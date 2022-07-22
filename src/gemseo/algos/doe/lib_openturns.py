@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """OpenTURNS DOE algorithms."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional, Sequence, Union
+from typing import Any
+from typing import Iterable
+from typing import Mapping
+from typing import MutableMapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 import openturns
-from numpy import array, full
+from numpy import array
+from numpy import full
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
 from packaging import version
 
+from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.string_tools import MultiLineString
 
@@ -116,33 +122,37 @@ class OpenTURNS(DOELibrary):
         OT_FACTORIAL: openturns.Factorial,
     }
 
+    LIBRARY_NAME = "OpenTURNS"
+
     def __init__(self):
-        super(OpenTURNS, self).__init__()
+        super().__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():
-            self.lib_dict[algo_name] = {
-                DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo_name,
-                DOELibrary.DESCRIPTION: algo_value[0],
-                DOELibrary.WEBSITE: self.__OT_WEBPAGE.format(algo_value[1]),
-            }
+            self.descriptions[algo_name] = DOEAlgorithmDescription(
+                algorithm_name=algo_name,
+                description=algo_value[0],
+                handle_integer_variables=True,
+                internal_algorithm_name=algo_name,
+                library_name=self.__class__.__name__,
+                website=self.__OT_WEBPAGE.format(algo_value[1]),
+            )
 
     def _get_options(
         self,
-        levels=None,  # type: Optional[int,Sequence[int]]
-        centers=None,  # type: Optional[Sequence[int]]
-        eval_jac=False,  # type: bool
-        n_samples=None,  # type: Optional[int]
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
-        criterion="C2",  # type: str
-        temperature="Geometric",  # type: str
-        annealing=True,  # type: bool
-        n_replicates=1000,  # type: int
-        seed=1,  # type: int
-        max_time=0,  # type: float
-        **kwargs  # type: OptionType
-    ):  # type: (...) -> Dict[str,OptionType]
+        levels: int | Sequence[int] | None = None,
+        centers: Sequence[int] | None = None,
+        eval_jac: bool = False,
+        n_samples: int | None = None,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        criterion: str = "C2",
+        temperature: str = "Geometric",
+        annealing: bool = True,
+        n_replicates: int = 1000,
+        seed: int = 1,
+        max_time: float = 0,
+        **kwargs: OptionType,
+    ) -> dict[str, OptionType]:
         r"""Set the options.
 
         Args:
@@ -155,7 +165,8 @@ class OpenTURNS(DOELibrary):
             n_samples: The number of samples. If None, the algorithm uses
                 the number of levels per input dimension provided by the
                 argument ``levels``.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             criterion: The space-filling criterion, either "C2", "PhiP" or "MinDist".
             temperature: The temperature profile for simulated annealing,
@@ -187,15 +198,15 @@ class OpenTURNS(DOELibrary):
             n_replicates=n_replicates,
             seed=seed,
             max_time=max_time,
-            **kwargs
+            **kwargs,
         )
 
         return options
 
     def __check_and_cast_levels(
         self,
-        options,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Check that the options ``levels`` is properly defined and cast it to array.
 
         Args:
@@ -224,9 +235,9 @@ class OpenTURNS(DOELibrary):
 
     def __check_and_cast_centers(
         self,
-        dimension,  # type: int
-        options,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        dimension: int,
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Check that the options ``centers`` is properly defined and cast it to array.
 
         Args:
@@ -256,22 +267,29 @@ class OpenTURNS(DOELibrary):
             )
 
     def _generate_samples(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> ndarray
+        self,
+        dimension: int,
+        n_samples: int | None = None,
+        seed: int | None = None,
+        **options: OptionType,
+    ) -> ndarray:
         """Generate the samples.
 
         Args:
-            **options: The options for the algorithm, see associated JSON file.
+            dimension: The dimension of the variables space.
+            n_samples: The number of samples.
+                If None, set from the options.
+            seed: The seed to be used.
+                If None, use :attr:`.seed`.
+            **options: The options for the DOE algorithm, see associated JSON file.
 
         Returns:
             The samples for the DOE.
         """
         self.seed += 1
-        openturns.RandomGenerator.SetSeed(options.get(self.SEED, self.seed))
-        dimension = options.pop(self.DIMENSION)
-        n_samples = options.pop(self.N_SAMPLES, None)
+        openturns.RandomGenerator.SetSeed(seed or self.seed)
 
-        LOGGER.info("Generation of %s DOE with OpenTurns", self.algo_name)
+        LOGGER.info("Generation of %s DOE with OpenTURNS", self.algo_name)
 
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
             return self.__generate_lhs(n_samples, dimension, **options)
@@ -295,9 +313,9 @@ class OpenTURNS(DOELibrary):
 
     def __check_stratified_options(
         self,
-        dimension,  # type: int
-        options,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        dimension: int,
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Check that the mandatory inputs for the composite design are set.
 
         Args:
@@ -320,9 +338,9 @@ class OpenTURNS(DOELibrary):
 
     def __generate_stratified(
         self,
-        dimension,  # type: int
-        options,  # type: Mapping[str,Any]
-    ):  # type: (...) -> ndarray
+        dimension: int,
+        options: Mapping[str, Any],
+    ) -> ndarray:
         """Generate a DOE using the composite DOE algorithm.
 
         Args:
@@ -347,10 +365,10 @@ class OpenTURNS(DOELibrary):
 
     def __generate_lhs(
         self,
-        n_samples,  # type: int
-        dimension,  # type: int
-        **options  # type: OptionType
-    ):  # type: (...) -> ndarray
+        n_samples: int,
+        dimension: int,
+        **options: OptionType,
+    ) -> ndarray:
         """Generate a DOE using the LHS algorithm, possibly centered or optimized.
 
         Args:
@@ -394,8 +412,8 @@ class OpenTURNS(DOELibrary):
 
     @staticmethod
     def __compute_centered_lhs(
-        samples,  # type:ndarray
-    ):  # type:(...) -> ndarray
+        samples: ndarray,
+    ) -> ndarray:
         """Center the samples resulting from a Latin hypercube sampling.
 
         Args:
@@ -410,15 +428,15 @@ class OpenTURNS(DOELibrary):
 
     @staticmethod
     def __get_uniform_distribution(
-        dimension,  # type: int
-    ):  # type: (...) -> openturns.ComposedDistribution
+        dimension: int,
+    ) -> openturns.ComposedDistribution:
         return openturns.ComposedDistribution([openturns.Uniform(0.0, 1.0)] * dimension)
 
     def __generate_sobol(
         self,
-        n_samples,  # type: int
-        dimension,  # type: int
-    ):  # type: (...) -> ndarray
+        n_samples: int,
+        dimension: int,
+    ) -> ndarray:
         """Generate a DOE using a Sobol' sampling.
 
         Args:
@@ -436,8 +454,8 @@ class OpenTURNS(DOELibrary):
 
     def _generate_fullfact_from_levels(
         self,
-        levels,  # type: Iterable[int]
-    ):  # type: (...) -> ndarray
+        levels: Iterable[int],
+    ) -> ndarray:
         # This method relies on openturns.Box.
         # This latter assumes that the levels provided correspond to the intermediate
         # levels between lower and upper bounds, while GEMSEO includes these bounds
@@ -466,11 +484,11 @@ class OpenTURNS(DOELibrary):
         doe[:, ot_indices] = ot_doe
         return doe
 
+    @staticmethod
     def __generate_random(
-        self,
-        n_samples,  # type: int
-        dimension,  # type: int
-    ):  # type: (...) -> ndarray
+        n_samples: int,
+        dimension: int,
+    ) -> ndarray:
         """Generate a DOE using the random generator.
 
         Args:
@@ -481,4 +499,4 @@ class OpenTURNS(DOELibrary):
             The samples.
         """
         samples = array(openturns.RandomGenerator.Generate(dimension * n_samples))
-        return samples.reshape((n_samples, dimension), order="F")
+        return samples.reshape((n_samples, dimension))

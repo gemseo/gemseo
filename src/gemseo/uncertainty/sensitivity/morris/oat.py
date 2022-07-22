@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Class to apply the OAT technique used by :class:`.MorrisIndices`.
 
 OAT technique
@@ -49,35 +46,46 @@ from an initial point
 From these elementary effects, we can compare their absolute values
 :math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import Mapping, Tuple
+from typing import Mapping
 
-from numpy import inf, ndarray
+from numpy import array
+from numpy import atleast_1d
+from numpy import inf
+from numpy import maximum
+from numpy import minimum
+from numpy import ndarray
 
+from gemseo.algos.database import DatabaseValueType
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.utils import get_all_outputs
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 LOGGER = logging.getLogger(__name__)
 
 
-class OATSensitivity(MDODiscipline):
-    """A :class:`.MDODiscipline` computing finite differences of another one."""
+class _OATSensitivity(MDODiscipline):
+    """An :class:`.MDODiscipline` to compute finite diff.
+
+    of a :class:`.DOEScenario`.
+    """
 
     _PREFIX = "fd"
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type: DesignSpace
-        step,  # type: float
-    ):  # type: (...) -> None # noqa: D107 D205 D212 D415
-        """
+        scenario: DOEScenario,
+        parameter_space: DesignSpace,
+        step: float,
+    ) -> None:
+        """# noqa: D107 D205 D212 D415
         Args:
-            discipline: A discipline.
+            scenario: The scenario for the analysis.
             parameter_space: A parameter space.
             step: The variation step of an input relative to its range,
                 between 0 and 0.5 (i.e. between 0 and 50% input range variation).
@@ -86,63 +94,93 @@ class OATSensitivity(MDODiscipline):
             ValueError: If the relative variation step is lower than or equal to 0
                 or greater than or equal to 0.5.
         """
-        super(OATSensitivity, self).__init__()
-        inputs = parameter_space.variables_names
-        self.input_grammar.initialize_from_data_names(inputs)
-        outputs = [
-            self.get_fd_name(input_, output)
-            for output in discipline.get_output_data_names()
-            for input_ in inputs
-        ]
-        self.output_grammar.initialize_from_data_names(outputs)
-        self.discipline = discipline
         if not 0 < step < 0.5:
             raise ValueError(
                 "Relative variation step must be "
-                "strictly comprised between 0 and 0.5; got {}.".format(step)
+                f"strictly comprised between 0 and 0.5; got {step}."
             )
+        super().__init__()
+        input_names = parameter_space.variables_names
+        self.input_grammar.update(input_names)
+        self.__output_names = get_all_outputs(scenario.disciplines)
+        output_names = [
+            self.get_fd_name(input_name, output_name)
+            for output_name in self.__output_names
+            for input_name in input_names
+        ]
+        self.output_grammar.update(output_names)
+
+        # The scenario is evaluated many times, this setting
+        # prevents conflicts between runs.
+        scenario.clear_history_before_run = True
+        self.scenario = scenario
+
         self.step = step
         self.parameter_space = parameter_space
-        self.output_range = {
-            name: [inf, -inf] for name in self.discipline.get_output_data_names()
+        self.output_range = self.output_range = {
+            name: [inf, -inf] for name in self.__output_names
         }
 
     def __update_output_range(
         self,
-        data,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        data: DatabaseValueType,
+    ) -> None:
         """Update the lower and upper bounds of the outputs from data.
 
         Args:
             data: The names and values of the outputs.
         """
-        for output_name in self.discipline.get_output_data_names():
-            output_value = data[output_name]
+        for output_name in self.__output_names:
+            output_value = atleast_1d(data[output_name])
             output_range = self.output_range[output_name]
-            output_range[0] = min(output_value, output_range[0])
-            output_range[1] = max(output_value, output_range[1])
+            output_range[0] = minimum(output_value, output_range[0])
+            output_range[1] = maximum(output_value, output_range[1])
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         inputs = self.get_input_data()
-        self.discipline.execute(inputs)
-        previous_data = self.discipline.local_data
+        samples = array([concatenate_dict_of_arrays_to_array(inputs, inputs.keys())])
+
+        # The opt_problem must be reset, this allows us to evaluate it again with
+        # different samples without getting max iter reached exceptions.
+        opt_problem = self.scenario.formulation.opt_problem
+        opt_problem.reset()
+        self.scenario.execute(
+            {
+                "algo": "CustomDOE",
+                "algo_options": {"samples": samples},
+            }
+        )
+
+        previous_data = opt_problem.database.last_item
+
         self.__update_output_range(previous_data)
+
         for input_name in self.get_input_data_names():
             inputs = self.__update_inputs(inputs, input_name, self.step)
-            self.discipline.execute(inputs)
-            new_data = self.discipline.local_data
+            samples = array(
+                [concatenate_dict_of_arrays_to_array(inputs, inputs.keys())]
+            )
+
+            # Reset the opt_problem before each evaluation.
+            opt_problem.reset()
+            self.scenario.execute(
+                {"algo": "CustomDOE", "algo_options": {"samples": samples}}
+            )
+
+            new_data = opt_problem.database.last_item
+
             self.__update_output_range(new_data)
-            for output_name in self.discipline.get_output_data_names():
+            for output_name in self.__output_names:
                 out_diff_name = self.get_fd_name(input_name, output_name)
                 out_diff_value = new_data[output_name] - previous_data[output_name]
-                self.local_data[out_diff_name] = out_diff_value
+                self.local_data[out_diff_name] = atleast_1d(out_diff_value)
 
             previous_data = new_data
 
     @staticmethod
     def get_io_names(
-        fd_name,  # type: str
-    ):  # type: (...) -> Tuple[str,str]
+        fd_name: str,
+    ) -> tuple[str, str]:
         """Get the output and input names from finite difference name.
 
         Args:
@@ -152,15 +190,13 @@ class OATSensitivity(MDODiscipline):
             The output name, then the input name.
         """
         split_name = fd_name.split("!")
-        output_name = split_name[1]
-        input_name = split_name[2]
-        return output_name, input_name
+        return split_name[1], split_name[2]
 
     def get_fd_name(
         self,
-        input_name,  # type: str
-        output_name,  # type: str
-    ):  # type: (...) -> str
+        input_name: str,
+        output_name: str,
+    ) -> str:
         """Return the output name associated to an input name.
 
         Args:
@@ -170,14 +206,14 @@ class OATSensitivity(MDODiscipline):
         Returns:
             The finite difference name.
         """
-        return "{}!{}!{}".format(self._PREFIX, output_name, input_name)
+        return f"{self._PREFIX}!{output_name}!{input_name}"
 
     def __update_inputs(
         self,
-        inputs,  # type: Mapping[str,ndarray]
-        input_name,  # type:str
-        step,  # type:float
-    ):  # type: (...) -> Mapping[str,ndarray]
+        inputs: Mapping[str, ndarray],
+        input_name: str,
+        step: float,
+    ) -> Mapping[str, ndarray]:
         """Update the input data from a finite difference step and an input name.
 
         Args:

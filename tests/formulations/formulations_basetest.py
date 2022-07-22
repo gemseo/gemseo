@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiProblem,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
 class FakeDiscipline(MDODiscipline):
@@ -52,9 +45,9 @@ class FakeDiscipline(MDODiscipline):
 
         """
         self.input_grammar = JSONGrammar("inputs")
-        self.input_grammar.initialize_from_base_dict({self.name + "_x": 0.0})
+        self.input_grammar.update_from_data({self.name + "_x": 0.0})
         self.output_grammar = JSONGrammar("outputs")
-        self.output_grammar.initialize_from_base_dict({self.name + "_y": 1.0})
+        self.output_grammar.update_from_data({self.name + "_y": 1.0})
 
 
 class FormulationsBaseTest(unittest.TestCase):
@@ -75,12 +68,12 @@ class FormulationsBaseTest(unittest.TestCase):
             SobieskiAerodynamics(dtype),
             SobieskiMission(dtype),
         ]
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         return MDOScenario(
             disciplines,
             formulation=formulation,
             objective_name="y_4",
             design_space=design_space,
             maximize_objective=True,
-            **options
+            **options,
         )

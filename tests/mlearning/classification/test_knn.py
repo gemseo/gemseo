@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test KNNClassifier."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array, array_equal, linspace, ndarray, zeros
-from numpy.random import permutation, seed
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model
 from gemseo.mlearning.classification.knn import KNNClassifier
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import linspace
+from numpy import ndarray
+from numpy import zeros
+from numpy.random import permutation
+from numpy.random import seed
 
 seed(12345)
 
@@ -46,7 +47,7 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the KNNClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 3))
@@ -66,7 +67,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model_1d(dataset):  # type: (...) -> KNNClassifier
+def model_1d(dataset) -> KNNClassifier:
     """A trained KNNClassifier with y_1 as single output."""
     knn = KNNClassifier(dataset, output_names=["y_1"])
     knn.learn()
@@ -74,7 +75,7 @@ def model_1d(dataset):  # type: (...) -> KNNClassifier
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> KNNClassifier
+def model(dataset) -> KNNClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     knn = KNNClassifier(dataset)
     knn.learn()
@@ -82,7 +83,7 @@ def model(dataset):  # type: (...) -> KNNClassifier
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> KNNClassifier
+def model_with_transform(dataset) -> KNNClassifier:
     """A trained KNNClassifier using input scaling."""
     knn = KNNClassifier(dataset, transformer={"inputs": MinMaxScaler()})
     knn.learn()
@@ -93,6 +94,8 @@ def test_constructor(dataset):
     """Test construction."""
     knn = KNNClassifier(dataset)
     assert knn.algo is not None
+    assert knn.SHORT_ALGO_NAME == "KNN"
+    assert knn.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset):

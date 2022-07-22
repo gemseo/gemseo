@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,29 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import os
 import unittest
 from itertools import permutations
 
 import pytest
-from numpy import allclose, ones
-
-from gemseo.core.analytic_discipline import AnalyticDiscipline
-from gemseo.core.chain import MDOAdditiveChain, MDOChain, MDOParallelChain
+from gemseo.core.chain import MDOAdditiveChain
+from gemseo.core.chain import MDOChain
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ParallelExecSequence
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import allclose
+from numpy import ones
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -115,8 +112,8 @@ class Testmdochain(unittest.TestCase):
     def test_common_in_out(self):
         # Check that the linearization works with a discipline
         # that has inputs and outputs of the same name
-        a = AnalyticDiscipline("a", {"x": "x"})
-        o = AnalyticDiscipline("o", {"o": "x+y"})
+        a = AnalyticDiscipline({"x": "x"}, name="a")
+        o = AnalyticDiscipline({"o": "x+y"}, name="o")
         chain = MDOChain([a, o])
         assert chain.check_jacobian(
             {"x": ones(1), "y": ones(1)},

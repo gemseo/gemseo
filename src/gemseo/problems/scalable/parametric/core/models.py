@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,29 +21,30 @@
 Scalable problem - Models
 *************************
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 
-from numpy import array, atleast_2d, diag, dot, eye
+from numpy import array
+from numpy import atleast_2d
+from numpy import diag
+from numpy import dot
+from numpy import eye
 from numpy import mean as npmean
 from numpy import ndarray
 from numpy import sum as npsum
-from past.utils import old_div
 
-from .variables import (
-    OBJECTIVE_NAME,
-    X_SHARED_NAME,
-    get_constraint_name,
-    get_coupling_name,
-    get_u_local_name,
-    get_x_local_name,
-)
+from .variables import get_constraint_name
+from .variables import get_coupling_name
+from .variables import get_u_local_name
+from .variables import get_x_local_name
+from .variables import OBJECTIVE_NAME
+from .variables import X_SHARED_NAME
 
 LOGGER = logging.getLogger(__name__)
 
 
-class TMMainModel(object):
+class TMMainModel:
 
     r"""The main discipline from the scalable problem introduced by Tedford
     and Martins (2010) takes the  local design parameters
@@ -116,7 +115,7 @@ class TMMainModel(object):
         :param dict(ndarray) coupling: list of coupling variables
             (one element per sub-discipline).
         """
-        obj = npmean(x_shared ** 2)
+        obj = npmean(x_shared**2)
         obj += npmean(
             [
                 npmean(coupling[get_coupling_name(index)] ** 2)
@@ -127,7 +126,7 @@ class TMMainModel(object):
         for index in range(self.n_submodels):
             constraint = get_constraint_name(index)
             coupling_name = get_coupling_name(index)
-            tmp = old_div(coupling[coupling_name], self.coefficients[index])
+            tmp = coupling[coupling_name] / self.coefficients[index]
             output[constraint] = 1 - tmp
         return output
 
@@ -138,22 +137,22 @@ class TMMainModel(object):
         :param dict(ndarray) coupling: list of coupling variables
             (one element per sub-discipline).
         """
-        tmp = old_div(2 * x_shared, len(x_shared))
+        tmp = 2 * x_shared / len(x_shared)
         jacobian = {OBJECTIVE_NAME: {}}
         jacobian[OBJECTIVE_NAME][X_SHARED_NAME] = atleast_2d(tmp)
         for index in range(self.n_submodels):
             constraint = get_constraint_name(index)
             coupling_name = get_coupling_name(index)
             jacobian[constraint] = {}
-            tmp = old_div(2 * coupling[coupling_name], len(coupling[coupling_name]))
+            tmp = 2 * coupling[coupling_name] / len(coupling[coupling_name])
             tmp /= self.n_submodels
             jacobian[OBJECTIVE_NAME][coupling_name] = atleast_2d(tmp)
-            tmp = diag(old_div(-1.0, self.coefficients[index]))
+            tmp = diag(-1.0 / self.coefficients[index])
             jacobian[constraint][coupling_name] = atleast_2d(tmp)
         return jacobian
 
 
-class TMSubModel(object):
+class TMSubModel:
 
     r"""A sub-discipline from the scalable problem introduced by
     Tedford and Martins (2010) takes local design parameters :math:`x_i`
@@ -184,7 +183,7 @@ class TMSubModel(object):
         :param dict(ndarray) c_coupling: weights for the coupling parameters.
         :param dict(ndarray) default_inputs: default inputs
         """
-        self.name = "SubModel_{}".format(index)
+        self.name = f"SubModel_{index}"
         self.index = index
         self.c_shared = c_shared
         self.c_local = c_local
@@ -280,12 +279,12 @@ class TMSubModel(object):
         norm = cpl_sum.reshape((-1, 1))
         norm += npsum(self.c_shared, 1).reshape((-1, 1))
         norm += npsum(self.c_local, 1).reshape((-1, 1))
-        der = old_div(-self.c_local, norm)
+        der = -self.c_local / norm
         jacobian = {coupling_name: {}}
         jacobian[coupling_name][x_local_name] = der
         jacobian[coupling_name][u_local_name] = eye(der.shape[0])
-        der = old_div(-self.c_shared, norm)
+        der = -self.c_shared / norm
         jacobian[coupling_name][X_SHARED_NAME] = der
         for cpl_name, cpl_value in self.c_coupling.items():
-            jacobian[coupling_name][cpl_name] = old_div(cpl_value, norm)
+            jacobian[coupling_name][cpl_name] = cpl_value / norm
         return jacobian

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,16 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClassificationModelFactory class in
 gemseo.mlearning.classification.factory."""
-from __future__ import division, unicode_literals
-
 import pytest
-
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.problems.dataset.iris import IrisDataset
 
 
 @pytest.fixture
-def dataset():  # type: (...) ->IrisDataset
+def dataset() -> IrisDataset:
     """The Iris dataset used to train the classification algorithms."""
     iris = IrisDataset(as_io=True)
     return iris
@@ -40,13 +35,11 @@ def test_constructor():
     """Test factory constructor."""
     factory = ClassificationModelFactory()
     # plugins may add classes
-    assert set(factory.models) <= set(
-        [
-            "KNNClassifier",
-            "RandomForestClassifier",
-            "SVMClassifier",
-        ]
-    )
+    assert set(factory.models) <= {
+        "KNNClassifier",
+        "RandomForestClassifier",
+        "SVMClassifier",
+    }
 
 
 def test_create(dataset):

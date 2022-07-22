@@ -1,0 +1,4 @@
+git+https://gitlab.com/gemseo/dev/gemseo-scilab.git@develop
+git+https://gitlab.com/gemseo/dev/gemseo-java.git@develop
+git+https://gitlab.com/gemseo/dev/gemseo-petsc.git@develop
+git+https://gitlab.com/gemseo/dev/gemseo-pymoo.git@develop

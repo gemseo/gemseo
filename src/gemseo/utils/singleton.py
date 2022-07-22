@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Singletons implementation and variants."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from os.path import realpath
 from typing import Any
 
 from six import with_metaclass
-
-from gemseo.utils.py23_compat import string_types
 
 
 class SingleInstancePerAttributeId(type):
@@ -77,13 +71,13 @@ class _Multiton(type):
         distinct call from f(y=2, x=1) which will be cached separately.
     """
 
-    _cache = {}  # type: Any
+    _cache: Any = {}
 
     def __call__(
         cls,
-        *args,  # type: Any
-        **kwargs  # type: Any
-    ):  # type (...) -> None
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         key = (cls,) + args + tuple(kwargs.items())
         try:
             return cls._cache[key]
@@ -93,24 +87,13 @@ class _Multiton(type):
             return inst
 
     @classmethod
-    def cache_clear(cls):  # type (...) -> None
+    def cache_clear(cls) -> None:
         """Clear the cache."""
         cls._cache = {}
 
 
 # Provide a naturally derivable class.
 Multiton = with_metaclass(_Multiton, object)
-
-
-class SingleInstancePerAttributeEq(_Multiton):
-    """Legacy multiton metaclass.
-
-    Provided for backward compatibility, please use the Multiton base class instead.
-    """
-
-    # TODO: deprecate at some point.
-
-    instances = _Multiton._cache
 
 
 class SingleInstancePerFileAttribute(type):
@@ -133,7 +116,7 @@ class SingleInstancePerFileAttribute(type):
             )
         fpath = args[0]
 
-        if not isinstance(fpath, string_types):
+        if not isinstance(fpath, str):
             raise TypeError(
                 "Argument 0 is not a string but of type :" + str(type(fpath))
             )

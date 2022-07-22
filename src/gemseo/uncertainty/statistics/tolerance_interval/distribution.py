@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,19 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted probability distribution."""
-import logging
-from typing import Any, Tuple, Type
+from __future__ import annotations
 
-import six
-from custom_inherit import DocInheritMeta
-from numpy import array, inf, ndarray
+import logging
+from typing import Any
+
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+from numpy import array
+from numpy import inf
+from numpy import ndarray
 
 from gemseo.core.factory import Factory
 from gemseo.utils.base_enum import BaseEnum
@@ -35,14 +36,7 @@ LOGGER = logging.getLogger(__name__)
 ToleranceIntervalSide = BaseEnum("ToleranceIntervalSide", "LOWER UPPER BOTH")
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class ToleranceInterval(object):
+class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
     """Computation of tolerance intervals from a data-fitted probability distribution.
 
     A :class:`.ToleranceInterval` (TI) is initialized
@@ -72,10 +66,9 @@ class ToleranceInterval(object):
 
     def __init__(
         self,
-        size,  # type: int
-    ):  # type:(...) -> None
-        # noqa: D205 D212 D415
-        """
+        size: int,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             size: The number of samples.
         """
@@ -83,10 +76,10 @@ class ToleranceInterval(object):
 
     def _compute_lower_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         """Compute the lower bound of the tolerance interval.
 
         Args:
@@ -101,10 +94,10 @@ class ToleranceInterval(object):
 
     def _compute_upper_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         """Compute the upper bound of the tolerance interval.
 
         Args:
@@ -119,11 +112,11 @@ class ToleranceInterval(object):
 
     def _compute(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-        side,  # type: ToleranceIntervalSide
-    ):  # type: (...) -> Tuple[ndarray,ndarray]
+        coverage: float,
+        alpha: float,
+        size: int,
+        side: ToleranceIntervalSide,
+    ) -> tuple[ndarray, ndarray]:
         r"""Compute the bounds of the tolerance interval.
 
         Args:
@@ -159,10 +152,10 @@ class ToleranceInterval(object):
 
     def compute(
         self,
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
-    ):  # type: (...) -> Tuple[ndarray,ndarray]
+        coverage: float,
+        confidence: float = 0.95,
+        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
+    ) -> tuple[ndarray, ndarray]:
         r"""Compute a tolerance interval.
 
         Args:
@@ -180,21 +173,20 @@ class ToleranceInterval(object):
         return self._compute(coverage, 1 - confidence, self.__size, side)
 
 
-class ToleranceIntervalFactory(object):
+class ToleranceIntervalFactory:
     """A factory of :class:`.ToleranceInterval`."""
 
-    def __init__(self):  # type: (...) -> None
-        # noqa: D107
+    def __init__(self) -> None:  # noqa: D107
         self.__factory = Factory(
             ToleranceInterval, ("gemseo.uncertainty.statistics.tolerance_interval",)
         )
 
     def create(
         self,
-        class_name,  # type: str
-        size,  # type: int
-        *args  # type: float
-    ):  # type: (...) -> ToleranceInterval
+        class_name: str,
+        size: int,
+        *args: float,
+    ) -> ToleranceInterval:
         """Return an instance of :class:`.ToleranceInterval`.
 
         Args:
@@ -221,9 +213,7 @@ class ToleranceIntervalFactory(object):
                 )
             )
 
-    def get_class(
-        self, name  # type: str
-    ):  # type: (...) -> Type[Any]
+    def get_class(self, name: str) -> type[Any]:
         """Return a class from its name.
 
         Args:
@@ -232,4 +222,4 @@ class ToleranceIntervalFactory(object):
         Returns:
             The class.
         """
-        return self.__factory.get_class("{}ToleranceInterval".format(name))
+        return self.__factory.get_class(f"{name}ToleranceInterval")

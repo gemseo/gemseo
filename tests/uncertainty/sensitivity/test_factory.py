@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-from numpy import pi
-
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
+from numpy import pi
 
 
 def test_constructor():
@@ -46,8 +40,9 @@ def test_is_available():
 
 
 def test_create():
-    expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-    discipline = AnalyticDiscipline(expressions_dict=expressions, name="Ishigami")
+    discipline = AnalyticDiscipline(
+        {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
+    )
 
     space = ParameterSpace()
     for variable in ["x1", "x2", "x3"]:
@@ -56,5 +51,5 @@ def test_create():
         )
     factory = SensitivityAnalysisFactory()
     assert factory.create(
-        "MorrisAnalysis", discipline, space, n_samples=None, n_replicates=5
+        "MorrisAnalysis", (discipline,), space, n_samples=None, n_replicates=5
     )

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -21,30 +19,44 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Basic display of optimization history: functions and x."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, List, Optional, Sequence, Tuple
+import sys
+from typing import Iterable
+from typing import Sequence
 
 import matplotlib.gridspec as gridspec
 import pylab
 from matplotlib.figure import Figure
-from matplotlib.ticker import LogFormatter, MaxNLocator
+from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
-from numpy import append, arange, argmin, array, atleast_2d, concatenate, hstack, isnan
+from numpy import append
+from numpy import arange
+from numpy import argmin
+from numpy import array
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import full
+from numpy import hstack
+from numpy import isnan
 from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
-from numpy import ndarray, ones, ones_like
+from numpy import ndarray
+from numpy import ones_like
 from numpy import sort as np_sort
-from numpy import vstack, where
+from numpy import vstack
+from numpy import where
 from numpy.linalg import norm
 
 from gemseo.algos.database import Database
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
+from gemseo.post.core.colormaps import PARULA
+from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
@@ -69,20 +81,20 @@ class OptHistoryView(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(OptHistoryView, self).__init__(opt_problem)
-        self.cmap = PARULA  # "viridis"  # "jet"
-        self.ineq_cstr_cmap = RG_SEISMIC  # "seismic" "PRGn_r"
-        self.eq_cstr_cmap = "seismic"  # "seismic" "PRGn_r"
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
+        self.cmap = PARULA
+        self.ineq_cstr_cmap = RG_SEISMIC
+        self.eq_cstr_cmap = "seismic"
 
     def _plot(
         self,
-        variables_names=None,  # type: Optional[Sequence[str]]
-        obj_min=None,  # type: Optional[float]
-        obj_max=None,  # type: Optional[float]
-        obj_relative=False,  # type: bool
-    ):  # type: (...) -> None
+        variables_names: Sequence[str] | None = None,
+        obj_min: float | None = None,
+        obj_max: float | None = None,
+        obj_relative: bool = False,
+    ) -> None:
         """
         Args:
             variables_names: The names of the variables to display.
@@ -100,8 +112,9 @@ class OptHistoryView(OptPostProcessor):
         eq_cstr = self.opt_problem.get_eq_constraints()
         eq_cstr_names = [c.name for c in eq_cstr]
 
-        obj_name = self.opt_problem.get_objective_name()
-        obj_history, x_history, n_iter = self._get_history(obj_name, variables_names)
+        obj_history, x_history, n_iter = self._get_history(
+            self._standardized_obj_name, variables_names
+        )
 
         # design variables
         self._create_variables_plot(x_history, variables_names)
@@ -118,9 +131,11 @@ class OptHistoryView(OptPostProcessor):
         self._create_x_star_plot(x_history, n_iter)
 
         # Hessian plot
-        plot_hessian = not self.database.is_func_grad_history_empty(obj_name)
+        plot_hessian = not self.database.is_func_grad_history_empty(
+            self._standardized_obj_name
+        )
         if plot_hessian:
-            self._create_hessian_approx_plot(self.database, obj_name)
+            self._create_hessian_approx_plot(self.database, self._standardized_obj_name)
 
         # inequality and equality constraints
         self._plot_cstr_history(ineq_cstr_names, MDOFunction.TYPE_INEQ)
@@ -128,9 +143,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _plot_cstr_history(
         self,
-        cstr_names,  # type: Sequence[str]
-        cstr_type,  # type: str
-    ):  # type: (...) -> None
+        cstr_names: Sequence[str],
+        cstr_type: str,
+    ) -> None:
         """Create the plot for (in)equality constraints.
 
         Args:
@@ -147,9 +162,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _get_history(
         self,
-        function_name,  # type: str
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,int]
+        function_name: str,
+        variables_names: Sequence[str],
+    ) -> tuple[ndarray, ndarray, int]:
         """Access the optimization history of a function and the design variables at
         which it was computed.
 
@@ -168,55 +183,54 @@ class OptHistoryView(OptPostProcessor):
 
         if variables_names is not None:
             # select only the interesting columns
-            block_list = []
+            blocks = []
             column = 0
             for var in self.opt_problem.design_space.variables_names:
                 if var in variables_names:
                     size = self.opt_problem.design_space.variables_sizes[var]
-                    block_list.append(x_hist[:, column : column + size])
+                    blocks.append(x_hist[:, column : column + size])
                     column += size
             # concatenate the blocks
-            x_hist = hstack(block_list)
-        n_iter = x_hist.shape[0]
-        return f_hist, x_hist, n_iter
+            x_hist = hstack(blocks)
+
+        return f_hist, x_hist, x_hist.shape[0]
 
     def _get_constraints(
         self,
-        cstr_names,  # type: Iterable[str]
-    ):  # type: (...) -> Tuple[ndarray,List[ndarray]]
+        constraint_names: Iterable[str],
+    ) -> tuple[ndarray, list[ndarray]]:
         """Extract a history of constraints.
 
         Args:
-            cstr_names: The names of the constraints.
+            constraint_names: The names of the constraints.
 
         Returns:
             The bounds of the constraints and history array.
         """
         available_data_names = self.database.get_all_data_names()
-        for cstr_name in cstr_names:
-            if cstr_name not in available_data_names:
-                cstr_names.remove(cstr_name)
+        for constraint_name in constraint_names:
+            if constraint_name not in available_data_names:
+                constraint_names.remove(constraint_name)
 
         constraints_history = []
-        bnd_list = -1e300 * ones(len(cstr_names))
-
-        for cstr_i, cstr_name in enumerate(cstr_names):
-
-            cstr_history = array(self.database.get_func_history(cstr_name)).real
-
-            constraints_history.append(cstr_history)
-            bnd_list[cstr_i] = max(
-                bnd_list[cstr_i],
-                max(abs(np_min(cstr_history)), abs(np_max(cstr_history))),
+        bounds = full(len(constraint_names), sys.float_info.min)
+        for constraint_index, constraint_name in enumerate(constraint_names):
+            constraint_history = array(
+                self.database.get_func_history(constraint_name)
+            ).real
+            constraints_history.append(constraint_history)
+            bounds[constraint_index] = max(
+                bounds[constraint_index],
+                max(abs(np_min(constraint_history)), abs(np_max(constraint_history))),
             )
 
-        return bnd_list, constraints_history
+        return bounds, constraints_history
 
     def _normalize_x_hist(
         self,
-        x_history,  # type: ndarray
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> ndarray
+        x_history: ndarray,
+        variables_names: Sequence[str],
+    ) -> ndarray:
         """Normalize the design variables history.
 
         Args:
@@ -236,9 +250,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_variables_plot(
         self,
-        x_history,  # type: ndarray
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        x_history: ndarray,
+        variables_names: Sequence[str],
+    ) -> None:
         """Create the design variables plot.
 
         Args:
@@ -275,7 +289,7 @@ class OptHistoryView(OptPostProcessor):
                 name += " (0)"
             y_labels.append(name)
             for i in range(1, size):
-                y_labels.append("({})".format(i))
+                y_labels.append(f"({i})")
 
         ax1.set_yticks(arange(n_variables))
         ax1.set_yticklabels(y_labels)
@@ -296,12 +310,12 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_obj_plot(
         self,
-        obj_history,  # type: ndarray
-        n_iter,  # type: int
-        obj_min=None,  # type: Optional[float]
-        obj_max=None,  # type: Optional[float]
-        obj_relative=False,  # type: bool
-    ):  # type: (...) -> None
+        obj_history: ndarray,
+        n_iter: int,
+        obj_min: float | None = None,
+        obj_max: float | None = None,
+        obj_relative: bool = False,
+    ) -> None:
         """Creates the design variables plot.
 
         Args:
@@ -314,9 +328,9 @@ class OptHistoryView(OptPostProcessor):
             obj_relative: If True, plot the objective value difference
                 with the initial value.
         """
-        # if max problem, plot -objective value
-        if not self.opt_problem.minimize_objective:
+        if self._change_obj:
             obj_history = -obj_history
+
         if obj_relative:
             LOGGER.info(
                 "Plot of optimization history "
@@ -325,6 +339,7 @@ class OptHistoryView(OptPostProcessor):
                 obj_history[0],
             )
             obj_history -= obj_history[0]
+
         # Remove nans
         n_x = len(obj_history)
         x_absc = arange(n_x)
@@ -369,8 +384,8 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_x_star_plot(
         self,
-        x_history,  # type: ndarray
-        n_iter,  # type:int
+        x_history: ndarray,
+        n_iter: int,
     ):
         """Create the design variables plot.
 
@@ -416,9 +431,9 @@ class OptHistoryView(OptPostProcessor):
 
     @staticmethod
     def _cstr_number(
-        cstr_names,  # type: Sequence[str]
-        cstr_history,  # type: ndarray
-    ):  # type: (...) -> int
+        cstr_names: Sequence[str],
+        cstr_history: ndarray,
+    ) -> int:
         """Compute the total scalar constraints number.
 
         Args:
@@ -439,10 +454,10 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_cstr_plot(
         self,
-        cstr_history,  # type: ndarray
-        cstr_type,  # type: str
-        cstr_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        cstr_history: ndarray,
+        cstr_type: str,
+        cstr_names: Sequence[str],
+    ) -> None:
         """Create the constraints plot: 1 line per constraint component.
 
         Args:
@@ -481,10 +496,10 @@ class OptHistoryView(OptPostProcessor):
                     if component_j == 0:
                         cstr_name = cstr_names[i]
                         if nb_components >= 2:
-                            cstr_name += " (" + str(component_j + 1) + ")"
+                            cstr_name += " (" + str(component_j) + ")"
                         cstr_labels.append(cstr_name)
                     else:
-                        cstr_labels.append("(" + str(component_j + 1) + ")")
+                        cstr_labels.append("(" + str(component_j) + ")")
 
                     history_i_j = atleast_2d(history_i[component_j, :])
 
@@ -500,16 +515,16 @@ class OptHistoryView(OptPostProcessor):
 
         fig = self._build_cstr_fig(cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels)
 
-        self._add_figure(fig, "{}_constraints".format(cstr_type))
+        self._add_figure(fig, f"{cstr_type}_constraints")
 
     def _build_cstr_fig(
         self,
-        cstr_matrix,  # type: ndarray
-        cstr_type,  # type: str
-        vmax,  # type: float
-        n_cstr,  # type: int
-        cstr_labels,  # type: Sequence[str]
-    ):  # type: (...) -> Figure
+        cstr_matrix: ndarray,
+        cstr_type: str,
+        vmax: float,
+        n_cstr: int,
+        cstr_labels: Sequence[str],
+    ) -> Figure:
         """Build the constraints figure.
 
         Args:
@@ -596,9 +611,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_hessian_approx_plot(
         self,
-        history,  # type: Database
-        obj_name,  # type: str
-    ):  # type: (...) -> None
+        history: Database,
+        obj_name: str,
+    ) -> None:
         """Create the plot of the Hessian approximation.
 
         Args:

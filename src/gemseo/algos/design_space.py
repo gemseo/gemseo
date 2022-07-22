@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -39,47 +37,55 @@ to get or set the value of a given variable property.
 Lastly,
 an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import collections
 import logging
-import sys
 from copy import deepcopy
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from numbers import Number
+from pathlib import Path
+from typing import Any
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
+from typing import Union
 
 import h5py
 from numpy import abs as np_abs
-from numpy import (
-    array,
-    atleast_1d,
-    complex128,
-    concatenate,
-    empty,
-    equal,
-    finfo,
-    float64,
-    genfromtxt,
-    inf,
-    int32,
-    isnan,
-    logical_or,
-    mod,
-    ndarray,
-    ones,
-    ones_like,
-)
+from numpy import array
+from numpy import atleast_1d
+from numpy import complex128
+from numpy import concatenate
+from numpy import dtype
+from numpy import empty
+from numpy import equal
+from numpy import finfo
+from numpy import float64
+from numpy import full
+from numpy import genfromtxt
+from numpy import hstack
+from numpy import inf
+from numpy import int32
+from numpy import isinf
+from numpy import isnan
+from numpy import logical_or
+from numpy import mod
+from numpy import ndarray
+from numpy import nonzero
+from numpy import ones_like
 from numpy import round_ as np_round
-from numpy import string_, vectorize, where, zeros_like
-from six import string_types
+from numpy import string_
+from numpy import vectorize
+from numpy import where
+from numpy import zeros_like
 
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.cache import hash_data_dict
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.data_conversion import flatten_mapping
+from gemseo.utils.data_conversion import flatten_nested_dict
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import Path, string_array, strings_to_unicode_list
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,32 +104,20 @@ VarType = Union[
     Sequence[DesignVariableType],
 ]
 
-if sys.version_info < (3, 7, 0):
-    DesignVariable = collections.namedtuple(
-        "DesignVariable", ["size", "var_type", "l_b", "u_b", "value"]
-    )
-    DesignVariable.__new__.__defaults__ = (
+DesignVariable = collections.namedtuple(
+    "DesignVariable",
+    ["size", "var_type", "l_b", "u_b", "value"],
+    defaults=(
         1,
         DesignVariableType.FLOAT,
         None,
         None,
         None,
-    )
-else:
-    DesignVariable = collections.namedtuple(
-        "DesignVariable",
-        ["size", "var_type", "l_b", "u_b", "value"],
-        defaults=(
-            1,
-            DesignVariableType.FLOAT,
-            None,
-            None,
-            None,
-        ),
-    )
+    ),
+)
 
 
-class DesignSpace(collections.MutableMapping):
+class DesignSpace(collections.abc.MutableMapping):
     """Description of a design space.
 
     It defines a set of variables from their names, sizes, types and bounds.
@@ -145,7 +139,7 @@ class DesignSpace(collections.MutableMapping):
             corresponding to the sum of the sizes of the variables.
         variables_sizes (Dict[str,int]): The sizes of the variables.
         variables_types (Dict[str,ndarray]): The types of the variables components,
-            which can be any :attr:`DesignVariableType`.
+            which can be any :attr:`.DesignSpace.DesignVariableType`.
         normalize (Dict[str,ndarray]): The normalization policies
             of the variables components indexed by the variables names;
             if `True`, the component can be normalized.
@@ -172,12 +166,18 @@ class DesignSpace(collections.MutableMapping):
     SIZE_GROUP = "size"
     # separator that denotes a vector's components
     SEP = "!"
+    __INT_DTYPE = dtype("int32")
+    __FLOAT_DTYPE = dtype("float64")
+    __COMPLEX_DTYPE = dtype("complex128")
+
+    __DEFAULT_COMMON_DTYPE = __FLOAT_DTYPE
+    """The default NumPy data type of the variables."""
 
     def __init__(
         self,
-        hdf_file=None,  # type: Optional[Union[str,Path]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        hdf_file: str | Path | None = None,
+        name: str | None = None,
+    ) -> None:
         """
         Args:
             hdf_file: The path to the file
@@ -197,21 +197,73 @@ class DesignSpace(collections.MutableMapping):
         # These attributes are stored for faster computation of normalization
         # and unnormalization
         self._norm_factor = None
+        self._norm_factor_inv = None
         self.__lower_bounds_array = None
         self.__upper_bounds_array = None
-        self.__int_vars_indices = None
+        self.__integer_components = None
+        self.__no_integer = True
         self.__norm_data_is_computed = False
         self.__norm_inds = None
         self.__to_zero = None
         self.__bound_tol = 100.0 * finfo(float64).eps
-        self._current_x = {}
+        self.__current_value = {}
+        self.__current_value_array = array([])
+        self.__norm_current_value = {}
+        self.__norm_current_value_array = array([])
+        self.__has_current_value = False
+        self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
         if hdf_file is not None:
             self.import_hdf(hdf_file)
 
+    @property
+    def _current_value(self) -> dict[str, ndarray]:
+        """The current design value."""
+        return self.__current_value
+
+    @_current_value.setter
+    def _current_value(self, value: Mapping[str, ndarray]) -> None:
+        self.__current_value = value
+        self.__update_current_metadata()
+
+    def __update_current_metadata(self) -> None:
+        """Update information about the current design value for quick access."""
+        self.__update_current_status()
+        self.__update_common_dtype()
+        if self.__has_current_value:
+            self.__current_value_array = self.dict_to_array(self.__current_value)
+            self.__norm_current_value_array = self.normalize_vect(
+                self.__current_value_array
+            )
+            self.__norm_current_value = self.array_to_dict(
+                self.__norm_current_value_array
+            )
+
+    def __update_common_dtype(self) -> None:
+        """Update the common data type of the variables."""
+        if self.__has_current_value:
+            self.__common_dtype = self.__get_common_dtype(self.__current_value)
+        else:
+            self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
+
+    def __update_current_status(self) -> None:
+        """Update the availability of current design values for all the variables."""
+        if not self.__current_value or set(self.__current_value.keys()) != set(
+            self.variables_names
+        ):
+            self.__has_current_value = False
+            return
+
+        for value in self.__current_value.values():
+            if value is None:
+                self.__has_current_value = False
+                return
+
+        self.__has_current_value = True
+
     def __delitem__(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Remove a variable from the design space.
 
         Args:
@@ -221,8 +273,8 @@ class DesignSpace(collections.MutableMapping):
 
     def remove_variable(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Remove a variable from the design space.
 
         Args:
@@ -237,21 +289,25 @@ class DesignSpace(collections.MutableMapping):
         del self.normalize[name]
         if name in self._lower_bounds:
             del self._lower_bounds[name]
+
         if name in self._upper_bounds:
             del self._upper_bounds[name]
-        if name in self._current_x:
-            del self._current_x[name]
+
+        if name in self.__current_value:
+            del self.__current_value[name]
+
+        self.__update_current_metadata()
 
     def filter(
         self,
-        keep_variables,  # type: Union[str,Iterable[str]]
-        copy=False,  # type: bool
-    ):  # type: (...) -> DesignSpace
+        keep_variables: str | Iterable[str],
+        copy: bool = False,
+    ) -> DesignSpace:
         """Filter the design space to keep a subset of variables.
 
         Args:
             keep_variables: The names of the variables to be kept.
-            copy: If True, then a copy of the design space is filtered,
+            copy: If ``True``, then a copy of the design space is filtered,
                 otherwise the design space itself is filtered.
 
         Returns:
@@ -260,7 +316,7 @@ class DesignSpace(collections.MutableMapping):
         Raises:
             ValueError: If the variable is not in the design space.
         """
-        if isinstance(keep_variables, string_types):
+        if isinstance(keep_variables, str):
             keep_variables = [keep_variables]
         design_space = deepcopy(self) if copy else self
         for name in deepcopy(self.variables_names):
@@ -268,14 +324,14 @@ class DesignSpace(collections.MutableMapping):
                 design_space.remove_variable(name)
         for name in keep_variables:
             if name not in self.variables_names:
-                raise ValueError("Variable '{}' is not known.".format(name))
+                raise ValueError(f"Variable '{name}' is not known.")
         return design_space
 
     def filter_dim(
         self,
-        variable,  # type: str
-        keep_dimensions,  # type: Iterable[int]
-    ):  # type: (...) -> DesignSpace
+        variable: str,
+        keep_dimensions: Iterable[int],
+    ) -> DesignSpace:
         """Filter the design space to keep a subset of dimensions for a variable.
 
         Args:
@@ -311,25 +367,30 @@ class DesignSpace(collections.MutableMapping):
                 )
             types.append(self.variables_types[variable][dimension])
             self.variables_types[variable] = array(types)
+
         idx = keep_dimensions
         self.normalize[variable] = self.normalize[variable][idx]
         if variable in self._lower_bounds:
             self._lower_bounds[variable] = self._lower_bounds[variable][idx]
+
         if variable in self._upper_bounds:
             self._upper_bounds[variable] = self._upper_bounds[variable][idx]
-        if variable in self._current_x:
-            self._current_x[variable] = self._current_x[variable][idx]
+
+        if variable in self.__current_value:
+            self.__current_value[variable] = self.__current_value[variable][idx]
+
+        self.__update_current_metadata()
         return self
 
     def add_variable(
         self,
-        name,  # type: str
-        size=1,  # type: int
-        var_type=DesignVariableType.FLOAT,  # type: VarType
-        l_b=None,  # type: Optional[Union[float,ndarray]]
-        u_b=None,  # type: Optional[Union[float,ndarray]]
-        value=None,  # type:  Optional[Union[float,ndarray]]
-    ):  # type: (...) -> None
+        name: str,
+        size: int = 1,
+        var_type: VarType = DesignVariableType.FLOAT,
+        l_b: float | ndarray | None = None,
+        u_b: float | ndarray | None = None,
+        value: float | ndarray | None = None,
+    ) -> None:
         r"""Add a variable to the design space.
 
         Args:
@@ -349,12 +410,10 @@ class DesignSpace(collections.MutableMapping):
                 or if the size is not a positive integer.
         """
         if name in self.variables_names:
-            raise ValueError("Variable '{}' already exists.".format(name))
+            raise ValueError(f"Variable '{name}' already exists.")
 
         if size <= 0 or int(size) != size:
-            raise ValueError(
-                "The size of '{}' should be a positive integer.".format(name)
-            )
+            raise ValueError(f"The size of '{name}' should be a positive integer.")
 
         # name and size
         self.variables_names.append(name)
@@ -375,22 +434,26 @@ class DesignSpace(collections.MutableMapping):
             array_value = atleast_1d(value)
             self._check_value(array_value, name)
             if len(array_value) == 1 and size > 1:
-                array_value = array_value * ones(size)
-            self._current_x[name] = array_value
-            self._check_current_x_value(name)
+                array_value = full(size, value)
+            self.__current_value[name] = array_value.astype(
+                self.__TYPES_TO_DTYPES[self.variables_types[name][0]], copy=False
+            )
+            self._check_current_value(name)
+
+        self.__update_current_metadata()
 
     def _add_type(
         self,
-        name,  # type: str
-        size,  # type: int
-        var_type=DesignVariableType.FLOAT,  # type: VarType
-    ):  # type: (...) -> None
+        name: str,
+        size: int,
+        var_type: VarType = DesignVariableType.FLOAT,
+    ) -> None:
         """Add a type to a variable.
 
         Args:
             name: The name of the variable.
             size: The size of the variable.
-            var_type: Either the type of the variable (see :attr:`AVAILABLE_TYPES`)
+            var_type: Either the type of the variable (see :attr:`.DesignSpace.AVAILABLE_TYPES`)
                 or the types of its components.
 
         Raises:
@@ -398,7 +461,7 @@ class DesignSpace(collections.MutableMapping):
                 from the variable size or if a variable type is unknown.
         """
         if not hasattr(var_type, "__iter__") or isinstance(
-            var_type, (string_types, DesignVariableType, bytes)
+            var_type, (str, DesignVariableType, bytes)
         ):
             var_type = [var_type] * size
 
@@ -415,8 +478,8 @@ class DesignSpace(collections.MutableMapping):
             if isinstance(v_type, bytes):
                 v_type = v_type.decode()
 
-            if isinstance(v_type, string_types) and v_type not in self.__TYPE_NAMES:
-                msg = 'The type "{0}" of {1} is not known.'.format(v_type, name)
+            if isinstance(v_type, str) and v_type not in self.__TYPE_NAMES:
+                msg = f'The type "{v_type}" of {name} is not known.'
                 raise ValueError(msg)
             elif v_type in DesignVariableType:
                 v_type = v_type.value
@@ -428,8 +491,8 @@ class DesignSpace(collections.MutableMapping):
 
     def _add_norm_policy(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Add a normalization policy to a variable.
 
         Unbounded variables are not normalized.
@@ -440,24 +503,22 @@ class DesignSpace(collections.MutableMapping):
 
         Raises:
             ValueError: Either if the variable is not in the design space,
-                it its size is not set,
+                if its size is not set,
                 if the types of its components are not set
                 or if there is no implemented normalization policy
                 for the type of this variable.
         """
         # Check that the variable is in the design space:
         if name not in self.variables_names:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
         # Check that the variable size is set:
         size = self.get_size(name)
         if size is None:
-            raise ValueError("The size of variable '{}' is not set.".format(name))
+            raise ValueError(f"The size of variable '{name}' is not set.")
         # Check that the variables types are set:
         variables_types = self.variables_types.get(name, None)
         if variables_types is None:
-            raise ValueError(
-                "The components types of variable '{}' are not set.".format(name)
-            )
+            raise ValueError(f"The components types of variable '{name}' are not set.")
         # Set the normalization policy:
         normalize = empty(size)
         for i in range(size):
@@ -481,24 +542,24 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __is_integer(
-        value,  # type: ndarray
-    ):  # type: (...) -> bool
-        """Check that all values in an array are integers.
+        values: ndarray | Number,
+    ) -> ndarray:
+        """Check if each value is an integer.
 
         Args:
-            value: The array to be checked.
+            values: The array or number to be checked.
 
         Returns:
-            Whether all values in the array are integers.
+            Whether each of the given values is an integer.
         """
-        are_none = equal(value, None)
-        are_int = equal(mod(value.astype("f"), 1), 0)
-        return logical_or(are_none, are_int)
+        values = atleast_1d(values)
+
+        return array([isinf(x) or x is None or not mod(x, 1) for x in values])
 
     @staticmethod
     def __is_numeric(
-        value,  # type: Any
-    ):  # type: (...) -> bool
+        value: Any,
+    ) -> bool:
         """Check that a value is numeric.
 
         Args:
@@ -517,8 +578,8 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __is_not_nan(
-        value,  # type: ndarray
-    ):  # type: (...) -> bool
+        value: ndarray,
+    ) -> bool:
         """Check that a value is not a nan.
 
         Args:
@@ -531,9 +592,9 @@ class DesignSpace(collections.MutableMapping):
 
     def _check_value(
         self,
-        value,  # type: ndarray
-        name,  # type: str
-    ):  # type: (...) -> bool
+        value: ndarray,
+        name: str,
+    ) -> bool:
         """Check that the value of a variable is valid.
 
         Args:
@@ -548,7 +609,8 @@ class DesignSpace(collections.MutableMapping):
                 if the value is not numerizable,
                 if the value is nan
                 or if there is a component value which is not an integer
-                while the variable type is integer.
+                while the variable type is integer and ``allow_inf_int_bound``
+                is set to ``False``.
         """
         all_indices = set(range(len(value)))
         # OK if the variable value is one-dimensional
@@ -568,33 +630,32 @@ class DesignSpace(collections.MutableMapping):
         indices = all_indices - set(list(where(test)[0]))
         for idx in indices:
             raise ValueError(
-                "Value {} of variable '{}' is not numerizable.".format(value[idx], name)
+                f"Value {value[idx]} of variable '{name}' is not numerizable."
             )
 
         test = vectorize(self.__is_not_nan)(value)
         indices = all_indices - set(list(where(test)[0]))
         for idx in indices:
-            raise ValueError(
-                "Value {} of variable '{}' is nan.".format(value[idx], name)
-            )
+            raise ValueError(f"Value {value[idx]} of variable '{name}' is NaN.")
 
         # Check if some components of an integer variable are not integer.
         if self.variables_types[name][0] == DesignVariableType.INTEGER.value:
-            indices = all_indices - set(list(where(self.__is_integer(value))[0]))
+            indices = all_indices - set(nonzero(self.__is_integer(value))[0])
             for idx in indices:
                 raise ValueError(
-                    "Component value {} of variable '{}' is not an integer "
+                    f"Component value {value[idx]} of variable '{name}'"
+                    " is not an integer "
                     "while variable is of type integer "
-                    "(index: {}).".format(value[idx], name, idx)
+                    f"(index: {idx})."
                 )
 
     def _add_bound(
         self,
-        name,  # type: str
-        size,  # type: int
-        bound,  # type: ndarray
-        is_lower=True,  # type: bool
-    ):  # type: (...) -> None
+        name: str,
+        size: int,
+        bound: ndarray | Number,
+        is_lower: bool = True,
+    ) -> None:
         """Add a lower or upper bound to a variable.
 
         Args:
@@ -609,44 +670,49 @@ class DesignSpace(collections.MutableMapping):
                 from the size of the variable.
         """
         self.__norm_data_is_computed = False
+
         if is_lower:
-            bound_dict = self._lower_bounds
+            bounds = self._lower_bounds
         else:
-            bound_dict = self._upper_bounds
-        infinity = inf * ones(size)
+            bounds = self._upper_bounds
+
         if bound is None:
+            infinity = full(size, inf)
             if is_lower:
-                bound_array = -infinity
+                bound_to_update = -infinity
             else:
-                bound_array = infinity
-            bound_dict.update({name: bound_array})
+                bound_to_update = infinity
+            bounds.update({name: bound_to_update})
             return
-        bound_array = atleast_1d(bound)
-        self._check_value(bound_array, name)
-        if hasattr(bound, "__iter__"):
-            # iterable structure
-            if len(bound_array) != size:
-                bound_str = "lower" if is_lower else "upper"
-                raise ValueError(
-                    "The {} bounds of '{}' should be of size {}.".format(
-                        bound_str, name, size
-                    )
-                )
-            if is_lower:
-                bound_array = where(equal(bound_array, None), -infinity, bound_array)
-            else:
-                bound_array = where(equal(bound_array, None), infinity, bound_array)
-            bound_dict.update({name: bound_array})
+
+        if is_lower:
+            infinity = -inf
         else:
+            infinity = inf
+
+        bound_to_update = atleast_1d(bound)
+        if None in bound_to_update:
+            bound_to_update = where(
+                equal(bound_to_update, None), infinity, bound_to_update
+            ).astype(self.__FLOAT_DTYPE)
+
+        self._check_value(bound_to_update, name)
+
+        if isinstance(bound, Number):
             # scalar: same lower bound for all components
-            bound_array = bound * ones(size)
-            bound_dict.update({name: bound_array})
-        return
+            bound_to_update = full(size, bound)
+        elif len(bound_to_update) != size:
+            bound_prefix = "lower" if is_lower else "upper"
+            raise ValueError(
+                f"The {bound_prefix} bounds of '{name}' should be of size {size}."
+            )
+
+        bounds.update({name: bound_to_update})
 
     def _check_variable_bounds(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Check that the bounds of a variable are compatible and have the same size.
 
         Args:
@@ -661,14 +727,14 @@ class DesignSpace(collections.MutableMapping):
         if inds.size != 0:
             raise ValueError(
                 "The bounds of variable '{}'{} are not valid: {}!<{}.".format(
-                    name, inds, u_b[inds], l_b[inds]
+                    name, inds, l_b[inds], u_b[inds]
                 )
             )
 
-    def _check_current_x_value(
+    def _check_current_value(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Check that the current value of a variable is between its bounds.
 
         Args:
@@ -679,36 +745,42 @@ class DesignSpace(collections.MutableMapping):
         """
         l_b = self._lower_bounds.get(name, None)
         u_b = self._upper_bounds.get(name, None)
-        c_x = self._current_x.get(name, None)
-        not_none = ~equal(c_x, None)
-        inds = where(
+        current_value = self.__current_value.get(name, None)
+        not_none = ~equal(current_value, None)
+        indices = where(
             logical_or(
-                c_x[not_none] < l_b[not_none] - 1e-14,
-                c_x[not_none] > u_b[not_none] + 1e-14,
+                current_value[not_none] < l_b[not_none] - self.__bound_tol,
+                current_value[not_none] > u_b[not_none] + self.__bound_tol,
             )
         )[0]
-        for idx in inds:
+        for index in indices:
             raise ValueError(
                 "The current value of variable '{}' ({}) is not "
                 "between the lower bound {} and the upper bound {}.".format(
-                    name, c_x[idx], l_b[idx], u_b[idx]
+                    name, current_value[index], l_b[index], u_b[index]
                 )
             )
 
-    def has_current_x(self):  # type: (...) -> bool
-        """Check if the current design value is defined for all variables.
+    def has_current_value(self) -> bool:
+        """Check if each variable has a current value.
 
         Returns:
             Whether the current design value is defined for all variables.
         """
-        if self._current_x is None or len(self._current_x) != len(self.variables_names):
-            return False
-        for val in self._current_x.values():
-            if val is None:
-                return False
-        return True
+        return self.__has_current_value
 
-    def check(self):  # type: (...) -> None
+    def has_integer_variables(self) -> bool:
+        """Check if the design space has at least one integer variable.
+
+        Returns:
+            Whether the design space has at least one integer variable.
+        """
+        return self.INTEGER.value in [
+            self.variables_types[variable_name][0]
+            for variable_name in self.variables_names
+        ]
+
+    def check(self) -> None:
         """Check the state of the design space.
 
         Raises:
@@ -720,97 +792,153 @@ class DesignSpace(collections.MutableMapping):
         for name in self.variables_names:
             self._check_variable_bounds(name)
 
-        if self.has_current_x():
-            self._check_current_x()
+        if self.has_current_value():
+            self._check_current_names()
 
     def check_membership(
         self,
-        x_vect,  # type: Union[Mapping[str,ndarray],ndarray]
-        variables_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        x_vect: Mapping[str, ndarray] | ndarray,
+        variable_names: Sequence[str] | None = None,
+    ) -> None:
         """Check whether the variables satisfy the design space requirements.
 
         Args:
             x_vect: The values of the variables.
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
                 If None, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of the values vector is wrong,
                 if the values are not specified as an array or a dictionary,
                 if the values are outside the bounds of the variables or
-                if the component of an integer variable is an integer.
+                if the component of an integer variable is not an integer.
         """
-        # Convert the input vector into a dictionary if necessary:
         if isinstance(x_vect, dict):
-            x_dict = x_vect
+            self.__check_membership(x_vect, variable_names)
         elif isinstance(x_vect, ndarray):
             if x_vect.size != self.dimension:
                 raise ValueError(
-                    "The dimension of the input array ({}) should be {}.".format(
-                        x_vect.size, self.dimension
-                    )
+                    f"The array should be of size {self.dimension}; got {x_vect.size}."
                 )
-            x_dict = self.array_to_dict(x_vect)
+            if variable_names is None:
+                if self.__lower_bounds_array is None:
+                    self.__lower_bounds_array = self.get_lower_bounds()
+
+                if self.__upper_bounds_array is None:
+                    self.__upper_bounds_array = self.get_upper_bounds()
+
+                self.__check_membership_x_vect(x_vect)
+            else:
+                self.__check_membership(
+                    split_array_to_dict_of_arrays(
+                        x_vect, self.variables_sizes, variable_names
+                    ),
+                    variable_names,
+                )
         else:
             raise TypeError(
                 "The input vector should be an array or a dictionary; "
-                "got {} instead.".format(type(x_vect))
+                f"got a {type(x_vect)} instead."
             )
-        # Check the membership of the input vector to the design space:
-        variables_names = variables_names or self.variables_names
-        for name in variables_names:
-            if x_dict[name] is None:
+
+    def __check_membership_x_vect(self, x_vect: ndarray) -> None:
+        """Check whether a vector is comprised between the lower and upper bounds.
+
+        Args:
+            x_vect: The vector.
+
+        Raises:
+            ValueError: When the values are outside the bounds of the variables.
+        """
+        l_b = self.__lower_bounds_array
+        u_b = self.__upper_bounds_array
+        indices = where(x_vect < l_b - self.__bound_tol)[0]
+        if len(indices):
+            value = x_vect[indices]
+            lower_bound = l_b[indices]
+            raise ValueError(
+                f"The components {indices} of the given array ({value}) "
+                f"are lower than the lower bound ({lower_bound}) "
+                f"by {lower_bound - value}."
+            )
+
+        indices = where(x_vect > u_b + self.__bound_tol)[0]
+        if len(indices):
+            value = x_vect[indices]
+            upper_bound = u_b[indices]
+            raise ValueError(
+                f"The components {indices} of the given array ({value}) "
+                f"are greater than the upper bound ({upper_bound}) "
+                f"by {value-upper_bound}."
+            )
+
+    def __check_membership(
+        self,
+        x_dict: Mapping[str, ndarray],
+        variable_names: Iterable[str] | None,
+    ) -> None:
+        """Check whether the variables satisfy the design space requirements.
+
+        Args:
+            x_dict: The values of the variables.
+            variable_names: The names of the variables.
+                If None, use the names of the variables of the design space.
+
+        Raises:
+            ValueError: Either if the dimension of an array is wrong,
+                if the values are outside the bounds of the variables or
+                if the component of an integer variable is not an integer.
+        """
+        variable_names = variable_names or self.variables_names
+        for name in variable_names:
+            value = x_dict[name]
+            if value is None:
                 continue
+
             size = self.variables_sizes[name]
             l_b = self._lower_bounds.get(name, None)
             u_b = self._upper_bounds.get(name, None)
 
-            if atleast_1d(x_dict[name]).size != size:
+            if value.size != size:
                 raise ValueError(
-                    "The component '{}' of the given array should have size {}.".format(
-                        name, size
-                    )
+                    f"The variable {name} of size {size} "
+                    f"cannot be set with an array of size {value.size}."
                 )
+
             for i in range(size):
-                x_real = atleast_1d(x_dict[name])[i].real
+                x_real = x_dict[name][i].real
                 if l_b is not None and x_real < l_b[i] - self.__bound_tol:
-                    msg = (
-                        "The component {}{}{} of the given array ({}) "
-                        "is lower than the lower bound ({}) by {:.1e}.".format(
-                            name, self.SEP, i, x_real, l_b[i], l_b[i] - x_real
-                        )
+                    raise ValueError(
+                        f"The component {name}[{i}] of the given array ({x_real}) "
+                        f"is lower than the lower bound ({l_b[i]}) "
+                        f"by {l_b[i] - x_real:.1e}."
                     )
-                    raise ValueError(msg)
+
                 if u_b is not None and u_b[i] + self.__bound_tol < x_real:
-                    msg = (
-                        "The component '{}'{}{} of the given array ({}) "
-                        "is greater than the upper bound ({}) by {:.1e}.".format(
-                            name, self.SEP, i, x_real, u_b[i], u_b[i] - x_real
-                        )
+                    raise ValueError(
+                        f"The component {name}[{i}] of the given array ({x_real}) "
+                        f"is greater than the upper bound ({l_b[i]}) "
+                        f"by {x_real-u_b[i]:.1e}."
                     )
-                    raise ValueError(msg)
+
                 if (
                     self.variables_types[name][0] == DesignVariableType.INTEGER.value
                 ) and not self.__is_integer(x_real):
-                    msg = (
-                        "The component '{}'{}{} of the given array is not an integer "
-                        "while variable is of type integer! Value = {}".format(
-                            name, self.SEP, i, x_real
-                        )
+                    raise ValueError(
+                        f"The variable {name} is of type integer; "
+                        f"got {name}[{i}] = {x_real}."
                     )
-                    raise ValueError(msg)
 
     def get_active_bounds(
         self,
-        x_vec=None,  # type: Optional[ndarray]
-        tol=1e-8,  # type: float
-    ):  # type: (...) -> Tuple[Dict[str,ndarray],Dict[str,ndarray]]
-        """Determine which bound constraints of the current point are active.
+        x_vec: ndarray | None = None,
+        tol: float = 1e-8,
+    ) -> tuple[dict[str, ndarray], dict[str, ndarray]]:
+        """Determine which bound constraints of a design value are active.
 
         Args:
-            x_vec: The point at which to check the bounds.
-                If None, use the current point.
+            x_vec: The design value at which to check the bounds.
+                If ``None``, use the current design value.
             tol: The tolerance of comparison of a scalar with a bound.
 
         Returns:
@@ -836,12 +964,12 @@ class DesignSpace(collections.MutableMapping):
                 are_y_upper_bounds_active = [True]
         """
         if x_vec is None:
-            x_dict = self._current_x
-            self.check_membership(self.get_current_x())
+            current_x = self.__current_value
+            self.check_membership(self.get_current_value())
         elif isinstance(x_vec, ndarray):
-            x_dict = self.array_to_dict(x_vec)
+            current_x = self.array_to_dict(x_vec)
         elif isinstance(x_vec, dict):
-            x_dict = x_vec
+            current_x = x_vec
         else:
             raise TypeError(
                 "Expected dict or array for x_vec argument; "
@@ -855,69 +983,122 @@ class DesignSpace(collections.MutableMapping):
             l_b = where(equal(l_b, None), -inf, l_b)
             u_b = self._upper_bounds.get(name)
             u_b = where(equal(u_b, None), inf, u_b)
-            x_vec_i = x_dict[name]
+            x_vec_i = current_x[name]
             # lower bound saturated
-            albi = where(np_abs(x_vec_i - l_b) <= tol, True, False)
-            active_l_b[name] = albi
+            active_l_b[name] = where(np_abs(x_vec_i - l_b) <= tol, True, False)
             # upper bound saturated
-            aubi = where(np_abs(x_vec_i - u_b) <= tol, True, False)
-            active_u_b[name] = aubi
+            active_u_b[name] = where(np_abs(x_vec_i - u_b) <= tol, True, False)
+
         return active_l_b, active_u_b
 
-    def _check_current_x(
+    def _check_current_names(
         self,
-        variables_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
-        """Check the names of the current point.
+        variable_names: Iterable[str] | None = None,
+    ) -> None:
+        """Check the names of the current design value.
 
         Args:
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
                 If None, use the names of the variables of the design space.
 
         Raises:
-            ValueError: If the names of the variables of the current point
+            ValueError: If the names of the variables of the current design value
                 and the names of the variables of the design space are different.
         """
-        if sorted(set(self.variables_names)) != sorted(set(self._current_x.keys())):
+        if sorted(set(self.variables_names)) != sorted(
+            set(self.__current_value.keys())
+        ):
             raise ValueError(
                 "Expected current_x variables: {}; got {}.".format(
-                    self.variables_names, list(self._current_x.keys())
+                    self.variables_names, list(self.__current_value.keys())
                 )
             )
-        self.check_membership(self._current_x, variables_names)
+        self.check_membership(self.__current_value, variable_names)
 
-    def get_current_x(
+    def get_current_value(
         self,
-        variables_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> ndarray
-        """Return the current point in the design space.
+        variable_names: Sequence[str] | None = None,
+        complex_to_real: bool = False,
+        as_dict: bool = False,
+        normalize: bool = False,
+    ) -> ndarray | dict[str, ndarray]:
+        """Return the current design value.
 
         Args:
-            variables_names: The names of the required variables.
-                If None, use the names of the variables of the design space.
+            variable_names: The names of the design variables.
+                If ``None``, use all the design variables.
+            complex_to_real: Whether to cast complex numbers to real ones.
+            as_dict: Whether to return the current design value
+                as a dictionary of the form ``{variable_name: variable_value}``.
+            normalize: Whether to normalize the design values in :math:`[0,1]`
+                with the bounds of the variables.
+
+        Returns:
+            The current design value.
 
         Raises:
             KeyError: If a variable has no current value.
         """
+        if normalize:
+            current_x_array = self.__norm_current_value_array
+            current_x_dict = self.__norm_current_value
+        else:
+            current_x_array = self.__current_value_array
+            current_x_dict = self.__current_value
+
+        if variable_names is None or set(variable_names) == set(self.variables_names):
+            if as_dict:
+                if complex_to_real:
+                    return {k: v.real for k, v in current_x_dict.items()}
+                else:
+                    return current_x_dict
+
+            if not self.__has_current_value:
+                variables = sorted(
+                    set(self.variables_names) - set(current_x_dict.keys())
+                )
+                raise KeyError(
+                    f"The design variables {variables} have no current value."
+                )
+
+            if complex_to_real:
+                return current_x_array.real
+            else:
+                return current_x_array
+
         try:
-            x_arr = self.dict_to_array(self._current_x, all_var_list=variables_names)
-            return x_arr
+            if as_dict:
+                current_value = {
+                    k: v for k, v in current_x_dict.items() if k in variable_names
+                }
+                if complex_to_real:
+                    return {k: v.real for k, v in current_value.items()}
+                else:
+                    return current_value
+            else:
+                x_arr = self.dict_to_array(
+                    current_x_dict, variable_names=variable_names
+                )
+                if complex_to_real:
+                    return x_arr.real
+                return x_arr
+
         except KeyError as err:
             raise KeyError(
-                "The design space has no current value for '{}'.".format(err.args[0])
+                f"The design space has no current value for '{err.args[0]}'."
             )
 
     def get_indexed_var_name(
         self,
-        variable_name,  # type: str
-    ):  # type: (...) -> Union[str,List[str]]
+        variable_name: str,
+    ) -> str | list[str]:
         """Create the names of the components of a variable.
 
         If the size of the variable is equal to 1,
         this method returns the name of the variable.
         Otherwise,
         it concatenates the name of the variable,
-        the separator :attr:`SEP` and the index of the component.
+        the separator :attr:`.DesignSpace.SEP` and the index of the component.
 
         Args:
             variable_name: The name of the variable.
@@ -930,14 +1111,14 @@ class DesignSpace(collections.MutableMapping):
             return variable_name
         return [variable_name + self.SEP + str(i) for i in range(size)]
 
-    def get_indexed_variables_names(self):  # type: (...) -> List[str]
+    def get_indexed_variables_names(self) -> list[str]:
         """Create the names of the components of all the variables.
 
         If the size of the variable is equal to 1,
         this method uses its name.
         Otherwise,
         it concatenates the name of the variable,
-        the separator :attr:`SEP` and the index of the component.
+        the separator :attr:`.DesignSpace.SEP` and the index of the component.
 
         Returns:
             The name of the components of all the variables.
@@ -945,7 +1126,7 @@ class DesignSpace(collections.MutableMapping):
         var_ind_names = []
         for var in self.variables_names:
             vnames = self.get_indexed_var_name(var)
-            if isinstance(vnames, string_types):
+            if isinstance(vnames, str):
                 var_ind_names.append(vnames)
             else:
                 var_ind_names += vnames
@@ -953,12 +1134,12 @@ class DesignSpace(collections.MutableMapping):
 
     def get_variables_indexes(
         self,
-        variables_names,  # type: Iterable[str]
-    ):  # type: (...) -> ndarray
+        variable_names: Iterable[str],
+    ) -> ndarray:
         """Return the indexes of a design array corresponding to the variables names.
 
         Args:
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The indexes of a design array corresponding to the variables names.
@@ -967,35 +1148,42 @@ class DesignSpace(collections.MutableMapping):
         index = 0
         for name in self.variables_names:
             var_size = self.get_size(name)
-            if name in variables_names:
+            if name in variable_names:
                 indexes.extend(range(index, index + var_size))
             index += var_size
         return array(indexes)
 
-    def __update_normalization_vars(self):  # type: (...) -> None
+    def __update_normalization_vars(self) -> None:
         """Compute the inner attributes used for normalization and unnormalization."""
 
         self.__lower_bounds_array = self.get_lower_bounds()
         self.__upper_bounds_array = self.get_upper_bounds()
         self._norm_factor = self.__upper_bounds_array - self.__lower_bounds_array
+
         norm_array = self.dict_to_array(self.normalize)
         self.__norm_inds = where(norm_array)[0]
         # In case lb=ub
         self.__to_zero = where(self._norm_factor == 0.0)[0]
+        self._norm_factor_inv = 1.0 / (
+            self.__upper_bounds_array - self.__lower_bounds_array
+        )
+        self._norm_factor_inv[self.__to_zero] = 1.0
 
-        var_ind_list = []
-        for var in self.variables_names:
-            # Store the mask of int variables
-            to_one = self.variables_types[var] == DesignVariableType.INTEGER.value
-            var_ind_list.append(to_one)
-        self.__int_vars_indices = concatenate(var_ind_list)
+        self.__integer_components = concatenate(
+            [
+                self.variables_types[variable_name] == DesignVariableType.INTEGER.value
+                for variable_name in self.variables_names
+            ]
+        )
+        self.__no_integer = not self.__integer_components.any()
         self.__norm_data_is_computed = True
 
     def normalize_vect(
         self,
-        x_vect,  # type: ndarray
-        minus_lb=True,  # type: bool
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        minus_lb: bool = True,
+        out: ndarray | None = None,
+    ) -> ndarray:
         r"""Normalize a vector of the design space.
 
         If `minus_lb` is True:
@@ -1017,47 +1205,51 @@ class DesignSpace(collections.MutableMapping):
         Args:
             x_vect: The values of the design variables.
             minus_lb: If True, remove the lower bounds at normalization.
+            out: The array to store the normalized vector.
+                If None, create a new array.
 
         Returns:
             The normalized vector.
-
-        Raises:
-            ValueError: If the array to be normalized is not one- or two-dimensional.
         """
         if not self.__norm_data_is_computed:
             self.__update_normalization_vars()
 
+        if out is None:
+            use_out = False
+            out = x_vect.copy()
+        else:
+            use_out = True
+            out[...] = x_vect
+
         # Normalize the relevant components:
-        if self.has_current_x():
-            current_dtype = self.get_current_x().dtype
-        else:
-            current_dtype = float
-        norm_vect = x_vect.astype(current_dtype, copy=True)
+        current_x_dtype = self.__common_dtype
+        # Normalization will not work with integers.
+        if current_x_dtype.kind == "i":
+            current_x_dtype = self.__FLOAT_DTYPE
 
-        # In case lb=ub
+        if out.dtype != current_x_dtype:
+            if use_out:
+                out[...] = out.astype(current_x_dtype, copy=False)
+            else:
+                out = out.astype(current_x_dtype, copy=False)
+
         norm_inds = self.__norm_inds
+        if minus_lb:
+            out[..., norm_inds] -= self.__lower_bounds_array[norm_inds]
 
-        if len(x_vect.shape) == 1:
-            if minus_lb:
-                norm_vect[norm_inds] -= self.__lower_bounds_array[norm_inds]
-            norm_vect[norm_inds] /= self._norm_factor[norm_inds]
-            # In case lb=ub put value to 0
-        elif len(x_vect.shape) == 2:
-            if minus_lb:
-                norm_vect[:, norm_inds] -= self.__lower_bounds_array[norm_inds]
-            norm_vect[:, norm_inds] /= self._norm_factor[norm_inds]
-        else:
-            raise ValueError("The array to be normalized must be 1d or 2d.")
+        out[..., norm_inds] *= self._norm_factor_inv[norm_inds]
 
+        # In case lb=ub, put value to 0.
         to_zero = self.__to_zero
         if to_zero.size > 0:
-            norm_vect[to_zero] = 0.0
-        return norm_vect
+            out[..., to_zero] = 0.0
+
+        return out
 
     def normalize_grad(
         self,
-        g_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        g_vect: ndarray,
+    ) -> ndarray:
         r"""Normalize an unnormalized gradient.
 
         This method is based on the chain rule:
@@ -1092,8 +1284,8 @@ class DesignSpace(collections.MutableMapping):
 
     def unnormalize_grad(
         self,
-        g_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        g_vect: ndarray,
+    ) -> ndarray:
         r"""Unnormalize a normalized gradient.
 
         This method is based on the chain rule:
@@ -1121,10 +1313,11 @@ class DesignSpace(collections.MutableMapping):
 
     def unnormalize_vect(
         self,
-        x_vect,  # type: ndarray
-        minus_lb=True,  # type: bool
-        no_check=False,  # type: bool
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        minus_lb: bool = True,
+        no_check: bool = False,
+        out: ndarray | None = None,
+    ) -> ndarray:
         """Unnormalize a normalized vector of the design space.
 
         If `minus_lb` is True:
@@ -1146,211 +1339,196 @@ class DesignSpace(collections.MutableMapping):
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If True, remove the lower bounds at normalization.
-            no_check: If True, do not check that the values are in [0,1].
+            minus_lb: Whether to remove the lower bounds at normalization.
+            no_check: Whether to check if the components are in :math:`[0,1]`.
+            out: The array to store the unnormalized vector.
+                If None, create a new array.
 
         Returns:
             The unnormalized vector.
-
-        Raises:
-            ValueError: If the array to be unnormalized is not one- or two-dimensional.
         """
-        n_dims = x_vect.ndim
-        if n_dims not in [1, 2]:
-            raise ValueError(
-                "The array to be unnormalized must be 1d or 2d, got {}d.".format(n_dims)
-            )
         if not self.__norm_data_is_computed:
             self.__update_normalization_vars()
+
         norm_inds = self.__norm_inds
-        l_bounds = self.__lower_bounds_array
+        lower_bounds = self.__lower_bounds_array
         if not no_check:
-            # Check whether the input components are between 0 and 1:
-            if n_dims == 1:
-                bounded = x_vect[norm_inds]
-            else:
-                bounded = x_vect[:, norm_inds]
-            if (bounded < -1e-12).any() or (bounded > 1 + 1e-12).any():
-                msg = (
-                    "All components of the normalized vector should be between 0 and 1."
+            value = x_vect[..., norm_inds]
+            lower_bounds_violated = value < -self.__bound_tol
+            upper_bounds_violated = value > 1 + self.__bound_tol
+            any_lower_bound_violated = lower_bounds_violated.any()
+            any_upper_bound_violated = upper_bounds_violated.any()
+            msg = "All components of the normalized vector should be between 0 and 1; "
+            if any_lower_bound_violated:
+                msg += "lower bounds violated: {}; ".format(
+                    value[lower_bounds_violated]
                 )
-                lb_viol = bounded[bounded < -1e-12]
-                if lb_viol.size != 0:
-                    msg += " Lower bounds violated: {}.".format(lb_viol)
-                ub_viol = bounded[bounded > 1 + 1e-12]
-                if ub_viol.size != 0:
-                    msg += " Upper bounds violated: {}.".format(ub_viol)
 
+            if any_upper_bound_violated:
+                msg += "upper bounds violated: {}; ".format(
+                    value[upper_bounds_violated]
+                )
+
+            if any_lower_bound_violated or any_upper_bound_violated:
+                msg = msg[:-2] + "."
                 LOGGER.warning(msg)
+
+        if out is None:
+            out = x_vect.copy()
+        else:
+            out *= 0
+            out = x_vect
+
         # Unnormalize the relevant components:
-        if self.has_current_x():
-            current_dtype = self.get_current_x().dtype
-        else:
-            current_dtype = float
-        unnorm_vect = x_vect.astype(current_dtype, copy=True)
+        recast_to_int = False
+        current_x_dtype = self.__common_dtype
+        # Normalization will not work with integers.
+        if current_x_dtype.kind == "i":
+            current_x_dtype = self.__FLOAT_DTYPE
+            recast_to_int = True
 
-        if n_dims == 1:
-            unnorm_vect[norm_inds] *= self._norm_factor[norm_inds]
-            if minus_lb:
-                unnorm_vect[norm_inds] += l_bounds[norm_inds]
-        else:
-            unnorm_vect[:, norm_inds] *= self._norm_factor[norm_inds]
-            if minus_lb:
-                unnorm_vect[:, norm_inds] += l_bounds[norm_inds]
-        inds_fixed = self.__to_zero
-        if inds_fixed.size > 0:
-            if n_dims == 1:
-                unnorm_vect[inds_fixed] = l_bounds[inds_fixed]
-            else:
-                unnorm_vect[:, inds_fixed] = l_bounds[inds_fixed]
+        if out.dtype != current_x_dtype:
+            out = out.astype(current_x_dtype, copy=False)
 
-        r_xvec = self.round_vect(unnorm_vect)
-        return r_xvec
+        out[..., norm_inds] *= self._norm_factor[norm_inds]
+        if minus_lb:
+            out[..., norm_inds] += lower_bounds[norm_inds]
+
+        # In case lb=ub, put value to lower bound.
+        to_lower_bounds = self.__to_zero
+        if to_lower_bounds.size > 0:
+            out[..., to_lower_bounds] = lower_bounds[to_lower_bounds]
+
+        if not self.__no_integer:
+            self.round_vect(out, copy=False)
+            if recast_to_int:
+                out = out.astype(int32)
+
+        return out
 
     def transform_vect(
-        self, vector  # type: ndarray
-    ):  # type:(...) -> ndarray
+        self,
+        vector: ndarray,
+        out: ndarray | None = None,
+    ) -> ndarray:
         """Map a point of the design space to a vector with components in :math:`[0,1]`.
 
         Args:
             vector: A point of the design space.
+            out: The array to store the transformed vector.
+                If None, create a new array.
 
         Returns:
             A vector with components in :math:`[0,1]`.
         """
-        return self.normalize_vect(vector)
+        return self.normalize_vect(vector, out=out)
 
     def untransform_vect(
-        self, vector  # type: ndarray
-    ):  # type:(...) -> ndarray
+        self,
+        vector: ndarray,
+        no_check: bool = False,
+        out: ndarray | None = None,
+    ) -> ndarray:
         """Map a vector with components in :math:`[0,1]` to the design space.
 
         Args:
             vector: A vector with components in :math:`[0,1]`.
+            no_check: Whether to check if the components are in :math:`[0,1]`.
+            out: The array to store the untransformed vector.
+                If None, create a new array.
 
         Returns:
             A point of the variables space.
         """
-        return self.unnormalize_vect(vector)
+        return self.unnormalize_vect(vector, no_check=no_check, out=out)
 
     def round_vect(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        copy: bool = True,
+    ) -> ndarray:
         """Round the vector where variables are of integer type.
 
         Args:
             x_vect: The values to be rounded.
+            copy: Whether to round a copy of ``x_vect``.
 
         Returns:
-            The rounded values values.
-
-        Raises:
-            ValueError: If the values is not a one- or two-dimensional
+            The rounded values.
         """
         if not self.__norm_data_is_computed:
             self.__update_normalization_vars()
-        int_vars = self.__int_vars_indices
-        if not int_vars.any():
-            return x_vect
-        n_dims = len(x_vect.shape)
-        rounded_x_vect = x_vect.copy()
-        if n_dims == 1:
-            rounded_x_vect[int_vars] = np_round(rounded_x_vect[int_vars])
-        elif n_dims == 2:
-            rounded_x_vect[:, int_vars] = np_round(rounded_x_vect[:, int_vars])
-        else:
-            raise ValueError(
-                "The array to be unnormalized must be 1d or 2d; got {}d.".format(n_dims)
-            )
 
+        if self.__no_integer:
+            return x_vect
+
+        if copy:
+            rounded_x_vect = x_vect.copy()
+        else:
+            rounded_x_vect = x_vect
+
+        are_integers = self.__integer_components
+        rounded_x_vect[..., are_integers] = np_round(x_vect[..., are_integers])
         return rounded_x_vect
 
-    def get_current_x_normalized(self):  # type: (...) -> ndarray
-        """Return the current point normalized.
-
-        Returns:
-            The current point as an array normalized by the bounds of the variables.
-
-        Returns:
-            KeyError: If the current point cannot be normalized.
-        """
-        try:
-            current_x = self.get_current_x()
-        except KeyError as err:
-            raise KeyError(
-                "Cannot compute normalized current value since {}.".format(err.args[0])
-            )
-        return self.normalize_vect(current_x)
-
-    def get_current_x_dict(self):  # type:(...) -> Dict[str,ndarray]
-        """Return the current point in the design space as a dictionary.
-
-        Returns:
-            The current point in the design space as a dictionary,
-            whose keys are the names of the variables
-            and values are the values of the variables.
-        """
-        return self._current_x
-
-    def set_current_x(
+    def set_current_value(
         self,
-        current_x,  # type: Union[ndarray,Mapping[str,ndarray], OptimizationResult]
-    ):  # type: (...) -> None
-        """Set the current point.
+        value: ndarray | Mapping[str, ndarray] | OptimizationResult,
+    ) -> None:
+        """Set the current dseign value.
 
         Args:
-            current_x: The value of the current point.
+            value: The value of the current design.
 
         Raises:
             ValueError: If the value has a wrong dimension.
-            TypeError: If the current point is neither a mapping of NumPy arrays,
+            TypeError: If the value is neither a mapping of NumPy arrays,
                 a NumPy array nor an :class:`.OptimizationResult`.
         """
-        if isinstance(current_x, dict):
-            self._current_x = current_x
-        elif isinstance(current_x, ndarray):
-            if current_x.size != self.dimension:
+        if isinstance(value, dict):
+            self.__current_value = value
+        elif isinstance(value, ndarray):
+            if value.size != self.dimension:
                 raise ValueError(
                     "Invalid current_x, "
-                    "dimension mismatch: {} != {}.".format(
-                        self.dimension, current_x.size
-                    )
+                    "dimension mismatch: {} != {}.".format(self.dimension, value.size)
                 )
-            self._current_x = self.array_to_dict(current_x)
-        elif isinstance(current_x, OptimizationResult):
-            if current_x.x_opt.size != self.dimension:
+            self.__current_value = self.array_to_dict(value)
+        elif isinstance(value, OptimizationResult):
+            if value.x_opt.size != self.dimension:
                 raise ValueError(
                     "Invalid x_opt, "
                     "dimension mismatch: {} != {}.".format(
-                        self.dimension, current_x.x_opt.size
+                        self.dimension, value.x_opt.size
                     )
                 )
-            self._current_x = self.array_to_dict(current_x.x_opt)
+            self.__current_value = self.array_to_dict(value.x_opt)
         else:
             raise TypeError(
-                "The current point should be either an array, "
+                "The current design value should be either an array, "
                 "a dictionary of arrays "
                 "or an optimization result; "
-                "got {} instead.".format(type(current_x))
+                f"got {type(value)} instead."
             )
 
-        for name, value in self._current_x.items():
+        for name, value in self.__current_value.items():
             if value is not None:
                 variable_type = self.variables_types[name]
                 if isinstance(variable_type, ndarray):
                     variable_type = variable_type[0]
                 if variable_type == DesignVariableType.INTEGER.value:
                     value = value.astype(self.__TYPES_TO_DTYPES[variable_type])
-                self._current_x[name] = value
+                self.__current_value[name] = value
 
-        self._check_current_x()
+        self.__update_current_metadata()
+        if self.__current_value:
+            self._check_current_names()
 
     def set_current_variable(
         self,
-        name,  # type: str
-        current_value,  # type: ndarray
-    ):
+        name: str,
+        current_value: ndarray,
+    ) -> None:
         """Set the current value of a single variable.
 
         Args:
@@ -1358,14 +1536,15 @@ class DesignSpace(collections.MutableMapping):
             current_value: The current value of the variable.
         """
         if name in self.variables_names:
-            self._current_x[name] = current_value
+            self.__current_value[name] = current_value
+            self.__update_current_metadata()
         else:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
 
     def get_size(
         self,
-        name,  # type: str
-    ):  # type:(...) -> Optional[int]
+        name: str,
+    ) -> int | None:
         """Get the size of a variable.
 
         Args:
@@ -1378,8 +1557,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_type(
         self,
-        name,  # type: str
-    ):  # type:(...) -> Optional[str]
+        name: str,
+    ) -> str | None:
         """Return the type of a variable.
 
         Args:
@@ -1392,8 +1571,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_lower_bound(
         self,
-        name,  # type: str
-    ):  # type:(...) -> ndarray
+        name: str,
+    ) -> ndarray:
         """Return the lower bound of a variable.
 
         Args:
@@ -1406,8 +1585,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_upper_bound(
         self,
-        name,  # type: str
-    ):  # type:(...) -> ndarray
+        name: str,
+    ) -> ndarray:
         """Return the upper bound of a variable.
 
         Args:
@@ -1420,45 +1599,45 @@ class DesignSpace(collections.MutableMapping):
 
     def get_lower_bounds(
         self,
-        variables_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> ndarray
+        variable_names: Sequence[str] | None = None,
+    ) -> ndarray:
         """Generate an array of the variables' lower bounds.
 
         Args:
-            variables_names: The names of the variables
+            variable_names: The names of the variables
                 of which the lower bounds are required.
                 If None, use the variables of the design space.
 
         Returns:
             The lower bounds of the variables.
         """
-        if self.__norm_data_is_computed and variables_names is None:
+        if self.__norm_data_is_computed and variable_names is None:
             return self.__lower_bounds_array
-        return self.dict_to_array(self._lower_bounds, all_var_list=variables_names)
+        return self.dict_to_array(self._lower_bounds, variable_names=variable_names)
 
     def get_upper_bounds(
         self,
-        variables_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> ndarray
+        variable_names: Sequence[str] | None = None,
+    ) -> ndarray:
         """Generate an array of the variables' upper bounds.
 
         Args:
-            variables_names: The names of the variables
+            variable_names: The names of the variables
                 of which the upper bounds are required.
                 If None, use the variables of the design space.
 
         Returns:
             The upper bounds of the variables.
         """
-        if self.__norm_data_is_computed and variables_names is None:
+        if self.__norm_data_is_computed and variable_names is None:
             return self.__upper_bounds_array
-        return self.dict_to_array(self._upper_bounds, all_var_list=variables_names)
+        return self.dict_to_array(self._upper_bounds, variable_names=variable_names)
 
     def set_lower_bound(
         self,
-        name,  # type: str
-        lower_bound,  # type: ndarray
-    ):  # type: (...) -> None
+        name: str,
+        lower_bound: ndarray,
+    ) -> None:
         """Set the lower bound of a variable.
 
         Args:
@@ -1469,16 +1648,16 @@ class DesignSpace(collections.MutableMapping):
             ValueError: If the variable does not exist.
         """
         if name not in self.variables_names:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
 
         self._add_bound(name, self.variables_sizes[name], lower_bound, is_lower=True)
         self._add_norm_policy(name)
 
     def set_upper_bound(
         self,
-        name,  # type: str
-        upper_bound,  # type: ndarray
-    ):  # type: (...) -> None
+        name: str,
+        upper_bound: ndarray,
+    ) -> None:
         """Set the upper bound of a variable.
 
         Args:
@@ -1489,36 +1668,34 @@ class DesignSpace(collections.MutableMapping):
             ValueError: If the variable does not exist.
         """
         if name not in self.variables_names:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
 
         self._add_bound(name, self.variables_sizes[name], upper_bound, is_lower=False)
         self._add_norm_policy(name)
 
     def array_to_dict(
         self,
-        x_array,  # type: ndarray
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Convert the current point into a dictionary indexed by the variables names.
+        x_array: ndarray,
+    ) -> dict[str, ndarray]:
+        """Convert a design array into a dictionary indexed by the variables names.
 
         Args:
-            x_array: The current point.
+            x_array: A design value expressed as a NumPy array.
 
         Returns:
-            The dictionary version of the current point.
+            The design value expressed as a dictionary of NumPy arrays.
         """
-        x_dict = {}
-        current_index = 0
-        # order given by self.variables_names
-        for name in self.variables_names:
-            size = self.variables_sizes[name]
-            x_dict[name] = x_array[current_index : current_index + size]
-            current_index += size
-        return x_dict
+        return split_array_to_dict_of_arrays(
+            x_array,
+            self.variables_sizes,
+            self.variables_names,
+        )
 
-    @staticmethod
+    @classmethod
     def __get_common_dtype(
-        x_dict,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> Union[complex128,float64,int32]
+        cls,
+        x_dict: Mapping[str, ndarray],
+    ) -> dtype:
         """Return the common data type.
 
         Use the following rules by parsing the values `x_dict`:
@@ -1538,53 +1715,49 @@ class DesignSpace(collections.MutableMapping):
         for val_arr in x_dict.values():
             if not isinstance(val_arr, ndarray):
                 raise TypeError("x_dict values must be ndarray.")
-            if val_arr.dtype == complex128:
-                return complex128
-            if val_arr.dtype == int32:
+
+            if val_arr.dtype.kind == "c":
+                return cls.__COMPLEX_DTYPE
+
+            if val_arr.dtype.kind == "i":
                 has_int = True
-            if val_arr.dtype == float64:
+
+            if val_arr.dtype.kind == "f":
                 has_float = True
+
         if has_float:
-            return float64
+            return cls.__FLOAT_DTYPE
+
         if has_int:
-            return int32
-        return float64
+            return cls.__INT_DTYPE
+
+        return cls.__FLOAT_DTYPE
 
     def dict_to_array(
         self,
-        x_dict,  # type: Dict[str,ndarray]
-        all_vars=True,  # type:bool
-        all_var_list=None,  # type: Sequence[str]
-    ):  # type: (...) -> ndarray
-        """Convert an point as dictionary into an array.
+        design_values: dict[str, ndarray],
+        variable_names: Iterable[str] = None,
+    ) -> ndarray:
+        """Convert a point as dictionary into an array.
 
         Args:
-            x_dict: The point to be converted.
-            all_vars: If True, all the variables to be considered
-                shall be in the provided point.
-            all_var_list: The variables to be considered.
+            design_values: The design point to be converted.
+            variable_names: The variables to be considered.
                 If None, use the variables of the design space.
 
         Returns:
             The point as an array.
         """
-        dtype = self.__get_common_dtype(x_dict)
-        if all_var_list is None:
-            all_var_list = self.variables_names
-        if all_vars:
-            array_list = [array(x_dict[name], dtype=dtype) for name in all_var_list]
-        else:
-            array_list = [
-                array(x_dict[name], dtype=dtype)
-                for name in all_var_list
-                if name in x_dict
-            ]
-        return concatenate(array_list)
+        if variable_names is None:
+            variable_names = self.variables_names
+
+        data = [design_values[name] for name in variable_names]
+        return hstack(data).astype(self.__get_common_dtype(design_values))
 
     def get_pretty_table(
         self,
-        fields=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> PrettyTable
+        fields: Sequence[str] | None = None,
+    ) -> PrettyTable:
         """Build a tabular view of the design space.
 
         Args:
@@ -1603,7 +1776,7 @@ class DesignSpace(collections.MutableMapping):
             l_b = self._lower_bounds.get(name)
             u_b = self._upper_bounds.get(name)
             var_type = self.variables_types[name]
-            curr = self._current_x.get(name)
+            curr = self.__current_value.get(name)
             for i in range(size):
                 data = {
                     "name": name,
@@ -1617,7 +1790,12 @@ class DesignSpace(collections.MutableMapping):
                 if u_b is not None and u_b[i] is not None:
                     data["upper_bound"] = u_b[i]
                 if curr is not None:
-                    data["value"] = curr[i]
+                    value = curr[i]
+                    # The current value of a float variable can be a complex array
+                    # when approximating gradients with complex step.
+                    if var_type[i] == "float":
+                        value = value.real
+                    data["value"] = value
                 table.add_row([data[key] for key in fields])
 
         table.align["name"] = "l"
@@ -1626,9 +1804,9 @@ class DesignSpace(collections.MutableMapping):
 
     def export_hdf(
         self,
-        file_path,  # type: Union[str,Path]
-        append=False,  # type: bool
-    ):  # type: (...) -> None
+        file_path: str | Path,
+        append: bool = False,
+    ) -> None:
         """Export the design space to an HDF file.
 
         Args:
@@ -1657,19 +1835,21 @@ class DesignSpace(collections.MutableMapping):
 
                 var_type = self.variables_types[name]
                 if var_type is not None:
-                    data_array = string_array(var_type)
+                    data_array = array(var_type, dtype="bytes")
                     var_grp.create_dataset(
-                        self.VAR_TYPE_GROUP, data=data_array, dtype=data_array.dtype
+                        self.VAR_TYPE_GROUP,
+                        data=data_array,
+                        dtype=data_array.dtype,
                     )
 
-                value = self._current_x.get(name)
+                value = self.__current_value.get(name)
                 if value is not None:
                     var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
 
     def import_hdf(
         self,
-        file_path,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        file_path: str | Path,
+    ) -> None:
         """Import a design space from an HDF file.
 
         Args:
@@ -1678,9 +1858,9 @@ class DesignSpace(collections.MutableMapping):
         """
         with h5py.File(file_path, "r") as h5file:
             design_vars_grp = get_hdf5_group(h5file, self.DESIGN_SPACE_GROUP)
-            variables_names = get_hdf5_group(design_vars_grp, self.NAMES_GROUP)
+            variable_names = get_hdf5_group(design_vars_grp, self.NAMES_GROUP)
 
-            for name in variables_names:
+            for name in variable_names:
                 name = name.decode()
                 var_group = get_hdf5_group(design_vars_grp, name)
                 l_b = self.__read_opt_attr_array(var_group, self.LB_GROUP)
@@ -1694,9 +1874,9 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __read_opt_attr_array(
-        var_group,  # type: h5py.Group
-        dataset_name,  # type: str
-    ):  # type: (...) -> Optional[ndarray]
+        var_group: h5py.Group,
+        dataset_name: str,
+    ) -> ndarray | None:
         """Read data in a group.
 
         Args:
@@ -1704,7 +1884,7 @@ class DesignSpace(collections.MutableMapping):
             dataset_name: The name of the dataset.
 
         Returns:
-            The data found in the group, if exist.
+            The data found in the group, if it exists.
             Otherwise, None.
         """
         data = var_group.get(dataset_name)
@@ -1714,8 +1894,8 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __to_real(
-        data,  # type:ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Convert complex to real NumPy array.
 
         Args:
@@ -1726,18 +1906,20 @@ class DesignSpace(collections.MutableMapping):
         """
         return array(array(data, copy=False).real, dtype=float64)
 
-    def to_complex(self):  # type: (...) -> None
+    def to_complex(self) -> None:
         """Cast the current value to complex."""
-        for name, val in self._current_x.items():
-            self._current_x[name] = array(val, dtype=complex128)
+        for name, val in self.__current_value.items():
+            self.__current_value[name] = array(val, dtype=complex128)
+
+        self.__update_common_dtype()
 
     def export_to_txt(
         self,
-        output_file,  # type: Union[str,Path],
-        fields=None,  # type: Optional[Sequence[str]]
-        header_char="",  # type: str
-        **table_options  # type: Any
-    ):  # type: (...) -> None
+        output_file: str | Path,
+        fields: Sequence[str] | None = None,
+        header_char: str = "",
+        **table_options: Any,
+    ) -> None:
         """Export the design space to a text file.
 
         Args:
@@ -1747,7 +1929,7 @@ class DesignSpace(collections.MutableMapping):
             header_char: The header character.
             **table_options: The names and values of additional attributes
                 for the :class:`.PrettyTable` view
-                generated by :meth:`get_pretty_table`.
+                generated by :meth:`.DesignSpace.get_pretty_table`.
         """
         output_file = Path(output_file)
         table = self.get_pretty_table(fields)
@@ -1760,9 +1942,9 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def read_from_txt(
-        input_file,  # type: Union[str,Path]
-        header=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> DesignSpace
+        input_file: str | Path,
+        header: Iterable[str] | None = None,
+    ) -> DesignSpace:
         """Create a design space from a text file.
 
         Args:
@@ -1780,7 +1962,7 @@ class DesignSpace(collections.MutableMapping):
         float_data = genfromtxt(input_file, dtype="float")
         str_data = genfromtxt(input_file, dtype="str")
         if header is None:
-            header = strings_to_unicode_list(str_data[0, :].tolist())
+            header = str_data[0, :].tolist()
             start_read = 1
         else:
             start_read = 0
@@ -1793,7 +1975,7 @@ class DesignSpace(collections.MutableMapping):
                 )
             )
         col_map = {field: i for i, field in enumerate(header)}
-        var_names = strings_to_unicode_list(str_data[start_read:, 0].tolist())
+        var_names = str_data[start_read:, 0].tolist()
         unique_names = []
         prev_name = None
         for name in var_names:  # set([]) does not preserve order !
@@ -1802,8 +1984,8 @@ class DesignSpace(collections.MutableMapping):
                 prev_name = name
             elif prev_name != name:
                 raise ValueError(
-                    "Malformed DesignSpace input file {} contains some variables ({}) "
-                    "in a non-consecutive order.".format(input_file, name)
+                    f"Malformed DesignSpace input file {input_file} contains some "
+                    f"variables ({name}) in a non-consecutive order."
                 )
 
         k = start_read
@@ -1829,20 +2011,20 @@ class DesignSpace(collections.MutableMapping):
         design_space.check()
         return design_space
 
-    def __str__(self):  # type:(...) -> str
+    def __str__(self) -> str:
         if self.name is None:
             header_suffix = ""
         else:
-            header_suffix = " {}".format(self.name)
-        header = "Design space:{}\n".format(header_suffix)
+            header_suffix = f" {self.name}"
+        header = f"Design space:{header_suffix}\n"
 
         return header + self.get_pretty_table().get_string()
 
     def project_into_bounds(
         self,
-        x_c,  # type: ndarray
-        normalized=False,  # type: bool
-    ):  # type: (...) -> ndarray
+        x_c: ndarray,
+        normalized: bool = False,
+    ) -> ndarray:
         """Project a vector onto the bounds, using a simple coordinate wise approach.
 
         Args:
@@ -1870,27 +2052,21 @@ class DesignSpace(collections.MutableMapping):
 
     def __contains__(
         self,
-        variable,  # type: str
-    ):  # type: (...) -> bool
-        """Return whether the variable is in the design space.
-
-        Args:
-            variable: The name of the variable.
-        """
+        variable: str,
+    ) -> bool:
         return variable in self.variables_names
 
-    def __len__(self):  # type: (...) -> int
-        """The length of the design space, corresponding to the number of variables."""
+    def __len__(self) -> int:
         return len(self.variables_names)
 
-    def __iter__(self):  # type: (...) -> Iterable[str]
+    def __iter__(self) -> Iterable[str]:
         return iter(self.variables_names)
 
     def __setitem__(
         self,
-        name,  # type: str
-        item,  # type: DesignVariable
-    ):  # type: (...) -> None
+        name: str,
+        item: DesignVariable,
+    ) -> None:
         self.add_variable(
             name,
             size=item.size,
@@ -1902,8 +2078,8 @@ class DesignSpace(collections.MutableMapping):
 
     def __eq__(
         self,
-        other,  # type: DesignSpace
-    ):  # type: (...) -> bool
+        other: DesignSpace,
+    ) -> bool:
         if not isinstance(other, self.__class__):
             return False
 
@@ -1914,8 +2090,8 @@ class DesignSpace(collections.MutableMapping):
             if key not in other:
                 return False
 
-            hash1 = hash_data_dict(flatten_mapping(val._asdict()))
-            hash2 = hash_data_dict(flatten_mapping(other[key]._asdict()))
+            hash1 = hash_data_dict(flatten_nested_dict(val._asdict()))
+            hash2 = hash_data_dict(flatten_nested_dict(other[key]._asdict()))
             if hash1 != hash2:
                 return False
 
@@ -1923,8 +2099,8 @@ class DesignSpace(collections.MutableMapping):
 
     def __getitem__(
         self,
-        name,  # type: str
-    ):  # type: (...) -> DesignVariable
+        name: str,
+    ) -> DesignVariable:
         """Return the data associated with a given variable.
 
         These data are: type, size, lower bound, upper bound and current value.
@@ -1939,10 +2115,10 @@ class DesignSpace(collections.MutableMapping):
             ValueError: If the variable name does not exist.
         """
         if name not in self.variables_names:
-            raise KeyError("Variable '{}' is not known.".format(name))
+            raise KeyError(f"Variable '{name}' is not known.")
 
         try:
-            value = self.get_current_x([name])
+            value = self.get_current_value([name])
         except KeyError:
             value = None
 
@@ -1956,8 +2132,8 @@ class DesignSpace(collections.MutableMapping):
 
     def extend(
         self,
-        other,  # type: DesignSpace
-    ):  # type: (...) -> None
+        other: DesignSpace,
+    ) -> None:
         """Extend the design space with another design space.
 
         Args:
@@ -1968,17 +2144,17 @@ class DesignSpace(collections.MutableMapping):
             var_type = other.get_type(name)
             l_b = other.get_lower_bound(name)
             u_b = other.get_upper_bound(name)
-            value = other.get_current_x_dict()[name]
+            value = other.get_current_value(as_dict=True)[name]
             self.add_variable(name, size, var_type, l_b, u_b, value)
 
     @staticmethod
     def __cast_array_to_list(
-        value,  # type: Union[str,int,ndarray]
-    ):  # type: (...) -> Union[str,int,List[Union[str,int]]]
+        value: str | int | ndarray,
+    ) -> str | int | list[str | int]:
         """Convert a value to a ``List`` if it is a NumPy array.
 
         Args:
-            value: The value to be casted.
+            value: The value to be cast.
 
         Returns:
             Either the original value or the NumPy array converted to a ``List``.
@@ -1988,12 +2164,12 @@ class DesignSpace(collections.MutableMapping):
     @classmethod
     def __cast_mapping(
         cls,
-        mapping,  # type: Mapping[str,Union[str,int,ndarray]]
-    ):  # type: (...) -> Dict[str,Union[str,int,List[Union[str,int]]]]
+        mapping: Mapping[str, str | int | ndarray],
+    ) -> dict[str, str | int | list[str | int]]:
         """Convert the NumPy arrays of a mapping to ``List``.
 
         Args:
-            mapping: The value to be casted.
+            mapping: The value to be cast.
 
         Returns:
             The original mapping with NumPy values converted to a ``List``.
@@ -2005,3 +2181,28 @@ class DesignSpace(collections.MutableMapping):
             }
             for key, val in mapping.items()
         }
+
+    def rename_variable(
+        self,
+        current_name: str,
+        new_name: str,
+    ) -> None:
+        """Rename a variable.
+
+        Args:
+            current_name: The name of the variable to rename.
+            new_name: The new name of the variable.
+        """
+        if current_name not in self.variables_names:
+            raise ValueError(f"The variable {current_name} is not in the design space.")
+
+        self.variables_names[self.variables_names.index(current_name)] = new_name
+        for dictionary in [
+            self.variables_sizes,
+            self.variables_types,
+            self.normalize,
+            self._lower_bounds,
+            self._upper_bounds,
+            self._current_value,
+        ]:
+            dictionary[new_name] = dictionary.pop(current_name)

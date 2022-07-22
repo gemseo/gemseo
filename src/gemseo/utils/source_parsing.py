@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Parse source code to extract information."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import inspect
 import re
-from typing import Callable, Dict
-
-from gemseo.utils.py23_compat import getargspec
+from inspect import getfullargspec
+from typing import Callable
 
 
 def get_options_doc(
-    method,  # type: Callable
-):  # type: (...) -> Dict[str, str]
+    method: Callable,
+) -> dict[str, str]:
     """Get the documentation of a method.
 
     Args:
@@ -46,7 +41,7 @@ def get_options_doc(
     docstring = inspect.getdoc(method)
 
     if docstring is None:
-        raise ValueError("Empty doc for {}".format(method))
+        raise ValueError(f"Empty doc for {method}")
 
     for parse in (parse_google, parse_rest):
         parsed_docstring = parse(docstring)
@@ -61,13 +56,15 @@ def get_options_doc(
 
 def get_default_options_values(
     cls,
-):  # type: (...) -> Dict[str, str]
+) -> dict[str, str]:
     """Get the options default values for the given class, by only addressing kwargs.
 
     Args:
         cls: The class.
     """
-    args, _, _, defaults = getargspec(cls.__init__)
+    full_arg_specs = getfullargspec(cls.__init__)
+    args = full_arg_specs[0]
+    defaults = full_arg_specs[3]
     if "self" in args:
         args.remove("self")
     n_def = len(defaults)
@@ -76,8 +73,8 @@ def get_default_options_values(
 
 
 def parse_rest(
-    docstring,  # type: str
-):  # type: (...) -> Dict[str, str]
+    docstring: str,
+) -> dict[str, str]:
     """Parse a reST docstring.
 
     Args:
@@ -88,8 +85,8 @@ def parse_rest(
     """
     pattern = r":param ([\*\w]+): (.*?)(?:(?=:param)|(?=:return)|\Z)"
     param_re = re.compile(pattern, re.S)
-    doc_list = param_re.findall(docstring)
-    parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in doc_list}
+    strings = param_re.findall(docstring)
+    parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in strings}
     parsed_doc = {
         name: description.replace("  ", " ").replace("\n", " ").replace("  ", "\n\n")
         for name, description in parsed_doc.items()
@@ -98,9 +95,9 @@ def parse_rest(
 
 
 # regex pattern for finding the arguments section of a google docstring
-# doc_inherit.DocInheritMeta replaces the section title "Args" with "Parameters"
+# docstring-inheritance replaces the section title "Args" with "Parameters"
 RE_PATTERN_ARGS_SECTION = re.compile(
-    r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:Returns:|Raises:|$)", flags=re.DOTALL
+    r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:\n\n[^\s]|$)", flags=re.DOTALL
 )
 
 # regex pattern for finding the arguments names and description of a google docstring
@@ -110,8 +107,8 @@ RE_PATTERN_ARGS = re.compile(
 
 
 def parse_google(
-    docstring,  # type: str
-):  # type: (...) -> Dict[str, str]
+    docstring: str,
+) -> dict[str, str]:
     """Parse a Google docstring.
 
     Args:

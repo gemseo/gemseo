@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 from unittest.case import TestCase
 
-from numpy import allclose, array
-
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from numpy import allclose
+from numpy import array
 
 
 class TestScipyLinprog(TestCase):
@@ -71,7 +71,7 @@ class TestScipyLinprog(TestCase):
     def test_linprog_algorithms(self):
 
         library = OptimizersFactory().create(self.OPT_LIB_NAME)
-        for algo_name in library.lib_dict.keys():
+        for algo_name in library.descriptions.keys():
             self.check_algorithm(algo_name)
 
     def check_algorithm(self, algo_name):
@@ -92,3 +92,8 @@ class TestScipyLinprog(TestCase):
         optim_result = OptimizersFactory().execute(problem, algo_name)
         assert allclose(optim_result.x_opt, array([1.0, 2.0]) / 3.0)
         self.assertAlmostEqual(optim_result.f_opt, 0.0)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyLinprog.LIBRARY_NAME == "SciPy"

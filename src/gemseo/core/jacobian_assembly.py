@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,13 +18,20 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Coupled derivatives calculations."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
+import itertools
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
-from numpy import atleast_2d, concatenate, empty, ones, zeros
-from scipy.sparse import dia_matrix, dok_matrix, vstack
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import empty
+from numpy import ones
+from numpy import zeros
+from scipy.sparse import dia_matrix
+from scipy.sparse import dok_matrix
+from scipy.sparse import vstack
 from scipy.sparse.csc import csc_matrix
 from scipy.sparse.linalg.dsolve.linsolve import factorized
 from scipy.sparse.linalg.interface import LinearOperator
@@ -46,10 +52,10 @@ def default_dict_factory():
     return defaultdict(none_factory)
 
 
-class JacobianAssembly(object):
+class JacobianAssembly:
     """Assembly of Jacobians.
 
-    Typically, assemble disciplines's Jacobians into a system Jacobian.
+    Typically, assemble discipline's Jacobians into a system Jacobian.
     """
 
     DIRECT_MODE = "direct"
@@ -67,7 +73,7 @@ class JacobianAssembly(object):
         """
         Args:
             coupling_structure: The CouplingStructure associated disciplines that form
-            the coupled system.
+                the coupled system.
         """
         self.coupling_structure = coupling_structure
         self.sizes = {}
@@ -146,13 +152,15 @@ class JacobianAssembly(object):
                 + " instead"
             )
 
-    def compute_sizes(self, functions, variables, couplings):
+    def compute_sizes(self, functions, variables, couplings, residual_variables=None):
         """Compute the number of scalar functions, variables and couplings.
 
         Args:
             functions: The functions to differentiate.
             variables: The differentiation variables.
             couplings: The coupling variables.
+            residual_variables: The mapping of residuals of disciplines to their
+                respective state variables.
 
         Raises:
             ValueError: When the size of some variables could not be determined.
@@ -162,35 +170,38 @@ class JacobianAssembly(object):
         # search for the functions/variables/couplings in the
         # Jacobians of the disciplines
 
-        # functions
-        for function in functions:
-            discipline = self.coupling_structure.find_discipline(function)
-            self.disciplines[function] = discipline
-            # get an arbitrary Jacobian and compute the number of rows
-            size = next(iter(discipline.jac[function].values())).shape[0]
-            self.sizes[function] = size
+        if residual_variables is not None:
+            outputs = itertools.chain(
+                functions,
+                couplings,
+                residual_variables.keys(),
+                residual_variables.values(),
+            )
+        else:
+            outputs = itertools.chain(functions, couplings)
 
-        # couplings
-        for coupling in couplings:
-            discipline = self.coupling_structure.find_discipline(coupling)
-            self.disciplines[coupling] = discipline
+        # functions and coupling and states
+        for output in outputs:
+            discipline = self.coupling_structure.find_discipline(output)
+            self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
-            size = next(iter(discipline.jac[coupling].values())).shape[0]
-            self.sizes[coupling] = size
+            size = next(iter(discipline.jac[output].values())).shape[0]
+            self.sizes[output] = size
 
         # variables
         for variable in variables:
             for discipline in self.coupling_structure.disciplines:
                 if variable not in self.sizes:
-                    for variables_dict in discipline.jac.values():
-                        jac = variables_dict.get(variable, None)
-                        if jac is not None:
-                            self.sizes[variable] = jac.shape[1]
+                    for jacobian in discipline.jac.values():
+                        jacobian_wrt_variable = jacobian.get(variable, None)
+                        if jacobian_wrt_variable is not None:
+                            self.sizes[variable] = jacobian_wrt_variable.shape[1]
                             self.disciplines[variable] = discipline
                             break
+
             if variable not in self.sizes:
                 raise ValueError(
-                    "Failed to determine the size of input variable {}".format(variable)
+                    f"Failed to determine the size of input variable {variable}"
                 )
 
     @staticmethod
@@ -246,7 +257,6 @@ class JacobianAssembly(object):
             The derivatives of the residuals wrt the variables.
         """
         dres_dvar = dok_matrix((n_residuals, n_variables))
-
         out_i = 0
         # Row blocks
         for residual in residuals:
@@ -263,7 +273,6 @@ class JacobianAssembly(object):
                     ones_mat = (ones(variable_size), 0)
                     shape = (variable_size, variable_size)
                     diag_mat = -dia_matrix(ones_mat, shape=shape)
-
                     if self.coupling_structure.is_self_coupled(discipline):
                         jac = residual_jac.get(variable, None)
                         if jac is not None:
@@ -283,8 +292,8 @@ class JacobianAssembly(object):
                         dres_dvar[out_i : out_i + n_i, out_j : out_j + n_j] = jac
                 # Shift the column by block width
                 out_j += variable_size
-            # Shift the row by block height
             out_i += residual_size
+
         return dres_dvar.real
 
     def _dres_dvar_linop(self, residuals, variables, n_residuals, n_variables):
@@ -436,7 +445,10 @@ class JacobianAssembly(object):
         """
         if matrix_type == JacobianAssembly.SPARSE:
             sparse_dres_dvar = self._dres_dvar_sparse(
-                residuals, variables, n_residuals, n_variables
+                residuals,
+                variables,
+                n_residuals,
+                n_variables,
             )
             if transpose:
                 return sparse_dres_dvar.T
@@ -501,7 +513,8 @@ class JacobianAssembly(object):
         use_lu_fact=False,
         exec_cache_tol=None,
         force_no_exec=False,
-        **linear_solver_options
+        residual_variables=None,
+        **linear_solver_options,
     ):
         """Compute the Jacobian of total derivatives of the coupled system formed by the
         disciplines.
@@ -520,9 +533,12 @@ class JacobianAssembly(object):
             exec_cache_tol: The discipline cache tolerance to
                 when calling the linearize method.
                 If None, no tolerance is set (equivalent to tol=0.0).
-            force_no_exec: Whether the discipline is not re executed,
+            force_no_exec: Whether the discipline is not re-executed,
                 the cache is loaded anyway.
             linear_solver_options: The options passed to the linear solver factory.
+            residual_variables: a mapping of residuals of disciplines to
+                their respective state variables.
+            **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
             The total coupled derivatives.
@@ -535,57 +551,75 @@ class JacobianAssembly(object):
 
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
+        couplings_and_res = couplings.copy()
+        couplings_and_states = couplings.copy()
         # linearize all the disciplines
-        self._add_differentiated_inouts(functions, variables, couplings)
+        if residual_variables is not None and residual_variables:
+            couplings_and_res += list(residual_variables.keys())
+            couplings_and_states += list(residual_variables.values())
+
+        self._add_differentiated_inouts(functions, variables, couplings_and_res)
 
         for disc in self.coupling_structure.disciplines:
-            if exec_cache_tol is not None:
+            if disc.cache is not None and exec_cache_tol is not None:
                 disc.cache_tol = exec_cache_tol
             disc.linearize(in_data, force_no_exec=force_no_exec)
 
         # compute the sizes from the Jacobians
-        self.compute_sizes(functions, variables, couplings)
+        self.compute_sizes(functions, variables, couplings, residual_variables)
         n_variables = self.compute_dimension(variables)
         n_functions = self.compute_dimension(functions)
-        n_couplings = self.compute_dimension(couplings)
-
+        n_residuals = self.compute_dimension(couplings)
+        if residual_variables is not None:
+            n_residuals += self.compute_dimension(residual_variables.keys())
+            n_variables += self.compute_dimension(residual_variables.values())
         # compute the partial derivatives of the residuals
-        dres_dx = self.dres_dvar(couplings, variables, n_couplings, n_variables)
+        dres_dx = self.dres_dvar(
+            couplings_and_res,
+            variables,
+            n_residuals,
+            n_variables,
+        )
 
         # compute the partial derivatives of the interest functions
         (dfun_dx, dfun_dy) = ({}, {})
         for fun in functions:
             dfun_dx[fun] = self.dfun_dvar(fun, variables, n_variables)
-            dfun_dy[fun] = self.dfun_dvar(fun, couplings, n_couplings)
+            dfun_dy[fun] = self.dfun_dvar(fun, couplings, n_residuals)
 
         mode = self._check_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
         if mode == JacobianAssembly.DIRECT_MODE:
             # sparse square matrix dR/dy
+
             dres_dy = self.dres_dvar(
-                couplings, couplings, n_couplings, n_couplings, matrix_type=matrix_type
+                couplings_and_res,
+                couplings_and_states,
+                n_residuals,
+                n_residuals,
+                matrix_type=matrix_type,
             )
             # compute the coupled derivatives
             total_derivatives = self.coupled_system.direct_mode(
                 functions,
                 n_variables,
-                n_couplings,
+                n_residuals,
                 dres_dx,
                 dres_dy,
                 dfun_dx,
                 dfun_dy,
                 linear_solver,
                 use_lu_fact=use_lu_fact,
-                **linear_solver_options
+                **linear_solver_options,
             )
         elif mode == JacobianAssembly.ADJOINT_MODE:
             # transposed square matrix dR/dy^T
             dres_dy_t = self.dres_dvar(
-                couplings,
-                couplings,
-                n_couplings,
-                n_couplings,
+                couplings_and_res,
+                couplings_and_states,
+                n_residuals,
+                n_residuals,
                 matrix_type=matrix_type,
                 transpose=True,
             )
@@ -598,7 +632,7 @@ class JacobianAssembly(object):
                 dfun_dy,
                 linear_solver,
                 use_lu_fact=use_lu_fact,
-                **linear_solver_options
+                **linear_solver_options,
             )
         else:
             raise ValueError("Incorrect linearization mode " + str(mode))
@@ -636,7 +670,7 @@ class JacobianAssembly(object):
             if outputs and not inputs:
                 base_msg = (
                     "Discipline '{}' has the outputs '{}' that must be "
-                    "differenciated, but no coupling or design "
+                    "differentiated, but no coupling or design "
                     "variables as inputs"
                 )
                 raise ValueError(base_msg.format(discipline.name, outputs))
@@ -670,7 +704,7 @@ class JacobianAssembly(object):
         relax_factor,
         linear_solver="DEFAULT",
         matrix_type=SPARSE,
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the Newton step for the coupled system of residuals formed by the
         disciplines.
@@ -682,7 +716,7 @@ class JacobianAssembly(object):
             linear_solver: The name of the linear solver.
             matrix_type: The representation of the matrix dR/dy (sparse or
                 linear operator).
-            linear_solver_options: The options passed to the linear solver factory.
+            **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
             The Newton step -[dR/dy]^-1 . R as a dict of steps
@@ -710,22 +744,20 @@ class JacobianAssembly(object):
         self.n_newton_linear_resolutions += 1
 
         # split the array of steps
-        newton_step_dict = {}
+        couplings_to_steps = {}
         component = 0
         for coupling in couplings:
             size = self.sizes[coupling]
-            newton_step_dict[coupling] = newton_step[component : component + size]
+            couplings_to_steps[coupling] = newton_step[component : component + size]
             component += size
 
-        return newton_step_dict
+        return couplings_to_steps
 
     def residuals(self, in_data, var_names):
         """Form the matrix of residuals wrt coupling variables.
 
         Given disciplinary explicit calculations Yi(Y0_t,...Yn_t),
-        fill the residual matrix:
-
-        ::
+        fill the residual matrix::
 
             [Y0(Y0_t,...Yn_t) - Y0_t]
             [                       ]
@@ -739,17 +771,17 @@ class JacobianAssembly(object):
         Returns:
             The residuals array.
         """
-        residual_list = []
+        residuals = []
         # Build rows blocks
-        for var in var_names:
+        for name in var_names:
             for discipline in self.coupling_structure.disciplines:
                 # Find associated discipline
-                if var in discipline.get_output_data_names():
-                    discipline_output = discipline.get_outputs_by_name(var)
-                    residual = atleast_2d(discipline_output - in_data[var])
-                    residual_list.append(residual)
-        residual_array = concatenate(residual_list, axis=1)[0, :]
-        return residual_array
+                if name in discipline.get_output_data_names():
+                    residuals.append(
+                        atleast_2d(discipline.get_outputs_by_name(name) - in_data[name])
+                    )
+
+        return concatenate(residuals, axis=1)[0, :]
 
     # plot method
     def plot_dependency_jacobian(
@@ -770,8 +802,8 @@ class JacobianAssembly(object):
             show: WHether the plot is displayed.
             save: WHether the plot is saved in a PDF file.
             filepath: The file name to save to.
-                If None,  "coupled_jacobian.pdf" is used, otherwise
-                "coupled_jacobian_" + filepath + ".pdf".
+                If None, ``coupled_jacobian.pdf`` is used, otherwise
+                ``coupled_jacobian_ + filepath + .pdf``.
 
         Returns:
             The file name.
@@ -803,7 +835,7 @@ class JacobianAssembly(object):
 
         # plot the (sparse) matrix
 
-        fig = plt.figure(figsize=(6, 10))
+        fig = plt.figure(figsize=(6.0, 10.0))
         ax1 = fig.add_subplot(111)
         plt.spy(total_jac, markersize=markersize)
         ax1.set_aspect("auto")
@@ -829,7 +861,7 @@ class JacobianAssembly(object):
         return filename
 
 
-class CoupledSystem(object):
+class CoupledSystem:
     """Compute coupled (total) derivatives of a system of residuals.
 
     Use several methods:
@@ -857,9 +889,9 @@ class CoupledSystem(object):
         dfun_dy,
         linear_solver="DEFAULT",
         use_lu_fact=False,
-        **linear_solver_options
+        **linear_solver_options,
     ):
-        """Computate the total derivative Jacobian in direct mode.
+        """Compute the total derivative Jacobian in direct mode.
 
         Args:
             functions: The functions to differentiate.
@@ -871,7 +903,7 @@ class CoupledSystem(object):
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy once.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of the total coupled derivatives.
@@ -892,7 +924,7 @@ class CoupledSystem(object):
             dfun_dx,
             dfun_dy,
             linear_solver,
-            **linear_solver_options
+            **linear_solver_options,
         )
 
     def adjoint_mode(
@@ -904,20 +936,19 @@ class CoupledSystem(object):
         dfun_dy,
         linear_solver="DEFAULT",
         use_lu_fact=False,
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in adjoint mode.
 
         Args:
             functions: The functions to differentiate.
             dres_dx: The Jacobian of the residuals wrt the design variables.
-            dres_dy: The Jacobian of the residuals wrt the coupling variables.
+            dres_dy_t: The Jacobian of the residuals wrt the coupling variables.
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy_t once.
-            dres_dy_t: The param kwargs.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -934,7 +965,7 @@ class CoupledSystem(object):
             dfun_dx,
             dfun_dy,
             linear_solver,
-            **linear_solver_options
+            **linear_solver_options,
         )
 
     def _direct_mode(
@@ -947,7 +978,7 @@ class CoupledSystem(object):
         dfun_dx,
         dfun_dy,
         linear_solver="DEFAULT",
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in direct mode.
 
@@ -960,7 +991,7 @@ class CoupledSystem(object):
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -993,7 +1024,7 @@ class CoupledSystem(object):
         dfun_dx,
         dfun_dy,
         linear_solver="DEFAULT",
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in adjoint mode.
 
@@ -1005,7 +1036,7 @@ class CoupledSystem(object):
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             dres_dy_t: The derivatives of the residuals wrt coupling vars.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.

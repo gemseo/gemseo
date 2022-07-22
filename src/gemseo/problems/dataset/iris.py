@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -50,9 +48,9 @@ or classification ones.
 <https://en.wikipedia.org/wiki/Iris_flower_data_set>`_
 
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from os.path import abspath, dirname, join
+from pathlib import Path
 
 from gemseo.core.dataset import Dataset
 
@@ -62,9 +60,8 @@ class IrisDataset(Dataset):
 
     def __init__(self, name="Iris", by_group=True, as_io=False):
         """Constructor."""
-        super(IrisDataset, self).__init__(name, by_group)
-        dirpath = dirname(abspath(__file__))
-        filename = join(dirpath, "iris.data")
+        super().__init__(name, by_group)
+        file_path = Path(__file__).parent / "iris.data"
         variables = [
             "sepal_length",
             "sepal_width",
@@ -89,4 +86,5 @@ class IrisDataset(Dataset):
             }
         else:
             groups = {"specy": "labels"}
-        self.set_from_file(filename, variables, sizes, groups, ",", False)
+
+        self.set_from_file(file_path, variables, sizes, groups, ",", False)

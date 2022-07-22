@@ -37,16 +37,10 @@
 Pretty table factory
 ********************
 """
-from __future__ import ( division, 
-                        unicode_literals)
-
 import csv
-
 
 from ._compact import HTMLParser
 from .prettytable import PrettyTable
-
-
 
 
 def from_csv(filepath, field_names=None, **kwargs):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -28,27 +26,28 @@ The machine learning API provides methods for creating new and loading
 existing machine learning models. It also provides methods for listing
 available models and options.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Union
+from pathlib import Path
+from typing import Mapping
 
 from gemseo.api import _get_schema
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-from gemseo.mlearning.core.ml_algo import MLAlgo, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
 # pylint: disable=import-outside-toplevel
 
 
-def get_mlearning_models():  # type:(...) -> List[str]
+def get_mlearning_models() -> list[str]:
     """Get available machine learning algorithms.
 
     Returns:
@@ -67,7 +66,7 @@ def get_mlearning_models():  # type:(...) -> List[str]
     return factory.models
 
 
-def get_regression_models():  # type:(...) -> List[str]
+def get_regression_models() -> list[str]:
     """Get available regression models.
 
     Returns:
@@ -85,7 +84,7 @@ def get_regression_models():  # type:(...) -> List[str]
     return factory.models
 
 
-def get_classification_models():  # type:(...) -> List[str]
+def get_classification_models() -> list[str]:
     """Get available classification models.
 
     Returns:
@@ -103,7 +102,7 @@ def get_classification_models():  # type:(...) -> List[str]
     return factory.models
 
 
-def get_clustering_models():  # type:(...) -> List[str]
+def get_clustering_models() -> list[str]:
     """Get available clustering models.
 
     Returns:
@@ -122,11 +121,11 @@ def get_clustering_models():  # type:(...) -> List[str]
 
 
 def create_mlearning_model(
-    name,  # type: str
-    data,  # type: Dataset
-    transformer=None,  # type: Optional[TransformerType]
-    **parameters
-):  # type:(...) -> MLAlgo
+    name: str,
+    data: Dataset,
+    transformer: Mapping[str, TransformerType] | None = None,
+    **parameters,
+) -> MLAlgo:
     """Create a machine learning algorithm from a learning dataset.
 
     Args:
@@ -157,11 +156,12 @@ minmax_inputs = {Dataset.INPUT_GROUP: MinMaxScaler()}
 
 
 def create_regression_model(
-    name,  # type: str
-    data,  # type: Dataset
-    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type:Optional[TransformerType]
-    **parameters
-):  # type: (...) -> MLRegressionAlgo
+    name: str,
+    data: Dataset,
+    transformer: Mapping[str, TransformerType]
+    | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    **parameters,
+) -> MLRegressionAlgo:
     """Create a regression model from a learning dataset.
 
     Args:
@@ -186,24 +186,25 @@ def create_regression_model(
 
     factory = RegressionModelFactory()
     if (
-        name == "PCERegression"
+        name == "PCERegressor"
         and isinstance(transformer, dict)
         and Dataset.INPUT_GROUP in transformer
     ):
         LOGGER.warning(
             "Remove input data transformation because "
-            "PCERegression does not support transformers."
+            "PCERegressor does not support transformers."
         )
         del transformer[Dataset.INPUT_GROUP]
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
 def create_classification_model(
-    name,  # type: str
-    data,  # type: Dataset
-    transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type:Optional[TransformerType]
-    **parameters
-):  # type: (...) -> MLClassificationAlgo
+    name: str,
+    data: Dataset,
+    transformer: Mapping[str, TransformerType]
+    | None = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    **parameters,
+) -> MLClassificationAlgo:
     """Create a classification model from a learning dataset.
 
     Args:
@@ -231,11 +232,11 @@ def create_classification_model(
 
 
 def create_clustering_model(
-    name,  # type: str
-    data,  # type: Dataset
-    transformer=None,  # type:Optional[TransformerType]
-    **parameters
-):  # type: (...) -> MLClusteringAlgo
+    name: str,
+    data: Dataset,
+    transformer: Mapping[str, TransformerType] | None = None,
+    **parameters,
+) -> MLClusteringAlgo:
     """Create a clustering model from a learning dataset.
 
     Args:
@@ -263,8 +264,8 @@ def create_clustering_model(
 
 
 def import_mlearning_model(
-    directory,  # type: Union[str,Path]
-):  # type: (...) -> MLAlgo
+    directory: str | Path,
+) -> MLAlgo:
     """Import a machine learning algorithm from a directory.
 
     Args:
@@ -286,8 +287,8 @@ def import_mlearning_model(
 
 
 def import_regression_model(
-    directory,  # type: Union[str,Path]
-):  # type: (...) -> MLRegressionAlgo
+    directory: str | Path,
+) -> MLRegressionAlgo:
     """Import a regression model from a directory.
 
     Args:
@@ -309,8 +310,8 @@ def import_regression_model(
 
 
 def import_classification_model(
-    directory,  # type: Union[str,Path]
-):  # type: (...) -> MLClassificationAlgo
+    directory: str | Path,
+) -> MLClassificationAlgo:
     """Import a classification model from a directory.
 
     Args:
@@ -332,8 +333,8 @@ def import_classification_model(
 
 
 def import_clustering_model(
-    directory,  # type: Union[str,Path]
-):  # type: (...) -> MLClusteringAlgo
+    directory: str | Path,
+) -> MLClusteringAlgo:
     """Import a clustering model from a directory.
 
     Args:
@@ -355,10 +356,10 @@ def import_clustering_model(
 
 
 def get_mlearning_options(
-    model_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=True,  # type:bool
-):  # type: (...) -> Union[Dict[str,str],str]
+    model_name: str,
+    output_json: bool = False,
+    pretty_print: bool = True,
+) -> dict[str, str] | str:
     """Find the available options for a machine learning algorithm.
 
     Args:
@@ -383,10 +384,10 @@ def get_mlearning_options(
 
 
 def get_regression_options(
-    model_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=True,  # type:bool
-):  # type: (...) -> Union[Dict[str,str],str]
+    model_name: str,
+    output_json: bool = False,
+    pretty_print: bool = True,
+) -> dict[str, str] | str:
     """Find the available options for a regression model.
 
     Args:
@@ -411,10 +412,10 @@ def get_regression_options(
 
 
 def get_classification_options(
-    model_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=True,  # type:bool
-):  # type: (...) -> Union[Dict[str,str],str]
+    model_name: str,
+    output_json: bool = False,
+    pretty_print: bool = True,
+) -> dict[str, str] | str:
     """Find the available options for a classification model.
 
     Args:
@@ -439,10 +440,10 @@ def get_classification_options(
 
 
 def get_clustering_options(
-    model_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=True,  # type:bool
-):  # type: (...) -> Union[Dict[str,str],str]
+    model_name: str,
+    output_json: bool = False,
+    pretty_print: bool = True,
+) -> dict[str, str] | str:
     """Find the available options for clustering model.
 
     Args:

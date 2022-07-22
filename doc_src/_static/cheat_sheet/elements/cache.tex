@@ -1,0 +1,50 @@
+% Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+%
+% This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+% International License. To view a copy of this license, visit
+% http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+% Commons, PO Box 1866, Mountain View, CA 94042, USA.
+%
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.3\textwidth}
+\begin{python}
+from gemseo.api import create_discipline
+discipline = create_discipline('disc')
+\end{python}
+Set the cache policy to store all executions:
+\begin{python}
+discipline.set_cache_policy('HDF5Cache', cache_hdf_file='file.h5') #  on the disk
+discipline.set_cache_policy('MemoryFullCache') # in memory
+\end{python}
+Set the simple cache policy to store the last execution in memory:
+\begin{python}
+discipline.set_cache_policy('SimpleCache') # default option
+\end{python}
+Export cache to dataset:
+\begin{python}
+dataset = discipline.cache.export_to_dataset()
+\end{python}
+Cache inputs and outputs in an HDF5 file:
+\begin{python}
+from gemseo.core.cache import HDF5Cache
+in_data = {'x':array([1.]), 'y':array([2.,3.])}
+out_data = {'z': array([-6])}
+cache = HDF5Cache('file.h5', 'node')
+cache[in_data] = out_data
+\end{python}
+Get cached data:
+\begin{python}
+last_entry = cache.last_entry
+last_cached_inputs = last_entry.inputs
+last_cached_outputs = last_entry.outputs
+len(cache)
+\end{python}
+Get outputs and jacobian if data are cached, else None:
+\begin{python}
+_, out_data, jac_data = cache[in_data]
+\end{python}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\DOT Cache};
+\end{tikzpicture}

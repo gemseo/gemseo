@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Abstract classes defining the concept of joint probability distribution.
 
 Overview
@@ -81,13 +78,15 @@ or for all marginals (:meth:`.ComposedDistribution.plot_all`).
 Lastly, we can compute realizations of the random variable
 by means of the :meth:`.ComposedDistribution.compute_samples` method.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, Sequence
+from typing import Iterable
+from typing import Sequence
 
-from numpy import array, concatenate, ndarray
+from numpy import array
+from numpy import concatenate
+from numpy import ndarray
 
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.string_tools import MultiLineString
@@ -106,22 +105,20 @@ class ComposedDistribution(Distribution):
 
     def __init__(
         self,
-        distributions,  # type: Sequence[Distribution]
-        copula=_INDEPENDENT_COPULA,  # type: str
-    ):  # type: (...) -> None # noqa: D205,D212,D415
-        """
+        distributions: Sequence[Distribution],
+        copula: str = _INDEPENDENT_COPULA,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             distributions: The distributions.
             copula: A name of copula.
         """
-        dimension = sum([distribution.dimension for distribution in distributions])
+        dimension = sum(distribution.dimension for distribution in distributions)
         self._marginal_variables = [
             distribution.variable_name for distribution in distributions
         ]
         variable = "_".join(self._marginal_variables)
-        super(ComposedDistribution, self).__init__(
-            variable, self._COMPOSED, (copula,), dimension
-        )
+        super().__init__(variable, self._COMPOSED, (copula,), dimension)
         self.marginals = distributions
         msg = MultiLineString()
         msg.indent()
@@ -138,8 +135,8 @@ class ComposedDistribution(Distribution):
 
     def _set_bounds(
         self,
-        distributions,  # type: Iterable[Distribution]
-    ):  # type: (...) -> None
+        distributions: Iterable[Distribution],
+    ) -> None:
         """Set the mathematical and numerical bounds (= support and range).
 
         Args:
@@ -164,22 +161,19 @@ class ComposedDistribution(Distribution):
             )
 
     @property
-    def mean(self):  # noqa: D102
-        # type: (...) -> ndarray
+    def mean(self) -> ndarray:  # noqa: D102
         mean = [marginal.mean for marginal in self.marginals]
         return array(mean).flatten()
 
     @property
-    def standard_deviation(self):  # noqa: D102
-        # type: (...) -> ndarray
+    def standard_deviation(self) -> ndarray:  # noqa: D102
         std = [marginal.standard_deviation for marginal in self.marginals]
         return array(std).flatten()
 
-    def compute_samples(
+    def compute_samples(  # noqa: D102
         self,
-        n_samples=1,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        n_samples: int = 1,
+    ) -> ndarray:
         sample = self.marginals[0].compute_samples(n_samples)
         for marginal in self.marginals[1:]:
             sample = concatenate((sample, marginal.compute_samples(n_samples)), axis=1)

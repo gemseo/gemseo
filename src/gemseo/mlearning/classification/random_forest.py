@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -30,17 +28,21 @@ The classifier relies on the RandomForestClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import ClassVar
+from typing import Iterable
+from typing import Mapping
 
-from numpy import ndarray, stack
+from numpy import ndarray
+from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,45 +50,45 @@ LOGGER = logging.getLogger(__name__)
 class RandomForestClassifier(MLClassificationAlgo):
     """The random forest classification algorithm."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "RandomForestClassifier"
+    SHORT_ALGO_NAME: ClassVar[str] = "RF"
+    LIBRARY: Final[str] = "scikit-learn"
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        n_estimators=100,  # type: int
-        **parameters  # type: Optional[Union[int,float,bool,str]]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        n_estimators: int = 100,
+        **parameters: int | float | bool | str | None,
+    ) -> None:
         """
         Args:
             n_estimators: The number of trees in the forest.
         """
-        super(RandomForestClassifier, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
-            **parameters
+            **parameters,
         )
         self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
 
     def _fit(
         self,
-        input_data,  # type:ndarray
-        output_data,  # type:ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         if output_data.shape[1] == 1:
             output_data = output_data.ravel()
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data,  # type:ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         output_data = self.algo.predict(input_data).astype(int)
         if len(output_data.shape) == 1:
             output_data = output_data[:, None]
@@ -94,8 +96,8 @@ class RandomForestClassifier(MLClassificationAlgo):
 
     def _predict_proba_soft(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         probas = self.algo.predict_proba(input_data)
         if len(probas[0].shape) == 1:
             probas = probas[..., None]

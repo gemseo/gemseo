@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create a joint probability distribution from the SciPy library.
 
 The :class:`.SPComposedDistribution` class is a concrete class
@@ -39,10 +36,12 @@ based on the SciPy library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
-
-from typing import TYPE_CHECKING, Callable, Iterable, Sequence
+from typing import Callable
+from typing import Iterable
+from typing import Sequence
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
@@ -60,15 +59,15 @@ class SPComposedDistribution(ComposedDistribution):
 
     def __init__(
         self,
-        distributions,  # type: Sequence[SPDistribution]
-        copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
-    ):  # type: (...) -> None # noqa: D205,D212,D415
-        """
+        distributions: Sequence[SPDistribution],
+        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             distributions (list(SPDistribution)): The distributions.
             copula (str, optional): A name of copula.
         """
-        super(SPComposedDistribution, self).__init__(distributions, copula)
+        super().__init__(distributions, copula)
         self.distribution = distributions
         self._mapping = {}
         index = 0
@@ -78,11 +77,10 @@ class SPComposedDistribution(ComposedDistribution):
                 index += 1
         self._set_bounds(distributions)
 
-    def compute_cdf(
+    def compute_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         tmp = []
         for index, value in enumerate(vector):
             id1 = self._mapping[index][0]
@@ -90,11 +88,10 @@ class SPComposedDistribution(ComposedDistribution):
             tmp.append(self.distribution[id1].marginals[id2].cdf(value))
         return array(tmp)
 
-    def compute_inverse_cdf(
+    def compute_inverse_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         tmp = []
         for index, value in enumerate(vector):
             id1 = self._mapping[index][0]
@@ -102,18 +99,16 @@ class SPComposedDistribution(ComposedDistribution):
             tmp.append(self.distribution[id1].marginals[id2].ppf(value))
         return array(tmp)
 
-    def _pdf(
+    def _pdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         id1 = self._mapping[index][0]
         id2 = self._mapping[index][1]
 
         def pdf(
-            point,  # type: float
-        ):
-            # type: (...) -> float
+            point: float,
+        ) -> float:
             """Probability Density Function (PDF).
 
             Args:
@@ -126,18 +121,16 @@ class SPComposedDistribution(ComposedDistribution):
 
         return pdf
 
-    def _cdf(
+    def _cdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         id1 = self._mapping[index][0]
         id2 = self._mapping[index][1]
 
         def cdf(
-            level,  # type: float
-        ):
-            # type: (...) -> float
+            level: float,
+        ) -> float:
             """Cumulative Density Function (CDF).
 
             Args:

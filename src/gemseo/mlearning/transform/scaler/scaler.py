@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -43,13 +41,16 @@ This method has to be overloaded.
    :mod:`~gemseo.mlearning.transform.scaler.min_max_scaler`
    :mod:`~gemseo.mlearning.transform.scaler.standard_scaler`
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 
-from numpy import diag, eye, ndarray
+from numpy import diag
+from numpy import eye
+from numpy import ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -59,47 +60,47 @@ class Scaler(Transformer):
 
     def __init__(
         self,
-        name="Scaler",  # type: str
-        offset=0.0,  # type: float
-        coefficient=1.0,  # type: float
-    ):  # type: (...) -> None
+        name: str = "Scaler",
+        offset: float = 0.0,
+        coefficient: float = 1.0,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
             offset: The offset of the linear transformation.
             coefficient: The coefficient of the linear transformation.
         """
-        super(Scaler, self).__init__(name, offset=offset, coefficient=coefficient)
+        super().__init__(name, offset=offset, coefficient=coefficient)
 
     @property
-    def offset(self):  # type: (...) -> float
+    def offset(self) -> float:
         """The scaling offset."""
         return self.parameters["offset"]
 
     @property
-    def coefficient(self):  # type: (...) -> float
+    def coefficient(self) -> float:
         """The scaling coefficient."""
         return self.parameters["coefficient"]
 
     @offset.setter
     def offset(
         self,
-        value,  # type: float
-    ):  # type: (...) -> None
+        value: float,
+    ) -> None:
         self.parameters["offset"] = value
 
     @coefficient.setter
     def coefficient(
         self,
-        value,  # type: float
-    ):  # type: (...) -> None
+        value: float,
+    ) -> None:
         self.parameters["coefficient"] = value
 
-    def fit(
+    def _fit(
         self,
-        data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         LOGGER.warning(
             (
                 "The %s.fit() function does nothing; "
@@ -112,20 +113,20 @@ class Scaler(Transformer):
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.offset + self.coefficient * data
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return (data - self.offset) / self.coefficient
 
     def compute_jacobian(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         if not isinstance(self.coefficient, ndarray):
             return self.coefficient * eye(data.shape[-1])
         else:
@@ -133,8 +134,8 @@ class Scaler(Transformer):
 
     def compute_jacobian_inverse(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         if not isinstance(self.coefficient, ndarray):
             return 1 / self.coefficient * eye(data.shape[-1])
         else:

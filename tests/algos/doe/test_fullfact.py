@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,13 +13,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pytest
-from numpy import allclose, array, array_equal, atleast_2d
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_2d
 
 
 @pytest.fixture()
@@ -38,12 +39,12 @@ def doe_problem_dim_2():
 @pytest.mark.parametrize(
     "expected",
     [
-        array([1.0]),
+        array([[1.0]]),
         array([[0.0], [2.0]]),
         array([[0.0], [1.0], [2.0]]),
-        array([1.0, 1.0]),
-        array([1.0, 1.0]),
-        array([1.0, 1.0]),
+        array([[1.0, 1.0]]),
+        array([[1.0, 1.0]]),
+        array([[1.0, 1.0]]),
         array([[0.0, 0.0], [2.0, 0.0], [0.0, 2.0], [2.0, 2.0]]),
     ],
 )
@@ -56,7 +57,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected):
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "func")
     doe_library_class().execute(problem, algo_name, n_samples=n_samples)
-    assert array_equal(problem.export_to_dataset("data")["x"]["x"], expected)
+    assert array_equal(problem.export_to_dataset("data")["x"], expected)
 
 
 @pytest.mark.parametrize(
@@ -71,23 +72,20 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "func")
     doe_library_class().execute(problem, algo_name, n_samples=n_samples)
-    data = problem.export_to_dataset("data")["x"]["x"]
-    if n_samples < 2 ** size:
+    data = problem.export_to_dataset("data")["x"]
+    if n_samples < 2**size:
         expected_min = expected_max = 1.0
-        expected_ndim = 1
-        expected_shape_0 = size
+        expected_shape = (1, size)
     else:
         expected_min = 0.0
         expected_max = 2.0
-        expected_ndim = 2
-        expected_shape_0 = int(n_samples ** (1.0 / size)) ** size
+        expected_shape = (int(n_samples ** (1.0 / size)) ** size, size)
 
     for feature in data.T:
         assert feature.min() == expected_min
         assert feature.max() == expected_max
 
-    assert data.ndim == expected_ndim
-    assert data.shape[0] == expected_shape_0
+    assert data.shape == expected_shape
 
 
 @pytest.mark.parametrize(

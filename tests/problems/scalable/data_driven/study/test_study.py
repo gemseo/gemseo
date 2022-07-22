@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,31 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import os
 
 import pytest
-
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy
-from gemseo.problems.sellar.sellar import (
-    OBJ,
-    X_LOCAL,
-    X_SHARED,
-    Y_1,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
+from gemseo.problems.sellar.sellar import OBJ
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_LOCAL
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -67,8 +59,8 @@ def sellar_use_case(tmp_wd):
         discipline = discipline_class()
         discipline.set_cache_policy(discipline.HDF5_CACHE, cache_hdf_file=file_name)
         disciplines_names.append(discipline.name)
-        objective_name = next(iter(discipline.output_grammar.get_data_names()))
-        inputs_names = list(discipline.input_grammar.get_data_names())
+        objective_name = next(iter(discipline.output_grammar.keys()))
+        inputs_names = list(discipline.input_grammar.keys())
         design_space = SellarDesignSpace().filter(inputs_names)
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #         documentation
@@ -47,17 +45,18 @@ the concept of scalability study:
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import numbers
 from copy import deepcopy
+from pathlib import Path
 
 from numpy import inf
 
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.py23_compat import Path, string_types
+from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -69,7 +68,7 @@ POSTSTUDY_DIRECTORY = POST_DIRECTORY / "scalability_study"
 POSTSCAL_DIRECTORY = POST_DIRECTORY / "dependency_matrix"
 
 
-class ScalabilityStudy(object):
+class ScalabilityStudy:
     """Scalability Study."""
 
     def __init__(
@@ -198,29 +197,19 @@ class ScalabilityStudy(object):
         msg.add("Early stopping: {}", self.early_stopping)
         LOGGER.info("%s", msg)
 
-    @staticmethod
-    def __mkdir(directory):
-        """Create directory if not exist.
-
-        :param Path directory: directory name.
-        """
-        # TODO: in Python 3, replace this workaround with Path.mkdir(exist_ok=True)
-        if not directory.exists():
-            directory.mkdir()
-
     def __create_directories(self):
         """Create the different directories to store results, post-processings, ..."""
-        self.__mkdir(self.directory)
+        self.directory.mkdir(exist_ok=True)
         post = self.directory / POST_DIRECTORY
-        self.__mkdir(post)
+        post.mkdir(exist_ok=True)
         postoptim = self.directory / POSTOPTIM_DIRECTORY
-        self.__mkdir(postoptim)
+        postoptim.mkdir(exist_ok=True)
         poststudy = self.directory / POSTSTUDY_DIRECTORY
-        self.__mkdir(poststudy)
+        poststudy.mkdir(exist_ok=True)
         postscal = self.directory / POSTSCAL_DIRECTORY
-        self.__mkdir(postscal)
+        postscal.mkdir(exist_ok=True)
         results = self.directory / RESULTS_DIRECTORY
-        self.__mkdir(results)
+        results.mkdir(exist_ok=True)
         msg = MultiLineString()
         msg.indent()
         msg.add("Create directories")
@@ -244,14 +233,11 @@ class ScalabilityStudy(object):
         for output_name in data.get_names(data.OUTPUT_GROUP):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
         inputs = ", ".join(
-            [
-                "{}({})".format(name, data.sizes[name])
-                for name in data.get_names(data.INPUT_GROUP)
-            ]
+            [f"{name}({data.sizes[name]})" for name in data.get_names(data.INPUT_GROUP)]
         )
         outputs = ", ".join(
             [
-                "{}({})".format(name, data.sizes[name])
+                f"{name}({data.sizes[name]})"
                 for name in data.get_names(data.OUTPUT_GROUP)
             ]
         )
@@ -303,7 +289,7 @@ class ScalabilityStudy(object):
     def __check_discipline(self, discipline):
         """Check if discipline is a string comprised in the list of disciplines
         names."""
-        if not isinstance(discipline, string_types):
+        if not isinstance(discipline, str):
             raise TypeError("The argument discipline should be a string")
         disciplines_names = self.disciplines_names
         if discipline not in disciplines_names:
@@ -315,8 +301,8 @@ class ScalabilityStudy(object):
     def __check_output(self, discipline, varname):
         """Check if a variable is an output of a given discipline."""
         self.__check_discipline(discipline)
-        if not isinstance(varname, string_types):
-            raise TypeError("{} is not a string.".format(varname))
+        if not isinstance(varname, str):
+            raise TypeError(f"{varname} is not a string.")
         outputs_names = next(
             dataset.get_names(dataset.OUTPUT_GROUP)
             for dataset in self.datasets
@@ -340,8 +326,8 @@ class ScalabilityStudy(object):
             if dataset.name == discipline
         )
         for inpt in inputs:
-            if not isinstance(inpt, string_types):
-                raise TypeError("{} is not a string.".format(inpt))
+            if not isinstance(inpt, str):
+                raise TypeError(f"{inpt} is not a string.")
             if inpt not in inputs_names:
                 raise ValueError(
                     "'{}' is not a discipline input; available inputs are: {}".format(
@@ -413,14 +399,11 @@ class ScalabilityStudy(object):
         self.top_level_diff.append(top_level_diff)
         if algo_options is not None:
             algo_options = ", ".join(
-                ["{}({})".format(name, value) for name, value in algo_options.items()]
+                [f"{name}({value})" for name, value in algo_options.items()]
             )
         if formulation_options is not None:
             formulation_options = ", ".join(
-                [
-                    "{}({})".format(name, value)
-                    for name, value in formulation_options.items()
-                ]
+                [f"{name}({value})" for name, value in formulation_options.items()]
             )
         msg = MultiLineString()
         msg.add("Add optimization strategy # {}", len(self.formulations))
@@ -500,10 +483,7 @@ class ScalabilityStudy(object):
         for idx in range(n_scaling):
             if variables[idx] is not None:
                 var_str = ", ".join(
-                    [
-                        "{}({})".format(name, size)
-                        for name, size in variables[idx].items()
-                    ]
+                    [f"{name}({size})" for name, size in variables[idx].items()]
                 )
             else:
                 var_str = None
@@ -622,18 +602,16 @@ class ScalabilityStudy(object):
                     problem = self.__create_scalable_problem(scaling, replicate)
                     path = self.__dep_mat_path(algo, formulation, scal_index, replicate)
                     directory = path.stem
-                    self.__mkdir(path)
+                    path.mkdir(exist_ok=True)
                     msg.add("Save dependency matrices in {}", path)
                     problem.plot_dependencies(True, False, str(path))
                     msg.add("Create MDO Scenario")
-                    root_logger = logging.getLogger()
-                    saved_level = root_logger.level
-                    root_logger.setLevel(logging.WARNING)
-                    self.__create_scenario(problem, formulation, opt_index)
-                    msg.add("Execute MDO Scenario")
-                    formulation_options = self.formulations_options[opt_index]
-                    algo_options = self.__execute_scenario(problem, algo, opt_index)
-                    root_logger.setLevel(saved_level)
+                    with LoggingContext(LOGGER, logging.WARNING):
+                        self.__create_scenario(problem, formulation, opt_index)
+                        msg.add("Execute MDO Scenario")
+                        formulation_options = self.formulations_options[opt_index]
+                        algo_options = self.__execute_scenario(problem, algo, opt_index)
+
                     path = self.__optview_path(algo, formulation, scal_index, replicate)
                     msg.add("Save optim history view in {}", path)
                     fpath = str(path) + "/"
@@ -651,7 +629,7 @@ class ScalabilityStudy(object):
                         scaling=scaling,
                         disc_names=problem.disciplines,
                         output_names=problem.outputs,
-                        **statistics
+                        **statistics,
                     )
                     fpath = result.get_file_path(self.directory)
                     msg.add("Save statistics in {}", fpath)
@@ -719,13 +697,14 @@ class ScalabilityStudy(object):
         :param int id_scaling: scaling index.
         :param int replicate: replicate number.
         """
-        directory = Path(self.prefix + "_" + algo + "_" + formulation)
-        path = self.directory / POSTOPTIM_DIRECTORY / directory
-        self.__mkdir(path)
-        path = path / Path("scaling_{}".format(id_scaling + 1))
-        self.__mkdir(path)
-        path = path / Path("replicate_{}".format(replicate))
-        self.__mkdir(path)
+        path = (
+            self.directory
+            / POSTOPTIM_DIRECTORY
+            / Path(f"{self.prefix}_{algo}_{formulation}")
+            / Path(f"scaling_{id_scaling + 1}")
+            / Path(f"replicate_{replicate}")
+        )
+        path.mkdir(exist_ok=True, parents=True)
         return path
 
     def __create_scalable_problem(self, scaling, seed):
@@ -768,7 +747,7 @@ class ScalabilityStudy(object):
             self.start_at_equilibrium,
             self.active_probability,
             self.feasibility_level,
-            **formulation_options
+            **formulation_options,
         )
 
     def __execute_scenario(self, problem, algo, opt_index):

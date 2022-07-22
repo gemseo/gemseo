@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,40 +12,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Module containing a factory to create an instance of :class:`.Distribution`."""
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
-
-from typing import List, Optional, Union
+from typing import Optional
+from typing import Union
 
 from gemseo.core.factory import Factory
-from gemseo.uncertainty.distributions.distribution import (
-    Distribution,
-    ParametersType,
-    StandardParametersType,
-)
+from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.distribution import ParametersType
+from gemseo.uncertainty.distributions.distribution import StandardParametersType
 
 DistributionParametersType = Union[
     int, ParametersType, Optional[StandardParametersType], float
 ]
 
 
-class DistributionFactory(object):
+class DistributionFactory:
     """Factory to build instances of :class:`.Distribution`.
 
     At initialization, this factory scans the following modules
     to search for subclasses of this class:
 
-    - the modules located in "gemseo.uncertainty.distributions" and its sub-packages,
-    - the modules referenced in the "GEMSEO_PATH",
-    - the modules referenced in the "PYTHONPATH" and starting with "gemseo_".
+    - the modules located in ``gemseo.uncertainty.distributions`` and its sub-packages,
+    - the modules referenced in the ``GEMSEO_PATH,``
+    - the modules referenced in the ``PYTHONPATH`` and starting with ``gemseo_``.
 
     Then, it can check if a class is present or return the list of available classes.
 
@@ -64,17 +59,15 @@ class DistributionFactory(object):
         Normal(mu=0.0, sigma=1.0)
     """
 
-    def __init__(self):  # noqa: D107
-        # type: (...) -> None
+    def __init__(self) -> None:  # noqa: D107
         self.factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
 
     def create(
         self,
-        distribution_name,  # type: str
-        variable,  # type: str
-        **parameters  # type: DistributionParametersType
-    ):
-        # type: (...) -> Distribution
+        distribution_name: str,
+        variable: str,
+        **parameters: DistributionParametersType,
+    ) -> Distribution:
         """Create a probability distribution for a given random variable.
 
         Args:
@@ -88,16 +81,14 @@ class DistributionFactory(object):
         return self.factory.create(distribution_name, variable=variable, **parameters)
 
     @property
-    def available_distributions(self):
-        # type: (...) -> List[str]
+    def available_distributions(self) -> list[str]:
         """The available probability distributions."""
         return self.factory.classes
 
     def is_available(
         self,
-        distribution_name,  # type: str
-    ):
-        # type: (...) -> bool
+        distribution_name: str,
+    ) -> bool:
         """Check the availability of a probability distribution.
 
         Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for K-means clustering model."""
-from __future__ import division, unicode_literals
-
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
 
 import pytest
-from numpy import allclose, array, integer, ndarray, vstack
-from numpy.linalg import eigvals
-from numpy.random import multivariate_normal, seed
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import long
+from numpy import allclose
+from numpy import array
+from numpy import integer
+from numpy import ndarray
+from numpy import vstack
+from numpy.linalg import eigvals
+from numpy.random import multivariate_normal
+from numpy.random import seed
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
@@ -59,7 +59,7 @@ VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
 @pytest.fixture
-def samples():  # type: (...) -> Tuple[ndarray,ndarray,List[int]]
+def samples() -> Tuple[ndarray, ndarray, List[int]]:
     """The description of the samples used to generate the learning dataset.
 
     It consists of three clusters from normal distributions.
@@ -73,7 +73,7 @@ def samples():  # type: (...) -> Tuple[ndarray,ndarray,List[int]]
 
 
 @pytest.fixture
-def dataset(samples):  # type: (...) -> Dataset
+def dataset(samples) -> Dataset:
     """The dataset used to train the GaussianMixture.
 
     It consists of three clusters from normal distributions.
@@ -123,9 +123,10 @@ def model(dataset):
 
 def test_constructor(dataset):
     """Test construction."""
-    for n_clusters in [1, 10]:
-        kmeans = KMeans(dataset, n_clusters=n_clusters)
-        assert kmeans.algo is not None
+    algo = KMeans(dataset)
+    assert algo.algo is not None
+    assert algo.SHORT_ALGO_NAME == "KMeans"
+    assert algo.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset):
@@ -147,7 +148,7 @@ def test_predict(model):
     """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
-    assert isinstance(prediction, (int, long, integer))
+    assert isinstance(prediction, (int, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]
@@ -159,7 +160,7 @@ def test_predict_with_transform(model_with_transform):
     """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
-    assert isinstance(prediction, (int, long, integer))
+    assert isinstance(prediction, (int, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]

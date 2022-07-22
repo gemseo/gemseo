@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -34,9 +32,7 @@ divided by the total number of *predicted* positives
 and :math:`\\mathit{recall}` is the number of correctly predicted positives
 divided by the total number of *true* positives.
 """
-from __future__ import division, unicode_literals
-
-from typing import Union
+from __future__ import annotations
 
 from numpy import ndarray
 from sklearn.metrics import f1_score
@@ -52,20 +48,21 @@ class F1Measure(MLErrorMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLClassificationAlgo
-    ):  # type: (...) -> None
+        algo: MLClassificationAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for classification.
         """
-        super(F1Measure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         if multioutput:
             raise NotImplementedError("F1 is only defined for single target.")
         return f1_score(outputs, predictions, average="weighted")

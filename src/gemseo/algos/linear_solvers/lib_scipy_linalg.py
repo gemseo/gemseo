@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-"""Wrappers for scipy's linear solvers."""
-
-from __future__ import division, unicode_literals
+"""Wrappers for SciPy's linear solvers."""
+from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any
+from typing import Mapping
 
-from numpy import find_common_type, ndarray
+from numpy import find_common_type
+from numpy import ndarray
 from scipy.sparse import spmatrix
 from scipy.sparse.base import issparse
-from scipy.sparse.linalg import LinearOperator, bicg, bicgstab, gmres, lgmres, qmr, splu
+from scipy.sparse.linalg import bicg
+from scipy.sparse.linalg import bicgstab
+from scipy.sparse.linalg import gmres
+from scipy.sparse.linalg import lgmres
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import qmr
+from scipy.sparse.linalg import splu
 
+from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 
 LOGGER = logging.getLogger(__name__)
@@ -74,8 +79,10 @@ class ScipyLinalgAlgos(LinearSolverLib):
         "DEFAULT": __WEBPAGE.format("splu"),
     }
 
-    def __init__(self):  # type: (...) -> None
-        super(ScipyLinalgAlgos, self).__init__()
+    LIBRARY_NAME = "SciPy"
+
+    def __init__(self) -> None:
+        super().__init__()
         self.methods_map = {
             "LGMRES": lgmres,
             "GMRES": gmres,
@@ -84,18 +91,16 @@ class ScipyLinalgAlgos(LinearSolverLib):
             "BICGSTAB": bicgstab,
             "DEFAULT": self._run_default_solver,
         }
-        self.lib_dict = {
-            name: self.get_default_properties(name) for name in self.methods_map.keys()
+        self.descriptions = {
+            name: self.get_default_properties(name) for name in self.methods_map
         }
-        self.lib_dict["DEFAULT"]["description"] = (
+        self.descriptions["DEFAULT"].description = (
             "This starts by LGMRES, but if it fails, "
             "switches to GMRES, then direct method super LU factorization."
         )
 
     @classmethod
-    def get_default_properties(
-        cls, algo_name  # type: str
-    ):  # type: (...) -> Dict[str, Union[bool,str]]
+    def get_default_properties(cls, algo_name: str) -> LinearSolverDescription:
         """Return the properties of the algorithm.
 
         It states if it requires symmetric,
@@ -107,32 +112,32 @@ class ScipyLinalgAlgos(LinearSolverLib):
         Returns:
             The properties of the solver.
         """
-        return {
-            cls.LHS_MUST_BE_POSITIVE_DEFINITE: False,
-            cls.LHS_MUST_BE_SYMMETRIC: False,
-            cls.LHS_CAN_BE_LINEAR_OPERATOR: True,
-            cls.INTERNAL_NAME: algo_name,
-            "description": "Linear solver implemented in the SciPy library.",
-            "website": cls.__WEBSITE.format(algo_name),
-        }
+        return LinearSolverDescription(
+            algorithm_name=algo_name,
+            description="Linear solver implemented in the SciPy library.",
+            internal_algorithm_name=algo_name,
+            lhs_must_be_linear_operator=True,
+            library_name="SciPy",
+            website=cls.__WEBSITE.format(algo_name),
+        )
 
     def _get_options(
         self,
-        max_iter=1000,  # type: int
-        preconditioner=None,  # type: Optional[Union[ndarray, LinearOperator]]
-        tol=1e-12,  # type: float
-        atol=None,  # type: Optional[float]
-        x0=None,  # type: Optional[ndarray]
-        use_ilu_precond=True,  # type: bool
-        inner_m=30,  # type: int
-        outer_k=3,  # type: int
-        outer_v=None,  # type: Optional[List[Tuple]]
-        store_outer_av=True,  # type: bool
-        prepend_outer_v=False,  # type: bool
-        save_when_fail=False,  # type: bool
-        store_residuals=False,  # type: bool
-    ):  # type: (...) -> Dict[str, Any]
-        """Check the options and sets the default values.
+        max_iter: int = 1000,
+        preconditioner: ndarray | LinearOperator | None = None,
+        tol: float = 1e-12,
+        atol: float | None = None,
+        x0: ndarray | None = None,
+        use_ilu_precond: bool = True,
+        inner_m: int = 30,
+        outer_k: int = 3,
+        outer_v: list[tuple] | None = None,
+        store_outer_av: bool = True,
+        prepend_outer_v: bool = False,
+        save_when_fail: bool = False,
+        store_residuals: bool = False,
+    ) -> dict[str, Any]:
+        """Check the options and set the default values.
 
         See https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html
 
@@ -199,9 +204,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
             store_residuals=store_residuals,
         )
 
-    def _run(
-        self, **options  # type: Union[None, bool, int, float, ndarray]
-    ):  # type: (...) -> ndarray
+    def _run(self, **options: None | bool | int | float | ndarray) -> ndarray:
         """Run the algorithm.
 
         Args:
@@ -242,9 +245,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
         return self.problem.solution
 
-    def __store_residuals(
-        self, current_x  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __store_residuals(self, current_x: ndarray) -> ndarray:
         """Store the current iteration residuals.
 
         Args:
@@ -255,9 +256,9 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     def _check_solver_info(
         self,
-        info,  # type: int
-        options,  # type: Mapping[str, Any]
-    ):  # type: (...) -> bool
+        info: int,
+        options: Mapping[str, Any],
+    ) -> bool:
         """Check the info returned by the solver.
 
         Args:
@@ -296,10 +297,10 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     def _run_default_solver(
         self,
-        lhs,  # type: Union[ndarray, spmatrix, LinearOperator]
-        rhs,  # type: ndarray
-        **options  # type: Any
-    ):  # type: (...) -> Tuple[ndarray, int]
+        lhs: ndarray | spmatrix | LinearOperator,
+        rhs: ndarray,
+        **options: Any,
+    ) -> tuple[ndarray, int]:
         """Run the default solver.
 
         This starts by LGMRES, but if it fails, switches to GMRES,

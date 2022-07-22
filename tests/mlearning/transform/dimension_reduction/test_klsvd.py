@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,13 +19,14 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test dimension reduction with Karhunen-Loeve singular value decomposition."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import array, linspace, pi, sin
-from numpy.random import rand
-
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
+from numpy import array
+from numpy import linspace
+from numpy import pi
+from numpy import sin
+from numpy.random import rand
+from openturns import ResourceMap
 
 N_SAMPLES = 100
 
@@ -66,19 +65,18 @@ def test_constructor():
     assert algo.algo is None
 
 
-def test_learn(data, data2d):
-    """Test learn."""
+def test_learn(data):
+    """Test learn with the default number of components (None)."""
     algo = KLSVD(MESH)
     algo.fit(data)
-    assert len(algo.algo.getModes()) == 5
+    assert algo.n_components == 10
 
-    algo = KLSVD(MESH2D)
-    algo.fit(data2d)
-    assert len(algo.algo.getModes()) == 5
 
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     algo = KLSVD(MESH, 10)
     algo.fit(data)
-    assert len(algo.algo.getModes()) == 10
+    assert algo.n_components == 10
 
 
 def test_transform(data, data2d):
@@ -124,3 +122,52 @@ def test_mesh():
     """Test mesh."""
     algo = KLSVD(MESH)
     assert algo.mesh == MESH
+
+
+def test_n_singular_values_default(data):
+    """Check the default value of n_singular_values."""
+    algo = KLSVD(MESH)
+    algo.fit(data)
+    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank") == "1000"
+
+
+def test_n_singular_values(data):
+    """Check changing the value of n_singular_values."""
+    algo = KLSVD(MESH, n_singular_values=10)
+    algo.fit(data)
+    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank") == "10"
+
+
+def test_use_random_svd_default(data):
+    """Check the default value of use_random_svd."""
+    algo = KLSVD(MESH)
+    algo.fit(data)
+    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-UseRandomSVD") == "false"
+
+
+@pytest.mark.parametrize("use_random_svd", [False, True])
+def test_use_random_svd(data, use_random_svd):
+    """Check changing use_random_svd."""
+    algo = KLSVD(MESH, use_random_svd=use_random_svd)
+    algo.fit(data)
+    assert (
+        ResourceMap.Get("KarhunenLoeveSVDAlgorithm-UseRandomSVD")
+        == str(use_random_svd).lower()
+    )
+
+
+def test_use_halko2010_default(data):
+    """Check the default value of use_halko2010."""
+    algo = KLSVD(MESH)
+    algo.fit(data)
+    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant") == "halko2010"
+
+
+@pytest.mark.parametrize("use_halko2010", [False, True])
+def test_use_halko2010(data, use_halko2010):
+    """Check changing the value of use_halko2010."""
+    algo = KLSVD(MESH, use_halko2010=use_halko2010)
+    algo.fit(data)
+    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant") == (
+        "halko2010" if use_halko2010 else "halko2011"
+    )

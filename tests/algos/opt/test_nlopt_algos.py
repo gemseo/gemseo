@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,31 +12,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the NLopt library wrapper."""
-from __future__ import division, unicode_literals
-
 from unittest import TestCase
 
-from numpy import array, inf
-from scipy.optimize.optimize import rosen, rosen_der
-
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_nlopt import Nlopt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
+from numpy import array
+from numpy import inf
+from scipy.optimize.optimize import rosen
+from scipy.optimize.optimize import rosen_der
 
 from .opt_lib_test_base import OptLibraryTestBase
 
 
 class TestNLOPT(TestCase):
-
     OPT_LIB_NAME = "Nlopt"
 
     def _test_init(self):
@@ -124,7 +121,12 @@ def get_options(algo_name):
     if algo_name == "NLOPT_SLSQP":
         return {Nlopt.X_TOL_REL: 1e-5, Nlopt.F_TOL_REL: 1e-5, "max_iter": 100}
     if algo_name == "NLOPT_MMA":
-        return {"max_iter": 2700, Nlopt.X_TOL_REL: 1e-8, Nlopt.F_TOL_REL: 1e-8}
+        return {
+            "max_iter": 2700,
+            Nlopt.X_TOL_REL: 1e-8,
+            Nlopt.F_TOL_REL: 1e-8,
+            Nlopt.INNER_MAXEVAL: 10,
+        }
     if algo_name == "NLOPT_COBYLA":
         return {"max_iter": 10000, Nlopt.X_TOL_REL: 1e-8, Nlopt.F_TOL_REL: 1e-8}
     if algo_name == "NLOPT_BOBYQA":
@@ -135,3 +137,8 @@ def get_options(algo_name):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("Nlopt", get_options):
     setattr(TestNLOPT, test_method.__name__, test_method)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert Nlopt.LIBRARY_NAME == "NLopt"

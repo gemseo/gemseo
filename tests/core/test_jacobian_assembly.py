@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import json
 import os
 import unittest
 
 import numpy as np
 import pytest
-
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import SobieskiAerodynamics, SobieskiMission
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -47,25 +42,25 @@ class TestJacobianAssembly(unittest.TestCase):
         assembly.total_derivatives(*args)
 
         args = (in_data, ["toto"], ["x_shared"], ["y_24"])
-        self.assertRaises(Exception, assembly.total_derivatives, *args)
+        self.assertRaises(ValueError, assembly.total_derivatives, *args)
 
         args = (in_data, ["y_4"], ["toto"], ["y_24"])
-        self.assertRaises(Exception, assembly.total_derivatives, *args)
+        self.assertRaises(ValueError, assembly.total_derivatives, *args)
 
         args = (in_data, ["y_4"], ["x_shared"], ["x_shared"])
-        self.assertRaises(Exception, assembly.total_derivatives, *args)
+        self.assertRaises(ValueError, assembly.total_derivatives, *args)
 
         args = (in_data, ["y_4"], ["x_shared"], ["y_24"])
 
         self.assertRaises(
-            Exception, assembly.total_derivatives, *args, matrix_type="toto"
+            ValueError, assembly.total_derivatives, *args, matrix_type="toto"
         )
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             assembly._JacobianAssembly__check_inputs(["Y5"], ["x_3"], coupl_vars=[])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             assembly._JacobianAssembly__check_inputs(["y_4"], ["X5"], coupl_vars=[])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             assembly._JacobianAssembly__check_inputs(
                 ["y_4"], ["x_3"], coupl_vars=["x_3"]
             )
@@ -104,7 +99,7 @@ class TestJacobianAssembly(unittest.TestCase):
     @staticmethod
     def __compare_mda_jac_ref(comp_jac):
         """Compare a given Jacobian with reference Jacobian in file."""
-        with open(os.path.join(DIRNAME, "mda_grad_sob.json"), "r") as inf:
+        with open(os.path.join(DIRNAME, "mda_grad_sob.json")) as inf:
             refjac = json.load(inf)
             for ykey, jac_dict in refjac.items():
                 if ykey not in comp_jac:
@@ -125,7 +120,7 @@ class TestJacobianAssembly(unittest.TestCase):
         mda = SobieskiMDAGaussSeidel("complex128")
         mda.tolerance = 1e-14
         mda.max_iter = 100
-        inputs = mda.input_grammar.get_data_names()
+        inputs = mda.input_grammar.keys()
         indata = SobieskiProblem("complex128").get_default_inputs(names=inputs)
         # functions/variables/couplings
         functions = ["y_4", "g_1", "g_2", "g_3", "y_1", "y_2", "y_3"]

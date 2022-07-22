@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,36 +16,57 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from numpy import eye, ones
-from scipy.sparse.linalg import aslinearoperator
-
+import pytest
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
+from numpy import eye
+from numpy import ones
+from scipy.sparse.linalg import aslinearoperator
+from scipy.sparse.linalg import LinearOperator
 
 
-def test_symmetric_filter():
-    lib_dict = {LinearSolverLib.LHS_MUST_BE_SYMMETRIC: True}
-    problem = LinearProblem(eye(2), ones(2), is_symmetric=True)
-    assert LinearSolverLib.is_algorithm_suited(lib_dict, problem)
-
-    problem = LinearProblem(eye(2), ones(2), is_symmetric=False)
-    assert not LinearSolverLib.is_algorithm_suited(lib_dict, problem)
-
-
-def test_posdef_filter():
-    lib_dict = {LinearSolverLib.LHS_MUST_BE_POSITIVE_DEFINITE: True}
-    problem = LinearProblem(eye(2), ones(2), is_positive_def=True)
-    assert LinearSolverLib.is_algorithm_suited(lib_dict, problem)
-
-    problem = LinearProblem(eye(2), ones(2), is_positive_def=False)
-    assert not LinearSolverLib.is_algorithm_suited(lib_dict, problem)
+@pytest.mark.parametrize("is_symmetric", [False, True])
+@pytest.mark.parametrize("lhs_must_be_symmetric", [False, True])
+def test_linear_solver_for_symmetric_lhs(is_symmetric, lhs_must_be_symmetric):
+    """Check is_algorithm_suited with linear solver requiring symmetric LHS."""
+    description = LinearSolverDescription(
+        algorithm_name="foo",
+        internal_algorithm_name="bar",
+        lhs_must_be_symmetric=lhs_must_be_symmetric,
+    )
+    problem = LinearProblem(eye(2), ones(2), is_symmetric=is_symmetric)
+    is_suited = LinearSolverLib.is_algorithm_suited(description, problem)
+    assert is_suited is (not lhs_must_be_symmetric or is_symmetric)
 
 
-def test_linop_filter():
-    lib_dict = {LinearSolverLib.LHS_CAN_BE_LINEAR_OPERATOR: True}
-    problem = LinearProblem(aslinearoperator(eye(2)), ones(2))
-    assert LinearSolverLib.is_algorithm_suited(lib_dict, problem)
+@pytest.mark.parametrize("is_positive_def", [False, True])
+@pytest.mark.parametrize("lhs_must_be_positive_definite", [False, True])
+def test_linear_solver_for_positive_definite_lhs(
+    is_positive_def, lhs_must_be_positive_definite
+):
+    """Check is_algorithm_suited with linear solver requiring positive definite LHS."""
+    description = LinearSolverDescription(
+        algorithm_name="foo",
+        internal_algorithm_name="bar",
+        lhs_must_be_positive_definite=lhs_must_be_positive_definite,
+    )
+    problem = LinearProblem(eye(2), ones(2), is_positive_def=is_positive_def)
+    is_suited = LinearSolverLib.is_algorithm_suited(description, problem)
+    assert is_suited is (not lhs_must_be_positive_definite or is_positive_def)
 
-    lib_dict = {LinearSolverLib.LHS_CAN_BE_LINEAR_OPERATOR: False}
-    assert not LinearSolverLib.is_algorithm_suited(lib_dict, problem)
+
+@pytest.mark.parametrize("lhs_must_be_linear_operator", [False, True])
+@pytest.mark.parametrize("lhs", [aslinearoperator(eye(2)), eye(2)])
+def test_linear_solver_for_linear_operator(lhs, lhs_must_be_linear_operator):
+    """Check is_algorithm_suited with linear solver requiring linear operator."""
+    description = LinearSolverDescription(
+        algorithm_name="foo",
+        internal_algorithm_name="bar",
+        lhs_must_be_linear_operator=lhs_must_be_linear_operator,
+    )
+    problem = LinearProblem(lhs, ones(2))
+    is_suited = LinearSolverLib.is_algorithm_suited(description, problem)
+    assert is_suited is (
+        lhs_must_be_linear_operator or not isinstance(lhs, LinearOperator)
+    )

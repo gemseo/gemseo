@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,27 +17,51 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Base class for algorithm libraries."""
-
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, Dict, List, Mapping, MutableMapping
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+from typing import ClassVar
+from typing import Mapping
+from typing import MutableMapping
 
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.core.grammar import InvalidDataException
-from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import Path
+from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
 
 
-class AlgoLib(object):
+@dataclass
+class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
+    """The description of an algorithm."""
+
+    algorithm_name: str
+    """The name of the algorithm in |g|."""
+
+    internal_algorithm_name: str
+    """The name of the algorithm in the wrapped library."""
+
+    library_name: str = ""
+    """The name of the wrapped library."""
+
+    description: str = ""
+    """A description of the algorithm."""
+
+    website: str = ""
+    """The website of the wrapped library or algorithm."""
+
+
+class AlgoLib:
     """Abstract class for algorithms libraries interfaces.
 
     An algorithm library solves a numerical problem
@@ -51,39 +74,59 @@ class AlgoLib(object):
     To integrate an optimization package, inherit from this class
     and put your module in gemseo.algos.doe or gemseo.algo.opt,
     or gemseo.algos.linear_solver packages.
-
-    Attributes:
-        lib_dict (Dict[str, Dict[str, Union[str, bool]]]): The properties
-            of the algorithm in terms
-            of requirements on the properties of the problem to
-            be solved.
-        algo_name (str): The name of the algorithm used currently.
-        internal_algo_name (str): The name of the algorithm used currently
-            as defined in the used library.
-        problem (Any): The problem to be solved.
     """
 
-    LIB = "lib"
-    INTERNAL_NAME = "internal_algo_name"
-    OPTIONS_DIR = "options"
-    OPTIONS_MAP = {}
-    PROBLEM_TYPE = "problem_type"
+    descriptions: dict[str, AlgorithmDescription]
+    """The description of the algorithms contained in the library."""
 
-    def __init__(self):  # type: (...) -> None
+    algo_name: str | None
+    """The name of the algorithm used currently."""
+
+    internal_algo_name: str | None
+    """The internal name of the algorithm used currently.
+
+    It typically corresponds to the name of the algorithm in the wrapped library if any.
+    """
+
+    problem: Any | None
+    """The problem to be solved."""
+
+    opt_grammar: JSONGrammar | None
+    """The grammar defining the options of the current algorithm."""
+
+    OPTIONS_DIR: Final[str] = "options"
+    """The name of the directory containing the files of the grammars of the options."""
+
+    OPTIONS_MAP: dict[str, str] = {}
+    """The names of the options in |g| mapping to those in the wrapped library."""
+
+    LIBRARY_NAME: ClassVar[str | None] = None
+    """The name of the interfaced library."""
+
+    def __init__(self) -> None:
         # Library settings and check
-        self.lib_dict = {}
+        self.descriptions = {}
         self.algo_name = None
         self.internal_algo_name = None
         self.problem = None
+        self.opt_grammar = None
 
     def init_options_grammar(
         self,
-        algo_name,  # type: str
-    ):  # type: (...) -> JSONGrammar
+        algo_name: str,
+    ) -> JSONGrammar:
         """Initialize the options grammar.
 
-        :param algo_name: The name of the algorithm.
+        Args:
+            algo_name: The name of the algorithm.
         """
+        # Store the lib in case we rerun the same algorithm,
+        # for multilevel scenarios for instance
+        # This significantly speedups the process
+        # because of the option grammar that is long to create
+        if self.opt_grammar is not None and self.opt_grammar.name == algo_name:
+            return self.opt_grammar
+
         library_directory = Path(inspect.getfile(self.__class__)).parent
         options_directory = library_directory / self.OPTIONS_DIR
         algo_schema_file = options_directory / "{}_options.json".format(
@@ -106,40 +149,39 @@ class AlgoLib(object):
             )
             raise ValueError(msg)
 
-        descr_dict = get_options_doc(self.__class__._get_options)
-        self.opt_grammar = JSONGrammar(
-            algo_name, schema_file=schema_file, descriptions=descr_dict
-        )
+        self.opt_grammar = JSONGrammar(algo_name)
+        self.opt_grammar.update_from_file(schema_file)
+        self.opt_grammar.set_descriptions(get_options_doc(self.__class__._get_options))
 
         return self.opt_grammar
 
     @property
-    def algorithms(self):  # type: (...) -> List[str]
+    def algorithms(self) -> list[str]:
         """The available algorithms."""
-        return list(self.lib_dict.keys())
+        return list(self.descriptions.keys())
 
     def _pre_run(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        **options  # type: Any
-    ):  # type: (...) -> None  # pragma: no cover
+        problem: LinearProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> None:  # pragma: no cover
         """Save the solver options and name in the problem attributes.
 
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         pass
 
     def _post_run(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        result,  # type: ndarray
-        **options  # type: Any
-    ):  # type: (...) -> None  # pragma: no cover
+        problem: LinearProblem,
+        algo_name: str,
+        result: ndarray,
+        **options: Any,
+    ) -> None:  # pragma: no cover
         """Save the LinearProblem to the disk when required.
 
         If the save_when_fail option is True, save the LinearProblem to the disk when
@@ -149,25 +191,26 @@ class AlgoLib(object):
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
             result: The result of the run, i.e. the solution.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         pass
 
-    def driver_has_option(
-        self, option_key  # type: str
-    ):  # type: (...) -> bool
-        """Check if the option key exists.
+    def driver_has_option(self, option_name: str) -> bool:
+        """Check the existence of an option.
 
-        :param option_key: The name of the option.
-        :return: Whether the option is in the grammar.
+        Args:
+            option_name: The name of the option.
+
+        Returns:
+            Whether the option exists.
         """
-        return self.opt_grammar.is_data_name_existing(option_key)
+        return option_name in self.opt_grammar
 
     def _process_specific_option(
         self,
-        options,  # type: MutableMapping[str, Any]
-        option_key,  # type:str
-    ):  # type: (...) -> None # pragma: no cover
+        options: MutableMapping[str, Any],
+        option_key: str,
+    ) -> None:  # pragma: no cover
         """Preprocess the option specifically, to be overriden by subclasses.
 
         Args:
@@ -176,13 +219,11 @@ class AlgoLib(object):
         """
         pass
 
-    def _process_options(
-        self, **options  # type:Any
-    ):  # type: (...) -> Dict[str, Any]
+    def _process_options(self, **options: Any) -> dict[str, Any]:
         """Convert the options to algorithm specific options and check them.
 
         Args:
-            options: The driver options.
+            **options: The driver options.
 
         Returns:
             The converted options.
@@ -190,55 +231,56 @@ class AlgoLib(object):
         Raises:
             ValueError: If an option is invalid.
         """
-        for option_key in list(options.keys()):  # Copy keys on purpose
+        for option_name in list(options.keys()):  # Copy keys on purpose
             # Remove extra options added in the _get_option method of the
             # driver
-            if not self.driver_has_option(option_key):
-                del options[option_key]
+            if not self.driver_has_option(option_name):
+                del options[option_name]
             else:
-                self._process_specific_option(options, option_key)
+                self._process_specific_option(options, option_name)
 
         try:
-            self.opt_grammar.load_data(options)
+            self.opt_grammar.validate(options)
         except InvalidDataException:
-            raise ValueError("Invalid options for algorithm " + self.opt_grammar.name)
+            raise ValueError(f"Invalid options for algorithm {self.opt_grammar.name}.")
 
-        for option_key in list(options.keys()):  # Copy keys on purpose
-            lib_option_key = self.OPTIONS_MAP.get(option_key)
+        for option_name in list(options.keys()):  # Copy keys on purpose
+            lib_option_name = self.OPTIONS_MAP.get(option_name)
             # Overload with specific keys
-            if lib_option_key is not None:
-                options[lib_option_key] = options[option_key]
-                if lib_option_key != option_key:
-                    del options[option_key]
+            if lib_option_name is not None:
+                options[lib_option_name] = options[option_name]
+                if lib_option_name != option_name:
+                    del options[option_name]
+
         return options
 
-    def _check_ignored_options(
-        self, options  # type:Mapping[str, Any]
-    ):  # type: (...) -> None
+    def _check_ignored_options(self, options: Mapping[str, Any]) -> None:
         """Check that the user did not pass options that do not exist for this driver.
 
         Log a warning if it is the case.
 
-        :param options: The options.
+        Args:
+            options: The options.
         """
-        for option_key in options:
-            if not self.driver_has_option(option_key):
+        for option_name in options:
+            if not self.driver_has_option(option_name):
                 msg = "Driver %s has no option %s, option is ignored."
-                LOGGER.warning(msg, self.algo_name, option_key)
+                LOGGER.warning(msg, self.algo_name, option_name)
 
     def execute(
         self,
-        problem,  # type: Any
-        algo_name=None,  # type: str
-        **options  # type: Any
-    ):  # type: (...) -> None
-        """Executes the driver.
+        problem: Any,
+        algo_name: str = None,
+        **options: Any,
+    ) -> None:
+        """Execute the driver.
 
-        :param problem: The problem to be solved.
-        :param algo_name: The name of the algorithm>
-            If None, use the algo_name attribute
-            which may have been set by the factory.
-        :param options: The options dict for the algorithm.
+        Args:
+            problem: The problem to be solved.
+            algo_name: The name of the algorithm.
+                If ``None`, use :attr:`algo_name` attribute
+                which may have been set by the factory.
+            **options: The algorithm options.
         """
         self.problem = problem
 
@@ -253,7 +295,9 @@ class AlgoLib(object):
 
         self._check_algorithm(self.algo_name, problem)
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+        self.internal_algo_name = self.descriptions[
+            self.algo_name
+        ].internal_algorithm_name
         problem.check()
 
         self._pre_run(problem, self.algo_name, **options)
@@ -262,9 +306,7 @@ class AlgoLib(object):
 
         return result
 
-    def _update_algorithm_options(
-        self, **options  # type: Any
-    ):  # type: (...) -> Dict[str, Any]
+    def _update_algorithm_options(self, **options: Any) -> dict[str, Any]:
         """Update the algorithm options.
 
         1. Load the grammar of algorithm options.
@@ -281,78 +323,86 @@ class AlgoLib(object):
         self._check_ignored_options(options)
         return self._get_options(**options)
 
-    def _get_options(
-        self, **options  # type: Any
-    ):  # type: (...) -> None
+    def _get_options(self, **options: Any) -> dict[str, Any]:
         """Retrieve the options of the library.
 
         To be overloaded by subclasses.
         Used to define default values for options using keyword arguments.
 
-        :param options: The options of the driver.
+        Args:
+            **options: The options of the algorithm.
+
+        Returns:
+            The options of the algorithm.
         """
         raise NotImplementedError()
 
-    def _run(self, **options):  # type: (...) -> Any
+    def _run(self, **options) -> Any:
         """Run the algorithm.
 
         To be overloaded by subclasses.
 
-        :param options: The options for the algorithm.
+        Args:
+            **options: The options of the algorithm.
 
-        :returns: The solution of the problem.
+        Returns:
+            The solution of the problem.
         """
         raise NotImplementedError()
 
     def _check_algorithm(
         self,
-        algo_name,  # type: str
-        problem,  # type: Any
-    ):  # type: (...) -> None
+        algo_name: str,
+        problem: Any,
+    ) -> None:
         """Check that algorithm is available and adapted to the problem.
 
         Set the optimization library and the algorithm name according
         to the requirements of the optimization library.
 
-        :param algo_name: The name of algorithm.
-        :param problem: The problem to be solved.
+        Args:
+            algo_name: The name of the algorithm.
+            problem: The problem to be solved.
         """
         # Check that the algorithm is available
-        if algo_name not in self.lib_dict:
+        if algo_name not in self.descriptions:
             raise KeyError(
                 "Requested algorithm {} is not in list of available algorithms: "
-                "{}.".format(algo_name, ", ".join(self.lib_dict.keys()))
+                "{}.".format(algo_name, ", ".join(self.descriptions.keys()))
             )
 
         # Check that the algorithm is suited to the problem
-        algo_dict = self.lib_dict[self.algo_name]
-        if not self.is_algorithm_suited(algo_dict, problem):
-            raise ValueError(
-                "Algorithm {} is not adapted to the problem.".format(algo_name)
-            )
+        if not self.is_algorithm_suited(self.descriptions[self.algo_name], problem):
+            raise ValueError(f"Algorithm {algo_name} is not adapted to the problem.")
 
     @staticmethod
     def is_algorithm_suited(
-        algo_dict,  # type: Mapping[str,bool]
-        problem,  # type: Any
-    ):  # type: (...) -> bool
-        """Check if the algorithm is suited to the problem according to algo_dict.
+        algorithm_description: AlgorithmDescription,
+        problem: Any,
+    ) -> bool:
+        """Check if the algorithm is suited to the problem according to its description.
 
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
         """
         raise NotImplementedError()
 
-    def filter_adapted_algorithms(
-        self, problem  # type: Any
-    ):  # type: (...) -> bool
+    def filter_adapted_algorithms(self, problem: Any) -> list[str]:
         """Filter the algorithms capable of solving the problem.
 
-        :param problem: The opt_problem to be solved.
-        :returns: The list of adapted algorithms names.
+        Args:
+            problem: The problem to be solved.
+
+        Returns:
+            The names of the algorithms adapted to this problem.
         """
-        available = []
-        for algo_name, algo_dict in self.lib_dict.items():
-            if self.is_algorithm_suited(algo_dict, problem):
-                available.append(algo_name)
-        return available
+        adapted_algorithms = []
+        for algo_name, algo_description in self.descriptions.items():
+            if self.is_algorithm_suited(algo_description, problem):
+                adapted_algorithms.append(algo_name)
+
+        return adapted_algorithms

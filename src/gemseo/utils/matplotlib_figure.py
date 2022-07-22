@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Services for handling Matplotlib figures, e.g. save and show."""
+from __future__ import annotations
 
-from typing import Optional, Tuple, Union
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-from gemseo.utils.py23_compat import Path
-
 
 def save_show_figure(
-    fig,  # type: Figure
-    show,  # type:bool
-    file_path,  # type: Union[str,Path]
-    fig_size=None,  # type: Optional[Tuple[float, float]]
-):  # type: (...) -> None
+    fig: Figure,
+    show: bool,
+    file_path: str | Path,
+    fig_size: tuple[float, float] | None = None,
+) -> None:
     """Save or show a Matplotlib figure.
 
     Args:

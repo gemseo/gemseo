@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,19 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create an uniform distribution from the SciPy library.
 
 This class inherits from :class:`.SPDistribution`.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
@@ -44,13 +40,12 @@ class SPUniformDistribution(SPDistribution):
 
     def __init__(
         self,
-        variable,  # type: str
-        minimum=0.0,  # type: float
-        maximum=1.0,  # type: float
-        dimension=1,  # type: int
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        minimum: float = 0.0,
+        maximum: float = 1.0,
+        dimension: int = 1,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the uniform random variable.
             minimum: The minimum of the uniform random variable.
@@ -59,6 +54,6 @@ class SPUniformDistribution(SPDistribution):
         """
         parameters = {"loc": minimum, "scale": maximum - minimum}
         standard_parameters = {self._LOWER: minimum, self._UPPER: maximum}
-        super(SPUniformDistribution, self).__init__(
+        super().__init__(
             variable, "uniform", parameters, dimension, standard_parameters
         )

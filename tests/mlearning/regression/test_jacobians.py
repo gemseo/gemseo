@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doeving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Test analytical Jacobian expressions against finite difference approximations.
 
 This is done using the built in check method of MDODiscipline. The regression models are
@@ -27,22 +24,19 @@ thus converted to surrogate disciplines. The Jacobians are checked over differen
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
 """
-
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import arange, array
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.surrogate_disc import SurrogateDiscipline
-from gemseo.mlearning.regression.rbf import RBFRegression
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.surrogate import SurrogateDiscipline
+from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from numpy import arange
+from numpy import array
 
 LEARNING_SIZE = 10
 
@@ -57,7 +51,7 @@ def dataset_factory(dataset_name, expressions, design_space_variables, objective
             variables names to bounds to be passed to DesignSpace.add_variable.
         objective_name (str): The name of the objective variable.
     """
-    discipline = AnalyticDiscipline("func", expressions)
+    discipline = AnalyticDiscipline(expressions)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=-3.0, u_b=3.0)
@@ -133,7 +127,7 @@ def _get_dataset_name(dataset_description):
     params=DATASETS_DESCRIPTIONS,
     ids=map(_get_dataset_name, DATASETS_DESCRIPTIONS),
 )
-def dataset(request):  # type: (...) -> Dataset
+def dataset(request) -> Dataset:
     """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""
     return dataset_factory(*request.param)
 
@@ -157,7 +151,7 @@ def test_regression_model():
 def test_linreg(dataset, transformer, fit_intercept):
     """Test linear regression Jacobians."""
     discipline = SurrogateDiscipline(
-        "LinearRegression",
+        "LinearRegressor",
         data=dataset,
         transformer=transformer,
         fit_intercept=fit_intercept,
@@ -171,7 +165,7 @@ def test_linreg(dataset, transformer, fit_intercept):
 def test_polyreg(dataset, transformer, fit_intercept, degree):
     """Test polynomial regression Jacobians."""
     discipline = SurrogateDiscipline(
-        "PolynomialRegression",
+        "PolynomialRegressor",
         data=dataset,
         transformer=transformer,
         fit_intercept=fit_intercept,
@@ -181,15 +175,15 @@ def test_polyreg(dataset, transformer, fit_intercept, degree):
 
 
 def _r3(r):
-    return r ** 3
+    return r**3
 
 
 def _der_r3(x, norx, eps):
-    return 3.0 * x * norx / eps ** 3
+    return 3.0 * x * norx / eps**3
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", RBFRegression.AVAILABLE_FUNCTIONS + [_r3])
+@pytest.mark.parametrize("function", RBFRegressor.AVAILABLE_FUNCTIONS + [_r3])
 def test_rbf(dataset, transformer, function):
     """Test polynomial regression Jacobians."""
     if function is _r3:
@@ -198,7 +192,7 @@ def test_rbf(dataset, transformer, function):
         der_func = None
 
     discipline = SurrogateDiscipline(
-        "RBFRegression",
+        "RBFRegressor",
         data=dataset,
         transformer=transformer,
         function=function,
@@ -215,6 +209,6 @@ def test_pce(dataset):
         space.add_random_variable(input_name, "OTUniformDistribution")
 
     discipline = SurrogateDiscipline(
-        "PCERegression", data=dataset, transformer=None, probability_space=space
+        "PCERegressor", data=dataset, transformer=None, probability_space=space
     )
     discipline.check_jacobian()

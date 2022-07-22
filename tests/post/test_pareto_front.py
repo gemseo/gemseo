@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from unittest import mock  # noqa: F401
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.testing import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
 # - the expected file names without extension to be compared
@@ -56,14 +49,13 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_pareto(
     tmp_wd,
     kwargs,
@@ -87,7 +79,7 @@ def test_pareto(
         save=False,
         file_path="power",
         objectives=problem.get_all_functions_names(),
-        **kwargs
+        **kwargs,
     )
     post.figures
 
@@ -149,14 +141,13 @@ def test_pareto_incorrect_objective_names():
         )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS_BINHKORN.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS_BINHKORN.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_pareto_binhkorn(
     tmp_wd,
     kwargs,
@@ -180,13 +171,12 @@ def test_pareto_binhkorn(
         save=False,
         file_path="binh_korn",
         objectives=["compute_binhkorn"],
-        **kwargs
+        **kwargs,
     )
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
-@image_comparison(["binh_korn_design_variable"], extensions=["png"])
+@image_comparison(["binh_korn_design_variable"])
 def test_pareto_binhkorn_design_variable(
     tmp_wd,
     pyplot_close_all,
@@ -211,8 +201,7 @@ def test_pareto_binhkorn_design_variable(
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
-@image_comparison(["binh_korn_no_obj"], extensions=["png"])
+@image_comparison(["binh_korn_no_obj"])
 def test_pareto_binhkorn_no_obj(
     tmp_wd,
     pyplot_close_all,

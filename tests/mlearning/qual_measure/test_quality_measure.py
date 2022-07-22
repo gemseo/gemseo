@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,40 +12,43 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test quality measure module."""
-from __future__ import division, unicode_literals
-
 from unittest.mock import Mock
 
 import pytest
-from numpy import array
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import (
-    MLQualityMeasure,
-    MLQualityMeasureFactory,
-)
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
+from numpy import array
+from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def measure():  # type: (...) -> MLQualityMeasure
-    """The quality measure related to an trained machine learning algorithm."""
-    dataset = Dataset("the_dataset")
-    dataset.add_variable("x", array([[1]]))
+def dataset() -> Dataset:
+    """The learning dataset."""
+    data = Dataset("the_dataset")
+    data.add_variable("x", array([[1]]))
+    return data
+
+
+@pytest.fixture(scope="module")
+def measure(dataset) -> MLQualityMeasure:
+    """The quality measure related to a trained machine learning algorithm."""
     return MLQualityMeasure(MLAlgo(dataset))
 
 
-def test_constructor(measure):
+@pytest.mark.parametrize("fit_transformers", [False, True])
+def test_constructor(fit_transformers, dataset):
     """Test construction."""
-    assert measure.algo is not None
+    measure = MLQualityMeasure(MLAlgo(dataset), fit_transformers=fit_transformers)
     assert measure.algo.learning_set.name == "the_dataset"
+    assert measure._fit_transformers is fit_transformers
 
 
 def test_evaluate(measure):
@@ -96,6 +98,7 @@ def algo_with_three_samples():
     learning_set.n_samples = 5
     algo = Mock()
     algo.learning_set = learning_set
+    algo.learning_samples_indices = [0, 1, 2, 3, 4]
     return algo
 
 
@@ -105,10 +108,10 @@ def algo_with_three_samples():
 def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
     """Check that randomized cross-validation works correctly."""
     measure = MLQualityMeasure(algo_with_three_samples)
-    folds, final_samples = measure._compute_folds(samples, n_folds, randomize)
+    folds, final_samples = measure._compute_folds(samples, n_folds, randomize, None)
     assert len(folds) == n_folds
     assert set.union(*(set(fold) for fold in folds)) == set(final_samples)
-    assert sum([len(fold) == 0 for fold in folds]) == 0
+    assert sum(len(fold) == 0 for fold in folds) == 0
 
     if samples is None:
         assert set(final_samples) == {0, 1, 2, 3, 4}
@@ -117,7 +120,7 @@ def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
 
     replicates = []
     for _ in range(10):
-        _, final_samples = measure._compute_folds(samples, n_folds, randomize)
+        _, final_samples = measure._compute_folds(samples, n_folds, randomize, None)
         replicates.append(final_samples.tolist())
 
     replicates = array(replicates)
@@ -127,3 +130,14 @@ def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
         assert not all_replicates_are_identical
     else:
         assert all_replicates_are_identical
+
+
+@pytest.mark.parametrize("seed", [None, 1])
+def test_cross_validation_seed(measure, seed):
+    """Check that the seed is correctly used by cross-validation."""
+    _, samples_1 = measure._compute_folds([0, 1, 2, 3, 4], 5, True, seed)
+    _, samples_2 = measure._compute_folds([0, 1, 2, 3, 4], 5, True, seed)
+    if seed is not None:
+        assert array_equal(samples_1, samples_2)
+    else:
+        assert not array_equal(samples_1, samples_2)

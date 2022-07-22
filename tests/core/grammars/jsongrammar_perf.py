@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,28 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import argparse
 import cProfile
 import string
 import sys
 import timeit
-from itertools import combinations, islice
+from itertools import combinations
+from itertools import islice
 
 import numpy as np
-from numpy import ones
-from numpy.random import choice, seed
-from pyperf import Runner
-
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.mda.mda_chain import MDAChain
+from numpy import ones
+from numpy.random import choice
+from numpy.random import seed
+from pyperf import Runner
 
 seed(1)
 
@@ -48,14 +46,14 @@ DEFAULT_ARGS = dict(
 ALPHABET = np.array(list(string.ascii_uppercase))
 
 
-def generate_bench_many_io():  # type: (...) -> JSONGrammar
+def generate_bench_many_io() -> JSONGrammar:
     """Create a JSON grammar.
 
     Returns:
         A JSON grammar.
     """
     grammar = JSONGrammar("manyinpt")
-    grammar.initialize_from_data_names(["t"])
+    grammar.update(["t"])
     return grammar
 
 
@@ -67,7 +65,7 @@ def test_bench_many_io():
         data_dict = {"t": ones(n_t)}
 
         def run_check():
-            return grammar.load_data(data_dict)
+            return grammar.validate(data_dict)
 
         tref = timeit.timeit(stmt=run_check, number=100)
         ref_check_times[n_t] = tref
@@ -83,7 +81,7 @@ def test_large_data_validation(sizes=(10, 1000, 100000), n_repeats=5):
         inputs = {"t": ones(n_t)}
 
         def create_chain():
-            grammar.load_data(inputs)
+            grammar.validate(inputs)
 
         tref = timeit.timeit(stmt=create_chain, number=n_repeats)
         ref_check_times[n_t] = tref / n_repeats
@@ -179,10 +177,10 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
         """Run the benchmark payload."""
         self.class_(list(self.disciplines.values()))
         # inst = self.class_(list(self.disciplines.values()))
-        # inst.input_grammar.load_data(inst.default_inputs)
+        # inst.input_grammar.validate(inst.default_inputs)
 
     def __str__(self):
-        return "{}-{}".format(self.class_.__name__, self.nb_of_disc)
+        return f"{self.class_.__name__}-{self.nb_of_disc}"
 
 
 if __name__ == "__main__":
@@ -199,7 +197,7 @@ if __name__ == "__main__":
     # add arguments for our discipline benchmark parameters
     for name, value in DEFAULT_ARGS.items():
         parser.add_argument(
-            "--{}".format(name),
+            f"--{name}",
             default=value,
             type=type(value),
             help="default = %(default)s",

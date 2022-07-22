@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: François Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import pytest
-
 from gemseo.api import create_mda
 from gemseo.core.discipline import MDODiscipline
+from gemseo.problems.scalable.linear.disciplines_generator import _get_disc_names
 from gemseo.problems.scalable.linear.disciplines_generator import (
-    DESC_3_DISC_WEAK,
-    DESC_4_DISC_WEAK,
-    DESC_5_DISC,
-    DESC_16_DISC,
-    DESC_DISC_REPEATED,
-    _get_disc_names,
     create_disciplines_from_desc,
+)
+from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_16_DISC
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_5_DISC
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_DISC_REPEATED
 
 DESCRIPTIONS = [
     DESC_3_DISC_WEAK,
@@ -44,15 +42,17 @@ DESCRIPTIONS = [
 ]
 
 
-@pytest.mark.parametrize("desc", DESCRIPTIONS)
-def test_creation(desc):
+@pytest.mark.parametrize("descriptions", DESCRIPTIONS)
+def test_creation(descriptions):
     """Tests that the disciplines are well generated according to spec."""
-    disciplines = create_disciplines_from_desc(desc)
-    assert len(disciplines) == len(desc)
-    for disc, desc in zip(disciplines, desc):
-        assert disc.name == desc[0]
+    disciplines = create_disciplines_from_desc(descriptions)
+    assert len(disciplines) == len(descriptions)
+    for disc, description in zip(disciplines, descriptions):
+        assert disc.name == description[0]
         out = disc.execute()
-        assert sorted(list(out.keys())) == sorted(list(desc[2]) + list(desc[1]))
+        assert sorted(list(out.keys())) == sorted(
+            list(description[2]) + list(description[1])
+        )
 
 
 @pytest.mark.parametrize("desc", DESCRIPTIONS[:-1])
@@ -120,7 +120,7 @@ def test_create_disciplines_from_sizes(grammar_type):
 )
 def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind):
     """Test that the inputs consistency errors."""
-    with pytest.raises(ValueError, match="The number of disciplines {}".format(kind)):
+    with pytest.raises(ValueError, match=f"The number of disciplines {kind}"):
         create_disciplines_from_sizes(
             1,
             2,

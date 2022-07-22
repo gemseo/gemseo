@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 r"""
 Scalable module from Tedford and Martins (2010)
 ***********************************************
@@ -98,3 +96,4 @@ A given sizing configuration is called "scaling strategy"
 and this scalable module is particularly useful to compare different MDO
 formulations with respect to the scaling strategy.
 """
+from __future__ import annotations

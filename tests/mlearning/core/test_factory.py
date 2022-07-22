@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import arange
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
+from numpy import arange
 
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
@@ -43,36 +38,32 @@ def dataset():  # type: (...) -> Dataset
 
 def test_constructor():
     """Test factory constructor."""
-    factory = MLAlgoFactory()
-    # plugins may add classes
-    assert set(factory.models) <= set(
-        [
-            "GaussianMixture",
-            "GaussianProcessRegression",
-            "KMeans",
-            "KNNClassifier",
-            "LinearRegression",
-            "MLClassificationAlgo",
-            "MLClusteringAlgo",
-            "MLPredictiveClusteringAlgo",
-            "MLRegressionAlgo",
-            "MLSupervisedAlgo",
-            "MLUnsupervisedAlgo",
-            "MixtureOfExperts",
-            "PCERegression",
-            "PolynomialRegression",
-            "RBFRegression",
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "SVMClassifier",
-        ]
-    )
+    assert {
+        "GaussianMixture",
+        "GaussianProcessRegressor",
+        "KMeans",
+        "KNNClassifier",
+        "LinearRegressor",
+        "MLClassificationAlgo",
+        "MLClusteringAlgo",
+        "MLPredictiveClusteringAlgo",
+        "MLRegressionAlgo",
+        "MLSupervisedAlgo",
+        "MLUnsupervisedAlgo",
+        "MOERegressor",
+        "PCERegressor",
+        "PolynomialRegressor",
+        "RBFRegressor",
+        "RandomForestClassifier",
+        "RandomForestRegressor",
+        "SVMClassifier",
+    } <= set(MLAlgoFactory().models)
 
 
 def test_create(dataset):
     """Test the creation of a model from data."""
     factory = MLAlgoFactory()
-    ml_algo = factory.create("LinearRegression", data=dataset)
+    ml_algo = factory.create("LinearRegressor", data=dataset)
     assert hasattr(ml_algo, "parameters")
 
 
@@ -94,5 +85,5 @@ def test_available_models():
 def test_is_available():
     """Test the existence of a regression model."""
     factory = MLAlgoFactory()
-    assert factory.is_available("PolynomialRegression")
+    assert factory.is_available("PolynomialRegressor")
     assert not factory.is_available("Dummy")

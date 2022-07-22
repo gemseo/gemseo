@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from pathlib import Path
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array, ones, power
-
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.post.post_factory import PostFactory
+from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.utils.testing import image_comparison
+from numpy import array
+from numpy import ones
+from numpy import power
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -56,7 +56,7 @@ def test_scatter(tmp_wd, pyplot_close_all):
         "ScatterPlotMatrix",
         save=True,
         file_path="scatter1",
-        variables_list=problem.get_all_functions_names(),
+        variable_names=problem.get_all_functions_names(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -78,13 +78,13 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
         "ScatterPlotMatrix",
         save=True,
         file_path="scatter2",
-        variables_list=problem.get_all_functions_names(),
+        variable_names=problem.get_all_functions_names(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
         assert Path(outf).exists()
 
-    post = factory.execute(problem, "ScatterPlotMatrix", save=True, variables_list=[])
+    post = factory.execute(problem, "ScatterPlotMatrix", save=True, variable_names=[])
     for outf in post.output_files:
         assert Path(outf).exists()
 
@@ -99,19 +99,18 @@ def test_non_existent_var(tmp_wd):
     problem = OptimizationProblem.import_hdf(POWER2)
     with pytest.raises(
         ValueError,
-        match=r"Cannot build scatter plot matrix, Function toto is neither "
-        r"among optimization problem functions : .* "
-        r"nor design variables : .*",
+        match=r"Cannot build scatter plot matrix: function foo is neither "
+        r"among optimization problem functions: .* "
+        r"nor design variables: .*",
     ):
         factory.execute(
             problem,
             "ScatterPlotMatrix",
             save=True,
-            variables_list=["toto"],
+            variable_names=["foo"],
         )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "variables, baseline_images",
     [
@@ -121,7 +120,7 @@ def test_non_existent_var(tmp_wd):
         (["c_2", "x_shared", "x_local", "obj", "c_1"], ["all_var_func"]),
     ],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_scatter_plot(baseline_images, variables, pyplot_close_all):
     """Test images created by the post_process method against references.
 
@@ -153,7 +152,7 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
         save=False,
         file_path="scatter_sellar",
         file_extension="png",
-        variables_list=variables,
+        variable_names=variables,
     )
     post.figures
 
@@ -191,19 +190,18 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
         save=True,
         file_path="scatter_sellar",
         file_extension="png",
-        variables_list=["obj", "x_local", "x_shared"],
+        variable_names=["obj", "x_local", "x_shared"],
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
         assert Path(outf).exists()
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "filter_non_feasible, baseline_images",
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_all):
     """Test if the filter_non_feasible option works properly.
 
@@ -239,7 +237,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_
         file_extension="png",
         save=False,
         filter_non_feasible=filter_non_feasible,
-        variables_list=["x"],
+        variable_names=["x"],
     )
     post.figures
 
@@ -258,7 +256,29 @@ def test_filter_non_feasible_exception():
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
 
-    with pytest.raises(ValueError, match="No feasible points were found!"):
+    with pytest.raises(ValueError, match="No feasible points were found."):
         factory.execute(
-            problem, "ScatterPlotMatrix", filter_non_feasible=True, variables_list=["x"]
+            problem, "ScatterPlotMatrix", filter_non_feasible=True, variable_names=["x"]
         )
+
+
+TEST_PARAMETERS = {
+    "standardized": (True, ["ScatterPlotMatrix_standardized"]),
+    "unstandardized": (False, ["ScatterPlotMatrix_unstandardized"]),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check ScatterPlotMatrix with objective, standardized or not."""
+    opt = ScatterPlotMatrix(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], show=False, save=False)

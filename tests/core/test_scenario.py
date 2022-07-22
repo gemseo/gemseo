@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,43 +12,44 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
-
+import re
+import unittest
 from typing import Sequence
 
 import pytest
-from numpy import array
-from numpy.linalg import norm
-
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
+from gemseo.core.dataset import Dataset
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.problems.sobieski.wrappers_sg import (
-    SobieskiAerodynamicsSG,
-    SobieskiMissionSG,
-    SobieskiPropulsionSG,
-    SobieskiStructureSG,
-)
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy.linalg import norm
+from numpy.testing import assert_equal
 
 
 def build_mdo_scenario(
-    formulation,  # type: str
-    grammar_type=MDOScenario.JSON_GRAMMAR_TYPE,  # type: str
-):  # type: (...) -> MDOScenario
+    formulation: str,
+    grammar_type: str = MDOScenario.JSON_GRAMMAR_TYPE,
+) -> MDOScenario:
     """Build the scenario for SSBJ.
 
     Args:
@@ -74,7 +74,7 @@ def build_mdo_scenario(
             SobieskiStructureSG(),
         ]
 
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     scenario = MDOScenario(
         disciplines,
         formulation=formulation,
@@ -204,14 +204,19 @@ def test_backup_error(tmp_wd, mdf_scenario):
         )
 
 
-def test_backup_0(tmp_wd, mdf_scenario):
+@pytest.mark.parametrize("each_iter", [False, True])
+def test_backup_0(tmp_wd, mdf_scenario, each_iter):
     """Test the optimization backup with generation of plots during convergence.
 
-    tests that when used, the backup does not call the original objective
+    Test that, when used, the backup does not call the original objective.
     """
     filename = "opt_history.h5"
     mdf_scenario.set_optimization_history_backup(
-        filename, erase=True, pre_load=False, generate_opt_plot=True
+        filename,
+        erase=True,
+        pre_load=False,
+        generate_opt_plot=True,
+        each_new_iter=each_iter,
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     assert len(mdf_scenario.formulation.opt_problem.database) == 2
@@ -262,7 +267,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
 
 def test_typeerror_formulation():
     disciplines = [SobieskiPropulsion()]
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
 
     expected_message = (
         "Formulation must be specified by its name; "
@@ -282,10 +287,10 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
 
     Test the case when the Optimization results are available.
     """
-    x_opt = [1.0, 2.0]
-    f_opt = 3
-    constraints_values = [4.0, 5.0]
-    constraints_grad = [6.0, 7.0]
+    x_opt = array([1.0, 2.0])
+    f_opt = array([3.0])
+    constraints_values = {"g": array([4.0, 5.0])}
+    constraints_grad = {"g": array([6.0, 7.0])}
     is_feasible = True
 
     opt_results = OptimizationResult(
@@ -297,14 +302,13 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
     )
 
     mdf_variable_grammar_scenario.optimization_result = opt_results
-
     optimum = mdf_variable_grammar_scenario.get_optimum()
 
-    assert optimum.x_opt == x_opt
-    assert optimum.f_opt == f_opt
-    assert optimum.constraints_values == constraints_values
-    assert optimum.constraints_grad == constraints_grad
-    assert optimum.is_feasible == is_feasible
+    assert_equal(optimum.x_opt, x_opt)
+    assert_equal(optimum.f_opt, f_opt)
+    assert_equal(optimum.constraints_values, constraints_values)
+    assert_equal(optimum.constraints_grad, constraints_grad)
+    assert optimum.is_feasible is is_feasible
 
 
 def test_get_optimization_results_empty(mdf_scenario):
@@ -372,8 +376,7 @@ def test_repr_str(idf_scenario):
         "MDOScenario",
         "   Disciplines: "
         "SobieskiPropulsion SobieskiAerodynamics SobieskiMission SobieskiStructure",
-        "   MDOFormulation: IDF",
-        "   Algorithm: None",
+        "   MDO formulation: IDF",
     ]
     assert repr(idf_scenario) == "\n".join(expected)
 
@@ -389,8 +392,8 @@ def test_xdsm_filename(tmp_path, idf_scenario):
 
 @pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
 def test_add_observable(
-    mdf_scenario,  # type: MDOScenario
-    observables,  # type: Sequence[str]
+    mdf_scenario: MDOScenario,
+    observables: Sequence[str],
 ):
     """Test adding observables from discipline outputs.
 
@@ -405,7 +408,7 @@ def test_add_observable(
 
 
 def test_add_observable_not_available(
-    mdf_scenario,  # type: MDOScenario
+    mdf_scenario: MDOScenario,
 ):
     """Test adding an observable which is not available in any discipline.
 
@@ -420,3 +423,183 @@ def test_add_observable_not_available(
 def test_database_name(mdf_scenario):
     """Check the name of the database."""
     assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
+
+
+@unittest.mock.patch("timeit.default_timer", new=lambda: 1)
+def test_run_log(mdf_scenario, caplog):
+    """Check the log message of Scenario._run."""
+    mdf_scenario._run_algorithm = lambda: None
+    mdf_scenario.name = "ABC Scenario"
+    mdf_scenario._run()
+    strings = [
+        "*** Start ABC Scenario execution ***",
+        "*** End ABC Scenario execution (time: 0:00:00) ***",
+    ]
+    for string in strings:
+        assert string in caplog.text
+
+
+def test_clear_history_before_run(mdf_scenario):
+    """Check that clear_history_before_run is correctly used in Scenario._run."""
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+
+    def run_algorithm_mock():
+        pass
+
+    mdf_scenario._run_algorithm = run_algorithm_mock
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+
+    mdf_scenario.clear_history_before_run = True
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 0
+
+
+@pytest.mark.parametrize(
+    "activate,text",
+    [
+        (True, "Scenario Execution Statistics"),
+        (False, "The discipline counters are disabled."),
+    ],
+)
+def test_print_execution_metrics(mdf_scenario, caplog, activate, text):
+    """Check the print of the execution metrics w.r.t.
+
+    activate_counters.
+    """
+    activate_counters = MDODiscipline.activate_counters
+    MDODiscipline.activate_counters = activate
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.print_execution_metrics()
+    assert text in caplog.text
+    MDODiscipline.activate_counters = activate_counters
+
+
+def test_get_execution_metrics(mdf_scenario):
+    """Check the string returned byecution_metrics."""
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    expected = re.compile(
+        "Scenario Execution Statistics\n"
+        "   Discipline: SobieskiPropulsion\n"
+        "      Executions number: 10\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Discipline: SobieskiAerodynamics\n"
+        "      Executions number: 10\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Discipline: SobieskiMission\n"
+        "      Executions number: 1\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Discipline: SobieskiStructure\n"
+        "      Executions number: 10\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Total number of executions calls: 31\n"
+        "   Total number of linearizations: 4"
+    )
+    assert expected.match(str(mdf_scenario._Scenario__get_execution_metrics()))
+
+
+def mocked_export_to_dataset(
+    name: str | None = None,
+    by_group: bool = True,
+    categorize: bool = True,
+    opt_naming: bool = True,
+    export_gradients: bool = False,
+) -> Dataset:
+    """A mock for OptimizationProblem.export_to_dataset."""
+    return (
+        name,
+        by_group,
+        categorize,
+        opt_naming,
+        export_gradients,
+    )
+
+
+def test_export_to_dataset(mdf_scenario):
+    """Check that export_to_dataset calls OptimizationProblem.export_to_dataset."""
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.export_to_dataset = mocked_export_to_dataset
+    dataset = mdf_scenario.export_to_dataset(
+        name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
+    )
+    assert dataset == (1, 2, 3, 4, 5)
+
+
+@pytest.fixture
+def complex_step_scenario() -> MDOScenario:
+    """The scenario to be used by test_complex_step."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    class MyDiscipline(MDODiscipline):
+        """The identity discipline f computing y = f(x) = x."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.input_grammar.update(["x"])
+            self.output_grammar.update(["y"])
+
+        def _run(self) -> None:
+            self.local_data["y"] = self.local_data["x"]
+
+    scenario = MDOScenario([MyDiscipline()], "DisciplinaryOpt", "y", design_space)
+    scenario.set_differentiation_method(scenario.COMPLEX_STEP)
+    return scenario
+
+
+@pytest.mark.parametrize("normalize_design_space", [False, True])
+def test_complex_step(complex_step_scenario, normalize_design_space):
+    """Check that complex step approximation works correctly."""
+    complex_step_scenario.execute(
+        {
+            "algo": "SLSQP",
+            "max_iter": 10,
+            "algo_options": {"normalize_design_space": normalize_design_space},
+        }
+    )
+
+    assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
+
+
+@pytest.fixture
+def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
+    """The sinus discipline and its design space."""
+    discipline = AnalyticDiscipline({"y": "sin(2*pi*x)"})
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    return discipline, design_space
+
+
+@pytest.mark.parametrize(
+    "maximize,standardize,expr,val",
+    [
+        (False, False, "minimize y(x)", -1.0),
+        (False, True, "minimize y(x)", -1.0),
+        (True, False, "maximize y(x)", 1.0),
+        (True, True, "minimize -y(x)", -1.0),
+    ],
+)
+def test_use_standardized_objective(
+    sinus_use_case, maximize, standardize, expr, val, caplog
+):
+    """Check that the setter use_standardized_objective works correctly."""
+    discipline, design_space = sinus_use_case
+    scenario = MDOScenario(
+        [discipline],
+        formulation="MDF",
+        objective_name="y",
+        maximize_objective=maximize,
+        design_space=design_space,
+    )
+    assert scenario.use_standardized_objective
+    scenario.use_standardized_objective = standardize
+    assert scenario.use_standardized_objective is standardize
+    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    assert expr in caplog.text
+    assert f"Objective: {val}" in caplog.text
+    assert f"obj={int(val)}" in caplog.text

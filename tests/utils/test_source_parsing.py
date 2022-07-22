@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
-
-from gemseo.utils.source_parsing import (
-    get_default_options_values,
-    get_options_doc,
-    parse_google,
-    parse_rest,
-)
+from gemseo.utils.source_parsing import get_default_options_values
+from gemseo.utils.source_parsing import get_options_doc
+from gemseo.utils.source_parsing import parse_google
+from gemseo.utils.source_parsing import parse_rest
 
 
 def function_with_google_docstring(arg1, arg2):
@@ -44,7 +36,7 @@ def function_with_google_docstring(arg1, arg2):
     """
 
 
-class ClassWithGoogleDocstring(object):
+class ClassWithGoogleDocstring:
     """A class doing nothing."""
 
     def __init__(self, arg1=0.0, arg2=1.0):
@@ -57,7 +49,6 @@ class ClassWithGoogleDocstring(object):
 
 def test_get_default_options_values():
     """Check the function getting the default values of the __init__'s options."""
-
     assert get_default_options_values(ClassWithGoogleDocstring) == {
         "arg1": 0.0,
         "arg2": 1.0,
@@ -66,15 +57,13 @@ def test_get_default_options_values():
 
 def test_get_options_doc():
     """Check the function getting the documentation of the options of a function."""
-
     assert get_options_doc(function_with_google_docstring) == {
         "arg1": "The first element.",
         "arg2": "The second element.",
     }
 
 
-DOCSTRINGS = (
-    """
+DOCSTRING = """
 Args:
     arg1: A one-line description: with colon.
     arg2: A multi-line
@@ -84,53 +73,34 @@ Args:
         And a second one.
     **arg4: A kwargs.
 
-Returns:
-    The description of the returned object.
+Section title:
+    Section description.
+"""
 
-Raises:
-    Error: If bla.
-""",
-    """
-Parameters:
-    arg1: A one-line description: with colon.
-    arg2: A multi-line
-        description.
-    arg3: A description with a first paragraph.
+REST_DOCSTRING = """
+:param arg1: A one-line description.
+:param arg2: A multi-line
+    description.
+:param arg3: A description with a first paragraph.
 
-        And a second one.
-    arg4: A kwargs.
-""",
-)
+    And a second one.
+"""
 
 
-@pytest.mark.parametrize("docstring", DOCSTRINGS)
-def test_google(docstring):
-    """Test that the Google docstrings are correctly parsed.
-
-    Args:
-        args_section_title: The title of the section dedicated.
-    """
-    parsed_docstring = parse_google(docstring)
+def test_google():
+    """Test that the Google docstrings are correctly parsed."""
+    parsed_docstring = parse_google(DOCSTRING)
     assert parsed_docstring == {
         "arg1": "A one-line description: with colon.",
         "arg2": "A multi-line description.",
         "arg3": "A description with a first paragraph. And a second one.",
         "arg4": "A kwargs.",
     }
-    assert parsed_docstring
 
 
 def test_rest():
     """Test that the reST docstrings are correctly parsed."""
-    docstring = (
-        ":param arg1: A one-line description.\n"
-        ":param arg2: A multi-line\n"
-        "    description.\n"
-        ":param arg3: A description with a first paragraph.\n"
-        "\n"
-        "    And a second one.\n\n"
-    )
-    assert parse_rest(docstring) == {
+    assert parse_rest(REST_DOCSTRING) == {
         "arg1": "A one-line description.",
         "arg2": "A multi-line description.",
         "arg3": "A description with a first paragraph.\n\nAnd a second one.",
@@ -138,9 +108,8 @@ def test_rest():
 
 
 def test_google_without_parameters_block():
-    """Test that the arguments docstring cannot be parsed wo 'Parameters' or 'Args'."""
-    parsed_docstring = parse_google(DOCSTRINGS[0].replace("Args", "Foo"))
-    assert not parsed_docstring
+    """Test that the arguments docstring cannot be parsed without 'Args' section."""
+    assert not parse_google(DOCSTRING.replace("Args", "Foo"))
 
 
 def function_with_malformed_docstring(x):
@@ -153,9 +122,11 @@ def function_with_malformed_docstring(x):
 
 def test_parsing_with_malformed_docstring():
     """Test an invalid docstring."""
-    expected = (
-        "The docstring of the arguments is malformed: "
-        "please use Google style docstrings"
-    )
-    with pytest.raises(ValueError, match=expected):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The docstring of the arguments is malformed: "
+            "please use Google style docstrings"
+        ),
+    ):
         get_options_doc(function_with_malformed_docstring)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import numpy as np
-
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2
 
 
-class OptLibraryTestBase(object):
+class OptLibraryTestBase:
     """"""
 
     @staticmethod
@@ -193,8 +186,6 @@ class OptLibraryTestBase(object):
                     name = "test_" + opt_lib.__class__.__name__ + "_" + algo_name
                     name += "_on_" + problem.__class__.__name__
                     name = name.replace("-", "_")
-                    if PY2:
-                        name = name.encode("ascii")
                     test_method.__name__ = name
 
                     tests.append(test_method)

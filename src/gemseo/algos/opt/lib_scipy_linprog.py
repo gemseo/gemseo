@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,37 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
-from typing import Any, Callable, Dict, Optional
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any
+from typing import Callable
 
 from numpy import isfinite
-from scipy.optimize import OptimizeResult, linprog
+from scipy.optimize import linprog
+from scipy.optimize import OptimizeResult
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
-from gemseo.utils.py23_compat import PY2
+
+
+@dataclass
+class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of a linear optimization algorithm from the SciPy library."""
+
+    problem_type: str = OptimizationProblem.LINEAR_PB
+    handle_equality_constraints: bool = True
+    handle_inequality_constraints: bool = True
+    library_name: str = "SciPy"
 
 
 class ScipyLinprog(OptimizationLibrary):
@@ -49,61 +62,59 @@ class ScipyLinprog(OptimizationLibrary):
         REDUNDANCY_REMOVAL: "rr",
     }
 
+    LIBRARY_NAME = "SciPy"
+
     def __init__(self):
         """Constructor.
 
         Generate the library dictionary that contains the list of algorithms with their
         characteristics.
         """
-        super(ScipyLinprog, self).__init__()
+        super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
 
-        self.lib_dict = {
-            "LINEAR_INTERIOR_POINT": {
-                self.INTERNAL_NAME: "interior-point",
-                self.DESCRIPTION: "Linear programming by the interior-point"
-                " method implemented in the SciPy library",
-                self.WEBSITE: doc + "optimize.linprog-interior-point.html",
-            },
-            ScipyLinprog.REVISED_SIMPLEX: {
-                self.INTERNAL_NAME: "revised simplex",
-                self.DESCRIPTION: "Linear programming by a two-phase revised"
-                " simplex algorithm implemented in the SciPy library",
-                self.WEBSITE: doc + "optimize.linprog-revised_simplex.html",
-            },
-            "SIMPLEX": {
-                self.INTERNAL_NAME: "simplex",
-                self.DESCRIPTION: "Linear programming by the two-phase simplex"
-                " algorithm implemented in the SciPy library",
-                self.WEBSITE: doc + "optimize.linprog-simplex.html",
-            },
+        self.descriptions = {
+            "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
+                algorithm_name="Linear interior point",
+                description=(
+                    "Linear programming by the interior-point"
+                    " method implemented in the SciPy library"
+                ),
+                internal_algorithm_name="interior-point",
+                website=f"{doc}optimize.linprog-interior-point.html",
+            ),
+            ScipyLinprog.REVISED_SIMPLEX: ScipyLinProgAlgorithmDescription(
+                algorithm_name="Revised simplex",
+                description=(
+                    "Linear programming by a two-phase revised"
+                    " simplex algorithm implemented in the SciPy library"
+                ),
+                internal_algorithm_name="revised simplex",
+                website=f"{doc}optimize.linprog-revised_simplex.html",
+            ),
+            "SIMPLEX": ScipyLinProgAlgorithmDescription(
+                algorithm_name="Simplex",
+                description=(
+                    "Linear programming by the two-phase simplex"
+                    " algorithm implemented in the SciPy library"
+                ),
+                internal_algorithm_name="simplex",
+                website=f"{doc}optimize.linprog-simplex.html",
+            ),
         }
-        if PY2:
-            # The "revised simplex" algorithm is not available in Python 2.
-            # Indeed this feature appeared in SciPy 1.3.0 which requires Python 3.5+.
-            # https://docs.scipy.org/doc/scipy-1.3.0/reference/release.1.3.0.html
-            del self.lib_dict["REVISED_SIMPLEX"]
-        common_items = {
-            self.PROBLEM_TYPE: OptimizationProblem.LINEAR_PB,
-            self.POSITIVE_CONSTRAINTS: False,
-            self.HANDLE_EQ_CONS: True,
-            self.HANDLE_INEQ_CONS: True,
-        }
-        for algo_dict in self.lib_dict.values():
-            algo_dict.update(common_items)
 
     def _get_options(
         self,
-        max_iter=999,  # type: int
-        autoscale=False,  # type: bool
-        presolve=True,  # type: bool
-        redundancy_removal=True,  # type: bool
-        callback=None,  # type: Optional[Callable[[OptimizeResult], Any]]
-        verbose=False,  # type: bool
-        normalize_design_space=True,  # type: bool
-        disp=False,  # type: bool
-        **kwargs  # type: Any
-    ):  # type: (...) -> Dict[str, Any]
+        max_iter: int = 999,
+        autoscale: bool = False,
+        presolve: bool = True,
+        redundancy_removal: bool = True,
+        callback: Callable[[OptimizeResult], Any] | None = None,
+        verbose: bool = False,
+        normalize_design_space: bool = True,
+        disp: bool = False,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Retrieve the options of the library.
 
         Define the default values for the options using the keyword arguments.
@@ -139,13 +150,11 @@ class ScipyLinprog(OptimizationLibrary):
             verbose=verbose,
             callback=callback,
             normalize_design_space=normalize_ds,
-            **kwargs
+            **kwargs,
         )
         return options
 
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm.
 
         Args:

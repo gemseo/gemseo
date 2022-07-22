@@ -1,0 +1,1 @@
+Add workaround for ``gemseo-template-grammar-editor`` issue with PySide2.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,33 +12,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import logging
 import os
 
 import numpy as np
 import pytest
-
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda import MDA
+from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -131,29 +128,38 @@ def test_weak_strong_coupling_mda_jac():
 
 
 def analytic_disciplines_from_desc(descriptions):
-    return [AnalyticDiscipline(expressions_dict=desc) for desc in descriptions]
+    return [AnalyticDiscipline(desc) for desc in descriptions]
 
 
 @pytest.mark.parametrize(
-    "desc",
+    "desc, log_message",
     [
         (
-            {"y": "x"},
-            {"y": "z"},
+            (
+                {"y": "x"},
+                {"y": "z"},
+            ),
+            "The following outputs are defined multiple times: ['y'].",
         ),
         (
-            {"y": "x+y", "c1": "1-0.2*c2"},
-            {"c2": "0.1*c1"},
+            ({"y": "x+y", "c1": "1-0.2*c2"}, {"c2": "0.1*c1"}),
+            "The following disciplines contain self-couplings and strong couplings: "
+            "['AnalyticDiscipline'].",
         ),
     ],
 )
-def test_consistency_fail(desc):
+def test_consistency_fail(desc, log_message, caplog):
+    """Test that the consistency check is done properly.
+
+    Args:
+        desc: The mathematical expressions to create analytic disciplines.
+        log_message: The expected warning message.
+        caplog: Fixture to access and control log capturing.
+    """
     disciplines = analytic_disciplines_from_desc(desc)
-    with pytest.raises(
-        ValueError,
-        match="Too many coupling constraints|Outputs are defined multiple times",
-    ):
-        MDA(disciplines)
+
+    MDA(disciplines)
+    assert log_message in caplog.text
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
@@ -167,15 +173,15 @@ def test_array_couplings(mda_class, grammar_type):
     )
 
     a_disc = disciplines[0]
-    a_disc.input_grammar.remove_item("y1")
+    del a_disc.input_grammar["y1"]
     a_disc.default_inputs["y1"] = 2.0
-    a_disc.input_grammar.initialize_from_base_dict({"y1": 2.0})
-    assert not a_disc.input_grammar.is_type_array("y1")
+    a_disc.input_grammar.update_from_data({"y1": 2.0})
+    assert not a_disc.input_grammar.is_array("y1")
 
     with pytest.raises(InvalidDataException):
         a_disc.execute({"x": 2.0})
 
-    with pytest.raises(ValueError, match="must be of type array"):
+    with pytest.raises(TypeError, match="must be of type array"):
         mda_class(disciplines, grammar_type=grammar_type)
 
 
@@ -185,22 +191,23 @@ def test_convergence_warning(caplog):
     mda.normed_residual = 2.0
     mda.max_mda_iter = 1
     caplog.clear()
-    residual_is_small, _ = mda._warn_convergence_criteria(10)
+    residual_is_small, max_iter_is_reached = mda._warn_convergence_criteria()
     assert not residual_is_small
+    assert not max_iter_is_reached
+
+    mda.norm0 = 1.0
+    mda._compute_residual(
+        np.array([1, 2]), np.array([10, 10]), log_normed_residual=False
+    )
+    mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
     assert (
         "MDA has reached its maximum number of iterations" in caplog.records[0].message
     )
 
     mda.normed_residual = 1e-14
-    residual_is_small, _ = mda._warn_convergence_criteria(1)
+    residual_is_small, _ = mda._warn_convergence_criteria()
     assert residual_is_small
-
-    mda.max_mda_iter = 2
-    _, max_iter_is_reached = mda._warn_convergence_criteria(2)
-    assert max_iter_is_reached
-    _, max_iter_is_reached = mda._warn_convergence_criteria(1)
-    assert not max_iter_is_reached
 
 
 def test_coupling_structure(sellar_disciplines):
@@ -224,10 +231,49 @@ def test_log_convergence(caplog):
 
     caplog.set_level(logging.INFO)
 
-    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), 1)
-    assert "MDA running... Normed residual = 1.00e+00 (iter. 1)" not in caplog.text
+    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), store_it=False)
+    assert "MDA running... Normed residual = 1.00e+00 (iter. 0)" not in caplog.text
 
-    mda._compute_residual(
-        np.array([1, 2]), np.array([2, 1]), 1, log_normed_residual=True
+    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), log_normed_residual=True)
+    assert "MDA running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
+@pytest.mark.parametrize("norm0", [None, 1.0])
+@pytest.mark.parametrize("scale_coupl_active", [True, False])
+def test_scale_res_size(mda_class, norm0, scale_coupl_active):
+    coupl_size = 10
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
+        inputs_size=coupl_size,
+        outputs_size=coupl_size,
     )
-    assert "MDA running... Normed residual = 1.00e+00 (iter. 1)" in caplog.text
+
+    mda = mda_class(disciplines, max_mda_iter=1)
+    mda.norm0 = 1.0  # Deactivate scaling
+    mda.execute()
+
+    mda_scale = mda_class(disciplines, max_mda_iter=1)
+    mda.norm0 = norm0
+    mda_scale.set_residuals_scaling_options(scale_coupl_active, True)
+    mda_scale.execute()
+
+    scaled_res = mda.residual_history[-1] / ((2 * coupl_size) ** 0.5)
+    scaled_mda_res = mda_scale.residual_history[-1]
+    assert (abs(scaled_res - scaled_mda_res) < 1e-6) == scale_coupl_active
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
+@pytest.mark.parametrize("scale_active", [True, False])
+def test_deactivate_scaling(mda_class, scale_active):
+    coupl_size = 10
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
+        inputs_size=coupl_size,
+        outputs_size=coupl_size,
+    )
+
+    mda = mda_class(disciplines, max_mda_iter=2)
+    mda.set_residuals_scaling_options(False, scale_active)
+    mda.execute()
+    assert (mda.residual_history[0] == 1.0) == scale_active

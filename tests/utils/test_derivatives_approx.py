@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,37 +12,37 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from copy import deepcopy
-from math import cos, exp, log10, sin
+from math import cos
+from math import exp
+from math import log10
+from math import sin
 
 import pytest
-from numpy import array, complex128, float64, zeros
-from numpy.linalg import norm
-from scipy.optimize import rosen, rosen_der
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_discipline
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.derivatives.complex_step import ComplexStep
+from gemseo.utils.derivatives.derivatives_approx import comp_best_step
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
-from gemseo.utils.derivatives_approx import (
-    ComplexStep,
-    DisciplineJacApprox,
-    FirstOrderFD,
-    comp_best_step,
-)
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import zeros
+from numpy.linalg import norm
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 
 def test_init_first_order_fd():
@@ -109,7 +108,7 @@ def test_approx_complex_step_diff_steps_e30():
 
 
 def test_abs_der():
-    discipline = AnalyticDiscipline("name", {"y": "x", "z": "x"})
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
     apprx = DisciplineJacApprox(discipline)
     apprx.compute_approx_jac(["z"], ["x"])
@@ -194,7 +193,7 @@ def test_compute_io_indices(indices, expected_sequence, expected_variables_indic
 
 def test_load_and_dump(tmp_wd):
     """Check the loading and dumping of a reference Jacobian."""
-    discipline = AnalyticDiscipline("name", {"y": "x", "z": "x"})
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
     apprx = DisciplineJacApprox(discipline)
     apprx.compute_approx_jac(["z"], ["x"])
@@ -221,9 +220,9 @@ def test_load_and_dump(tmp_wd):
 
 class ToyDiscipline(MDODiscipline):
     def __init__(self, dtype=float64):
-        super(ToyDiscipline, self).__init__()
-        self.input_grammar.initialize_from_data_names(["x1", "x2"])
-        self.output_grammar.initialize_from_data_names(["y1", "y2"])
+        super().__init__()
+        self.input_grammar.update(["x1", "x2"])
+        self.output_grammar.update(["y1", "y2"])
         self.default_inputs = {
             "x1": array([1.0], dtype=dtype),
             "x2": array([1.0, 1.0], dtype=dtype),
@@ -258,15 +257,46 @@ class ToyDiscipline(MDODiscipline):
 
 @pytest.mark.parametrize("inputs", [["x1"], ["x2"], ["x1", "x2"]])
 @pytest.mark.parametrize("outputs", [["y1"], ["y2"], ["y1", "y2"]])
-@pytest.mark.parametrize("indices", [None, {"x1": 0}, {"y2": 1}, {"x1": 0, "y2": 1}])
+@pytest.mark.parametrize(
+    "indices",
+    [
+        None,
+        {"x1": 0},
+        {"y2": 1},
+        {"x1": 0, "y2": 1},
+        {"x2": [0, 1], "y2": [0, 1]},
+        {"x2": 1, "y2": [0, 1]},
+    ],
+)
 @pytest.mark.parametrize("dtype", [float64, complex128])
 def test_indices(inputs, outputs, indices, dtype):
+    """Test the option to check the Jacobian by indices.
+
+    Args:
+        inputs: The input variables to be checked.
+        outputs: The output variables to be checked.
+        dtype: The data type of the variables for the test discipline.
+    """
     discipline = ToyDiscipline(dtype=dtype)
     discipline.linearize(force_all=True)
     apprx = DisciplineJacApprox(discipline)
     assert apprx.check_jacobian(
         discipline.jac, outputs, inputs, discipline, indices=indices
     )
+
+
+@pytest.mark.parametrize("dtype", [float64, complex128])
+def test_wrong_step(dtype):
+    """Test that an exception is raised if the step size length does not math inputs.
+
+    Args:
+        dtype: The data type of the variables for the test discipline.
+    """
+    discipline = ToyDiscipline(dtype=dtype)
+    discipline.linearize(force_all=True)
+    apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7])
+    with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
+        apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
 
 
 def test_factory():
@@ -304,7 +334,7 @@ def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_
     problem = OptimizationProblem(
         design_space, differentiation_method="finite_differences"
     )
-    problem.objective = MDOFunction(lambda x: x ** 2, "my_objective")
+    problem.objective = MDOFunction(lambda x: x**2, "my_objective")
 
     OptimizersFactory().execute(
         problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Class for the estimation of Sobol' indices.
 
 Let us consider the model :math:`Y=f(X_1,\ldots,X_d)`
@@ -98,31 +95,31 @@ The user can select the algorithm to estimate the Sobol' indices.
 The computation relies on
 `OpenTURNS capabilities <http://www.openturns.org/>`_.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
+from pathlib import Path
+from typing import Collection
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
-from openturns import (
-    JansenSensitivityAlgorithm,
-    MartinezSensitivityAlgorithm,
-    MauntzKucherenkoSensitivityAlgorithm,
-    SaltelliSensitivityAlgorithm,
-    Sample,
-)
-from past.utils import old_div
+from openturns import JansenSensitivityAlgorithm
+from openturns import MartinezSensitivityAlgorithm
+from openturns import MauntzKucherenkoSensitivityAlgorithm
+from openturns import SaltelliSensitivityAlgorithm
+from openturns import Sample
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.uncertainty.sensitivity.analysis import IndicesType, SensitivityAnalysis
-from gemseo.utils.data_conversion import DataConversion
-from gemseo.utils.py23_compat import Path
+from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,7 +134,7 @@ class SobolAnalysis(SensitivityAnalysis):
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>>
         >>> parameter_space = create_parameter_space()
@@ -151,7 +148,7 @@ class SobolAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = SobolAnalysis(discipline, parameter_space, n_samples=10000)
+        >>> analysis = SobolAnalysis([discipline], parameter_space, n_samples=10000)
         >>> indices = analysis.compute_indices()
     """
 
@@ -163,29 +160,29 @@ class SobolAnalysis(SensitivityAnalysis):
     }
     _FIRST = "first"
     _TOTAL = "total"
-    _FIRST_METHOD = "Sobol({})".format(_FIRST)
-    _TOTAL_METHOD = "Sobol({})".format(_TOTAL)
+    _FIRST_METHOD = f"Sobol({_FIRST})"
+    _TOTAL_METHOD = f"Sobol({_TOTAL})"
 
     AVAILABLE_ALGOS = sorted(_ALGOS.keys())
     DEFAULT_DRIVER = OpenTURNS.OT_SOBOL_INDICES
 
-    def __init__(
+    def __init__(  # noqa: D107,D205,D212,D415
         self,
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type: ParameterSpace
-        n_samples,  # type: int
-        algo=None,  # type:Optional[str]
-        algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
-    ):  # type: (...) -> None  # noqa: D107,D205,D212,D415
+        disciplines: Collection[MDODiscipline],
+        parameter_space: ParameterSpace,
+        n_samples: int,
+        algo: str | None = None,
+        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+    ) -> None:
         self.__sobol = None
-        super(SobolAnalysis, self).__init__(discipline, parameter_space, n_samples)
+        super().__init__(disciplines, parameter_space, n_samples)
         self.main_method = self._FIRST
 
     @SensitivityAnalysis.main_method.setter
-    def main_method(
+    def main_method(  # noqa: D102
         self,
-        name,  # type: str
-    ):  # type:(...) -> None # noqa: D102
+        name: str,
+    ) -> None:
         if name == self._FIRST:
             self._main_method = self._FIRST_METHOD
             LOGGER.info("Use first order indices as main indices.")
@@ -200,11 +197,10 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs=None,  # type: Optional[Sequence[str]]
-        algo="Saltelli",  # type: str
-    ):  # type: (...) -> Dict[str,IndicesType]
-        # noqa:D205,D212,D415
-        """
+        outputs: Sequence[str] | None = None,
+        algo: str = "Saltelli",
+    ) -> dict[str, IndicesType]:
+        """# noqa:D205,D212,D415
         Args:
             algo: The name of the algorithm to estimate the Sobol' indices
         """
@@ -221,7 +217,7 @@ class SobolAnalysis(SensitivityAnalysis):
         inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
         outputs = self.dataset.get_data_by_names(output_names, True)
         dim = self.dataset.dimension[self.dataset.INPUT_GROUP]
-        n_samples = int(old_div(len(self.dataset), (dim + 2)))
+        n_samples = int(len(self.dataset) / (dim + 2))
         self.__sobol = {}
         for output_name, value in outputs.items():
             self.__sobol[output_name] = []
@@ -232,8 +228,8 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def __get_indices(
         self,
-        first_order=True,  # type: bool
-    ):  # type: (...) -> IndicesType
+        first_order: bool = True,
+    ) -> IndicesType:
         """Get the indices, either first-order or total order.
 
         Args:
@@ -248,19 +244,20 @@ class SobolAnalysis(SensitivityAnalysis):
             method = "getFirstOrderIndices"
         else:
             method = "getTotalOrderIndices"
-        array_to_dict = DataConversion.array_to_dict
         inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
         sizes = self.dataset.sizes
         indices = {}
         for name in self.__sobol:
             indices[name] = [
-                array_to_dict(array(getattr(sobol, method)()), inputs_names, sizes)
+                split_array_to_dict_of_arrays(
+                    array(getattr(sobol, method)()), sizes, inputs_names
+                )
                 for sobol in self.__sobol[name]
             ]
         return indices
 
     @property
-    def first_order_indices(self):  # type: (...) -> IndicesType
+    def first_order_indices(self) -> IndicesType:
         """dict: The first-order Sobol' indices.
 
         With the following structure:
@@ -278,7 +275,7 @@ class SobolAnalysis(SensitivityAnalysis):
         return self.__get_indices()
 
     @property
-    def total_order_indices(self):  # type: (...) -> IndicesType
+    def total_order_indices(self) -> IndicesType:
         """dict: The total-order Sobol' indices.
 
         With the following structure:
@@ -297,8 +294,8 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def get_intervals(
         self,
-        first_order=True,  # type: bool
-    ):  # type: (...) -> IndicesType
+        first_order: bool = True,
+    ) -> IndicesType:
         """Get the confidence interval for Sobol' indices.
 
         Args:
@@ -321,7 +318,6 @@ class SobolAnalysis(SensitivityAnalysis):
                     ]
                 }
         """
-        array_to_dict = DataConversion.array_to_dict
         inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
         sizes = self.dataset.sizes
         intervals = {}
@@ -334,8 +330,12 @@ class SobolAnalysis(SensitivityAnalysis):
                     interval = sobol.getTotalOrderIndicesInterval()
                 lower_bound = array(interval.getLowerBound())
                 upper_bound = array(interval.getUpperBound())
-                lower_bound = array_to_dict(lower_bound, inputs_names, sizes)
-                upper_bound = array_to_dict(upper_bound, inputs_names, sizes)
+                lower_bound = split_array_to_dict_of_arrays(
+                    lower_bound, sizes, inputs_names
+                )
+                upper_bound = split_array_to_dict_of_arrays(
+                    upper_bound, sizes, inputs_names
+                )
                 intervals[output_name].append(
                     {
                         name: array([lower_bound[name][0], upper_bound[name][0]])
@@ -345,13 +345,13 @@ class SobolAnalysis(SensitivityAnalysis):
         return intervals
 
     @property
-    def indices(
+    def indices(  # noqa: D102
         self,
-    ):  # type: (...) -> Dict[str, IndicesType] # noqa: D102
+    ) -> dict[str, IndicesType]:  # noqa: D102
         return {"first": self.first_order_indices, "total": self.total_order_indices}
 
     @property
-    def main_indices(self):  # type: (...) -> IndicesType # noqa: D102
+    def main_indices(self) -> IndicesType:  # noqa: D102
         if self.main_method == self._TOTAL_METHOD:
             return self.total_order_indices
         else:
@@ -359,22 +359,24 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def plot(
         self,
-        output,  # type: Union[str,Tuple[str,int]]
-        inputs=None,  # type: Optional[Iterable[str]]
-        title=None,  # type: Optional[str]
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        sort=True,  # type:bool
-        sort_by_total=True,  # type:bool
-    ):  # noqa: D417
-        r"""Plot the first- and total-order Sobol' indices.
+        output: str | tuple[str, int],
+        inputs: Iterable[str] | None = None,
+        title: str | None = None,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        sort: bool = True,
+        sort_by_total: bool = True,
+    ):
+        r"""# noqa: D415,D417
+
+        Plot the first- and total-order Sobol' indices.
 
         For :math:`i\in\{1,\ldots,d\}`, plot :math:`S_i^{1}` and :math:`S_T^{1}`
-        with their confidence intervals,
+        with their confidence intervals.
 
         Args:
             sort: The sorting option.
@@ -408,7 +410,7 @@ class SobolAnalysis(SensitivityAnalysis):
         errorbar_options = {"marker": "o", "linestyle": "", "markersize": 7}
         trans1 = Affine2D().translate(-0.01, 0.0) + ax.transData
         trans2 = Affine2D().translate(+0.01, 0.0) + ax.transData
-        values = [first_order_indices[name] for name in names]
+        values = [first_order_indices[name][0] for name in names]
         yerr = array(
             [
                 [
@@ -421,14 +423,14 @@ class SobolAnalysis(SensitivityAnalysis):
         ax.errorbar(
             names,
             values,
-            yerr,
+            yerr=yerr,
             label="First order",
             transform=trans2,
-            **errorbar_options
+            **errorbar_options,
         )
         intervals = self.get_intervals(False)
         intervals = intervals[output[0]][output[1]]
-        values = [total_order_indices[name] for name in names]
+        values = [total_order_indices[name][0] for name in names]
         yerr = array(
             [
                 [
@@ -444,7 +446,7 @@ class SobolAnalysis(SensitivityAnalysis):
             yerr,
             label="Total order",
             transform=trans1,
-            **errorbar_options
+            **errorbar_options,
         )
         ax.legend(
             loc="lower left",
@@ -453,8 +455,7 @@ class SobolAnalysis(SensitivityAnalysis):
             borderaxespad=0,
             frameon=False,
         )
-        output = "{}({})".format(output[0], output[1])
-        ax.set_title(title or "Sobol indices for the output {}".format(output))
+        ax.set_title(title or f"Sobol indices for the output {output[0]}({output[1]})")
         self._save_show_plot(
             fig,
             save=save,

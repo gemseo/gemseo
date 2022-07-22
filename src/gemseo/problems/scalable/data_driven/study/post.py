@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Post-processing for scalability study.
 
 The :class:`.PostScalabilityStudy` class implements the way as the set of
@@ -43,19 +40,21 @@ of the true problem.
    that satisfies this budget, or even saves us time. Thus, it is important
    to carefully define these cost functions.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-from numpy import array, atleast_3d
+from numpy import array
+from numpy import atleast_3d
 from numpy import bool as np_bool
-from numpy import median, poly1d, polyfit
+from numpy import median
+from numpy import poly1d
+from numpy import polyfit
 
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.py23_compat import Path, string_types
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -67,7 +66,7 @@ POST_DIRECTORY = Path("visualization")
 POSTSTUDY_DIRECTORY = POST_DIRECTORY / "scalability_study"
 
 
-class PostScalabilityStudy(object):
+class PostScalabilityStudy:
 
     """The PostScalabilityStudy class aims to post-process a list of scalability results
     stored in a directory."""
@@ -118,7 +117,7 @@ class PostScalabilityStudy(object):
         """
         self.unit_cost = cost_unit
         description = self.descriptions["original_exec_time"].split(" (")[0]
-        description = "{} ({})".format(description, cost_unit)
+        description = f"{description} ({cost_unit})"
         self.descriptions["original_exec_time"] = description
 
     def labelize_exec_time(self, description):
@@ -182,10 +181,8 @@ class PostScalabilityStudy(object):
         """
         if not self.descriptions.get(keyword):
             keywords = ", ".join(list(self.descriptions.keys()))
-            raise ValueError(
-                "The keyword {} is not in the list: {}".format(keyword, keywords)
-            )
-        if not isinstance(description, string_types):
+            raise ValueError(f"The keyword {keyword} is not in the list: {keywords}")
+        if not isinstance(description, str):
             raise TypeError(
                 'The argument "description" must be '
                 "of type string, "
@@ -196,12 +193,10 @@ class PostScalabilityStudy(object):
     def __load_results(self):
         """Load results from the results directory of the study path."""
         if not self.study_directory.is_dir():
-            raise ValueError(
-                'Directory "{}" does not exist.'.format(self.study_directory)
-            )
+            raise ValueError(f'Directory "{self.study_directory}" does not exist.')
         directory = self.study_directory / RESULTS_DIRECTORY
         if not directory.is_dir():
-            raise ValueError('Directory "{}" does not exist.'.format(directory))
+            raise ValueError(f'Directory "{directory}" does not exist.')
         filenames = [
             filename.name for filename in directory.iterdir() if filename.is_file()
         ]
@@ -214,7 +209,7 @@ class PostScalabilityStudy(object):
             result.load(self.study_directory)
             results.append(result)
         if not results:
-            raise ValueError("Directory {} is empty.".format(directory))
+            raise ValueError(f"Directory {directory} is empty.")
         return results
 
     def plot(
@@ -223,7 +218,7 @@ class PostScalabilityStudy(object):
         xticks=None,
         xticks_labels=None,
         xmargin=0.0,
-        **options
+        **options,
     ):
         """Plot the results using different methods according to the presence or absence
         of replicate values.
@@ -581,30 +576,32 @@ class PostScalabilityStudy(object):
 
         :param bool unique: return either unique values if True
             or one value per scalability result if False (default: False).
-        :return: names of the optimization stategies.
+        :return: names of the optimization strategies.
         :rtype: list(str)
         """
-        os_list = ["_".join(name.split("_")[0:-2]) for name in self.names]
+        strategy_names = ["_".join(name.split("_")[0:-2]) for name in self.names]
         if unique:
-            os_list = sorted(set(os_list))
-        return os_list
+            return sorted(set(strategy_names))
+
+        return strategy_names
 
     @property
     def optimization_strategies(self):
         return self.get_optimization_strategies(True)
 
     def get_scaling_strategies(self, unique=False):
-        """Get the identificants of the scaling strategies.
+        """Get the identifiers of the scaling strategies.
 
         :param bool unique: return either unique values if True
             or one value per scalability result if False (default: False).
-        :return: identifiants of scaling strategies
+        :return: identifiers of scaling strategies
         :rtype: list(int)
         """
-        ss_list = [int(name.split("_")[-2]) for name in self.names]
+        strategy_identifiers = [int(name.split("_")[-2]) for name in self.names]
         if unique:
-            ss_list = sorted(set(ss_list))
-        return ss_list
+            return sorted(set(strategy_identifiers))
+
+        return strategy_identifiers
 
     def get_replicates(self, unique=False):
         """Get the replicate identifiants.

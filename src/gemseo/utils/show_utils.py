@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Copyright ONERA, taken from WhatsOpt-CLI https://github.com/OneraHub/WhatsOpt-
 CLI/blob/master/whatsopt/show_utils.py.
 
@@ -21,9 +19,10 @@ Distributed under the Apache 2.0 license
 
 Minor modifications by Francois Gallard : merge the two methods an comment
 """
-from typing import TYPE_CHECKING, Union
+from __future__ import annotations
 
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.utils.xdsmizer import XdsmType
@@ -70,9 +69,9 @@ HTML_TEMPLATE = """
 
 
 def generate_xdsm_html(
-    xdsm,  # type: XdsmType
-    file_path="xdsm.html",  # type: Union[str,Path]
-):  # type: (...) -> None
+    xdsm: XdsmType,
+    file_path: str | Path = "xdsm.html",
+) -> None:
     """Generate a HTML file to visualize a dynamic and interactive XDSM.
 
     Args:

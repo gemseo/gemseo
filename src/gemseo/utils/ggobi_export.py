@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
@@ -24,32 +22,43 @@ GGOBI : interactive data visualization software
 
 Export data to the XML file format needed by GGOBI
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import os
+from pathlib import Path
+from typing import Sequence
 from xml.dom import minidom
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Comment, Element, SubElement
+from xml.etree.ElementTree import Comment
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
+
+from numpy import ndarray
 
 
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.
 
-    :param elem: the xml element
+    Args:
+        elem: The xml element.
     """
     rough_string = ElementTree.tostring(elem, "utf-8")
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="\t")
 
 
-def save_data_arrays_to_xml(variables_names, values_array, file_path="opt_hist.xml"):
-    """Saves an optimization history in numpy format to an xml file to be read by ggobi.
+def save_data_arrays_to_xml(
+    variables_names: Sequence[str],
+    values_array: ndarray,
+    file_path: str | Path = "opt_hist.xml",
+) -> None:
+    """Save an optimization history in NumPy format to an xml file to be read by ggobi.
 
-    :param variables_names: list of the variables names
-    :type variables_names: list(str)
-    :param values_array: the variables history (nb variables,nb iterations)
-    :param file_path: the file path of the generated xml file
-    :type file_path: str
+    Args:
+        variables_names: The names of the variables.
+        values_array: The history of the variables,
+            of the form *(number of variables, number of iterations)*.
+        file_path: The file path of the generated xml file.
     """
 
     if os.path.exists(file_path):

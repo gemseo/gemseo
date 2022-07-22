@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test F1 measure."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import arange, array
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.knn import KNNClassifier
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.f1_measure import F1Measure
+from numpy import arange
+from numpy import array
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the classification algorithms."""
     input_data = 1.0 * arange(63).reshape((21, 3))
     output_data = array([[0], [1], [2]]).repeat(7, axis=0)
@@ -43,7 +39,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def dataset_test():  # type: (...) -> Dataset
+def dataset_test() -> Dataset:
     """The dataset used to test the performance classification algorithms."""
     input_data = 1.0 * arange(18).reshape((6, 3))
     output_data = array([[0], [1], [2]]).repeat(2, axis=0)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,35 +12,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # INITIAL AUTHORS - initial API and implementation and/or
 #                   initial documentation
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
 import os
 import unittest
-from os.path import dirname, exists, join
+from os.path import dirname
+from os.path import exists
+from os.path import join
 from shutil import copy
 
 import numpy as np
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.utils.py23_compat import string_types
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 DIRNAME = dirname(__file__)
 HDF_CACHE_PATH = join(DIRNAME, "dataset.hdf5")
@@ -143,7 +137,12 @@ class ScalableProblem(unittest.TestCase):
             var_ub = {}
             ScalableProblem.scalable_disciplines = []
             for discipline in ScalableProblem.original_disciplines:
-                for input_name in discipline.get_input_data_names():
+                input_names = [
+                    name
+                    for name in discipline.get_input_data_names()
+                    if not name.startswith("c_")
+                ]
+                for input_name in input_names:
                     l_bnds, u_bnds = self.problem.get_bounds_by_name([input_name])
                     var_lb[input_name] = l_bnds
                     var_ub[input_name] = u_bnds
@@ -200,7 +199,7 @@ class ScalableProblem(unittest.TestCase):
             scalable_disciplines = ScalableProblem.scalable_disciplines
             coupling_structure = MDOCouplingStructure(scalable_disciplines)
             # add an optimization variable for each coupling variable
-            for coupling in coupling_structure.strong_couplings():
+            for coupling in coupling_structure.strong_couplings:
                 value = 0.5 * np.ones(ScalableProblem.sizes[coupling])
                 design_space.add_variable(
                     coupling,
@@ -228,7 +227,7 @@ class ScalableProblem(unittest.TestCase):
 
         opt_pb.preprocess_functions()
         for func in opt_pb.get_all_functions():
-            func.check_grad(opt_pb.design_space.get_current_x())
+            func.check_grad(opt_pb.design_space.get_current_value())
 
     def test_grad(self):
         """Verify the analytical gradients against finite differences."""
@@ -244,7 +243,7 @@ class ScalableProblem(unittest.TestCase):
         attrs = self.scalable_disciplines[0].get_attributes_to_serialize()
         assert len(attrs) > 5
         for attr in attrs:
-            assert isinstance(attr, string_types)
+            assert isinstance(attr, str)
 
     def test_group_dep(self):
         hdf_node_path = ScalableProblem.original_disciplines[3].name

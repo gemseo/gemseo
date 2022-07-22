@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,18 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The Gaussian process algorithm for regression.
+r"""Gaussian process regression model.
 
 Overview
 --------
 
-The Gaussian process regression (GPR) surrogate model
+The Gaussian process regression (GPR) model
 expresses the model output as a weighted sum of kernel functions
 centered on the learning input data:
 
@@ -69,7 +67,7 @@ is estimated by numerical non-linear optimization.
 Surrogate model
 ---------------
 
-The expectation :math:`\hat{f}` is the GPR surrogate model of :math:`f`.
+The expectation :math:`\hat{f}` is the surrogate model of :math:`f`.
 
 Error measure
 -------------
@@ -84,8 +82,8 @@ of :math:`\hat{f}`:
 Interpolation or regression
 ---------------------------
 
-The GPR surrogate model can be regressive or interpolative
-according to the value of the nugget effect :math:`\\alpha\geq 0`
+The GPR model can be regressive or interpolative
+according to the value of the nugget effect :math:`\alpha\geq 0`
 which is a regularization term
 applied to the correlation matrix :math:`K`.
 When :math:`\alpha = 0`,
@@ -97,53 +95,71 @@ The GPR model relies on the GaussianProcessRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable
+from typing import ClassVar
+from typing import Iterable
+from typing import Mapping
+from typing import Tuple
 
-import openturns
-from numpy import atleast_2d, ndarray
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import Matern
+import sklearn.gaussian_process
+from numpy import atleast_2d
+from numpy import ndarray
+from numpy import repeat
+from sklearn.gaussian_process.kernels import Kernel
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import DataType, TransformerType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
+__Bounds = Tuple[float, float]
 
-class GaussianProcessRegression(MLRegressionAlgo):
-    """Gaussian process regression."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "GPR"
+class GaussianProcessRegressor(MLRegressionAlgo):
+    """Gaussian process regression model."""
+
+    SHORT_ALGO_NAME: ClassVar[str] = "GPR"
+    LIBRARY: Final[str] = "scikit-learn"
+    __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        kernel=None,  # type: Optional[openturns.CovarianceModel]
-        alpha=1e-10,  # type: Union[float,ndarray]
-        optimizer="fmin_l_bfgs_b",  # type: Union[str,Callable]
-        n_restarts_optimizer=10,  # type: int
-        random_state=None,  # type: Optional[int]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        kernel: Kernel | None = None,
+        bounds: __Bounds | Mapping[str, __Bounds] | None = None,
+        alpha: float | ndarray = 1e-10,
+        optimizer: str | Callable = "fmin_l_bfgs_b",
+        n_restarts_optimizer: int = 10,
+        random_state: int | None = None,
+    ) -> None:
         """
         Args:
-            kernel: The kernel function. If None, use a ``Matern(2.5)``.
+            kernel: The kernel specifying the covariance model.
+                If ``None``, use a Matérn(2.5).
+            bounds: The lower and upper bounds of the parameter length scales
+                when ``kernel`` is ``None``.
+                Either a unique lower-upper pair common to all the inputs
+                or lower-upper pairs for some of them.
+                When ``bounds`` is ``None`` or when an input has no pair,
+                the lower bound is 0.01 and the upper bound is 100.
             alpha: The nugget effect to regularize the model.
-            optimizer: The optimization algorithm to find the hyperparameters.
+            optimizer: The optimization algorithm to find the parameter length scales.
             n_restarts_optimizer: The number of restarts of the optimizer.
             random_state: The seed used to initialize the centers.
                 If None, the random number generator is the RandomState instance
                 used by `numpy.random`.
         """
-        super(GaussianProcessRegression, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -156,49 +172,87 @@ class GaussianProcessRegression(MLRegressionAlgo):
         )
 
         if kernel is None:
-            raw_input_shape, _ = self._get_raw_shapes()
-            self.kernel = Matern(
-                (1.0,) * raw_input_shape, [(0.01, 100)] * raw_input_shape, nu=2.5
+            kernel = sklearn.gaussian_process.kernels.Matern(
+                (1.0,) * self._reduced_dimensions[0],
+                self.__compute_parameter_length_scale_bounds(bounds),
+                nu=2.5,
             )
-        else:
-            self.kernel = kernel
 
-        nro = n_restarts_optimizer
-        self.algo = GaussianProcessRegressor(
+        self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
             normalize_y=False,
-            kernel=self.kernel,
+            kernel=kernel,
             copy_X_train=True,
             alpha=alpha,
             optimizer=optimizer,
-            n_restarts_optimizer=nro,
+            n_restarts_optimizer=n_restarts_optimizer,
             random_state=random_state,
         )
-        self.parameters["kernel"] = self.kernel.__class__.__name__
+        self.parameters["kernel"] = kernel.__class__.__name__
+
+    @property
+    def kernel(self):  # (...) -> Kernel
+        """The kernel used for prediction."""
+        if self.is_trained:
+            return self.algo.kernel_
+        else:
+            return self.algo.kernel
+
+    def __compute_parameter_length_scale_bounds(
+        self,
+        bounds: __Bounds | Mapping[str, __Bounds] | None,
+    ) -> list[tuple[float, float]]:
+        """Return the lower and upper bounds for the parameter length scales.
+
+        Args:
+            bounds: The lower and upper bounds of the parameter length scales.
+                Either a unique lower-upper pair common to all the inputs
+                or lower-upper pairs for some of them.
+                When an input has no pair,
+                the lower bound is 0.01 and the upper bound is 100.
+
+        Returns:
+            The lower and upper bounds of the parameter length scales.
+        """
+        dimension = self._reduced_dimensions[0]
+        if bounds is None:
+            return [self.__DEFAULT_BOUNDS] * dimension
+
+        if isinstance(bounds, tuple):
+            return [bounds] * dimension
+
+        bounds_ = []
+        for name in self.input_names:
+            name_bounds = bounds.get(name, self.__DEFAULT_BOUNDS)
+            bounds_.extend([name_bounds] * self.sizes[name])
+
+        return bounds_
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
-        output_pred = self.algo.predict(input_data, False)
-        return output_pred
+        input_data: ndarray,
+    ) -> ndarray:
+        output_data = self.algo.predict(input_data)
+        if output_data.ndim == 1:
+            output_data = output_data[:, None]
+        return output_data
 
     def predict_std(
         self,
-        input_data,  # type: DataType
-    ):  # type: (...) -> ndarray
+        input_data: DataType,
+    ) -> ndarray:
         """Predict the standard deviation from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
-        or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g. ``array([1., 2., 3.])``
+        or as a dictionary of NumPy arrays,
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the NumPy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -212,19 +266,21 @@ class GaussianProcessRegression(MLRegressionAlgo):
             The standard deviation at the query points.
 
         Warning:
-            The standard deviation at a query point is defined as a positive scalar,
-            whatever the output dimension.
-            By the way,
-            if the output variables are transformed before the training stage,
+            If the output variables are transformed before the training stage,
             then the standard deviation is related to this transformed output space
             unlike :meth:`.predict` which returns values in the original output space.
         """
-        as_dict = isinstance(input_data, dict)
-        if as_dict:
-            input_data = DataConversion.dict_to_array(input_data, self.input_names)
+        if isinstance(input_data, Mapping):
+            input_data = concatenate_dict_of_arrays_to_array(
+                input_data, self.input_names
+            )
+
         input_data = atleast_2d(input_data)
-        inputs = self.learning_set.INPUT_GROUP
-        if inputs in self.transformer:
-            input_data = self.transformer[inputs].transform(input_data)
-        _, output_std = self.algo.predict(input_data, True)
-        return output_std
+        transformer = self.transformer.get(self.learning_set.INPUT_GROUP)
+        if transformer:
+            input_data = transformer.transform(input_data)
+
+        output_data = self.algo.predict(input_data, return_std=True)[1]
+        if output_data.ndim == 1:
+            output_data = repeat(output_data[:, None], self._reduced_dimensions[1], 1)
+        return output_data

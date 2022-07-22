@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,30 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm selection module."""
-from __future__ import division, unicode_literals
-
 import numpy as np
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.regression.linreg import LinearRegression
-from gemseo.mlearning.regression.polyreg import PolynomialRegression
-from gemseo.mlearning.regression.rbf import RBFRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)
     data = np.vstack((data, np.sin(data), np.cos(data))).T
@@ -78,20 +73,20 @@ def test_add_candidate(dataset):
     selector = MLAlgoSelection(dataset, MSEMeasure)
 
     # Add linear regression candidate
-    selector.add_candidate("LinearRegression")
+    selector.add_candidate("LinearRegressor")
     assert selector.candidates
     cand = selector.candidates[0]
-    assert isinstance(cand[0], LinearRegression)
+    assert isinstance(cand[0], LinearRegressor)
     assert isinstance(cand[1], float)
 
     # Add polynomial regression candidate
     degrees = [2, 5, 7]
     fit_int = False
     selector.add_candidate(
-        "PolynomialRegression", degree=[2, 5, 7], fit_intercept=[fit_int]
+        "PolynomialRegressor", degree=[2, 5, 7], fit_intercept=[fit_int]
     )
     cand = selector.candidates[-1]
-    assert isinstance(cand[0], PolynomialRegression)
+    assert isinstance(cand[0], PolynomialRegressor)
     assert isinstance(cand[1], float)
     assert cand[0].parameters["degree"] in degrees
     assert cand[0].parameters["fit_intercept"] == fit_int
@@ -100,9 +95,9 @@ def test_add_candidate(dataset):
     space = DesignSpace()
     space.add_variable("smooth", 1, "float", 0.0, 10.0, 0.0)
     algorithm = {"algo": "fullfact", "n_samples": 11}
-    selector.add_candidate("RBFRegression", space, algorithm)
+    selector.add_candidate("RBFRegressor", space, algorithm)
     cand = selector.candidates[-1]
-    assert isinstance(cand[0], RBFRegression)
+    assert isinstance(cand[0], RBFRegressor)
     assert isinstance(cand[1], float)
     assert isinstance(cand[0].parameters["smooth"], float)
     assert cand[0].parameters["smooth"] >= 0
@@ -114,9 +109,9 @@ def test_select(dataset, eval_method):
     """Test select method."""
     measure = MSEMeasure
     selector = MLAlgoSelection(dataset, measure, eval_method=eval_method)
-    selector.add_candidate("PolynomialRegression", degree=[1, 2])
-    selector.add_candidate("LinearRegression")
-    selector.add_candidate("RBFRegression", smooth=[0, 0.1, 1, 10])
+    selector.add_candidate("PolynomialRegressor", degree=[1, 2])
+    selector.add_candidate("LinearRegressor")
+    selector.add_candidate("RBFRegressor", smooth=[0, 0.1, 1, 10])
     algo = selector.select(True)
     assert isinstance(algo, tuple)
     assert len(algo) == 2
@@ -126,7 +121,7 @@ def test_select(dataset, eval_method):
     for cand in cands:
         if cand != algo:
             assert measure.is_better(algo[1], cand[1])
-    assert algo[0].__class__.__name__ == "RBFRegression"
+    assert algo[0].__class__.__name__ == "RBFRegressor"
 
     algo = selector.select()
     assert isinstance(algo, MLRegressionAlgo)

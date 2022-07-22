@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,12 +19,10 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quadratic approximations of functions from the optimization history."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 from math import ceil
-from typing import Optional
 
 import numpy as np
 import pylab
@@ -59,65 +55,73 @@ class QuadApprox(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(QuadApprox, self).__init__(opt_problem)
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
         self.grad_opt = None
 
     def _plot(
         self,
-        function,  # type: str
-        func_index=None,  # type: Optional[int]
-    ):  # type: (...) -> None
+        function: str,
+        func_index: int | None = None,
+    ) -> None:
         """Build the plot and save it.
 
         Args:
             function: The function name to build the quadratic approximation.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
-                If None and if the output is multidimensional, an error is raised.
+                If ``None`` and if the output is multidimensional, an error is raised.
         """
-        b_mat = self.__build_approx(function, func_index)
-        self.out_data_dict["b_mat"] = b_mat
-        fig = self.__plot_hessian(b_mat, function)
-        self._add_figure(fig, "hess_approx")
-        fig = self.__plot_variations(b_mat)
-        self._add_figure(fig, "quad_approx")
+
+        problem = self.opt_problem
+        if function == self._obj_name:
+            b_mat = self.__build_approx(self._standardized_obj_name, func_index)
+            if not (problem.minimize_objective or problem.use_standardized_objective):
+                self.grad_opt *= -1
+                b_mat *= -1
+                function = self._standardized_obj_name
+        else:
+            if function in problem.constraint_names:
+                function = problem.constraint_names[function][0]
+
+            b_mat = self.__build_approx(function, func_index)
+
+        self.materials_for_plotting["b_mat"] = b_mat
+        self._add_figure(self.__plot_hessian(b_mat, function), "hess_approx")
+        self._add_figure(self.__plot_variations(b_mat), "quad_approx")
 
     def __build_approx(
         self,
-        function,  # type: str
-        func_index,  # type: int
-    ):  # type: (...) -> ndarray
+        function: str,
+        func_index: int | None,
+    ) -> ndarray:
         """Build the approximation.
 
         Args:
             function: The function name to build the quadratic approximation.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
+                If ``None`` and if the output is multidimensional, an error is raised.
 
         Returns:
              The approximation.
         """
-        apprx = SR1Approx(self.database)
-        n_x = self.opt_problem.get_dimension()
-        max_i = int(1.5 * n_x)
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
-        out = apprx.build_approximation(
-            function, at_most_niter=max_i, return_x_grad=True, func_index=func_index
+        b_mat, _, _, self.grad_opt = SR1Approx(self.database).build_approximation(
+            function,
+            at_most_niter=int(1.5 * self.opt_problem.get_dimension()),
+            return_x_grad=True,
+            func_index=func_index,
         )
-        b_mat = out[0]
-        grad_opt = out[-1]
-
-        self.grad_opt = grad_opt
         return b_mat
 
     @classmethod
     def __plot_hessian(
         cls,
-        hessian,  # type: ndarray
-        function,  # type: str
-    ):  # type: (...) -> Figure
+        hessian: ndarray,
+        function: str,
+    ) -> Figure:
         """Plot the Hessian of the function.
 
         Args:
@@ -131,36 +135,34 @@ class QuadApprox(OptPostProcessor):
         pylab.plt.xlabel(r"$x_i$", fontsize=16)
         pylab.plt.ylabel(r"$x_j$", fontsize=16)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
-        linthresh = 10 ** (np.log10(vmax) - 5.0)
-
-        norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax)
+        linear_threshold = 10 ** (np.log10(vmax) - 5.0)
 
         # SymLog is a symmetric log scale adapted to negative values
         pylab.imshow(
             hessian,
             cmap=PARULA,
             interpolation="nearest",
-            norm=norm,
+            norm=SymLogNorm(linthresh=linear_threshold, vmin=-vmax, vmax=vmax),
         )
         pylab.grid(True)
-        l_f = LogFormatter(base=10, labelOnlyBase=False)
-        thick_min = int(np.log10(linthresh))
-        thick_max = int(np.log10(vmax))
-        thick_num = thick_max - thick_min + 1
-        lvls_pos = np.logspace(thick_min, thick_max, num=thick_num, base=10.0)
-        levels_neg = np.sort(-lvls_pos)
-        levels = np.concatenate((levels_neg, lvls_pos))
-        pylab.plt.colorbar(ticks=levels, format=l_f)
-        fig.suptitle("Hessian matrix SR1 approximation of " + str(function))
+        thick_min, thick_max = int(np.log10(linear_threshold)), int(np.log10(vmax))
+        positive_levels = np.logspace(
+            thick_min, thick_max, num=thick_max - thick_min + 1, base=10.0
+        )
+        pylab.plt.colorbar(
+            ticks=np.concatenate((np.sort(-positive_levels), positive_levels)),
+            format=LogFormatter(base=10, labelOnlyBase=False),
+        )
+        fig.suptitle(f"Hessian matrix SR1 approximation of {function}")
         return fig
 
     @staticmethod
     def unnormalize_vector(
-        xn_array,  # type: ndarray
-        ivar,  # type: int
-        lower_bounds,  # type: ndarray
-        upper_bounds,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        xn_array: ndarray,
+        ivar: int,
+        lower_bounds: ndarray,
+        upper_bounds: ndarray,
+    ) -> ndarray:
         """Unormalize a variable with respect to bounds.
 
         Args:
@@ -178,8 +180,8 @@ class QuadApprox(OptPostProcessor):
 
     def __plot_variations(
         self,
-        hessian,  # type: ndarray
-    ):  # type: (...) -> Figure
+        hessian: ndarray,
+    ) -> Figure:
         """Plot the variation plot of the function w.r.t. all variables.
 
         Args:
@@ -199,8 +201,8 @@ class QuadApprox(OptPostProcessor):
 
         for i in range(ndv):
             ax_i = plt.subplot(nrows, ncols, i + 1)
-            f_vals = xn_vars ** 2 * hessian[i, i] + self.grad_opt[i] * xn_vars
-            self.out_data_dict[i] = f_vals
+            f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
+            self.materials_for_plotting[i] = f_vals
 
             x_vars = self.unnormalize_vector(xn_vars, i, lower_bounds, upper_bounds)
             ax_i.plot(x_vars, f_vals, "-", lw=2)

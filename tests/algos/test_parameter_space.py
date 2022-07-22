@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,22 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, arange, array, array_equal, concatenate, ndarray
-
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.design_space import DesignVariable
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.algos.parameter_space import RandomVariable
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import array_equal
+from numpy import concatenate
+from numpy import ndarray
 
 
 def test_constructor():
@@ -87,7 +88,9 @@ def test_to_design_space(mixed_space):
         assert design_space.get_size(name) == mixed_space.get_size(name)
         assert design_space.get_lower_bound(name) == mixed_space.get_lower_bound(name)
         assert design_space.get_upper_bound(name) == mixed_space.get_upper_bound(name)
-        assert design_space._current_x.get(name) == mixed_space._current_x.get(name)
+        assert design_space._current_value.get(name) == mixed_space._current_value.get(
+            name
+        )
 
     assert (
         design_space.get_lower_bound("y")[0]
@@ -98,7 +101,8 @@ def test_to_design_space(mixed_space):
         == mixed_space.distributions["y"].math_upper_bound[0]
     )
     assert (
-        design_space.get_current_x(["y"])[0] == mixed_space.distributions["y"].mean[0]
+        design_space.get_current_value(["y"])[0]
+        == mixed_space.distributions["y"].mean[0]
     )
 
 
@@ -130,7 +134,7 @@ def test_extract_uncertain_space_as_design_space(mixed_space):
         == mixed_space.distributions["y"].math_upper_bound[0]
     )
     assert (
-        uncertain_space.get_current_x(["y"])[0]
+        uncertain_space.get_current_value(["y"])[0]
         == mixed_space.distributions["y"].mean[0]
     )
 
@@ -219,29 +223,47 @@ def test_range():
     assert allclose(rng[2][1], -rng[2][0])
 
 
-def test_normalize():
-    """Check that normalize works correctly."""
+@pytest.fixture(scope="module")
+def parameter_space():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
     space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
-    vector = array([0.5] * 6)
-    u_vector = space.normalize_vect(vector, use_dist=True)
-    expectation = array([0.5] * 2 + [0.25] + [0.598706] * 3)
+    return space
+
+
+@pytest.mark.parametrize("one_dim", [True, False])
+def test_normalize(parameter_space, one_dim):
+    """Check that normalize works correctly with both 1D and 2D arrays."""
+    if one_dim:
+        vector = array([0.5] * 6)
+    else:
+        vector = array([0.5] * 12).reshape((2, 6))
+
+    u_vector = parameter_space.normalize_vect(vector, use_dist=True)
+    values = [0.5] * 2 + [0.25] + [0.598706] * 3
+    if one_dim:
+        expectation = array(values)
+    else:
+        expectation = array([values, values])
     assert allclose(u_vector, expectation, 1e-3)
 
 
-def test_unnormalize():
-    """Check that unnormalize works correctly."""
-    space = ParameterSpace()
-    space.add_variable("x1")
-    space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
-    u_vector = array([0.5] * 2 + [0.25] + [0.598706] * 3)
-    vector = space.unnormalize_vect(u_vector, use_dist=True)
-    expectation = array([0.5] * 6)
+@pytest.mark.parametrize("one_dim", [True, False])
+def test_unnormalize(parameter_space, one_dim):
+    """Check that unnormalize works correctly with both 1D and 2D arrays."""
+    values = [0.5] * 2 + [0.25] + [0.598706] * 3
+    if one_dim:
+        u_vector = array(values)
+    else:
+        u_vector = array([values, values])
+    vector = parameter_space.unnormalize_vect(u_vector, use_dist=True)
+    values = [0.5] * 6
+    if one_dim:
+        expectation = array(values)
+    else:
+        expectation = array([values, values])
     assert allclose(vector, expectation, 1e-3)
 
 
@@ -281,7 +303,7 @@ def test_unnormalize_vect():
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     assert allclose(
-        space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5 ** 0.5])
+        space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5**0.5])
     )
     assert space.unnormalize_vect(array([0.5]))[0] == 1.0
 
@@ -293,7 +315,7 @@ def test_normalize_vect():
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     assert allclose(
-        space.normalize_vect(array([2.0 - 1.5 ** 0.5]), use_dist=True), array([0.5])
+        space.normalize_vect(array([2.0 - 1.5**0.5]), use_dist=True), array([0.5])
     )
     assert space.normalize_vect(array([1.0]))[0] == 0.5
 
@@ -322,7 +344,7 @@ def test_evaluate_cdf_raising_errors():
 
 
 @pytest.fixture
-def io_dataset():  # type: (...) -> Dataset
+def io_dataset() -> Dataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)
     outputs = arange(20).reshape(10, 2)
@@ -347,11 +369,11 @@ def test_init_from_dataset_default(io_dataset):
         assert (parameter_space[name].var_type == "float").all()
         assert name in parameter_space.deterministic_variables
     assert parameter_space["in_1"].size == 2
-    ref = io_dataset["in_1"]["in_1"].min(0)
+    ref = io_dataset["in_1"].min(0)
     assert (parameter_space["in_1"].l_b == ref).all()
-    ref = io_dataset["in_1"]["in_1"].max(0)
+    ref = io_dataset["in_1"].max(0)
     assert (parameter_space["in_1"].u_b == ref).all()
-    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
+    ref = (io_dataset["in_1"].max(0) + io_dataset["in_1"].min(0)) / 2.0
     assert (parameter_space["in_1"].value == ref).all()
     assert parameter_space["in_2"].size == 3
     assert parameter_space["out_1"].size == 2
@@ -465,3 +487,23 @@ def test_transform():
     assert transformed_vector == array([0.5])
     untransformed_vector = parameter_space.untransform_vect(transformed_vector)
     assert vector == untransformed_vector
+
+
+def test_rename_variable():
+    """Check the renaming of a variable."""
+    design_variable = DesignVariable(2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    random_variable = RandomVariable(
+        "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
+    )
+
+    parameter_space = ParameterSpace()
+    parameter_space["x"] = design_variable
+    parameter_space["u"] = random_variable
+    parameter_space.rename_variable("x", "y")
+    parameter_space.rename_variable("u", "v")
+
+    other_parameter_space = ParameterSpace()
+    other_parameter_space["y"] = design_variable
+    other_parameter_space["v"] = random_variable
+
+    assert parameter_space == other_parameter_space

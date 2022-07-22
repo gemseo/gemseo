@@ -1,0 +1,40 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. _plugins:
+
+Plugins
+=======
+
+.. _cookiecutter-gemseo: https://gitlab.com/gemseo/dev/cookiecutter-gemseo
+.. _cookiecutter: https://cookiecutter.readthedocs.io
+
+|g| features can be extended with external Python modules.
+All kinds of additional features can be implemented:
+disciplines, optimizers, DOE algorithms, formulations, post-processings, surrogate models, ...
+
+.. list-table::
+   :widths: 25 50 25
+   :header-rows: 1
+
+   * - Name / Repo
+     - Description
+     - Documentation
+{% for name, description in plugins.items() %}
+   * - `{{ name }} <https://gitlab.com/gemseo/dev/{{ name }}>`_
+     - {{ description }}
+     - :ref:`Modules <{{ name.replace('-', '_') }}>`
+{% endfor %}
+
+.. seealso::
+
+   :ref:`extending-gemseo` with external Python modules.
+
+.. seealso::
+
+   Create a new plugin with `cookiecutter-gemseo`_.

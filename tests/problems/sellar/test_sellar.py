@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,36 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import os
 import unittest
-from math import exp
 
 import numpy as np
 import pytest
-
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sellar.sellar import (
-    C_1,
-    C_2,
-    OBJ,
-    X_LOCAL,
-    X_SHARED,
-    Y_1,
-    Y_2,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
+from gemseo.problems.sellar.sellar import C_1
+from gemseo.problems.sellar.sellar import C_2
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_LOCAL
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -75,24 +65,6 @@ class TestSellar(unittest.TestCase):
         discipline1.execute()
         y_1 = discipline1.get_outputs_by_name(Y_1)
         self.assertAlmostEqual(y_1[0], 0.89442719, 8)
-
-    def test_run_2(self):
-        """Evaluate discipline 2."""
-        discipline2 = Sellar2()
-        discipline2.execute()
-        y_2 = discipline2.get_outputs_by_name(Y_2)
-        self.assertAlmostEqual(y_2[0], 2.0, 10)
-
-    def test_run_obj(self):
-        """Evaluate objective function."""
-        system = SellarSystem()
-        design_space = SellarDesignSpace()
-        indata = design_space.get_current_x_dict()
-        indata[Y_1] = np.ones([1])
-        indata[Y_2] = np.ones([1])
-        system.execute(indata)
-        obj = system.get_outputs_by_name(OBJ)
-        self.assertAlmostEqual(obj, 2 ** 2 + 1 + exp(-1.0), 10)
 
     def test_serialize(self):
         """"""
@@ -177,19 +149,6 @@ class TestSellar(unittest.TestCase):
 
         assert mda.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    def test_residual_form_jacs(self):
-        """"""
-
-        d1 = Sellar1(residual_form=True)
-        d2 = Sellar2(residual_form=True)
-        system = SellarSystem()
-        disciplines = [d1, d2, system]
-        indata = self.get_input_data_linearization()
-        indata[Y_1] = np.ones([1])
-        indata[Y_2] = np.ones([1])
-        for disc in disciplines:
-            assert disc.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
-
 
 class TestSellarScenarios(unittest.TestCase):
     """Test optimization scenarios."""
@@ -205,18 +164,8 @@ class TestSellarScenarios(unittest.TestCase):
     def create_functional_disciplines():
         """"""
         disciplines = [
-            Sellar1(residual_form=False),
-            Sellar2(residual_form=False),
-            SellarSystem(),
-        ]
-        return disciplines
-
-    @staticmethod
-    def create_residual_disciplines():
-        """"""
-        disciplines = [
-            Sellar1(residual_form=True),
-            Sellar2(residual_form=True),
+            Sellar1(),
+            Sellar2(),
             SellarSystem(),
         ]
         return disciplines
@@ -238,21 +187,15 @@ class TestSellarScenarios(unittest.TestCase):
         return scenario
 
     @staticmethod
-    def build_and_run_scenario(
-        formulation, algo, use_residuals=False, lin_method="complex_step"
-    ):
+    def build_and_run_scenario(formulation, algo, lin_method="complex_step"):
         """Create a scenario with given formulation, solver and linearization method,
         and solve it.
 
         :param formulation: param algo:
-        :param use_residuals: Default value = False)
         :param lin_method: Default value = 'complex_step')
         :param algo:
         """
-        if use_residuals:
-            disciplines = TestSellarScenarios.create_residual_disciplines()
-        else:
-            disciplines = TestSellarScenarios.create_functional_disciplines()
+        disciplines = TestSellarScenarios.create_functional_disciplines()
         scenario = TestSellarScenarios.build_scenario(disciplines, formulation)
         scenario.set_differentiation_method(lin_method)
 
@@ -265,7 +208,7 @@ class TestSellarScenarios(unittest.TestCase):
         scenario.execute(run_inputs)
 
         obj_opt = scenario.optimization_result.f_opt
-        x_opt = scenario.design_space.get_current_x_dict()
+        x_opt = scenario.design_space.get_current_value(as_dict=True)
 
         x_local = x_opt[X_LOCAL]
         x_shared = x_opt[X_SHARED]

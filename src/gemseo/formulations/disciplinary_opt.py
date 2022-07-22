@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,22 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A formulation for uncoupled or weakly coupled problems."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List, Sequence, Tuple
+from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
+from gemseo.core.execution_sequence import ExecutionSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.disciplines.utils import get_all_inputs
 
 
 class DisciplinaryOpt(MDOFormulation):
@@ -40,13 +39,13 @@ class DisciplinaryOpt(MDOFormulation):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        maximize_objective=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-    ):  # type: (...) -> None
-        super(DisciplinaryOpt, self).__init__(
+        disciplines: Sequence[MDODiscipline],
+        objective_name: str,
+        design_space: DesignSpace,
+        maximize_objective: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    ) -> None:
+        super().__init__(
             disciplines,
             objective_name,
             design_space,
@@ -57,31 +56,31 @@ class DisciplinaryOpt(MDOFormulation):
         if len(disciplines) > 1:
             self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         self._filter_design_space()
-        self._set_defaultinputs_from_ds()
+        self._set_default_input_values_from_design_space()
         # Build the objective from its objective name
         self._build_objective_from_disc(objective_name)
 
     def get_expected_workflow(
         self,
-    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
+    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         if self.chain is None:
             return ExecutionSequenceFactory.serial(self.disciplines[0])
         return self.chain.get_expected_workflow()
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         if self.chain is None:
             return []
         return self.chain.get_expected_dataflow()
 
-    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
+    def get_top_level_disc(self) -> list[MDODiscipline]:
         if self.chain is not None:
             return [self.chain]
         return self.disciplines
 
-    def _filter_design_space(self):  # type: (...) -> None
+    def _filter_design_space(self) -> None:
         """Filter the design space to keep only available variables."""
-        all_inpts = DataConversion.get_all_inputs(self.get_top_level_disc())
+        all_inpts = get_all_inputs(self.get_top_level_disc())
         kept = set(self.design_space.variables_names) & set(all_inpts)
         self.design_space.filter(kept)

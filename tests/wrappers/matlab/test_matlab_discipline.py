@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-import sys
-
 import pytest
 from numpy import array
 
 # skip if matlab API is not found
 matlab = pytest.importorskip("matlab")
 
-from gemseo.utils.py23_compat import PY2  # noqa: E402
 from gemseo.wrappers.matlab.matlab_data_processor import load_matlab_file  # noqa: E402
 from gemseo.wrappers.matlab.matlab_discipline import MatlabDiscipline  # noqa: E402
 
@@ -44,7 +39,7 @@ def test_inputs_from_matlab():
 def test_inputs_from_param():
     """Test input variables given as input param."""
     mat = MatlabDiscipline(
-        MATLAB_COMPLEX_FUNC, input_data_list=["v1", "v2", "v3", "v4", "v5", "v6"]
+        MATLAB_COMPLEX_FUNC, input_names=["v1", "v2", "v3", "v4", "v5", "v6"]
     )
     assert mat._MatlabDiscipline__inputs == ["v1", "v2", "v3", "v4", "v5", "v6"]
 
@@ -202,14 +197,14 @@ def test_check_existing_function():
 
 def test_check_function_builtin():
     """Test a built-in function."""
-    mat = MatlabDiscipline("cos", input_data_list=["x"], output_data_list=["y"])
+    mat = MatlabDiscipline("cos", input_names=["x"], output_names=["y"])
     assert mat.function_name == "cos"
 
 
 def test_run_builtin():
     """Test that built-in matlab function is correctly called and returned right
     values."""
-    mat = MatlabDiscipline("cos", input_data_list=["x"], output_data_list=["out"])
+    mat = MatlabDiscipline("cos", input_names=["x"], output_names=["out"])
     mat.execute({"x": array([0])})
     assert mat.local_data["out"] == pytest.approx(1)
 
@@ -225,7 +220,7 @@ def test_run_user_new_names():
     """Test that user matlab function is correctly called and returned right values when
     new names are prescribed for inputs and outputs."""
     mat = MatlabDiscipline(
-        MATLAB_SIMPLE_FUNC, input_data_list=["in1"], output_data_list=["out"]
+        MATLAB_SIMPLE_FUNC, input_names=["in1"], output_names=["out"]
     )
     mat.execute({"in1": array([3])})
     assert mat.local_data["out"] == pytest.approx(9)
@@ -280,14 +275,9 @@ def test_run_user_multidim_jac_wrong_size():
     with pytest.raises(ValueError) as excp:
         mat.execute({"x": array([1, 2]), "y": array([3])})
 
-    if PY2 and sys.platform.startswith("win"):
-        type_ = "L"
-    else:
-        type_ = ""
-
     assert str(excp.value) == (
         "Jacobian term 'jac_dz1_dx' has the wrong size "
-        "(1{}, 4{}) whereas it should be (2, 2).".format(type_, type_)
+        "(1, 4) whereas it should be (2, 2)."
     )
 
 

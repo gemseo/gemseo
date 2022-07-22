@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,102 +12,102 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Abstraction of processes."""
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
-
-import inspect
+import collections
 import logging
 import os
+import pickle
 import sys
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import Manager, Value, cpu_count
+from multiprocessing import cpu_count
+from multiprocessing import Manager
+from multiprocessing import Value
 from multiprocessing.sharedctypes import Synchronized
 from timeit import default_timer as timer
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import ClassVar
+from typing import Generator
+from typing import Iterable
+from typing import Mapping
+from typing import MutableMapping
+from typing import NoReturn
+from typing import TYPE_CHECKING
 
-import six
-from custom_inherit import DocInheritMeta
-from numpy import concatenate, empty, ndarray, zeros
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+from numpy import concatenate
+from numpy import empty
+from numpy import ndarray
+from numpy import zeros
+
+from gemseo.core.cache import AbstractCache
+from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.discipline_data import MutableData
+from gemseo.core.namespaces import remove_prefix_from_dict
+from gemseo.core.namespaces import remove_prefix_from_list
 
 if TYPE_CHECKING:
     from gemseo.core.execution_sequence import SerialExecSequence
 
+
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.grammar import AbstractGrammar, InvalidDataException
+from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from pathlib import Path
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
-
-# TODO: remove try except when py2 is no longer supported
-try:
-    import cPickle as pickle  # noqa: N813
-except ImportError:
-    import pickle
-
 
 LOGGER = logging.getLogger(__name__)
 
 
-def default_dict_factory():  # type: (...) -> Dict
+def default_dict_factory() -> dict:
     """Instantiate a defaultdict(None) object."""
     return defaultdict(None)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class MDODiscipline(object):
+class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """A software integrated in the workflow.
 
-    The inputs and outputs are defined in a grammar, which can be
-    either a SimpleGrammar or a JSONGrammar, or your own which
-    derives from the Grammar abstract class.
+    To be used,
+    subclass :class:`.MDODiscipline`
+    and implement the :meth:`._run` method which defines the execution of the software.
+    Typically,
+    :meth:`._run` gets the input data stored in the :attr:`.local_data`,
+    passes them to the callable computing the output data, e.g. a software,
+    and stores these output data in the :attr:`.local_data`.
 
-    To be used, use a subclass and implement the _run method
-    which defined the execution of the software.
-    Typically, in the _run method, get the inputs from the
-    input grammar, call your software, and write the outputs
-    to the output grammar.
+    Then,
+    the end-user calls the :meth:`.execute` method
+    with optional ``input_data``;
+    if not,
+    :attr:`.default_inputs` are used.
 
-    The JSONGrammar files are automatically detected when in the same
-    folder as your subclass module and named "CLASSNAME_input.json"
-    use ``auto_detect_grammar_files=True`` to activate this option.
+    This :meth:`.execute` method uses name grammars
+    to check the variable names and types of
+    both the passed input data before calling :meth:`.run`
+    and the returned output data before they are stored in the :attr:`.cache`.
+    A grammar can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar`,
+    or your own which derives from :class:`.AbstractGrammar`.
 
     Attributes:
-        input_grammar (AbstractGrammar): The input grammar.
-        output_grammar (AbstractGrammar): The output grammar.
-        grammar_type (str): The type of grammar
-            to be used for inputs and outputs declaration.
-        comp_dir (str): The path to the directory of the discipline module file if any.
+        input_grammar (BaseGrammar): The input grammar.
+        output_grammar (BaseGrammar): The output grammar.
         data_processor (DataProcessor): A tool to pre- and post-process discipline data.
         re_exec_policy (str): The policy to re-execute the same discipline.
-        residual_variables (List[str]): The output variables
+        residual_variables (Mapping[str, str]): The output variables
+            mapping to their inputs,
             to be considered as residuals; they shall be equal to zero.
+        run_solves_residuals boolean: if True, the run method shall solve the residuals.
         jac (Dict[str, Dict[str, ndarray]]): The Jacobians of the outputs wrt inputs
             of the form ``{output: {input: matrix}}``.
         exec_for_lin (bool): Whether the last execution was due to a linearization.
@@ -116,7 +115,6 @@ class MDODiscipline(object):
         cache (AbstractCache): The cache
             containing one or several executions of the discipline
             according to the cache policy.
-        local_data (Dict[str, Any]): The last input and output data.
     """
 
     STATUS_VIRTUAL = "VIRTUAL"
@@ -124,10 +122,19 @@ class MDODiscipline(object):
     STATUS_DONE = "DONE"
     STATUS_RUNNING = "RUNNING"
     STATUS_FAILED = "FAILED"
+    AVAILABLE_STATUSES = [
+        STATUS_DONE,
+        STATUS_FAILED,
+        STATUS_PENDING,
+        STATUS_RUNNING,
+        STATUS_VIRTUAL,
+    ]
 
-    __DEPRECATED_GRAMMAR_TYPES = {"JSON": "JSONGrammar", "Simple": "SimpleGrammar"}
     JSON_GRAMMAR_TYPE = "JSONGrammar"
     SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"
+
+    GRAMMAR_DIRECTORY: ClassVar[str | None] = None
+    """The directory in which to search for the grammar files if not the class one."""
 
     COMPLEX_STEP = "complex_step"
     FINITE_DIFFERENCES = "finite_differences"
@@ -135,6 +142,9 @@ class MDODiscipline(object):
     SIMPLE_CACHE = "SimpleCache"
     HDF5_CACHE = "HDF5Cache"
     MEMORY_FULL_CACHE = "MemoryFullCache"
+
+    activate_cache: bool = True
+    """Whether to cache the discipline evaluations by default."""
 
     APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
     AVAILABLE_MODES = (
@@ -150,36 +160,41 @@ class MDODiscipline(object):
     RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
     N_CPUS = cpu_count()
 
+    activate_counters: ClassVar[bool] = True
+    """Whether to activate the counters (execution time, calls and linearizations)."""
+
+    activate_input_data_check: ClassVar[bool] = True
+    """Whether to check the input data respect the input grammar."""
+
+    activate_output_data_check: ClassVar[bool] = True
+    """Whether to check the output data respect the output grammar."""
+
     _ATTR_TO_SERIALIZE = (
-        "residual_variables",
-        "output_grammar",
-        "name",
-        "local_data",
-        "jac",
-        "input_grammar",
-        "_status",
-        "cache",
-        "n_calls",
-        "n_calls_linearize",
+        "_cache_was_loaded",
+        "_default_inputs",
         "_differentiated_inputs",
         "_differentiated_outputs",
-        "data_processor",
-        "_is_linearized",
-        "_linearization_mode",
-        "_default_inputs",
-        "re_exec_policy",
-        "exec_time",
-        "_cache_type",
-        "_cache_file_path",
-        "_cache_tolerance",
-        "_cache_hdf_node_name",
-        "_linearize_on_last_state",
-        "_cache_was_loaded",
-        "_grammar_type",
-        "comp_dir",
-        "exec_for_lin",
         "_in_data_hash_dict",
+        "_is_linearized",
         "_jac_approx",
+        "_linearization_mode",
+        "_linearize_on_last_state",
+        "_grammar_type",
+        "_local_data",
+        "_status",
+        "cache",
+        "data_processor",
+        "exec_for_lin",
+        "exec_time",
+        "input_grammar",
+        "jac",
+        "n_calls",
+        "n_calls_linearize",
+        "name",
+        "output_grammar",
+        "re_exec_policy",
+        "residual_variables",
+        "run_solves_residuals",
     )
 
     __time_stamps_mp_manager = None
@@ -187,55 +202,64 @@ class MDODiscipline(object):
 
     def __init__(
         self,
-        name=None,  # type: Optional[str]
-        input_grammar_file=None,  # type: Optional[Union[str, Path]]
-        output_grammar_file=None,  # type: Optional[Union[str, Path]]
-        auto_detect_grammar_files=False,  # type: bool
-        grammar_type=JSON_GRAMMAR_TYPE,  # type: str
-        cache_type=SIMPLE_CACHE,  # type: str
-        cache_file_path=None,  # type: Optional[Union[str, Path]]
-    ):  # type: (...) -> None
+        name: str | None = None,
+        input_grammar_file: str | Path | None = None,
+        output_grammar_file: str | Path | None = None,
+        auto_detect_grammar_files: bool = False,
+        grammar_type: str = JSON_GRAMMAR_TYPE,
+        cache_type: str | None = SIMPLE_CACHE,
+        cache_file_path: str | Path | None = None,
+    ) -> None:
         """
         Args:
             name: The name of the discipline.
                 If None, use the class name.
             input_grammar_file: The input grammar file path.
-                If None and ``auto_detect_grammar_files=True``,
-                use the file naming convention ``name + "_input.json"``
-                and look for it in the directory containing the discipline source file
-                If None and ``auto_detect_grammar_files=False``,
+                If ``None`` and ``auto_detect_grammar_files=True``,
+                look for ``"ClassName_input.json"``
+                in the :attr:`.GRAMMAR_DIRECTORY` if any
+                or in the directory of the discipline class module.
+                If ``None`` and ``auto_detect_grammar_files=False``,
                 do not initialize the input grammar from a schema file.
             output_grammar_file: The output grammar file path.
-                If None and ``auto_detect_grammar_files=True``,
-                use the file naming convention ``name + "_output.json"``
-                and look for it in the directory containing the discipline source file
-                If None and ``auto_detect_grammar_files=False``,
+                If ``None`` and ``auto_detect_grammar_files=True``,
+                look for ``"ClassName_output.json"``
+                in the :attr:`.GRAMMAR_DIRECTORY` if any
+                or in the directory of the discipline class module.
+                If ``None`` and ``auto_detect_grammar_files=False``,
                 do not initialize the output grammar from a schema file.
-            auto_detect_grammar_files: Whether to use the naming convention
-                when ``input_grammar_file`` and ``output_grammar_file`` are None.
-                If so,
-                search for these file names in the directory
-                containing the discipline source file.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            auto_detect_grammar_files: Whether to
+                look for ``"ClassName_{input,output}.json"``
+                in the :attr:`.GRAMMAR_DIRECTORY` if any
+                or in the directory of the discipline class module
+                when ``{input,output}_grammar_file`` is ``None``.
+            grammar_type: The type of grammar to define the input and output variables,
+                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             cache_type: The type of policy to cache the discipline evaluations,
-                e.g. :attr:`.SIMPLE_CACHE` or :attr:`.HDF5_CACHE`.
+                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
+                :attr:`.MDODiscipline.HDF5_CACHE` to cache them in a HDF file,
+                or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
+                If ``None`` or if :class:`.MDODiscipline.activate_cache` is ``True``,
+                do not cache the discipline evaluations.
             cache_file_path: The HDF file path
-                when ``grammar_type`` is :attr:`.HDF5_CACHE`.
+                when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
         """
-        self.input_grammar = None  # : input grammar
-        self.output_grammar = None  # : output grammar
-        self._grammar_type = grammar_type
-        self.comp_dir = None
 
         # : data converters between execute and _run
         self.data_processor = None
-        self._default_inputs = {}  # : default data to be set if not passed
-        # Allow to re execute the same discipline twice, only if did not fail
+        self._default_inputs = None
+        self.input_grammar = None
+        self.output_grammar = None
+        self.__set_default_inputs({})
+        # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         # : list of outputs that shall be null, to be considered as residuals
-        self.residual_variables = []
+        self.residual_variables = {}
+
+        self.run_solves_residuals = False
+
         self._differentiated_inputs = []  # : outputs to differentiate
         # : inputs to be used for differentiation
         self._differentiated_outputs = []
@@ -262,41 +286,46 @@ class MDODiscipline(object):
             self.name = name
 
         self.cache = None
-        self._cache_type = cache_type
-        self._cache_file_path = cache_file_path
-        self._cache_tolerance = 0.0
-        self._cache_hdf_node_name = None
-        # By default, dont use approximate cache
-        # It is up to the user to choose to optimize CPU time with this or not
-        self.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_file_path)
+        if not self.activate_cache:
+            cache_type = None
+
+        if cache_type is not None:
+            self.cache = self.__create_new_cache(
+                cache_type, hdf_file_path=cache_file_path, hdf_node_path=self.name
+            )
+
+        self._cache_was_loaded = False
+
         # linearize mode :auto, adjoint, direct
         self._linearization_mode = JacobianAssembly.AUTO_MODE
 
-        self_module = sys.modules.get(self.__class__.__module__)
-        has_file = hasattr(self_module, "__file__")
-        if has_file:
-            self.comp_dir = str(Path(inspect.getfile(self.__class__)).parent.absolute())
+        self._grammar_type = grammar_type
 
-        if input_grammar_file is None and auto_detect_grammar_files:
-            input_grammar_file = self.auto_get_grammar_file(True)
-        if output_grammar_file is None and auto_detect_grammar_files:
-            output_grammar_file = self.auto_get_grammar_file(False)
+        if auto_detect_grammar_files:
+            if input_grammar_file is None:
+                input_grammar_file = self.auto_get_grammar_file(is_input=True)
+
+            if output_grammar_file is None:
+                output_grammar_file = self.auto_get_grammar_file(is_input=False)
 
         self._instantiate_grammars(
             input_grammar_file, output_grammar_file, self._grammar_type
         )
 
-        self.local_data = {}  # : the inputs and outputs data
+        self._local_data = None
+        self.__set_local_data({})
+
         # : The current status of execution
         self._status = self.STATUS_PENDING
-        self._cache_was_loaded = False
-        self._init_shared_attrs()
+        if self.activate_counters:
+            self._init_shared_attrs()
+
         self._status_observers = []
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
@@ -306,122 +335,176 @@ class MDODiscipline(object):
         msg.add("Outputs: {}", pretty_repr(outputs))
         return str(msg)
 
-    def _init_shared_attrs(self):  # type: (...) -> None
+    def _init_shared_attrs(self) -> None:
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
 
-    def __init_cache_attr(self):  # type: (...) -> None
-        """Initialize the cache attributes."""
-        if self._cache_type == self.HDF5_CACHE:
-            self.cache = None
-            self.set_cache_policy(
-                self.HDF5_CACHE,
-                self._cache_tolerance,
-                self._cache_file_path,
-                self._cache_hdf_node_name,
-            )
+    @property
+    def local_data(self) -> DisciplineData:
+        """The current input and output data."""
+        return self._local_data
+
+    @local_data.setter
+    def local_data(self, data: MutableMapping[str, Any]) -> None:
+        self.__set_local_data(data)
+
+    def __set_local_data(self, data: MutableMapping[str, Any]) -> None:
+        self._local_data = DisciplineData(
+            data,
+            input_to_namespaced=self.input_grammar.to_namespaced,
+            output_to_namespaced=self.output_grammar.to_namespaced,
+        )
 
     @property
-    def n_calls(self):  # type: (...) -> int
+    def n_calls(self) -> int | None:
         """The number of times the discipline was executed.
 
-        .. note::
+        This property is multiprocessing safe.
 
-            This property is multiprocessing safe.
+        Raises:
+            RuntimeError: When the discipline counters are disabled.
         """
-        return self._n_calls.value
+        if self.activate_counters:
+            return self._n_calls.value
 
     @n_calls.setter
     def n_calls(
         self,
-        value,  # type: int
-    ):  # type: (...) -> None
+        value: int,
+    ) -> None:
+        if not self.activate_counters:
+            raise RuntimeError("The discipline counters are disabled.")
+
         self._n_calls.value = value
 
     @property
-    def exec_time(self):  # type: (...) -> float
+    def exec_time(self) -> float | None:
         """The cumulated execution time of the discipline.
 
-        .. note::
+        This property is multiprocessing safe.
 
-            This property is multiprocessing safe.
+        Raises:
+            RuntimeError: When the discipline counters are disabled.
         """
-        return self._exec_time.value
+        if self.activate_counters:
+            return self._exec_time.value
 
     @exec_time.setter
     def exec_time(
         self,
-        value,  # type: float
-    ):  # type: (...) -> None
+        value: float,
+    ) -> None:
+        if not self.activate_counters:
+            raise RuntimeError("The discipline counters are disabled.")
+
         self._exec_time.value = value
 
     @property
-    def n_calls_linearize(self):  # type: (...) -> int
+    def n_calls_linearize(self) -> int | None:
         """The number of times the discipline was linearized.
 
-        .. note::
+        This property is multiprocessing safe.
 
-            This property is multiprocessing safe.
+        Raises:
+            RuntimeError: When the discipline counters are disabled.
         """
-        return self._n_calls_linearize.value
+        if self.activate_counters:
+            return self._n_calls_linearize.value
 
     @n_calls_linearize.setter
     def n_calls_linearize(
         self,
-        value,  # type: int
-    ):  # type: (...) -> None
+        value: int,
+    ) -> None | NoReturn:
+        if not self.activate_counters:
+            raise RuntimeError("The discipline counters are disabled.")
+
         self._n_calls_linearize.value = value
 
     @property
-    def grammar_type(self):  # type: (...) -> AbstractGrammar
-        """The grammar type."""
+    def grammar_type(self) -> BaseGrammar:
+        """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
     def auto_get_grammar_file(
         self,
-        is_input=True,  # type: bool
-        name=None,  # type: Optional[str]
-        comp_dir=None,  # type: Optional[Union[str, Path]]
-    ):  # type: (...) -> Path
-        """Use a naming convention to associate a grammar file to a discipline.
+        is_input: bool = True,
+        name: str | None = None,
+        comp_dir: str | Path | None = None,
+    ) -> str:
+        """Use a naming convention to associate a grammar file to the discipline.
 
-        This method searches in a directory for
+        Search in the directory ``comp_dir`` for
         either an input grammar file named ``name + "_input.json"``
-        or an output grammar file named``name + "_output.json"``.
+        or an output grammar file named ``name + "_output.json"``.
 
         Args:
-            is_input: If True,
-                autodetect the input grammar file;
-                otherwise,
-                autodetect the output grammar file.
+            is_input: Whether to search for an input or output grammar file.
             name: The name to be searched in the file names.
-                If None,
-                use the :attr:`.name` name of the discipline.
+                If ``None``,
+                use the name of the discipline class.
             comp_dir: The directory in which to search the grammar file.
-                If None, use :attr:`.comp_dir`.
+                If None,
+                use the :attr:`.GRAMMAR_DIRECTORY` if any,
+                or the directory of the discipline class module.
 
         Returns:
             The grammar file path.
         """
-        if comp_dir is None:
-            comp_dir = self.comp_dir
-        if name is None:
-            name = self.name
-        if is_input:
-            suffix = "input"
+        cls = self.__class__
+        initial_name = name or cls.__name__
+        classes = [cls] + [
+            base for base in cls.__bases__ if issubclass(base, MDODiscipline)
+        ]
+        names = [initial_name] + [cls.__name__ for cls in classes[1:]]
+
+        in_or_out = "in" if is_input else "out"
+        for cls, name in zip(classes, names):
+            grammar_file_path = self.__get_grammar_file_path(
+                cls, comp_dir, in_or_out, name
+            )
+            if grammar_file_path.is_file():
+                return grammar_file_path
+
+        file_name = f"{initial_name}_{in_or_out}put.json"
+        raise FileNotFoundError(f"The grammar file {file_name} is missing.")
+
+    @staticmethod
+    def __get_grammar_file_path(
+        cls: type, comp_dir: str | Path | None, in_or_out: str, name: str
+    ) -> Path:
+        """Return the grammar file path.
+
+        Args:
+            cls: The class for which the grammar file is searched.
+            comp_dir: The initial directory path if any.
+            in_or_out: The suffix to look for in the file name, either "in" or "out".
+            name: The name to be searched in the file names.
+
+        Returns:
+            The grammar file path.
+        """
+        grammar_directory = comp_dir
+        if grammar_directory is None:
+            grammar_directory = cls.GRAMMAR_DIRECTORY
+
+        if grammar_directory is None:
+            class_module = sys.modules[cls.__module__]
+            grammar_directory = Path(class_module.__file__).parent.absolute()
         else:
-            suffix = "output"
-        return Path(comp_dir) / "{}_{}.json".format(name, suffix)
+            grammar_directory = Path(grammar_directory)
+
+        return grammar_directory / f"{name}_{in_or_out}put.json"
 
     def add_differentiated_inputs(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+    ) -> None:
         """Add inputs against which to differentiate the outputs.
 
-        This method updates :attr:`._differentiated_inputs` with ``inputs``.
+        This method updates :attr:`.MDODiscipline._differentiated_inputs` with ``inputs``.
 
         Args:
             inputs: The input variables against which to differentiate the outputs.
@@ -446,11 +529,11 @@ class MDODiscipline(object):
 
     def add_differentiated_outputs(
         self,
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         """Add outputs to be differentiated.
 
-        This method updates :attr:`._differentiated_outputs` with ``outputs``.
+        This method updates :attr:`.MDODiscipline._differentiated_outputs` with ``outputs``.
 
         Args:
             outputs: The output variables to be differentiated.
@@ -472,21 +555,47 @@ class MDODiscipline(object):
             outputs = self.get_output_data_names()
         self._differentiated_outputs = list(set(out_diff) | set(outputs))
 
+    def __create_new_cache(
+        self,
+        class_name: str,
+        **kwargs: bool | float | str,
+    ) -> AbstractCache:
+        """Create a cache object.
+
+        Args:
+            class_name: The name of the cache class.
+            **kwargs: The arguments to instantiate a cache object.
+
+        Returns:
+            The cache object.
+        """
+        if class_name != self.HDF5_CACHE:
+            for key in ("hdf_file_path", "hdf_node_path"):
+                if key in kwargs:
+                    del kwargs[key]
+
+        if class_name != self.MEMORY_FULL_CACHE:
+            key = "is_memory_shared"
+            if key in kwargs:
+                del kwargs[key]
+
+        return CacheFactory().create(class_name, name=self.name, **kwargs)
+
     def set_cache_policy(
         self,
-        cache_type=SIMPLE_CACHE,  # type: str
-        cache_tolerance=0.0,  # type: float
-        cache_hdf_file=None,  # type: Optional[Union[str, Path]]
-        cache_hdf_node_name=None,  # type: Optional[str]
-        is_memory_shared=True,  # type: bool
-    ):  # type: (...) -> None
+        cache_type: str = SIMPLE_CACHE,
+        cache_tolerance: float = 0.0,
+        cache_hdf_file: str | Path | None = None,
+        cache_hdf_node_name: str | None = None,
+        is_memory_shared: bool = True,
+    ) -> None:
         """Set the type of cache to use and the tolerance level.
 
         This method defines when the output data have to be cached
         according to the distance between the corresponding input data
         and the input data already cached for which output data are also cached.
 
-        The cache can be either a :class:`SimpleCache` recording the last execution
+        The cache can be either a :class:`.SimpleCache` recording the last execution
         or a cache storing all executions,
         e.g. :class:`.MemoryFullCache` and :class:`.HDF5Cache`.
         Caching data can be either in-memory,
@@ -502,10 +611,11 @@ class MDODiscipline(object):
                 of the difference between two input arrays
                 to consider that two input arrays are equal.
             cache_hdf_file: The path to the HDF file to store the data;
-                this argument is mandatory when the :attr:`.HDF5Cache` policy is used.
+                this argument is mandatory when the
+                :attr:`.MDODiscipline.HDF5_CACHE` policy is used.
             cache_hdf_node_name: The name of the HDF file node
                 to store the discipline data.
-                If None, :attr:`.name` is used.
+                If None, :attr:`.MDODiscipline.name` is used.
             is_memory_shared: Whether to store the data with a shared memory dictionary,
                 which makes the cache compatible with multiprocessing.
 
@@ -517,54 +627,28 @@ class MDODiscipline(object):
                    there may be duplicate computations
                    because the cache will not be shared among the processes.
         """
-
-        create_cache = CacheFactory().create
-
-        if cache_type == self.HDF5_CACHE:
-            not_same_file = cache_hdf_file != self._cache_file_path
-            not_same_node = cache_hdf_node_name != self._cache_hdf_node_name
-            cache_none = self.cache is None
-            already_hdf = self._cache_type == self.HDF5_CACHE
-            not_already_hdf = self._cache_type != self.HDF5_CACHE
-            if cache_none or (
-                (already_hdf and (not_same_file or not_same_node)) or not_already_hdf
-            ):
-                node_path = cache_hdf_node_name or self.name
-                self.cache = create_cache(
-                    self.HDF5_CACHE,
-                    hdf_file_path=cache_hdf_file,
-                    hdf_node_path=node_path,
-                    tolerance=cache_tolerance,
-                    name=self.name,
-                )
-                self._cache_hdf_node_name = cache_hdf_node_name
-                self._cache_file_path = cache_hdf_file
-
-        elif cache_type != self._cache_type or self.cache is None:
-            if cache_type == self.MEMORY_FULL_CACHE:
-                self.cache = create_cache(
-                    cache_type,
-                    tolerance=cache_tolerance,
-                    name=self.name,
-                    is_memory_shared=is_memory_shared,
-                )
-            else:
-                self.cache = create_cache(
-                    cache_type, tolerance=cache_tolerance, name=self.name
-                )
+        if self.cache.__class__.__name__ != cache_type or not (
+            cache_type == self.HDF5_CACHE
+            and cache_hdf_file == self.cache.hdf_file.hdf_file_path
+            and cache_hdf_node_name == self.cache.node_path
+        ):
+            self.cache = self.__create_new_cache(
+                cache_type,
+                tolerance=cache_tolerance,
+                hdf_file_path=cache_hdf_file,
+                hdf_node_path=cache_hdf_node_name or self.name,
+                is_memory_shared=is_memory_shared,
+            )
         else:
             LOGGER.warning(
-                "Cache policy is already set to %s. To clear the"
-                " discipline cache, use its clear() method.",
+                "Cache policy is set to %s: call clear() to clear a "
+                "discipline cache",
                 cache_type,
             )
 
-        self._cache_type = cache_type
-        self._cache_tolerance = cache_tolerance
-
     def get_sub_disciplines(
         self,
-    ):  # type: (...) -> List[MDODiscipline]  # pylint: disable=R0201
+    ) -> list[MDODiscipline]:  # pylint: disable=R0201
         """Return the sub-disciplines if any.
 
         Returns:
@@ -572,7 +656,7 @@ class MDODiscipline(object):
         """
         return []
 
-    def get_expected_workflow(self):  # type: (...) -> SerialExecSequence
+    def get_expected_workflow(self) -> SerialExecSequence:
         """Return the expected execution sequence.
 
         This method is used for the XDSM representation.
@@ -594,7 +678,7 @@ class MDODiscipline(object):
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         """Return the expected data exchange sequence.
 
         This method is used for the XDSM representation.
@@ -610,12 +694,25 @@ class MDODiscipline(object):
         """
         return []
 
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:
+        """Return the disciplines that must be shown as blocks within the XDSM
+        representation of a chain.
+
+        By default, only the discipline itself is shown.
+        This function can be differently implemented for
+        any type of inherited discipline.
+
+        Returns:
+            The disciplines shown in the XDSM chain.
+        """
+        return [self]
+
     def _instantiate_grammars(
         self,
-        input_grammar_file,  # type: Optional[Union[str, Path]]
-        output_grammar_file,  # type: Optional[Union[str, Path]]
-        grammar_type=JSON_GRAMMAR_TYPE,  # type: str
-    ):  # type: (...) -> None
+        input_grammar_file: str | Path | None,
+        output_grammar_file: str | Path | None,
+        grammar_type: str = JSON_GRAMMAR_TYPE,
+    ) -> None:
         """Create the input and output grammars.
 
         Args:
@@ -624,24 +721,22 @@ class MDODiscipline(object):
             output_grammar_file: The output grammar file path.
                 If None, do not initialize the output grammar from a schema file.
             grammar_type: The type of grammar,
-                e.g. :attr:`.JSONGrammar` or :attr:`.SimpleGrammar`.
+                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
         """
         factory = GrammarFactory()
-        grammar_type = self.__DEPRECATED_GRAMMAR_TYPES.get(grammar_type, grammar_type)
-        # TODO: deprecate this at some point.
-
         self.input_grammar = factory.create(
             grammar_type,
-            name="{}_input".format(self.name),
-            schema_file=input_grammar_file,
+            name=f"{self.name}_input",
+            schema_path=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
-            name="{}_output".format(self.name),
-            schema_file=output_grammar_file,
+            name=f"{self.name}_output",
+            schema_path=output_grammar_file,
         )
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Define the execution of the process, given that data has been checked.
 
         To be overloaded by subclasses.
@@ -650,8 +745,8 @@ class MDODiscipline(object):
 
     def _filter_inputs(
         self,
-        input_data=None,  # type: Optional[Dict[str, Any]]
-    ):  # type: (...) -> Dict[str, Any]
+        input_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Filter data with the discipline inputs and use the default values if missing.
 
         Args:
@@ -665,52 +760,58 @@ class MDODiscipline(object):
         """
         if input_data is None:
             return deepcopy(self.default_inputs)
-        if not isinstance(input_data, dict):
+
+        if not isinstance(input_data, collections.abc.Mapping):
             raise TypeError(
                 "Input data must be of dict type, "
                 "got {} instead.".format(type(input_data))
             )
 
-        # Take default inputs if not in input_data
-        filt_inputs = self._default_inputs.copy()  # Shallow copy
-        filt_inputs.update(input_data)
+        full_input_data = DisciplineData({})
+        for key in self.input_grammar.keys():
+            val = input_data.get(key)
+            if val is not None:
+                full_input_data[key] = val
+            else:
+                val = self._default_inputs.get(key)
+                if val is not None:
+                    full_input_data[key] = val
 
-        # Remove inputs that should not be there
-        in_names = self.get_input_data_names()
-        filt_inputs = {key: val for key, val in filt_inputs.items() if key in in_names}
+        return full_input_data
 
-        return filt_inputs
-
-    def _filter_local_data(self):  # type: (...) -> None
+    def _filter_local_data(self) -> None:
         """Filter the local data after execution.
 
         This method removes data that are neither inputs nor outputs.
         """
         all_data_names = self.get_input_output_data_names()
 
-        self.local_data = {
-            key: val for key, val in self.local_data.items() if key in all_data_names
-        }
+        for key in tuple(self._local_data.keys()):
+            if key not in all_data_names:
+                del self._local_data[key]
 
-    def _check_status_before_run(self):  # type: (...) -> None
-        """Check the status of the discipline before calling :meth:`._run`.
+    def _check_status_before_run(self) -> None:
+        """Check the status of the discipline.
 
-        Check the status of the discipline depending on :attr:`.re_execute_policy`.
+        Check the status of the discipline depending on
+        :attr:`.MDODiscipline.re_execute_policy`.
 
         If ``re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
-        the status shall be either :attr:`.PENDING` or :attr:`.VIRTUAL`.
+        the status shall be either :attr:`.MDODiscipline.STATUS_PENDING`
+        or :attr:`.MDODiscipline.VIRTUAL`.
 
         If ``self.re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
 
-        - if status is :attr:`.DONE`,
-          :meth:`.reset_statuses_for_run` is called prior :meth:`._run`,
-        - otherwise status must be :attr:`.VIRTUAL` or :attr:`.PENDING`.
+        - if status is :attr:`.MDODiscipline.STATUS_DONE`,
+          :meth:`.MDODiscipline.reset_statuses_for_run`.
+        - otherwise status must be :attr:`.MDODiscipline.VIRTUAL`
+          or :attr:`.MDODiscipline.STATUS_PENDING`.
 
         Raises:
             ValueError:
-                * When the re-execution policy is unknown.
-                * When the discipline status and the re-execution policy
-                  are no consistent.
+                When the re-execution policy is unknown.
+                When the discipline status and the re-execution policy
+                are no consistent.
         """
         status_ok = True
         if self.status == self.STATUS_RUNNING:
@@ -725,7 +826,7 @@ class MDODiscipline(object):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy: {}.".format(self.re_exec_policy))
+            raise ValueError(f"Unknown re_exec_policy: {self.re_exec_policy}.")
         if not status_ok:
             raise ValueError(
                 "Trying to run a discipline {} with status: {} "
@@ -736,9 +837,9 @@ class MDODiscipline(object):
 
     def __get_input_data_for_cache(
         self,
-        input_data,  # type: Dict[str, Any]
-        in_names,  # type: Iterable[str]
-    ):  # type: (...) -> Dict[str, Any]
+        input_data: dict[str, Any],
+        in_names: Iterable[str],
+    ) -> dict[str, Any]:
         """Prepare the input data for caching.
 
         Args:
@@ -750,7 +851,8 @@ class MDODiscipline(object):
         """
         in_and_out = set(in_names) & set(self.get_output_data_names())
 
-        cached_inputs = dict(input_data.items())
+        cached_inputs = input_data.copy()
+
         for key in in_and_out:
             val = input_data.get(key)
             if val is not None:
@@ -761,69 +863,82 @@ class MDODiscipline(object):
 
     def execute(
         self,
-        input_data=None,  # type:Optional[Dict[str, Any]]
-    ):  # type: (...) -> Dict[str, Any]
+        input_data: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Execute the discipline.
 
         This method executes the discipline:
 
         * Adds the default inputs to the ``input_data``
           if some inputs are not defined in input_data
-          but exist in :attr:`._default_inputs`.
+          but exist in :attr:`.MDODiscipline.default_inputs`.
         * Checks whether the last execution of the discipline was called
-          with identical inputs, ie. cached in :attr:`.cache`;
+          with identical inputs, i.e. cached in :attr:`.MDODiscipline.cache`;
           if so, directly returns ``self.cache.get_output_cache(inputs)``.
         * Caches the inputs.
-        * Checks the input data against :attr:`.input_grammar`.
-        * If :attr:`.data_processor` is not None, runs the preprocessor.
-        * Updates the status to :attr:`.RUNNING`.
-        * Calls the :meth:`._run` method, that shall be defined.
-        * If :attr:`.data_processor` is not None, runs the postprocessor.
+        * Checks the input data against :attr:`.MDODiscipline.input_grammar`.
+        * If :attr:`.MDODiscipline.data_processor` is not None, runs the preprocessor.
+        * Updates the status to :attr:`.MDODiscipline.STATUS_RUNNING`.
+        * Calls the :meth:`.MDODiscipline._run` method, that shall be defined.
+        * If :attr:`.MDODiscipline.data_processor` is not None, runs the postprocessor.
         * Checks the output data.
         * Caches the outputs.
-        * Updates the status to :attr:`.DONE` or :attr:`.FAILED`.
+        * Updates the status to :attr:`.MDODiscipline.STATUS_DONE`
+          or :attr:`.MDODiscipline.STATUS_FAILED`.
         * Updates summed execution time.
 
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.default_inputs`.
+                If None, use the :attr:`.MDODiscipline.default_inputs`.
 
         Returns:
             The discipline local data after execution.
+
+        Raises:
+            RuntimeError: When residual_variables are declared but
+                self.run_solves_residuals is False. This is not suported yet.
         """
+        if self.residual_variables and not self.run_solves_residuals:
+            raise RuntimeError(
+                "Disciplines that do not solve their residuals are not supported yet."
+            )
         # Load the default_inputs if the user did not provide all required data
         input_data = self._filter_inputs(input_data)
 
-        # Check if the cache already the contains outputs associated to these
-        # inputs
-        in_names = self.get_input_data_names()
-        out_cached, out_jac = self.cache.get_outputs(input_data, in_names)
-
-        if out_cached is not None:
-            self.__update_local_data_from_cache(input_data, out_cached, out_jac)
-            return self.local_data
+        if self.cache is not None:
+            # Check if the cache already contains the outputs associated to these inputs
+            in_names = self.get_input_data_names()
+            _, out_cached, out_jac = self.cache[input_data]
+            if out_cached:
+                self.__update_local_data_from_cache(input_data, out_cached, out_jac)
+                return self._local_data
 
         # Cache was not loaded, see self.linearize
         self._cache_was_loaded = False
 
-        # Save the state of the inputs
-        cached_inputs = self.__get_input_data_for_cache(input_data, in_names)
+        if self.cache is not None:
+            # Save the state of the inputs
+            cached_inputs = self.__get_input_data_for_cache(input_data, in_names)
+
         self._check_status_before_run()
 
-        self.check_input_data(input_data)
-        self.local_data = {}
-        self.local_data.update(input_data)
+        if self.activate_input_data_check:
+            self.check_input_data(input_data)
 
         processor = self.data_processor
-        # If the data processor is set, pre-process the data before _run
-        # See gemseo.core.data_processor module
         if processor is not None:
-            self.local_data = processor.pre_process_data(input_data)
+            self.__set_local_data(processor.pre_process_data(input_data))
+        else:
+            self.__set_local_data(input_data)
+
         self.status = self.STATUS_RUNNING
         self._is_linearized = False
-        self.__increment_n_calls()
+        if self.activate_counters:
+            self.__increment_n_calls()
+
         t_0 = timer()
+
         try:
             # Effectively run the discipline, the _run method has to be
             # Defined by the subclasses
@@ -833,35 +948,43 @@ class MDODiscipline(object):
             # Update the status but
             # raise the same exception
             raise
-        self.__increment_exec_time(t_0)
+
+        if self.activate_counters:
+            self.__increment_exec_time(t_0)
+
         self.status = self.STATUS_DONE
 
         # If the data processor is set, post process the data after _run
         # See gemseo.core.data_processor module
         if processor is not None:
-            self.local_data = processor.post_process_data(self.local_data)
+            self.__set_local_data(processor.post_process_data(self._local_data))
 
         # Filter data that is neither outputs nor inputs
         self._filter_local_data()
 
-        self.check_output_data()
+        if self.activate_output_data_check:
+            self.check_output_data()
 
-        # Caches output data in case the discipline is called twice in a row
-        # with the same inputs
-        out_names = self.get_output_data_names()
-        self.cache.cache_outputs(cached_inputs, in_names, self.local_data, out_names)
-        # Some disciplines are always linearized during execution, cache the
-        # jac in this case
-        if self._is_linearized:
-            self.cache.cache_jacobian(cached_inputs, in_names, self.jac)
-        return self.local_data
+        if self.cache is not None:
+            # Caches output data in case the discipline is called twice in a row
+            # with the same inputs
+            out_names = self.get_output_data_names()
+            self.cache.cache_outputs(
+                cached_inputs, {name: self._local_data[name] for name in out_names}
+            )
+            # Some disciplines are always linearized during execution, cache the
+            # jac in this case
+            if self._is_linearized:
+                self.cache.cache_jacobian(cached_inputs, self.jac)
+
+        return self._local_data
 
     def __update_local_data_from_cache(
         self,
-        input_data,  # type: Dict[str, Any]
-        out_cached,  # type: Dict[str, Any]
-        out_jac,  # type: Dict[str, ndarray]
-    ):  # type: (...) -> None
+        input_data: dict[str, Any],
+        out_cached: dict[str, Any],
+        out_jac: dict[str, ndarray],
+    ) -> None:
         """Update the local data from the cache.
 
         Args:
@@ -869,9 +992,8 @@ class MDODiscipline(object):
             out_cached: The output data retrieved from the cache.
             out_jac: The Jacobian data retrieved from the cache.
         """
-        self.local_data = {}
-        self.local_data.update(input_data)
-        self.local_data.update(out_cached)
+        self.__set_local_data(input_data)
+        self._local_data.update(out_cached)
 
         if out_jac is not None:
             self.jac = out_jac
@@ -883,21 +1005,21 @@ class MDODiscipline(object):
         self.check_output_data()
         self._cache_was_loaded = True
 
-    def __increment_n_calls(self):  # type: (...) -> None
+    def __increment_n_calls(self) -> None:
         """Increment by 1 the number of executions.."""
         with self._n_calls.get_lock():
             self._n_calls.value += 1
 
-    def __increment_n_calls_lin(self):  # type: (...) -> None
+    def __increment_n_calls_lin(self) -> None:
         """Increment by 1 the number of linearizations."""
         with self._n_calls_linearize.get_lock():
             self._n_calls_linearize.value += 1
 
     def __increment_exec_time(
         self,
-        t_0,  # type: float
-        linearize=False,  # type: bool
-    ):  # type: (...) -> None
+        t_0: float,
+        linearize: bool = False,
+    ) -> None:
         """Increment the execution time of the discipline.
 
         The execution can be either an evaluation or a linearization.
@@ -924,16 +1046,16 @@ class MDODiscipline(object):
 
     def _retrieve_diff_inouts(
         self,
-        force_all=False,  # type: bool
-    ):  # type: (...) -> Tuple[List[str], List[str]]
+        force_all: bool = False,
+    ) -> tuple[list[str], list[str]]:
         """Get the inputs and outputs used in the differentiation of the discipline.
 
         Args:
             force_all: If True,
                 consider all the inputs and outputs of the discipline;
                 otherwise,
-                consider :attr:`_differentiated_inputs`
-                and :attr:`_differentiated_outputs`.
+                consider :attr:`.MDODiscipline._differentiated_inputs`
+                and :attr:`.MDODiscipline._differentiated_outputs`.
         """
         if force_all:
             inputs = self.get_input_data_names()
@@ -943,11 +1065,8 @@ class MDODiscipline(object):
             outputs = self._differentiated_outputs
         return inputs, outputs
 
-    _retreive_diff_inouts = _retrieve_diff_inouts
-    # TODO: deprecate it at some point
-
     @classmethod
-    def activate_time_stamps(cls):  # type: (...) -> None
+    def activate_time_stamps(cls) -> None:
         """Activate the time stamps.
 
         For storing start and end times of execution and linearizations.
@@ -960,7 +1079,7 @@ class MDODiscipline(object):
             MDODiscipline.time_stamps = manager.dict()
 
     @classmethod
-    def deactivate_time_stamps(cls):  # type: (...) -> None
+    def deactivate_time_stamps(cls) -> None:
         """Deactivate the time stamps.
 
         For storing start and end times of execution and linearizations.
@@ -970,22 +1089,23 @@ class MDODiscipline(object):
 
     def linearize(
         self,
-        input_data=None,  # type: Optional[Dict[str, Any]]
-        force_all=False,  # type: bool
-        force_no_exec=False,  # type: bool
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        input_data: dict[str, Any] | None = None,
+        force_all: bool = False,
+        force_no_exec: bool = False,
+    ) -> dict[str, dict[str, ndarray]]:
         """Execute the linearized version of the code.
 
         Args:
             input_data: The input data needed to linearize the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.default_inputs`.
+                If None, use the :attr:`.MDODiscipline.default_inputs`.
             force_all: If False,
-                :attr:`._differentiated_inputs` and :attr:`.differentiated_output`
+                :attr:`.MDODiscipline._differentiated_inputs` and
+                :attr:`.MDODiscipline._differentiated_outputs`
                 are used to filter the differentiated variables.
                 otherwise, all outputs are differentiated wrt all inputs.
             force_no_exec: If True,
-                the discipline is not re executed, cache is loaded anyway.
+                the discipline is not re-executed, cache is loaded anyway.
 
         Returns:
             The Jacobian of the discipline.
@@ -999,7 +1119,7 @@ class MDODiscipline(object):
         # Save inputs dict for caching
         input_data = self._filter_inputs(input_data)
 
-        # if force_no_exec, we do not re execute the discipline
+        # if force_no_exec, we do not re-execute the discipline
         # otherwise, we ensure that the discipline was executed
         # with the right input_data.
         # This may trigger caching (see self.execute()
@@ -1013,7 +1133,7 @@ class MDODiscipline(object):
         # an input is also an output, if we don't want to keep the computed
         # state (as in MDAs)
         if not self._linearize_on_last_state:
-            self.local_data.update(input_data)
+            self._local_data.update(input_data)
 
         # If the caching was triggered, check if the jacobian
         # was loaded,
@@ -1039,35 +1159,41 @@ class MDODiscipline(object):
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
             self._compute_jacobian(inputs, outputs)
-            self.__increment_exec_time(t_0, linearize=True)
+            if self.activate_counters:
+                self.__increment_exec_time(t_0, linearize=True)
 
-        self.__increment_n_calls_lin()
+        if self.activate_counters:
+            self.__increment_n_calls_lin()
 
         self._check_jacobian_shape(inputs, outputs)
-        # Cache the Jacobian matrix
-        self.cache.cache_jacobian(input_data, self.get_input_data_names(), self.jac)
+
+        if self.cache is not None:
+            # Cache the Jacobian matrix
+            self.cache.cache_jacobian(input_data, self.jac)
 
         return self.jac
 
     def set_jacobian_approximation(
         self,
-        jac_approx_type=FINITE_DIFFERENCES,  # type: str
-        jax_approx_step=1e-7,  # type: float
-        jac_approx_n_processes=1,  # type: int
-        jac_approx_use_threading=False,  # type: bool
-        jac_approx_wait_time=0,  # type: float
-    ):  # type: (...) -> None
+        jac_approx_type: str = FINITE_DIFFERENCES,
+        jax_approx_step: float = 1e-7,
+        jac_approx_n_processes: int = 1,
+        jac_approx_use_threading: bool = False,
+        jac_approx_wait_time: float = 0,
+    ) -> None:
         """Set the Jacobian approximation method.
 
         Sets the linearization mode to approx_method,
         sets the parameters of the approximation for further use
-        when calling :meth:`.linearize`.
+        when calling :meth:`.MDODiscipline.linearize`.
 
         Args:
             jac_approx_type: The approximation method,
                 either "complex_step" or "finite_differences".
             jax_approx_step: The differentiation step.
-            jac_approx_n_processes: The maximum number of processors on which to run.
+            jac_approx_n_processes: The maximum simultaneous number of threads,
+                if ``jac_approx_use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             jac_approx_use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -1092,11 +1218,11 @@ class MDODiscipline(object):
 
     def set_optimal_fd_step(
         self,
-        outputs=None,  # type: Optional[Iterable[str]]
-        inputs=None,  # type: Optional[Iterable[str]]
-        force_all=False,  # type: bool
-        print_errors=False,  # type: bool
-        numerical_error=EPSILON,  # type: float
+        outputs: Iterable[str] | None = None,
+        inputs: Iterable[str] | None = None,
+        force_all: bool = False,
+        print_errors: bool = False,
+        numerical_error: float = EPSILON,
     ):
         """Compute the optimal finite-difference step.
 
@@ -1106,8 +1232,8 @@ class MDODiscipline(object):
         The optimal step is reached when the truncation error
         (cut in the Taylor development),
         and the numerical cancellation errors
-        (roundoff when doing f(x+step)-f(x))
-         are approximately equal.
+        (round-off when doing f(x+step)-f(x))
+        are approximately equal.
 
         .. warning::
 
@@ -1118,13 +1244,13 @@ class MDODiscipline(object):
            https://en.wikipedia.org/wiki/Numerical_differentiation
            and
            "Numerical Algorithms and Digital Representation", Knut Morken ,
-           Chapter 11, "Numerical Differenciation"
+           Chapter 11, "Numerical Differentiation"
 
         Args:
             inputs: The inputs wrt which the outputs are linearized.
-                If None, use the :attr:`_differentiated_inputs`.
+                If None, use the :attr:`.MDODiscipline._differentiated_inputs`.
             outputs: The outputs to be linearized.
-                If None, use the :attr:`_differentiated_outputs`.
+                If None, use the :attr:`.MDODiscipline._differentiated_outputs`.
             force_all: Whether to consider all the inputs and outputs of the discipline;
             print_errors: Whether to display the estimated errors.
             numerical_error: The numerical error associated to the calculation of f.
@@ -1154,7 +1280,7 @@ class MDODiscipline(object):
         return errors, steps
 
     @staticmethod
-    def __get_len(container):  # type: (...) -> int
+    def __get_len(container) -> int:
         """Measure the length of a container."""
         if container is None:
             return -1
@@ -1165,9 +1291,9 @@ class MDODiscipline(object):
 
     def _check_jacobian_shape(
         self,
-        inputs,  # type: Iterable[str]
-        outputs,  # type: Iterable[str]
-    ):  # type: (...) -> None
+        inputs: Iterable[str],
+        outputs: Iterable[str],
+    ) -> None:
         """Check that the Jacobian is a dictionary of dictionaries of 2D NumPy arrays.
 
         Args:
@@ -1176,14 +1302,14 @@ class MDODiscipline(object):
 
         Raises:
             ValueError:
-            * When the discipline was not linearized.
-            * When the Jacobian is not of the right shape.
+                When the discipline was not linearized.
+                When the Jacobian is not of the right shape.
             KeyError:
-            * When outputs are missing in the Jacobian of the discipline.
-            * When inputs are missing for an output in the Jacobian of the discipline.
+                When outputs are missing in the Jacobian of the discipline.
+                When inputs are missing for an output in the Jacobian of the discipline.
         """
         if self.jac is None:
-            raise ValueError("The discipline {} was not linearized.".format(self.name))
+            raise ValueError(f"The discipline {self.name} was not linearized.")
         out_set = set(outputs)
         in_set = set(inputs)
         out_jac_set = set(self.jac.keys())
@@ -1196,7 +1322,7 @@ class MDODiscipline(object):
         for j_o in outputs:
             j_out = self.jac[j_o]
             out_dv_set = set(j_out.keys())
-            output_vals = self.local_data.get(j_o)
+            output_vals = self._local_data.get(j_o)
             n_out_j = self.__get_len(output_vals)
 
             if not in_set.issubset(out_dv_set):
@@ -1205,14 +1331,14 @@ class MDODiscipline(object):
                 raise KeyError(msg.format(missing_inputs, self.name, j_o))
 
             for j_i in inputs:
-                input_vals = self.local_data.get(j_i)
+                input_vals = self._local_data.get(j_i)
                 n_in_j = self.__get_len(input_vals)
                 j_mat = j_out[j_i]
                 expected_shape = (n_out_j, n_in_j)
 
                 if -1 in expected_shape:
                     # At least one of the dimensions is unknown
-                    # Dont check shape
+                    # Don't check shape
                     continue
 
                 if j_mat.shape != expected_shape:
@@ -1225,32 +1351,41 @@ class MDODiscipline(object):
                     raise ValueError(msg.format(*data))
 
         # Discard imaginary part of Jacobian
-        for jac_loc in self.jac.values():
-            for desv, jac_out in jac_loc.items():
-                jac_loc[desv] = jac_out.real
+        for output_jacobian in self.jac.values():
+            for input_name, input_output_jacobian in output_jacobian.items():
+                output_jacobian[input_name] = input_output_jacobian.real
 
     @property
-    def cache_tol(self):  # type: (...) -> float
+    def cache_tol(self) -> float:
         """The cache input tolerance.
 
         This is the tolerance for equality of the inputs in the cache.
         If norm(stored_input_data-input_data) <= cache_tol * norm(stored_input_data),
         the cached data for ``stored_input_data`` is returned
         when calling ``self.execute(input_data)``.
+
+        Raises:
+            ValueError: When the discipline does not have a cache.
         """
+        if self.cache is None:
+            raise ValueError(f"The discipline {self.name} does not have a cache.")
+
         return self.cache.tolerance
 
     @cache_tol.setter
     def cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
+        cache_tol: float,
+    ) -> None:
+        if self.cache is None:
+            raise ValueError(f"The discipline {self.name} does not have a cache.")
+
         self._set_cache_tol(cache_tol)
 
     def _set_cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
+        cache_tol: float,
+    ) -> None:
         """Set to the cache input tolerance.
 
         To be overloaded by subclasses.
@@ -1261,7 +1396,7 @@ class MDODiscipline(object):
         self.cache.tolerance = cache_tol or 0.0
 
     @property
-    def default_inputs(self):  # type: (...) -> Dict[str, Any]
+    def default_inputs(self) -> dict[str, Any]:
         """The default inputs.
 
         Raises:
@@ -1270,21 +1405,70 @@ class MDODiscipline(object):
         return self._default_inputs
 
     @default_inputs.setter
-    def default_inputs(
-        self, default_inputs  # type: Dict[str,Any]
-    ):  # type: (...) -> None
-        if not isinstance(default_inputs, dict):
+    def default_inputs(self, default_inputs: dict[str, Any]) -> None:
+        if not isinstance(default_inputs, collections.abc.Mapping):
             raise TypeError(
-                "MDODiscipline default inputs must be of dict type, "
+                "MDODiscipline default_inputs must be of dict-like type, "
                 "got {} instead.".format(type(default_inputs))
             )
-        self._default_inputs = default_inputs
+        self.__set_default_inputs(default_inputs, with_namespace=True)
+
+    def __set_default_inputs(self, data: MutableData, with_namespace=False) -> None:
+        """Set the default inputs.
+
+        Args:
+            data: The mapping containing default values.
+            with_namespace: Whether to add the input grammar namespaces prefixes
+                to the keys of the default inputs.
+        """
+        if with_namespace:
+            to_ns = self.input_grammar.to_namespaced
+            in_names = self.input_grammar.keys()
+            data = {
+                (to_ns[k] if (k not in in_names and k in to_ns) else k): v
+                for k, v in data.items()
+            }
+        if self.input_grammar is not None:
+            disc_data = DisciplineData(
+                data, input_to_namespaced=self.input_grammar.to_namespaced
+            )
+        else:
+            disc_data = DisciplineData(data)
+        self._default_inputs = disc_data
+
+    def add_namespace_to_input(self, name: str, namespace: str):
+        """Add a namespace prefix to an existing input grammar element.
+
+        The updated input grammar element name will be
+        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+
+        Args:
+            name: The element name to rename.
+            namespace: The name of the namespace.
+        """
+        self.input_grammar.add_namespace(name, namespace)
+        default_value = self.default_inputs.get(name)
+        if default_value is not None:
+            del self.default_inputs[name]
+            self.default_inputs[self.input_grammar.to_namespaced[name]] = default_value
+
+    def add_namespace_to_output(self, name: str, namespace: str):
+        """Add a namespace prefix to an existing output grammar element.
+
+        The updated output grammar element name will be
+        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+
+        Args:
+            name: The element name to rename.
+            namespace: The name of the namespace.
+        """
+        self.output_grammar.add_namespace(name, namespace)
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         """Compute the Jacobian matrix.
 
         To be overloaded by subclasses, actual computation of the Jacobian matrix.
@@ -1300,11 +1484,11 @@ class MDODiscipline(object):
 
     def _init_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-        with_zeros=False,  # type: bool
-        fill_missing_keys=False,  # type: bool
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+        with_zeros: bool = False,
+        fill_missing_keys: bool = False,
+    ) -> None:
         """Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
 
         Args:
@@ -1348,11 +1532,7 @@ class MDODiscipline(object):
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(default_dict_factory)
             for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = defaultdict(None)
-                jac[out_n] = jac_loc
-                # When a key is not in the default dict,
-                # ie a variable is not in the
-                # Jacobian; return a defaultdict(None)
+                jac_loc = jac[out_n]
                 for in_n, in_v in zip(inputs_names, inputs_vals):
                     jac_loc[in_n] = np_method((len(out_v), len(in_v)))
             self.jac = jac
@@ -1360,19 +1540,15 @@ class MDODiscipline(object):
             jac = self.jac
             # Only fill the missing sub jacobians
             for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = jac.get(out_n)
-                if jac_loc is None:
-                    jac_loc = defaultdict(None)
-                    jac[out_n] = jac_loc
-
+                jac_loc = jac.get(out_n, defaultdict(None))
                 for in_n, in_v in zip(inputs_names, inputs_vals):
                     sub_jac = jac_loc.get(in_n)
                     if sub_jac is None:
                         jac_loc[in_n] = np_method((len(out_v), len(in_v)))
 
     @property
-    def linearization_mode(self):  # type: (...) -> str
-        """The linearization mode among :attr:`.LINEARIZE_MODE_LIST`.
+    def linearization_mode(self) -> str:
+        """The linearization mode among :attr:`.MDODiscipline.AVAILABLE_MODES`.
 
         Raises:
             ValueError: When the linearization mode is unknown.
@@ -1382,8 +1558,8 @@ class MDODiscipline(object):
     @linearization_mode.setter
     def linearization_mode(
         self,
-        linearization_mode,  # type: str
-    ):  # type: (...) -> None
+        linearization_mode: str,
+    ) -> None:
         if linearization_mode not in self.AVAILABLE_MODES:
             msg = "Linearization mode '{}' is unknown; it must be one of {}."
             raise ValueError(msg.format(linearization_mode, self.AVAILABLE_MODES))
@@ -1395,26 +1571,26 @@ class MDODiscipline(object):
 
     def check_jacobian(
         self,
-        input_data=None,  # type: Optional[Dict[str, ndarray]]
-        derr_approx=FINITE_DIFFERENCES,  # type: str
-        step=1e-7,  # type: float
-        threshold=1e-8,  # type: float
-        linearization_mode="auto",  # type: str
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-        parallel=False,  # type: bool
-        n_processes=N_CPUS,  # type: int
-        use_threading=False,  # type: bool
-        wait_time_between_fork=0,  # type: float
-        auto_set_step=False,  # type: bool
-        plot_result=False,  # type: bool
-        file_path="jacobian_errors.pdf",  # type: Union[str, Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: float
-        figsize_y=10,  # type: float
-        reference_jacobian_path=None,  # type: Optional[str, Path]
-        save_reference_jacobian=False,  # type: bool
-        indices=None,  # type: Optional[Iterable[int]]
+        input_data: dict[str, ndarray] | None = None,
+        derr_approx: str = FINITE_DIFFERENCES,
+        step: float = 1e-7,
+        threshold: float = 1e-8,
+        linearization_mode: str = "auto",
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+        parallel: bool = False,
+        n_processes: int = N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0,
+        auto_set_step: bool = False,
+        plot_result: bool = False,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        fig_size_x: float = 10,
+        fig_size_y: float = 10,
+        reference_jacobian_path: str | Path | None = None,
+        save_reference_jacobian: bool = False,
+        indices: Iterable[int] | None = None,
     ):
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
@@ -1434,7 +1610,7 @@ class MDODiscipline(object):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.default_inputs`.
+                If None, use the :attr:`.MDODiscipline.default_inputs`.
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -1445,7 +1621,9 @@ class MDODiscipline(object):
             outputs: The names of the outputs to be differentiated.
             step: The differentiation step.
             parallel: Whether to differentiate the discipline in parallel.
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -1461,8 +1639,8 @@ class MDODiscipline(object):
                 (computed vs approximated Jacobians).
             file_path: The path to the output file if ``plot_result`` is ``True``.
             show: Whether to open the figure.
-            figsize_x: The x-size of the figure in inches.
-            figsize_y: The y-size of the figure in inches.
+            fig_size_x: The x-size of the figure in inches.
+            fig_size_y: The y-size of the figure in inches.
             reference_jacobian_path: The path of the reference Jacobian file.
             save_reference_jacobian: Whether to save the reference Jacobian.
             indices: The indices of the inputs and outputs
@@ -1508,7 +1686,7 @@ class MDODiscipline(object):
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
         self.linearize(input_data)
-        o_k = approx.check_jacobian(
+        return approx.check_jacobian(
             self.jac,
             outputs,
             inputs,
@@ -1517,23 +1695,22 @@ class MDODiscipline(object):
             plot_result=plot_result,
             file_path=file_path,
             show=show,
-            figsize_x=figsize_x,
-            figsize_y=figsize_y,
+            fig_size_x=fig_size_x,
+            fig_size_y=fig_size_y,
             reference_jacobian_path=reference_jacobian_path,
             save_reference_jacobian=save_reference_jacobian,
             indices=indices,
         )
-        return o_k
 
     @property
-    def status(self):  # type: (...) -> str
+    def status(self) -> str:
         """The status of the discipline."""
         return self._status
 
     def _check_status(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         """Check the status according to possible statuses.
 
         Raises:
@@ -1546,12 +1723,12 @@ class MDODiscipline(object):
             self.STATUS_RUNNING,
             self.STATUS_FAILED,
         ]:
-            raise ValueError("Unknown status: {}.".format(status))
+            raise ValueError(f"Unknown status: {status}.")
 
     def set_disciplines_statuses(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         """Set the sub-disciplines statuses.
 
         To be implemented in subclasses.
@@ -1562,8 +1739,8 @@ class MDODiscipline(object):
 
     def is_output_existing(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> bool
+        data_name: str,
+    ) -> bool:
         """Test if a variable is a discipline output.
 
         Args:
@@ -1572,12 +1749,12 @@ class MDODiscipline(object):
         Returns:
             Whether the variable is a discipline output.
         """
-        return self.output_grammar.is_data_name_existing(data_name)
+        return data_name in self.output_grammar
 
     def is_all_outputs_existing(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> bool
+        data_names: Iterable[str],
+    ) -> bool:
         """Test if several variables are discipline outputs.
 
         Args:
@@ -1586,12 +1763,16 @@ class MDODiscipline(object):
         Returns:
             Whether all the variables are discipline outputs.
         """
-        return self.output_grammar.is_all_data_names_existing(data_names)
+        output_names = self.output_grammar.keys()
+        for data_name in data_names:
+            if data_name not in output_names:
+                return False
+        return True
 
     def is_all_inputs_existing(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> bool
+        data_names: Iterable[str],
+    ) -> bool:
         """Test if several variables are discipline inputs.
 
         Args:
@@ -1600,12 +1781,16 @@ class MDODiscipline(object):
         Returns:
             Whether all the variables are discipline inputs.
         """
-        return self.input_grammar.is_all_data_names_existing(data_names)
+        input_names = self.input_grammar.keys()
+        for data_name in data_names:
+            if data_name not in input_names:
+                return False
+        return True
 
     def is_input_existing(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> bool
+        data_name: str,
+    ) -> bool:
         """Test if a variable is a discipline input.
 
         Args:
@@ -1614,12 +1799,12 @@ class MDODiscipline(object):
         Returns:
             Whether the variable is a discipline input.
         """
-        return self.input_grammar.is_data_name_existing(data_name)
+        return data_name in self.input_grammar
 
     def _is_status_ok_for_run_again(
         self,
-        status,  # type: str
-    ):  # type: (...) -> bool
+        status: str,
+    ) -> bool:
         """Check if the discipline can be run again.
 
         Args:
@@ -1630,8 +1815,8 @@ class MDODiscipline(object):
         """
         return status not in [self.STATUS_RUNNING]
 
-    def reset_statuses_for_run(self):  # type: (...) -> None
-        """Set all the statuses to :attr:`.PENDING`.
+    def reset_statuses_for_run(self) -> None:
+        """Set all the statuses to :attr:`.MDODiscipline.STATUS_PENDING`.
 
         Raises:
             ValueError: When the discipline cannot be run because of its status.
@@ -1647,16 +1832,16 @@ class MDODiscipline(object):
     @status.setter
     def status(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         self._check_status(status)
         self._status = status
         self.notify_status_observers()
 
     def add_status_observer(
         self,
-        obs,  # type: Any
-    ):  # type: (...) -> None
+        obs: Any,
+    ) -> None:
         """Add an observer for the status.
 
         Add an observer for the status
@@ -1670,8 +1855,8 @@ class MDODiscipline(object):
 
     def remove_status_observer(
         self,
-        obs,  # type: Any
-    ):  # type: (...) -> None
+        obs: Any,
+    ) -> None:
         """Remove an observer for the status.
 
         Args:
@@ -1680,73 +1865,84 @@ class MDODiscipline(object):
         if obs in self._status_observers:
             self._status_observers.remove(obs)
 
-    def notify_status_observers(self):  # type: (...) -> None
+    def notify_status_observers(self) -> None:
         """Notify all status observers that the status has changed."""
         for obs in self._status_observers[:]:
             obs.update_status(self)
 
-    def store_local_data(
-        self, **kwargs  # type:Any
-    ):  # type: (...) -> None
+    def store_local_data(self, **kwargs: Any) -> None:
         """Store discipline data in local data.
 
         Args:
-            kwargs: The data to be stored in :attr:`.local_data`.
+            kwargs: The data to be stored in :attr:`.MDODiscipline.local_data`.
         """
-        self.local_data.update(kwargs)
+        out_ns = self.output_grammar.to_namespaced
+        if not out_ns:
+            self._local_data.update(kwargs)
+        else:
+            out_names = self.output_grammar.keys()
+            for key, value in kwargs.items():
+                if key in out_names:
+                    self._local_data[key] = value
+                else:
+                    key_with_ns = out_ns.get(key)
+                    if key_with_ns is not None:
+                        self._local_data[key_with_ns] = value
+                    # else out data will be cleared
 
     def check_input_data(
         self,
-        input_data,  # type: Dict[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> None
+        input_data: dict[str, Any],
+        raise_exception: bool = True,
+    ) -> None:
         """Check the input data validity.
 
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
+            raise_exception: Whether to raise on error.
         """
         try:
-            self.input_grammar.load_data(input_data, raise_exception)
+            self.input_grammar.validate(input_data, raise_exception)
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid input data")
-                + " in discipline {}".format(self.name),
+                + f" in discipline {self.name}",
             )
             raise
 
     def check_output_data(
         self,
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> None
+        raise_exception: bool = True,
+    ) -> None:
         """Check the output data validity.
 
         Args:
             raise_exception: Whether to raise an exception when the data is invalid.
         """
         try:
-            self.output_grammar.load_data(self.local_data, raise_exception)
+            self.output_grammar.validate(self._local_data, raise_exception)
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid output data")
-                + " in discipline {}".format(self.name),
+                + f" in discipline {self.name}",
             )
             raise
 
-    def get_outputs_asarray(self):  # type: (...) -> ndarray
+    def get_outputs_asarray(self) -> ndarray:
         """Return the local input data as a large NumPy array.
 
-        The order is the one of :meth:`.get_all_inputs`.
+        The order is the one of :meth:`.MDODiscipline.get_all_inputs`.
 
         Returns:
             The local input data.
         """
         return concatenate(list(self.get_all_outputs()))
 
-    def get_inputs_asarray(self):  # type: (...) -> ndarray
+    def get_inputs_asarray(self) -> ndarray:
         """Return the local output data as a large NumPy array.
 
-        The order is the one of :meth:`.get_all_outputs`.
+        The order is the one of :meth:`.MDODiscipline.get_all_outputs`.
 
         Returns:
             The local output data.
@@ -1755,8 +1951,8 @@ class MDODiscipline(object):
 
     def get_inputs_by_name(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> List[Any]
+        data_names: Iterable[str],
+    ) -> list[Any]:
         """Return the local data associated with input variables.
 
         Args:
@@ -1769,16 +1965,14 @@ class MDODiscipline(object):
             ValueError: When a variable is not an input of the discipline.
         """
         try:
-            return self.get_data_list_from_dict(data_names, self.local_data)
+            return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                "Discipline {} has no input named {}.".format(self.name, err)
-            )
+            raise ValueError(f"Discipline {self.name} has no input named {err}.")
 
     def get_outputs_by_name(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> List[Any]
+        data_names: Iterable[str],
+    ) -> list[Any]:
         """Return the local data associated with output variables.
 
         Args:
@@ -1791,110 +1985,139 @@ class MDODiscipline(object):
             ValueError: When a variable is not an output of the discipline.
         """
         try:
-            return self.get_data_list_from_dict(data_names, self.local_data)
+            return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                "Discipline {} has no output named {}.".format(self.name, err)
-            )
+            raise ValueError(f"Discipline {self.name} has no output named {err}.")
 
-    def get_input_data_names(self):  # type: (...) -> List[str]
+    def get_input_data_names(self, with_namespaces=True) -> list[str]:
         """Return the names of the input variables.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                input names, if any.
 
         Returns:
             The names of the input variables.
         """
-        return self.input_grammar.get_data_names()
+        if with_namespaces:
+            return self.input_grammar.keys()
+        else:
+            return remove_prefix_from_list(self.input_grammar.keys())
 
-    def get_output_data_names(self):  # type: (...) -> List[str]
+    def get_output_data_names(self, with_namespaces=True) -> list[str]:
         """Return the names of the output variables.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
 
         Returns:
             The names of the output variables.
         """
-        return self.output_grammar.get_data_names()
+        if with_namespaces:
+            return self.output_grammar.keys()
+        else:
+            return remove_prefix_from_list(self.output_grammar.keys())
 
-    def get_input_output_data_names(self):  # type: (...) -> List[str]
+    def get_input_output_data_names(self, with_namespaces=True) -> list[str]:
         """Return the names of the input and output variables.
+
+         Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
 
         Returns:
             The name of the input and output variables.
         """
-        outpt = self.output_grammar.get_data_names()
-        inpt = self.input_grammar.get_data_names()
-        return list(set(outpt) | set(inpt))
+        in_outs = set(self.output_grammar.keys()) | set(self.input_grammar.keys())
+        if with_namespaces:
+            return list(in_outs)
+        else:
+            return remove_prefix_from_list(in_outs)
 
-    def get_all_inputs(self):  # type: (...) -> List[Any]
+    def get_all_inputs(self) -> list[Any]:
         """Return the local input data as a list.
 
-        The order is given by :meth:`.get_input_data_names`.
+        The order is given by :meth:`.MDODiscipline.get_input_data_names`.
 
         Returns:
             The local input data.
         """
         return self.get_inputs_by_name(self.get_input_data_names())
 
-    def get_all_outputs(self):  # type: (...) -> List[Any]
+    def get_all_outputs(self) -> list[Any]:
         """Return the local output data as a list.
 
-        The order is given by :meth:`.get_output_data_names`.
+        The order is given by :meth:`.MDODiscipline.get_output_data_names`.
 
         Returns:
             The local output data.
         """
         return self.get_outputs_by_name(self.get_output_data_names())
 
-    def get_output_data(self):  # type: (...) -> Dict[str, Any]
+    def get_output_data(self, with_namespaces=True) -> dict[str, Any]:
         """Return the local output data as a dictionary.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
 
         Returns:
             The local output data.
         """
-        return dict(
-            (k, v) for k, v in self.local_data.items() if self.is_output_existing(k)
-        )
+        if with_namespaces or not self.output_grammar.to_namespaced:
+            output_names = self.output_grammar.keys()
+            return {k: v for k, v in self._local_data.items() if k in output_names}
+        else:
+            return remove_prefix_from_dict(self.get_output_data(True))
 
-    def get_input_data(self):  # type: (...) -> Dict[str, Any]
+    def get_input_data(self, with_namespaces=True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                input names, if any.
 
         Returns:
             The local input data.
         """
-        return dict(
-            (k, v) for k, v in self.local_data.items() if self.is_input_existing(k)
-        )
+        if with_namespaces or not self.input_grammar.to_namespaced:
+            input_names = self.input_grammar.keys()
+            return {k: v for k, v in self._local_data.items() if k in input_names}
+        else:
+            return remove_prefix_from_dict(self.get_input_data(True))
 
     def serialize(
         self,
-        out_file,  # type: Union[str, Path]
-    ):  # type: (...) -> None
+        file_path: str | Path,
+    ) -> None:
         """Serialize the discipline and store it in a file.
 
         Args:
-            out_file: The path to the file to store the discipline.
+            file_path: The path to the file to store the discipline.
         """
-        out_file = Path(out_file)
-        with out_file.open("wb") as outfobj:
+        with Path(file_path).open("wb") as outfobj:
             pickler = pickle.Pickler(outfobj, protocol=2)
             pickler.dump(self)
 
     @staticmethod
     def deserialize(
-        in_file,  # type: Union[str, Path]
-    ):  # type: (...) -> MDODiscipline
+        file_path: str | Path,
+    ) -> MDODiscipline:
         """Deserialize a discipline from a file.
 
         Args:
-            in_file: The path to the file containing the discipline.
+            file_path: The path to the file containing the discipline.
 
         Returns:
             The discipline instance.
         """
-        in_file = Path(in_file)
-        with in_file.open("rb") as in_fobj:
-            pickler = pickle.Unpickler(in_fobj)
-            return pickler.load()
+        with Path(file_path).open("rb") as file_:
+            pickler = pickle.Unpickler(file_)
+            obj = pickler.load()
+        return obj
 
-    def get_attributes_to_serialize(self):  # pylint: disable=R0201
+    def get_attributes_to_serialize(self) -> list[str]:  # pylint: disable=R0201
         """Define the names of the attributes to be serialized.
 
         Shall be overloaded by disciplines
@@ -1902,11 +2125,11 @@ class MDODiscipline(object):
         Returns:
             The names of the attributes to be serialized.
         """
-        # pylint warning ==> method could be a function but when overriden,
+        # pylint warning ==> method could be a function but when overridden,
         # it is a function==> self is required
         return list(self._ATTR_TO_SERIALIZE)
 
-    def __getstate__(self):  # type: (...) -> Dict[str, Any]
+    def __getstate__(self) -> dict[str, Any]:
         """Used by pickle to define what to serialize.
 
         Returns:
@@ -1916,66 +2139,56 @@ class MDODiscipline(object):
             AttributeError: When an attribute to be serialized is undefined.
             TypeError: When an attribute has an undefined type.
         """
-        out_d = {}
-        for keep_name in self.get_attributes_to_serialize():
-            if keep_name not in self.__dict__:
-                if "_" + keep_name not in self.__dict__ and not hasattr(
-                    self, keep_name
+        state = {}
+        for attribute_name in self.get_attributes_to_serialize():
+            if attribute_name not in self.__dict__:
+                if "_" + attribute_name not in self.__dict__ and not hasattr(
+                    self, attribute_name
                 ):
                     msg = (
-                        "Discipline {} defined attribute '{}' "
-                        "as required for serialization, "
-                        "but it appears to "
-                        "be undefined.".format(self.name, keep_name)
-                    )
+                        "The discipline {} cannot be serialized "
+                        "because its attribute {} does not exist."
+                    ).format(self.name, attribute_name)
                     raise AttributeError(msg)
 
-                prop = self.__dict__.get("_" + keep_name)
+                prop = self.__dict__.get("_" + attribute_name)
                 # May appear for properties that overload public attrs of super class
-                if hasattr(self, keep_name) and not isinstance(prop, Synchronized):
+                if hasattr(self, attribute_name) and not isinstance(prop, Synchronized):
                     continue
 
                 if not isinstance(prop, Synchronized):
                     raise TypeError(
-                        "Cant handle attribute {} serialization "
-                        "of undefined type.".format(keep_name)
+                        "The discipline {} cannot be serialized "
+                        "because its attribute {} has an undefined type.".format(
+                            self.name, attribute_name
+                        )
                     )
-                # Dont serialize shared memory object,
+                # Don´t serialize shared memory object,
                 # this is meaningless, save the value instead
-                out_d[keep_name] = prop.value
+                state[attribute_name] = prop.value
             else:
-                out_d[keep_name] = self.__dict__[keep_name]
+                state[attribute_name] = self.__dict__[attribute_name]
 
-        if self._cache_type == self.HDF5_CACHE:
-            out_d.pop("cache")
-        return out_d
+        return state
 
     def __setstate__(
         self,
-        state_dict,  # type: Dict[str, Any]
-    ):  # type: (...) -> None
-        """Used by pickle to define what to deserialize.
-
-        Args:
-            state_dict: Update ``self.__dict__`` from ``state_dict``
-                to deserialize the discipline.
-        """
+        state: dict[str, Any],
+    ) -> None:
         self._init_shared_attrs()
         self._status_observers = []
-        out_d = self.__dict__
-        shared_attrs = list(out_d.keys())
-        for key, val in state_dict.items():
-            if "_" + key not in shared_attrs:
-                out_d[key] = val
+        __dict__ = self.__dict__
+        for key, val in state.items():
+            _key = f"_{key}"
+            if _key not in __dict__.keys():
+                __dict__[key] = val
             else:
-                out_d["_" + key].value = val
-
-        self.__init_cache_attr()
+                __dict__[_key].value = val
 
     def get_local_data_by_name(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> Generator[Any]
+        data_names: Iterable[str],
+    ) -> Generator[Any]:
         """Return the local data of the discipline associated with variables names.
 
         Args:
@@ -1985,25 +2198,23 @@ class MDODiscipline(object):
             The local data associated with the variables names.
 
         Raises:
-            ValueError: When a name is not not a discipline input name.
+            ValueError: When a name is not a discipline input name.
         """
         try:
-            return self.get_data_list_from_dict(data_names, self.local_data)
+            return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                "Discipline {} has no local_data named {}.".format(self.name, err)
-            )
+            raise ValueError(f"Discipline {self.name} has no local_data named {err}.")
 
     @staticmethod
-    def is_scenario():  # type: (...) -> bool
+    def is_scenario() -> bool:
         """Whether the discipline is a scenario."""
         return False
 
     @staticmethod
     def get_data_list_from_dict(
-        keys,  # type: Union[str, Iterable]
-        data_dict,  # type: Dict[str, Any]
-    ):  # type: (...) -> Union[Any, Generator[Any]]
+        keys: str | Iterable,
+        data_dict: dict[str, Any],
+    ) -> Any | Generator[Any]:
         """Filter the dict from a list of keys or a single key.
 
         If keys is a string, then the method return the value associated to the
@@ -2018,6 +2229,6 @@ class MDODiscipline(object):
         Returns:
             Either a data or a generator of data.
         """
-        if isinstance(keys, six.string_types):
+        if isinstance(keys, str):
             return data_dict[keys]
         return (data_dict[name] for name in keys)

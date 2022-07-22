@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,33 +12,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import math
 import unittest
+from operator import mul
+from operator import truediv
+from unittest import mock
 
 import numpy as np
 import pytest
-from numpy import allclose, array, eye, matmul, ones, zeros
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import SetPtFromDatabase
+from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
+from gemseo.core.mdofunctions.norm_function import NormFunction
+from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
+from numpy import allclose
+from numpy import array
+from numpy import eye
+from numpy import matmul
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
 from numpy.linalg import norm
 from scipy import optimize
-
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOFunction,
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-)
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.utils.data_conversion import DataConversion
 
 
 class TestMdofunction(unittest.TestCase):
@@ -167,7 +172,7 @@ class TestMdofunction(unittest.TestCase):
             f_type=MDOFunction.TYPE_EQ,
             dim=1,
         )
-        repr_dict = f.get_data_dict_repr()
+        repr_dict = f.to_dict()
         for k in MDOFunction.DICT_REPR_ATTR:
             if k != "special_repr":
                 assert k in repr_dict
@@ -302,7 +307,7 @@ class TestMdofunction(unittest.TestCase):
     def test_quadratic_approximation(self):
         """Test the second-order polynomial of a function."""
         dim = 3
-        args = ("x_{}".format(i) for i in range(dim))
+        args = (f"x_{i}" for i in range(dim))
         function = MDOFunction(
             lambda x: 0.5 * norm(x) ** 2, "f", jac=lambda x: x, args=args
         )
@@ -336,21 +341,21 @@ class TestMdofunctiongenerator(unittest.TestCase):
         """"""
         x = np.zeros(2)
         d = {"x": x}
-        out_d = DataConversion.update_dict_from_array(d, data_names=[], values_array=x)
+        out_d = update_dict_of_arrays_from_array(d, [], x)
         assert (out_d["x"] == x).all()
 
         args = [d, ["x"], np.ones(4)]
-        self.assertRaises(Exception, DataConversion.update_dict_from_array, *args)
+        self.assertRaises(Exception, update_dict_of_arrays_from_array, *args)
         args = [d, ["x"], np.ones(1)]
-        self.assertRaises(Exception, DataConversion.update_dict_from_array, *args)
+        self.assertRaises(Exception, update_dict_of_arrays_from_array, *args)
 
     def test_get_values_array_from_dict(self):
         """"""
         x = np.zeros(2)
         data_dict = {"x": x}
-        out_x = DataConversion.dict_to_array(data_dict, data_names=["x"])
+        out_x = concatenate_dict_of_arrays_to_array(data_dict, ["x"])
         assert (out_x == x).all()
-        out_x = DataConversion.dict_to_array(data_dict, data_names=[])
+        out_x = concatenate_dict_of_arrays_to_array(data_dict, [])
         assert out_x.size == 0
 
     def test_get_function(self):
@@ -430,7 +435,7 @@ class TestMdofunctiongenerator(unittest.TestCase):
     def test_set_pt_from_database(self):
         for normalize in (True, False):
             pb = Power2()
-            pb.preprocess_functions(normalize=normalize)
+            pb.preprocess_functions(is_function_input_normalized=normalize)
             x = np.zeros(3)
             pb.evaluate_functions(x, normalize=normalize)
             func = MDOFunction(np.sum, pb.objective.name)
@@ -672,3 +677,190 @@ def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expec
 
     assert function.name == expected_n
     assert function.expr == expected_e
+
+
+def test_expects_normalized_inputs(function):
+    """Check the inputs normalization expectation."""
+    assert not function.expects_normalized_inputs
+
+
+@pytest.fixture(scope="module")
+def design_space():
+    """A design space."""
+    return mock.Mock()
+
+
+@pytest.fixture(scope="module")
+def problem():
+    """An optimization problem."""
+    return mock.Mock()
+
+
+@pytest.fixture(scope="module")
+def database():
+    """A database."""
+    return mock.Mock()
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_expect_normalized_inputs_from_database(
+    function, design_space, database, normalize
+):
+    """Check the inputs normalization expectation."""
+    func = SetPtFromDatabase(database, design_space, function, normalize=normalize)
+    assert func.expects_normalized_inputs == normalize
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_expect_normalized_inputs_normfunction(function, problem, normalize):
+    """Check the inputs normalization expectation."""
+    func = NormFunction(function, normalize, False, problem)
+    assert func.expects_normalized_inputs == normalize
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_expect_normalized_inputs_normdbfunction(function, problem, normalize):
+    """Check the inputs normalization expectation."""
+    func = NormDBFunction(function, normalize, False, problem)
+    assert func.expects_normalized_inputs == normalize
+
+
+def test_activate_counters():
+    """Check that the function counter is active by default."""
+    func = MDOFunction(lambda x: x, "func")
+    assert func.n_calls == 0
+    func(array([1.0]))
+    assert func.n_calls == 1
+
+
+def test_deactivate_counters():
+    """Check that the function counter is set to None when deactivated."""
+    activate_counters = MDOFunction.activate_counters
+
+    MDOFunction.activate_counters = False
+
+    func = MDOFunction(lambda x: x, "func")
+    assert func.n_calls is None
+
+    with pytest.raises(RuntimeError, match="The function counters are disabled."):
+        func.n_calls = 1
+
+    MDOFunction.activate_counters = activate_counters
+
+
+def test_get_indexed_name(function):
+    """Check the indexed function name."""
+    assert function.get_indexed_name(3) == "n!3"
+
+
+@pytest.mark.parametrize("fexpr", [None, "x**2"])
+@pytest.mark.parametrize("gexpr", [None, "x**3"])
+@pytest.mark.parametrize(
+    "op,op_name,func,jac", [(mul, "*", 32, 80), (truediv, "/", 0.5, -1.0 / 9)]
+)
+def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
+    """Check the multiplication of a function by a function or its inverse."""
+    f = MDOFunction(lambda x: x**2, "f", jac=lambda x: 2 * x, args=["x"], expr=fexpr)
+    g = MDOFunction(
+        lambda x: x**3, "g", jac=lambda x: 3 * x**2, args=["x"], expr=gexpr
+    )
+
+    f_op_g = op(f, g)
+    suffix = ""
+    if fexpr and gexpr:
+        suffix = f" = {fexpr}{op_name}{gexpr}"
+
+    assert repr(f_op_g) == f"f{op_name}g(x)" + suffix
+    assert f_op_g(2) == func
+    assert f_op_g.jac(2) == jac
+
+
+@pytest.mark.parametrize("expr", [None, "x**2"])
+@pytest.mark.parametrize(
+    "op,op_name,func,jac", [(mul, "*", 16, 24), (truediv, "/", 4, 6)]
+)
+def test_multiplication_by_scalar(expr, op, op_name, func, jac):
+    """Check the multiplication of a function by a scalar or its inverse."""
+    f = MDOFunction(
+        lambda x: x**3, "f", jac=lambda x: 3 * x**2, args=["x"], expr=expr
+    )
+    f_op_2 = op(f, 2)
+    suffix = ""
+    if expr:
+        suffix = f" = 2{op_name}{expr}"
+
+    assert repr(f_op_2) == f"2{op_name}f(x)" + suffix
+    assert f_op_2(2) == func
+    assert f_op_2.jac(2) == jac
+
+
+def simple_function(x: ndarray) -> ndarray:
+    """An identity function.
+
+    Serialization tests require explicitly defined functions instead of lambdas.
+
+    Args:
+        x: The input data.
+
+    Returns:
+        The input data.
+    """
+    return x
+
+
+@pytest.mark.parametrize("activate_counters", [True, False])
+@pytest.mark.parametrize(
+    "mdo_function, kwargs, value",
+    [
+        (
+            MDOFunction,
+            {
+                "func": math.sin,
+                "f_type": "obj",
+                "name": "obj",
+                "jac": math.cos,
+                "expr": "sin(x)",
+                "args": ["x"],
+            },
+            array([1.0]),
+        ),
+        (
+            NormFunction,
+            {
+                "orig_func": MDOFunction(simple_function, "f"),
+                "normalize": True,
+                "round_ints": False,
+                "optimization_problem": Power2(),
+            },
+            array([1.0, 1.0, 1.0]),
+        ),
+    ],
+)
+def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, tmp_wd):
+    """Test the serialization/deserialization method.
+
+    Args:
+        activate_counters: Whether to activate the function counters.
+        mdo_function: The ``MDOFunction`` to be tested.
+        kwargs: The keyword arguments to instantiate the ``MDOFunction``.
+        value: The value to evaluate the ``MDOFunction``.
+        tmp_wd: Fixture to move into a temporary work directory.
+    """
+    function = mdo_function(**kwargs)
+    out_file = "function1.o"
+    function.activate_counters = activate_counters
+    function(value)
+    function.serialize(out_file)
+    serialized_func = mdo_function.deserialize(out_file)
+
+    if activate_counters:
+        assert function.n_calls == 1
+    else:
+        assert function.n_calls is None
+
+    s_func_u_dict = serialized_func.__dict__
+    ok = True
+    for k, _ in function.__dict__.items():
+        if k not in s_func_u_dict:
+            ok = False
+    assert ok

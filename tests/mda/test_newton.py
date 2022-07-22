@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,45 +12,40 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import re
-import sys
 
 import pytest
-from numpy import array, float64, isclose, linalg, ones
-
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.core.parallel_execution import IS_WIN
-from gemseo.mda.newton import MDANewtonRaphson, MDAQuasiNewton
-from gemseo.problems.sellar.sellar import (
-    X_SHARED,
-    Y_1,
-    Y_2,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.mda.newton import MDANewtonRaphson
+from gemseo.mda.newton import MDAQuasiNewton
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy import float64
+from numpy import isclose
+from numpy import linalg
+from numpy import ones
 
 from .test_gauss_seidel import SelfCoupledDisc
 
 TRESHOLD_MDA_TOL = 1e-6
 
 
-def test_raphson_sobieski():
+@pytest.mark.parametrize("coupl_scaling", [True, False])
+def test_raphson_sobieski(coupl_scaling):
     """Test the execution of Gauss-Seidel on Sobieski."""
     disciplines = [
         SobieskiAerodynamics(),
@@ -60,14 +54,15 @@ def test_raphson_sobieski():
         SobieskiMission(),
     ]
     mda = MDANewtonRaphson(disciplines)
+    mda.set_residuals_scaling_options(scale_residuals_with_coupling_size=coupl_scaling)
     mda.matrix_type = JacobianAssembly.SPARSE
     mda.reset_history_each_run = True
     mda.execute()
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
     mda.warm_start = True
     mda.execute({"x_1": mda.default_inputs["x_1"] + 1.0e-2})
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
 @pytest.mark.parametrize("relax_factor", [-0.1, 1.1])
@@ -101,7 +96,7 @@ def test_raphson_sobieski_sparse():
     mda = MDANewtonRaphson(disciplines)
     mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
     mda.execute()
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
 def test_quasi_newton_invalida_method():
@@ -128,7 +123,7 @@ def test_raphson_sellar_sparse_complex():
     mda.matrix_type = JacobianAssembly.SPARSE
     mda.execute()
 
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
@@ -141,7 +136,7 @@ def test_raphson_sellar():
     mda = MDANewtonRaphson(disciplines)
     mda.execute()
 
-    assert mda.residual_history[-1][0] < 1e-6
+    assert mda.residual_history[-1] < 1e-6
 
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
@@ -153,7 +148,7 @@ def test_raphson_sellar_linop():
     mda = MDANewtonRaphson(disciplines)
     mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
     mda.execute()
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
 def test_broyden_sellar():
@@ -161,7 +156,7 @@ def test_broyden_sellar():
     mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.BROYDEN1)
     mda.reset_history_each_run = True
     mda.execute()
-    assert mda.residual_history[-1][0] < 1e-5
+    assert mda.residual_history[-1] < 1e-5
 
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
@@ -236,13 +231,9 @@ def test_log_convergence():
     assert mda.log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 @pytest.mark.parametrize(
     "mda_class,expected_obj",
-    [("MDAQuasiNewton", 591.35), ("MDANewtonRaphson", 608.175)],
+    [("MDAQuasiNewton", -591.35), ("MDANewtonRaphson", -608.175)],
 )
 def test_parallel_doe(mda_class, expected_obj, generate_parallel_doe_data):
     """Test the execution of Newton methods in parallel.
@@ -251,7 +242,7 @@ def test_parallel_doe(mda_class, expected_obj, generate_parallel_doe_data):
         mda_class: The specific Newton MDA to test.
         expected_obj: The expected objective value of the DOE scenario.
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`.
+            a parallel DOE scenario for a particular `main_mda_name`.
     """
     obj = generate_parallel_doe_data(mda_class)
     assert isclose(array([obj]), array([expected_obj]), atol=1e-3)

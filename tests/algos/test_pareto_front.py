@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,32 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-
-from __future__ import division, unicode_literals
-
-from os.path import exists, join
+from os.path import exists
+from os.path import join
+from pathlib import Path
 
 import pytest
+from gemseo.algos.pareto_front import compute_pareto_optimal_points
+from gemseo.algos.pareto_front import generate_pareto_plots
 from matplotlib import pyplot as plt
-from numpy import array, ndarray
-from numpy.random import rand, seed
+from numpy import array
+from numpy import ndarray
+from numpy.random import rand
+from numpy.random import seed
 from numpy.testing import assert_array_equal
-
-from gemseo.algos.pareto_front import (
-    compute_pareto_optimal_points,
-    generate_pareto_plots,
-)
-from gemseo.utils.py23_compat import Path
 
 
 @pytest.fixture()
-def objective_points():  # type: (...) -> ndarray
+def objective_points() -> ndarray:
     """Return points.
 
     Returns:
@@ -48,7 +42,7 @@ def objective_points():  # type: (...) -> ndarray
 
 
 @pytest.fixture()
-def non_feasible_points():  # type: (...) -> ndarray
+def non_feasible_points() -> ndarray:
     """Return a non-feasible point mask.
 
     Returns:
@@ -58,8 +52,8 @@ def non_feasible_points():  # type: (...) -> ndarray
 
 
 def test_select_pareto_optimal(
-    tmp_path,  # type: Path
-    objective_points,  # type: objective_points
+    tmp_path: Path,
+    objective_points: objective_points,
 ):
     """Test the selection of Pareto optimal points.
 
@@ -72,9 +66,9 @@ def test_select_pareto_optimal(
 
 
 def test_select_pareto_optimal_w_non_feasible_points(
-    tmp_path,  # type: Path
-    objective_points,  # type: objective_points
-    non_feasible_points,  # type: non_feasible_points
+    tmp_path: Path,
+    objective_points: objective_points,
+    non_feasible_points: non_feasible_points,
 ):
     """Test the selection of Pareto optimal points, with non-feasible points.
 

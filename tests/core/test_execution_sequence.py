@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,34 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard, Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
 from copy import deepcopy
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import (
-    AtomicExecSequence,
-    CompositeExecSequence,
-    ExecutionSequenceFactory,
-    LoopExecSequence,
-    SerialExecSequence,
-)
-from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.core.execution_sequence import AtomicExecSequence
+from gemseo.core.execution_sequence import CompositeExecSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import LoopExecSequence
+from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
 class TestExecSequence(unittest.TestCase):
@@ -156,7 +148,7 @@ class TestExecSequence(unittest.TestCase):
         self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
         self.d1.status = MDODiscipline.STATUS_DONE
         self.assertEqual(seq.status, MDODiscipline.STATUS_DONE)
-        for state in seq.get_state_dict().values():
+        for state in seq.get_statuses().values():
             self.assertEqual(MDODiscipline.STATUS_DONE, state)
 
     def test_parallel_execution_failed(self):
@@ -209,12 +201,12 @@ class TestExecSequence(unittest.TestCase):
     def status_of(self, seq, disc, n=0):
         #         print seq
         #         print seq.disc_to_uuids[disc]
-        #         print seq.get_state_dict()
-        return seq.get_state_dict()[seq.disc_to_uuids[disc][n]]
+        #         print seq.get_statuses()
+        return seq.get_statuses()[seq.disc_to_uuids[disc][n]]
 
     def test_sub_scenario(self):
         d1 = SobieskiPropulsion()
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         sc_prop = MDOScenario(
             disciplines=[d1],
             formulation="DisciplinaryOpt",
@@ -258,7 +250,7 @@ class TestExecSequence(unittest.TestCase):
         self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.STATUS_DONE)
 
     def test_visitor_pattern(self):
-        class Visitor(object):
+        class Visitor:
             def __init__(self):
                 self.result = []
 

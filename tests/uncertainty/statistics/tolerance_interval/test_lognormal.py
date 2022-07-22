@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -23,14 +21,13 @@
 from math import exp
 
 import pytest
-from scipy.special import erfinv
-
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.lognormal import (
     LogNormalToleranceInterval,
 )
+from scipy.special import erfinv
 
 
 def test_lognormal_quantile_both():
@@ -39,8 +36,8 @@ def test_lognormal_quantile_both():
         1000000, mean=0.0, std=1.0, location=0.5
     )
     lower, upper = tolerance_interval.compute(0.95, 0.9)
-    assert pytest.approx(lower, 0.01) == exp(2 ** 0.5 * erfinv(2 * 0.025 - 1)) + 0.5
-    assert pytest.approx(upper, 0.01) == exp(2 ** 0.5 * erfinv(2 * 0.975 - 1)) + 0.5
+    assert pytest.approx(lower, 0.01) == exp(2**0.5 * erfinv(2 * 0.025 - 1)) + 0.5
+    assert pytest.approx(upper, 0.01) == exp(2**0.5 * erfinv(2 * 0.975 - 1)) + 0.5
 
 
 def test_lognormal_quantile_lower():
@@ -51,7 +48,7 @@ def test_lognormal_quantile_lower():
     lower, upper = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceIntervalSide.LOWER
     )
-    assert pytest.approx(lower, 0.01) == exp(2 ** 0.5 * erfinv(2 * 0.025 - 1)) + 0.5
+    assert pytest.approx(lower, 0.01) == exp(2**0.5 * erfinv(2 * 0.025 - 1)) + 0.5
 
 
 def test_lognormal_quantile_upper():
@@ -62,4 +59,4 @@ def test_lognormal_quantile_upper():
     lower, upper = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceIntervalSide.UPPER
     )
-    assert pytest.approx(upper, 0.01) == exp(2 ** 0.5 * erfinv(2 * 0.975 - 1)) + 0.5
+    assert pytest.approx(upper, 0.01) == exp(2**0.5 * erfinv(2 * 0.975 - 1)) + 0.5

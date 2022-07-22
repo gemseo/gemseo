@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,82 +12,83 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
 import json
 import re
-from copy import deepcopy
-from unittest import mock
+from pathlib import Path
 
 import pytest
-from numpy import arange, array, cos, linspace
-from numpy import pi as np_pi
-from numpy import sin
-from six import string_types
-
-from gemseo.api import (
-    compute_doe,
-    create_cache,
-    create_design_space,
-    create_discipline,
-    create_mda,
-    create_parameter_space,
-    create_scalable,
-    create_scenario,
-    create_surrogate,
-    execute_algo,
-    execute_post,
-    export_design_space,
-    generate_coupling_graph,
-    generate_n2_plot,
-    get_algorithm_options_schema,
-    get_all_inputs,
-    get_all_outputs,
-    get_available_caches,
-    get_available_disciplines,
-    get_available_doe_algorithms,
-    get_available_formulations,
-    get_available_mdas,
-    get_available_opt_algorithms,
-    get_available_post_processings,
-    get_available_scenario_types,
-    get_available_surrogates,
-    get_discipline_inputs_schema,
-    get_discipline_options_defaults,
-    get_discipline_options_schema,
-    get_discipline_outputs_schema,
-    get_formulation_options_schema,
-    get_formulation_sub_options_schema,
-    get_formulations_options_defaults,
-    get_formulations_sub_options_defaults,
-    get_mda_options_schema,
-    get_post_processing_options_schema,
-    get_scenario_differentiation_modes,
-    get_scenario_inputs_schema,
-    get_scenario_options_schema,
-    get_surrogate_options_schema,
-    import_discipline,
-    load_dataset,
-    monitor_scenario,
-    print_configuration,
-)
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.driver_lib import DriverLib
+from gemseo.api import AlgorithmFeatures
+from gemseo.api import compute_doe
+from gemseo.api import configure
+from gemseo.api import create_cache
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_mda
+from gemseo.api import create_parameter_space
+from gemseo.api import create_scalable
+from gemseo.api import create_scenario
+from gemseo.api import create_surrogate
+from gemseo.api import execute_algo
+from gemseo.api import execute_post
+from gemseo.api import export_design_space
+from gemseo.api import generate_coupling_graph
+from gemseo.api import generate_n2_plot
+from gemseo.api import get_algorithm_features
+from gemseo.api import get_algorithm_options_schema
+from gemseo.api import get_available_caches
+from gemseo.api import get_available_disciplines
+from gemseo.api import get_available_doe_algorithms
+from gemseo.api import get_available_formulations
+from gemseo.api import get_available_mdas
+from gemseo.api import get_available_opt_algorithms
+from gemseo.api import get_available_post_processings
+from gemseo.api import get_available_scenario_types
+from gemseo.api import get_available_surrogates
+from gemseo.api import get_discipline_inputs_schema
+from gemseo.api import get_discipline_options_defaults
+from gemseo.api import get_discipline_options_schema
+from gemseo.api import get_discipline_outputs_schema
+from gemseo.api import get_formulation_options_schema
+from gemseo.api import get_formulation_sub_options_schema
+from gemseo.api import get_formulations_options_defaults
+from gemseo.api import get_formulations_sub_options_defaults
+from gemseo.api import get_mda_options_schema
+from gemseo.api import get_post_processing_options_schema
+from gemseo.api import get_scenario_differentiation_modes
+from gemseo.api import get_scenario_inputs_schema
+from gemseo.api import get_scenario_options_schema
+from gemseo.api import get_surrogate_options_schema
+from gemseo.api import import_discipline
+from gemseo.api import load_dataset
+from gemseo.api import monitor_scenario
+from gemseo.api import print_configuration
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.scenario import Scenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mda.mda import MDA
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.utils.py23_compat import Path
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.string_tools import MultiLineString
+from numpy import array
+from numpy import cos
+from numpy import linspace
+from numpy import pi as np_pi
+from numpy import sin
 
 
-class Observer(object):
+class Observer:
     def __init__(self):
         self.status_changes = 0
 
@@ -111,7 +111,7 @@ def test_generate_n2_plot(tmp_wd):
         ]
     )
     file_path = "n2.png"
-    generate_n2_plot(disciplines, file_path, save=True, show=False, figsize=(5, 5))
+    generate_n2_plot(disciplines, file_path, save=True, show=False, fig_size=(5, 5))
     assert Path(file_path).exists()
 
 
@@ -164,8 +164,8 @@ def test_get_surrogate_options_schema(tmp_wd):
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-    get_surrogate_options_schema("RBFRegression")
-    get_surrogate_options_schema("RBFRegression", pretty_print=True)
+    get_surrogate_options_schema("RBFRegressor")
+    get_surrogate_options_schema("RBFRegressor", pretty_print=True)
 
 
 def test_create_scenario_and_monitor(tmp_wd):
@@ -178,7 +178,7 @@ def test_create_scenario_and_monitor(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
     )
 
     with pytest.raises(
@@ -188,7 +188,7 @@ def test_create_scenario_and_monitor(tmp_wd):
             create_discipline("SobieskiMission"),
             "DisciplinaryOpt",
             "y_4",
-            SobieskiProblem().read_design_space(),
+            SobieskiProblem().design_space,
             scenario_type="unknown",
         )
 
@@ -203,7 +203,7 @@ def test_monitor_scenario(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
     )
 
     observer = Observer()
@@ -226,14 +226,12 @@ def test_execute_post(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
     )
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
     execute_post(scenario, "OptHistoryView", save=True, show=False)
-    with pytest.raises(
-        TypeError, match="Cannot post process type: {}".format(type(1234))
-    ):
+    with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
         execute_post(1234, "OptHistoryView")
 
 
@@ -247,22 +245,8 @@ def test_create_doe_scenario(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
         scenario_type="DOE",
-    )
-
-
-def test_get_all_inputs(tmp_wd):
-    """Check that all the inputs from the Sobieski problem are recovered.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    inputs = get_all_inputs(
-        create_discipline(["SobieskiMission", "SobieskiAerodynamics"])
-    )
-    assert sorted(inputs) == sorted(
-        ["y_12", "x_shared", "y_14", "x_2", "y_24", "y_32", "y_34"]
     )
 
 
@@ -273,57 +257,22 @@ def test_get_formulation_sub_options_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     sub_opts_schema = get_formulation_sub_options_schema(
-        "MDF", main_mda_class="MDAJacobi"
+        "MDF", main_mda_name="MDAJacobi"
     )
     props = sub_opts_schema["properties"]
     assert "acceleration" in props
 
     for formulation in get_available_formulations():
         if formulation == "MDF":
-            opts = {"main_mda_class": "MDAJacobi"}
-        elif formulation == "BiLevel" or formulation == "BLISS98B":
+            opts = {"main_mda_name": "MDAJacobi"}
+        elif formulation == "BiLevel":
+            opts = {"main_mda_name": "MDAGaussSeidel"}
+        elif formulation == "BLISS98B":
             opts = {"mda_name": "MDAGaussSeidel"}
         else:
             opts = {}
         get_formulation_sub_options_schema(formulation, **opts)
         get_formulation_sub_options_schema(formulation, pretty_print=True, **opts)
-
-
-def test_get_all_in_out_puts_recursive(tmp_wd):
-    """Test the recursive option when retrieving all inputs/outputs.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    miss, aero, struct = create_discipline(
-        ["SobieskiMission", "SobieskiAerodynamics", "SobieskiStructure"]
-    )
-    design_space = SobieskiProblem().read_design_space()
-    sc_aero = create_scenario(
-        aero, "DisciplinaryOpt", "y_24", deepcopy(design_space).filter("x_2")
-    )
-
-    sc_struct = create_scenario(
-        struct, "DisciplinaryOpt", "y_14", deepcopy(design_space).filter("x_1")
-    )
-
-    inputs = get_all_inputs([sc_aero, sc_struct, miss], recursive=True)
-    assert sorted(inputs) == sorted(
-        [
-            "x_1",
-            "x_2",
-            "x_shared",
-            "y_12",
-            "y_14",
-            "y_21",
-            "y_24",
-            "y_31",
-            "y_32",
-            "y_34",
-        ]
-    )
-
-    get_all_outputs([sc_aero, sc_struct, miss], recursive=True)
 
 
 def test_get_scenario_inputs_schema(tmp_wd):
@@ -333,7 +282,7 @@ def test_get_scenario_inputs_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     aero = create_discipline(["SobieskiAerodynamics"])
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     sc_aero = create_scenario(
         aero, "DisciplinaryOpt", "y_24", design_space.filter("x_2")
     )
@@ -392,18 +341,6 @@ def test_get_mda_options_schema(tmp_wd):
     get_mda_options_schema("MDAJacobi", pretty_print=True)
 
 
-def test_get_all_outputs(tmp_wd):
-    """Test that all discipline outputs are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    outs = get_all_outputs(
-        create_discipline(["SobieskiMission", "SobieskiAerodynamics"])
-    )
-    assert sorted(outs) == sorted(["y_23", "y_24", "y_4", "y_2", "g_2", "y_21"])
-
-
 def test_get_available_opt_algorithms(tmp_wd):
     """Check that the optimization algorithms are retrieved correctly.
 
@@ -457,8 +394,8 @@ def test_get_available_surrogates(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     surrogates = get_available_surrogates()
-    assert "RBFRegression" in surrogates
-    assert "LinearRegression" in surrogates
+    assert "RBFRegressor" in surrogates
+    assert "LinearRegressor" in surrogates
 
 
 def test_get_available_disciplines(tmp_wd):
@@ -496,7 +433,11 @@ def test_create_discipline(tmp_wd):
         "cache_type": MDODiscipline.SIMPLE_CACHE,
     }
 
-    with pytest.raises(InvalidDataException, match="Invalid data in"):
+    msg = (
+        "data.linearization_mode must be one of "
+        r"\['auto', 'direct', 'reverse', 'adjoint'\]"
+    )
+    with pytest.raises(InvalidDataException, match=msg):
         create_discipline("SobieskiMission", **options_fail)
 
 
@@ -509,12 +450,12 @@ def test_create_surrogate(tmp_wd):
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
     disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
     doe.execute({"algo": "fullfact", "n_samples": 10})
     surr = create_surrogate(
-        "RBFRegression",
+        "RBFRegressor",
         disc.cache.export_to_dataset(),
         input_names=["y_24", "y_34"],
     )
@@ -562,7 +503,7 @@ def test_create_mda(tmp_wd):
     )
     mda = create_mda("MDAGaussSeidel", disciplines)
     mda.execute()
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
 
 def test_get_available_mdas(tmp_wd):
@@ -587,7 +528,7 @@ def test_get_discipline_inputs_schema(tmp_wd):
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_inputs_schema(mission, True)
-    assert isinstance(schema_str, string_types)
+    assert isinstance(schema_str, str)
     get_discipline_inputs_schema(mission, False, pretty_print=True)
 
 
@@ -603,7 +544,7 @@ def test_get_discipline_outputs_schema(tmp_wd):
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_outputs_schema(mission, True)
-    assert isinstance(schema_str, string_types)
+    assert isinstance(schema_str, str)
     get_discipline_outputs_schema(mission, False, pretty_print=True)
 
 
@@ -615,7 +556,7 @@ def test_get_scenario_differenciation_modes(tmp_wd):
     """
     modes = get_scenario_differentiation_modes()
     for mode in modes:
-        assert isinstance(mode, string_types)
+        assert isinstance(mode, str)
 
 
 def test_get_post_processing_options_schema(tmp_wd):
@@ -635,14 +576,14 @@ def test_get_formulation_options_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     mdf_schema = get_formulation_options_schema("MDF")
-    for prop in ["maximize_objective", "sub_mda_class"]:
+    for prop in ["maximize_objective", "inner_mda_name"]:
         assert prop in mdf_schema["required"]
 
     idf_schema = get_formulation_options_schema("IDF")
     for prop in [
         "maximize_objective",
         "normalize_constraints",
-        "parallel_exec",
+        "n_processes",
         "use_threading",
     ]:
         assert prop in idf_schema["required"]
@@ -687,7 +628,7 @@ def test_get_default_sub_options_values(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
 
-    defaults = get_formulations_sub_options_defaults("MDF", main_mda_class="MDAChain")
+    defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
 
     defaults = get_formulations_sub_options_defaults("DisciplinaryOpt")
@@ -758,7 +699,7 @@ def test_create_cache(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     cache = create_cache("MemoryFullCache")
-    assert cache.get_length() == 0
+    assert not cache
 
 
 def test_get_available_caches(tmp_wd):
@@ -769,7 +710,7 @@ def test_get_available_caches(tmp_wd):
     """
     caches = get_available_caches()
     # plugins may add classes
-    assert set(caches) <= set(["HDF5Cache", "MemoryFullCache", "SimpleCache"])
+    assert set(caches) <= {"HDF5Cache", "MemoryFullCache", "SimpleCache"}
 
 
 def test_load_dataset(tmp_wd):
@@ -793,6 +734,25 @@ def test_print_configuration(capfd):
 
     out, err = capfd.readouterr()
     assert not err
+
+    expected = MultiLineString()
+    expected.add("Settings")
+    expected.indent()
+    expected.add("MDODiscipline")
+    expected.indent()
+    expected.add("The caches are activated.")
+    expected.add("The counters are activated.")
+    expected.add("The input data are checked before running the discipline.")
+    expected.add("The output data are checked after running the discipline.")
+    expected.dedent()
+    expected.add("MDOFunction")
+    expected.indent()
+    expected.add("The counters are activated.")
+    expected.dedent()
+    expected.add("DriverLib")
+    expected.indent()
+    expected.add("The progress bar is activated.")
+    assert str(expected) in out
 
     gemseo_modules = [
         "MDODiscipline",
@@ -842,38 +802,128 @@ def test_get_schema_pretty_print(capfd):
 @pytest.fixture(scope="module")
 def variables_space():
     """A mock design space."""
-    design_space = mock.Mock()
-    design_space.dimension = 2
-    design_space.untransform_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=2.0, value=1.0)
+    design_space.add_variable("y", l_b=-1.0, u_b=1.0, value=0.0)
     return design_space
 
 
 def test_compute_doe_transformed(variables_space):
     """Check the computation of a transformed DOE in a variables space."""
-    points = compute_doe(variables_space, size=3, algo_name="lhs", unit_sampling=True)
-    assert points.shape == (3, 2)
-    assert points.max() <= 1.0
-    assert points.min() >= 0.0
-    variables_space.untransform_vect.assert_not_called()
+    points = compute_doe(
+        variables_space, size=4, algo_name="fullfact", unit_sampling=True
+    )
+    assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
 def test_compute_doe_nontransformed(variables_space):
     """Check the computation of a non-transformed DOE in a variables space."""
-    points = compute_doe(variables_space, size=3, algo_name="lhs")
-    assert points.shape == (3, 2)
-    variables_space.untransform_vect.assert_called_once()
+    points = compute_doe(variables_space, size=4, algo_name="fullfact")
+    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
+
+
+def test_import_analytic_discipline(tmp_wd):
+    """Check that an analytic discipline performs correctly after import."""
+    file_path = tmp_wd / "saved_discipline.pkl"
+
+    discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
+    discipline.serialize(file_path)
+    discipline.execute()
+
+    loaded_discipline = import_discipline(file_path, AnalyticDiscipline)
+    loaded_discipline.execute()
+
+    assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
+    assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
 
 
 def test_import_discipline(tmp_wd):
     """Check that a discipline performs correctly after import."""
     file_path = tmp_wd / "saved_discipline.pkl"
 
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict={"y": "2*x"})
-    discipline.execute()
+    discipline = create_discipline("Sellar1")
     discipline.serialize(file_path)
+    discipline.execute()
 
     loaded_discipline = import_discipline(file_path)
     loaded_discipline.execute()
 
-    assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
-    assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
+    assert loaded_discipline.local_data["x_local"] == discipline.local_data["x_local"]
+    assert loaded_discipline.local_data["y_1"] == discipline.local_data["y_1"]
+
+
+@pytest.mark.parametrize("activate_discipline_counters", [False, True])
+@pytest.mark.parametrize("activate_function_counters", [False, True])
+@pytest.mark.parametrize("activate_progress_bar", [False, True])
+@pytest.mark.parametrize("activate_discipline_cache", [False, True])
+@pytest.mark.parametrize("check_input_data", [False, True])
+@pytest.mark.parametrize("check_output_data", [False, True])
+def test_configure(
+    activate_discipline_counters,
+    activate_function_counters,
+    activate_progress_bar,
+    activate_discipline_cache,
+    check_input_data,
+    check_output_data,
+):
+    """Check that the configuration of GEMSEO works correctly."""
+    configure(
+        activate_discipline_counters=activate_discipline_counters,
+        activate_function_counters=activate_function_counters,
+        activate_progress_bar=activate_progress_bar,
+        activate_discipline_cache=activate_discipline_cache,
+        check_input_data=check_input_data,
+        check_output_data=check_output_data,
+    )
+    assert MDOFunction.activate_counters == activate_function_counters
+    assert MDODiscipline.activate_counters == activate_discipline_counters
+    assert MDODiscipline.activate_input_data_check == check_input_data
+    assert MDODiscipline.activate_output_data_check == check_output_data
+    assert MDODiscipline.activate_cache == activate_discipline_cache
+    assert DriverLib.activate_progress_bar == activate_progress_bar
+    assert Scenario.activate_input_data_check
+    assert Scenario.activate_output_data_check
+    assert MDA.activate_cache
+    configure(
+        activate_discipline_counters=True,
+        activate_function_counters=True,
+        activate_progress_bar=True,
+        activate_discipline_cache=True,
+        check_input_data=True,
+        check_output_data=True,
+    )
+
+
+def test_configure_default():
+    """Check the default use of configure."""
+    configure()
+    assert MDOFunction.activate_counters is True
+    assert MDODiscipline.activate_counters is True
+    assert MDODiscipline.activate_input_data_check is True
+    assert MDODiscipline.activate_output_data_check is True
+    assert MDODiscipline.activate_cache is True
+    assert DriverLib.activate_progress_bar is True
+
+
+def test_algo_features():
+    """Check that get_algorithm_features returns the features of an optimizer."""
+    expected = AlgorithmFeatures(
+        library_name="SciPy",
+        algorithm_name="SLSQP",
+        root_package_name="gemseo",
+        handle_equality_constraints=True,
+        handle_inequality_constraints=True,
+        handle_float_variables=True,
+        handle_integer_variables=False,
+        handle_multiobjective=False,
+        require_gradient=True,
+    )
+    assert get_algorithm_features("SLSQP") == expected
+
+
+def test_algo_features_error():
+    """Check that asking for the features of a wrong optimizer raises an error."""
+    with pytest.raises(
+        ValueError, match="wrong_name is not the name of an optimization algorithm."
+    ):
+        assert get_algorithm_features("wrong_name")

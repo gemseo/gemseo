@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Dummy linear discipline."""
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from typing import Sequence
 
 from numpy import ones
 from numpy.random import rand
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
 class LinearDiscipline(MDODiscipline):
@@ -35,13 +35,13 @@ class LinearDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        name,  # type: str
-        input_names,  # type: Sequence[str]
-        output_names,  # type: Sequence[str]
-        inputs_size=1,  # type: int
-        outputs_size=1,  # type: int
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+        input_names: Sequence[str],
+        output_names: Sequence[str],
+        inputs_size: int = 1,
+        outputs_size: int = 1,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    ) -> None:
         # noqa: D205,D212,D415
         """
         Args:
@@ -54,12 +54,12 @@ class LinearDiscipline(MDODiscipline):
                 each output data is of shape (outputs_size,).
             grammar_type: The type of grammars.
         """
-        super(LinearDiscipline, self).__init__(name, grammar_type=grammar_type)
+        super().__init__(name, grammar_type=grammar_type)
         self.input_names = input_names
         self.output_names = output_names
 
-        self.input_grammar.initialize_from_data_names(input_names)
-        self.output_grammar.initialize_from_data_names(output_names)
+        self.input_grammar.update(input_names)
+        self.output_grammar.update(output_names)
 
         self.size_in = len(input_names) * inputs_size
         self.size_out = len(output_names) * outputs_size
@@ -73,21 +73,22 @@ class LinearDiscipline(MDODiscipline):
 
         self.default_inputs = {k: 0.5 * ones(inputs_size) for k in input_names}
 
-    def _run(self):  # type: (...) -> None
-        in_array = DataConversion.dict_to_array(self.local_data, self.input_names)
-        out_array = self.mat.dot(in_array)
-        out_dict = DataConversion.array_to_dict(
-            out_array,
-            self.output_names,
-            self.__sizes_d,
+    def _run(self) -> None:
+        input_data = concatenate_dict_of_arrays_to_array(
+            self.local_data, self.input_names
         )
-        self.local_data.update(out_dict)
+        output_data = self.mat.dot(input_data)
+        self.local_data.update(
+            split_array_to_dict_of_arrays(
+                output_data, self.__sizes_d, self.output_names
+            )
+        )
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Sequence[str]]
-        outputs=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
-        self.jac = DataConversion.jac_2dmat_to_dict(
-            self.mat, self.output_names, self.input_names, self.__sizes_d
+        inputs: Sequence[str] | None = None,
+        outputs: Sequence[str] | None = None,
+    ) -> None:
+        self.jac = split_array_to_dict_of_arrays(
+            self.mat, self.__sizes_d, self.output_names, self.input_names
         )

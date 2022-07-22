@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,10 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import pytest
+from pathlib import Path
 
-from gemseo.utils.file_path_manager import FilePathManager, FileType
-from gemseo.utils.py23_compat import Path
+import pytest
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 
 
 def test_str():
@@ -27,13 +27,13 @@ def test_str():
         "   File type: FIGURE",
         "   Default file name: figure",
         "   Default file extension: png",
-        "   Default directory: {}".format(Path.cwd()),
+        f"   Default directory: {Path.cwd()}",
     ]
     assert str(manager) == "\n".join(expected)
 
 
 @pytest.fixture(scope="module")
-def file_path_manager():  # type: (...) -> FilePathManager
+def file_path_manager() -> FilePathManager:
     """A manager of figure file paths."""
     return FilePathManager(FileType.FIGURE, default_directory=Path("."))
 

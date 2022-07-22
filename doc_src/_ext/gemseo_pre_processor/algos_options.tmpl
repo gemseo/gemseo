@@ -1,0 +1,184 @@
+..
+   Copyright 2021 IRT Saint-Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. _gen_{{algo_type}}_algos:
+
+{{long_algo_type}} algorithms
+==========={{ (long_algo_type|length)*'=' }}
+
+.. warning::
+    Some algorithms may require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
+    and some others may depend on :ref:`plugins <plugins>`.
+
+.. note::
+    All the features of the wrapped optimization libraries may not be exposed through |g|.
+
+.. raw:: html
+
+    <style>
+    th {
+      cursor: pointer;
+    }
+
+    th, td {
+      text-align: center;
+    }
+
+    tr:hover {
+        border: 1px solid black;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2
+    }
+    </style>
+
+    <script>
+    function sortTable(n) {
+      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+      table = document.getElementById("myTable");
+      switching = true;
+      dir = "asc";
+      while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+          shouldSwitch = false;
+          x = rows[i].getElementsByTagName("TD")[n];
+          y = rows[i + 1].getElementsByTagName("TD")[n];
+          if (dir == "asc") {
+            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+              shouldSwitch= true;
+              break;
+            }
+          } else if (dir == "desc") {
+            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount ++;
+        } else {
+          if (switchcount == 0 && dir == "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+    </script>
+{% if features is not none %}
+    <table id="myTable">
+      <tr>
+        <th onclick="sortTable(0)">Algorithm<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(1)">Library<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(2)">Name in GEMSEO<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(3)">Package<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(4)">Handle equality constraints<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(5)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(6)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(7)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(8)">Handle multiobjective<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(9)">Require gradient<br/>&#x25B2;&#x25BC;</th>
+      </tr>
+{% for algo in algos %}
+{% set algo_features = features[algo] %}
+      <tr>
+         <td>{{algo_features.algorithm_name}}</td>
+         <td>{{algo_features.library_name}}</td>
+         <td><a href="#{{ algo|lower|replace('_', '-') }}">{{algo}}</a></td>
+         <td><a href="https://gitlab.com/gemseo/dev/{{ algo_features.root_package_name.replace('_', '-') }}">{{algo_features.root_package_name}}</a></td>
+         <td>{% if algo_features.handle_equality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_inequality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_float_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_integer_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_multiobjective %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.require_gradient %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+      </tr>
+{% endfor %}
+    </table>
+    <br/>
+{% endif %}
+
+{% for algo in algos %}
+.. _{{algo}}_options:
+
+{{algo}}
+{{ (algo|length)*'-' }}
+
+{% if libraries[algo] != "gemseo" %}
+.. note::
+    The plugin `{{ libraries[algo] }} <https://gitlab.com/gemseo/dev/{{ libraries[algo].replace('_', '-') }}>`_ is required.
+{% endif %}
+
+Module: :class:`{{modules[algo]}}`
+
+{% if descriptions[algo] %}
+{{descriptions[algo]}}
+{% endif %}
+
+{% if websites[algo] %}
+More details about the algorithm and its options on {{websites[algo]}}.
+{% endif %}
+
+Mandatory and optional parameters:
+
+.. raw:: html
+
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
+
+    <dl class="field-list simple">
+    <dt class="field-odd">Parameters</dt>
+    <dd class="field-odd"><ul class="simple">
+
+{% for arg in options[algo]|dictsort %}
+{% if not arg[0].startswith('*') %}
+    <li>
+
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+
+{{arg[1]['description']}}
+
+{% if arg[1]['default'] != '' %}
+By default it is set to {{arg[1]['default']}}.
+{% endif %}
+
+.. raw:: html
+
+    </li>
+{% endif %}
+{% endfor %}
+
+{% for arg in options[algo]|dictsort|reverse %}
+{% if arg[0].startswith('*') %}
+    <li>
+
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+
+{{arg[1]['description']}}
+
+{% if arg[1]['default'] != '' %}
+By default it is set to {{arg[1]['default']}}.
+{% endif %}
+
+.. raw:: html
+
+    </li>
+{% endif %}
+{% endfor %}
+
+    </ul>
+    </dd>
+    </dl>
+
+{% endfor %}

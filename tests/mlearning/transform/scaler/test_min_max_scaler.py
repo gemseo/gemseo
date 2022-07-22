@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,22 +12,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test min-max scaler module."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, arange, ndarray
-
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
+from numpy import arange
+from numpy import ndarray
 
 
 @pytest.fixture
-def data():  # type: (...) -> ndarray
+def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))
 

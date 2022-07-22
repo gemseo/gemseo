@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,29 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite differences approximation."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import pickle
-from itertools import chain
 from multiprocessing import cpu_count
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from numbers import Number
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
+from typing import Sized
+from typing import TYPE_CHECKING
 
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 
@@ -55,16 +47,20 @@ from numpy import (
     divide,
     finfo,
     ndarray,
+    zeros,
 )
 
-from gemseo.utils.data_conversion import DataConversion
-from gemseo.utils.py23_compat import Path, xrange
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
+from pathlib import Path
 
 EPSILON = finfo(float).eps
 LOGGER = logging.getLogger(__name__)
 
 
-class DisciplineJacApprox(object):
+class DisciplineJacApprox:
     """Approximates a discipline Jacobian using finite differences or Complex step."""
 
     COMPLEX_STEP = "complex_step"
@@ -74,23 +70,27 @@ class DisciplineJacApprox(object):
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-        approx_method=FINITE_DIFFERENCES,  # type: str
-        step=1e-7,  # type: float
-        parallel=False,  # type: bool
-        n_processes=N_CPUS,  # type: int
-        use_threading=False,  # type: bool
-        wait_time_between_fork=0,  # type: float
+        discipline: MDODiscipline,
+        approx_method: str = FINITE_DIFFERENCES,
+        step: Number | Iterable[Number] = 1e-7,
+        parallel: bool = False,
+        n_processes: int = N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0,
     ):
         """
         Args:
             discipline: The discipline
                 for which the Jacobian approximation shall be made.
             approx_method: The approximation method,
-                either "complex_step" or "finite_differences".
-            step: The differentiation step.
+                either ``complex_step`` or ``finite_differences``.
+            step: The differentiation step. The ``finite_differences`` takes either
+                a float or an iterable of floats with the same length as the inputs.
+                The ``complex_step`` method takes either a complex or a float as input.
             parallel: Whether to differentiate the discipline in parallel.
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -119,8 +119,8 @@ class DisciplineJacApprox(object):
 
     def _create_approximator(
         self,
-        outputs,  # type: Sequence[str]
-        inputs,  # type: Sequence[str]
+        outputs: Sequence[str],
+        inputs: Sequence[str],
     ):
         """Create the Jacobian approximation class.
 
@@ -132,11 +132,11 @@ class DisciplineJacApprox(object):
             ValueError: If the Jacobian approximation method is unknown.
         """
         self.func = self.generator.get_function(
-            input_names_list=inputs, output_names_list=outputs
+            input_names=inputs, output_names=outputs
         )
         if self.approx_method not in [self.FINITE_DIFFERENCES, self.COMPLEX_STEP]:
             raise ValueError(
-                "Unknown Jacobian approximation method {}.".format(self.approx_method)
+                f"Unknown Jacobian approximation method {self.approx_method}."
             )
         factory = GradientApproximationFactory()
         self.approximator = factory.create(
@@ -144,16 +144,16 @@ class DisciplineJacApprox(object):
             self.func,
             step=self.step,
             parallel=self.__parallel,
-            **self.__par_args
+            **self.__par_args,
         )
 
     def auto_set_step(
         self,
-        outputs,  # type: Sequence[str]
-        inputs,  # type: Sequence[str]
-        print_errors=True,  # type: bool
-        numerical_error=EPSILON,  # type: float
-    ):  # type: (...) -> ndarray
+        outputs: Sequence[str],
+        inputs: Sequence[str],
+        print_errors: bool = True,
+        numerical_error: float = EPSILON,
+    ) -> ndarray:
         r"""Compute the optimal step.
 
         Require a first evaluation of the perturbed functions values.
@@ -163,10 +163,10 @@ class DisciplineJacApprox(object):
         and the numerical cancellation errors
         (round-off when doing :math:`f(x+step)-f(x))` are equal.
 
-        See:
-        - https://en.wikipedia.org/wiki/Numerical_differentiation
-        - *Numerical Algorithms and Digital Representation*,
-          Knut Morken, Chapter 11, "Numerical Differenciation"
+        See Also:
+            https://en.wikipedia.org/wiki/Numerical_differentiation
+            and *Numerical Algorithms and Digital Representation*,
+            Knut Morken, Chapter 11, "Numerical Differentiation"
 
         Args:
             inputs: The names of the inputs used to differentiate the outputs.
@@ -197,15 +197,15 @@ class DisciplineJacApprox(object):
         self.discipline.cache_tol = old_cache_tol
         data = self.discipline.local_data
         data_sizes = {key: val.size for key, val in data.items()}
-        self.auto_steps = DataConversion.array_to_dict(steps_opt, inputs, data_sizes)
+        self.auto_steps = split_array_to_dict_of_arrays(steps_opt, data_sizes, inputs)
         return errors, self.auto_steps
 
     def _prepare_xvect(
         self,
-        inputs,  # type: Iterable[str]
-        data=None,  # type: Optional[Dict[str,ndarray]]
-    ):  # type: (...) -> ndarray
-        """Convert a input data mapping into an input array.
+        inputs: Iterable[str],
+        data: dict[str, ndarray] | None = None,
+    ) -> ndarray:
+        """Convert an input data mapping into an input array.
 
         Args:
             inputs: The names of the inputs to be used for the differentiation.
@@ -217,20 +217,20 @@ class DisciplineJacApprox(object):
         """
         if data is None:
             data = self.discipline.local_data
-        x_vect = DataConversion.dict_to_array(data, inputs)
-        return x_vect
+
+        return concatenate_dict_of_arrays_to_array(data, inputs)
 
     def compute_approx_jac(
         self,
-        outputs,  # type:Iterable[str]
-        inputs,  # type:Iterable[str]
-        x_indices=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
+        outputs: Iterable[str],
+        inputs: Iterable[str],
+        x_indices: Sequence[int] | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Approximate the Jacobian.
 
         Args:
-            inputs: The names of the inputs used to differentiate the outputs.
             outputs: The names of the outputs to be differentiated.
+            inputs: The names of the inputs used to differentiate the outputs.
             x_indices: The components of the input vector
                 to be used for the differentiation.
                 If None, use all the components.
@@ -251,33 +251,50 @@ class DisciplineJacApprox(object):
         else:
             step = self.step
 
-        if hasattr(step, "len") and 1 < len(step) != len(x_vect):
+        if isinstance(step, Sized) and 1 < len(step) != len(x_vect):
             raise ValueError(
-                "Inconsistent step size, "
-                "expected {} got {}.".format(x_vect.size, len(step))
+                f"Inconsistent step size, expected {x_vect.size} got {len(step)}."
             )
+
         flat_jac = self.approximator.f_gradient(x_vect, x_indices=x_indices, step=step)
         flat_jac = atleast_2d(flat_jac)
-        data_sizes = {key: len(local_data[key]) for key in chain(inputs, outputs)}
+
+        data_sizes = {key: len(local_data[key]) for key in outputs}
+        outputs_len = sum(data_sizes.values())
+
+        input_sizes = {key: len(local_data[key]) for key in inputs}
+        inputs_len = sum(input_sizes.values())
+
+        data_sizes.update(input_sizes)
+        global_shape = [outputs_len, inputs_len]
+
+        if x_indices is None:
+            flat_jac_complete = flat_jac
+        else:
+            flat_jac_complete = zeros(global_shape)
+            flat_jac_complete[:, x_indices] = flat_jac
+
         self.discipline.cache_tol = old_cache_tol
-        return DataConversion.jac_2dmat_to_dict(flat_jac, outputs, inputs, data_sizes)
+        return split_array_to_dict_of_arrays(
+            flat_jac_complete, data_sizes, outputs, inputs
+        )
 
     def check_jacobian(
         self,
-        analytic_jacobian,  # type: Dict[str,Dict[str,ndarray]]
-        outputs,  # type: Iterable[str]
-        inputs,  # type: Iterable[str]
-        discipline,  # type: MDODiscipline
-        threshold=1e-8,  # type: float
-        plot_result=False,  # type: bool
-        file_path="jacobian_errors.pdf",  # type: Union[str,Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
-        reference_jacobian_path=None,  # type: Optional[Union[str,Path]]
-        save_reference_jacobian=False,  # type: bool
-        indices=None,  # type: Optional[Union[int,Sequence[int],slice,Ellipsis]]
-    ):  # type: (...) -> bool
+        analytic_jacobian: dict[str, dict[str, ndarray]],
+        outputs: Iterable[str],
+        inputs: Iterable[str],
+        discipline: MDODiscipline,
+        threshold: float = 1e-8,
+        plot_result: bool = False,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        fig_size_x: float = 10.0,
+        fig_size_y: float = 10.0,
+        reference_jacobian_path: str | Path | None = None,
+        save_reference_jacobian: bool = False,
+        indices: int | Sequence[int] | slice | Ellipsis | None = None,
+    ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
         If `reference_jacobian_path` is not `None`
@@ -297,13 +314,14 @@ class DisciplineJacApprox(object):
             analytic_jacobian: The Jacobian to validate.
             inputs: The names of the inputs used to differentiate the outputs.
             outputs: The names of the outputs to be differentiated.
+            discipline: The discipline to be differentiated.
             threshold: The acceptance threshold for the Jacobian error.
             plot_result: Whether to plot the result of the validation
                 (computed vs approximated Jacobians).
             file_path: The path to the output file if ``plot_result`` is ``True``.
             show: Whether to open the figure.
-            figsize_x: The x-size of the figure in inches.
-            figsize_y: The y-size of the figure in inches.
+            fig_size_x: The x-size of the figure in inches.
+            fig_size_y: The y-size of the figure in inches.
             reference_jacobian_path: The path of the reference Jacobian file.
             save_reference_jacobian: Whether to save the reference Jacobian.
             indices: The indices of the inputs and outputs
@@ -322,7 +340,7 @@ class DisciplineJacApprox(object):
         Returns:
             Whether the analytical Jacobian is correct.
         """
-        inputs_indices = input_indices = outputs_indices = output_indices = None
+        inputs_indices = input_indices = outputs_indices = None
         if indices is not None:
             input_indices, inputs_indices = self._compute_variables_indices(
                 indices,
@@ -331,24 +349,24 @@ class DisciplineJacApprox(object):
             )
 
         if reference_jacobian_path is None or save_reference_jacobian:
-            approx_jac_complete = self.compute_approx_jac(
+            approximated_jacobian = self.compute_approx_jac(
                 outputs, inputs, input_indices
             )
         else:
             with Path(reference_jacobian_path).open("rb") as infile:
-                approx_jac_complete = pickle.load(infile)
+                approximated_jacobian = pickle.load(infile)
 
         if save_reference_jacobian:
             with Path(reference_jacobian_path).open("wb") as outfile:
-                pickle.dump(approx_jac_complete, outfile)
+                pickle.dump(approximated_jacobian, outfile)
 
         name = discipline.name
         succeed = True
 
         if indices is not None:
             outputs_sizes = {
-                output_name: apprx_jac_dict[next(iter(apprx_jac_dict))].shape[0]
-                for output_name, apprx_jac_dict in approx_jac_complete.items()
+                output_name: output_jacobian[next(iter(output_jacobian))].shape[0]
+                for output_name, output_jacobian in approximated_jacobian.items()
             }
             output_indices, outputs_indices = self._compute_variables_indices(
                 indices, outputs, outputs_sizes
@@ -360,16 +378,14 @@ class DisciplineJacApprox(object):
         if outputs_indices is None:
             outputs_indices = Ellipsis
 
-        for out_data, apprx_jac_dict in approx_jac_complete.items():
-            for in_data, approx_jac in apprx_jac_dict.items():
-                computed_jac = analytic_jacobian[out_data][in_data]
+        for output_name, output_jacobian in approximated_jacobian.items():
+            for input_name, approx_jac in output_jacobian.items():
+                computed_jac = analytic_jacobian[output_name][input_name]
                 if indices is not None:
-                    computed_jac = computed_jac[
-                        outputs_indices[out_data], inputs_indices[in_data]
-                    ]
-                    approx_jac = approx_jac[
-                        outputs_indices[out_data], inputs_indices[in_data]
-                    ]
+                    row_idx = atleast_2d(outputs_indices[output_name]).T
+                    col_idx = inputs_indices[input_name]
+                    computed_jac = computed_jac[row_idx, col_idx]
+                    approx_jac = approx_jac[row_idx, col_idx]
 
                 if approx_jac.shape != computed_jac.shape:
                     succeed = False
@@ -377,8 +393,8 @@ class DisciplineJacApprox(object):
                         "{} Jacobian: dp {}/dp {} is of wrong shape; "
                         "got: {} while expected: {}.".format(
                             name,
-                            out_data,
-                            in_data,
+                            output_name,
+                            input_name,
                             computed_jac.shape,
                             approx_jac.shape,
                         )
@@ -395,44 +411,47 @@ class DisciplineJacApprox(object):
                                 absolute(approx_jac) + 1.0,
                             )
                         )
-                        msg = "{} Jacobian: dp {}/d {} is wrong by {}%.".format(
-                            name, out_data, in_data, err * 100.0
+                        LOGGER.error(
+                            "%s Jacobian: dp %s/d %s is wrong by %s%%.",
+                            name,
+                            output_name,
+                            input_name,
+                            err * 100.0,
                         )
-                        LOGGER.error(msg)
                         LOGGER.info("Approximate jacobian = \n%s", approx_jac)
-                        LOGGER.info(
-                            "Provided by linearize method = \n{}%s", computed_jac
-                        )
+                        LOGGER.info("Provided by linearize method = \n%s", computed_jac)
                         LOGGER.info(
                             "Difference of jacobians = \n%s", approx_jac - computed_jac
                         )
                         succeed = succeed and success_loc
                     else:
                         LOGGER.info(
-                            "Jacobian:  dp %s/dp %s succeeded!", out_data, in_data
+                            "Jacobian: dp %s/dp %s succeeded.", output_name, input_name
                         )
-        if succeed:
-            LOGGER.info("Linearization of MDODiscipline: %s is correct.", name)
-        else:
-            LOGGER.info("Linearization of MDODiscipline: %s is wrong.", name)
+
+        LOGGER.info(
+            "Linearization of MDODiscipline: %s is %s.",
+            name,
+            "correct" if succeed else "wrong",
+        )
 
         if plot_result:
             self.plot_jac_errors(
                 analytic_jacobian,
-                approx_jac_complete,
+                approximated_jacobian,
                 file_path,
                 show,
-                figsize_x,
-                figsize_y,
+                fig_size_x,
+                fig_size_y,
             )
         return succeed
 
     @staticmethod
     def _compute_variables_indices(
-        indices,  # type: Mapping[str,Union[int,Sequence[int],Ellipsis,slice]]
-        variables_names,  # type: Iterable[str]
-        variables_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> List[int]
+        indices: Mapping[str, int | Sequence[int] | Ellipsis | slice],
+        variables_names: Iterable[str],
+        variables_sizes: Mapping[str, int],
+    ) -> list[int]:
         """Return indices.
 
         Args:
@@ -478,60 +497,69 @@ class DisciplineJacApprox(object):
         return indices_sequence, variables_indices
 
     @staticmethod
-    def __format_jac_as_grad_dict(
-        computed_jac,  # type: Dict[str,Dict[str,ndarray]]
-        approx_jac,  # type: Dict[str,Dict[str,ndarray]]
-    ):  # type: (...) -> Tuple[Dict[str,ndarray],Dict[str,ndarray],List[str]]
-        """Format the approximate Jacobian dictionaries as a dictionary of gradients.
+    def __concatenate_jacobian_per_output_names(
+        analytic_jacobian: dict[str, dict[str, ndarray]],
+        approximated_jacobian: dict[str, dict[str, ndarray]],
+    ) -> tuple[dict[str, ndarray], dict[str, ndarray], list[str]]:
+        """Concatenate the Jacobian matrices per output name.
 
         Args:
-            computed_jac: The reference computed Jacobian dictionary of dictionaries.
-            approx_jac: The dictionary of of gradients.
+            analytic_jacobian: The reference Jacobian
+                of the form ``{output_name: {input_name: sub_jacobian}}``.
+            approximated_jacobian: The approximated Jacobian
+                of the form ``{output_name: {input_name: sub_jacobian}}``.
 
         Returns:
-            grad dict, approx dict, and design var names
+            The analytic Jacobian of the form ``{output_name: sub_jacobian}``,
+            the approximated Jacobian of the form ``{output_name: sub_jacobian}``
+            and the names of the output components
+            corresponding to the columns of ``sub_jacobian``.
         """
-        approx_grad_dict = {}
-        computed_grad_dict = {}
-        in_names = None
-        for out_data, apprx_jac_dict in approx_jac.items():
-            com_jac_dict = computed_jac[out_data]
-            approx_grad = []
-            computed_grad = []
-
-            if in_names is None:
-                in_names = list(iter(computed_jac[out_data].keys()))
-                x_names = [
-                    inp + "_" + str(i + 1)
-                    for inp in in_names
-                    for i in xrange(apprx_jac_dict[inp].shape[1])
-                ]
-
-            for in_data in in_names:
-                approx_grad.append(apprx_jac_dict[in_data])
-                computed_grad.append(com_jac_dict[in_data])
-            approx_grad = concatenate(approx_grad, axis=1)
-            computed_grad = concatenate(computed_grad, axis=1)
-            n_f, _ = approx_grad.shape
+        _approx_jacobian = {}
+        _analytic_jacobian = {}
+        jacobian = analytic_jacobian[next(iter(analytic_jacobian))]
+        input_names = list(jacobian.keys())
+        input_component_names = [
+            f"{input_name}_{i+1}"
+            for input_name in input_names
+            for i in range(jacobian[input_name].shape[1])
+        ]
+        for output_name, output_approximated_jacobian in approximated_jacobian.items():
+            _output_approx_jacobian = concatenate(
+                [
+                    output_approximated_jacobian[input_name]
+                    for input_name in input_names
+                ],
+                axis=1,
+            )
+            _output_analytic_jacobian = concatenate(
+                [
+                    analytic_jacobian[output_name][input_name]
+                    for input_name in input_names
+                ],
+                axis=1,
+            )
+            n_f, _ = _output_approx_jacobian.shape
             if n_f == 1:
-                approx_grad_dict[out_data] = approx_grad.flatten()
-                computed_grad_dict[out_data] = computed_grad.flatten()
+                _approx_jacobian[output_name] = _output_approx_jacobian.flatten()
+                _analytic_jacobian[output_name] = _output_analytic_jacobian.flatten()
             else:
-                for i in xrange(n_f):
-                    out_name = out_data + "_" + str(i)
-                    approx_grad_dict[out_name] = approx_grad[i, :]
-                    computed_grad_dict[out_name] = computed_grad[i, :]
-        return computed_grad_dict, approx_grad_dict, x_names
+                for i in range(n_f):
+                    output_name = f"{output_name}_{i}"
+                    _approx_jacobian[output_name] = _output_approx_jacobian[i, :]
+                    _analytic_jacobian[output_name] = _output_analytic_jacobian[i, :]
+
+        return _analytic_jacobian, _approx_jacobian, input_component_names
 
     def plot_jac_errors(
         self,
-        computed_jac,  # type: ndarray
-        approx_jac,  # type: ndarray
-        file_path="jacobian_errors.pdf",  # type: Union[str,Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
-    ):  # type: (...) -> Figure
+        computed_jac: ndarray,
+        approx_jac: ndarray,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        fig_size_x: float = 10.0,
+        fig_size_y: float = 10.0,
+    ) -> Figure:
         """Generate a plot of the exact vs approximated Jacobian.
 
         Args:
@@ -539,10 +567,10 @@ class DisciplineJacApprox(object):
             approx_jac: The approximated Jacobian.
             file_path: The path to the output file if ``plot_result`` is ``True``.
             show: Whether to open the figure.
-            figsize_x: The x-size of the figure in inches.
-            figsize_y: The y-size of the figure in inches.
+            fig_size_x: The x-size of the figure in inches.
+            fig_size_y: The y-size of the figure in inches.
         """
-        comp_grad, app_grad, x_labels = self.__format_jac_as_grad_dict(
+        comp_grad, app_grad, x_labels = self.__concatenate_jacobian_per_output_names(
             computed_jac, approx_jac
         )
         n_funcs = len(app_grad)
@@ -557,7 +585,7 @@ class DisciplineJacApprox(object):
             ncols=2,
             sharex=True,
             sharey=False,
-            figsize=(figsize_x, figsize_y),
+            figsize=(fig_size_x, fig_size_y),
         )
         i = 0
         j = -1
@@ -608,12 +636,12 @@ class DisciplineJacApprox(object):
 
 
 def comp_best_step(
-    f_p,  # type: ndarray
-    f_x,  # type: ndarray
-    f_m,  # type: ndarray
-    step,  # type: float
-    epsilon_mach=EPSILON,  # type: float
-):  # type: (...) -> Tuple[Optional[ndarray],Optional[ndarray],float]
+    f_p: ndarray,
+    f_x: ndarray,
+    f_m: ndarray,
+    step: float,
+    epsilon_mach: float = EPSILON,
+) -> tuple[ndarray | None, ndarray | None, float]:
     r"""Compute the optimal step for finite differentiation.
 
     Applied to a forward first order finite differences gradient approximation.
@@ -625,10 +653,10 @@ def comp_best_step(
     and the numerical cancellation errors
     (round-off when doing :math:`f(x+step)-f(x))` are equal.
 
-    See:
-    - https://en.wikipedia.org/wiki/Numerical_differentiation
-    - *Numerical Algorithms and Digital Representation*,
-      Knut Morken, Chapter 11, "Numerical Differenciation"
+    See Also:
+        https://en.wikipedia.org/wiki/Numerical_differentiation
+        and *Numerical Algorithms and Digital Representation*,
+        Knut Morken, Chapter 11, "Numerical Differenciation"
 
     Args:
         f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
@@ -637,11 +665,11 @@ def comp_best_step(
         step: The differentiation step :math:`\\delta_x`.
 
     Returns:
-        * The estimation of the truncation error.
-          None if the Hessian approximation is too small to compute the optimal step.
-        * The estimation of the cancellation error.
-          None if the Hessian approximation is too small to compute the optimal step.
-        * The optimal step.
+        The estimation of the truncation error.
+        None if the Hessian approximation is too small to compute the optimal step.
+        The estimation of the cancellation error.
+        None if the Hessian approximation is too small to compute the optimal step.
+        The optimal step.
     """
     hess = approx_hess(f_p, f_x, f_m, step)
 
@@ -656,9 +684,9 @@ def comp_best_step(
 
 
 def compute_truncature_error(
-    hess,  # type: ndarray
-    step,  # type: float
-):  # type: (...) -> ndarray
+    hess: ndarray,
+    step: float,
+) -> ndarray:
     r"""Estimate the truncation error.
 
     Defined for a first order finite differences scheme.
@@ -670,15 +698,14 @@ def compute_truncature_error(
     Returns:
         The truncation error.
     """
-    trunc_error = abs(hess) * step / 2
-    return trunc_error
+    return abs(hess) * step / 2
 
 
 def compute_cancellation_error(
-    f_x,  # type: ndarray
-    step,  # type: float
+    f_x: ndarray,
+    step: float,
     epsilon_mach=EPSILON,
-):  # type: (...) -> ndarray
+) -> ndarray:
     r"""Estimate the cancellation error.
 
     This is the round-off when doing :math:`f(x+\\delta_x)-f(x)`.
@@ -691,17 +718,15 @@ def compute_cancellation_error(
     Returns:
         The cancellation error.
     """
-    epsa = epsilon_mach * abs(f_x)
-    cancel_error = 2 * epsa / step
-    return cancel_error
+    return 2 * epsilon_mach * abs(f_x) / step
 
 
 def approx_hess(
-    f_p,  # type:ndarray
-    f_x,  # type:ndarray
-    f_m,  # type:ndarray
-    step,  # type: float
-):  # type: (...) -> ndarray
+    f_p: ndarray,
+    f_x: ndarray,
+    f_m: ndarray,
+    step: float,
+) -> ndarray:
     r"""Compute the second-order approximation of the Hessian matrix :math:`d^2f/dx^2`.
 
     Args:
@@ -713,5 +738,4 @@ def approx_hess(
     Returns:
         The approximation of the Hessian matrix at the current step :math:`x`.
     """
-    hess = (f_p - 2 * f_x + f_m) / (step ** 2)
-    return hess
+    return (f_p - 2 * f_x + f_m) / (step**2)

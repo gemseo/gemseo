@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,17 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: François Gallard: initial Scilab version
 #        :author: Arthur Piat: conversion Scilab to Matlab and complementary features
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 """Definition of the Matlab discipline.
 
 Overview
@@ -34,26 +30,28 @@ which enables to automatically create a wrapper of any Matlab function.
 This class can be used in order to interface any Matlab code
 and to use it inside a MDO process.
 """
+from __future__ import annotations
 
 import logging
 import os
 import re
-from os.path import exists, join
-from typing import List, Mapping, Optional, Sequence, Union
+from os.path import exists
+from os.path import join
+from pathlib import Path
+from typing import Any
+from typing import Mapping
+from typing import Sequence
 
 import matlab.engine
 import numpy as np
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.matlab.engine import get_matlab_engine
-from gemseo.wrappers.matlab.matlab_data_processor import (
-    MatlabDataProcessor,
-    convert_array_from_matlab,
-    double2array,
-    load_matlab_file,
-    save_matlab_file,
-)
+from gemseo.wrappers.matlab.matlab_data_processor import convert_array_from_matlab
+from gemseo.wrappers.matlab.matlab_data_processor import double2array
+from gemseo.wrappers.matlab.matlab_data_processor import load_matlab_file
+from gemseo.wrappers.matlab.matlab_data_processor import MatlabDataProcessor
+from gemseo.wrappers.matlab.matlab_data_processor import save_matlab_file
 from gemseo.wrappers.matlab.matlab_parser import MatlabParser
 
 LOGGER = logging.getLogger(__name__)
@@ -90,7 +88,7 @@ class MatlabDiscipline(MDODiscipline):
         by the matlab function itself. In such case, function outputs must contain
         standard output as well as new outputs for jacobian terms. These new
         outputs must follow naming convention described in function
-        :meth:`MatlabDiscipline._get_jac_name`. They can be returned
+        :meth:`.MatlabDiscipline._get_jac_name`. They can be returned
         in any order.
     """
 
@@ -98,30 +96,30 @@ class MatlabDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        matlab_fct,  # type: Union[str, Path]
-        input_data_list=None,  # type: Optional[Sequence[str]]
-        output_data_list=None,  # type: Optional[Sequence[str]]
-        add_subfold_path=False,  # type: bool
-        search_file=None,  # type: Optional[str]
-        matlab_engine_name="matlab",  # type: str
-        matlab_data_file=None,  # type: Optional[Union[str, Path]]
-        name=None,  # type: Optional[str]
-        clean_cache_each_n=None,  # type: Optional[int]
-        input_grammar_file=None,  # type: Optional[str]
-        output_grammar_file=None,  # type: Optional[str]
-        auto_detect_grammar_files=False,  # type: bool
-        check_opt_data=True,  # type: bool
-        cache_type=MDODiscipline.SIMPLE_CACHE,  # type: str
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        cache_file_path=None,  # type: Optional[str]
-        is_jac_returned_by_func=False,  # type: bool
-    ):  # type: (...) -> None
+        matlab_fct: str | Path,
+        input_names: Sequence[str] | None = None,
+        output_names: Sequence[str] | None = None,
+        add_subfold_path: bool = False,
+        search_file: str | None = None,
+        matlab_engine_name: str = "matlab",
+        matlab_data_file: str | Path | None = None,
+        name: str | None = None,
+        clean_cache_each_n: int | None = None,
+        input_grammar_file: str | None = None,
+        output_grammar_file: str | None = None,
+        auto_detect_grammar_files: bool = False,
+        check_opt_data: bool = True,
+        cache_type: str = MDODiscipline.SIMPLE_CACHE,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        cache_file_path: str | None = None,
+        is_jac_returned_by_func: bool = False,
+    ) -> None:
         # noqa: D205,D212,D415
         """
         Args:
             matlab_fct: The path of the Matlab file or Name of the function.
-            input_data_list: The list of input variables.
-            output_data_list: The list of output variables.
+            input_names: The list of input variables.
+            output_names: The list of output variables.
             add_subfold_path: If True, add all sub-folder to matlab engine path..
             search_file: The root directory to launch the research of matlab file.
             matlab_engine_name: The name of the singleton used for this discipline.
@@ -152,7 +150,7 @@ class MatlabDiscipline(MDODiscipline):
                 If True, the conventional name 'jac_dout_din' is used as jacobian
                 term of any output 'out' with respect to input 'in'.
         """
-        super(MatlabDiscipline, self).__init__(
+        super().__init__(
             name=name,
             input_grammar_file=input_grammar_file,
             output_grammar_file=output_grammar_file,
@@ -164,7 +162,7 @@ class MatlabDiscipline(MDODiscipline):
         self.__fct_name = None
 
         matlab_fct = str(matlab_fct)
-        if input_data_list is None or output_data_list is None:
+        if input_names is None or output_names is None:
             parser = MatlabParser()
 
             if search_file is not None:
@@ -183,10 +181,10 @@ class MatlabDiscipline(MDODiscipline):
         else:
             function_path = matlab_fct
 
-        if input_data_list is not None:
-            input_data = input_data_list
-        if output_data_list is not None:
-            output_data = output_data_list
+        if input_names is not None:
+            input_data = input_names
+        if output_names is not None:
+            output_data = output_names
 
         self.__engine = get_matlab_engine(matlab_engine_name)
         self.__inputs = input_data
@@ -218,16 +216,16 @@ class MatlabDiscipline(MDODiscipline):
             self.__reorder_and_check_jacobian_consistency()
 
     @property
-    def function_name(self):  # type: (...) -> str
+    def function_name(self) -> str:
         """Return the name of the function."""
         return self.__fct_name
 
     @staticmethod
     def search_file(
-        file_name,  # type: str
-        root_dir,  # type: str
-        extension=".m",  # type: str
-    ):  # type: (...) -> str
+        file_name: str,
+        root_dir: str,
+        extension: str = ".m",
+    ) -> str:
         """Locate recursively a file in the given root directory.
 
         Args:
@@ -257,26 +255,24 @@ class MatlabDiscipline(MDODiscipline):
                         msg = "At least two files {} were in directory {}".format(
                             file_name, root_dir
                         )
-                        msg += "\n File one: {};".format(file_path)
-                        msg += "\n File two: {}.".format(join(subdir, file_loc))
-                        raise IOError(msg)
+                        msg += f"\n File one: {file_path};"
+                        msg += f"\n File two: {join(subdir, file_loc)}."
+                        raise OSError(msg)
                     found_file = True
                     file_path = join(subdir, file_loc)
                     dir_name = subdir
 
         if not found_file:
-            raise IOError(
-                "No file: {}, found in directory: {}.".format(file_name, root_dir)
-            )
+            raise OSError(f"No file: {file_name}, found in directory: {root_dir}.")
 
         LOGGER.info("File: %s found in directory: %s.", file_name, dir_name)
         return file_path
 
     def __check_function(
         self,
-        matlab_fct,  # type: Union[str, Path]
-        add_subfold_path,  # type: bool
-    ):  # type (...) --> None
+        matlab_fct: str | Path,
+        add_subfold_path: bool,
+    ) -> None:
         """Check the availability of the prescribed MATLAB function.
 
         The function manages encrypted, build-in and user made function and
@@ -301,16 +297,16 @@ class MatlabDiscipline(MDODiscipline):
             self.__fct_name = matlab_fct
         else:
             # If no file and build-in function exist, raise error
-            msg = 'No existing file or function "{}".'.format(matlab_fct)
+            msg = f'No existing file or function "{matlab_fct}".'
             raise NameError(msg)
 
     def __init_default_data(
         self,
-        matlab_data_file,  # type: str
-        input_grammar_file,  # type: str
-        output_grammar_file,  # type: str
-        auto_detect_grammar_files,  # type: bool
-    ):  # type: (...) -> None
+        matlab_data_file: str,
+        input_grammar_file: str,
+        output_grammar_file: str,
+        auto_detect_grammar_files: bool,
+    ) -> None:
         """Initialize default data of the discipline.
 
         Args:
@@ -330,39 +326,36 @@ class MatlabDiscipline(MDODiscipline):
             # size 1 but that could not be the right size...
             # The right size can be known from either matlab_data_file or evaluating
             # the matlab function
-            inputs_dict = dict.fromkeys(self.__inputs, np.array([0.1]))
+            input_data = dict.fromkeys(self.__inputs, np.array([0.1]))
             if matlab_data_file is not None:
-                inputs_dict = self.__update_default_val(
-                    inputs_dict.copy(), saved_values
-                )
+                input_data = self.__update_data(input_data.copy(), saved_values)
 
         if output_grammar_file is None and not auto_detect_grammar_files:
             # same remark as above about the size
-            outputs_dict = dict.fromkeys(self.__outputs, np.array([0.1]))
+            output_data = dict.fromkeys(self.__outputs, np.array([0.1]))
             if matlab_data_file is not None:
-                outputs_dict = self.__update_default_val(
-                    outputs_dict.copy(), saved_values
-                )
+                output_data = self.__update_data(output_data.copy(), saved_values)
 
-        self.input_grammar.initialize_from_base_dict(inputs_dict)
+        self.input_grammar.update_from_data(input_data)
 
-        self.output_grammar.initialize_from_base_dict(outputs_dict)
+        self.output_grammar.update_from_data(output_data)
 
         # If none input matlab data is prescribed, we cannot know
         # the size of inputs and outputs. Thus we must evaluate
         # the function in order to know the sizes
         if matlab_data_file is not None:
             self.__is_size_known = True
-            for in_name, val in inputs_dict.items():
-                self.__inputs_size[in_name] = len(val)
-            for out_name, val in outputs_dict.items():
-                self.__outputs_size[out_name] = len(val)
+            for input_name, input_value in input_data.items():
+                self.__inputs_size[input_name] = len(input_value)
 
-        default_values = inputs_dict.copy()
-        default_values.update(outputs_dict)
+            for output_name, output_value in output_data.items():
+                self.__outputs_size[output_name] = len(output_value)
+
+        default_values = input_data.copy()
+        default_values.update(output_data)
         self.default_inputs = default_values
 
-    def __filter_jacobian_in_outputs(self):  # type: (...) -> None
+    def __filter_jacobian_in_outputs(self) -> None:
         """Filter jacobians in outputs names.
 
         This function is applied when _is_jac_returned_by_func is True.
@@ -390,20 +383,20 @@ class MatlabDiscipline(MDODiscipline):
         # here self.outputs only contains output responses (no jacobian)
         self.__outputs = output_names
 
-    def __reorder_and_check_jacobian_consistency(self):  # type: (...) -> None
+    def __reorder_and_check_jacobian_consistency(self) -> None:
         """This function checks jacobian output consistency.
 
         This function is used when _is_jac_returned_by_func is True.
 
         The function is called after calling jacobian filtering
-        :meth:`MatlabDiscipline._filter_jacobian_in_outputs`. It enables to:
+        :meth:`.MatlabDiscipline._filter_jacobian_in_outputs`. It enables to:
         * check that all outputs have a jacobian matrix with respect to all inputs;
         * reorder the list of jacobian names (and indices) following the order
           from iterating over outputs then inputs lists;
 
         In order to check that all jacobian components exist, the function
         uses the conventional naming described in
-        :meth:`MatlabDiscipline._get_jac_name`.
+        :meth:`.MatlabDiscipline._get_jac_name`.
 
         Raises:
             ValueError:
@@ -440,10 +433,10 @@ class MatlabDiscipline(MDODiscipline):
         self.__jac_output_names = conventional_jac_names
         self.__jac_output_indices = new_indices
 
-    def __get_conventional_jac_names(self):  # type: (...) -> List[str]
+    def __get_conventional_jac_names(self) -> list[str]:
         """Return the list of jacobian names following the conventional naming.
 
-        The conventional naming is described in :meth:`MatlabDiscipline._get_jac_name`.
+        The conventional naming is described in :meth:`.MatlabDiscipline._get_jac_name`.
         """
         return [
             self.__get_jac_name(out_var, in_var)
@@ -453,9 +446,9 @@ class MatlabDiscipline(MDODiscipline):
 
     def __get_jac_name(
         self,
-        out_var,  # type: str
-        in_var,  # type: str
-    ):  # type: (...) -> str
+        out_var: str,
+        in_var: str,
+    ) -> str:
         """Return the name of jacobian given input and ouput variables.
 
         The conventional naming of jacobian component is the following:
@@ -483,27 +476,21 @@ class MatlabDiscipline(MDODiscipline):
 
     def check_input_data(
         self,
-        input_data,  # type: Mapping[str, np.ndarray]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> None # noqa: D102
+        input_data: Mapping[str, np.ndarray],
+        raise_exception: bool = True,
+    ) -> None:  # noqa: D102
         if self.__check_opt_data:
-            super(MatlabDiscipline, self).check_input_data(
-                input_data, raise_exception=raise_exception
-            )
+            super().check_input_data(input_data, raise_exception=raise_exception)
 
-    def check_output_data(
-        self, raise_exception=True  # type: bool
-    ):  # type(...) -> None # noqa: D102
+    def check_output_data(self, raise_exception: bool = True) -> None:
         if self.__check_opt_data:
-            super(MatlabDiscipline, self).check_output_data(
-                raise_exception=raise_exception
-            )
+            super().check_output_data(raise_exception=raise_exception)
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run the Matlab discipline.
 
         If jacobian values are returned by the matlab function, they are filtered and
-        used in order to fill :attr:`MatlabDiscipline.jac`.
+        used in order to fill :attr:`.MatlabDiscipline.jac`.
 
         Raises:
             ValueError:
@@ -518,7 +505,7 @@ class MatlabDiscipline(MDODiscipline):
             out_vals = self.__engine.execute_function(
                 self.__fct_name,
                 *list_of_values,
-                nargout=len(self.__outputs) + len(self.__jac_output_names)
+                nargout=len(self.__outputs) + len(self.__jac_output_names),
             )
 
         except matlab.engine.MatlabExecutionError:
@@ -589,27 +576,26 @@ class MatlabDiscipline(MDODiscipline):
             self._is_linearized = True
 
     @staticmethod
-    def __update_default_val(
-        inputs_dict,  # type: dict
-        updating_dict,  # type: dict
-    ):  # type: (...) -> dict
-        """Update only presented key with new values from another dict.
+    def __update_data(
+        data: Mapping[str, Any],
+        other_data: Mapping[str, Any],
+    ) -> Mapping[str]:
+        """Update the values of a data mapping without adding new data names.
 
         Args:
-            inputs_dict: The dict to be updated.
-            updating_dict: The dict containing new values.
+            data: The data to be updated.
+            other_data: The data to update ``data``.
 
         Returns:
-            The ``inputs_dict`` with only matching keys from ``updating_dict`` updated.
+            The updated data.
         """
-        for key in updating_dict:
-            if key in inputs_dict.keys():
-                inputs_dict[key] = updating_dict[key]
-        return inputs_dict
+        for key, value in other_data.items():
+            if key in data.keys():
+                data[key] = value
 
-    def save_data_to_matlab(
-        self, file_path  # type: Union[str, Path]
-    ):  # type: (...) -> None
+        return data
+
+    def save_data_to_matlab(self, file_path: str | Path) -> None:
         """Save local data to matlab .mat format.
 
         Args:
@@ -623,7 +609,7 @@ class MatlabDiscipline(MDODiscipline):
         LOGGER.info(msg)
 
     @property
-    def cleaning_interval(self):  # type: (...) -> int
+    def cleaning_interval(self) -> int:
         """Get and/or set the flushing interval for matlab disciplines."""
         return self.__cleaning_interval
 

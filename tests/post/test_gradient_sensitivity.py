@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from pathlib import Path
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array, empty
-
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.sobieski.wrappers import SobieskiProblem, SobieskiStructure
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.testing import image_comparison
+from numpy import array
+from numpy import empty
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -89,8 +89,8 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
             with matplotlib pyplot.
     """
     disc = SobieskiStructure()
-    design_space = SobieskiProblem().read_design_space()
-    inputs = disc.get_input_data_names()
+    design_space = SobieskiProblem().design_space
+    inputs = [name for name in disc.get_input_data_names() if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
     doe_scenario.execute(
@@ -127,7 +127,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
 # Define a simple analytical function and its Jacobian
 def f(x1=0.0, x2=0.0):
     """A simple analytical test function."""
-    y = 1 * x1 + 2 * x2 ** 2
+    y = 1 * x1 + 2 * x2**2
     return y
 
 
@@ -173,7 +173,7 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
         save=True,
     )
 
-    actual_jac = post._GradientSensitivity__get_grad_dict(
+    actual_jac = post._GradientSensitivity__get_output_gradients(
         array([-2.0, 0.0]), scale_gradients=scale_gradients
     )
 
@@ -185,12 +185,11 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
     assert expected_jac.all() == actual_jac["y"].all()
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "scale_gradients,baseline_images",
     [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
     """Test images created by the post_process method against references.
 
@@ -226,3 +225,29 @@ def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
         save=False,
     )
     post.figures
+
+
+TEST_PARAMETERS = {
+    "standardized": (True, ["GradientSensitivity_standardized"]),
+    "unstandardized": (False, ["GradientSensitivity_unstandardized"]),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    tmp_wd,
+    use_standardized_objective,
+    baseline_images,
+    common_problem,
+    pyplot_close_all,
+):
+    """Check GradientSensitivity with objective, standardized or not."""
+    opt = GradientSensitivity(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(show=False, save=False)

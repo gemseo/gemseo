@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted Weibull distribution."""
+from __future__ import annotations
 
 import openturns as ot
-from numpy import exp, log
+from numpy import exp
+from numpy import log
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
@@ -41,27 +41,26 @@ class WeibullToleranceInterval(ToleranceInterval):
 
     def __init__(
         self,
-        size,  # type: int
-        scale,  # type: float
-        shape,  # type: float
-        location,  # type: float
-    ):  # type:(...) -> None
-        # noqa: D205 D212 D415
-        """
+        size: int,
+        scale: float,
+        shape: float,
+        location: float,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             scale: The estimation of the scale of the Weibull distribution.
             shape: The estimation of the shape of the Weibull distribution.
             location: The estimation of the location of the Weibull distribution.
         """
-        super(WeibullToleranceInterval, self).__init__(size)
+        super().__init__(size)
         self.__scale = scale
         self.__shape = shape
         self.__location = location
 
     @staticmethod
     def __lambda_function(
-        value,  # type: float
-    ):  # type: (...) -> float
+        value: float,
+    ) -> float:
         """Compute the natural logarithm of the opposite natural logarithm.
 
         Args:
@@ -74,26 +73,26 @@ class WeibullToleranceInterval(ToleranceInterval):
 
     def _compute_lower_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         xi_ = log(self.__scale)
         delta = 1.0 / self.__shape
-        offset = -(size ** 0.5) * self.__lambda_function(coverage)
+        offset = -(size**0.5) * self.__lambda_function(coverage)
         student = ot.Student(size - 1, offset, 1.0)
         bound = xi_ - delta * student.computeQuantile(1 - alpha)[0] / (size - 1) ** 0.5
         return exp(bound) + self.__location
 
     def _compute_upper_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         xi_ = log(self.__scale)
         delta = 1.0 / self.__shape
-        offset = -(size ** 0.5) * self.__lambda_function(1 - coverage)
+        offset = -(size**0.5) * self.__lambda_function(1 - coverage)
         student = ot.Student(size - 1, offset, 1.0)
         bound = xi_ - delta * student.computeQuantile(alpha)[0] / (size - 1) ** 0.5
         return exp(bound) + self.__location
@@ -103,8 +102,4 @@ class WeibullMinToleranceInterval(WeibullToleranceInterval):
     """Computation of tolerance intervals from a data-fitted Weibull distribution.
 
     The formulae come from the R library *tolerance* [1]_.
-
-    .. [1] Derek S. Young,
-           *tolerance: An R Package for Estimating Tolerance Intervals*,
-           Journal of Statistical Software, 36(5), 2010
     """

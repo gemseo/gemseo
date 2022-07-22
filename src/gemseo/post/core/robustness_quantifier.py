@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,39 +12,38 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quantification of robustness of the optimum to variables perturbations."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import numpy as np
 from numpy.random import multivariate_normal
 
-from gemseo.post.core.hessians import BFGSApprox, LSTSQApprox, SR1Approx
+from gemseo.post.core.hessians import BFGSApprox
+from gemseo.post.core.hessians import LSTSQApprox
+from gemseo.post.core.hessians import SR1Approx
 
 
-class RobustnessQuantifier(object):
+class RobustnessQuantifier:
     """classdocs."""
 
     AVAILABLE_APPROXIMATIONS = ["BFGS", "SR1", "LEAST_SQUARES"]
 
     def __init__(self, history, approximation_method="SR1"):
-        """Constructor.
-
-        :param history: an approximation history.
-        :param approximation_method: an approximation method for the Hessian.
+        """
+        Args:
+            history: An approximation history.
+            approximation_method: The name of an approximation method for the Hessian.
         """
         self.history = history
         if approximation_method not in self.AVAILABLE_APPROXIMATIONS:
             raise ValueError(
-                "Unknown hessian approximation method "
-                + str(approximation_method)
-                + " the available ones are:"
-                + str(self.AVAILABLE_APPROXIMATIONS)
+                f"Unknown hessian approximation method {approximation_method}; "
+                f"the available ones are: {self.AVAILABLE_APPROXIMATIONS}."
             )
         if approximation_method == "SR1":
             approx_class = SR1Approx
@@ -68,17 +66,19 @@ class RobustnessQuantifier(object):
         at_most_niter=-1,
         func_index=None,
     ):
-        """Builds the BFGS approximation for the hessian.
+        """Build the BFGS approximation for the Hessian.
 
-        :param at_most_niter: maximum number of iterations to take
-            (Default value = -1).
-        :param funcname: param first_iter:  (Default value = 0).
-        :param last_iter: Default value = 0).
-        :param b0_mat: Default value = None).
-        :param func_index: Default value = None).
-        :param first_iter:  (Default value = 0).
+        Args:
+            funcname: The name of the function.
+            first_iter: The index of the first iteration.
+            last_iter: The index of the last iteration.
+            b0_mat: The Hessian matrix at the first iteration.
+            at_most_niter: The maximum number of iterations to take
+            func_index: The component of the function.
+
+        Returns:
+            An approximation of the Hessian matrix.
         """
-
         self.b_mat, _, x_ref, grad_ref = self.approximator.build_approximation(
             funcname=funcname,
             first_iter=first_iter,
@@ -94,19 +94,29 @@ class RobustnessQuantifier(object):
         return self.b_mat
 
     def compute_expected_value(self, expect, cov):
-        """computes 1/2*E(e.T B e) , where e is a vector of expected values expect and
-        covariance matrix cov.
+        r"""Compute the expected value of the output.
 
-        :param expect: the expected value of inputs.
-        :param cov: the covariance matrix of inputs.
+        Equal to :math:`0.5\mathbb{E}[e^TBe]`
+        where :math:`e` is the expected values
+        and :math:`B` the covariance matrix.
+
+        Args:
+            expect: The expected value of the inputs.
+            cov: The covariance matrix of the inputs.
+
+        Returns:
+            The expected value of the output.
+
+        Raises:
+            ValueError: When expectation and covariance matrices
+                have inconsistent shapes or when the Hessian approximation is missing.
         """
         n_vars = len(expect)
         if cov.shape != (n_vars, n_vars):
             raise ValueError("Inconsistent expect and covariance matrices shapes")
         if self.b_mat is None:
             raise ValueError(
-                "Build Hessian approximation before"
-                + " computing expected_value_offset"
+                "Build Hessian approximation before computing expected_value_offset"
             )
         b_approx = 0.5 * self.b_mat
         exp_val = np.trace(np.dot(b_approx, cov))
@@ -116,16 +126,25 @@ class RobustnessQuantifier(object):
         return exp_val
 
     def compute_variance(self, expect, cov):
-        """computes 1/2*E(e.T B e), where e is a vector of expected values expect and
-        covariance matrix cov.
+        r"""Compute the variance of the output.
 
-        :param expect: the expected value of inputs.
-        :param cov: the covariance matrix of inputs.
+        Equal to :math:`0.5\mathbb{E}[e^TBe]`
+        where :math:`e` is the expected values
+        and :math:`B` the covariance matrix.
+
+        Args:
+            expect: The expected value of the inputs.
+            cov: The covariance matrix of the inputs.
+
+        Returns:
+            The variance of the output.
+
+        Raises:
+            ValueError: When expectation and covariance matrices
+                have inconsistent shapes or when the Hessian approximation is missing.
         """
         if self.b_mat is None:
-            raise ValueError(
-                "Build Hessian approximation" + " before computing variance"
-            )
+            raise ValueError("Build Hessian approximation before computing variance")
         n_vars = len(expect)
         if cov.shape != (n_vars, n_vars):
             raise ValueError("Inconsistent expect and covariance matrices shapes")
@@ -133,19 +152,20 @@ class RobustnessQuantifier(object):
         mu_cent = expect - self.x_ref
         v_mat = np.linalg.multi_dot((b_approx, cov, b_approx, cov))
         v_mat += 4 * np.linalg.multi_dot((mu_cent.T, b_approx, cov, b_approx, mu_cent))
-        var = 2 * np.trace(v_mat)
-        return var
+        return 2 * np.trace(v_mat)
 
     def compute_function_approximation(self, x_vars):
-        """Computes a second order approximation of the function.
+        """Compute a second order approximation of the function.
 
-        :param x_vars: the point on which the approximation is evaluated.
-        :param x_vars: x vars.
+        Args:
+            x_vars: The point on which the approximation is evaluated.
+
+        Returns:
+            A second order approximation of the function.
         """
         if self.b_mat is None or self.x_ref is None:
             raise ValueError(
-                "Build Hessian approximation before"
-                + " computing function approximation"
+                "Build Hessian approximation before computing function approximation"
             )
         x_l = x_vars - self.x_ref
         return (
@@ -157,12 +177,12 @@ class RobustnessQuantifier(object):
     def compute_gradient_approximation(self, x_vars):
         """Computes a first order approximation of the gradient based on the hessian.
 
-        :param x_vars: the point on which the approximation is evaluated.
+        Args:
+            x_vars: The point on which the approximation is evaluated.
         """
         if self.b_mat is None or self.fgrad_ref is None:
             raise ValueError(
-                "Build Hessian approximation before"
-                + " computing function approximation"
+                "Build Hessian approximation before computing function approximation"
             )
         x_l = x_vars - self.x_ref
         return np.dot(self.b_mat, x_l) + self.fgrad_ref
@@ -170,12 +190,12 @@ class RobustnessQuantifier(object):
     def montecarlo_average_var(self, mean, cov, n_samples=100000, func=None):
         """Computes the variance and expected value using Monte Carlo approach.
 
-        :param mean: the mean value.
-        :param cov: the covariance matrix.
-        :param n_samples: the number of samples for the distribution
-            (Default value = 100000).
-        :param func: if None, the compute_function_approximation function,
-                        otherwise a user function (Default value = None).
+        Args:
+            mean: The mean value.
+            cov: The covariance matrix.
+            n_samples: The number of samples for the distribution.
+            func: If ``None``, the ``compute_function_approximation`` function,
+                otherwise a user function.
         """
         n_dv = len(mean)
         if not cov.shape == (n_dv, n_dv):

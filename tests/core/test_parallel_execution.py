@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,46 +12,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import unicode_literals
-
-import sys
 import unittest
 from timeit import default_timer as timer
 
 import pytest
-from numpy import array, complex128, equal, ones
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution import DiscParallelLinearization
+from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from numpy import array
+from numpy import complex128
+from numpy import equal
+from numpy import ones
 from scipy.optimize import rosen
 
-from gemseo.api import create_design_space, create_discipline, create_scenario
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.parallel_execution import (
-    IS_WIN,
-    DiscParallelExecution,
-    DiscParallelLinearization,
-    ParallelExecution,
-)
-from gemseo.problems.sellar.sellar import (
-    X_SHARED,
-    Y_1,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-    get_inputs,
-)
 
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
-
-
-class CallableWorker(object):
+class CallableWorker:
     """Callable worker."""
 
     def __call__(self, counter):
@@ -295,3 +284,39 @@ def test_par_discipline_lin_no_jac():
     parallel_execution.execute(input_list)
 
     assert sellar_par_lin.n_calls_linearize == 0
+
+
+def f(x: float = 0.0) -> float:
+    """A function that raises an exception on certain conditions."""
+    if x == 0:
+        raise ValueError("Undefined")
+    y = x + 1
+    return y
+
+
+@pytest.mark.parametrize(
+    "exceptions,raises_exception",
+    [(None, False), ((ValueError,), True), ((RuntimeError,), False)],
+)
+def test_re_raise_exceptions(exceptions, raises_exception):
+    """Test that exceptions inside workers are properly handled.
+
+    Args:
+        exceptions: The exceptions that should not be ignored.
+        raises_exception: Whether the input exception matches the one in the
+            reference function.
+    """
+    parallel_execution = ParallelExecution(
+        [f],
+        n_processes=2,
+        exceptions_to_re_raise=exceptions,
+        wait_time_between_fork=0.1,
+    )
+
+    input_list = [array([1.0]), array([0.0])]
+
+    if raises_exception:
+        with pytest.raises(ValueError, match="Undefined"):
+            parallel_execution.execute(input_list)
+    else:
+        assert parallel_execution.execute(input_list) == [array([2.0]), None]

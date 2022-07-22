@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,66 +12,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Damien Guenot
-#        :author: Francois Gallard
+#        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-import unittest
-from os.path import dirname, exists, join
-
 import pytest
-
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.basic_history import BasicHistory
-
-DIRNAME = dirname(__file__)
-POWER2 = join(DIRNAME, "power2_opt_pb.h5")
-POWER2_NAN = join(DIRNAME, "power2_opt_pb_nan.h5")
+from gemseo.utils.testing import image_comparison
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestBasicHistory(unittest.TestCase):
-    """"""
+TEST_PARAMETERS = {
+    "standardized": (True, ["BasicHistory_standardized"]),
+    "unstandardized": (False, ["BasicHistory_unstandardized"]),
+}
 
-    def test_basic_history(self):
-        problem = OptimizationProblem.import_hdf(POWER2)
-        view = BasicHistory(problem)
-        view.execute(
-            show=False,
-            save=True,
-            file_path="power2_basic",
-            data_list=problem.get_constraints_names(),
-        )
-        for full_path in view.output_files:
-            assert exists(full_path)
 
-    def test_basic_history_desvars(self):
-        problem = OptimizationProblem.import_hdf(POWER2)
-        view = BasicHistory(problem)
-        view.execute(
-            show=False,
-            save=True,
-            file_path="power2_dv",
-            data_list=problem.design_space.variables_names,
-        )
-
-        for full_path in view.output_files:
-            assert exists(full_path)
-
-    def test_basic_hist_nan(self):
-        problem = OptimizationProblem.import_hdf(POWER2_NAN)
-        view = BasicHistory(problem)
-        view.execute(
-            show=False,
-            save=True,
-            file_path="power2_dv_nans",
-            data_list=problem.get_constraints_names(),
-        )
-
-        for full_path in view.output_files:
-            assert exists(full_path)
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check BasicHistory with objective, standardized or not."""
+    opt = BasicHistory(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], show=False, save=False)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,19 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # INITIAL AUTHORS - initial API and implementation and/or
 #                   initial documentation
-#        :author:  Francois Gallard
+#        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+import faulthandler
+from pathlib import Path
+from typing import Generator
+from typing import Tuple
 
 import pytest
-from numpy import array
-
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.xls_discipline import XLSDiscipline
+from numpy import array
+from numpy import exp
+from numpy import ones
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
@@ -39,43 +44,59 @@ def import_or_skip_xlwings():
 
 
 @pytest.fixture(scope="module")
-def skip_if_xlwings_is_not_usable(import_or_skip_xlwings):
-    """Fixture to skip a test when xlwings has no usable excel.
+def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
+    """Check if xlwings is usable.
 
     Args:
-        import_or_skip_xlwings: Fixture to skip a test when
-            xlwings cannot be imported.
+        import_or_skip_xlwings: Fixture to import xlwings when available,
+            otherwise skip the test.
+        disable_fault_handler: Fixture to temporarily disable the fault handler.
     """
     xlwings = import_or_skip_xlwings
 
     try:
-        xlwings.App(visible=False)
-    # wide except because I cannot tell what is the exception raised by xlwings
+        # Launch xlwings from a context manager to ensure it closes immediately.
+        # See https://docs.xlwings.org/en/stable/whatsnew.html#v0-24-3-jul-15-2021
+        with xlwings.App(visible=False) as app:  # noqa: F841
+            pass
     except:  # noqa: E722,B001
-        pytest.skip("test requires excel available")
+        return False
+    else:
+        return True
 
 
 @pytest.fixture(scope="module")
-def skip_if_xlwings_is_usable(import_or_skip_xlwings):
-    """Fixture to skip a test when xlwings has usable excel.
+def skip_if_xlwings_is_not_usable(is_xlwings_usable):
+    if not is_xlwings_usable:
+        pytest.skip("This test requires excel.")
 
-    Args:
-        import_or_skip_xlwings: Fixture to skip a test when
-            xlwings cannot be imported.
+
+@pytest.fixture(scope="module")
+def skip_if_xlwings_is_usable(is_xlwings_usable):
+    if is_xlwings_usable:
+        pytest.skip("This test is only required when excel is not available.")
+
+
+@pytest.fixture(scope="module")
+def disable_fault_handler() -> Generator[None, None, None]:
+    """Generator to temporarily disable the fault handler.
+
+    Return a call to disable the fault handler.
     """
-    xlwings = import_or_skip_xlwings
-
-    try:
-        xlwings.App(visible=False)
-    # wide except because I cannot tell what is the exception raised by xlwings
-    except:  # noqa: E722,B001
-        pass
-    else:
-        pytest.skip("test requires no excel available")
+    if faulthandler.is_enabled():
+        try:
+            faulthandler.disable()
+            yield
+        finally:
+            faulthandler.enable()
 
 
 def test_missing_xlwings(skip_if_xlwings_is_usable):
-    """Check error when excel is not available."""
+    """Check error when excel is not available.
+
+    Args:
+        skip_if_xlwings_is_usable: Fixture to skip the test when xlwings is usable.
+    """
     msg = "xlwings requires Microsoft Excel"
     with pytest.raises(RuntimeError, match=msg):
         XLSDiscipline("dummy_file_path")
@@ -85,10 +106,9 @@ def test_basic(skip_if_xlwings_is_not_usable):
     """Simple test, the output is the sum of the inputs.
 
     Args:
-        skip_if_xlwings_is_not_usable: Fixture to skip a test
-            when xlwings has no usable excel.
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
     """
-    xlsd = XLSDiscipline(str(DIR_PATH / "test_excel.xlsx"))
+    xlsd = XLSDiscipline(DIR_PATH / "test_excel.xlsx")
     xlsd.execute(INPUT_DATA)
     assert xlsd.local_data["c"] == 23.5
 
@@ -98,8 +118,7 @@ def test_error_init(skip_if_xlwings_is_not_usable, file_id):
     """Test that errors are raised for files without the proper format.
 
     Args:
-        skip_if_xlwings_is_not_usable: Fixture to skip a test
-            when xlwings has no usable excel.
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
         file_id: The id of the test file.
     """
     with pytest.raises(ValueError):
@@ -110,8 +129,7 @@ def test_error_execute(skip_if_xlwings_is_not_usable):
     """Check that an exception is raised for incomplete data.
 
     Args:
-        skip_if_xlwings_is_not_usable: Fixture to skip a test
-            when xlwings has no usable excel.
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
     """
     disc = XLSDiscipline(FILE_PATH_PATTERN.format(4))
     with pytest.raises(
@@ -126,11 +144,10 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable):
     """Test the parallel execution xls disciplines.
 
     Args:
-        skip_if_xlwings_is_not_usable: Fixture to skip a test
-            when xlwings has no usable excel.
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
     """
-    xlsd = XLSDiscipline(str(DIR_PATH / "test_excel.xlsx"), copy_xls_at_setstate=True)
-    xlsd_2 = XLSDiscipline(str(DIR_PATH / "test_excel.xlsx"), copy_xls_at_setstate=True)
+    xlsd = XLSDiscipline(DIR_PATH / "test_excel.xlsx", copy_xls_at_setstate=True)
+    xlsd_2 = XLSDiscipline(DIR_PATH / "test_excel.xlsx", copy_xls_at_setstate=True)
 
     parallel_execution = DiscParallelExecution(
         [xlsd, xlsd_2], use_threading=False, n_processes=2
@@ -138,9 +155,101 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable):
     parallel_execution.execute(
         [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
     )
+    assert xlsd.get_output_data() == {"c": array([3.0])}
+    assert xlsd_2.get_output_data() == {"c": array([8.0])}
+
+
+def test_multithreading(skip_if_xlwings_is_not_usable):
+    """Test the execution of an XLSDiscipline with threading.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
+    """
+    xlsd = XLSDiscipline(
+        DIR_PATH / "test_excel.xlsx",
+        copy_xls_at_setstate=True,
+        recreate_book_at_run=True,
+    )
+    xlsd_2 = XLSDiscipline(
+        DIR_PATH / "test_excel.xlsx",
+        copy_xls_at_setstate=False,
+        recreate_book_at_run=True,
+    )
+
+    parallel_execution = DiscParallelExecution(
+        [xlsd, xlsd_2], use_threading=True, n_processes=2
+    )
+    parallel_execution.execute(
+        [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
+    )
 
     assert xlsd.get_output_data() == {"c": array([3.0])}
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
+
+
+def f_sellar_system(
+    x_local: float = 1.0, x_shared_2: float = 3.0, y_1: float = 1.0, y_2: float = 1.0
+) -> Tuple[float, float, float]:
+    """Objective function for the sellar problem."""
+    obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
+    c_1 = 3.16 - y_1**2
+    c_2 = y_2 - 24.0
+    return obj, c_1, c_2
+
+
+def f_sellar_1(
+    x_local: float = 1.0,
+    y_2: float = 1.0,
+    x_shared_1: float = 1.0,
+    x_shared_2: float = 3.0,
+) -> float:
+    """Function for discipline sellar 1."""
+    y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
+    return y_1
+
+
+def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
+    """Test the execution of a parallel DOE with multithreading at the MDA level.
+
+    At the DOE level, the parallelization uses multiprocessing to compute the samples.
+    At the MDA level of each sample, an MDAJacobi uses multithreading for faster
+    convergence. Both parallelization techniques shall work together.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
+    """
+    sellar_1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
+    sellar_2_xls = XLSDiscipline(
+        DIR_PATH / "sellar_2.xlsx",
+        copy_xls_at_setstate=True,
+        recreate_book_at_run=True,
+    )
+    sellar_system = create_discipline("AutoPyDiscipline", py_func=f_sellar_system)
+    disciplines = [sellar_1, sellar_2_xls, sellar_system]
+
+    design_space = create_design_space()
+    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_shared_1", 1, l_b=-10.0, u_b=10.0, value=array([4]))
+    design_space.add_variable("x_shared_2", 1, l_b=0.0, u_b=10.0, value=array([3]))
+
+    scenario = create_scenario(
+        disciplines,
+        formulation="MDF",
+        main_mda_name="MDAChain",
+        inner_mda_name="MDAJacobi",
+        objective_name="obj",
+        design_space=design_space,
+        scenario_type="DOE",
+    )
+    scenario.add_constraint("c_1", "ineq")
+    scenario.add_constraint("c_2", "ineq")
+    doe_input = {
+        "algo": "DiagonalDOE",
+        "n_samples": 2,
+        "algo_options": {"n_processes": 2},
+    }
+    scenario.execute(doe_input)
+    assert scenario.optimization_result.f_opt == 101.0
 
 
 #         def test_macro(self):

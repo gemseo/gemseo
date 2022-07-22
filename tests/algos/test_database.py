@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                        initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - stacked data ; docstrings
-
-from __future__ import division, unicode_literals
+from pathlib import Path
 
 import h5py
 import pytest
-from numpy import arange, array, ones, string_
-from numpy.linalg import norm
-from numpy.testing import assert_almost_equal
-from scipy.optimize import rosen, rosen_der
-
-from gemseo.algos.database import Database, HashableNdarray
+from gemseo.algos.database import Database
+from gemseo.algos.database import HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2, OrderedDict, Path
+from numpy import arange
+from numpy import array
+from numpy import ones
+from numpy import string_
+from numpy.linalg import norm
+from numpy.testing import assert_almost_equal
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail.hdf5"
@@ -122,11 +122,9 @@ def test_set_item():
     with pytest.raises(TypeError):
         database.setdefault(hash_k, k)
     database.setdefault(hash_k, {"f": 1})
-    with pytest.raises(TypeError):
-        database.get(1.0)
-    with pytest.raises(TypeError):
-        database.get(1.0)
-    with pytest.raises(TypeError):
+    assert database.get(1.0) is None
+    assert database.get(1.0) is None
+    with pytest.raises(KeyError):
         database[1.0]
     database.get(k)
     database[k]
@@ -138,8 +136,9 @@ def test_set_wrong_item():
     msg = "Optimization history keys must be design variables numpy arrays"
     with pytest.raises(TypeError, match=msg):
         database["1"] = "toto"
-    msg = "Optimization history values must be data dictionary"
-    with pytest.raises(TypeError, match=msg):
+
+    msg = "dictionary update sequence "
+    with pytest.raises(ValueError, match=msg):
         database[array([1.0])] = "toto"
 
 
@@ -397,7 +396,7 @@ def test_add_hdf_output_dataset(h5_file):
     values_group = h5_file.require_group("v")
     keys_group = h5_file.require_group("k")
 
-    values = OrderedDict()
+    values = {}
     values["f"] = 10
     values["g"] = array([1, 2])
     values["Iter"] = [3]
@@ -409,7 +408,7 @@ def test_add_hdf_output_dataset(h5_file):
     assert array(values_group["arr_10"]["2"]) == pytest.approx(array([3]))
     assert array(values_group["arr_10"]["3"]) == pytest.approx(array([[1, 2, 3]]))
 
-    values = OrderedDict()
+    values = {}
     values["i"] = array([1, 2])
     values["Iter"] = 1
     values["@j"] = array([[1, 2, 3]])
@@ -429,14 +428,14 @@ def test_get_missing_hdf_output_dataset(h5_file):
     values_group = h5_file.require_group("v")
     keys_group = h5_file.require_group("k")
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     database._add_hdf_output_dataset(10, keys_group, values_group, values)
 
     with pytest.raises(ValueError):
         database._get_missing_hdf_output_dataset(0, keys_group, values)
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     values["h"] = [10]
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
@@ -445,7 +444,7 @@ def test_get_missing_hdf_output_dataset(h5_file):
     assert new_values == {"h": [10]}
     assert idx_mapping == {"h": 2}
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
         10, keys_group, values
@@ -453,7 +452,7 @@ def test_get_missing_hdf_output_dataset(h5_file):
     assert new_values == {}
     assert idx_mapping is None
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     values["h"] = [2, 3]
     values["i"] = 20
@@ -628,13 +627,7 @@ def test__str__database():
     database.store(x1, {"Rosenbrock": value1}, add_iter=False)
     database.store(x2, {"Rosenbrock": value2}, add_iter=False)
 
-    if PY2:
-        ref = (
-            "OrderedDict([([1. 2.], OrderedDict([(u'Rosenbrock', 100.0)])), "
-            "([3.  4.5], OrderedDict([(u'Rosenbrock', 2029.0)]))])"
-        )
-    else:
-        ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
+    ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
 
     assert database.__str__() == ref
 
@@ -729,14 +722,41 @@ def test_name():
     assert Database(name="my_database").name == "my_database"
 
 
-def test_newiter_listeners_no_x():
-    """Test that new iter listeners are properly called when no x_vect is given."""
+def test_notify_newiter_listeners():
+    """Check that notify_newiter_listeners works properly."""
     database = Database()
-    database.store(
-        array([0.79499653, 0.20792012, 0.96630481]),
-        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
-    )
-    database.add_new_iter_listener(lambda x: x)
+    database.x_sum = 0
 
-    # This call would fail without an x_vect
+    def add(x):
+        database.x_sum += x
+
+    database.store(array([1]), {"y": 0})
+    assert database.notify_newiter_listeners() is None
+    database.add_new_iter_listener(add)
     database.notify_newiter_listeners()
+    assert database.x_sum == 1
+    database.notify_newiter_listeners(HashableNdarray(array([2])))
+    assert database.x_sum == 3
+
+
+@pytest.fixture
+def simple_database():
+    """A database with a single element: ([0.], {'y': 1.})."""
+    database = Database()
+    database.store(array([0.0]), {"y": 1.0})
+    return database
+
+
+@pytest.mark.parametrize(
+    "reset_iteration_counter,max_iteration", [(False, 1), (True, 0)]
+)
+def test_clear(simple_database, reset_iteration_counter, max_iteration):
+    """Check the Database.clear method."""
+    simple_database.clear(reset_iteration_counter)
+    assert len(simple_database) == 0
+    assert simple_database.get_max_iteration() == max_iteration
+
+
+def test_last_item(simple_database):
+    """Check that the property last_item is the last item stored in the database."""
+    assert simple_database.last_item["y"] == 1.0

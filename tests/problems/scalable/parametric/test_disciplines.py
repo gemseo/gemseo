@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,22 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import array
-
-from gemseo.problems.scalable.parametric.disciplines import (
-    TMMainDiscipline,
-    TMSubDiscipline,
-)
+from gemseo.problems.scalable.parametric.disciplines import TMMainDiscipline
+from gemseo.problems.scalable.parametric.disciplines import TMSubDiscipline
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem
+from numpy import array
 
 
 def test_scalable_problem():

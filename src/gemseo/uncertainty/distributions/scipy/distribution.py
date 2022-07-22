@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create a probability distribution from the SciPy library.
 
 The :class:`.SPDistribution` class is a concrete class
@@ -48,21 +45,22 @@ The constructor has also optional arguments:
 - a standard representation of these parameters
   (default: use :code:`parameters`).
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Callable, Iterable, List, Mapping, Optional, Union
+from typing import Callable
+from typing import Iterable
+from typing import Mapping
 
 import scipy
 import scipy.stats as sp_stats
-from numpy import array, ndarray, vstack
+from numpy import array
+from numpy import ndarray
+from numpy import vstack
 
-from gemseo.uncertainty.distributions.distribution import (
-    Distribution,
-    ParametersType,
-    StandardParametersType,
-)
+from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.distribution import ParametersType
+from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.utils.string_tools import MultiLineString
 
@@ -97,14 +95,13 @@ class SPDistribution(Distribution):
 
     def __init__(
         self,
-        variable,  # type: str
-        interfaced_distribution,  # type: str
-        parameters,  # type: ParametersType
-        dimension=1,  # type: int
-        standard_parameters=None,  # type: Optional[StandardParametersType]
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        interfaced_distribution: str,
+        parameters: ParametersType,
+        dimension: int = 1,
+        standard_parameters: StandardParametersType | None = None,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
@@ -115,7 +112,7 @@ class SPDistribution(Distribution):
             standard_parameters (dict, optional): The standard representation
                 of the parameters of the probability distribution.
         """
-        super(SPDistribution, self).__init__(
+        super().__init__(
             variable,
             interfaced_distribution,
             parameters,
@@ -133,48 +130,43 @@ class SPDistribution(Distribution):
         msg.add("Numerical range: {}", num_range)
         LOGGER.debug("%s", msg)
 
-    def compute_samples(
+    def compute_samples(  # noqa: D102
         self,
-        n_samples=1,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        n_samples: int = 1,
+    ) -> ndarray:
         return vstack([marginal.rvs(n_samples) for marginal in self.marginals]).T
 
-    def compute_cdf(
+    def compute_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         return array(
             [self.marginals[index].cdf(value) for index, value in enumerate(vector)]
         )
 
-    def compute_inverse_cdf(
+    def compute_inverse_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         return array(
             [self.marginals[index].ppf(value) for index, value in enumerate(vector)]
         )
 
     @property
-    def mean(self):  # noqa: D102
-        # type: (...) -> ndarray
+    def mean(self) -> ndarray:  # noqa: D102
         mean = [marginal.mean() for marginal in self.marginals]
         return array(mean)
 
     @property
-    def standard_deviation(self):  # noqa: D102
-        # type: (...) -> ndarray
+    def standard_deviation(self) -> ndarray:  # noqa: D102
         std = [marginal.std() for marginal in self.marginals]
         return array(std)
 
     def __create_distributions(
         self,
-        distribution,  # type: str
-        parameters,  # type: Mapping[str,Union[int,float]]
-    ):  # type: (...) -> List[scipy.stats.rv_continuous]
+        distribution: str,
+        parameters: Mapping[str, int | float],
+    ) -> list[scipy.stats.rv_continuous]:
         """Instantiate a SciPy distribution for each random variable component.
 
         Args:
@@ -187,9 +179,7 @@ class SPDistribution(Distribution):
         try:
             sp_dist = getattr(sp_stats, distribution)
         except Exception:
-            raise ValueError(
-                "{} is an unknown scipy distribution.".format(distribution)
-            )
+            raise ValueError(f"{distribution} is an unknown scipy distribution.")
         try:
             sp_dist(**parameters)
         except Exception:
@@ -203,9 +193,9 @@ class SPDistribution(Distribution):
 
     def __set_bounds(
         self,
-        distributions,  # type: Iterable[scipy.stats.rv_continuous]
-        extrema_level=1e-12,  # type: float
-    ):  # type: (...) -> None
+        distributions: Iterable[scipy.stats.rv_continuous],
+        extrema_level: float = 1e-12,
+    ) -> None:
         """Set mathematical and numerical bounds (= support and range).
 
         Args:
@@ -230,15 +220,13 @@ class SPDistribution(Distribution):
         self.num_lower_bound = array(self.num_lower_bound)
         self.num_upper_bound = array(self.num_upper_bound)
 
-    def _pdf(
+    def _pdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         def pdf(
-            point,  # type: float
-        ):
-            # type: (...) -> float
+            point: float,
+        ) -> float:
             """Probability Density Function (PDF).
 
             Args:
@@ -251,15 +239,13 @@ class SPDistribution(Distribution):
 
         return pdf
 
-    def _cdf(
+    def _cdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         def cdf(
-            level,  # type: float
-        ):
-            # type: (...) -> float
+            level: float,
+        ) -> float:
             """Cumulative Density Function (CDF).
 
             Args:

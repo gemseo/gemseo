@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-"""
-Driver library
-==============
+"""Driver library.
 
 A driver library aims to solve an :class:`.OptimizationProblem`
 using a particular algorithm from a particular family of numerical methods.
@@ -38,31 +33,39 @@ as relevant as possible in order to reach as soon as possible the optimum.
 These families are implemented in :class:`.DOELibrary`
 and :class:`.OptimizationLibrary`.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import io
 import logging
 import string
+from dataclasses import dataclass
 from time import time
-from typing import Callable, List, Optional, Union
+from typing import Callable
+from typing import ClassVar
+from typing import List
+from typing import Union
 
 import tqdm
-from numpy import ndarray, ones_like, where, zeros_like
-from tqdm.utils import _unicode, disp_len
+from numpy import ndarray
+from numpy import ones
+from numpy import where
+from numpy import zeros
+from tqdm.utils import _unicode
+from tqdm.utils import disp_len
 
 from gemseo.algos.algo_lib import AlgoLib
+from gemseo.algos.algo_lib import AlgorithmDescription
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.stop_criteria import (
-    DesvarIsNan,
-    FtolReached,
-    FunctionIsNan,
-    MaxIterReachedException,
-    MaxTimeReached,
-    TerminationCriterion,
-    XtolReached,
-)
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FtolReached
+from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.algos.stop_criteria import MaxIterReachedException
+from gemseo.algos.stop_criteria import MaxTimeReached
+from gemseo.algos.stop_criteria import TerminationCriterion
+from gemseo.algos.stop_criteria import XtolReached
+from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
 LOGGER = logging.getLogger(__name__)
@@ -76,6 +79,17 @@ class TqdmToLogger(io.StringIO):
         buf = buf.strip(string.whitespace)
         if buf:
             LOGGER.info(buf)
+
+
+@dataclass
+class DriverDescription(AlgorithmDescription):
+    """The description of a driver."""
+
+    handle_integer_variables: bool = False
+    """Whether the optimization algorithm handles integer variables."""
+
+    require_gradient: bool = False
+    """Whether the optimization algorithm requires the gradient."""
 
 
 class ProgressBar(tqdm.tqdm):
@@ -116,11 +130,11 @@ class ProgressBar(tqdm.tqdm):
             rate = rpd
             unit = "day"
 
-        return rate, " it/{}".format(unit)
+        return rate, f" it/{unit}"
 
     def status_printer(
-        self, file  # type: Union[io.TextIOWrapper, io.StringIO]
-    ):  # type: (...) -> Callable[[str], None]
+        self, file: io.TextIOWrapper | io.StringIO
+    ) -> Callable[[str], None]:
         """Overload the status_printer method to avoid the use of closures.
 
         Args:
@@ -172,40 +186,42 @@ class DriverLib(AlgoLib):
         FINITE_DIFF_METHOD,
     ]
 
-    REQUIRE_GRAD = "require_grad"
-    HANDLE_EQ_CONS = "handle_equality_constraints"
-    HANDLE_INEQ_CONS = "handle_inequality_constraints"
-    POSITIVE_CONSTRAINTS = "positive_constraints"
     INEQ_TOLERANCE = "ineq_tolerance"
     EQ_TOLERANCE = "eq_tolerance"
     MAX_TIME = "max_time"
     USE_DATABASE_OPTION = "use_database"
     NORMALIZE_DESIGN_SPACE_OPTION = "normalize_design_space"
+    _NORMALIZE_DS = True
     ROUND_INTS_OPTION = "round_ints"
-    WEBSITE = "website"
-    DESCRIPTION = "description"
+    EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     MAX_DS_SIZE_PRINT = 40
 
+    _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
+    """The name of the option to activate the progress bar in the optimization log."""
+
+    activate_progress_bar: ClassVar[bool] = True
+    """Whether to activate the progress bar in the optimization log."""
+
     def __init__(self):
-        """Constructor."""
         # Library settings and check
-        super(DriverLib, self).__init__()
+        super().__init__()
         self.__progress_bar = None
+        self.__activate_progress_bar = self.activate_progress_bar
         self.__max_iter = 0
         self.__iter = 0
         self._start_time = None
         self._max_time = None
         self.__message = None
 
-    def deactivate_progress_bar(self):  # type: (...) -> None
+    def deactivate_progress_bar(self) -> None:
         """Deactivate the progress bar."""
         self.__progress_bar = None
 
     def init_iter_observer(
         self,
-        max_iter,  # type: int
-        message,  # type: str
-    ):  # type: (...) -> None
+        max_iter: int,
+        message: str,
+    ) -> None:
         """Initialize the iteration observer.
 
         It will handle the stopping criterion and the logging of the progress bar.
@@ -218,32 +234,44 @@ class DriverLib(AlgoLib):
             ValueError: If the `max_iter` is not greater than or equal to one.
         """
         if max_iter < 1:
-            raise ValueError("max_iter must be >=1, got {}".format(max_iter))
+            raise ValueError(f"max_iter must be >=1, got {max_iter}")
         self.__max_iter = max_iter
         self.__iter = 0
         self.__message = message
-        self.__progress_bar = ProgressBar(
-            total=self.__max_iter,
-            desc=self.__message,
-            ascii=False,
-            file=TqdmToLogger(),
-        )
+        if self.__activate_progress_bar:
+            self.__progress_bar = ProgressBar(
+                total=self.__max_iter,
+                desc=self.__message,
+                ascii=False,
+                bar_format="... {percentage:3.0f}%|{bar}{r_bar}",
+                file=TqdmToLogger(),
+            )
+        else:
+            self.deactivate_progress_bar()
+
         self._start_time = time()
         self.problem.max_iter = max_iter
 
-    def __set_progress_bar_objective_value(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> None
+    def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
         """Set the objective value in the progress bar.
 
         Args:
             x_vect: The design variables values.
+                If None, consider the objective at the last iteration.
         """
-        value = self.problem.database.get_f_of_x(self.problem.objective.name, x_vect)
+        if x_vect is None:
+            value = self.problem.objective.last_eval
+        else:
+            value = self.problem.database.get_f_of_x(
+                self.problem.objective.name, x_vect
+            )
 
         if value is not None:
             # if maximization problem: take the opposite
-            if not self.problem.minimize_objective:
+            if (
+                not self.problem.minimize_objective
+                and not self.problem.use_standardized_objective
+            ):
                 value = -value
 
             self.__progress_bar.set_postfix(refresh=False, obj=value)
@@ -251,9 +279,7 @@ class DriverLib(AlgoLib):
         else:
             self.__progress_bar.update()
 
-    def new_iteration_callback(
-        self, x_vect=None  # type: Optional[ndarray]
-    ):  # type: (...) -> None
+    def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Callback called at each new iteration, i.e. every time a design vector that
         is not already in the database is proposed by the optimizer.
 
@@ -277,23 +303,22 @@ class DriverLib(AlgoLib):
                 raise MaxTimeReached()
 
         if self.__progress_bar is not None:
-            if x_vect is None:
-                x_vect = self.problem.database.get_x_by_iter(-1)
             self.__set_progress_bar_objective_value(x_vect)
 
-    def finalize_iter_observer(self):  # type: (...) -> None
+    def finalize_iter_observer(self) -> None:
         """Finalize the iteration observer."""
         if self.__progress_bar is not None:
             self.__progress_bar.close()
 
     def _pre_run(
         self,
-        problem,  # type: OptimizationProblem
-        algo_name,  # type: str
-        **options  # type: DriverLibOptionType
-    ):  # type: (...) -> None
-        """To be overridden by subclasses. Specific method to be executed just before
-        _run method call.
+        problem: OptimizationProblem,
+        algo_name: str,
+        **options: DriverLibOptionType,
+    ) -> None:
+        """To be overridden by subclasses.
+
+        Specific method to be executed just before _run method call.
 
         Args:
             problem: The optimization problem.
@@ -302,31 +327,108 @@ class DriverLib(AlgoLib):
                 see the associated JSON file.
         """
         self._max_time = options.get(self.MAX_TIME, 0.0)
+        LOGGER.info("%s", problem)
+        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+            log = MultiLineString()
+            log.indent()
+            log.add("over the design space:")
+            for line in str(problem.design_space).split("\n")[1:]:
+                log.add(line)
+            LOGGER.info("%s", log)
+        LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
 
     def _post_run(self, problem, algo_name, result, **options):  # pylint: disable=W0613
         """To be overridden by subclasses Specific method to be executed just after _run
         method call.
 
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-        :param result: result of the run such as an OptimizationResult
-        :param options: the options dict for the algorithm, see associated JSON file
+        Args:
+            problem: The problem to be solved.
+            algo_name: The name of the algorithm.
+            result: The result of the run, e.g. an :class:`.OptimizationResult`.
+            **options: The options of the algorithm.
         """
-        LOGGER.info("%s", result)
+        opt_result_str = result._strings
+        LOGGER.info("%s", opt_result_str[0])
+        if result.constraints_values:
+            if result.is_feasible:
+                LOGGER.info("%s", opt_result_str[1])
+            else:
+                LOGGER.warning("%s", opt_result_str[1])
+        LOGGER.info("%s", opt_result_str[2])
         problem.solution = result
         if result.x_opt is not None:
-            problem.design_space.set_current_x(result)
+            problem.design_space.set_current_value(result)
         if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-            LOGGER.info("%s", problem.design_space)
+            log = MultiLineString()
+            log.indent()
+            log.indent()
+            for line in str(problem.design_space).split("\n"):
+                log.add(line)
+            LOGGER.info("%s", log)
 
-    def execute(self, problem, algo_name=None, **options):
-        """Executes the driver.
+    def _check_integer_handling(
+        self,
+        design_space: DesignSpace,
+        force_execution: bool,
+    ) -> None:
+        """Check if the algo handles integer variables.
 
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-            if None, use self.algo_name
-            which may have been set by the factory (Default value = None)
-        :param options: the options dict for the algorithm
+        The user may force the execution if needed, in this case a warning is logged.
+
+        Args:
+            design_space: The design space of the problem.
+            force_execution: Whether to force the execution of the algorithm when
+                the problem includes integer variables and the algo does not handle
+                them.
+
+        Raises:
+            ValueError: If `force_execution` is set to `False` and
+                the algo does not handle integer variables and the
+                design space includes at least one integer variable.
+        """
+        if (
+            design_space.has_integer_variables()
+            and not self.descriptions[self.algo_name].handle_integer_variables
+        ):
+            if not force_execution:
+                raise ValueError(
+                    "Algorithm {} is not adapted to the problem, it does not handle "
+                    "integer variables.\n"
+                    "Execution may be forced setting the 'skip_int_check' "
+                    "argument to 'True'.".format(self.algo_name)
+                )
+            else:
+                LOGGER.warning(
+                    "Forcing the execution of an algorithm that does not handle "
+                    "integer variables."
+                )
+
+    def execute(
+        self,
+        problem: OptimizationProblem,
+        algo_name: str | None = None,
+        eval_obs_jac: bool = False,
+        skip_int_check: bool = False,
+        **options: DriverLibOptionType,
+    ) -> OptimizationResult:
+        """Execute the driver.
+
+        Args:
+            problem: The problem to be solved.
+            algo_name: The name of the algorithm.
+                If None, use the algo_name attribute
+                which may have been set by the factory.
+            eval_obs_jac: Whether to evaluate the Jacobian of the observables.
+            skip_int_check: Whether to skip the integer variable handling check
+                of the selected algorithm.
+            **options: The options for the algorithm.
+
+        Returns:
+            The optimization result.
+
+        Raises:
+            ValueError: If `algo_name` was not either set by the factory or given
+                as an argument.
         """
         self.problem = problem
         if algo_name is not None:
@@ -339,14 +441,26 @@ class DriverLib(AlgoLib):
             )
 
         self._check_algorithm(self.algo_name, problem)
+        self._check_integer_handling(problem.design_space, skip_int_check)
+        activate_progress_bar = options.pop(
+            self._ACTIVATE_PROGRESS_BAR_OPTION_NAME, None
+        )
+        if activate_progress_bar is not None:
+            self.__activate_progress_bar = activate_progress_bar
+
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+        self.internal_algo_name = self.descriptions[
+            self.algo_name
+        ].internal_algorithm_name
 
         problem.check()
         problem.preprocess_functions(
-            normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
+            is_function_input_normalized=options.get(
+                self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
+            ),
             use_database=options.get(self.USE_DATABASE_OPTION, True),
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
+            eval_obs_jac=eval_obs_jac,
         )
 
         try:  # Term criteria such as max iter or max_time can be triggered in pre_run
@@ -361,7 +475,7 @@ class DriverLib(AlgoLib):
         return result
 
     def _process_specific_option(self, options, option_key):
-        """Process one option as a special treatment, at the begining of the general
+        """Process one option as a special treatment, at the beginning of the general
         treatment and checks of _process_options.
 
         Args:
@@ -378,7 +492,8 @@ class DriverLib(AlgoLib):
     def _termination_criterion_raised(self, error):  # pylint: disable=W0613
         """Retrieve the best known iterate when max iter has been reached.
 
-        :param error: the obtained error from the algorithm
+        Args:
+            error: The obtained error from the algorithm.
         """
         if isinstance(error, TerminationCriterion):
             message = ""
@@ -396,7 +511,7 @@ class DriverLib(AlgoLib):
                 message = "Successive iterates of the objective function "
                 message += "are closer than ftol_rel or ftol_abs."
             elif isinstance(error, MaxTimeReached):
-                message = "Maximum time reached : {} seconds.".format(self._max_time)
+                message = f"Maximum time reached: {self._max_time} seconds."
             message += " GEMSEO Stopped the driver"
         else:
             message = error.args[0]
@@ -406,11 +521,7 @@ class DriverLib(AlgoLib):
 
     def get_optimum_from_database(self, message=None, status=None):
         """Retrieves the optimum from the database and builds an optimization result
-        object from it.
-
-        :param message: Default value = None)
-        :param status: Default value = None)
-        """
+        object from it."""
         problem = self.problem
         if len(problem.database) == 0:
             return OptimizationResult(
@@ -422,8 +533,18 @@ class DriverLib(AlgoLib):
         x_0 = problem.database.get_x_by_iter(0)
         # compute the best feasible or infeasible point
         f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
-        if f_opt is not None and not problem.minimize_objective:
+        if (
+            f_opt is not None
+            and not problem.minimize_objective
+            and not problem.use_standardized_objective
+        ):
             f_opt = -f_opt
+
+        if x_opt is None:
+            optimum_index = None
+        else:
+            optimum_index = problem.database.get_index_of(x_opt)
+
         return OptimizationResult(
             x_0=x_0,
             x_opt=x_opt,
@@ -435,65 +556,76 @@ class DriverLib(AlgoLib):
             is_feasible=is_feas,
             constraints_values=c_opt,
             constraints_grad=c_opt_grad,
+            optimum_index=optimum_index,
         )
 
     def _get_options(self, **options):
-        """Retrieves the options of the library To be overloaded by subclasses Used to
+        """Retrieve the options of the library. To be overloaded by subclasses. Used to
         define default values for options using keyword arguments.
 
-        :param options: options of the driver
+        Args:
+            **options: The options of the driver.
         """
         raise NotImplementedError()
 
     def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm
+        Args:
+            **options: The options of the driver.
         """
         raise NotImplementedError()
 
     def is_algo_requires_grad(self, algo_name):
         """Returns True if the algorithm requires a gradient evaluation.
 
-        :param algo_name: name of the algorithm
+        Args:
+            algo_name: The name of the algorithm.
         """
-        lib_alg = self.lib_dict.get(algo_name, None)
-        if lib_alg is None:
-            raise ValueError("Algorithm {} is not available.".format(algo_name))
+        if algo_name not in self.descriptions:
+            raise ValueError(f"Algorithm {algo_name} is not available.")
 
-        return lib_alg.get(self.REQUIRE_GRAD, False)
+        return self.descriptions[algo_name].require_gradient
 
     def get_x0_and_bounds_vects(self, normalize_ds):
         """Gets x0, bounds, normalized or not depending on algo options, all as numpy
         arrays.
 
-        :param normalize_ds: if True, normalizes all input vars
-               that are not integers, according to design space
-               normalization policy
-        :returns: x, lower bounds, upper bounds
+        Args:
+            normalize_ds: Whether to normalize the input variables
+                that are not integers,
+                according to the normalization policy of the design space.
+
+        Returns:
+            The current value, the lower bounds and the upper bounds.
         """
-        dspace = self.problem.design_space
-        l_b = dspace.get_lower_bounds()
-        u_b = dspace.get_upper_bounds()
+        design_space = self.problem.design_space
+        l_b = design_space.get_lower_bounds()
+        u_b = design_space.get_upper_bounds()
 
         # remove normalization from options for algo
         if normalize_ds:
-            norm_dict = dspace.normalize
-            norm_array = dspace.dict_to_array(norm_dict)
-            xvec = self.problem.get_x0_normalized()
-            l_b = where(norm_array, zeros_like(xvec), l_b)
-            u_b = where(norm_array, ones_like(xvec), u_b)
+            norm_array = design_space.dict_to_array(design_space.normalize)
+            l_b = where(norm_array, zeros(norm_array.shape), l_b)
+            u_b = where(norm_array, ones(norm_array.shape), u_b)
+            current_x = self.problem.get_x0_normalized(cast_to_real=True)
         else:
-            xvec = self.problem.design_space.get_current_x()
+            current_x = self.problem.design_space.get_current_value(
+                complex_to_real=True
+            )
 
-        return xvec, l_b, u_b
+        return current_x, l_b, u_b
 
     def ensure_bounds(self, orig_func, normalize=True):
         """Project the design vector onto the design space before execution.
 
-        :param orig_func: the original function
-        :param normalize: if True, use the normalized design space
-        :returns: the wrapped function
+        Args:
+            orig_func: The original function.
+            normalize: Whether to use the normalized design space.
+
+        Returns:
+            A function calling the original function
+            with the input data projected onto the design space.
         """
 
         def wrapped_func(x_vect):

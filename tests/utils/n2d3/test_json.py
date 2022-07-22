@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,20 +13,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the class N2JSON."""
-from __future__ import unicode_literals
-
 from json import loads
 
 import pytest
-from numpy import ones
-
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_json import N2JSON
+from numpy import ones
 
 
 @pytest.fixture(scope="module")
-def n2_json():  # type: (...) -> N2JSON
+def n2_json() -> N2JSON:
     """The N2JSON related to two strongly coupled disciplines and a weakly one."""
     description_list = [
         ("D1", ["y21"], ["y12"]),
@@ -41,8 +37,8 @@ def n2_json():  # type: (...) -> N2JSON
         input_d = {k: data for k in desc[1]}
         output_d = {k: data for k in desc[2]}
         disc = MDODiscipline(name)
-        disc.input_grammar.initialize_from_base_dict(input_d)
-        disc.output_grammar.initialize_from_base_dict(output_d)
+        disc.input_grammar.update_from_data(input_d)
+        disc.output_grammar.update_from_data(output_d)
         disciplines.append(disc)
     return N2JSON(DependencyGraph(disciplines))
 
@@ -62,7 +58,7 @@ def expected_links(n2_json):
             "target": 4,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D1", "D2", ["y12"], {"y12": 1, "y21": 1}
+                "D1", "D2", ["y12"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {
@@ -70,7 +66,7 @@ def expected_links(n2_json):
             "target": 2,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D1", "D3", ["y12"], {"y12": 1, "y21": 1}
+                "D1", "D3", ["y12"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {
@@ -78,7 +74,7 @@ def expected_links(n2_json):
             "target": 3,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D2", "D1", ["y21"], {"y12": 1, "y21": 1}
+                "D2", "D1", ["y21"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {
@@ -86,7 +82,7 @@ def expected_links(n2_json):
             "target": 2,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D2", "D3", ["y21"], {"y12": 1, "y21": 1}
+                "D2", "D3", ["y21"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {"source": 0, "target": 0, "value": 1, "description": ""},
@@ -132,7 +128,7 @@ def expected_nodes(n2_json):
     for discipline in [disciplines[index] for index in [2, 0, 1]]:
         desc = n2_json._create_discipline_html(
             discipline,
-            {"y12": 1, "y21": 1},
+            {"y12": "n/a", "y21": "n/a"},
         )
         nodes.append(
             {
@@ -177,10 +173,7 @@ def test_generate_coupling_html(n2_json):
     """
     html = n2_json._create_coupling_html("A", "B", ["a", "b"], {"a": 1, "b": 2})
     expected_html = (
-        "<h2 style='text-align: center;'>"
-        "<span style='color: gray;'>Coupling</span></br>"
-        "<span style='color: gray;'>from</span> A<br/>"
-        "<span style='color: gray;'>to</span> B</h2>"
+        "The coupling variables from <b>A</b> to <b>B</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
@@ -206,8 +199,7 @@ def test_generate_discipline_html(n2_json):
         next(n2_json._graph.disciplines), {"y12": 1, "y21": 2}
     )
     expected_html = (
-        "<h2 style='text-align: center;'>D1</h2>"
-        "<h3 style='text-align: center;'>Inputs</h3>"
+        "The inputs of <b>D1</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
@@ -215,7 +207,7 @@ def test_generate_discipline_html(n2_json):
         "        </tr>"
         "    </table>"
         "</div>"
-        "<h3 style='text-align: center;'>Outputs</h3>"
+        "The outputs of <b>D1</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
@@ -245,7 +237,7 @@ def test_generate_group_html(n2_json, group):
     )
     if group == 1:
         expected_html = (
-            "<h2 style='text-align: center;'>Group 1</h2>"
+            "The disciplines of <b>Group 1</b>:"
             "<div align='center'>"
             "    <table>"
             "        <tr>"
@@ -259,7 +251,7 @@ def test_generate_group_html(n2_json, group):
         )
     else:
         expected_html = (
-            "<h2 style='text-align: center;'>Group 0</h2>"
+            "The disciplines of <b>Group 0</b>:"
             "<div align='center'>"
             "    <table>"
             "        <tr>"
@@ -284,29 +276,47 @@ def test_generate_groups_menu_html(n2_json):
     )
 
     expected_html = (
-        "<h2>Group the disciplines</h2>"
-        "<div style='overflow:scroll; height:39em;'>"
-        "    <ul id='myUL'>"
+        "    <ul class='collapsible'>"
         "        <li>"
-        "            <div class='caret'>"
-        "                <span id='group_name_0' contenteditable='true' class='group' onblur='change_group_name(this,0);'>Group 0</span>"  # noqa: B950
+        "           <div class='switch'>"
+        "              <label>"
+        "              <input type='checkbox' "
+        "onclick='expand_collapse_all(json.groups.length,svg);' "
+        "id='check_all'/>"
+        "              <span class='lever'></span>"
+        "              </label>All groups"
+        "           </div>"
+        "       </li>"
+        "        <li>"
+        "            <div class='collapsible-header'>"
+        "               <span id='group_name_0' "
+        "contenteditable='true' class='group' "
+        "onblur='change_group_name(this,0);'>Group 0"
+        "               </span>"
         "            </div>"
-        "            <ul class='nested'>"
-        "                <li>D1</li>"
-        "            </ul>"
+        "            <div class='collapsible-body'>"
+        "               D1"
+        "            </div>"
         "        </li>"
         "        <li>"
-        "            <div class='caret'>"
-        "                <span id='group_name_1' contenteditable='true' class='group' onblur='change_group_name(this,1);'>Group 1</span>"  # noqa: B950
-        "                <input type='checkbox' onclick='expand_collapse_group(1,svg)'/>"  # noqa: B950
+        "            <div class='collapsible-header'>"
+        "               <div class='switch'>"
+        "                   <label>"
+        "                   <input type='checkbox' "
+        "id='check_1' onclick='expand_collapse_group(1,svg)'/>"
+        "                   <span class='lever'></span>"
+        "                   </label>"
+        "               </div>"
+        "               <span id='group_name_1' contenteditable='true' "
+        "class='group' onblur='change_group_name(this,1);'>Group 1"
+        "               </span>"
         "            </div>"
-        "            <ul class='nested'>"
-        "                <li>D2</li>"
-        "                <li>D3</li>"
-        "            </ul>"
+        "            <div class='collapsible-body'>"
+        "               D2,"
+        "               D3"
+        "            </div>"
         "        </li>"
         "    </ul>"
-        "</div>"
     )
 
     assert html == expected_html
@@ -329,7 +339,7 @@ def test_compute_variables_sizes(n2_json):
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
-    assert n2_json._compute_variables_sizes() == {"y12": 1, "y21": 1}
+    assert n2_json._compute_variables_sizes() == {"y12": "n/a", "y21": "n/a"}
 
 
 def test_compute_groups(n2_json):
@@ -358,7 +368,7 @@ def test_create_nodes(n2_json, expected_nodes):
     children = [[2], [3, 4]]
     nodes, groups = n2_json._create_nodes(
         {"D1": 1, "D2": 1, "D3": 0},
-        {"y12": 1, "y21": 1},
+        {"y12": "n/a", "y21": "n/a"},
         disciplines,
         n_groups,
         children,
@@ -378,7 +388,7 @@ def test_default_group_template(name):
     Args:
         name: The name of the group.
     """
-    assert N2JSON._DEFAULT_GROUP_TEMPLATE.format(name) == "Group {}".format(name)
+    assert N2JSON._DEFAULT_GROUP_TEMPLATE.format(name) == f"Group {name}"
 
 
 def test_create_links(n2_json, expected_links):
@@ -392,7 +402,7 @@ def test_create_links(n2_json, expected_links):
     links = n2_json._create_links(
         n2_json._graph.get_disciplines_couplings(),
         5,
-        {"y12": 1, "y21": 1},
+        {"y12": "n/a", "y21": "n/a"},
         ["D3", "D1", "D2"],
         2,
     )

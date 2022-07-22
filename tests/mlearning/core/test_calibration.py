@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm calibration."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array, array_equal
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.mlearning.core.calibration import MLAlgoAssessor, MLAlgoCalibration
+from gemseo.mlearning.core.calibration import MLAlgoAssessor
+from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def dataset():  # type: (...) -> RosenbrockDataset
+def dataset() -> RosenbrockDataset:
     """The dataset used to train the regression algorithms."""
     return RosenbrockDataset(opt_naming=False)
 
@@ -44,7 +42,7 @@ def test_discipline_multioutput_fail(dataset):
         match=("MLAlgoAssessor does not support multioutput."),
     ):
         MLAlgoAssessor(
-            "PolynomialRegression",
+            "PolynomialRegressor",
             dataset,
             ["degree"],
             MSEMeasure,
@@ -59,7 +57,7 @@ def test_discipline_multioutput_fail(dataset):
 def test_discipline_multioutput(dataset, options):
     """Verify that MLAlgoAssessor works correctly when multioutput option is False."""
     assessor = MLAlgoAssessor(
-        "PolynomialRegression",
+        "PolynomialRegressor",
         dataset,
         ["degree"],
         MSEMeasure,
@@ -73,7 +71,7 @@ def test_discipline(dataset):
     """Test discipline."""
     measure_options = {"method": "loo"}
     disc = MLAlgoAssessor(
-        "PolynomialRegression", dataset, ["degree"], MSEMeasure, measure_options
+        "PolynomialRegressor", dataset, ["degree"], MSEMeasure, measure_options
     )
     result = disc.execute({"degree": array([3])})
     assert "degree" in result
@@ -84,7 +82,7 @@ def test_discipline(dataset):
 
 
 @pytest.fixture(scope="module")
-def calibration_space():  # type: (...) -> DesignSpace
+def calibration_space() -> DesignSpace:
     """The space of the parameters to be calibrated."""
     calibration_space = DesignSpace()
     calibration_space.add_variable("penalty_level", 1, "float", 0.0, 1.0, 0.5)
@@ -98,7 +96,7 @@ def test_calibration(dataset, calibration_space, algo):
     """Test calibration."""
     n_samples = 2
     calibration = MLAlgoCalibration(
-        "PolynomialRegression",
+        "PolynomialRegressor",
         dataset,
         ["penalty_level"],
         calibration_space,
@@ -122,4 +120,4 @@ def test_calibration(dataset, calibration_space, algo):
 
     calibration.maximize_objective = True
     calibration.execute({"algo": algo[0], algo[1]: n_samples})
-    assert calibration.optimal_criterion > f_opt
+    assert -calibration.optimal_criterion > f_opt

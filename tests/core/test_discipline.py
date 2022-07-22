@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,41 +12,44 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Damien Guenot
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import os
-from typing import Dict, Tuple
+import sys
+from pathlib import Path
+from typing import Dict
+from typing import Tuple
 
 import pytest
-from numpy import array, complex128, ndarray
-
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.core.auto_py_discipline import AutoPyDiscipline
 from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.problems.sobieski.wrappers_sg import SobieskiStructureSG
+from gemseo.core.scenario import Scenario
+from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.mda.mda import MDA
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy import complex128
+from numpy import ndarray
 
 
 def check_jac_equals(
-    jac_1,  # type: Dict[str, ndarray]
-    jac_2,  # type: Dict[str, ndarray]
-):  # type: (...) -> bool
+    jac_1: Dict[str, ndarray],
+    jac_2: Dict[str, ndarray],
+) -> bool:
     """Check that two Jacobian matrices are equals.
 
     Args:
@@ -70,7 +72,7 @@ def check_jac_equals(
 
 
 @pytest.fixture
-def sobieski_chain():  # type: (...) -> Tuple[MDOChain, Dict[str, ndarray]]
+def sobieski_chain() -> Tuple[MDOChain, Dict[str, ndarray]]:
     """Build a Sobieski chain.
 
     Returns:
@@ -85,7 +87,7 @@ def sobieski_chain():  # type: (...) -> Tuple[MDOChain, Dict[str, ndarray]]
             SobieskiMission(),
         ]
     )
-    chain_inputs = chain.input_grammar.get_data_names()
+    chain_inputs = chain.input_grammar.keys()
     indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
     return chain, indata
 
@@ -149,16 +151,18 @@ def test_check_input_data_exception(grammar_type):
         struct = SobieskiStructureSG()
     else:
         struct = SobieskiStructure()
-    struct_inputs = struct.input_grammar.get_data_names()
+
+    struct_inputs = struct.input_grammar.keys()
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
-    with pytest.raises(InvalidDataException, match="Missing mandatory elements: x_1"):
+
+    with pytest.raises(InvalidDataException, match=".*Missing required names: x_1"):
         struct.check_input_data(indata)
 
     struct.execute(indata)
 
     del struct.default_inputs["x_1"]
-    with pytest.raises(InvalidDataException, match="Invalid input data in"):
+    with pytest.raises(InvalidDataException, match=".*Missing required names: x_1"):
         struct.execute(indata)
 
 
@@ -170,7 +174,7 @@ def test_outputs():
     indata = SobieskiProblem().get_default_inputs()
     struct.execute(indata)
     in_array = struct.get_inputs_asarray()
-    assert len(in_array) == 10
+    assert len(in_array) == 13
 
 
 def test_get_outputs_by_name_exception(sobieski_chain):
@@ -355,7 +359,7 @@ def test_serialize_hdf_cache(tmp_wd):
     out_file = "sob_aero.pckl"
     aero.serialize(out_file)
     saero_u = MDODiscipline.deserialize(out_file)
-    assert saero_u.cache.get_last_cached_outputs()["y_2"] is not None
+    assert saero_u.cache.last_entry.outputs["y_2"] is not None
 
 
 def test_data_processor():
@@ -409,15 +413,15 @@ def test_linearize_errors():
 
     class LinDisc0(MDODiscipline):
         def __init__(self):
-            super(LinDisc0, self).__init__()
+            super().__init__()
 
     LinDisc0()._compute_jacobian()
 
     class LinDisc(MDODiscipline):
         def __init__(self):
-            super(LinDisc, self).__init__()
-            self.input_grammar.initialize_from_data_names(["x"])
-            self.output_grammar.initialize_from_data_names(["y"])
+            super().__init__()
+            self.input_grammar.update(["x"])
+            self.output_grammar.update(["y"])
 
         def _run(self):
             self.local_data["y"] = array([2.0])
@@ -430,7 +434,7 @@ def test_linearize_errors():
     d2.execute({"x": array([1.0])})
     # Shape is not 2D
     with pytest.raises(ValueError):
-        d2.linearize({"x": 1}, force_all=True)
+        d2.linearize({"x": array([1])}, force_all=True)
 
     with pytest.raises(ValueError):
         d2.__setattr__("linearization_mode", "toto")
@@ -497,9 +501,9 @@ def test_check_jacobian_2():
 
     class LinDisc(MDODiscipline):
         def __init__(self):
-            super(LinDisc, self).__init__()
-            self.input_grammar.initialize_from_data_names(["x"])
-            self.output_grammar.initialize_from_data_names(["y"])
+            super().__init__()
+            self.input_grammar.update(["x"])
+            self.output_grammar.update(["y"])
             self.default_inputs = {"x": x}
             self.jac_key = "x"
             self.jac_len = 2
@@ -563,10 +567,11 @@ def test_execute_rerun_errors():
 
     class MyDisc(MDODiscipline):
         def _run(self):
-            pass
+            self.local_data["b"] = array([1.0])
 
     d = MyDisc()
-    d.input_grammar.initialize_from_data_names(["a"])
+    d.input_grammar.update(["a"])
+    d.output_grammar.update(["b"])
     d.execute({"a": [1]})
     d.status = d.STATUS_RUNNING
     with pytest.raises(ValueError):
@@ -599,6 +604,9 @@ def test_cache():
     sm.execute({"x_shared": xs + 0.1})
     t2 = sm.exec_time
     assert t2 > t1
+
+    sm.exec_time = 1.0
+    assert sm.exec_time == 1.0
 
 
 def test_cache_h5(tmp_wd):
@@ -681,6 +689,16 @@ def test_cache_h5_jac(tmp_wd):
     sm.cache = HDF5Cache(hdf_file, sm.name)
 
 
+def test_replace_h5_cache(tmp_wd):
+    """Check that changing the HDF5 cache is correctly taken into account."""
+    sm = SobieskiMission()
+    hdf_file_1 = sm.name + "_1.hdf5"
+    hdf_file_2 = sm.name + "_2.hdf5"
+    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file_1)
+    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file_2)
+    assert sm.cache.hdf_file.hdf_file_path == hdf_file_2
+
+
 def test_cache_run_and_linearize():
     """Check that the cache is filled with the Jacobian during linearization."""
     sm = SobieskiMission()
@@ -694,10 +712,7 @@ def test_cache_run_and_linearize():
     sm._run = run_and_lin
     sm.set_cache_policy()
     sm.execute()
-    assert (
-        sm.cache.get_outputs(sm.default_inputs, next(iter(sm.default_inputs.keys())))
-        is not None
-    )
+    assert sm.cache[sm.default_inputs].jacobian is not None
 
     sm.linearize()
     # Cache must be loaded
@@ -813,3 +828,150 @@ def test_repr_str():
     disc = AutoPyDiscipline(myfunc)
     assert str(disc) == "myfunc"
     assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"
+
+
+def test_activate_counters():
+    """Check that the discipline counters are active by default."""
+    discipline = MDODiscipline()
+    assert discipline.n_calls == 0
+    assert discipline.n_calls_linearize == 0
+    assert discipline.exec_time == 0
+
+    discipline._run = lambda: None
+    discipline.execute()
+    assert discipline.n_calls == 1
+    assert discipline.n_calls_linearize == 0
+    assert discipline.exec_time > 0
+
+
+def test_deactivate_counters():
+    """Check that the discipline counters are set to None when deactivated."""
+    activate_counters = MDODiscipline.activate_counters
+
+    MDODiscipline.activate_counters = False
+
+    discipline = MDODiscipline()
+    assert discipline.n_calls is None
+    assert discipline.n_calls_linearize is None
+    assert discipline.exec_time is None
+
+    discipline._run = lambda: None
+    discipline.execute()
+    assert discipline.n_calls is None
+    assert discipline.n_calls_linearize is None
+    assert discipline.exec_time is None
+
+    with pytest.raises(RuntimeError, match="The discipline counters are disabled."):
+        discipline.n_calls = 1
+
+    with pytest.raises(RuntimeError, match="The discipline counters are disabled."):
+        discipline.n_calls_linearize = 1
+
+    with pytest.raises(RuntimeError, match="The discipline counters are disabled."):
+        discipline.exec_time = 1
+
+    MDODiscipline.activate_counters = activate_counters
+
+
+def test_cache_none():
+    """Check that the discipline cache can be deactivate."""
+    discipline = MDODiscipline(cache_type=None)
+    assert discipline.activate_cache is True
+    assert discipline.cache is None
+
+    MDODiscipline.activate_cache = False
+    discipline = MDODiscipline()
+    assert discipline.cache is None
+
+    discipline._run = lambda: None
+    discipline.execute()
+
+    assert MDA.activate_cache is True
+
+    MDODiscipline.activate_cache = True
+
+
+def test_grammar_inheritance():
+    """Check that disciplines based on JSON grammar files inherit these files."""
+
+    class NewSellar1(Sellar1):
+        """A discipline whose parent uses IO grammar files."""
+
+    # The discipline works correctly as the parent class has IO grammar files.
+    discipline = NewSellar1()
+    assert "x_local" in discipline.get_input_data_names()
+
+    class NewScenario(Scenario):
+        """A discipline whose parent forces its children to use IO grammar files."""
+
+        def _init_algo_factory(self):
+            pass
+
+    # An error is raised as Scenario does not provide JSON grammar files.
+    with pytest.raises(
+        FileNotFoundError, match="The grammar file NewScenario_input.json is missing."
+    ):
+        NewScenario([discipline], "MDF", "y_1", "design_space_mock")
+
+
+@pytest.mark.parametrize(
+    "grammar_directory,comp_dir,in_or_out,expected",
+    [
+        (
+            None,
+            None,
+            "in",
+            Path(sys.modules[Sellar1.__module__].__file__).parent.absolute()
+            / "foo_input.json",
+        ),
+        (None, "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
+        ("class_gd", None, "out", Path("class_gd") / "foo_output.json"),
+        ("class_gd", "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
+    ],
+)
+def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected):
+    """Check the grammar file path."""
+    original_grammar_directory = Sellar1.GRAMMAR_DIRECTORY
+    Sellar1.GRAMMAR_DIRECTORY = grammar_directory
+    get_grammar_file_path = MDODiscipline._MDODiscipline__get_grammar_file_path
+    path = get_grammar_file_path(Sellar1, comp_dir, in_or_out, "foo")
+    assert path == expected
+    Sellar1.GRAMMAR_DIRECTORY = original_grammar_directory
+
+
+def test_residuals_fail():
+    """Tests the check of residual variables with run_solves_residuals=False."""
+    disc = SobieskiMission()
+    disc.residual_variables = {"y_4": "x_shared"}
+    with pytest.raises(
+        RuntimeError,
+        match="Disciplines that do not solve their residuals are not supported yet.",
+    ):
+        disc.execute()
+
+
+def test_activate_checks():
+    out_ref = SobieskiMission().execute()["y_4"]
+    disc = SobieskiMission()
+    disc.activate_input_data_check = False
+    disc.activate_output_data_check = False
+    assert out_ref == disc.execute()["y_4"]
+
+
+def test_no_cache():
+    disc = SobieskiMission()
+    disc.execute()
+    disc.execute()
+    assert disc.n_calls == 1
+
+    disc = SobieskiMission()
+    disc.cache = None
+    disc.execute()
+    disc.execute()
+    assert disc.n_calls == 2
+
+    with pytest.raises(ValueError, match="does not have a cache"):
+        disc.cache_tol
+
+    with pytest.raises(ValueError, match="does not have a cache"):
+        disc.cache_tol = 1.0

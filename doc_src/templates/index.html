@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% set title = 'Home' %}
+{% block content %}
+<div class="container-fluid sk-landing-bg py-3">
+  <div class="container sk-landing-container">
+    <div style="text-align:center;">
+      <img src="_static/logo-small.png" width="30%"/>
+      <h2 class="sk-landing-subheader text-shadow">A Generic Engine for Multidisciplinary Scenarios,<br/> Exploration and Optimization</h2>
+    </div>
+    <div class="container-fluid sk-landing-bg py-3">
+      <div class="row">
+        <div class="col-md-5">
+          <img src="_static/gemseo_schema.png"/>
+        </div>
+        <div class="col-md-7 mb-3 mb-md-0">
+          <ul class="sk-landing-header-body">
+            <li>Automation of MDO processes based on MDO formulations</li>
+            <li>Features: coupling, optimization, design of experiments, visualization, surrogate modeling, machine learning, uncertainty quantification, ...
+            <li>Easy to embed in simulation platforms or to use as a standalone software</li>
+            <li>Can use tools in Python, Matlab, Excel, Scilab, executables, ...</li>
+            <li>Built on NumPy, SciPy and Matplotlib</li>
+            <li>Open source (GNU LGPL v3.0), commercially usable - <a href='software/licenses.html'>see licenses</a>
+            <li>Source code is available on <a href="https://gitlab.com/gemseo/dev/gemseo" target="_blank">gitlab</a>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;">
+    <a class="btn sk-landing-btn mb-1" href="software/installation.html" role="button"><i class="fa fa-plug"></i> Installation</a>
+    <a class="btn sk-landing-btn mb-1" href="contributing.html" role="button"><i class="fab fa-gitlab"></i> Contributing</a>
+    <a class="btn sk-landing-btn mb-1" href="aboutus.html" role="button"><i class="fas fa-users"></i> About us</a>
+    <a class="btn sk-landing-btn mb-1" href="software/changelog.html" role="button"><i class="fa fa-history"></i> Changelog</a>
+    <a class="btn sk-landing-btn mb-1" href="examples/mdo/plot_gemseo_in_10_minutes.html" role="button"><i class="fa fa-play-circle"></i> GEMSEO in 10 minutes</a>
+    <a class="btn sk-landing-btn mb-1" href="plugins.html" role="button"><i class="fas fa-puzzle-piece"></i> Plugins</a><br/>
+  </div>
+  <div style="text-align:center;">
+    <strong>Current version: {{ release }}</strong>
+  </div>
+</div>
+
+{% from 'block.html' import displayblock %}
+<div class="container sk-landing-container pt-3 body" role="main">
+  <h2 class="sk-landing-blocksection text-shadow bw-lines" id="main_concepts"><span>Main Concepts</span></h2>
+  <div class="row no-gutters">
+    {%- for block in main_concepts %}{{ displayblock(block) }}{%- endfor %}
+  </div>
+  <h2 class="sk-landing-blocksection text-shadow bw-lines"><span>Features</span></h2>
+  <div class="row no-gutters">
+    {%- for block in features %}{{ displayblock(block) }}{%- endfor %}
+  </div>
+</div>
+
+{% endblock %}

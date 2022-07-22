@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,41 +12,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm module."""
-from __future__ import division, unicode_literals
+import re
+from pathlib import Path
 
 import pytest
-from numpy import arange, array_equal
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import Path, xrange
+from gemseo.mlearning.transform.scaler.scaler import Scaler
+from numpy import arange
+from numpy import array
+from numpy import array_equal
 
-
-class NewMLAlgo(MLAlgo):
-    """New machine learning algorithm class."""
-
-    LIBRARY = "NewLibrary"
-
-    def learn(self, samples=None):
-        super(NewMLAlgo, self).learn(samples=samples)
-        self._trained = True
-
-    def _learn(self, indices):
-        pass
+from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
@@ -70,13 +58,13 @@ def test_constructor(dataset):
 def test_learning_samples(dataset):
     algo = NewMLAlgo(dataset)
     algo.learn()
-    assert list(algo.learning_samples_indices) == list(xrange(len(dataset)))
+    assert list(algo.learning_samples_indices) == list(range(len(dataset)))
     algo = NewMLAlgo(dataset)
     algo.learn(samples=[0, 1])
     assert algo.learning_samples_indices == [0, 1]
 
 
-@pytest.mark.parametrize("samples", [xrange(10), [1, 2]])
+@pytest.mark.parametrize("samples", [range(10), [1, 2]])
 @pytest.mark.parametrize("trained", [False, True])
 def test_str(dataset, samples, trained):
     """Test string representation."""
@@ -85,20 +73,37 @@ def test_str(dataset, samples, trained):
     ml_algo._trained = trained
     expected = "\n".join(["NewMLAlgo()", "   based on the NewLibrary library"])
     if ml_algo.is_trained:
-        expected += "\n   built from {} learning samples".format(len(samples))
+        expected += f"\n   built from {len(samples)} learning samples"
     assert str(ml_algo) == expected
 
 
-def test_scale(dataset):
-    """Test scaler in MLAlgo."""
-    ml_algo = MLAlgo(dataset, transformer={"parameters": MinMaxScaler()})
-    assert isinstance(ml_algo.transformer["parameters"], MinMaxScaler)
+@pytest.mark.parametrize(
+    "transformer", ["Scaler", ("Scaler", {"offset": 2.0}), Scaler()]
+)
+def test_transformer(dataset, transformer):
+    """Check if transformers are correctly passed."""
+    ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
+    assert isinstance(ml_algo.transformer["parameters"], Scaler)
+    if isinstance(transformer, tuple):
+        assert ml_algo.transformer["parameters"].offset == 2.0
+
+
+def test_transformer_wrong_type(dataset):
+    """Check that using a wrong transformer type raises a ValueError."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Transformer type must be "
+            "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+        ),
+    ):
+        MLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_save_and_load(dataset, tmp_path, monkeypatch, reset_factory):
     """Test save and load."""
     # Let the factory find NewMLAlgo
-    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent)
+    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "new_ml_algo")
 
     model = NewMLAlgo(dataset)
     model.learn()
@@ -118,3 +123,18 @@ def test_save_and_load(dataset, tmp_path, monkeypatch, reset_factory):
     assert len(imported_model.learning_set) == 0
     assert imported_model.is_trained
     assert imported_model.sizes == dataset.sizes
+
+
+def test_transformers_error(dataset):
+    """Check that MLAlgo cannot use a transformer for both group and variable."""
+    dataset = Dataset()
+    dataset.add_variable("x", array([[1.0]]), group="foo")
+    with pytest.raises(
+        ValueError,
+        match=(
+            "An MLAlgo cannot have both a transformer "
+            "for all variables of a group and a transformer "
+            "for one variable of this group."
+        ),
+    ):
+        MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

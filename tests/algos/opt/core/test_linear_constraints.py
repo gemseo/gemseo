@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
 import pytest
-from numpy import allclose, arange, array, inf
-
-from gemseo.algos.opt.core.linear_constraints import (
-    build_bounds_matrices,
-    build_constraints_matrices,
-)
-from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
+from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
+from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import inf
 
 
 def test_upper_bounds_matrices():
@@ -100,7 +99,7 @@ def test_constraint_check():
     with pytest.raises(ValueError):
         build_constraints_matrices([ineq_cstr_1, ineq_cstr_2], "obj")
     # Check function type
-    nonlinear_ineq_cstr = MDOFunction(lambda x: x ** 2, "square", f_type="ineq")
+    nonlinear_ineq_cstr = MDOFunction(lambda x: x**2, "square", f_type="ineq")
     with pytest.raises(TypeError):
         build_constraints_matrices([ineq_cstr_1, nonlinear_ineq_cstr], "ineq")
 

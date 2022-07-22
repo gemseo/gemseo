@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,22 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer module."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import arange, ndarray
-
 from gemseo.mlearning.transform.transformer import Transformer
+from numpy import arange
+from numpy import ndarray
 
 
 @pytest.fixture
-def data():  # type: (...) -> ndarray
+def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))
 
@@ -39,13 +35,21 @@ def test_constructor():
     another_transformer = Transformer("Another Transformer")
     assert transformer.name is not None
     assert another_transformer.name == "Another Transformer"
+    assert not transformer.is_fitted
 
 
 def test_fit(data):
-    """Test fit method."""
+    """Test fit method.
+
+    fit calls _fit which is an abstract method and then sets is_fitted as True.
+    """
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.fit(data)
+
+    transformer._fit = lambda data, *args: None
+    transformer.fit("foo")
+    assert transformer.is_fitted
 
 
 def test_transform(data):

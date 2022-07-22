@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,15 +19,24 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Francois Gallard
 """Design of experiments from custom data."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Sequence, TextIO, Union
+from pathlib import Path
+from typing import ClassVar
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import TextIO
+from typing import Union
 
-from numpy import apply_along_axis, atleast_2d, loadtxt, ndarray
+from numpy import apply_along_axis
+from numpy import atleast_2d
+from numpy import loadtxt
+from numpy import ndarray
 
+from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
-from gemseo.utils.py23_compat import Path
 
 OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
 
@@ -48,16 +55,27 @@ class CustomDOE(DOELibrary):
     whereas a text file (extension .txt) does not.
     """
 
-    ALGO_LIST = ["CustomDOE"]
-    COMMENTS_KEYWORD = "comments"
-    DELIMITER_KEYWORD = "delimiter"
-    SKIPROWS_KEYWORD = "skiprows"
-    DOE_FILE = "doe_file"
-    SAMPLES = "samples"
+    COMMENTS_KEYWORD: ClassVar[str] = "comments"
+    """The name given to the string indicating a comment line."""
 
-    def __init__(self):  # type: (...) -> None
-        super(CustomDOE, self).__init__()
-        self.file_dv_names_list = None
+    DELIMITER_KEYWORD: ClassVar[str] = "delimiter"
+    """The name given to the string separating two fields."""
+
+    DOE_FILE: ClassVar[str] = "doe_file"
+    """The name given to the DOE file."""
+
+    SAMPLES: ClassVar[str] = "samples"
+    """The name given to the samples."""
+
+    SKIPROWS_KEYWORD: ClassVar[str] = "skiprows"
+    """The name given to the number of skipped rows in the DOE file."""
+
+    LIBRARY_NAME = "GEMSEO"
+
+    def __init__(self) -> None:
+        super().__init__()
+        name = self.__class__.__name__
+        self.algo_name = name
 
         desc = {
             "CustomDOE": (
@@ -66,26 +84,26 @@ class CustomDOE(DOELibrary):
                 "or as a sequence of sequences of numbers."
             )
         }
-        for algo in self.ALGO_LIST:
-            self.lib_dict[algo] = {
-                DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo,
-                DOELibrary.DESCRIPTION: desc[algo],
-            }
+        self.descriptions[name] = DOEAlgorithmDescription(
+            algorithm_name=name,
+            description=desc[name],
+            internal_algorithm_name=name,
+            library_name=name,
+        )
 
     def _get_options(
         self,
-        doe_file=None,  # type: Optional[Union[str, Path, TextIO]]
-        samples=None,  # type: Optional[ndarray]
-        delimiter=",",  # type: Optional[str]
-        comments="#",  # type: Optional[Union[str,Sequence[str]]]
-        skiprows=0,  # type: int
-        max_time=0,  # type: float
-        eval_jac=False,  # type: bool
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
-        **kwargs  # type: OptionType
-    ):  # type: (...) -> Dict[str,OptionType]
+        doe_file: str | Path | TextIO | None = None,
+        samples: ndarray | None = None,
+        delimiter: str | None = ",",
+        comments: str | Sequence[str] | None = "#",
+        skiprows: int = 0,
+        max_time: float = 0,
+        eval_jac: bool = False,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        **kwargs: OptionType,
+    ) -> dict[str, OptionType]:
         """Set the options.
 
         Args:
@@ -100,7 +118,8 @@ class CustomDOE(DOELibrary):
                 None implies no comments.
             skiprows: The number of first lines to skip.
             eval_jac: Whether to evaluate the jacobian.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
@@ -109,7 +128,6 @@ class CustomDOE(DOELibrary):
         Returns:
             The processed options.
         """
-        wtbs = wait_time_between_samples
         return self._process_options(
             max_time=max_time,
             doe_file=doe_file,
@@ -119,17 +137,17 @@ class CustomDOE(DOELibrary):
             skiprows=skiprows,
             eval_jac=eval_jac,
             n_processes=n_processes,
-            wait_time_between_samples=wtbs,
-            **kwargs
+            wait_time_between_samples=wait_time_between_samples,
+            **kwargs,
         )
 
     def read_file(
         self,
-        doe_file,  # type: Union[str, Path, TextIO]
-        delimiter=",",  # type: Optional[str]
-        comments="#",  # type: Optional[Union[str,Sequence[str]]]
-        skiprows=0,  # type: int
-    ):  # type: (...) -> ndarray
+        doe_file: str | Path | TextIO,
+        delimiter: str | None = ",",
+        comments: str | Sequence[str] | None = "#",
+        skiprows: int = 0,
+    ) -> ndarray:
         """Read a file containing several samples (one per line) and return them.
 
         Args:
@@ -164,9 +182,7 @@ class CustomDOE(DOELibrary):
 
         return samples
 
-    def _generate_samples(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> ndarray
+    def _generate_samples(self, **options: OptionType) -> ndarray:
         """
         Returns:
             The samples.
@@ -202,8 +218,6 @@ class CustomDOE(DOELibrary):
                 " the samples ({}).".format(self.problem.dimension, samples.shape[1])
             )
 
-        samples = apply_along_axis(
-            self.problem.design_space.normalize_vect, axis=1, arr=samples
+        return apply_along_axis(
+            self.problem.design_space.transform_vect, axis=1, arr=samples
         )
-
-        return samples

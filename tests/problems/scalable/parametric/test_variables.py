@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
-
-from gemseo.problems.scalable.parametric.core.variables import (
-    U_LOCAL_NAME_BASIS,
-    X_LOCAL_NAME_BASIS,
-    X_SHARED_NAME,
-    check_consistency,
-    get_constraint_name,
-    get_coupling_name,
-    get_u_local_name,
-    get_x_local_name,
-)
+from gemseo.problems.scalable.parametric.core.variables import check_consistency
+from gemseo.problems.scalable.parametric.core.variables import get_constraint_name
+from gemseo.problems.scalable.parametric.core.variables import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variables import get_u_local_name
+from gemseo.problems.scalable.parametric.core.variables import get_x_local_name
+from gemseo.problems.scalable.parametric.core.variables import U_LOCAL_NAME_BASIS
+from gemseo.problems.scalable.parametric.core.variables import X_LOCAL_NAME_BASIS
+from gemseo.problems.scalable.parametric.core.variables import X_SHARED_NAME
 
 
 def test_check_consistency():

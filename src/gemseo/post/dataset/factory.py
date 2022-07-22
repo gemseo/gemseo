@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,16 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create instances of :class:`.DatasetPlot`.
 
-The module :mod:`~gemseo.post.dataset.factory` contains the :class:`DatasetPlotFactory`
+The module :mod:`~gemseo.post.dataset.factory` contains the :class:`.DatasetPlotFactory`
 class which is a factory to instantiate a :class:`.DatasetPlot` from its class name. The
 class can be internal to |g| or located in an external module whose path is provided to
 the constructor. It also provides a list of available cache types and allows you to test
 if a cache type is available.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset
@@ -41,18 +39,18 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 LOGGER = logging.getLogger(__name__)
 
 
-class DatasetPlotFactory(object):
+class DatasetPlotFactory:
     """This factory instantiates a :class:`.DatasetPlot` from its class name."""
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.factory = Factory(DatasetPlot, ("gemseo.post.dataset",))
 
     def create(
         self,
-        plot_name,  # type: str
-        dataset,  # type: Dataset
-        **options
-    ):  # type: (...) -> DatasetPlot
+        plot_name: str,
+        dataset: Dataset,
+        **options,
+    ) -> DatasetPlot:
         """Create a plot for dataset.
 
         Args:
@@ -66,14 +64,14 @@ class DatasetPlotFactory(object):
         return self.factory.create(plot_name, dataset=dataset, **options)
 
     @property
-    def plots(self):  # type: (...) -> List[str]
+    def plots(self) -> list[str]:
         """The available plot methods for dataset."""
         return self.factory.classes
 
     def is_available(
         self,
-        plot_name,  # type: str
-    ):  # type: (...) -> bool
+        plot_name: str,
+    ) -> bool:
         """Check the availability of a plot for dataset.
 
         Args:

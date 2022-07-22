@@ -1,0 +1,54 @@
+{
+    "name": "SobieskiStructure_input",
+    "required": ["y_21", "y_31","x_1","x_shared"],
+    "properties": {
+        "y_21": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_31": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "x_1": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "x_shared": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "c_0": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "minimum fuel weight"
+        },
+        "c_1": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "miscellaneous weight"
+        },
+        "c_2": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "maximum load factor"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#SobieskiStructure_input"
+}

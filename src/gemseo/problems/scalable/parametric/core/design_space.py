@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,23 +21,23 @@
 Scalable problem - Design space
 *******************************
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
+import collections
 import logging
 
-from numpy import ones, zeros
+from numpy import ones
+from numpy import zeros
 
-from .variables import (
-    X_SHARED_NAME,
-    check_consistency,
-    get_coupling_name,
-    get_x_local_name,
-)
+from .variables import check_consistency
+from .variables import get_coupling_name
+from .variables import get_x_local_name
+from .variables import X_SHARED_NAME
 
 LOGGER = logging.getLogger(__name__)
 
 
-class TMDesignSpace(object):
+class TMDesignSpace:
     """The design space for the scalable problem introduced by Tedford and Martins
     (2010) defines the lower and upper bounds of both local design parameters, shared
     design parameters and coupling variables, as well as default values.
@@ -77,7 +75,11 @@ class TMDesignSpace(object):
         n_coupling = n_coupling or [1, 1]
         check_consistency(n_shared, n_local, n_coupling)
 
-        default_inputs = {} if not isinstance(default_inputs, dict) else default_inputs
+        default_inputs = (
+            {}
+            if not isinstance(default_inputs, collections.abc.Mapping)
+            else default_inputs
+        )
         self.names = []
         self.sizes = {}
         self.lower_bounds = {}

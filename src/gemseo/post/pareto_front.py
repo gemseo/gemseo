@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,19 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Pareto Front."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import List, Optional, Sequence, Tuple
+from typing import Sequence
 
-from numpy import full, ndarray
+from numpy import full
+from numpy import ndarray
 
 from gemseo.algos.pareto_front import generate_pareto_plots
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -36,7 +35,7 @@ LOGGER = logging.getLogger(__name__)
 class ParetoFront(OptPostProcessor):
     """Compute the Pareto front for a multi-objective problem.
 
-    The Pareto front of an optimization problem is the set of _non-dominated_ points of
+    The Pareto front of an optimization problem is the set of ``non-dominated`` points of
     the design space for which there is no other point that improves an objective
     without damaging another.
 
@@ -45,17 +44,17 @@ class ParetoFront(OptPostProcessor):
     For a given plot, the red markers are the non-dominated points according to the
     objectives of this plot and the green markers are the non-dominated points
     according to all the objectives.
-    The latter are also called _Pareto optimal points_.
+    The latter are also called ``Pareto optimal points``.
     """
 
     DEFAULT_FIG_SIZE = (10.0, 10.0)
 
     def _plot(
         self,
-        objectives=None,  # type: Optional[Sequence[str]]
-        objectives_labels=None,  # type: Optional[Sequence[str]]
-        show_non_feasible=True,  # type: bool
-    ):  # type: (...) -> None
+        objectives: Sequence[str] | None = None,
+        objectives_labels: Sequence[str] | None = None,
+        show_non_feasible: bool = True,
+    ) -> None:
         """
         Args:
             objectives: The functions names or design variables to plot.
@@ -66,7 +65,7 @@ class ParetoFront(OptPostProcessor):
 
         Raises:
             ValueError: If the numbers of objectives and objectives
-            labels are different.
+                labels are different.
         """
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
@@ -91,7 +90,7 @@ class ParetoFront(OptPostProcessor):
         fig = generate_pareto_plots(
             sample_values,
             all_labels,
-            figsize=self.DEFAULT_FIG_SIZE,
+            fig_size=self.DEFAULT_FIG_SIZE,
             non_feasible_samples=non_feasible_samples,
             show_non_feasible=show_non_feasible,
         )
@@ -100,10 +99,10 @@ class ParetoFront(OptPostProcessor):
 
     def __compute_names_and_values(
         self,
-        all_dv_names,  # type: Sequence[str]
-        all_funcs,  # type: Sequence[str]
-        objectives,  # type: Sequence[str]
-    ):  # type: (...) -> Tuple[ndarray,List[str]]
+        all_dv_names: Sequence[str],
+        all_funcs: Sequence[str],
+        objectives: Sequence[str],
+    ) -> tuple[ndarray, list[str]]:
         """Compute the names and values of the objective and design variables.
 
         Args:
@@ -151,11 +150,11 @@ class ParetoFront(OptPostProcessor):
 
     def __check_objective_name(
         self,
-        all_dv_names,  # type: Sequence[str]
-        all_funcs,  # type: Sequence[str]
-        func,  # type: str
-        objectives,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        all_dv_names: Sequence[str],
+        all_funcs: Sequence[str],
+        func: str,
+        objectives: Sequence[str],
+    ) -> None:
         """Check that the objective name is valid.
 
         Args:
@@ -183,10 +182,10 @@ class ParetoFront(OptPostProcessor):
 
     def __move_objective_to_design_variable(
         self,
-        design_variables,  # type: Sequence[str]
-        func,  # type: str
-        objectives,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        design_variables: Sequence[str],
+        func: str,
+        objectives: Sequence[str],
+    ) -> None:
         """Move an objective to a design variable.
 
         If the given function is a design variable,
@@ -201,16 +200,14 @@ class ParetoFront(OptPostProcessor):
             objectives.remove(func)
             design_variables.append(func)
 
-    def __compute_non_feasible_samples(
-        self, sample_values  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __compute_non_feasible_samples(self, sample_values: ndarray) -> ndarray:
         """Compute the non-feasible indexes.
 
         Args:
             sample_values: The sample values.
 
         Returns:
-            An array of size ``n_samples``, True if the point is non feasible
+            An array of size ``n_samples``, True if the point is non feasible.
         """
         x_feasible, _ = self.opt_problem.get_feasible_points()
         feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]

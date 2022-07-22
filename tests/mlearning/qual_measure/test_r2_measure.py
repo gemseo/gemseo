@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test R2 error measure module."""
-from __future__ import division, unicode_literals
-
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.r2_measure import R2Measure
-from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
 
-MODEL = AnalyticDiscipline(expressions_dict={"y": "1+x+x**2"})
+MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
 
 TOL_DEG_1 = 0.1
@@ -43,7 +39,7 @@ ATOL = 1e-12
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
@@ -54,7 +50,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def dataset_test():  # type: (...) -> Dataset
+def dataset_test() -> Dataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
@@ -74,17 +70,17 @@ def test_constructor(dataset):
 
 def test_evaluate_learn(dataset):
     """Test evaluate learn method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     r2_train = measure.evaluate("learn")
     assert r2_train > 1 - TOL_DEG_2
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
     r2_train = measure.evaluate("learn")
     assert r2_train > 1 - TOL_DEG_1
 
-    algo = PolynomialRegression(
+    algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
@@ -96,17 +92,17 @@ def test_evaluate_learn(dataset):
 
 def test_evaluate_test(dataset, dataset_test):
     """Test evaluate test method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     r2_test = measure.evaluate("test", test_data=dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
     r2_test = measure.evaluate("test", test_data=dataset_test)
     assert r2_test > 1 - TOL_DEG_1
 
-    algo = PolynomialRegression(
+    algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
@@ -118,12 +114,12 @@ def test_evaluate_test(dataset, dataset_test):
 
 def test_evaluate_loo(dataset):
     """Test evaluate leave one out method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     r2_loo = measure.evaluate("loo")
     assert r2_loo > 1 - TOL_DEG_2
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
     r2_loo = measure.evaluate("loo")
     assert r2_loo < 1 - TOL_DEG_3
@@ -131,17 +127,17 @@ def test_evaluate_loo(dataset):
 
 def test_evaluate_kfolds(dataset):
     """Test evaluate k-folds method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     r2_kfolds = measure.evaluate("kfolds")
     assert r2_kfolds > 1 - TOL_DEG_2
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
     r2_kfolds = measure.evaluate("kfolds")
     assert r2_kfolds < 1 - TOL_DEG_3
 
-    algo = PolynomialRegression(
+    algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
@@ -153,7 +149,18 @@ def test_evaluate_kfolds(dataset):
 
 def test_evaluate_bootstrap(dataset):
     """Test evaluate bootstrap method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     with pytest.raises(NotImplementedError):
         measure.evaluate("bootstrap")
+
+
+@pytest.mark.parametrize("fit", [False, True])
+def test_fit_transformers(algo_for_transformer, fit):
+    """Check that transformers are fitted with the sub-datasets."""
+    m1 = R2Measure(algo_for_transformer)
+    m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
+    assert (
+        allclose(m1.evaluate("kfolds", seed=0), m2.evaluate("kfolds", seed=0))
+        is not fit
+    )

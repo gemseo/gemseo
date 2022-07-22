@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import shutil
-import sys
+from pathlib import Path
 
 import pytest
-
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.study_analysis import StudyAnalysis
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
-
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 6), reason="study analysis requires python 3.6 or higher"
-)
 
 try:
     skip_condition = shutil.which("pdflatex") is None
@@ -49,7 +40,7 @@ has_no_pdflatex = {
 def test_generate_n2(tmp_path):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
     fpath = tmp_path / "xls_n2.pdf"
-    study.generate_n2(fpath, figsize=(5, 5))
+    study.generate_n2(fpath, fig_size=(5, 5))
     assert fpath.exists()
 
 
@@ -57,6 +48,35 @@ def test_generate_n2(tmp_path):
 def test_xdsm_mdf(tmp_path):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
     study.generate_xdsm(tmp_path, latex_output=True)
+
+
+def test_discipline_self_coupled_two_disciplines(tmp_path):
+    """Test that a GEMSEO study can be performed with a self-coupled discipline.
+
+    In this test, two disciplines with one self-coupled discipline are present in the
+    MDO process.
+    """
+    study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
+    fpath = tmp_path / "xls_n2.pdf"
+    study.generate_n2(fpath, fig_size=(5, 5))
+    study.generate_xdsm(tmp_path, latex_output=False)
+    assert fpath.exists()
+
+
+def test_discipline_self_coupled_one_disc(tmp_path):
+    """Test that a GEMSEO study can be done with a self-coupled discipline.
+
+    In this test, only one self-coupled discipline is present in the MDO process.
+    """
+    study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
+    fpath = tmp_path / "xls_n2.pdf"
+
+    with pytest.raises(ValueError, match="N2 diagrams need at least two disciplines."):
+        study.generate_n2(fpath, fig_size=(5, 5))
+
+    study.generate_xdsm(tmp_path, latex_output=False)
+    xdsm_path = tmp_path / "xdsm.html"
+    assert xdsm_path.exists()
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
@@ -105,7 +125,7 @@ def test_none_inputs():
 
 @pytest.mark.parametrize("file_index", range(1, 19))
 def test_wrong_inputs(tmp_path, file_index):
-    fname = "disciplines_spec_fail{}.xlsx".format(file_index)
+    fname = f"disciplines_spec_fail{file_index}.xlsx"
     with pytest.raises(ValueError):
         StudyAnalysis(INPUT_DIR / fname)
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
@@ -24,14 +22,16 @@ Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent 
 optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
 exhibit (p. 714).
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Tuple
-
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.problems.sellar.sellar import X_LOCAL, X_SHARED, Y_1, Y_2
+from gemseo.problems.sellar.sellar import X_LOCAL
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
 
 
 class SellarDesignSpace(DesignSpace):
@@ -55,13 +55,13 @@ class SellarDesignSpace(DesignSpace):
 
     def __init__(
         self,
-        dtype="complex128",  # type: str
-    ):  # type: (...) -> None
+        dtype: str = "complex128",
+    ) -> None:
         """
         Args:
             dtype: The type of the variables defined in the design space.
         """
-        super(SellarDesignSpace, self).__init__()
+        super().__init__()
 
         x_local, x_shared, y_1, y_2 = self.__get_initial_solution(dtype)
         self.add_variable(X_LOCAL, 1, l_b=0.0, u_b=10.0, value=x_local)
@@ -71,8 +71,8 @@ class SellarDesignSpace(DesignSpace):
 
     @staticmethod
     def __get_initial_solution(
-        dtype,  # type: str
-    ):  # type: (...) -> Tuple[ndarray]
+        dtype: str,
+    ) -> tuple[ndarray]:
         """Return an initial solution for the MDO problem.
 
         Args:

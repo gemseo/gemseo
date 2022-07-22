@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -51,29 +49,36 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List, Mapping
-
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
 class Radar(DatasetPlot):
     """Radar visualization."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
-        classifier,  # type: str
-    ):  # type: (...) -> List[Figure]
+        dataset: Dataset,
+        classifier: str,
+    ) -> None:
         """
         Args:
             classifier: The name of the variable to group the data.
         """
+        super().__init__(dataset, classifier=classifier)
+
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
+        classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
                 "Classifier must be one of these names: "
@@ -87,6 +92,11 @@ class Radar(DatasetPlot):
                 column = (self.dataset.get_group(label), label, str(comp))
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
+
         dataframe.columns = self._get_variables_names(dataframe)
-        radviz(dataframe, label)
-        return [plt.gcf()]
+        fig, axes = self._get_figure_and_axes(fig, axes)
+        radviz(dataframe, label, ax=axes)
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
+        axes.set_title(self.title)
+        return [fig]

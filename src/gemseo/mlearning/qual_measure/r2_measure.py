@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -39,15 +37,17 @@ where
 :math:`y` are the data points and
 :math:`\\bar{y}` is the mean of :math:`y`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
-from typing import List, NoReturn, Optional, Union
+from typing import NoReturn
 
-from numpy import atleast_2d
 from numpy import delete as npdelete
-from numpy import mean, ndarray, repeat
-from sklearn.metrics import mean_squared_error, r2_score
+from numpy import mean
+from numpy import ndarray
+from numpy import repeat
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
@@ -60,63 +60,61 @@ class R2Measure(MLErrorMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLRegressionAlgo
-    ):  # type: (...) -> None
+        algo: MLRegressionAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for regression.
         """
-        super(R2Measure, self).__init__(algo)
+        super().__init__(algo, fit_transformers)
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         multioutput = "raw_values" if multioutput else "uniform_average"
         return r2_score(outputs, predictions, multioutput=multioutput)
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-    ):  # type: (...) -> Union[float,ndarray]
-        folds, samples = self._compute_folds(samples, n_folds, randomize)
+        n_folds: int = 5,
+        samples: list[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
+        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
-        in_grp = self.algo.learning_set.INPUT_GROUP
-        out_grp = self.algo.learning_set.OUTPUT_GROUP
-        inputs = self.algo.learning_set.get_data_by_group(in_grp)
-        outputs = self.algo.learning_set.get_data_by_group(out_grp)
+        input_data = self.algo.input_data
+        output_data = self.algo.output_data
 
         multiout = "raw_values" if multioutput else "uniform_average"
 
         algo = deepcopy(self.algo)
 
-        num = 0
-        ymean = mean(outputs, axis=0)
-        ymean = atleast_2d(ymean)
-        ymean = repeat(ymean, outputs.shape[0], axis=0)
-        den = mean_squared_error(outputs, ymean, multioutput=multiout) * len(ymean)
+        sse = 0
+        ymean = repeat(mean(output_data, axis=0)[None, :], len(output_data), axis=0)
+        var = mean_squared_error(output_data, ymean, multioutput=multiout)
         for n_fold in range(n_folds):
             fold = folds[n_fold]
-            train = npdelete(samples, fold)
-            algo.learn(samples=train)
-            expected = outputs[fold]
-            predicted = algo.predict(inputs[fold])
-            tmp = mean_squared_error(expected, predicted, multioutput=multiout)
-            num += tmp * len(fold)
+            algo.learn(
+                samples=npdelete(samples, fold), fit_transformers=self._fit_transformers
+            )
+            mse = mean_squared_error(
+                output_data[fold], algo.predict(input_data[fold]), multioutput=multiout
+            )
+            sse += mse * len(fold)
 
-        quality = 1 - num / den
-
-        return quality
+        return 1 - sse / var / len(ymean)
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> NoReturn
+        n_replicates: int = 100,
+        samples: list[int] | None = None,
+        multioutput: bool = True,
+        seed: int | None = None,
+    ) -> NoReturn:
         raise NotImplementedError

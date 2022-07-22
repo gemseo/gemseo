@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -51,9 +49,9 @@ belonging to the cluster :math:`k` (:math:`k=1,\\cdots,K`),
 and :math:`|C_k| = \\sum_{j\\in C_k} 1` is the number of points
 in the cluster :math:`k`, :math:`k=1,\\cdots,K`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Optional, Sequence, Union
+from typing import Sequence
 
 from numpy import ndarray
 from sklearn.metrics import silhouette_score
@@ -70,49 +68,50 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLPredictiveClusteringAlgo
-    ):  # type: (...) -> None
+        algo: MLPredictiveClusteringAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for clustering.
         """
-        super(SilhouetteMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_test(
         self,
-        test_data,  # type:Dataset
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        test_data: Dataset,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         raise NotImplementedError
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-    ):  # type: (...) -> Union[float,ndarray]
+        n_folds: int = 5,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
         raise NotImplementedError
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        n_replicates: int = 100,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        seed: int | None = None,
+    ) -> float | ndarray:
         raise NotImplementedError
 
     def _compute_measure(
         self,
-        data,  # type: ndarray
-        labels,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        data: ndarray,
+        labels: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         if multioutput:
             raise NotImplementedError(
                 "The SilhouetteMeasure does not support the multioutput case."
             )
-        measure = silhouette_score(data, labels)
-
-        return measure
+        return silhouette_score(data, labels)

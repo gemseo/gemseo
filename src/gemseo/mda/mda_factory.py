@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,17 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate MDA from their class names."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, List, Optional, Sequence, Union
+from typing import Iterable
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -37,18 +38,18 @@ MDAOptionType = Optional[
 ]
 
 
-class MDAFactory(object):
+class MDAFactory:
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.factory = Factory(MDA, ("gemseo.mda",))
 
     def create(
         self,
-        mda_name,  # type: str
-        disciplines,  # type: Sequence[MDODiscipline]
-        **options  # type: MDAOptionType
-    ):  # type: (...) -> MDA
+        mda_name: str,
+        disciplines: Sequence[MDODiscipline],
+        **options: MDAOptionType,
+    ) -> MDA:
         """Create a MDA.
 
         Args:
@@ -60,14 +61,14 @@ class MDAFactory(object):
         return self.factory.create(mda_name, disciplines=disciplines, **options)
 
     @property
-    def mdas(self):  # type: (...) -> List[str]
+    def mdas(self) -> list[str]:
         """The names of the available MDAs."""
         return self.factory.classes
 
     def is_available(
         self,
-        mda_name,  # type: str
-    ):  # type: (...) -> bool
+        mda_name: str,
+    ) -> bool:
         """Check the availability of an MDA.
 
         Args:

@@ -1,0 +1,70 @@
+..
+   Copyright 2021 IRT Saint-Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. _gen_surrogate_algos:
+
+Surrogate disciplines
+=====================
+
+A :class:`.SurrogateDiscipline` is built
+from the name of a :class:`.MLRegressionAlgo` and its options.
+These names and options are listed below.
+
+.. warning::
+    Some algorithms can require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
+    and others can depend on :ref:`plugins <plugins>`.
+
+{% for algo in algos %}
+.. _{{algo}}_options:
+
+{{algo}}
+{{ (algo|length)*'-' }}
+
+Module: :class:`{{modules[algo]}}`
+
+{% if descriptions is not none %}
+{{descriptions[algo]}}
+{% endif %}
+
+{% if websites is not none %}
+More details about the algorithm and its options on {{websites[algo]}}.
+{% endif %}
+
+Here are the options available in |g|:
+
+.. raw:: html
+
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
+
+    <dl class="field-list simple">
+    <dt class="field-odd">Options</dt>
+    <dd class="field-odd"><ul class="simple">
+
+{% for arg in options[algo]|dictsort %}
+    <li>
+
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+
+{{arg[1]['description']}}
+
+{% if arg[1]['default'] != '' %}
+By default it is set to {{arg[1]['default']}}.
+{% endif %}
+
+.. raw:: html
+
+    </li>
+
+{% endfor %}
+
+    </ul>
+    </dd>
+    </dl>
+
+{% endfor %}

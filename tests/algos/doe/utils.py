@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2
 
 
 def get_problem(
-    dim,  # type: int
-):  # type: (...) -> Rosenbrock
+    dim: int,
+) -> Rosenbrock:
     """Return the Rosenbrock problem for the given input dimension.
 
     It serves as a benchmark problem.
@@ -50,10 +48,10 @@ def get_problem(
 
 
 def execute_problem(
-    doe_algo_name,  # type: str
-    dim=3,  # type: int
-    **options  # type: Any
-):  # type: (...) -> DOELibrary
+    doe_algo_name: str,
+    dim: int = 3,
+    **options: Any,
+) -> DOELibrary:
     """Create and execute a problem.
 
     This method creates an OptimizationProblem
@@ -76,12 +74,12 @@ def execute_problem(
 
 
 def check_problem_execution(
-    dim,  # type: int
-    doe_library,  # type: DOELibrary
-    algo_name,  # type: str
-    get_expected_nsamples,  # type: Callable[[str,int,Optional[int]],int]
-    options,  # type: Dict[str,Any]
-):  # type: (...) -> Optional[str]
+    dim: int,
+    doe_library: DOELibrary,
+    algo_name: str,
+    get_expected_nsamples: Callable[[str, int, Optional[int]], int],
+    options: Dict[str, Any],
+) -> Optional[str]:
     """Create a problem, execute it and return an error message if any.
 
     Args:
@@ -96,7 +94,7 @@ def check_problem_execution(
     """
     problem = get_problem(dim)
     doe_library.execute(problem, algo_name=algo_name, **options)
-    samples = doe_library.samples
+    samples = doe_library.unit_samples
 
     pb_name = problem.__class__.__name__
     error_msg = "DOE with {} failed to generate sample on problem {}".format(
@@ -104,7 +102,7 @@ def check_problem_execution(
     )
 
     if not len(samples.shape) == 2 or samples.shape[0] == 0:
-        error_msg += ", wrong samples shapes : {}".format(samples.shape)
+        error_msg += f", wrong samples shapes : {samples.shape}"
         return error_msg
 
     n_samples = options.get("n_samples")
@@ -112,17 +110,17 @@ def check_problem_execution(
     get_samples = samples.shape[0]
     if exp_samples is not None and get_samples != exp_samples:
         error_msg += "\n number_samples are not the expected ones : "
-        error_msg += "\n expected : {} got : {}".format(exp_samples, get_samples)
+        error_msg += f"\n expected : {exp_samples} got : {get_samples}"
         return error_msg
 
 
 def create_test_function(
-    dim,  # type: int
-    doe_library,  # type: DOELibrary
-    algo_name,  # type: str
-    get_expected_nsamples,  # type: Callable[[str,int,Optional[int]],int]
-    options,  # type: Dict[str,Any]
-):  # type: (...) -> Callable[[Optional[Any]], None]
+    dim: int,
+    doe_library: DOELibrary,
+    algo_name: str,
+    get_expected_nsamples: Callable[[str, int, Optional[int]], int],
+    options: Dict[str, Any],
+) -> Callable[[Optional[Any]], None]:
     """Create a test function for a DOE algorithm and a variables space dimension.
 
     Args:
@@ -137,7 +135,7 @@ def create_test_function(
         and raising an exception if an error occurs.
     """
 
-    def test_problem_execution():  # type: (...) -> None
+    def test_problem_execution() -> None:
         """Test the execution of the problem with a given DOE algorithm.
 
         Raises:
@@ -153,10 +151,10 @@ def create_test_function(
 
 
 def generate_test_functions(
-    opt_lib_name,  # type: str
-    get_expected_nsamples,  # type: Callable[[str,int,Optional[int]],int]
-    get_options,  # type: Callable[[str,int],Dict[str,Any]]
-):  # type: (...) -> List[Callable[[],None]]
+    opt_lib_name: str,
+    get_expected_nsamples: Callable[[str, int, Optional[int]], int],
+    get_options: Callable[[str, int], Dict[str, Any]],
+) -> List[Callable[[], None]]:
     """Generate test functions for a DOE library.
 
     This methods filters the algorithms adapted to the benchmark problem.
@@ -190,8 +188,6 @@ def generate_test_functions(
                     opt_lib.__class__.__name__, algo_name, dim
                 )
                 name = name.replace("-", "_")
-                if PY2:
-                    name = name.encode("ascii")
                 test_method.__name__ = name
                 tests.append(test_method)
     return tests

@@ -37,9 +37,17 @@
         "atol":{
             "type":"number"
         },
-        "mutation":{
-            "type":"object"
-        },
+        "mutation":{"anyOf":[
+            {"type": "number"},
+            {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                    "type": "number"
+                }
+            }
+        ]},
         "recombination":{
             "type":"number"
         },

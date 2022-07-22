@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                  initial documentation
@@ -30,9 +28,9 @@ where inputs vary proportionally from their lower bounds
 to their upper bounds, following the diagonal of the input space.
 
 So for every output, the dataset catches its evolution
-with respect to this proportion, which makes it a monodimensional behavior.
+with respect to this proportion, which makes it a mono dimensional behavior.
 Then, for a new user-defined problem dimension,
-the scalable model extrapolates this monodimensional behavior
+the scalable model extrapolates this mono dimensional behavior
 to the different input directions.
 
 The concept of scalable diagonal model is implemented through
@@ -41,26 +39,37 @@ which is composed of a :class:`.ScalableDiagonalApproximation`.
 With regard to the diagonal DOE, |g| proposes the
 :class:`.DiagonalDOE` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 from numbers import Number
+from pathlib import Path
 
 import matplotlib.pyplot as plt
-from numpy import arange, argsort, array, array_equal, atleast_1d, hstack
+from numpy import arange
+from numpy import argsort
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_1d
+from numpy import hstack
 from numpy import max as np_max
-from numpy import mean, median
+from numpy import mean
+from numpy import median
 from numpy import min as np_min
-from numpy import nan_to_num, sqrt, vstack, where, zeros
-from numpy.random import choice, rand, randint
+from numpy import nan_to_num
+from numpy import sqrt
+from numpy import vstack
+from numpy import where
+from numpy import zeros
+from numpy.random import choice
+from numpy.random import rand
+from numpy.random import randint
 from numpy.random import seed as npseed
-from past.utils import old_div
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problems.scalable.data_driven.model import ScalableModel
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -121,7 +130,7 @@ class ScalableDiagonalModel(ScalableModel):
             "seed": seed,
             "group_dep": group_dep,
         }
-        super(ScalableDiagonalModel, self).__init__(data, sizes, **parameters)
+        super().__init__(data, sizes, **parameters)
         self.t_scaled, self.f_scaled = self.__build_scalable_functions()
 
     def __build_dependencies(self):
@@ -146,9 +155,10 @@ class ScalableDiagonalModel(ScalableModel):
         :return: evaluation of the scalable functions.
         :rtype: dict
         """
-        dict_to_array = DataConversion.dict_to_array
         input_value = input_value or self.default_inputs
-        input_value = dict_to_array(input_value, self.inputs_names)
+        input_value = concatenate_dict_of_arrays_to_array(
+            input_value, self.inputs_names
+        )
         scal_func = self.model.get_scalable_function
         return {fname: scal_func(fname)(input_value) for fname in self.outputs_names}
 
@@ -160,9 +170,10 @@ class ScalableDiagonalModel(ScalableModel):
         :return: evaluation of the scalable derivatives.
         :rtype: dict
         """
-        dict_to_array = DataConversion.dict_to_array
         input_value = input_value or self.default_inputs
-        input_value = dict_to_array(input_value, self.inputs_names)
+        input_value = concatenate_dict_of_arrays_to_array(
+            input_value, self.inputs_names
+        )
         scal_der = self.model.get_scalable_derivative
         return {fname: scal_der(fname)(input_value) for fname in self.outputs_names}
 
@@ -192,7 +203,7 @@ class ScalableDiagonalModel(ScalableModel):
         return t_scaled, f_scaled
 
     def __get_variables_locations(self, names):
-        """Get the locations of first component of each variables.
+        """Get the locations of first component of each variable.
 
         :param names: list of variables names.
         :type names: list(str)
@@ -213,7 +224,7 @@ class ScalableDiagonalModel(ScalableModel):
         :param dependency: input-output dependency structure.
         :type dependency: dict
         :return: dependency matrix.
-        :rtype: array
+        :rtype: ndarray
         """
         matrix = None
         for output_name in self.outputs_names:
@@ -247,7 +258,7 @@ class ScalableDiagonalModel(ScalableModel):
         )
         if not is_binary_matrix:
             dp_sum = dependency_matrix.sum(0)
-            dependency_matrix = old_div(dependency_matrix, dp_sum)
+            dependency_matrix = dependency_matrix / dp_sum
 
         fig, axes = plt.subplots()
         axes.matshow(dependency_matrix, cmap="Greys", vmin=0)
@@ -280,10 +291,9 @@ class ScalableDiagonalModel(ScalableModel):
     def plot_1d_interpolations(
         self, save=False, show=False, step=0.01, varnames=None, directory=".", png=False
     ):
-        r"""This methods plots the scaled 1D interpolations,
-        a.k.a. basis functions.
+        r"""Plot the scaled 1D interpolations, a.k.a. the basis functions.
 
-        A basis function is a monodimensional function
+        A basis function is a mono dimensional function
         interpolating the samples of a given output component
         over the input sampling line
         :math:`t\in[0,1]\mapsto \\underline{x}+t(\overline{x}-\\underline{x})`.
@@ -329,12 +339,12 @@ class ScalableDiagonalModel(ScalableModel):
                 plt.ylim(-0.1, 1.1)
                 plt.plot(
                     x_vals,
-                    old_div((y_vals - min(y_vals)), (max(y_vals) - min(y_vals))),
+                    (y_vals - min(y_vals)) / (max(y_vals) - min(y_vals)),
                     label=func + str(index),
                 )
                 plt.plot(
                     doe_t,
-                    old_div((doe_f - min(y_vals)), (max(y_vals) - min(y_vals))),
+                    (doe_f - min(y_vals)) / (max(y_vals) - min(y_vals)),
                     "or",
                 )
                 plt.xlabel("Scaled abscissa", fontsize=18)
@@ -356,7 +366,7 @@ class ScalableDiagonalModel(ScalableModel):
         """Generates a random dependency structure for use in scalable discipline.
 
         :return: output component dependency and input-output dependency
-        :rtype: dict(int), dict(dict(array))
+        :rtype: dict(int), dict(dict(ndarray))
         """
         npseed(self.parameters["seed"])
         io_dependency = self.parameters["group_dep"] or {}
@@ -397,7 +407,7 @@ class ScalableDiagonalModel(ScalableModel):
             Default: None.
         :type io_dependency: dict(list(str))
         :return: random input-output dependencies
-        :rtype: dict(dict(array))
+        :rtype: dict(dict(ndarray))
         """
         error_msg = (
             "Fill factor must be a number, "
@@ -445,7 +455,7 @@ class ScalableDiagonalModel(ScalableModel):
         """Complete random dependency if row (input name) or column (function name) of
         the random dependency matrix is empty.
 
-        :param array r_io_dep: input-output dependency.
+        :param ndarray r_io_dep: input-output dependency.
         :param str dataname: name of the variable to check
             if component is empty.
         :param int index: component index of the variable.
@@ -479,7 +489,7 @@ class ScalableDiagonalModel(ScalableModel):
                 r_io_dep[dataname][varname][index, id_comp] = 1
 
 
-class ScalableDiagonalApproximation(object):
+class ScalableDiagonalApproximation:
     """Methodology that captures the trends of a physical problem, and extends it into a
     problem that has scalable input and outputs dimensions The original and the
     resulting scalable problem have the same interface:
@@ -498,7 +508,7 @@ class ScalableDiagonalApproximation(object):
         :param io_dependency: dependency between new inputs and new outputs.
         :type io_dependency: dict
         """
-        super(ScalableDiagonalApproximation, self).__init__()
+        super().__init__()
         self.sizes = sizes
         # dependency matrices
         self.output_dependency = output_dependency
@@ -513,8 +523,8 @@ class ScalableDiagonalApproximation(object):
         npseed(seed)
 
     def build_scalable_function(self, function_name, dataset, input_names, degree=3):
-        """Build interpolation interpolation from a 1D input and output function. Add
-        the model to the local dictionary.
+        """Build interpolation from a 1D input and output function. Add the model to the
+        local dictionary.
 
         :param str function_name: name of the output function
         :param Dataset dataset: the input-output dataset
@@ -523,7 +533,7 @@ class ScalableDiagonalApproximation(object):
         """
         x2_scaled = nan_to_num(dataset.get_data_by_group(dataset.INPUT_GROUP) ** 2)
         t_scaled = [atleast_1d(sqrt(mean(val.real))) for val in x2_scaled]
-        f_scaled = dataset[function_name][function_name].real
+        f_scaled = dataset[function_name].real
 
         # sort t_scaled and f_scaled following the t_scaled ascending order
         indices = argsort([val[0] for val in t_scaled])
@@ -564,9 +574,9 @@ class ScalableDiagonalApproximation(object):
         """Scale samples of array into [0, 1]
 
         :param samples: samples of multivariate array
-        :type samples: list(array)
+        :type samples: list(ndarray)
         :return: samples of multivariate array
-        :rtype: array
+        :rtype: ndarray
         """
         samples = array(samples)
         col_min = np_min(samples, 0)
@@ -628,13 +638,13 @@ class ScalableDiagonalApproximation(object):
             input_name: dep_mat[0:output_size, 0 : self.sizes[input_name]]
             for (input_name, dep_mat) in self.io_dependency[function_name].items()
         }
-        io_dependency = DataConversion.dict_to_array(io_dependency, input_names)
+        io_dependency = concatenate_dict_of_arrays_to_array(io_dependency, input_names)
 
         # Convert the input-output dependency matrix to a list
         # where the i-th element is a list whose j-th element corresponds to
         # the degree of dependence between the i-th output component and the
         # i-th input.
-        coefficients = [list(row) for row in io_dependency]
+        io_dependency = [list(row) for row in io_dependency]
 
         # Get the 1D interpolation functions and their derivatives
         interpolated_fun_1d = self.interpolation_dict[function_name]
@@ -642,43 +652,43 @@ class ScalableDiagonalApproximation(object):
 
         # Get the indices of the 1D interpolation functions
         # associated with the components of the new output.
-        components_list = self.output_dependency[function_name]
+        outputs_to_original_ones = self.output_dependency[function_name]
 
-        def scalable_function(input_vars):
+        def scalable_function(input_data):
             """n-dimensional to size_output-dimensional extrapolated function.
 
-            :param list(float) input_vars: vector of inputs
+            :param list(float) input_data: vector of inputs
             :returns: size_output extrapolated output
             """
             result = zeros(output_size)
-            for out_id in range(output_size):
-                interp_id = components_list[out_id]
-                coeffs = coefficients[out_id]
-                tmp = [
-                    coeffs[in_id] * interpolated_fun_1d[interp_id](in_val)
-                    for in_id, in_val in enumerate(input_vars)
-                ]
-                tmp = old_div(sum(tmp), sum(coeffs))
-                result[out_id] = tmp
+            for output_index in range(output_size):
+                func = interpolated_fun_1d[outputs_to_original_ones[output_index]]
+                coefficients = io_dependency[output_index]
+                result[output_index] = sum(
+                    coefficient * func(input_value)
+                    for coefficient, input_value in zip(coefficients, input_data)
+                ) / sum(coefficients)
+
             return result
 
-        def scalable_derivative(input_vars):
+        def scalable_derivative(input_data):
             """n-dimensional to size_output-dimensional extrapolated function Jacobian.
 
-            :param list(float) input_vars: vector of inputs
+            :param list(float) input_data: vector of inputs
             :returns: size_output - sizeof input_vars extrapolated output
             """
-            dresult = zeros([output_size, input_size])
-            for out_id in range(output_size):
-                interp_id = components_list[out_id]
-                coeffs = coefficients[out_id]
-                tmp = [
-                    coeffs[in_id] * interpolated_dfun_1d[interp_id](in_val)
-                    for in_id, in_val in enumerate(input_vars)
-                ]
-                tmp = old_div(array(tmp), sum(coeffs))
-                dresult[out_id, :] = tmp
-            return dresult
+            result = zeros([output_size, input_size])
+            for output_index in range(output_size):
+                func = interpolated_dfun_1d[outputs_to_original_ones[output_index]]
+                coefficients = io_dependency[output_index]
+                result[output_index, :] = array(
+                    [
+                        coefficient * func(input_value)
+                        for coefficient, input_value in zip(coefficients, input_data)
+                    ]
+                ) / sum(coefficients)
+
+            return result
 
         self.scalable_functions[function_name] = scalable_function
         self.scalable_dfunctions[function_name] = scalable_derivative

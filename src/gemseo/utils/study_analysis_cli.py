@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,18 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """CLI for |g| study."""
+from __future__ import annotations
 
 import argparse
-import sys
 from ast import literal_eval
-from os import getcwd, mkdir
-from os.path import exists, join
+from os import getcwd
+from os import mkdir
+from os.path import exists
+from os.path import join
 
 from gemseo.utils.study_analysis import StudyAnalysis
 
@@ -59,17 +59,13 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-s", "--figsize", help="Size of the N2 figure, tuple (x,y)", type=str
+        "-s", "--fig_size", help="Size of the N2 figure, tuple (x,y)", type=str
     )
     return parser.parse_args()
 
 
 def main():
     """Entry point."""
-    if sys.version_info < (3, 6):
-        sys.exit("study analysis only works for python 3.6+")
-        return
-
     args = parse_args()
 
     out_dir = args.out_dir
@@ -81,9 +77,9 @@ def main():
     if not exists(out_dir):
         mkdir(out_dir)
 
-    if args.figsize is not None:
-        figsize = literal_eval(args.figsize)
-        study.generate_n2(join(out_dir, "n2.pdf"), figsize=figsize)
+    if args.fig_size is not None:
+        fig_size = literal_eval(args.fig_size)
+        study.generate_n2(join(out_dir, "n2.pdf"), fig_size=fig_size)
     else:
         study.generate_n2(join(out_dir, "n2.pdf"))
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -28,25 +27,23 @@ and to display it on screen or save it to a file.
 This abstract class has to be overloaded by concrete ones
 implementing at least method :meth:`!DatasetPlot._run`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
+from collections import namedtuple
 from numbers import Number
-from typing import (
-    TYPE_CHECKING,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+from matplotlib.axes import Axes
 from numpy import linspace
 
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -54,37 +51,101 @@ if TYPE_CHECKING:
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from six import string_types
 
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class DatasetPlot(object):
-    """Abstract class for plotting a dataset.
+class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
+    """Abstract class for plotting a dataset."""
 
-    Attributes:
-        dataset (Dataset): The dataset to be plotted.
+    color: str | list[str]
+    """The color(s) for the series.
+
+    If empty, use a default one.
     """
 
-    COLOR = "color"
-    COLORMAP = "colormap"
-    FIGSIZE_X = "figsize_x"
-    FIGSIZE_Y = "figsize_y"
-    LINESTYLE = "linestyle"
+    colormap: str
+    """The color map."""
+
+    dataset: Dataset
+    """The dataset to be plotted."""
+
+    fig_size: tuple[float, float]
+    """The figure size."""
+
+    font_size: int
+    """The font size."""
+
+    legend_location: str
+    """The location of the legend."""
+
+    linestyle: str | list[str]
+    """The line style(s) for the series.
+
+    If empty, use a default one.
+    """
+
+    marker: str | list[str]
+    """The marker(s) for the series.
+
+    If empty, use a default one.
+    """
+
+    title: str
+    """The title of the plot."""
+
+    xlabel: str
+    """The label for the x-axis."""
+
+    xmin: float | None
+    """The minimum value on the x-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    xmax: float | None
+    """The maximum value on the x-axis."
+
+    If ``None``, compute it from data.
+    """
+
+    ylabel: str
+    """The label for the y-axis."""
+
+    ymin: float | None
+    """The minimum value on the y-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    ymax: float | None
+    """The maximum value on the y-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    zlabel: str
+    """The label for the z-axis."""
+
+    zmin: float | None
+    """The minimum value on the z-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    zmax: float | None
+    """The maximum value on the z-axis.
+
+    If ``None``, compute it from data.
+    """
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        **kwargs: Any,
+    ) -> None:
         """
         Args:
             dataset: The dataset containing the data to plot.
@@ -92,225 +153,75 @@ class DatasetPlot(object):
         Raises:
             ValueError: If the dataset is empty.
         """
+        param = namedtuple(f"{self.__class__.__name__}Parameters", kwargs.keys())
+        self._param = param(**kwargs)
+
         if dataset.is_empty():
             raise ValueError("Dataset is empty.")
+
+        self.color = ""
+        self.colormap = "rainbow"
         self.dataset = dataset
-        self.__title = None
-        self.__xlabel = None
-        self.__ylabel = None
-        self.__zlabel = None
-        self.__font_size = 10
-        self.__xmin = None
-        self.__xmax = None
-        self.__ymin = None
-        self.__ymax = None
-        self.__zmin = None
-        self.__zmax = None
-        self.__rmin = None
-        self.__rmax = None
-        self.__line_style = None
-        self.__color = None
-        self.__figsize = (8, 8)
-        self.__colormap = "rainbow"
-        self.__legend_location = "best"
-        default_name = FilePathManager.to_snake_case(self.__class__.__name__)
+        self.font_size = 10
+        self.legend_location = "best"
+        self.linestyle = ""
+        self.marker = ""
+        self.title = ""
+        self.rmin = None
+        self.rmax = None
+        self.xlabel = ""
+        self.xmin = None
+        self.xmax = None
+        self.ylabel = ""
+        self.ymin = None
+        self.ymax = None
+        self.zlabel = ""
+        self.zmin = None
+        self.zmax = None
+        self.fig_size = (6.4, 4.8)
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE, default_name=default_name
+            FileType.FIGURE,
+            default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
         self.__output_files = []
+        self.__names_to_labels = {}
 
     @property
-    def output_files(self):  # type: (...) -> List[str]
+    def output_files(self) -> list[str]:
         """The paths to the output files."""
         return self.__output_files
 
     @property
-    def legend_location(self):  # type: (...) -> str
-        """The location of the legend."""
-        return self.__legend_location
-
-    @legend_location.setter
-    def legend_location(self, value):
-        self.__legend_location = value
-
-    @property
-    def colormap(self):  # type: (...) -> str
-        """The color map."""
-        return self.__colormap
-
-    @colormap.setter
-    def colormap(self, value):
-        self.__colormap = value
-
-    @property
-    def figsize(self):  # type: (...) -> Tuple[int,int]
-        """The figure size."""
-        return self.__figsize
-
-    @property
-    def figsize_x(self):  # type: (...) -> int
+    def fig_size_x(self) -> float:
         """The x-component of figure size."""
-        return self.__figsize[0]
+        return self.fig_size[0]
 
-    @figsize_x.setter
-    def figsize_x(self, value):
-        self.__figsize = (value, self.figsize_y)
+    @fig_size_x.setter
+    def fig_size_x(self, value: float) -> None:
+        self.fig_size = (value, self.fig_size_y)
 
     @property
-    def figsize_y(self):  # type: (...) -> int
+    def fig_size_y(self) -> float:
         """The y-component of figure size."""
-        return self.__figsize[1]
+        return self.fig_size[1]
 
-    @figsize_y.setter
-    def figsize_y(self, value):
-        self.__figsize = (self.figsize_x, value)
-
-    @property
-    def color(self):  # type: (...) -> str
-        """The color of the series."""
-        return self.__color
-
-    @color.setter
-    def color(self, value):
-        self.__color = value
-
-    @property
-    def linestyle(self):  # type: (...) -> str
-        """The line style of the series."""
-        return self.__line_style
-
-    @linestyle.setter
-    def linestyle(self, value):
-        self.__line_style = value
-
-    @property
-    def title(self):  # type: (...) -> str
-        """The title of the plot."""
-        return self.__title
-
-    @title.setter
-    def title(self, value):
-        self.__title = value
-
-    @property
-    def xlabel(self):  # type: (...) -> str
-        """The label for the x-axis."""
-        return self.__xlabel
-
-    @xlabel.setter
-    def xlabel(self, value):
-        self.__xlabel = value
-
-    @property
-    def ylabel(self):  # type: (...) -> str
-        """The label for the y-axis."""
-        return self.__ylabel
-
-    @ylabel.setter
-    def ylabel(self, value):
-        self.__ylabel = value
-
-    @property
-    def zlabel(self):  # type: (...) -> str
-        """The label for the z-axis."""
-        return self.__zlabel
-
-    @zlabel.setter
-    def zlabel(self, value):
-        self.__zlabel = value
-
-    @property
-    def font_size(self):  # type: (...) -> int
-        """The font size."""
-        return self.__font_size
-
-    @font_size.setter
-    def font_size(self, value):
-        self.__font_size = value
-
-    @property
-    def xmin(self):  # type: (...) -> float
-        """The minimum value on the x-axis."""
-        return self.__xmin
-
-    @xmin.setter
-    def xmin(self, value):
-        self.__xmin = value
-
-    @property
-    def xmax(self):  # type: (...) -> float
-        """The maximum value on the x-axis."""
-        return self.__xmax
-
-    @xmax.setter
-    def xmax(self, value):
-        self.__xmax = value
-
-    @property
-    def ymin(self):  # type: (...) -> float
-        """The minimum value on the y-axis."""
-        return self.__ymin
-
-    @ymin.setter
-    def ymin(self, value):
-        self.__ymin = value
-
-    @property
-    def ymax(self):  # type: (...) -> float
-        """The maximum value on the y-axis."""
-        return self.__ymax
-
-    @ymax.setter
-    def ymax(self, value):
-        self.__ymax = value
-
-    @property
-    def rmin(self):  # type: (...) -> float
-        """The minimum value on the r-axis."""
-        return self.__rmin
-
-    @rmin.setter
-    def rmin(self, value):
-        self.__rmin = value
-
-    @property
-    def rmax(self):  # type: (...) -> float
-        """The maximum value on the r-axis."""
-        return self.__rmax
-
-    @rmax.setter
-    def rmax(self, value):
-        self.__rmax = value
-
-    @property
-    def zmin(self):
-        """The minimum value on the z-axis."""
-        return self.__zmin
-
-    @zmin.setter
-    def zmin(self, value):
-        self.__zmin = value
-
-    @property
-    def zmax(self):  # type: (...) -> float
-        """The maximum value on the z-axis."""
-        return self.__zmax
-
-    @zmax.setter
-    def zmax(self, value):
-        self.__zmax = value
+    @fig_size_y.setter
+    def fig_size_y(self, value: float) -> None:
+        self.fig_size = (self.fig_size_x, value)
 
     def execute(
         self,
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        properties=None,  # type: Optional[Mapping[str,DatasetPlotPropertyType]]
-        **plot_options  # type: Union[str,int,float,bool,Sequence[str]]
-    ):  # type: (...) -> List[Figure]
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        properties: Mapping[str, DatasetPlotPropertyType] | None = None,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+        **plot_options,
+    ) -> list[Figure]:
         """Execute the post processing.
 
         Args:
@@ -327,12 +238,27 @@ class DatasetPlot(object):
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
             properties: The general properties of a :class:`.DatasetPlot`.
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
             **plot_options: The options of the current class
                 inheriting from :class:`.DatasetPlot`.
 
         Returns:
             The figures.
+
+        Raises:
+            AttributeError: When the name of a property is not the name of an attribute.
         """
+        properties = properties or {}
+        for name, value in properties.items():
+            if not hasattr(self, name):
+                raise AttributeError(
+                    f"{name} is not an attribute of {self.__class__.__name__}."
+                )
+            setattr(self, name, value)
+
         if file_path is not None:
             file_path = Path(file_path)
 
@@ -342,30 +268,39 @@ class DatasetPlot(object):
             file_name=file_name,
             file_extension=file_format,
         )
-        return self._run(properties or {}, save, show, file_path, **plot_options)
+        return self._run(save, show, file_path, fig, axes, **plot_options)
 
     def _run(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
-        save,  # type:bool
-        show,  # type: bool
-        file_path,  # type: Path
-        **plot_options
-    ):  # type: (...)-> List[Figure]
+        save: bool,
+        show: bool,
+        file_path: Path,
+        fig: None | Figure,
+        axes: None | Axes,
+        **plot_options,
+    ) -> list[Figure]:
         """Create the post processing and save or display it.
 
         Args:
-            properties: The general properties of a :class:`.DatasetPlot`.
             save: If True, save the plot on the disk.
             show: If True, display the plot.
             file_path: The file path.
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
             **plot_options: The options of the current class
                 inheriting from :class:`.DatasetPlot`.
 
         Returns:
             The figures.
         """
-        figures = self._plot(properties=properties, **plot_options)
+        if plot_options:
+            self._param = self._param._replace(**plot_options)
+
+        figures = self._plot(fig=fig, axes=axes)
+        if fig or axes:
+            return []
 
         for index, sub_figure in enumerate(figures):
             if save:
@@ -380,8 +315,6 @@ class DatasetPlot(object):
             else:
                 fig_file_path = None
 
-            sub_figure.tight_layout()
-
             save_show_figure(
                 sub_figure,
                 show,
@@ -392,12 +325,16 @@ class DatasetPlot(object):
 
     def _plot(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
-    ):  # type: (...) -> List[Figure]
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         """Define the way as the dataset is plotted.
 
         Args:
-            properties: The general properties of a :class:`.DatasetPlot`.
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
 
         Returns:
             The figures.
@@ -406,8 +343,8 @@ class DatasetPlot(object):
 
     def _get_variables_names(
         self,
-        dataframe_columns,  # type: Iterable[Tuple]
-    ):  # type: (...) -> List[str]
+        dataframe_columns: Iterable[tuple],
+    ) -> list[str]:
         """Return the names of the variables from the columns of a pandas DataFrame.
 
         Args:
@@ -418,16 +355,34 @@ class DatasetPlot(object):
         """
         new_columns = []
         for column in dataframe_columns:
-            if self.dataset.sizes[column[1]] == 1:
-                new_columns.append(column[1])
-            else:
-                new_columns.append("{}({})".format(column[1], column[2]))
+            name = self._get_component_name(column[1], column[2], self.dataset.sizes)
+            new_columns.append(name)
+
         return new_columns
+
+    @staticmethod
+    def _get_component_name(
+        name: str, component: int, names_to_sizes: Mapping[str, int]
+    ) -> str:
+        """Return the name of a variable component.
+
+        Args:
+            name: The name of the variable.
+            component: The component of the variable.
+            names_to_sizes: The sizes of the variables.
+
+        Returns:
+            The name of the variable component.
+        """
+        if names_to_sizes[name] == 1:
+            return name
+        else:
+            return f"{name}({component})"
 
     def _get_label(
         self,
-        variable,  # type: Union[str,Tuple[str,int]]
-    ):  # type: (...) -> Tuple[str,Tuple[str, int]]
+        variable: str | tuple[str, int],
+    ) -> tuple[str, tuple[str, int]]:
         """Return the label related to a variable name and a refactored variable name.
 
         Args:
@@ -443,15 +398,15 @@ class DatasetPlot(object):
             " whose first component is a string and second"
             " one is an integer"
         )
-        if isinstance(variable, string_types):
+        if isinstance(variable, str):
             label = variable
             variable = (self.dataset.get_group(variable), variable, "0")
         elif hasattr(variable, "__len__") and len(variable) == 3:
-            is_string = isinstance(variable[0], string_types)
-            is_string = is_string and isinstance(variable[1], string_types)
+            is_string = isinstance(variable[0], str)
+            is_string = is_string and isinstance(variable[1], str)
             is_number = isinstance(variable[2], Number)
             if is_string and is_number:
-                label = "{}({})".format(variable[1], variable[2])
+                label = f"{variable[1]}({variable[2]})"
                 variable[2] = str(variable[2])
                 variable = tuple(variable)
             else:
@@ -462,37 +417,84 @@ class DatasetPlot(object):
 
     def _set_color(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType],
-        n_items,  # type: int
-    ):  # type: (...) -> None
+        n_items: int,
+    ) -> None:
         """Set the colors of the items to be plotted.
 
         Args:
-            properties: The graphical properties of the :class:`.DatasetPlot`.
             n_items: The number of items to be plotted.
         """
         colormap = plt.cm.get_cmap(self.colormap)
-        default_color = [colormap(color) for color in linspace(0, 1, n_items)]
-        self.color = properties.get(self.COLOR) or self.color or default_color
-        if isinstance(self.color, string_types):
+        color = [colormap(color) for color in linspace(0, 1, n_items)]
+        self.color = self.color or color
+        if isinstance(self.color, str):
             self.color = [self.color] * n_items
 
-    def _set_linestyle(
-        self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType],
-        n_items,  # type: int
-        default_value,  # type: str
-    ):  # type: (...) -> None
+    def _set_linestyle(self, n_items: int, linestyle: str | Sequence[str]) -> None:
         """Set the line style of the items to be plotted.
 
         Args:
-            properties: The graphical properties of the :class:`.DatasetPlot`.
             n_items: The number of items to be plotted.
-            default_value: The default line style.
+            linestyle: The default line style to use
+                when :attr:`.linestyle` is ``None`.
         """
 
-        self.linestyle = (
-            properties.get(self.LINESTYLE) or self.linestyle or default_value
-        )
-        if isinstance(self.linestyle, string_types):
+        self.linestyle = self.linestyle or linestyle
+        if isinstance(self.linestyle, str):
             self.linestyle = [self.linestyle] * n_items
+
+    def _set_marker(
+        self,
+        n_items: int,
+        marker: str | Sequence[str] | None,
+    ) -> None:
+        """Set the marker of the items to be plotted.
+
+        Args:
+            n_items: The number of items to be plotted.
+            marker: The default marker to use when :attr:`.marker` is ``None``.
+        """
+        self.marker = self.marker or marker
+        if isinstance(self.marker, str):
+            self.marker = [self.marker] * n_items
+
+    @property
+    def labels(self) -> Mapping[str, str]:
+        """The labels of the variables."""
+        return self.__names_to_labels
+
+    @labels.setter
+    def labels(self, names_to_labels: Mapping[str, str]) -> None:
+        self.__names_to_labels = names_to_labels
+
+    def _get_figure_and_axes(
+        self,
+        fig: Figure | None,
+        axes: Axes | None,
+        fig_size: tuple[float, float] | None = None,
+    ) -> tuple[Figure, Axes]:
+        """Return the figure and axes to plot the data.
+
+        Args:
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
+            fig_size: The width and height of the figure in inches.
+                If ``None``, use the default ``fig_size``.
+
+        Returns:
+            The figure and axis to plot the data.
+        """
+        if fig is None:
+            if axes is not None:
+                raise ValueError(
+                    "The figure associated with the given axes is missing."
+                )
+
+            return plt.subplots(figsize=fig_size or self.fig_size)
+
+        if axes is None:
+            raise ValueError("The axes associated with the given figure are missing.")
+
+        return fig, axes

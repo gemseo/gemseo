@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """OpenTURNS-based capabilities for probability distributions.
 
 This package interfaces capabilities
@@ -44,7 +42,7 @@ are documented in such a way that a newbie could easily apprehend them.
 Composed distribution
 ---------------------
 
-A :code:`OTDistribution` has a :attr:`.OTDistribution.COMPOSED_DISTRIBUTION`
+A :code:`OTDistribution` has a :attr:`.OTDistribution._COMPOSED_DISTRIBUTION`
 attribute referencing :class:`.OTComposedDistribution`
 which is a class to build a composed distribution
 related to given random variables from a list of :class:`.OTDistribution` objects
@@ -64,3 +62,4 @@ The class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from :code:`numpy.array` data,
 based on the OpenTURNS capabilities.
 """
+from __future__ import annotations

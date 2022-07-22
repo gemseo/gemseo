@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """|g| main package."""
+from __future__ import annotations
 
-import logging
+import logging as __logging
 
-from ._version import get_versions
+import pkg_resources as __pkg_resources
+
+try:
+    __version__ = __pkg_resources.get_distribution("package-name").version
+except __pkg_resources.DistributionNotFound:
+    # package is not installed
+    pass
 
 # by default no logging is produced
-logging.getLogger(__name__).addHandler(logging.NullHandler())
-del logging
-
-__version__ = get_versions()["version"]
-del get_versions
+__logging.getLogger(__name__).addHandler(__logging.NullHandler())

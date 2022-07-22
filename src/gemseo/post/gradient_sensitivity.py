@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,21 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the derivatives of the functions."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, Iterable, Mapping
+from typing import Iterable
+from typing import Mapping
 
 from matplotlib import pyplot
 from matplotlib.figure import Figure
-from numpy import arange, atleast_2d, ndarray
+from numpy import arange
+from numpy import atleast_2d
+from numpy import ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
@@ -35,159 +36,149 @@ LOGGER = logging.getLogger(__name__)
 
 
 class GradientSensitivity(OptPostProcessor):
-    """Histograms of the derivatives of objective and constraints.
-
-    The plot method considers the derivatives at the last iteration. The iteration can
-    be changed.
-    """
+    """Derivatives of the objective and constraints at a given iteration."""
 
     DEFAULT_FIG_SIZE = (10.0, 10.0)
 
     def _plot(
         self,
-        iteration=-1,  # type: int
-        scale_gradients=False,  # type: bool
-    ):  # type: (...) -> None
+        iteration: int | None = None,
+        scale_gradients: bool = False,
+    ) -> None:
         """
         Args:
-            iteration: The iteration to plot the sensitivities;
-                if negative, use the optimum.
+            iteration: The iteration to plot the sensitivities.
+                Can use either positive or negative indexing,
+                e.g. ``4`` for the 5-th iteration
+                or ``-2`` for the penultimate one.
+                If ``None``, use the iteration of the optimum.
             scale_gradients: If True, normalize each gradient
                 w.r.t. the design variables.
         """
-        if iteration == -1:
-            x_ref = self.opt_problem.solution.x_opt
+        if iteration is None:
+            design_value = self.opt_problem.solution.x_opt
         else:
-            x_ref = self.opt_problem.database.get_x_by_iter(iteration)
-        grad_dict = self.__get_grad_dict(x_ref, scale_gradients=scale_gradients)
-
-        x_names = self._generate_x_names()
+            design_value = self.opt_problem.database.get_x_by_iter(iteration)
 
         fig = self.__generate_subplots(
-            x_names,
-            x_ref,
-            grad_dict,
+            self._generate_x_names(),
+            design_value,
+            self.__get_output_gradients(design_value, scale_gradients=scale_gradients),
             scale_gradients=scale_gradients,
         )
         self._add_figure(fig)
 
-    def __get_grad_dict(
+    def __get_output_gradients(
         self,
-        x_ref,  # type: ndarray
-        scale_gradients=False,  # type: bool
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Create a gradient dictionary from a given iteration.
-
-        Scale it if necessary.
+        design_value: ndarray,
+        scale_gradients: bool = False,
+    ) -> dict[str, ndarray]:
+        """Return the gradients of all the output variable at a given design value.
 
         Args:
-            x_ref: The reference value for x.
-            scale_gradients: If True, normalize each gradient
+            design_value: The value of the design vector.
+            scale_gradients: Whether to normalize the gradients
                 w.r.t. the design variables.
 
         Returns:
             The gradients of the outputs
             indexed by the names of the output,
-            e.g. 'output_name' for a mono-dimensional output,
-            or 'output_name_i' for the i-th component of a multi-dimensional output.
+            e.g. ``"output_name"`` for a mono-dimensional output,
+            or ``"output_name_i"`` for the i-th component of a multi-dimensional output.
         """
-        all_funcs = self.opt_problem.get_all_functions_names()
-        scale_func = self.opt_problem.design_space.unnormalize_vect
-        grad_dict = {}
-        for func in all_funcs:
-            grad = self.database.get_f_of_x("@{}".format(func), x_ref)
-            if grad is not None:
-                if len(grad.shape) == 1:
-                    if scale_gradients:
-                        grad = scale_func(grad, minus_lb=False)
-                    grad_dict[func] = grad
-                else:
-                    n_f, _ = grad.shape
-                    for i in range(n_f):
-                        if scale_gradients:
-                            grad[i, :] = scale_func(grad[i, :], minus_lb=False)
-                        grad_dict["{}_{}".format(func, i)] = grad[i, :]
-        return grad_dict
+        function_names = self.opt_problem.get_all_functions_names()
+        scale_gradient = self.opt_problem.design_space.unnormalize_vect
+        function_names_to_gradients = {}
+        for function_name in function_names:
+            gradient_value = self.database.get_f_of_x(f"@{function_name}", design_value)
+            if gradient_value is None:
+                continue
 
-    @classmethod
+            if gradient_value.ndim == 1:
+                if scale_gradients:
+                    gradient_value = scale_gradient(gradient_value, minus_lb=False)
+                function_names_to_gradients[function_name] = gradient_value
+                continue
+
+            for i, _gradient_value in enumerate(gradient_value):
+                if scale_gradients:
+                    _gradient_value = scale_gradient(_gradient_value, minus_lb=False)
+                function_names_to_gradients[f"{function_name}_{i}"] = _gradient_value
+
+        return function_names_to_gradients
+
     def __generate_subplots(
-        cls,
-        x_names,  # type: Iterable[str]
-        x_ref,  # type: ndarray
-        grad_dict,  # type: Mapping[str, ndarray]
-        scale_gradients=False,  # type: bool
-    ):  # type: (...)-> Figure
+        self,
+        design_names: Iterable[str],
+        design_value: ndarray,
+        gradients: Mapping[str, ndarray],
+        scale_gradients: bool = False,
+    ) -> Figure:
         """Generate the gradients subplots from the data.
 
         Args:
-            x_names: The variables names.
-            x_ref: The reference value for x.
-            grad_dict: The gradients to plot.
-            scale_gradients: If True, normalize the gradients w.r.t. the design variables.
+            design_names: The names of the design variables.
+            design_value: The reference value for x.
+            gradients: The gradients to plot indexed by the output names.
+            scale_gradients: Whether to normalize the gradients
+                w.r.t. the design variables.
 
         Returns:
             The gradients subplots.
 
         Raises:
-            ValueError: If `grad_dict` is empty.
+            ValueError: If `gradients` is empty.
         """
-        n_funcs = len(grad_dict)
-        if n_funcs == 0:
+        n_gradients = len(gradients)
+        if n_gradients == 0:
             raise ValueError("No gradients to plot at current iteration!")
-        nrows = n_funcs // 2
-        if 2 * nrows < n_funcs:
-            nrows += 1
-        ncols = 2
+
+        n_cols = 2
+        n_rows = sum(divmod(n_gradients, n_cols))
+
         fig, axes = pyplot.subplots(
-            nrows=nrows,
-            ncols=2,
+            nrows=n_rows,
+            ncols=n_cols,
             sharex=True,
             sharey=False,
-            figsize=cls.DEFAULT_FIG_SIZE,
+            figsize=self.DEFAULT_FIG_SIZE,
         )
-        i = 0
-        j = -1
 
         axes = atleast_2d(axes)
-        n_subplots = len(axes) * len(axes[0])
-        abscissa = arange(len(x_ref))
-        x_labels = [str(x_id) for x_id in x_names]
-        for func, grad in sorted(grad_dict.items()):
-            j += 1
-            if j == ncols:
-                j = 0
-                i += 1
+        abscissa = arange(len(design_value))
+        if self._change_obj:
+            gradients[self._obj_name] = -gradients.pop(self._standardized_obj_name)
+
+        i = j = 0
+        font_size = 12
+        rotation = 90
+        for output_name, gradient_value in sorted(gradients.items()):
             axe = axes[i][j]
-            axe.bar(abscissa, grad, color="blue", align="center")
-            axe.set_title(func)
-            axe.set_xticklabels(x_labels, fontsize=12, rotation=90)
+            axe.bar(abscissa, gradient_value, color="blue", align="center")
+            axe.set_title(output_name)
+            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissa)
             # Update y labels spacing
             vis_labels = [
                 label for label in axe.get_yticklabels() if label.get_visible() is True
             ]
             pyplot.setp(vis_labels[::2], visible=False)
+            if j == n_cols - 1:
+                j = 0
+                i += 1
+            else:
+                j += 1
 
-        if len(grad_dict) < n_subplots:
-            # xlabel must be written with the same fontsize on the 2 columns
-            j += 1
-            #             if j == ncols: Seems impossible to reach
-            #                 j = 0
-            #                 i += 1
+        if j == n_cols - 1:
             axe = axes[i][j]
-            axe.set_xticklabels(x_labels, fontsize=12, rotation=90)
+            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissa)
 
+        title = (
+            "Derivatives of objective and constraints with respect to design variables"
+        )
         if scale_gradients:
-            fig.suptitle(
-                "Derivatives of objective and constraints"
-                + " with respect to design variables.\n \nNormalized Design Space.",
-                fontsize=14,
-            )
+            fig.suptitle(f"{title}\n\nNormalized design space.", fontsize=14)
         else:
-            fig.suptitle(
-                "Derivatives of objective and constraints"
-                + " with respect to design variables",
-                fontsize=14,
-            )
+            fig.suptitle(title, fontsize=14)
         return fig

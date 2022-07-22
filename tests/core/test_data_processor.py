@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
 
-from numpy import array, complex128, float64, linalg, ndarray
-
-from gemseo.core.data_processor import (
-    ComplexDataProcessor,
-    FloatDataProcessor,
-    NameMapping,
-)
+from gemseo.core.data_processor import ComplexDataProcessor
+from gemseo.core.data_processor import FloatDataProcessor
+from gemseo.core.data_processor import NameMapping
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import ndarray
+from scipy import linalg
 
 
 class TestDataProcessor(unittest.TestCase):
@@ -93,9 +89,9 @@ class TestDataProcessor(unittest.TestCase):
 
 class LocalDisc(MDODiscipline):
     def __init__(self):
-        super(LocalDisc, self).__init__()
-        self.input_grammar.initialize_from_data_names(["A", "B"])
-        self.output_grammar.initialize_from_data_names(["O"])
+        super().__init__()
+        self.input_grammar.update(["A", "B"])
+        self.output_grammar.update(["O"])
 
     def _run(self):
         self.local_data["o"] = self.local_data["a"] + self.local_data["b"]

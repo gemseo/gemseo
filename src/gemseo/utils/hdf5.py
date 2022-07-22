@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,18 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Helper functions for hdf5 data."""
-
-from typing import Union
+from __future__ import annotations
 
 import h5py
 
 
 def get_hdf5_group(
-    h5py_data,  # type: Union[h5py.File, h5py.Group]
-    name,  # type: str
-):  # type: (...) -> h5py.Group
+    h5py_data: h5py.File | h5py.Group,
+    name: str,
+) -> h5py.Group:
     """Return a group from a h5py data handle.
 
     This function shall be used to show a better error message to the end user.
@@ -37,11 +34,9 @@ def get_hdf5_group(
         The contents of the group.
 
     Raises:
-        KeyError if the group does not exist.
+        KeyError: if the group does not exist.
     """
     try:
         return h5py_data[name]
     except KeyError as err:
-        raise KeyError(
-            "In hdf5 file {}: no such group {}".format(h5py_data.file, err.args[0])
-        )
+        raise KeyError(f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}.")

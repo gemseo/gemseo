@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,21 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+import re
+from pathlib import Path
 
 import pytest
-
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import Path
+from gemseo.post.radar_chart import RadarChart
+from gemseo.utils.testing import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -37,93 +32,77 @@ def problem():
     return OptimizationProblem.import_hdf(file_path=POWER2)
 
 
-@pytest.fixture(scope="module")
-def factory():
-    return PostFactory()
+TEST_PARAMETERS = {
+    "default": ({}, ["RadarChart_default"]),
+    "opt": ({"iteration": "opt"}, ["RadarChart_opt"]),
+    "negative": ({"iteration": -2}, ["RadarChart_negative"]),
+    "positive": ({"iteration": 2}, ["RadarChart_positive"]),
+    "names": (
+        {"iteration": 2, "constraint_names": ["ineq1", "eq"]},
+        ["RadarChart_names"],
+    ),
+    "show_names_radially": ({"show_names_radially": True}, ["RadarChart_radial"]),
+}
 
 
-def test_radar(tmp_wd, factory):
-    """Test the radar chart post-processing with the Power2 problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
-    """
-    problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
-    post = factory.execute(
-        problem,
-        "RadarChart",
-        save=True,
-        show=False,
-        constraints_list=problem.get_constraints_names(),
-        iteration=-1,
-        file_path="radar1",
-    )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
-        assert Path(outf).exists()
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_post(kwargs, baseline_images, problem, pyplot_close_all):
+    """Test the radar chart post-processing with the Power2 problem."""
+    post = RadarChart(problem)
+    post.execute(save=False, show=False, **kwargs)
 
 
-def test_radar_load(tmp_wd, problem, factory):
-    """Test the radar chart post-processing from a database.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
-        factory: Fixture to return a post-processing factory.
-    """
-    post = factory.execute(
-        problem,
-        "RadarChart",
-        save=True,
-        show=False,
-        constraints_list=problem.get_constraints_names(),
-        iteration=2,
-        file_path="radar2",
-    )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
-        assert Path(outf).exists()
-
-
-def test_function_error(tmp_wd, problem, factory):
-    """Test a ValueError is raised for a non-existent function.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
-        factory: Fixture to return a post-processing factory.
-    """
+def test_function_error(problem):
+    """Test a ValueError is raised for a non-existent function."""
+    post = RadarChart(problem)
     with pytest.raises(
         ValueError,
-        match="Cannot build radar chart; "
-        "function toto is not among constraints names"
-        " or does not exist.",
+        match=(
+            r"The names \[.?'foo'\] are not names of constraints "
+            r"stored in the database\."
+        ),
     ):
-        factory.execute(
-            problem, "RadarChart", save=True, show=False, constraints_list=["toto"]
-        )
+        post.execute(save=False, show=False, constraint_names=["foo"])
 
 
-def test_iteration_error(tmp_wd, problem, factory):
-    """Test a ValueError is raised with ill defined iteration.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
-        factory: Fixture to return a post-processing factory.
-    """
+def test_iteration_error(problem):
+    """Test a ValueError is raised with ill defined iteration."""
+    n_iterations = len(problem.database)
+    post = RadarChart(problem)
     with pytest.raises(
         ValueError,
-        match="iteration should be either equal to -1 or positive and lower than "
-        "maximum iteration = {}".format(len(problem.database)),
+        match=re.escape(
+            "The requested iteration 1000 is neither in ({},...,0,...,{}) "
+            "nor equal to the tag {}.".format(
+                -n_iterations + 1, n_iterations - 1, RadarChart.OPTIMUM
+            )
+        ),
     ):
-        factory.execute(
-            problem,
-            "RadarChart",
-            save=True,
+        post.execute(
+            save=False,
             show=False,
-            constraints_list=problem.get_constraints_names(),
+            constraint_names=problem.get_constraints_names(),
             iteration=1000,
         )
+
+
+TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
+
+
+@pytest.mark.parametrize(
+    "baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
+    """Check RadarChart."""
+    opt = RadarChart(common_problem)
+    opt.execute(constraint_names=["eq", "neg", "pos"], show=False, save=False)

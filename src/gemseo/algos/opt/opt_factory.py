@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """A factory to execute optimization algorithms from their name."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
@@ -32,4 +30,4 @@ class OptimizersFactory(DriverFactory):
 
     def __init__(self):
         """Test and import optimization library if it is available."""
-        super(OptimizersFactory, self).__init__(OptimizationLibrary, "gemseo.algos.opt")
+        super().__init__(OptimizationLibrary, "gemseo.algos.opt")

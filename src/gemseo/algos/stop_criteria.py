@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -22,10 +20,11 @@
 Various termination criteria for drivers
 ****************************************
 """
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
-
-from numpy import all, allclose, average
+from numpy import all
+from numpy import allclose
+from numpy import average
 
 
 class TerminationCriterion(Exception):
@@ -79,15 +78,20 @@ def is_x_tol_reached(opt_problem, x_tol_rel=1e-6, x_tol_abs=1e-6, n_x=2):
     database = opt_problem.database
     if len(database) < n_x:
         return False
-    x_list = database.get_last_n_x(n_x)
+
+    x_values = database.get_last_n_x(n_x)
 
     # Checks that there is at least one feasible point
-    is_feas = any((opt_problem.is_point_feasible(database[x]) for x in x_list))
-    if not is_feas:
+    if not any(opt_problem.is_point_feasible(database[x_val]) for x_val in x_values):
         return False
-    x_average = average(x_list, axis=0)
-    x_close = [allclose(x, x_average, atol=x_tol_abs, rtol=x_tol_rel) for x in x_list]
-    return all(x_close)
+
+    x_average = average(x_values, axis=0)
+    return all(
+        [
+            allclose(x_val, x_average, atol=x_tol_abs, rtol=x_tol_rel)
+            for x_val in x_values
+        ]
+    )
 
 
 def is_f_tol_reached(opt_problem, f_tol_rel=1e-6, f_tol_abs=1e-6, n_x=2):
@@ -112,17 +116,23 @@ def is_f_tol_reached(opt_problem, f_tol_rel=1e-6, f_tol_abs=1e-6, n_x=2):
         return False
 
     # Checks that there is at least one feasible point
-    x_list = database.get_last_n_x(n_x)
-    is_feas = any((opt_problem.is_point_feasible(database[x]) for x in x_list))
-    if not is_feas:
+    x_values = database.get_last_n_x(n_x)
+    if not any(opt_problem.is_point_feasible(database[x_val]) for x_val in x_values):
         return False
+
     obj_name = opt_problem.objective.name
-    f_list = [database.get_f_of_x(obj_name, x) for x in x_list]
-    f_list = [f_val for f_val in f_list if f_val is not None]
-    if not f_list:
+    f_values = [
+        f_value
+        for f_value in [database.get_f_of_x(obj_name, x_val) for x_val in x_values]
+        if f_value is not None
+    ]
+    if not f_values:
         return False
-    f_average = average(f_list)
 
-    close = [allclose(f, f_average, atol=f_tol_abs, rtol=f_tol_rel) for f in f_list]
-
-    return all(close)
+    f_average = average(f_values)
+    return all(
+        [
+            allclose(f_val, f_average, atol=f_tol_abs, rtol=f_tol_rel)
+            for f_val in f_values
+        ]
+    )

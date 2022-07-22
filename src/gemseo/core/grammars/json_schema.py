@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,15 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """JSON schema handler."""
+from __future__ import annotations
 
-from gemseo.utils.py23_compat import PY2
-
-if PY2:
-    from collections import ItemsView, KeysView, Mapping, ValuesView
-else:
-    from collections.abc import ItemsView, KeysView, Mapping, ValuesView
+from collections import abc
+from typing import Any
+from typing import Iterator
 
 from genson import SchemaBuilder
 from genson.schema.strategies import Object
@@ -38,97 +34,70 @@ class _MergeRequiredStrategy(Object):
     # Do not merge the name and id properties.
     KEYWORDS = Object.KEYWORDS + ("name", "id")
 
-    def add_schema(self, schema):
+    def add_schema(self, schema) -> None:
         """Add a schema and merge the required attribute.
 
         Args:
             schema: A schema to be added.
         """
         if "required" not in schema or self._required is None:
-            super(_MergeRequiredStrategy, self).add_schema(schema)
+            super().add_schema(schema)
         else:
+            # Backup the current required before updating it with the new ones.
             required = set(self._required)
-            super(_MergeRequiredStrategy, self).add_schema(schema)
+            super().add_schema(schema)
             self._required = required | set(schema["required"])
 
-    def add_object(self, obj):
+    def add_object(self, obj: Any) -> None:
         """Add an object and merge the required attribute.
 
         Args:
             obj: An object to be added.
         """
         if self._required is None:
-            super(_MergeRequiredStrategy, self).add_object(obj)
+            super().add_object(obj)
         else:
+            # Backup the current required before updating it with the new ones.
             required = set(self._required)
-            super(_MergeRequiredStrategy, self).add_object(obj)
+            super().add_object(obj)
             self._required = required | set(obj.keys())
 
 
-class MutableMappingSchemaBuilder(SchemaBuilder):
+class _MultipleMeta(type(abc.Mapping), type(SchemaBuilder)):
+    """Required base class for inheriting from multiple classes with meta classes."""
+
+
+class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_MultipleMeta):
     """A mutable genson SchemaBuilder with a dictionary-like interface.
 
-    The mutability is provided by the ability to delete a property.
+    The :class:`SchemaBuilder` does not provide a way to mutate directly the properties
+    of a schema (these are stored deeply). For ease of usage, this class brings the
+    properties closer to the surface, and the mutability is only provided by the ability
+    to delete a property.
     """
 
     EXTRA_STRATEGIES = (_MergeRequiredStrategy,)
 
-    def get(self, key, default=None):
-        """Implement the standard mapping getter.
-
-        Args:
-            key: A key whose mapped value shall be returned.
-            default: The default value returned if the key is missing.
-
-        Returns:
-            The value mapped to key if it exists, default otherwise.
-        """
-        try:
-            return self[key]
-        except KeyError:
-            return default
-
-    def __contains__(self, key):
-        try:
-            self[key]
-        except KeyError:
-            return False
+    def __getitem__(self, key: str) -> dict[str, Any]:
+        # Immutable workaround because self.properties is a defaultdict.
+        if key in self.properties:
+            return self.properties[key]
         else:
-            return True
+            raise KeyError(key)
 
-    def keys(self):
-        """Return the keys.
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.properties)
 
-        Returns:
-            The keys.
-        """
-        return KeysView(self)
+    def __len__(self) -> int:
+        return len(self.properties)
 
-    def items(self):
-        """Return the pairs of key and mapped value.
-
-        Returns:
-            The pairs of key and mapped value.
-        """
-        return ItemsView(self)
-
-    def values(self):
-        """Return the values.
-
-        Returns:
-            The values.
-        """
-        return ValuesView(self)
-
-    def __eq__(self, other):
-        if not isinstance(other, Mapping):
-            return NotImplemented
-        return dict(self.items()) == dict(other.items())
-
-    __reversed__ = None
+    def __delitem__(self, key) -> None:
+        del self.properties[key]
+        if key in self.required:
+            self.required.remove(key)
 
     @property
-    def _properties(self):
+    def properties(self) -> dict[str, Any]:
         """Return the properties.
 
         Returns:
@@ -136,28 +105,20 @@ class MutableMappingSchemaBuilder(SchemaBuilder):
         """
         try:
             return self._root_node._active_strategies[0]._properties
-        except AttributeError:
+        except (AttributeError, IndexError):
             return {}
 
-    def __getitem__(self, key):
-        return self._properties[key]
+    @property
+    def required(self) -> set[str]:
+        """Return the required properties.
 
-    def __iter__(self):
-        return iter(self._properties)
-
-    def __len__(self):
-        return len(self._properties)
-
-    def __delitem__(self, key):
-        del self._properties[key]
-        required_properties = self._root_node._active_strategies[0]._required
-        if required_properties is None:
-            return
+        Returns:
+            The required properties, otherwise an empty set.
+        """
         try:
-            required_properties.remove(key)
-        except KeyError:
-            pass
-
-    # For backward compatibility
-    # TODO: add deprecation warning
-    to_dict = SchemaBuilder.to_schema
+            required = self._root_node._active_strategies[0]._required
+        except (AttributeError, IndexError):
+            return set()
+        if required is None:
+            return set()
+        return required

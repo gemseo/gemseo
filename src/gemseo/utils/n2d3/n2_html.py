@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,27 +13,27 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Generator of the HTML file containing a D3.js version of the N2 chart."""
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import json
 import webbrowser
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
 
 from gemseo.utils.n2d3.n2_json import N2JSON
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 
 
-class N2HTML(object):
+class N2HTML:
     """Generate a HTML file to visualize a dynamic and interactive N2 chart."""
 
     def __init__(
         self,
-        file_path="n2.html",  # type: Union[str,Path]
-        open_browser=False,  # type: bool
-    ):  # type: (...) -> None
+        file_path: str | Path = "n2.html",
+        open_browser: bool = False,
+    ) -> None:
         """
         Args:
             file_path: The file path of the HTML file.
@@ -45,8 +44,8 @@ class N2HTML(object):
 
     def __create_html_file(
         self,
-        json_structure,  # type: str
-    ):  # type: (...) -> None
+        json_structure: str,
+    ) -> None:
         """Build the HTML file from the JSON structure of the N2 chart.
 
         Args:
@@ -54,13 +53,14 @@ class N2HTML(object):
         """
         with Path(self.__file_path).open("w", encoding="utf-8", newline="") as stream:
             stream.write(self.__create_html_contents(json_structure))
+
         if self.__open_browser:
             webbrowser.open_new_tab(str(self.__file_path))
 
     def from_graph(
         self,
-        graph,  # type: DependencyGraph
-    ):  # type: (...) -> None
+        graph: DependencyGraph,
+    ) -> None:
         """Create the HTML file from a dependency graph.
 
         Args:
@@ -70,8 +70,8 @@ class N2HTML(object):
 
     def from_json(
         self,
-        file_path,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        file_path: str | Path,
+    ) -> None:
         """Create the HTML file from a JSON file.
 
         Args:
@@ -82,8 +82,8 @@ class N2HTML(object):
 
     def __create_html_contents(
         self,
-        json_data,  # type: str
-    ):  # type: (...) -> str
+        json_data: str,
+    ) -> str:
         """Create the HTML content related to the N2 chart.
 
         Args:
@@ -93,7 +93,7 @@ class N2HTML(object):
             The HTML content.
         """
 
-        css_files = ["style.css", "modal.css", "button.css"]
+        css_files = ["style.css", "modal.css", "button.css", "materialize.min.css"]
         js_files = [
             "d3.v3.js",
             "d3.parcoords.js",
@@ -107,19 +107,21 @@ class N2HTML(object):
             "FileSave.js",
             "save_json.js",
             "save_png.js",
+            "materialize.min.js",
         ]
         template = (Path(__file__).parent / "n2_html.tmpl").read_text()
         data = [
             self.__get_file_contents(Path("css") / css_file) for css_file in css_files
         ]
         data += [self.__get_file_contents(Path("js") / js_file) for js_file in js_files]
+        data += [self.__get_file_contents("gemseo_logo.svg")]
         data += [json_data]
         return template.format(*data)
 
     @staticmethod
     def __get_file_contents(
-        file_name,  # type: Path
-    ):  # type: (...) -> str
+        file_name: Path,
+    ) -> str:
         """Read the content of a file located in the directory `n2d3`.
 
         Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,30 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Test the class Surfaces plotting samples of a 2D variable with surfaces."""
-
-from __future__ import division, unicode_literals
-
-import sys
-
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array
-
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
-from gemseo.utils.py23_compat import PY2
-
-pytestmark = pytest.mark.skipif(
-    PY2, reason="image comparison does not work with python 2"
-)
+from gemseo.utils.testing import image_comparison
+from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -66,27 +52,37 @@ TEST_PARAMETERS = {
         {"add_points": True},
         ["Surfaces_with_addpoints_0", "Surfaces_with_addpoints_1"],
     ),
+    "with_isolines": (
+        {"fill": False},
+        ["Surfaces_with_isolines_0", "Surfaces_with_isolines_1"],
+    ),
+    "with_levels": (
+        {"levels": 2},
+        ["Surfaces_with_levels_0", "Surfaces_with_levels_1"],
+    ),
+    "with_properties": (
+        {
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            }
+        },
+        ["Surfaces_properties_0", "Surfaces_properties_1"],
+    ),
 }
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 6),
-    reason="Image comparison based on Surfaces does not work with Python 3.6",
-)
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
-    """Test images created by Surfaces._plot against references.
-
-    Args:
-        kwargs (dict): The optional arguments to pass to Surfaces._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    Surfaces(dataset)._plot(properties={}, mesh="mesh", variable="output", **kwargs)
+    """Test images created by Surfaces._plot against references."""
+    properties = kwargs.pop("properties", None)
+    Surfaces(dataset, mesh="mesh", variable="output", **kwargs).execute(
+        save=False, show=False, properties=properties
+    )

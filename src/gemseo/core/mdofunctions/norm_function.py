@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,7 +20,7 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """An MDOFunction subclass to support formulations."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
@@ -41,11 +40,11 @@ class NormFunction(MDOFunction):
 
     def __init__(
         self,
-        orig_func,  # type: MDOFunction
-        normalize,  # type: bool
-        round_ints,  # type: bool
-        optimization_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
+        orig_func: MDOFunction,
+        normalize: bool,
+        round_ints: bool,
+        optimization_problem: OptimizationProblem,
+    ) -> None:
         """
         Args:
             orig_func: The original function.
@@ -62,8 +61,14 @@ class NormFunction(MDOFunction):
         self.__orig_func = orig_func
         self.__round_ints = round_ints
         self.__optimization_problem = optimization_problem
+        # For performance
+        design_space = self.__optimization_problem.design_space
+        self.__unnormalize_vect = design_space.unnormalize_vect
+        self.__round_vect = design_space.round_vect
+        self.__normalize_grad = design_space.normalize_grad
+        self.__evaluate_orig_func = self.__orig_func.evaluate
 
-        super(NormFunction, self).__init__(
+        super().__init__(
             self._func,
             name=orig_func.name,
             jac=self._jac,
@@ -76,8 +81,8 @@ class NormFunction(MDOFunction):
 
     def _func(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the original function.
 
         Args:
@@ -87,15 +92,15 @@ class NormFunction(MDOFunction):
             The value of the function at this input vector.
         """
         if self.__normalize:
-            x_vect = self.__optimization_problem.design_space.unnormalize_vect(x_vect)
+            x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:
-            x_vect = self.__optimization_problem.design_space.round_vect(x_vect)
-        return self.__orig_func(x_vect)
+            x_vect = self.__round_vect(x_vect)
+        return self.__evaluate_orig_func(x_vect)
 
     def _jac(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the gradient of the original function.
 
         Args:
@@ -113,10 +118,14 @@ class NormFunction(MDOFunction):
                 "has no Jacobian matrix !".format(self.__orig_func)
             )
         if self.__normalize:
-            x_vect = self.__optimization_problem.design_space.unnormalize_vect(x_vect)
+            x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:
-            x_vect = self.__optimization_problem.design_space.round_vect(x_vect)
+            x_vect = self.__round_vect(x_vect)
         g_u = self.__orig_func.jac(x_vect)
         if self.__normalize:
-            return self.__optimization_problem.design_space.normalize_grad(g_u)
+            return self.__normalize_grad(g_u)
         return g_u
+
+    @property
+    def expects_normalized_inputs(self) -> bool:
+        return self.__normalize

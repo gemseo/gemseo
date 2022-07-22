@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,68 +12,44 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
-
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import Path
-
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+from gemseo.post.quad_approx import QuadApprox
+from gemseo.utils.testing import image_comparison
 
 
-@pytest.fixture(scope="module")
-def factory():
-    return PostFactory()
+TEST_PARAMETERS = {
+    "standardized": (
+        True,
+        "rosen",
+        ["QuadApprox_standardized_0", "QuadApprox_standardized_1"],
+    ),
+    "unstandardized": (
+        False,
+        "rosen",
+        ["QuadApprox_unstandardized_0", "QuadApprox_unstandardized_1"],
+    ),
+}
 
 
-def test_quad_sr1(tmp_wd, factory):
-    """Test the quad approx post-processing with the Rosenbrock problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
-    """
-    problem = Rosenbrock(20)
-    OptimizersFactory().execute(problem, "L-BFGS-B")
-    post = factory.execute(
-        problem,
-        "QuadApprox",
-        show=False,
-        save=True,
-        function=problem.objective.name,
-        file_path="quadappr",
-    )
-
-    for outf in post.output_files:
-        assert Path(outf).exists()
-
-
-def test_quad_sr1_load(tmp_wd, factory):
-    """Test the quad approx post-processing from a database.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        factory: Fixture to return a post-processing factory.
-    """
-    problem = OptimizationProblem.import_hdf(POWER2)
-    post = factory.execute(
-        problem,
-        "QuadApprox",
-        show=False,
-        save=True,
-        function=problem.objective.name,
-        file_path="quadappr_sr1",
-    )
-
-    for outf in post.output_files:
-        assert Path(outf).exists()
+@pytest.mark.parametrize(
+    "use_standardized_objective, function, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective,
+    function,
+    baseline_images,
+    common_problem_,
+    pyplot_close_all,
+):
+    """Check QuadApprox with objective, standardized or not."""
+    opt = QuadApprox(common_problem_)
+    common_problem_.use_standardized_objective = use_standardized_objective
+    opt.execute(function=function, show=False, save=False)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,48 +16,59 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Base wrapper for all linear solvers."""
+from __future__ import annotations
 
 import logging
 import pickle
-from typing import Any, Mapping, Optional
+from dataclasses import dataclass
+from typing import Any
 from uuid import uuid4
 
 from numpy import ndarray
-from scipy.sparse.linalg import LinearOperator, spilu
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import spilu
 
 from gemseo.algos.algo_lib import AlgoLib
+from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 LOGGER = logging.getLogger(__name__)
 
 
+@dataclass
+class LinearSolverDescription(AlgorithmDescription):
+    """The description of a linear solver."""
+
+    lhs_must_be_symmetric: bool = False
+    """Whether the left-hand side matrix must be symmetric."""
+
+    lhs_must_be_positive_definite: bool = False
+    """Whether the left-hand side matrix must be positive definite."""
+
+    lhs_must_be_linear_operator: bool = False
+    """Whether the left-hand side matrix must be a linear operator."""
+
+
 class LinearSolverLib(AlgoLib):
-    """Abstract class for libraries of linear solvers.
-
-    Attributes:
-        XXX how about backup_path or file_path?
-        save_fpath (str): The path to the file to save the problem when
-            it is not converged and the attribute save_when_fail is True.
-    """
-
-    LHS_MUST_BE_SYMMETRIC = "LHS_symmetric"
-    LHS_MUST_BE_POSITIVE_DEFINITE = "LHS_positive_definite"
-    LHS_CAN_BE_LINEAR_OPERATOR = "LHS_linear_operator"
+    """Abstract class for libraries of linear solvers."""
 
     SAVE_WHEN_FAIL = "save_when_fail"
 
-    def __init__(self):  # type: (...) -> None
-        super(LinearSolverLib, self).__init__()
+    save_fpath: str | None
+    """The file path to save the linear problem."""
+
+    def __init__(self) -> None:
+        super().__init__()
         self.save_fpath = None
 
     def solve(
         self,
-        linear_problem,  # type: LinearProblem
-        algo_name,  # type: str
-        **options  # type: Any
-    ):  # type: (...) -> Any
+        linear_problem: LinearProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> Any:
         """Solve the linear system.
 
         Args:
@@ -73,9 +83,9 @@ class LinearSolverLib(AlgoLib):
 
     def _build_ilu_preconditioner(
         self,
-        lhs,  # type: ndarray
-        dtype=None,  # type: Optional[str]
-    ):  # type: (...) -> LinearOperator
+        lhs: ndarray,
+        dtype: str | None = None,
+    ) -> LinearOperator:
         """Construct a preconditioner using an incomplete LU factorization.
 
         Args:
@@ -86,40 +96,40 @@ class LinearSolverLib(AlgoLib):
         Returns:
             The preconditioner operator.
         """
-        ilu = spilu(lhs)
+        ilu = spilu(csc_matrix(lhs))
         return LinearOperator(lhs.shape, ilu.solve, dtype=dtype)
 
     @property
-    def solution(self):  # type: (...) -> ndarray
+    def solution(self) -> ndarray:
         """The solution of the problem."""
         return self.problem.solution
 
     @staticmethod
     def is_algorithm_suited(
-        algo_dict,  # type: Mapping[str, bool]
-        problem,  # type: LinearProblem
-    ):  # type: (...) -> bool
+        algorithm_description: LinearSolverDescription,
+        problem: LinearProblem,
+    ) -> bool:
         """Check if the algorithm is suited to the problem according to algo_dict.
 
         Args:
-            algo_dict: The algorithm characteristics.
+            algorithm_description: The description of the algorithm.
             problem: The problem to be solved.
 
         Returns:
             Whether the algorithm suits.
         """
-        if not problem.is_symmetric and algo_dict.get(
-            LinearSolverLib.LHS_MUST_BE_SYMMETRIC, False
+        if not problem.is_symmetric and algorithm_description.lhs_must_be_symmetric:
+            return False
+
+        if (
+            not problem.is_positive_def
+            and algorithm_description.lhs_must_be_positive_definite
         ):
             return False
 
-        if not problem.is_positive_def and algo_dict.get(
-            LinearSolverLib.LHS_MUST_BE_POSITIVE_DEFINITE, False
-        ):
-            return False
-
-        if problem.is_lhs_linear_operator and not algo_dict.get(
-            LinearSolverLib.LHS_CAN_BE_LINEAR_OPERATOR, False
+        if (
+            problem.is_lhs_linear_operator
+            and not algorithm_description.lhs_must_be_linear_operator
         ):
             return False
 
@@ -127,27 +137,27 @@ class LinearSolverLib(AlgoLib):
 
     def _pre_run(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        **options  # type: Any
-    ):  # type: (...) -> None
+        problem: LinearProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> None:
         """Set the solver options and name in the problem attributes.
 
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         problem.solver_options = options
         problem.solver_name = algo_name
 
     def _post_run(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        result,  # type: ndarray
-        **options  # type: Any
-    ):  # type: (...) -> None # noqa: D107
+        problem: LinearProblem,
+        algo_name: str,
+        result: ndarray,
+        **options: Any,
+    ) -> None:  # noqa: D107
         """Save the LinearProblem to the disk when required.
 
         If the save_when_fail option is True, save the LinearProblem to the disk when
@@ -157,11 +167,11 @@ class LinearSolverLib(AlgoLib):
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
             result: The result of the run, i.e. the solution.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         if options.get(self.SAVE_WHEN_FAIL, False):
             if not self.problem.is_converged:
-                f_path = "linear_system_{}.pck".format(uuid4())
+                f_path = f"linear_system_{uuid4()}.pck"
                 pickle.dump(self.problem, open(f_path, "wb"))
                 LOGGER.warning(
                     "Linear solver failed, saving problem to file: %s", f_path

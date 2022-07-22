@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -61,17 +59,26 @@ the Jacobian prediction method of the regression algorithm should return the mat
 This concept is implemented through the :class:`.MLRegressionAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Callable, Iterable, NoReturn, Optional
+import collections
+from typing import Callable
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
 
-from numpy import eye, matmul, ndarray
+from numpy import eye
+from numpy import matmul
+from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
 class MLRegressionAlgo(MLSupervisedAlgo):
@@ -89,18 +96,18 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=DEFAULT_TRANSFORMER,  # type: TransformerType
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
-        super(MLRegressionAlgo, self).__init__(
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
-            **parameters
+            **parameters,
         )
 
     class DataFormatters(MLSupervisedAlgo.DataFormatters):
@@ -109,8 +116,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         @classmethod
         def format_dict_jacobian(
             cls,
-            predict_jac,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[DataType],DataType]
+            predict_jac: Callable[[ndarray], ndarray],
+        ) -> Callable[[DataType], DataType]:
             """Wrap an array-based function to make it callable with a dictionary of
             NumPy arrays.
 
@@ -149,9 +156,9 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 Returns:
                     The output data with the same type as the input one.
                 """
-                as_dict = isinstance(input_data, dict)
+                as_dict = isinstance(input_data, collections.abc.Mapping)
                 if as_dict:
-                    input_data = DataConversion.dict_to_array(
+                    input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names
                     )
                 single_sample = len(input_data.shape) == 1
@@ -159,12 +166,12 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 if as_dict:
                     varsizes = self.learning_set.sizes
                     if single_sample:
-                        jacobians = DataConversion.jac_2dmat_to_dict(
-                            jacobians, self.output_names, self.input_names, varsizes
+                        jacobians = split_array_to_dict_of_arrays(
+                            jacobians, varsizes, self.output_names, self.input_names
                         )
                     else:
-                        jacobians = DataConversion.jac_3dmat_to_dict(
-                            jacobians, self.output_names, self.input_names, varsizes
+                        jacobians = split_array_to_dict_of_arrays(
+                            jacobians, varsizes, self.output_names, self.input_names
                         )
                 return jacobians
 
@@ -173,8 +180,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         @classmethod
         def transform_jacobian(
             cls,
-            predict_jac,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[ndarray],ndarray]
+            predict_jac: Callable[[ndarray], ndarray],
+        ) -> Callable[[ndarray], ndarray]:
             """Apply transformation to inputs and inverse transformation to outputs.
 
             Args:
@@ -206,7 +213,23 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 Returns:
                     Either the raw output data of 'predict_jac'
                     or a transformed version according to the requirements.
+
+                Raises:
+                    NotImplementedError: When the transformer is applied to a variable
+                        rather than to a group of variables.
                 """
+                if (
+                    self._input_variables_to_transform
+                    or self._output_variables_to_transform
+                ):
+                    # TODO: implement this case
+                    raise NotImplementedError(
+                        "The Jacobian of regression models cannot be computed "
+                        "when the transformed quantities are variables; "
+                        "please transform the whole group 'inputs' or 'outputs' "
+                        "or do not use data transformation."
+                    )
+
                 inputs = self.learning_set.INPUT_GROUP
                 if inputs in self.transformer:
                     jac = self.transformer[inputs].compute_jacobian(input_data)
@@ -229,8 +252,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def predict_raw(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Predict output data from input data.
 
         Args:
@@ -246,8 +269,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     @DataFormatters.transform_jacobian
     def predict_jacobian(
         self,
-        input_data,  # type: DataType
-    ):  # type: (...) -> NoReturn
+        input_data: DataType,
+    ) -> NoReturn:
         """Predict the Jacobians of the regression model at input_data.
 
         The user can specify these input data either as a NumPy array,
@@ -274,8 +297,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def _predict_jacobian(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        input_data: ndarray,
+    ) -> NoReturn:
         """Predict the Jacobian matrices of the regression model at input_data.
 
         Args:
@@ -283,6 +306,9 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
         Returns:
             The predicted Jacobian data with shape (n_samples, n_outputs, n_inputs).
+
+        Raises:
+            NotImplementedError: When the method is called.
         """
         name = self.__class__.__name__
-        raise NotImplementedError("Derivatives are not available for {}".format(name))
+        raise NotImplementedError(f"Derivatives are not available for {name}.")

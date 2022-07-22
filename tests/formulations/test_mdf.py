@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf import MDF
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import XDSMizer
 
 from .formulations_basetest import FormulationsBaseTest
@@ -88,7 +81,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         )
 
         # do not set a tolerance below 1e-4
-        assert 2000.0 < obj < 5000.0
+        assert 2000.0 < -obj < 5000.0
 
     def test_expected_workflow(self):
         """"""
@@ -97,7 +90,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         disc3 = SobieskiAerodynamics()
         disc4 = SobieskiMission()
         disciplines = [disc1, disc2, disc3, disc4]
-        mdf = MDF(disciplines, "y_4", DesignSpace(), sub_mda_class="MDAGaussSeidel")
+        mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
         wkf = mdf.get_expected_workflow()
         self.assertEqual(
             str(wkf),
@@ -114,7 +107,7 @@ class TestMDFFormulation(FormulationsBaseTest):
 
 def test_grammar_type():
     """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline(expressions_dict={"y1": "x+y2", "y2": "x+2*y1"})
+    discipline = AnalyticDiscipline({"y1": "x+y2", "y2": "x+2*y1"})
     design_space = DesignSpace()
     design_space.add_variable("x")
     grammar_type = discipline.SIMPLE_GRAMMAR_TYPE

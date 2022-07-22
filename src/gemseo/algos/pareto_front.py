@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,32 +12,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Compute and display a Pareto Front
-**********************************
-"""
-from __future__ import division, unicode_literals
+"""Compute and display a Pareto Front."""
+from __future__ import annotations
 
 from itertools import combinations
-from typing import Optional, Sequence, Tuple
+from typing import Sequence
 
 import matplotlib
 import matplotlib.pyplot as plt
 from numpy import all as np_all
 from numpy import any as np_any
-from numpy import array, full, ndarray, vstack
+from numpy import array
+from numpy import full
+from numpy import ndarray
+from numpy import vstack
 
 
 def compute_pareto_optimal_points(
-    obj_values,  # type: ndarray
-    feasible_points=None,  # type: Optional[ndarray]
-):  # type: (...) -> ndarray
+    obj_values: ndarray,
+    feasible_points: ndarray | None = None,
+) -> ndarray:
     """Compute the Pareto optimal points.
 
     Search for all the non-dominated points, i.e. there exists ``j`` such that
@@ -82,20 +80,20 @@ def compute_pareto_optimal_points(
     return pareto_optimal
 
 
-class ParetoPlotBiObjective(object):
+class ParetoPlotBiObjective:
     """Plot a 2D Pareto front on a Matplotlib axes."""
 
     def __init__(
         self,
-        axes,  # type: matplotlib.axes.Axes
-        obj_values,  # type: ndarray
-        pareto_optimal_loc,  # type: Sequence[bool]
-        obj_names,  # type: Sequence[str]
-        all_pareto_optimal,  # type: Sequence[bool]
-        is_non_feasible,  # type: Sequence[bool]
-        bi_obj=False,  # type: bool
-        show_non_feasible=True,  # type: bool
-    ):  # type: (...) -> None
+        axes: matplotlib.axes.Axes,
+        obj_values: ndarray,
+        pareto_optimal_loc: Sequence[bool],
+        obj_names: Sequence[str],
+        all_pareto_optimal: Sequence[bool],
+        is_non_feasible: Sequence[bool],
+        bi_obj: bool = False,
+        show_non_feasible: bool = True,
+    ) -> None:
         """
         Args:
             axes: A matplotlib axes on which to be plotted.
@@ -124,7 +122,7 @@ class ParetoPlotBiObjective(object):
         # Compute the Pareto dominated indexes
         self.__compute_pareto_dominated_indexes()
 
-    def plot_on_axes(self):  # type: (...) -> None
+    def plot_on_axes(self) -> None:
         """Plot the Pareto points on the Matplolib axes."""
         self.__plot_pareto_dominated_points()
         self.__plot_non_feasible_points()
@@ -133,7 +131,7 @@ class ParetoPlotBiObjective(object):
         self.__axes.set_xlabel(self.__obj_names[0])
         self.__axes.set_ylabel(self.__obj_names[1])
 
-    def __compute_pareto_dominated_indexes(self):  # type: (...) -> None
+    def __compute_pareto_dominated_indexes(self) -> None:
         """Compute the Pareto dominated indexes.
 
         The Pareto-dominated points are all the points which are feasible, but not
@@ -147,7 +145,7 @@ class ParetoPlotBiObjective(object):
             & ~self.__pareto_optimal_all
         )
 
-    def __plot_pareto_dominated_points(self):  # type: (...) -> None
+    def __plot_pareto_dominated_points(self) -> None:
         """Plot the Pareto-dominated points on the scatter plot."""
         if True in self.__pareto_dominated_indexes:
             self.__axes.scatter(
@@ -157,7 +155,7 @@ class ParetoPlotBiObjective(object):
                 label="Pareto dominated",
             )
 
-    def __plot_non_feasible_points(self):  # type: (...) -> None
+    def __plot_non_feasible_points(self) -> None:
         """Plot the non-feasible points on the scatter plot."""
         if True in self.__is_non_feasible and self.__show_non_feasible:
             self.__axes.scatter(
@@ -168,7 +166,7 @@ class ParetoPlotBiObjective(object):
                 label="Non feasible point",
             )
 
-    def __plot_globally_pareto_optimal_points(self):  # type: (...) -> None
+    def __plot_globally_pareto_optimal_points(self) -> None:
         """Plot the globally optimal Pareto points on the scatter plot."""
         if True in self.__pareto_optimal_all:
             if self.__bi_objective:
@@ -182,7 +180,7 @@ class ParetoPlotBiObjective(object):
                 label=label,
             )
 
-    def __plot_locally_pareto_optimal_points(self):  # type: (...) -> None
+    def __plot_locally_pareto_optimal_points(self) -> None:
         """Plot the locally optimal Pareto points on the scatter plot."""
         if True in self.__pareto_optimal_loc and not self.__bi_objective:
             self.__axes.scatter(
@@ -194,18 +192,18 @@ class ParetoPlotBiObjective(object):
 
 
 def generate_pareto_plots(
-    obj_values,  # type: ndarray
-    obj_names,  # type: Sequence[str]
-    figsize=(10.0, 10.0),  # type: Tuple[float, float]
-    non_feasible_samples=None,  # type: Optional[ndarray]
-    show_non_feasible=True,  # type: bool
-):  # type: (...) -> matplotlib.figure.Figure
+    obj_values: ndarray,
+    obj_names: Sequence[str],
+    fig_size: tuple[float, float] = (10.0, 10.0),
+    non_feasible_samples: ndarray | None = None,
+    show_non_feasible: bool = True,
+) -> matplotlib.figure.Figure:
     """Plot a 2D Pareto front.
 
     Args:
         obj_values: The objective function array of size (n_samples, n_objs).
         obj_names: The names of the objectives.
-        figsize: The matplotlib figure sizes in x an y directions, in inches.
+        fig_size: The matplotlib figure sizes in x and y directions, in inches.
         non_feasible_samples: The array of bool of size n_samples,
             True if the current sample is non-feasible.
             If None, all the samples are considered feasible.
@@ -232,7 +230,7 @@ def generate_pareto_plots(
 
     pareto_opt_all = compute_pareto_optimal_points(obj_values, is_feasible)
 
-    fig, axes = plt.subplots(n_obj - 1, n_obj - 1, figsize=figsize, squeeze=False)
+    fig, axes = plt.subplots(n_obj - 1, n_obj - 1, figsize=fig_size, squeeze=False)
     fig.suptitle("Pareto front")
 
     # 0 vs 1   0 vs 2    0 vs 3

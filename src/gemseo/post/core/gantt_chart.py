@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,38 +12,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Generate a gantt chart with processes execution time data."""
+from __future__ import annotations
 
-from __future__ import unicode_literals
-
-from typing import Optional, Sequence, Tuple, Union
+from pathlib import Path
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import Path
 
 DEFAULT_NAME = "gantt_chart"
 
 
 def create_gantt_chart(
-    file_path=DEFAULT_NAME,  # type: Union[str, Path]
-    save=True,  # type: bool
-    show=False,  # type: bool
-    file_extension=None,  # type: Optional[str]
-    figure_size=(15, 10),  # type: Tuple[int,int]
-    font_size=12,  # type: int
-    disc_names=None,  # type: Optional[Sequence[str]]
-):  # type: (...) -> plt.Figure
+    file_path: str | Path = DEFAULT_NAME,
+    save: bool = True,
+    show: bool = False,
+    file_extension: str | None = None,
+    fig_size: tuple[float, float] = (15.0, 10.0),
+    font_size: int = 12,
+    disc_names: Sequence[str] | None = None,
+) -> plt.Figure:
     """Generate a gantt chart with processes execution time data.
 
     The disciplines names are used as labels and plotted on rows.
@@ -61,7 +58,7 @@ def create_gantt_chart(
         show: Whether to show the figure.
         file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
             If ``None``, use the default file extension.
-        figure_size: The figure size.
+        fig_size: The figure size.
         font_size: The size of the fonts in the plot.
         disc_names: The names of the disciplines to plot.
             If ``None``, plot all the disciplines for which time stamps exist.
@@ -77,16 +74,14 @@ def create_gantt_chart(
     if time_stamps is None:
         raise ValueError("Time stamps are not activated in MDODiscipline")
 
-    fig, ax = plt.subplots(figsize=figure_size)
+    fig, ax = plt.subplots(figsize=fig_size)
 
     if disc_names is None:
         disc_names = list(time_stamps.keys())
     else:
         missing = list(set(disc_names) - set(time_stamps.keys()))
         if missing:
-            raise ValueError(
-                "The disciplines: {}, have no time stamps!".format(missing)
-            )
+            raise ValueError(f"The disciplines: {missing}, have no time stamps.")
 
     ax.set_ylim(5, 10 * len(disc_names) + 15)
     ax.set_yticklabels(disc_names)
@@ -96,7 +91,7 @@ def create_gantt_chart(
     ax.grid(True)
 
     # Minimum time as a reference
-    min_t = min((stamps[0][0] for stamps in time_stamps.values()))
+    min_t = min(stamps[0][0] for stamps in time_stamps.values())
 
     # Blue for execution, red for linearization
     colors = {False: "tab:blue", True: "tab:red"}

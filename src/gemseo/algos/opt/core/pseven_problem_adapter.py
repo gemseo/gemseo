@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,36 +12,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """An adapter from `.OptimizationProblem` to a pSeven ProblemGeneric."""
+from __future__ import annotations
 
-from enum import Enum
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from typing import Mapping
 
 from da import p7core
-from numpy import array, atleast_1d, concatenate, full, full_like, ndarray
+from numpy import array
+from numpy import atleast_1d
+from numpy import concatenate
+from numpy import full
+from numpy import full_like
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.stop_criteria import TerminationCriterion
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOFunction,
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-)
-
-
-class CostType(Enum):
-    """The evaluation cost type of pSeven functions."""
-
-    CHEAP = "Cheap"
-    EXPENSIVE = "Expensive"
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 
 
 class PSevenProblem(p7core.gtopt.ProblemGeneric):
@@ -54,20 +46,22 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __init__(
         self,
-        problem,  # type: OptimizationProblem
-        evaluation_cost_type=None,  # type: Optional[Mapping[str, CostType]]
-        expensive_evaluations=None,  # type: Optional[Mapping[str, int]]
-        lower_bounds=None,  # type: Optional[ndarray]
-        upper_bounds=None,  # type: Optional[ndarray]
-        initial_point=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> None
+        problem: OptimizationProblem,
+        evaluation_cost_type: str | Mapping[str, str] | None = None,
+        expensive_evaluations: Mapping[str, int] | None = None,
+        lower_bounds: ndarray | None = None,
+        upper_bounds: ndarray | None = None,
+        initial_point: ndarray | None = None,
+        use_gradient: bool = True,
+    ) -> None:
         # noqa:D205,D212,D415
         """
         Args:
             problem: The optimization problem to be adapted to pSeven.
             evaluation_cost_type: The evaluation cost type of each function of the
-                problem.
-                If None, the evaluation cost types default to "Cheap".
+                problem: "Cheap" or "Expensive".
+                If a string, then the same cost type is set for all the functions.
+                If None, the evaluation cost types are set by pSeven.
             expensive_evaluations: The maximal number of expensive evaluations for
                 each function of the problem.
                 If None, this number is set automatically by pSeven.
@@ -77,11 +71,18 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
                 If None, the upper bounds are read from the design space.
             initial_point: The initial values of the design variables.
                 If None, the initial values are read from the design space.
+            use_gradient: Whether to use the derivatives of the functions.
+                If the functions have no derivative then this value has no effect.
         """
         self.__problem = problem
+        self.__use_gradient = use_gradient
 
         if evaluation_cost_type is None:
             self.__evaluation_cost_type = dict()
+        elif isinstance(evaluation_cost_type, str):
+            self.__evaluation_cost_type = {
+                name: evaluation_cost_type for name in problem.get_all_functions_names()
+            }
         else:
             self.__evaluation_cost_type = evaluation_cost_type
 
@@ -105,18 +106,18 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
         if initial_point is not None:
             self.__initial_point = initial_point
-        elif design_space.has_current_x():
-            self.__initial_point = design_space.get_current_x()
+        elif design_space.has_current_value():
+            self.__initial_point = design_space.get_current_value()
         else:
             self.__initial_point = full(design_space.dimension, None)
 
-    def prepare_problem(self):  # type: (...) -> None
+    def prepare_problem(self) -> None:
         """Initialize the problem for pSeven."""
         self.__add_variables()
         self.__add_objectives()
         self.__add_constraints()
 
-    def __add_variables(self):  # type: (...) -> None
+    def __add_variables(self) -> None:
         """Add the design variables to the pSeven problem."""
         design_space = self.__problem.design_space
         for var_name in design_space.variables_names:
@@ -132,48 +133,51 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
                 hints = {"@GT/VariableType": pseven_type}
                 self.add_variable(bounds, initial_guess, indexed_names[index], hints)
 
-    def __add_objectives(self):  # type: (...) -> None
+    def __add_objectives(self) -> None:
         """Add the objectives to the pSeven problem."""
         objective = self.__problem.objective
         hints = self.__get_p7_function_hints(objective)
-        dimension = self.__get_function_dimension(objective)
+        dimension = self.__problem.get_function_dimension(objective.name)
 
         if dimension > 1:
             for index in range(dimension):
-                name = self.__get_component_name(objective, index)
+                name = objective.get_indexed_name(index)
                 self.add_objective(name, hints)
         else:
             self.add_objective(objective.name, hints)
 
         # Add the objectives gradients
-        if objective.has_jac():
+        if self.__use_gradient and objective.has_jac():
             self.enable_objectives_gradient()
 
-    def __add_constraints(self):  # type: (...) -> None
+    def __add_constraints(self) -> None:
         """Add the constraints to the pSeven problem."""
         problem = self.__problem
 
         for constraint in problem.constraints:
             bounds = self.__get_p7_constraint_bounds(constraint)
             hints = self.__get_p7_function_hints(constraint)
-            dimension = self.__get_function_dimension(constraint)
+            dimension = problem.get_function_dimension(constraint.name)
             if dimension > 1:
                 for index in range(dimension):
-                    name = self.__get_component_name(constraint, index)
+                    name = constraint.get_indexed_name(index)
                     self.add_constraint(bounds, name, hints)
             else:
                 self.add_constraint(bounds, constraint.name, hints)
 
         # Add the constraints gradients
-        differentiable = all(constraint.has_jac() for constraint in problem.constraints)
-        if problem.has_constraints() and differentiable:
-            self.enable_constraints_gradient()
+        if self.__use_gradient:
+            differentiable = all(
+                constraint.has_jac() for constraint in problem.constraints
+            )
+            if problem.has_constraints() and differentiable:
+                self.enable_constraints_gradient()
 
     def __get_p7_variable_type(
         self,
-        variable_name,  # type: str
-        index,  # type: int
-    ):  # type: (...) -> str
+        variable_name: str,
+        index: int,
+    ) -> str:
         """Return the pSeven variable type associated with a design variable component.
 
         Args:
@@ -191,14 +195,14 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             return "Continuous"
         if var_type == DesignSpace.INTEGER.value:
             return "Integer"
-        raise TypeError("Unsupported design variable type: {}".format(var_type))
+        raise TypeError(f"Unsupported design variable type: {var_type}.")
         # TODO: For future reference, pSeven also supports discrete and categorical
         #  variables.
 
     def __get_p7_function_hints(
         self,
-        function,  # type: MDOFunction
-    ):  # type: (...) -> Dict[str, Union[str, int]]
+        function: MDOFunction,
+    ) -> dict[str, str | int]:
         """Return the pSeven hints associated with a function.
 
         Args:
@@ -211,15 +215,15 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         hints = {"@GTOpt/LinearityType": linearity_type}
         name = function.name
         if name in self.__evaluation_cost_type:
-            hints["@GTOpt/EvaluationCostType"] = self.__evaluation_cost_type[name].value
+            hints["@GTOpt/EvaluationCostType"] = self.__evaluation_cost_type[name]
         if name in self.__expensive_evaluations:
             hints["@GTOpt/ExpensiveEvaluations"] = self.__expensive_evaluations[name]
         return hints
 
     @staticmethod
     def __get_p7_linearity_type(
-        function,  # type: MDOFunction
-    ):  # type: (...) -> str
+        function: MDOFunction,
+    ) -> str:
         """Return the pSeven linearity type of a function.
 
         Args:
@@ -234,50 +238,10 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             return "Quadratic"
         return "Generic"
 
-    def __get_function_dimension(
-        self,
-        function,  # type: MDOFunction
-    ):  # type: (...) -> int
-        """Return the dimension of a function.
-
-        Args:
-            function: The function.
-
-        Returns:
-            The dimension of the function.
-
-        Raises:
-            RuntimeError: If the function dimension is unavailable.
-        """
-        design_space = self.__problem.design_space
-        if function.has_dim():
-            return function.dim
-        elif design_space.has_current_x():
-            current_x = design_space.get_current_x()
-            return atleast_1d(function(current_x)).size
-        else:
-            raise RuntimeError("The function dimension is not available.")
-
-    @staticmethod
-    def __get_component_name(
-        function,  # type: MDOFunction
-        index,  # type: int
-    ):  # type: (...) -> str
-        """Return the name of function component.
-
-        Args:
-            function: The function.
-            index: The index of the function component.
-
-        Returns:
-            The name of the function component.
-        """
-        return "{}{}{}".format(function.name, DesignSpace.SEP, index)
-
-    @staticmethod
     def __get_p7_constraint_bounds(
-        constraint,  # type: MDOFunction
-    ):  # type: (...) -> Tuple[Optional[float], float]
+        self,
+        constraint: MDOFunction,
+    ) -> tuple[float | None, float]:
         """Return the pSeven bounds associated with a constraint.
 
         Args:
@@ -290,18 +254,20 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             ValueError: If the constraint type is invalid.
         """
         if constraint.f_type == MDOFunction.TYPE_EQ:
-            return 0.0, 0.0
+            return -self.__problem.eq_tolerance, self.__problem.eq_tolerance
+
         if constraint.f_type == MDOFunction.TYPE_INEQ:
-            return None, 0.0
+            return None, self.__problem.ineq_tolerance
+
         raise ValueError("Invalid constraint type.")
         # TODO: For future reference, pSeven support constraints bounded from both
         #  sides.
 
     def evaluate(
         self,
-        queryx,  # type: ndarray
-        querymask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[List[float]], List[ndarray]]
+        queryx: ndarray,
+        querymask: ndarray,
+    ) -> tuple[list[list[float]], list[ndarray]]:
         """Compute the values of the objectives and the constraints for pSeven.
 
         Args:
@@ -311,52 +277,44 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         Returns:
             The evaluation result. (2D-array-like with one row per point.),
             The evaluation masks. (Idem.)
-
-        Raises:
-            p7core.UserTerminated: If a termination criterion is reached.
         """
         functions_batch = list()
         output_masks_batch = list()
         for x, mask in zip(queryx, querymask):
             # Evaluate the functions, unless a stopping criterion is satisfied
             functions = list()
-            try:
-                # Compute the objectives values
-                objectives, obj_mask = self.__compute_objectives(x, mask)
-                functions.extend(objectives)
-                # Compute the constraints values
-                constraints, constr_mask = self.__compute_constraints(
-                    x, mask[len(functions) :]
-                )
-                functions.extend(constraints)
-                # Compute the objectives gradients
-                obj_grads, obj_grads_mask = self.__compute_objectives_gradients(
-                    x, mask[len(functions) :]
-                )
-                functions.extend(obj_grads)
-                # Compute the constraints gradients
-                constr_grads, constr_grads_mask = self.__compute_constraints_gradients(
-                    x, mask[len(functions) :]
-                )
-            except TerminationCriterion:
-                # Interrupt pSeven
-                raise p7core.UserTerminated("Gemseo stopping criterion satisfied")
-            else:
-                functions.extend(constr_grads)
-                functions_batch.append(functions)
-                output_mask = concatenate(
-                    [obj_mask, constr_mask, obj_grads_mask, constr_grads_mask]
-                )
-                output_masks_batch.append(output_mask)
+            # Compute the objectives values
+            objectives, obj_mask = self.__compute_objectives(x, mask)
+            functions.extend(objectives)
+            # Compute the constraints values
+            constraints, constr_mask = self.__compute_constraints(
+                x, mask[len(functions) :]
+            )
+            functions.extend(constraints)
+            # Compute the objectives gradients
+            obj_grads, obj_grads_mask = self.__compute_objectives_gradients(
+                x, mask[len(functions) :]
+            )
+            functions.extend(obj_grads)
+            # Compute the constraints gradients
+            constr_grads, constr_grads_mask = self.__compute_constraints_gradients(
+                x, mask[len(functions) :]
+            )
+            functions.extend(constr_grads)
+            functions_batch.append(functions)
+            output_mask = concatenate(
+                [obj_mask, constr_mask, obj_grads_mask, constr_grads_mask]
+            )
+            output_masks_batch.append(output_mask)
 
         return functions_batch, output_masks_batch
 
     def __compute_objectives(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
-        obj_dim = self.__get_function_dimension(self.__problem.objective)
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
+        obj_dim = self.__problem.get_function_dimension(self.__problem.objective.name)
 
         if True in mask[:obj_dim]:
             objectives = atleast_1d(self.__problem.objective(x_vec)).tolist()
@@ -369,15 +327,15 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __compute_constraints(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
         constraints = list()
         output_mask = list()
         n_inds = 0
 
         for constraint in self.__problem.constraints:
-            constr_dim = self.__get_function_dimension(constraint)
+            constr_dim = self.__problem.get_function_dimension(constraint.name)
             if True in mask[n_inds : n_inds + constr_dim]:
                 constraints.extend(atleast_1d(constraint(x_vec)).tolist())
                 output_mask.extend([True] * constr_dim)
@@ -390,45 +348,50 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __compute_objectives_gradients(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
+        if not self.__use_gradient or not self.__problem.objective.has_jac():
+            return [], array([])
+
         pb_dim = self.__problem.dimension
-        obj_dim = self.__get_function_dimension(self.__problem.objective)
+        obj_dim = self.__problem.get_function_dimension(self.__problem.objective.name)
         n_values = obj_dim * pb_dim
 
-        if self.__problem.objective.has_jac() and True in mask[:n_values]:
+        if True in mask[:n_values]:
             obj_grads = self.__problem.objective.jac(x_vec).flatten().tolist()
             output_mask = full_like(mask[:n_values], True)
-        elif self.__problem.objective.has_jac():
+        else:
             obj_grads = [None] * n_values
             output_mask = full_like(mask[:n_values], False)
-        else:
-            obj_grads = []
-            output_mask = array([])
 
         return obj_grads, output_mask
 
     def __compute_constraints_gradients(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
         constr_grads = list()
         output_mask = list()
+
+        if not self.__use_gradient or any(
+            not constraint.has_jac() for constraint in self.__problem.constraints
+        ):
+            return constr_grads, array(output_mask)
+
         pb_dim = self.__problem.dimension
         n_inds = 0
 
-        if all(constraint.has_jac() for constraint in self.__problem.constraints):
-            for constraint in self.__problem.constraints:
-                constr_dim = self.__get_function_dimension(constraint)
-                n_values = constr_dim * pb_dim
-                if True in mask[n_inds : n_inds + n_values]:
-                    constr_grads.extend(constraint.jac(x_vec).flatten().tolist())
-                    output_mask.extend([True] * n_values)
-                else:
-                    constr_grads.extend([None] * n_values)
-                    output_mask.extend([False] * n_values)
-                n_inds += n_values
+        for constraint in self.__problem.constraints:
+            constr_dim = self.__problem.get_function_dimension(constraint.name)
+            n_values = constr_dim * pb_dim
+            if True in mask[n_inds : n_inds + n_values]:
+                constr_grads.extend(constraint.jac(x_vec).flatten().tolist())
+                output_mask.extend([True] * n_values)
+            else:
+                constr_grads.extend([None] * n_values)
+                output_mask.extend([False] * n_values)
+            n_inds += n_values
 
         return constr_grads, array(output_mask)

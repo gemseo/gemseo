@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,23 +19,20 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test partial least square regression."""
-from __future__ import division, unicode_literals
-
 from typing import Tuple
 
 import pytest
+from gemseo.mlearning.transform.dimension_reduction.pls import PLS
 from numpy import ndarray
 from numpy import sum as npsum
 from numpy.random import rand
-
-from gemseo.mlearning.transform.dimension_reduction.pls import PLS
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
 
 @pytest.fixture
-def data():  # type: (...) -> Tuple[ndarray,ndarray]
+def data() -> Tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     input_data = rand(N_SAMPLES, N_FEATURES)
     output_data = npsum(input_data, 1)[:, None]
@@ -54,11 +49,20 @@ def test_constructor():
 
 
 def test_learn(data):
-    """Test learn."""
+    """Test learn with the default number of components (None)."""
+    input_data, output_data = data
+    pca = PLS()
+    pca.fit(input_data, output_data)
+    assert pca.n_components == 1
+
+
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     input_data, output_data = data
     n_components = 3
-    pca = PLS(n_components=n_components)
-    pca.fit(input_data, output_data)
+    pls = PLS(n_components=n_components)
+    pls.fit(input_data, output_data)
+    assert pls.n_components == n_components
 
 
 def test_transform(data):

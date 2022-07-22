@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,13 +20,16 @@ import pickle
 from os import remove
 
 import pytest
-from numpy import eye, ones, random, zeros
-from scipy.linalg import norm
-from scipy.sparse.linalg import LinearOperator, spilu
-
 from gemseo.algos.linear_solvers.lib_scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from numpy import eye
+from numpy import ones
+from numpy import random
+from numpy import zeros
+from scipy.linalg import norm
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import spilu
 
 RESIDUALS_TOL = 1e-12
 
@@ -184,3 +186,8 @@ def test_algo_none():
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
         lib.execute(problem, algo_name=None)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyLinalgAlgos.LIBRARY_NAME == "SciPy"

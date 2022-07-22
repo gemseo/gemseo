@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "maximize_objective": {
+      "description": "If True, the objective function is maximized.",
+      "type": "boolean"
+    },
+    "main_mda_name": {
+      "description": "The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.",
+      "type": "string"
+    },
+    "inner_mda_name": {
+      "description": "The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.",
+      "type": "string"
+    },
+    "parallel_scenarios": {
+      "description": "Whether to run the sub-scenarios in parallel.",
+      "type": "boolean"
+    },
+    "multithread_scenarios": {
+      "description": "If True and parallel_scenarios=True, the sub-scenarios are run in parallel using multi-threading; if False and parallel_scenarios=True, multi-processing is used.",
+      "type": "boolean"
+    },
+    "apply_cstr_tosub_scenarios": {
+      "description": "Whether the :meth:`.add_constraint` method adds the constraint to the optimization problem of the sub-scenario capable of computing the constraint.",
+      "type": "boolean"
+    },
+    "apply_cstr_to_system": {
+      "description": "Whether the :meth:`.add_constraint` method adds the constraint to the optimization problem of the system scenario.",
+      "type": "boolean"
+    },
+    "reset_x0_before_opt": {
+      "description": "Whether to restart the sub optimizations from the initial guesses, otherwise warm start them.",
+      "type": "boolean"
+    },
+    "grammar_type": {
+      "description": "The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "apply_cstr_to_system",
+    "apply_cstr_tosub_scenarios",
+    "grammar_type",
+    "inner_mda_name",
+    "main_mda_name",
+    "maximize_objective",
+    "multithread_scenarios",
+    "parallel_scenarios",
+    "reset_x0_before_opt"
+  ]
+}

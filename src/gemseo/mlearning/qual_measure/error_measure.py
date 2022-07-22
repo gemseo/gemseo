@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -24,15 +22,16 @@
 The concept of error measure is implemented with the :class:`.MLErrorMeasure` class and
 proposes different evaluation methods.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
-from typing import NoReturn, Optional, Sequence, Union
+from typing import NoReturn
+from typing import Sequence
 
 from numpy import arange
 from numpy import delete as npdelete
-from numpy import ndarray, unique
-from numpy.random import choice
+from numpy import ndarray
+from numpy import unique
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
@@ -44,111 +43,113 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLSupervisedAlgo
-    ):  # type: (...) -> None
+        algo: MLSupervisedAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for supervised learning.
         """
-        super(MLErrorMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        self.algo.learn(samples)
-        inputs = self.algo.input_data[samples]
-        outputs = self.algo.output_data[samples]
-        predictions = self.algo.predict(inputs)
-        measure = self._compute_measure(outputs, predictions, multioutput)
-        return measure
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
+        self._train_algo(samples)
+        return self._compute_measure(
+            self.algo.output_data,
+            self.algo.predict(self.algo.input_data),
+            multioutput,
+        )
 
     def evaluate_test(
         self,
-        test_data,  # type:Dataset
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        self.algo.learn(samples)
-        in_grp = test_data.INPUT_GROUP
-        out_grp = test_data.OUTPUT_GROUP
-        inputs = test_data.get_data_by_group(in_grp)
-        outputs = test_data.get_data_by_group(out_grp)
-        predictions = self.algo.predict(inputs)
-        measure = self._compute_measure(outputs, predictions, multioutput)
-        return measure
+        test_data: Dataset,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
+        self._train_algo(samples)
+        return self._compute_measure(
+            test_data.get_data_by_names(self.algo.output_names, False),
+            self.algo.predict(
+                test_data.get_data_by_names(self.algo.input_names, False)
+            ),
+            multioutput,
+        )
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-    ):  # type: (...) -> Union[float,ndarray]
-        folds, samples = self._compute_folds(samples, n_folds, randomize)
+        n_folds: int = 5,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
+        self._train_algo(samples)
+        samples = self._assure_samples(samples)
+        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
-        in_grp = self.algo.learning_set.INPUT_GROUP
-        out_grp = self.algo.learning_set.OUTPUT_GROUP
-        inputs = self.algo.learning_set.get_data_by_group(in_grp)
-        outputs = self.algo.learning_set.get_data_by_group(out_grp)
+        input_data = self.algo.input_data
+        output_data = self.algo.output_data
 
         algo = deepcopy(self.algo)
 
         qualities = []
-        for n_fold in range(n_folds):
-            fold = folds[n_fold]
-            train = npdelete(samples, fold)
-            algo.learn(samples=train)
-            expected = outputs[fold]
-            predicted = algo.predict(inputs[fold])
+        for fold in folds:
+            algo.learn(
+                samples=npdelete(samples, fold), fit_transformers=self._fit_transformers
+            )
+            expected = output_data[fold]
+            predicted = algo.predict(input_data[fold])
             quality = self._compute_measure(expected, predicted, multioutput)
             qualities.append(quality)
 
-        quality = sum(qualities) / len(qualities)
-
-        return quality
+        return sum(qualities) / len(qualities)
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        n_replicates: int = 100,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        seed: None | None = None,
+    ) -> float | ndarray:
         samples = self._assure_samples(samples)
+        self._train_algo(samples)
         n_samples = samples.size
-        inds = arange(n_samples)
+        input_data = self.algo.input_data
+        output_data = self.algo.output_data
 
-        in_grp = self.algo.learning_set.INPUT_GROUP
-        out_grp = self.algo.learning_set.OUTPUT_GROUP
-        inputs = self.algo.learning_set.get_data_by_group(in_grp)
-        outputs = self.algo.learning_set.get_data_by_group(out_grp)
+        all_indices = arange(n_samples)
 
         algo = deepcopy(self.algo)
 
         qualities = []
+        generator = self._get_rng(seed)
         for _ in range(n_replicates):
-            train = unique(choice(n_samples, n_samples))
-            test = npdelete(inds, train)
-            algo.learn([samples[index] for index in train])
-            test_samples = [samples[index] for index in test]
-            expected = outputs[test_samples]
-            predicted = algo.predict(inputs[test_samples])
-            quality = self._compute_measure(expected, predicted, multioutput)
+            training_indices = unique(generator.choice(n_samples, n_samples))
+            test_indices = npdelete(all_indices, training_indices)
+            algo.learn(
+                [samples[index] for index in training_indices],
+                fit_transformers=self._fit_transformers,
+            )
+            test_samples = [samples[index] for index in test_indices]
+            quality = self._compute_measure(
+                output_data[test_samples],
+                algo.predict(input_data[test_samples]),
+                multioutput,
+            )
             qualities.append(quality)
 
-        quality = sum(qualities) / len(qualities)
-
-        return quality
+        return sum(qualities) / len(qualities)
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> NoReturn
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> NoReturn:
         """Compute the quality measure.
 
         Args:

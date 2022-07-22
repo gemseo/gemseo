@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -21,51 +19,40 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
-
-"""
-A database of function calls and design variables
-*************************************************
-"""
-
-from __future__ import division, unicode_literals
+"""A database of function calls and design variables."""
+from __future__ import annotations
 
 import logging
+import sys
 from ast import literal_eval
-from hashlib import sha1
-from itertools import chain, islice
-from typing import (
-    Any,
-    Callable,
-    ItemsView,
-    Iterable,
-    KeysView,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Tuple,
-    Union,
-    ValuesView,
-)
+from itertools import chain
+from itertools import islice
+from typing import Any
+from typing import Callable
+from typing import ItemsView
+from typing import Iterable
+from typing import KeysView
+from typing import List
+from typing import Mapping
+from typing import Tuple
+from typing import Union
+from typing import ValuesView
 from xml.etree.ElementTree import parse as parse_element
 
 import h5py
-from numpy import (
-    array,
-    atleast_2d,
-    concatenate,
-    float64,
-    isclose,
-    ndarray,
-    string_,
-    uint8,
-)
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import float64
+from numpy import ndarray
+from numpy import string_
+from numpy import uint8
 from numpy.linalg import norm
-from six import string_types
+from xxhash._xxhash import xxh3_64_hexdigest
 
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import OrderedDict
 
 LOGGER = logging.getLogger(__name__)
 
@@ -76,20 +63,21 @@ ReturnedHdfMissingOutputType = Tuple[
 ]
 
 
-class Database(object):
+class Database:
     """Class to store evaluations of functions, such as DOE or optimization histories.
 
     Avoid multiple calls of the same functions,
     useful when simulations are costly.
 
     It is also used to store inputs and retrieve them
-    for optimization graphical post processing and plots
+    for optimization graphical post-processing and plots
     generation.
 
-    Can be serialized to HDF5 for portability and cold post processing.
+    Can be serialized to HDF5 for portability and cold post-processing.
 
     The database is based on a two-levels dictionary-like mapping such as
-    ``{key_level_1: {key_level_2: value_level_2} }`` with:
+    ``{key_level_1: {key_level_2: value_level_2}}`` with:
+
         * ``key_level_1``: the values of the input design variables that have been used
           during the evaluations;
         * ``key_level_2``: the name of the output functions that have been returned,
@@ -116,9 +104,9 @@ class Database(object):
 
     def __init__(
         self,
-        input_hdf_file=None,  # type: Optional[str]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        input_hdf_file: str | None = None,
+        name: str | None = None,
+    ) -> None:
         """
         Args:
             input_hdf_file: The path to a HDF5 file from which the database is created.
@@ -131,7 +119,7 @@ class Database(object):
         else:
             self.name = name
 
-        self.__dict = OrderedDict()
+        self.__dict = {}
         self.__max_iteration = 0
         self.__store_listeners = []
         self.__newiter_listeners = []
@@ -144,11 +132,19 @@ class Database(object):
         if input_hdf_file is not None:
             self.import_hdf(input_hdf_file)
 
+    @property
+    def last_item(self) -> DatabaseValueType:
+        """The last item stored in the database."""
+        if sys.version_info < (3, 8, 0):
+            return next(reversed(list(self.__dict.values())))
+        else:
+            return next(reversed(self.__dict.values()))
+
     def __setitem__(
         self,
-        key,  # type: Union[ndarray, HashableNdarray]
-        value,  # type: DatabaseValueType
-    ):  # type: (...) -> None
+        key: ndarray | HashableNdarray,
+        value: DatabaseValueType,
+    ) -> None:
         """Set an item to the database.
 
         Args:
@@ -157,23 +153,20 @@ class Database(object):
 
         Raises:
             TypeError:
+
                 * If the key is neither an array, nor a hashable array.
                 * If the value is not a dictionary.
         """
-        if not isinstance(key, (ndarray, HashableNdarray)):
-            raise TypeError(
-                "Optimization history keys must be design variables numpy arrays."
-            )
-        if not isinstance(value, dict):
-            raise TypeError("Optimization history values must be data dictionary.")
         if isinstance(key, HashableNdarray):
-            self.__dict[key] = OrderedDict(value)
+            self.__dict[key] = dict(value)
         else:
-            self.__dict[HashableNdarray(key, True)] = OrderedDict(value)
+            if not isinstance(key, ndarray):
+                raise TypeError(
+                    "Optimization history keys must be design variables numpy arrays."
+                )
+            self.__dict[HashableNdarray(key, True)] = dict(value)
 
-    def is_new_eval(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> bool
+    def is_new_eval(self, x_vect: ndarray) -> bool:
         """Whether storing the given values would generate a new iteration.
 
         Args:
@@ -190,59 +183,47 @@ class Database(object):
         n_cval = len(curr_val)
         return (n_cval == 1 and self.ITER_TAG in curr_val) or n_cval == 0
 
-    @staticmethod
-    def __get_hashed_key(
-        x_vect,  # type: Union[ndarray, HashableNdarray]
-    ):  # type: (...) -> HashableNdarray
+    def get_hashed_key(
+        self,
+        x_vect: ndarray | HashableNdarray,
+        copy: bool = False,
+    ) -> HashableNdarray:
         """Convert an array to a hashable array.
 
         This array basically represent a key of the first level of the database.
 
         Args:
             x_vect: An array.
+            copy: Whether to copy the original array.
 
         Returns:
             The input array converted to a hashable array.
 
         Raises:
-            TypeError: If the input is not an array.
+            TypeError: If the input is not an array or HashableNdarray.
         """
-        if not isinstance(x_vect, (ndarray, HashableNdarray)):
-            raise TypeError("Database keys must have ndarray type.")
         if isinstance(x_vect, ndarray):
-            return HashableNdarray(x_vect)
-        return x_vect
+            return HashableNdarray(x_vect, tight=copy)
 
-    def __getitem__(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> DatabaseValueType
-        """Get an item value from the database.
+        if isinstance(x_vect, HashableNdarray):
+            if copy and not x_vect.tight:
+                x_vect.wrapped = array(x_vect.wrapped)
 
-        Args:
-            x_vect: The key of the item.
+            return x_vect
 
-        Returns:
-            The value of the item.
-        """
-        hashed = self.__get_hashed_key(x_vect)
-        return self.__dict[hashed]
+        raise KeyError(f"Invalid key type {type(x_vect)}.")
 
-    def __delitem__(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> None
-        """Delete an item from the database.
+    def __getitem__(self, x_vect: ndarray) -> DatabaseValueType | None:
+        return self.__dict.get(self.get_hashed_key(x_vect))
 
-        Args:
-            x_vect: The key of the item that must be deleted.
-        """
-        hashed = self.__get_hashed_key(x_vect)
-        del self.__dict[hashed]
+    def __delitem__(self, x_vect: ndarray) -> None:
+        del self.__dict[self.get_hashed_key(x_vect)]
 
     def setdefault(
         self,
-        key,  # type: ndarray
-        default,  # type: DatabaseValueType
-    ):  # type: (...) -> DatabaseValueType
+        key: ndarray,
+        default: DatabaseValueType,
+    ) -> DatabaseValueType:
         """Set a default database entry.
 
         Args:
@@ -267,15 +248,10 @@ class Database(object):
 
         return self.__dict.setdefault(key, default)
 
-    def __len__(self):  # type: (...) -> int
-        """Get the length of the database.
-
-        Returns:
-            The length.
-        """
+    def __len__(self) -> int:
         return len(self.__dict)
 
-    def keys(self):  # type: (...) -> KeysView[ndarray]
+    def keys(self) -> KeysView[ndarray]:
         """Database keys generator.
 
         Yields:
@@ -283,7 +259,7 @@ class Database(object):
         """
         return self.__dict.keys()
 
-    def values(self):  # type: (...) -> ValuesView[DatabaseValueType]
+    def values(self) -> ValuesView[DatabaseValueType]:
         """Database values generator.
 
         Yields:
@@ -291,7 +267,7 @@ class Database(object):
         """
         return self.__dict.values()
 
-    def items(self):  # type: (...) -> ItemsView[ndarray, DatabaseValueType]
+    def items(self) -> ItemsView[ndarray, DatabaseValueType]:
         """Database items generator.
 
         Yields:
@@ -299,9 +275,7 @@ class Database(object):
         """
         return self.__dict.items()
 
-    def get_value(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> DatabaseValueType
+    def get_value(self, x_vect: ndarray) -> DatabaseValueType:
         """Return a value in the database.
 
         Args:
@@ -315,25 +289,23 @@ class Database(object):
         """
         return self[x_vect]
 
-    def get_max_iteration(self):  # type: (...) -> int
+    def get_max_iteration(self) -> int:
         """Return the maximum number of iterations.
 
         Returns:
-            The max number of iterations.
+            The maximum number of iterations.
         """
         return self.__max_iteration
 
-    def get_x_history(self):  # type: (...) -> List[ndarray]
+    def get_x_history(self) -> list[ndarray]:
         """Return the history of the input design variables ordered by calls.
 
         Returns:
             This values of input design variables.
         """
-        return [x_vect.unwrap() for x_vect in self.__dict.keys()]
+        return [x_vect.wrapped for x_vect in self.__dict.keys()]
 
-    def get_last_n_x(
-        self, n  # type: int
-    ):  # type: (...) -> List[ndarray]
+    def get_last_n_x(self, n: int) -> list[ndarray]:
         """Return the last n ordered calls of the input design variables.
 
         Args:
@@ -352,12 +324,10 @@ class Database(object):
                 "the database size = {}".format(n, n_max)
             )
         return [
-            x_vect.unwrap() for x_vect in islice(self.__dict.keys(), n_max - n, n_max)
+            x_vect.wrapped for x_vect in islice(self.__dict.keys(), n_max - n, n_max)
         ]
 
-    def get_index_of(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> int
+    def get_index_of(self, x_vect: ndarray) -> int:
         """Return the index of an input values in the database.
 
         Args:
@@ -376,9 +346,7 @@ class Database(object):
                 return i
         raise KeyError(x_vect)
 
-    def get_x_by_iter(
-        self, iteration  # type: int
-    ):  # type: (...) -> ndarray
+    def get_x_by_iter(self, iteration: int) -> ndarray:
         """Return the values of the input design variables at a specified iteration.
 
         Args:
@@ -410,15 +378,19 @@ class Database(object):
         # key located at the required iteration using the islice method from
         # itertools.
         key = next(islice(iter(self.__dict), iteration, iteration + 1))
-        return key.unwrap()
+        return key.wrapped
 
-    def clear(self):  # type: (...) -> None
-        """Clear the database."""
+    def clear(self, reset_iteration_counter=False) -> None:
+        """Clear the database.
+
+        Args:
+            reset_iteration_counter: Whether to reset the iteration counter.
+        """
         self.__dict.clear()
+        if reset_iteration_counter:
+            self.__max_iteration = 0
 
-    def clean_from_iterate(
-        self, iterate  # type: int
-    ):  # type: (...) -> None
+    def clean_from_iterate(self, iterate: int) -> None:
         """Delete the iterates after a given iteration number.
 
         Args:
@@ -437,7 +409,7 @@ class Database(object):
             del self.__dict[key]
         self.__max_iteration = len(self)
 
-    def remove_empty_entries(self):  # type: (...) -> None
+    def remove_empty_entries(self) -> None:
         """Remove items when the key is associated to an empty value."""
         empt = [
             k
@@ -447,25 +419,22 @@ class Database(object):
         for k in empt:
             del self[k]
 
-    def filter(
-        self, data_list_to_keep  # type: Iterable[str]
-    ):  # type: (...) -> None
+    def filter(self, names: Iterable[str]) -> None:
         """Filter the database so that only the required output functions are kept.
 
         Args:
-            data_list_to_keep: The name of output functions that must be kept.
+            names: The names of output functions that must be kept.
         """
-        data_list_to_keep = set(data_list_to_keep)
-        for val in self.values():
-            keys_to_del = set(val.keys()) - data_list_to_keep
-            for key in keys_to_del:
-                del val[key]
+        names = set(names)
+        for value in self.values():
+            for key in set(value.keys()) - names:
+                del value[key]
 
     def get_func_history(
         self,
-        funcname,  # type: str
-        x_hist=False,  # type: bool
-    ):  # type: (...) -> Union[ndarray, Tuple[ndarray, List[ndarray]]]
+        funcname: str,
+        x_hist: bool = False,
+    ) -> ndarray | tuple[ndarray, list[ndarray]]:
         """Return the history of the output function values.
 
         This function can also return the history of the input values.
@@ -487,7 +456,7 @@ class Database(object):
                     val = val[0]
                 outf_l.append(val)
                 if x_hist:
-                    x_history.append(x_vect.unwrap())
+                    x_history.append(x_vect.wrapped)
         outf = array(outf_l)
         if x_hist:
             return outf, x_history
@@ -496,9 +465,9 @@ class Database(object):
 
     def get_func_grad_history(
         self,
-        funcname,  # type: str
-        x_hist=False,  # type: bool
-    ):  # type: (...) -> Union[ndarray, Tuple[ndarray, List[ndarray]]]
+        funcname: str,
+        x_hist: bool = False,
+    ) -> ndarray | tuple[ndarray, list[ndarray]]:
         """Return the history of the gradient values of any function.
 
         The function can also return the history of the input values.
@@ -514,9 +483,7 @@ class Database(object):
         gradient_name = self.get_gradient_name(funcname)
         return self.get_func_history(funcname=gradient_name, x_hist=x_hist)
 
-    def is_func_grad_history_empty(
-        self, funcname  # type: str
-    ):  # type: (...) -> bool
+    def is_func_grad_history_empty(self, funcname: str) -> bool:
         """Check if the history of the gradient of any function is empty.
 
         Args:
@@ -527,9 +494,7 @@ class Database(object):
         """
         return len(self.get_func_grad_history(funcname, x_hist=False)) == 0
 
-    def contains_x(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> bool
+    def contains_x(self, x_vect: ndarray) -> bool:
         """Check if the history contains a specific value of input design variables.
 
         Args:
@@ -542,10 +507,10 @@ class Database(object):
 
     def get_f_of_x(
         self,
-        fname,  # type: str
-        x_vect,  # type: ndarray
-        dist_tol=0.0,  # type: float
-    ):  # type: (...) -> Optional[float, ndarray, List[int]]
+        fname: str,
+        x_vect: ndarray,
+        dist_tol: float = 0.0,
+    ) -> None | float | ndarray | list[int]:
         """Return the output function values of any input values in the database.
 
         Args:
@@ -561,22 +526,24 @@ class Database(object):
             the required input values.
             ``None`` if no point matches.
         """
-        if isclose(dist_tol, 0.0, rtol=1e-16):
-            vals = self.get(x_vect)
-            if vals is not None:
-                return vals.get(fname)  # Returns None if not in self
+        if abs(dist_tol) < sys.float_info.epsilon:
+            val = self.get(x_vect)
+            if val is not None:
+                return val.get(fname)
         else:
+            if isinstance(x_vect, HashableNdarray):
+                x_vect = x_vect.wrapped
             for x_key, vals in self.items():
-                x_v = x_key.unwrap()
+                x_v = x_key.wrapped
                 if norm(x_v - x_vect) <= dist_tol * norm(x_v):
                     return vals.get(fname)
         return None
 
     def get(
         self,
-        x_vect,  # type: ndarray
-        default=None,  # type: Any
-    ):  # type: (...) -> Any
+        x_vect: ndarray,
+        default: Any = None,
+    ) -> Any:
         """Return the value of the required key if the key is in the dictionary.
 
         Args:
@@ -591,18 +558,11 @@ class Database(object):
             TypeError: If the type of the required key is neither an array
                 nor a hashable array.
         """
-        if not isinstance(x_vect, (HashableNdarray, ndarray)):
-            raise TypeError(
-                "The key must be an ndarray with the values "
-                "of the input design variables."
-            )
         if isinstance(x_vect, ndarray):
             x_vect = HashableNdarray(x_vect)
         return self.__dict.get(x_vect, default)
 
-    def pop(
-        self, key  # type: ndarray
-    ):  # type: (...) -> DatabaseValueType
+    def pop(self, key: ndarray) -> DatabaseValueType:
         """Remove the required key from the database and return the corresponding value.
 
         Args:
@@ -618,9 +578,9 @@ class Database(object):
 
     def contains_dataname(
         self,
-        data_name,  # type: str
-        skip_grad=False,  # type: bool
-    ):  # type: (...) -> bool
+        data_name: str,
+        skip_grad: bool = False,
+    ) -> bool:
         """Check if the database has an output function with the required name.
 
         Args:
@@ -635,10 +595,10 @@ class Database(object):
 
     def store(
         self,
-        x_vect,  # type: ndarray
-        values_dict,  # type: DatabaseValueType
-        add_iter=True,  # type: bool
-    ):  # type: (...) -> None
+        x_vect: ndarray,
+        values_dict: DatabaseValueType,
+        add_iter: bool = True,
+    ) -> None:
         """Store the output values associated to the input values.
 
         Args:
@@ -646,39 +606,39 @@ class Database(object):
             values_dict: The output values corresponding to the input values.
             add_iter: True if iterations are added to the output values, False otherwise.
         """
-        self.__hdf_export_buffer.append(self.__get_hashed_key(x_vect))
+        x_vect_hash = self.get_hashed_key(x_vect, True)
 
         n_values = len(values_dict)
         values_not_empty = n_values > 1 or (
             n_values == 1 and self.ITER_TAG not in values_dict
         )
-        if self.contains_x(x_vect):
-            curr_val = self.get_value(x_vect)
+        curr_val = self.get(x_vect_hash)
+        self.__hdf_export_buffer.append(x_vect_hash)
+        if curr_val is None:
+            self.__max_iteration += 1
+            cval_ok = True
+            curr_val = values_dict
+            if add_iter:
+                curr_val[self.ITER_TAG] = [self.__max_iteration]
+            self[x_vect_hash] = curr_val
+        else:
             # No new keys = already computed = new iteration
             # otherwise just calls to other functions
             cval_ok = (len(curr_val) == 1 and self.ITER_TAG in curr_val) or not curr_val
-            curr_val.update(OrderedDict(values_dict))
-            self[x_vect] = curr_val
+            curr_val.update(values_dict)
+
+        if self.__store_listeners:
             self.notify_store_listeners()
-            # Notify the new iteration after storing x_vect
-            # because callbacks may need an updated x_vect
+        # Notify the new iteration after storing x_vect
+        # because callbacks may need an updated x_vect
+        if self.__newiter_listeners:
             if cval_ok and values_not_empty:
-                self.notify_newiter_listeners(x_vect)
-        else:
-            self.__max_iteration += 1
-            if add_iter:
-                values_dict = dict(
-                    values_dict, **{self.ITER_TAG: [self.__max_iteration]}
-                )
-            self[x_vect] = values_dict
-            self.notify_store_listeners()
-            if values_not_empty:
                 self.notify_newiter_listeners(x_vect)
 
     def add_store_listener(
         self,
-        listener_func,  # type: Callable
-    ):  # type: (...) -> None
+        listener_func: Callable,
+    ) -> None:
         """Add a listener to be called when an item is stored to the database.
 
         Args:
@@ -693,12 +653,13 @@ class Database(object):
 
     def add_new_iter_listener(
         self,
-        listener_func,  # type: Callable
-    ):  # type: (...) -> None
+        listener_func: Callable,
+    ) -> None:
         """Add a listener to be called when a new iteration is stored to the database.
 
         Args:
-            listener_func: The function to be called.
+            listener_func: The function to be called, it must have one argument that is
+                the current x_vector.
 
         Raises:
             TypeError: If the argument is not a callable.
@@ -707,40 +668,41 @@ class Database(object):
             raise TypeError("Listener function is not callable.")
         self.__newiter_listeners.append(listener_func)
 
-    def clear_listeners(self):  # type: (...) -> None
+    def clear_listeners(self) -> None:
         """Clear all the listeners."""
         self.__store_listeners = []
         self.__newiter_listeners = []
 
-    def notify_store_listeners(self):  # type: (...) -> None
+    def notify_store_listeners(self) -> None:
         """Notify the listeners that a new entry was stored in the database."""
         for func in self.__store_listeners:
             func()
 
     def notify_newiter_listeners(
         self,
-        x_vect=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> None
+        x_vect: ndarray | None = None,
+    ) -> None:
         """Notify the listeners that a new iteration is ongoing.
 
         Args:
             x_vect: The values of the design variables. If None, use
                 the values of the last iteration.
         """
-        if x_vect is None:
+        if not self.__newiter_listeners:
+            return
+        if isinstance(x_vect, HashableNdarray):
+            x_vect = x_vect.wrapped
+        elif x_vect is None:
             x_vect = self.get_x_by_iter(-1)
 
         for func in self.__newiter_listeners:
-            try:
-                func(x_vect)
-            except TypeError:
-                func()
+            func(x_vect)
 
     def get_all_data_names(
         self,
-        skip_grad=True,  # type: bool
-        skip_iter=False,  # type: bool
-    ):  # type: (...) -> Set[str]
+        skip_grad: bool = True,
+        skip_iter: bool = False,
+    ) -> set[str]:
         """Return all the names of the output functions contained in the database.
 
         Args:
@@ -764,9 +726,9 @@ class Database(object):
 
     def _format_history_names(
         self,
-        functions,  # type: Iterable[str]
-        stacked_data,  # type: Iterable[str]
-    ):  # type: (...) -> Tuple[Iterable[str], List[str]]
+        functions: Iterable[str],
+        stacked_data: Iterable[str],
+    ) -> tuple[Iterable[str], list[str]]:
         """Format the names of the output functions to be displayed in the history.
 
         Args:
@@ -801,12 +763,12 @@ class Database(object):
 
     def get_complete_history(
         self,
-        functions=None,  # type: Optional[Iterable[str]]
-        add_missing_tag=False,  # type: bool
-        missing_tag="NA",  # type: str
-        all_iterations=False,  # type: bool
-        stacked_data=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> Tuple[List[List[Union[float, ndarray]]], List[ndarray]]
+        functions: Iterable[str] | None = None,
+        add_missing_tag: bool = False,
+        missing_tag: str | float = "NA",
+        all_iterations: bool = False,
+        stacked_data: Iterable[str] | None = None,
+    ) -> tuple[list[list[float | ndarray]], list[ndarray]]:
         """Return the complete history of the optimization: design variables, functions
         and gradients.
 
@@ -858,13 +820,13 @@ class Database(object):
                         out_vals.append(missing_tag)
                 if out_vals:
                     f_history.append(out_vals)
-                    x_history.append(x_vect.unwrap())
+                    x_history.append(x_vect.wrapped)
         return f_history, x_history
 
     @staticmethod
     def __to_real(
-        data,  # type: Union[ndarray, Iterable[complex]]
-    ):  # type: (...) -> ndarray
+        data: ndarray | Iterable[complex],
+    ) -> ndarray:
         """Convert complex to real numpy array.
 
         Args:
@@ -877,10 +839,10 @@ class Database(object):
 
     def _add_hdf_input_dataset(
         self,
-        index_dataset,  # type: int
-        design_vars_group,  # type: h5py.Group
-        design_vars_values,  # type: HashableNdarray
-    ):  # type: (...) -> None
+        index_dataset: int,
+        design_vars_group: h5py.Group,
+        design_vars_values: HashableNdarray,
+    ) -> None:
         """Add a new input to the hdf group of input values.
 
         Args:
@@ -899,17 +861,17 @@ class Database(object):
             )
 
         design_vars_group.create_dataset(
-            str(index_dataset), data=design_vars_values.unwrap()
+            str(index_dataset), data=design_vars_values.wrapped
         )
 
     def _add_hdf_output_dataset(
         self,
-        index_dataset,  # type: int
-        keys_group,  # type: h5py.Group
-        values_group,  # type: h5py.Group
-        output_values,  # type: Mapping[str, Union[float, ndarray, List]]
-        output_name_to_idx=None,  # type: Optional[Mapping[str, int]]
-    ):  # type: (...) -> None
+        index_dataset: int,
+        keys_group: h5py.Group,
+        values_group: h5py.Group,
+        output_values: Mapping[str, float | ndarray | list],
+        output_name_to_idx: Mapping[str, int] | None = None,
+    ) -> None:
         """Add new outputs to the hdf group of output values.
 
         Args:
@@ -946,10 +908,10 @@ class Database(object):
 
     def _get_missing_hdf_output_dataset(
         self,
-        index_dataset,  # type: int
-        keys_group,  # type: h5py.Group
-        output_values,  # type: Mapping[str, Union[float, ndarray, List[int]]]
-    ):  # type: (...) -> ReturnedHdfMissingOutputType
+        index_dataset: int,
+        keys_group: h5py.Group,
+        output_values: Mapping[str, float | ndarray | list[int]],
+    ) -> ReturnedHdfMissingOutputType:
         """Return the missing values in the hdf group of the output names.
 
         Compare the keys of ``output_values`` with the existing names
@@ -971,9 +933,9 @@ class Database(object):
         """
         name = str(index_dataset)
         if name not in keys_group:
-            raise ValueError("The dataset named '{}' does not exist.".format(name))
+            raise ValueError(f"The dataset named '{name}' does not exist.")
 
-        existing_output_names = set(out.decode() for out in keys_group[name])
+        existing_output_names = {out.decode() for out in keys_group[name]}
         all_output_names = set(output_values)
         missing_names = all_output_names - existing_output_names
 
@@ -990,9 +952,9 @@ class Database(object):
 
     def _add_hdf_name_output(
         self,
-        index_dataset,  # type: int
-        keys_group,  # type: h5py.Group
-        keys,  # type: List[str]
+        index_dataset: int,
+        keys_group: h5py.Group,
+        keys: list[str],
     ):
         """Add new output names to the hdf5 group of output names.
 
@@ -1019,10 +981,10 @@ class Database(object):
 
     def _add_hdf_scalar_output(
         self,
-        index_dataset,  # type: int
-        values_group,  # type: h5py.Group
-        values,  # type: List[float]
-    ):  # type: (...) -> None
+        index_dataset: int,
+        values_group: h5py.Group,
+        values: list[float],
+    ) -> None:
         """Add new scalar values to the hdf5 group of output values.
 
         Create a dataset in the group of output values
@@ -1047,11 +1009,11 @@ class Database(object):
 
     def _add_hdf_vector_output(
         self,
-        index_dataset,  # type: int
-        idx_sub_group,  # type: int
-        values_group,  # type: h5py.Group
-        value,  # type: Union[ndarray, List[int]]
-    ):  # type: (...) -> None
+        index_dataset: int,
+        idx_sub_group: int,
+        values_group: h5py.Group,
+        value: ndarray | list[int],
+    ) -> None:
         """Add a new vector of values to the hdf5 group of output values.
 
         Create a sub-group dedicated to vectors in the group of output
@@ -1070,7 +1032,7 @@ class Database(object):
             ValueError: If the index of the dataset in the sub-group of vectors
                 already exist.
         """
-        sub_group_name = "arr_{}".format(index_dataset)
+        sub_group_name = f"arr_{index_dataset}"
 
         if sub_group_name not in values_group:
             sub_group = values_group.require_group(sub_group_name)
@@ -1089,11 +1051,11 @@ class Database(object):
 
     def _append_hdf_output(
         self,
-        index_dataset,  # type: int
-        keys_group,  # type: h5py.Group
-        values_group,  # type: h5py.Group
-        output_values,  # type: Mapping[str, Union[float, ndarray, List[int]]]
-    ):  # type: (...) -> None
+        index_dataset: int,
+        keys_group: h5py.Group,
+        values_group: h5py.Group,
+        output_values: Mapping[str, float | ndarray | list[int]],
+    ) -> None:
         """Append the existing hdf5 datasets of the outputs with new values.
 
         Find the values among ``output_values`` that do not
@@ -1120,12 +1082,12 @@ class Database(object):
 
     def _create_hdf_input_output(
         self,
-        index_dataset,  # type: int
-        design_vars_group,  # type: h5py.Group
-        keys_group,  # type: h5py.Group
-        values_group,  # type: h5py.Group
-        input_values,  # type: HashableNdarray
-        output_values,  # type: Mapping[str, Union[float, ndarray, List[int]]]
+        index_dataset: int,
+        design_vars_group: h5py.Group,
+        keys_group: h5py.Group,
+        values_group: h5py.Group,
+        input_values: HashableNdarray,
+        output_values: Mapping[str, float | ndarray | list[int]],
     ):
         """Create the new hdf5 datasets for the given inputs and outputs.
 
@@ -1146,9 +1108,9 @@ class Database(object):
 
     def export_hdf(
         self,
-        file_path="optimization_history.h5",  # type: str
-        append=False,  # type: bool
-    ):  # type: (...) -> None
+        file_path: str = "optimization_history.h5",
+        append: bool = False,
+    ) -> None:
         """Export the optimization database to a hdf file.
 
         Args:
@@ -1205,9 +1167,7 @@ class Database(object):
 
         self.__hdf_export_buffer = []
 
-    def import_hdf(
-        self, filename="optimization_history.h5"  # type: str
-    ):  # type: (...) -> None
+    def import_hdf(self, filename: str = "optimization_history.h5") -> None:
         """Import a database from a hdf file.
 
         Args:
@@ -1222,23 +1182,25 @@ class Database(object):
                 str_index = str(raw_index)
                 keys = [k.decode() for k in get_hdf5_group(keys_group, str_index)]
 
-                array_name = "arr_{}".format(str_index)
-
+                array_name = f"arr_{str_index}"
                 if array_name in values_group:
-                    argrp = values_group[array_name]
-                    vec_dict = {keys[int(k)]: array(v) for k, v in argrp.items()}
+                    names_to_arrays = {
+                        keys[int(k)]: array(v)
+                        for k, v in values_group[array_name].items()
+                    }
                 else:
-                    vec_dict = {}
-
-                scalar_keys = (k for k in keys if k not in vec_dict)
+                    names_to_arrays = {}
 
                 if str_index in values_group:
-                    locvalues_scalars = get_hdf5_group(values_group, str_index)
-                    scalar_dict = dict(zip(scalar_keys, locvalues_scalars))
+                    scalar_dict = dict(
+                        zip(
+                            (k for k in keys if k not in names_to_arrays),
+                            get_hdf5_group(values_group, str_index),
+                        )
+                    )
                 else:
                     scalar_dict = {}
-
-                scalar_dict.update(vec_dict)
+                scalar_dict.update(names_to_arrays)
 
                 self.store(
                     array(design_vars_grp[str_index]), scalar_dict, add_iter=False
@@ -1246,8 +1208,8 @@ class Database(object):
 
     @staticmethod
     def set_dv_names(
-        n_dv,  # type: int
-    ):  # type: (...) -> List[str]
+        n_dv: int,
+    ) -> list[str]:
         """Return the default input variables names.
 
         Args:
@@ -1260,9 +1222,9 @@ class Database(object):
 
     def _format_design_variables_names(
         self,
-        design_variables_names,  # type: Optional[str, Iterable[str]]
-        dimension,  # type: int
-    ):  # type: (...) -> Union[List[str], Tuple[str]]
+        design_variables_names: None | str | Iterable[str],
+        dimension: int,
+    ) -> list[str] | tuple[str]:
         """Format the design variables names to be displayed in the history.
 
         Args:
@@ -1278,7 +1240,7 @@ class Database(object):
         """
         if design_variables_names is None:
             design_variables_names = self.set_dv_names(dimension)
-        elif isinstance(design_variables_names, string_types):
+        elif isinstance(design_variables_names, str):
             design_variables_names = [design_variables_names]
         elif not isinstance(design_variables_names, list) and not isinstance(
             design_variables_names, tuple
@@ -1291,14 +1253,14 @@ class Database(object):
 
     def get_history_array(
         self,
-        functions=None,  # type: Optional[Iterable[str]]
-        design_variables_names=None,  # type: Optional[Union[str, Iterable[str]]]
-        add_missing_tag=False,  # type: bool
-        missing_tag="NA",  # type: str
-        add_dv=True,  # type: bool
-        all_iterations=False,  # type: bool
-        stacked_data=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> Tuple[ndarray, List[str], Iterable[str]]
+        functions: Iterable[str] | None = None,
+        design_variables_names: str | Iterable[str] | None = None,
+        add_missing_tag: bool = False,
+        missing_tag: str | float = "NA",
+        add_dv: bool = True,
+        all_iterations: bool = False,
+        stacked_data: Iterable[str] | None = None,
+    ) -> tuple[ndarray, list[str], Iterable[str]]:
         """Return the history of the optimization process.
 
         Args:
@@ -1330,7 +1292,7 @@ class Database(object):
             design_variables_names, len(x_history[0])
         )
         flat_vals = []
-        fdict = OrderedDict()
+        fdict = {}
         for f_val_i in f_history:
             flat_vals_i = []
             for f_val, f_name in zip(f_val_i, functions):
@@ -1338,26 +1300,22 @@ class Database(object):
                     f_val = array(f_val)
                 if isinstance(f_val, ndarray) and len(f_val) > 1:
                     flat_vals_i = flat_vals_i + f_val.tolist()
-                    fdict[f_name] = [
-                        f_name + "_" + str(i + 1) for i in range(len(f_val))
-                    ]
+                    fdict[f_name] = [f"{f_name} ({i})" for i in range(len(f_val))]
                 else:
                     flat_vals_i.append(f_val)
                     if f_name not in fdict:
                         fdict[f_name] = [f_name]
             flat_vals.append(flat_vals_i)
-        flat_names = sorted(list(chain(*fdict.values())))
+        flat_names = list(chain(*fdict.values()))
 
         x_flat_vals = []
-        xdict = OrderedDict()
+        xdict = {}
         for x_val_i in x_history:
             x_flat_vals_i = []
             for x_val, x_name in zip(x_val_i, design_variables_names):
                 if isinstance(x_val, ndarray) and len(x_val) > 1:
                     x_flat_vals_i = x_flat_vals_i + x_val.tolist()
-                    xdict[x_name] = [
-                        x_name + "_" + str(i + 1) for i in range(len(x_val))
-                    ]
+                    xdict[x_name] = [f"{x_name} ({i})" for i in range(len(x_val))]
                 else:
                     x_flat_vals_i.append(x_val)
                     if x_name not in xdict:
@@ -1386,10 +1344,10 @@ class Database(object):
 
     def export_to_ggobi(
         self,
-        functions=None,  # type: Optional[Iterable[str]]
-        file_path="opt_hist.xml",  # type: str
-        design_variables_names=None,  # type: Optional[Union[str, Iterable[str]]]
-    ):  # type: (...) -> None
+        functions: Iterable[str] | None = None,
+        file_path: str = "opt_hist.xml",
+        design_variables_names: str | Iterable[str] | None = None,
+    ) -> None:
         """Export the database to a xml file for ggobi tool.
 
         Args:
@@ -1408,9 +1366,7 @@ class Database(object):
             file_path=file_path,
         )
 
-    def import_from_opendace(
-        self, database_file  # type: str
-    ):  # type: (...) -> None
+    def import_from_opendace(self, database_file: str) -> None:
         """Load the current database from an opendace xml database.
 
         Args:
@@ -1431,8 +1387,8 @@ class Database(object):
     @classmethod
     def get_gradient_name(
         cls,
-        name,  # type: str
-    ):  # type: (...) -> str
+        name: str,
+    ) -> str:
         """Return the name of the gradient related to a function.
 
         This name is the concatenation of a GRAD_TAG, e.g. '@',
@@ -1445,18 +1401,13 @@ class Database(object):
         Returns:
             The name of the gradient based on the name of the function.
         """
-        return "{}{}".format(cls.GRAD_TAG, name)
+        return f"{cls.GRAD_TAG}{name}"
 
-    def __str__(self):  # type: (...) -> str
-        """Return the string representation.
-
-        The string representation of the database is based on the underlying dictionary
-        string representation.
-        """
+    def __str__(self) -> str:
         return str(self.__dict)
 
 
-class HashableNdarray(object):
+class HashableNdarray:
     """HashableNdarray wrapper for ndarray objects.
 
     Instances of ndarray are not HashableNdarray,
@@ -1475,9 +1426,9 @@ class HashableNdarray(object):
 
     def __init__(
         self,
-        wrapped,  # type: ndarray
-        tight=False,  # type: bool
-    ):  # type: (...) -> None
+        wrapped: ndarray,
+        tight: bool = False,
+    ) -> None:
         """
         Args:
             wrapped: The array that must be wrapped.
@@ -1485,30 +1436,28 @@ class HashableNdarray(object):
         """
         self.__tight = tight
         self.wrapped = array(wrapped) if tight else wrapped
-        self.__hash = int(sha1(wrapped.view(uint8)).hexdigest(), 16)
+        self.__hash = int(xxh3_64_hexdigest(wrapped.view(uint8)), 16)
 
-    def __eq__(
-        self, other  # type: HashableNdarray
-    ):  # type: (...) -> bool
-        """Check equality with another HashableNdarray.
+    @property
+    def tight(self) -> bool:
+        """Whether the wrapped array is a copy of the original one.copied."""
+        return self.__tight
 
-        Args:
-            other: The other hashable array.
+    def __eq__(self, other: Any) -> bool:
+        if hash(self) != hash(other):
+            return False
+        return array_equal(self.wrapped, other.wrapped)
 
-        Returns:
-            True if the two arrays are equal, False otherwise.
-        """
-        return all(self.wrapped == other.wrapped)
-
-    def __hash__(self):  # type: (...) -> int
-        """Return the hash number of the current array.
-
-        Returns:
-            The hash number.
-        """
+    def __hash__(self) -> int:
         return self.__hash
 
-    def unwrap(self):  # type: (...) -> ndarray
+    def __str__(self) -> str:
+        return str(self.wrapped)
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def unwrap(self) -> ndarray:
         """Return the encapsulated ndarray.
 
         Returns:
@@ -1518,19 +1467,3 @@ class HashableNdarray(object):
             return array(self.wrapped)
 
         return self.wrapped
-
-    def __str__(self):  # type: (...) -> str
-        """Return the informal string representation of the array.
-
-        Returns:
-            The string representation.
-        """
-        return str(array(self.wrapped))
-
-    def __repr__(self):  # type: (...) -> str
-        """Return the official string representation.
-
-        Returns:
-            The string representation.
-        """
-        return str(self)

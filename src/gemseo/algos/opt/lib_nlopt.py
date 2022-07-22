@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,16 +19,21 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """NLopt library wrapper."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, Optional, Union
+from dataclasses import dataclass
+from typing import Any
+from typing import Callable
+from typing import Union
 
 import nlopt
 from nlopt import RoundoffLimited
-from numpy import atleast_1d, atleast_2d, ndarray
+from numpy import atleast_1d
+from numpy import atleast_2d
+from numpy import ndarray
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import TerminationCriterion
@@ -45,6 +48,13 @@ class NloptRoundOffException(Exception):
     """NLopt roundoff error."""
 
 
+@dataclass
+class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the NLopt library."""
+
+    library_name: str = "NLopt"
+
+
 class Nlopt(OptimizationLibrary):
     """NLopt optimization library interface.
 
@@ -52,6 +62,7 @@ class Nlopt(OptimizationLibrary):
     """
 
     LIB_COMPUTE_GRAD = False
+    INNER_MAXEVAL = "inner_maxeval"
     STOPVAL = "stopval"
     CTOL_ABS = "ctol_abs"
     INIT_STEP = "init_step"
@@ -115,78 +126,86 @@ class Nlopt(OptimizationLibrary):
         -5: FORCED_STOP,
     }
 
-    def __init__(self):  # type: (...) -> None
-        super(Nlopt, self).__init__()
+    LIBRARY_NAME = "NLopt"
+
+    def __init__(self) -> None:
+        super().__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
-        self.lib_dict = {
-            "NLOPT_MMA": {
-                self.INTERNAL_NAME: nlopt.LD_MMA,
-                self.REQUIRE_GRAD: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_EQ_CONS: False,
-                self.DESCRIPTION: "Method of Moving Asymptotes (MMA)"
-                "implemented in the NLOPT library",
-                self.WEBSITE: "{}#mma-method-of-moving-asymptotes-and-ccsa".format(
-                    nlopt_doc
+        self.descriptions = {
+            "NLOPT_MMA": NLoptAlgorithmDescription(
+                algorithm_name="MMA",
+                description=(
+                    "Method of Moving Asymptotes (MMA)"
+                    "implemented in the NLOPT library"
                 ),
-            },
-            "NLOPT_COBYLA": {
-                self.INTERNAL_NAME: nlopt.LN_COBYLA,
-                self.REQUIRE_GRAD: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "Constrained Optimization BY Linear "
-                "Approximations (COBYLA) implemented "
-                "in the NLOPT library",
-                self.WEBSITE: "{}".format(nlopt_doc)
-                + "#cobyla-constrained-optimization-by-linear-"
-                "approximations",
-            },
-            "NLOPT_SLSQP": {
-                self.INTERNAL_NAME: nlopt.LD_SLSQP,
-                self.REQUIRE_GRAD: True,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "Sequential Least-Squares Quadratic "
-                "Programming (SLSQP) implemented in "
-                "the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#slsqp",
-            },
-            "NLOPT_BOBYQA": {
-                self.INTERNAL_NAME: nlopt.LN_BOBYQA,
-                self.REQUIRE_GRAD: False,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.DESCRIPTION: "Bound Optimization BY Quadratic "
-                "Approximation (BOBYQA) implemented "
-                "in the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#bobyqa",
-            },
-            "NLOPT_BFGS": {
-                self.INTERNAL_NAME: nlopt.LD_LBFGS,
-                self.REQUIRE_GRAD: True,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.DESCRIPTION: "Broyden-Fletcher-Goldfarb-Shanno method "
-                "(BFGS) implemented in the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#low-storage-bfgs",
-            },
+                handle_inequality_constraints=True,
+                internal_algorithm_name=nlopt.LD_MMA,
+                require_gradient=True,
+                website=f"{nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
+            ),
+            "NLOPT_COBYLA": NLoptAlgorithmDescription(
+                algorithm_name="COBYLA",
+                description=(
+                    "Constrained Optimization BY Linear "
+                    "Approximations (COBYLA) implemented "
+                    "in the NLOPT library"
+                ),
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=nlopt.LN_COBYLA,
+                website=(
+                    f"{nlopt_doc}#cobyla-constrained-optimization-by-linear-"
+                    "approximations"
+                ),
+            ),
+            "NLOPT_SLSQP": NLoptAlgorithmDescription(
+                algorithm_name="SLSQP",
+                description=(
+                    "Sequential Least-Squares Quadratic "
+                    "Programming (SLSQP) implemented in "
+                    "the NLOPT library"
+                ),
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=nlopt.LD_SLSQP,
+                require_gradient=True,
+                website=f"{nlopt_doc}#slsqp",
+            ),
+            "NLOPT_BOBYQA": NLoptAlgorithmDescription(
+                algorithm_name="BOBYQA",
+                description=(
+                    "Bound Optimization BY Quadratic "
+                    "Approximation (BOBYQA) implemented "
+                    "in the NLOPT library"
+                ),
+                internal_algorithm_name=nlopt.LN_BOBYQA,
+                website=f"{nlopt_doc}#bobyqa",
+            ),
+            "NLOPT_BFGS": NLoptAlgorithmDescription(
+                algorithm_name="BFGS",
+                description=(
+                    "Broyden-Fletcher-Goldfarb-Shanno method "
+                    "(BFGS) implemented in the NLOPT library"
+                ),
+                internal_algorithm_name=nlopt.LD_LBFGS,
+                require_gradient=True,
+                website=f"{nlopt_doc}#low-storage-bfgs",
+            ),
             # Does not work on Rastrigin => banned
             #             'NLOPT_ESCH': { Does not work on Rastrigin
             #                 self.INTERNAL_NAME: nlopt.GN_ESCH,
             #                 self.REQUIRE_GRAD: False,
             #                 self.HANDLE_EQ_CONS: False,
             #                 self.HANDLE_INEQ_CONS: False},
-            "NLOPT_NEWUOA": {
-                self.INTERNAL_NAME: nlopt.LN_NEWUOA_BOUND,
-                self.REQUIRE_GRAD: False,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.DESCRIPTION: "NEWUOA + bound constraints implemented "
-                "in the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#newuoa-bound-constraints",
-            },
+            "NLOPT_NEWUOA": NLoptAlgorithmDescription(
+                algorithm_name="NEWUOA",
+                description=(
+                    "NEWUOA + bound constraints implemented in the NLOPT library"
+                ),
+                internal_algorithm_name=nlopt.LN_NEWUOA_BOUND,
+                website=f"{nlopt_doc}#newuoa-bound-constraints",
+            ),
             # Does not work on Rastrigin => banned
             #             'NLOPT_ISRES': {
             #                 self.INTERNAL_NAME: nlopt.GN_ISRES,
@@ -194,25 +213,23 @@ class Nlopt(OptimizationLibrary):
             #                 self.HANDLE_EQ_CONS: True,
             #                 self.HANDLE_INEQ_CONS: True}
         }
-        for key in self.lib_dict:
-            self.lib_dict[key][self.LIB] = self.__class__.__name__
 
     def _get_options(
         self,
-        ftol_abs=1e-14,  # type: float  # pylint: disable=W0221
-        xtol_abs=1e-14,  # type: float
-        max_time=0.0,  # type: float
-        max_iter=999,  # type: int
-        ftol_rel=1e-8,  # type: float
-        xtol_rel=1e-8,  # type: float
-        ctol_abs=1e-6,  # type: float
-        stopval=None,  # type: Optional[float]
-        normalize_design_space=True,  # type: bool
-        eq_tolerance=1e-2,  # type: float
-        ineq_tolerance=1e-4,  # type: float
-        init_step=0.25,  # type: float
-        **kwargs  # type: Any
-    ):  # type: (...) -> Dict[str, NLoptOptionsType]
+        ftol_abs: float = 1e-14,  # pylint: disable=W0221
+        xtol_abs: float = 1e-14,
+        max_time: float = 0.0,
+        max_iter: int = 999,
+        ftol_rel: float = 1e-8,
+        xtol_rel: float = 1e-8,
+        ctol_abs: float = 1e-6,
+        stopval: float | None = None,
+        normalize_design_space: bool = True,
+        eq_tolerance: float = 1e-2,
+        ineq_tolerance: float = 1e-4,
+        init_step: float = 0.25,
+        **kwargs: Any,
+    ) -> dict[str, NLoptOptionsType]:
         r"""Retrieve the options of the Nlopt library.
 
         Args:
@@ -254,16 +271,16 @@ class Nlopt(OptimizationLibrary):
             eq_tolerance=eq_tolerance,
             ineq_tolerance=ineq_tolerance,
             init_step=init_step,
-            **kwargs
+            **kwargs,
         )
 
         return popts
 
     def __opt_objective_grad_nlopt(
         self,
-        xn_vect,  # type: ndarray
-        grad,  # type: ndarray
-    ):  # type: (...) -> float
+        xn_vect: ndarray,
+        grad: ndarray,
+    ) -> float:
         """Evaluate the objective and gradient functions for NLopt.
 
         Args:
@@ -280,10 +297,10 @@ class Nlopt(OptimizationLibrary):
 
     def __make_constraint(
         self,
-        func,  # type: Callable[[ndarray], ndarray]
-        jac,  # type: Callable[[ndarray], ndarray]
-        index_cstr,  # type: int
-    ):  # type: (...) -> Callable[[ndarray, ndarray], ndarray]
+        func: Callable[[ndarray], ndarray],
+        jac: Callable[[ndarray], ndarray],
+        index_cstr: int,
+    ) -> Callable[[ndarray, ndarray], ndarray]:
         """Build NLopt-like constraints.
 
         No vector functions are allowed. The database will avoid
@@ -299,9 +316,9 @@ class Nlopt(OptimizationLibrary):
         """
 
         def cstr_fun_grad(
-            xn_vect,  # type: ndarray
-            grad,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            xn_vect: ndarray,
+            grad: ndarray,
+        ) -> ndarray:
             """Define the function to be given as a pointer to the optimizer.
 
             Used to compute constraints and constraints gradients if required.
@@ -313,7 +330,7 @@ class Nlopt(OptimizationLibrary):
             Returns:
                 The result of evaluating the function for a given constraint.
             """
-            if self.lib_dict[self.algo_name][self.REQUIRE_GRAD]:
+            if self.descriptions[self.algo_name].require_gradient:
                 if grad.size > 0:
                     cstr_jac = jac(xn_vect)
                     grad[:] = atleast_2d(cstr_jac)[
@@ -325,9 +342,9 @@ class Nlopt(OptimizationLibrary):
 
     def __add_constraints(
         self,
-        nlopt_problem,  # type: nlopt.opt
-        ctol=0.0,  # type: float
-    ):  # type: (...) -> None
+        nlopt_problem: nlopt.opt,
+        ctol: float = 0.0,
+    ) -> None:
         """Add all the constraints to the optimization problem.
 
         Args:
@@ -348,9 +365,9 @@ class Nlopt(OptimizationLibrary):
 
     def __set_prob_options(
         self,
-        nlopt_problem,  # type: nlopt.opt
-        **opt_options  # type: Any
-    ):  # type: (...) -> nlopt.opt
+        nlopt_problem: nlopt.opt,
+        **opt_options: Any,
+    ) -> nlopt.opt:
         """Set the options for the NLopt algorithm.
 
         Args:
@@ -372,12 +389,12 @@ class Nlopt(OptimizationLibrary):
             stopval = opt_options[self.STOPVAL]
             if stopval is not None:
                 nlopt_problem.set_stopval(stopval)
+        if self.INNER_MAXEVAL in opt_options:
+            nlopt_problem.set_param(self.INNER_MAXEVAL, opt_options[self.INNER_MAXEVAL])
 
         return nlopt_problem
 
-    def _run(
-        self, **options  # type: NLoptOptionsType
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: NLoptOptionsType) -> OptimizationResult:
         """Run the algorithm.
 
         Args:

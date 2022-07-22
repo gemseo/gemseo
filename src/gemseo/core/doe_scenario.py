@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scenario whose driver is a design of experiments."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Any, Optional, Sequence
+from typing import Any
+from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
 
@@ -38,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 class DOEScenario(Scenario):
     """A multidisciplinary scenario to be executed by a design of experiments (DOE).
 
-    A :class:`DOEScenario` is a particular :class:`.Scenario`
+    A :class:`.DOEScenario` is a particular :class:`.Scenario`
     whose driver is a DOE.
     This DOE must be implemented in a :class:`.DOELibrary`.
 
@@ -50,17 +50,18 @@ class DOEScenario(Scenario):
     N_SAMPLES = "n_samples"
     EVAL_JAC = "eval_jac"
     SEED = "seed"
+    _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + ("seed",)
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        formulation,  # type: str
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options  # type: Any
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        formulation: str,
+        objective_name: str | Sequence[str],
+        design_space: DesignSpace,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        **formulation_options: Any,
+    ) -> None:
         """
         Args:
             disciplines: The disciplines
@@ -69,6 +70,7 @@ class DOEScenario(Scenario):
             formulation: The name of the MDO formulation,
                 also the name of a class inheriting from :class:`.MDOFormulation`.
             objective_name: The name of the objective.
+                If a sequence is passed, a vector objective function is created.
             design_space: The design space.
             name: The name to be given to this scenario.
                 If None, use the name of the class.
@@ -78,22 +80,23 @@ class DOEScenario(Scenario):
                 to be passed to the :class:`.MDOFormulation`.
         """
         # This loads the right json grammars from class name
-        super(DOEScenario, self).__init__(
+        super().__init__(
             disciplines,
             formulation,
             objective_name,
             design_space,
             name,
             grammar_type,
-            **formulation_options
+            **formulation_options,
         )
         self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
+        self.__samples = None
 
-    def _init_algo_factory(self):  # type: (...) -> None
+    def _init_algo_factory(self) -> None:
         self._algo_factory = DOEFactory()
 
-    def _run_algorithm(self):  # type: (...) -> None
+    def _run_algorithm(self) -> None:
         self.seed += 1
 
         algo_name = self.local_data[self.ALGO]
@@ -101,12 +104,22 @@ class DOEScenario(Scenario):
         if options is None:
             options = {}
 
-        lib = self._algo_factory.create(algo_name)
-        lib.init_options_grammar(algo_name)
-        if self.SEED in lib.opt_grammar.get_data_names() and self.SEED not in options:
+        # Store the lib in case we rerun the same algorithm,
+        # for multilevel scenarios for instance
+        # This significantly speedups the process
+        # also because of the option grammar that is long to create
+        if self._algo_name is not None and self._algo_name == algo_name:
+            lib = self._lib
+        else:
+            lib = self._algo_factory.create(algo_name)
+            lib.init_options_grammar(algo_name)
+            self._lib = lib
+            self._algo_name = algo_name
+
+        if self.SEED in lib.opt_grammar and self.SEED not in options:
             options[self.SEED] = self.seed
 
-        if self.N_SAMPLES in lib.opt_grammar.get_data_names():
+        if self.N_SAMPLES in lib.opt_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in options:
                 LOGGER.warning(
@@ -116,20 +129,28 @@ class DOEScenario(Scenario):
             options[self.N_SAMPLES] = n_samples
 
         self.optimization_result = lib.execute(self.formulation.opt_problem, **options)
+        self.__samples = lib.samples
 
         return self.optimization_result
 
-    def _run(self):  # type: (...) -> None
-        LOGGER.info(" ")
-        LOGGER.info("*** Start DOE Scenario execution ***")
-        LOGGER.info("%s", repr(self))
-        self._run_algorithm()
-        LOGGER.info("*** DOE Scenario run terminated ***")
+    def _update_grammar_input(self) -> None:
+        self.input_grammar.update(dict(algo=str, n_samples=int, algo_options=dict))
+        for name in ("n_samples", "algo_options"):
+            self.input_grammar.required_names.remove(name)
 
-    def _update_grammar_input(self):  # type: (...) -> None
-        self.input_grammar.update_elements(
-            algo=str, n_samples=int, algo_options=dict, python_typing=True
-        )
-        self.input_grammar.update_required_elements(
-            algo=True, n_samples=False, algo_options=False
+    def export_to_dataset(
+        self,
+        name: str | None = None,
+        by_group: bool = True,
+        categorize: bool = True,
+        opt_naming: bool = True,
+        export_gradients: bool = False,
+    ) -> Dataset:
+        return self.formulation.opt_problem.export_to_dataset(
+            name=name,
+            by_group=by_group,
+            categorize=categorize,
+            opt_naming=opt_naming,
+            export_gradients=export_gradients,
+            input_values=self.__samples,
         )

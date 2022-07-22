@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -95,39 +93,39 @@ to be carefully tuned in order to maximize the generalization power of the model
    :mod:`~gemseo.mlearning.core.calibration`
    :mod:`~gemseo.mlearning.core.selection`
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import pickle
 from copy import deepcopy
-from typing import Any, Dict, Mapping, Optional, Sequence, Union
+from pathlib import Path
+from typing import Any
+from typing import ClassVar
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.py23_compat import Path, xrange
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
-TransformerType = Dict[str, Transformer]
+TransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
 SavedObjectType = Union[Dataset, TransformerType, str, bool]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class MLAlgo(object):
+class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
     """An abstract machine learning algorithm.
 
     Such a model is built from a training dataset,
@@ -155,16 +153,25 @@ class MLAlgo(object):
         algo (Any): The interfaced machine learning algorithm.
     """
 
-    LIBRARY = None
-    ABBR = "MLAlgo"
-    FILENAME = "ml_algo.pkl"
+    SHORT_ALGO_NAME: ClassVar[str] = "MLAlgo"
+    """The short name of the machine learning algorithm, often an acronym.
+
+    Typically used for composite names,
+    e.g. ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"``
+    or ``f"{algo.SHORT_ALGO_NAME}_{discipline.name}"``.
+    """
+
+    LIBRARY: ClassVar[str] = ""
+    """The name of the library of the wrapped machine learning algorithm."""
+
+    FILENAME: ClassVar[str] = "ml_algo.pkl"
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
-        **parameters  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             data: The learning dataset.
@@ -179,64 +186,106 @@ class MLAlgo(object):
                 to all the variables of this group.
                 If None, do not transform the variables.
             **parameters: The parameters of the machine learning algorithm.
+
+        Raises:
+            ValueError: When both the variable and the group it belongs to
+                have a transformer.
         """
         self.learning_set = data
         self.parameters = parameters
         self.transformer = {}
-        if transformer:
+        if transformer is not None:
             self.transformer = {
-                group: transf.duplicate() for group, transf in transformer.items()
+                key: self.__create_transformer(transf)
+                for key, transf in transformer.items()
             }
 
         self.algo = None
         self.sizes = deepcopy(self.learning_set.sizes)
         self._trained = False
-        self._learning_samples_indices = xrange(len(self.learning_set))
+        self._learning_samples_indices = range(len(self.learning_set))
+        transformer_keys = set(self.transformer)
+        for group in self.learning_set.groups:
+            names = self.learning_set.get_names(group)
+            if group in self.transformer and transformer_keys & set(names):
+                raise ValueError(
+                    "An MLAlgo cannot have both a transformer "
+                    "for all variables of a group and a transformer "
+                    "for one variable of this group."
+                )
 
-    class DataFormatters(object):
-        """Decorators for the internal MLAlgo methods."""
+    @staticmethod
+    def __create_transformer(
+        transformer: TransformerType,
+    ) -> Transformer:
+        if isinstance(transformer, Transformer):
+            return transformer.duplicate()
+
+        if isinstance(transformer, tuple):
+            return TransformerFactory().create(transformer[0], **transformer[1])
+
+        if isinstance(transformer, str):
+            return TransformerFactory().create(transformer)
+
+        raise ValueError(
+            "Transformer type must be "
+            "either Transformer, "
+            "Tuple[str, Mapping[str, Any]] "
+            "or str."
+        )
+
+    class DataFormatters:
+        """Decorators for the internal MLAlgo methods.
+
+        :noindex:
+        """
 
     @property
-    def is_trained(self):  # type: (...) -> bool
+    def is_trained(self) -> bool:
         """Return whether the algorithm is trained."""
         return self._trained
 
     @property
-    def learning_samples_indices(self):  # type: (...) -> Sequence[int]
+    def learning_samples_indices(self) -> Sequence[int]:
         """The indices of the learning samples used for the training."""
         return self._learning_samples_indices
 
     def learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> None
+        samples: Sequence[int] | None = None,
+        fit_transformers: bool = True,
+    ) -> None:
         """Train the machine learning algorithm from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
                 If None, use the whole learning dataset.
+            fit_transformers: Whether to fit the variable transformers.
         """
         if samples is not None:
             self._learning_samples_indices = samples
-        self._learn(samples)
+        self._learn(samples, fit_transformers)
         self._trained = True
 
     def _learn(
-        self, indices  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> None
+        self,
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
         """Define the indices of the learning samples.
 
         Args:
             indices: The indices of the learning samples.
                 If None, use the whole learning dataset.
+            fit_transformers: Whether to fit the variable transformers.
         """
         raise NotImplementedError
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         msg = MultiLineString()
         msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
         msg.indent()
-        if self.LIBRARY is not None:
+        if self.LIBRARY:
             msg.add("based on the {} library", self.LIBRARY)
         if self.is_trained:
             msg.add(
@@ -246,10 +295,10 @@ class MLAlgo(object):
 
     def save(
         self,
-        directory=None,  # type: Optional[str]
-        path=".",  # type: Union[str,Path]
-        save_learning_set=False,  # type: bool
-    ):  # type: (...) -> str
+        directory: str | None = None,
+        path: str | Path = ".",
+        save_learning_set: bool = False,
+    ) -> str:
         """Save the machine learning algorithm.
 
         Args:
@@ -282,8 +331,8 @@ class MLAlgo(object):
 
     def _save_algo(
         self,
-        directory,  # type: Path
-    ):  # type: (...) -> None
+        directory: Path,
+    ) -> None:
         """Save the interfaced machine learning algorithm.
 
         Args:
@@ -295,8 +344,8 @@ class MLAlgo(object):
 
     def load_algo(
         self,
-        directory,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        directory: str | Path,
+    ) -> None:
         """Load a machine learning algorithm from a directory.
 
         Args:
@@ -306,7 +355,7 @@ class MLAlgo(object):
         with (Path(directory) / "algo.pkl").open("rb") as handle:
             self.algo = pickle.load(handle)
 
-    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
         """Return the objects to save.
 
         Returns:

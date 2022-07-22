@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,7 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Sequence
@@ -39,21 +38,31 @@ class BasicHistory(OptPostProcessor):
 
     def _plot(
         self,
-        data_list,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        variable_names: Sequence[str],
+    ) -> None:
         """
         Args:
-            data_list: The names of the variables.
+            variable_names: The names of the variables.
         """
-        dataset = self.opt_problem.export_to_dataset(
-            "OptimizationProblem", opt_naming=False, by_group=False
-        )
+        problem = self.opt_problem
+        dataset = problem.export_to_dataset(opt_naming=False, by_group=False)
+        if self._obj_name in variable_names:
+            if problem.use_standardized_objective and not problem.minimize_objective:
+                obj_index = variable_names.index(self._obj_name)
+                variable_names[obj_index] = self._neg_obj_name
+
+            if self._change_obj:
+                dataset.transform_variable(self._neg_obj_name, lambda x: -x)
+                dataset.rename_variable(self._neg_obj_name, self._obj_name)
+
         plot = Lines(dataset)
         plot.font_size = 12
         plot.xlabel = "Iterations"
-        plot.figsize_x = self.DEFAULT_FIG_SIZE[0]
-        plot.figsize_y = self.DEFAULT_FIG_SIZE[1]
+        plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
+        plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
-        figures = plot.execute(save=False, show=False, variables=data_list)
+        figures = plot.execute(
+            save=False, show=False, variables=problem.get_function_names(variable_names)
+        )
         for figure in figures:
             self._add_figure(figure)

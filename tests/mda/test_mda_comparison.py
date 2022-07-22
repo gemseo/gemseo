@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import os
 
 import numpy as np
-
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA
-from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel, SobieskiMDAJacobi
+from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 DIRNAME = os.path.dirname(__file__)
 

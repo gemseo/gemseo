@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -39,9 +37,11 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from numpy import hstack, linspace, meshgrid
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
 
 from gemseo.core.dataset import Dataset
 
@@ -51,29 +51,29 @@ class RosenbrockDataset(Dataset):
 
     def __init__(
         self,
-        name="Rosenbrock",
-        by_group=True,
-        n_samples=100,
-        categorize=True,
-        opt_naming=True,
-    ):
-        """Constructor.
-
-        :param str name: name of the dataset.
-        :param bool by_group: if True, store the data by group. Otherwise,
-            store them by variables. Default: True
-        :param int n_samples: number of samples
-        :param bool categorize: distinguish between the different groups of
-            variables. Default: True.
-        :parma bool opt_naming: use an optimization naming. Default: True.
+        name: str = "Rosenbrock",
+        by_group: bool = True,
+        n_samples: int = 100,
+        categorize: bool = True,
+        opt_naming: bool = True,
+    ) -> None:
         """
-        super(RosenbrockDataset, self).__init__(name, by_group)
-        root_n_samples = int(n_samples ** 0.5)
+        Args:
+            name: The name of the dataset.
+            by_group: Whether to store the data by group.
+                Otherwise, store them by variables.
+            n_samples: The number of samples.
+            categorize: Whether to distinguish
+                between the different groups of variables.
+            opt_naming: Whether to use an optimization naming.
+        """
+        super().__init__(name, by_group)
+        root_n_samples = int(n_samples**0.5)
         x_i = linspace(-2.0, 2.0, root_n_samples)
         x_i, y_i = meshgrid(x_i, x_i)
         x_i = x_i.reshape((-1, 1))
         y_i = y_i.reshape((-1, 1))
-        z_i = 100 * (y_i - x_i ** 2) ** 2 + (1 - x_i) ** 2
+        z_i = 100 * (y_i - x_i**2) ** 2 + (1 - x_i) ** 2
         data = hstack((x_i, y_i, z_i))
         if categorize:
             if opt_naming:

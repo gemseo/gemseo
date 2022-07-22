@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import random
+import re
 from functools import partial
+from pathlib import Path
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.utils.testing import image_comparison
 
 PARENT_PATH = Path(__file__).parent
 POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
@@ -104,19 +99,22 @@ def test_correlations_func_name_error(factory):
     OptimizersFactory().execute(problem, "L-BFGS-B")
 
     with pytest.raises(
-        ValueError, match=r"The following elements are not" r" functions: .*toto.*"
+        ValueError,
+        match=re.escape(
+            "The following elements are not functions: ['toto']; "
+            "available ones are: ['rosen']."
+        ),
     ):
         factory.execute(
             problem, "Correlations", save=False, show=False, func_names=["toto"]
         )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "func_names,baseline_images",
     [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_correlations_func_names(
     tmp_wd, factory, baseline_images, func_names, pyplot_close_all
 ):
@@ -146,8 +144,7 @@ def test_correlations_func_names(
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
-@image_comparison(baseline_images=["modified_sellar"], extensions=["png"])
+@image_comparison(["modified_sellar"])
 def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
     """Test that the function names sorting.
 
@@ -249,3 +246,34 @@ def test_func_order():
     ]
 
     assert variables == variables_expected
+
+
+TEST_PARAMETERS = {
+    "standardized": (
+        True,
+        ["Correlations_standardized_0", "Correlations_standardized_1"],
+    ),
+    "unstandardized": (
+        False,
+        ["Correlations_unstandardized_0", "Correlations_unstandardized_1"],
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check Correlations with objective, standardized or not."""
+    opt = Correlations(common_problem)
+    maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT
+    opt.MAXIMUM_CORRELATION_COEFFICIENT = 1.0
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(func_names=["obj", "eq", "neg", "pos"], show=False, save=False)
+    opt.MAXIMUM_CORRELATION_COEFFICIENT = maximum_correlation_coefficient

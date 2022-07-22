@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,21 +19,35 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """SNOPT optimization library wrapper."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from numpy import append, array, concatenate
+from numpy import append
+from numpy import array
+from numpy import concatenate
 from numpy import float as np_float
-from numpy import float64, hstack
+from numpy import float64
+from numpy import full
+from numpy import hstack
 from numpy import int as np_int
-from numpy import isinf, ndarray, ones, reshape
+from numpy import isinf
+from numpy import ndarray
+from numpy import ones
+from numpy import reshape
 from numpy import str as np_str
-from numpy import vstack, where, zeros
+from numpy import vstack
+from numpy import where
+from numpy import zeros
 from optimize.snopt7 import SNOPT_solver
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 
@@ -51,6 +63,13 @@ SnOptPreprocessType = Tuple[
     ndarray,
     int,
 ]
+
+
+@dataclass
+class SNOPTAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the SNOPT library."""
+
+    library_name: str = "SNOPT"
 
 
 class SnOpt(OptimizationLibrary):
@@ -97,40 +116,44 @@ class SnOpt(OptimizationLibrary):
         142: "error in basis package",
     }
 
+    LIBRARY_NAME = "SNOPT"
+
     def __init__(self):
         """Constructor.
 
         Generate the library dict, contains the list
         of algorithms with their characteristics:
-         * does it require gradient
-         * does it handle equality constraints
-         * does it handle inequality constraints
+
+            * does it require gradient,
+            * does it handle equality constraints,
+            * does it handle inequality constraints.
         """
-        super(SnOpt, self).__init__()
+        super().__init__()
         self.__n_ineq_constraints = 0
         self.__n_eq_constraints = 0
-        self.lib_dict = {
-            "SNOPTB": {
-                self.INTERNAL_NAME: "SNOPTB",
-                self.REQUIRE_GRAD: True,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "Sparse Nonlinear OPTimizer (SNOPT)",
-                self.WEBSITE: "https://ccom.ucsd.edu/~optimizers",
-            }
+        self.descriptions = {
+            "SNOPTB": SNOPTAlgorithmDescription(
+                algorithm_name="SNOPT",
+                description="Sparse Nonlinear OPTimizer (SNOPT)",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name="SNOPTB",
+                require_gradient=True,
+                website="https://ccom.ucsd.edu/~optimizers",
+            )
         }
 
     def _get_options(
         self,
-        ftol_rel=1e-9,  # type: float
-        ftol_abs=1e-9,  # type: float
-        xtol_rel=1e-9,  # type: float
-        xtol_abs=1e-9,  # type: float
-        max_time=0,  # type: float
-        max_iter=999,  # type: int # pylint: disable=W0221
-        normalize_design_space=True,  # type: bool
-        **kwargs  # type: OptionType
-    ):  # type: (...) -> Dict[str, Any]
+        ftol_rel: float = 1e-9,
+        ftol_abs: float = 1e-9,
+        xtol_rel: float = 1e-9,
+        xtol_abs: float = 1e-9,
+        max_time: float = 0,
+        max_iter: int = 999,  # pylint: disable=W0221
+        normalize_design_space: bool = True,
+        **kwargs: OptionType,
+    ) -> dict[str, Any]:
         """Set the options.
 
         Args:
@@ -142,7 +165,7 @@ class SnOpt(OptimizationLibrary):
             xtol_rel: A stop criteria, the relative tolerance on the
                design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
             xtol_abs: A stop criteria, the absolute tolerance on the
-                   design variables. If norm(xk-xk+1)<= xtol_abs: stop.
+               design variables. If norm(xk-xk+1)<= xtol_abs: stop.
             max_time: max_time: The maximum runtime in seconds,
                 disabled if 0.
             max_iter: The maximum number of iterations,
@@ -159,14 +182,14 @@ class SnOpt(OptimizationLibrary):
             xtol_rel=xtol_rel,
             xtol_abs=xtol_abs,
             max_time=max_time,
-            **kwargs
+            **kwargs,
         )
 
     @staticmethod
     def __eval_func(
-        func,  # type: Callable[[ndarray], ndarray]
-        xn_vect,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, int]
+        func: Callable[[ndarray], ndarray],
+        xn_vect: ndarray,
+    ) -> tuple[ndarray, int]:
         """Evaluate a function at the given points.
 
         Try to call it, if it fails, return a -1 status.
@@ -191,11 +214,11 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     def cb_opt_objective_snoptb(
         self,
-        mode,  # type: int
-        nn_obj,  # type: int
-        xn_vect,  # type: ndarray
-        n_state=0,  # type: int
-    ):  # type: (...) -> Tuple[int, ndarray, ndarray]
+        mode: int,
+        nn_obj: int,
+        xn_vect: ndarray,
+        n_state: int = 0,
+    ) -> tuple[int, ndarray, ndarray]:
         r"""Evaluate the objective function and gradient.
 
         Use the snOpt conventions for mode and status
@@ -217,20 +240,20 @@ class SnOpt(OptimizationLibrary):
                 n_state = 1: first call to driver.cb_opt_objective_snoptb.
                 n_state > 1, snOptB is calling subroutine for the last time and:
                 n_state = 2       and the current x is optimal
-                n_state  = 3, the problem appears to be infeasible
-                n_state  = 4, the problem appears to be unbounded;
-                n_state  = 5,  an iterations limit was reached.
+                n_state = 3, the problem appears to be infeasible
+                n_state = 4, the problem appears to be unbounded;
+                n_state = 5,  an iterations limit was reached.
 
         Returns:
             The solution status, the evaluation of the objective function and its
-                gradient.
+            gradient.
 
         """
         obj_func = self.problem.objective
         status = -1
         if mode == 0:
             obj_f, status = self.__eval_func(obj_func.func, xn_vect)
-            obj_df = ones((xn_vect.shape[0],)) * 666.0
+            obj_df = full((xn_vect.shape[0],), 666.0)
 
         if mode == 1:
             obj_df, status = self.__eval_func(obj_func.jac, xn_vect)
@@ -245,9 +268,7 @@ class SnOpt(OptimizationLibrary):
                 status = -1
         return status, obj_f, obj_df
 
-    def __snoptb_create_c(
-        self, xn_vect  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, int]
+    def __snoptb_create_c(self, xn_vect: ndarray) -> tuple[ndarray, int]:
         """Return the evaluation of the constraints at the design vector.
 
         Args:
@@ -255,7 +276,7 @@ class SnOpt(OptimizationLibrary):
 
         Returns:
             The evaluation of the constraints at `xn_vect` and the status of
-                the evaluation.
+            the evaluation.
         """
         cstr = array([])
         for constraint in self.problem.get_eq_constraints():
@@ -271,9 +292,7 @@ class SnOpt(OptimizationLibrary):
             cstr = hstack((cstr, c_val))
         return cstr, 1
 
-    def __snoptb_create_dc(
-        self, xn_vect  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, int]
+    def __snoptb_create_dc(self, xn_vect: ndarray) -> tuple[ndarray, int]:
         """Evaluate the constraints gradient at the design vector xn_vect.
 
         Args:
@@ -281,7 +300,7 @@ class SnOpt(OptimizationLibrary):
 
         Returns:
             The evaluation of the constraints gradient at xn_vect and the status
-                of the computation.
+            of the computation.
         """
         dcstr = array([])
         # First equality constraints then inequality
@@ -311,13 +330,13 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     def cb_opt_constraints_snoptb(
         self,
-        mode,  # type: int
-        nn_con,  # type: int
-        nn_jac,  # type: int
-        ne_jac,  # type: int
-        xn_vect,  # type: ndarray
-        n_state,  # type: int
-    ):  # type: (...) -> Tuple[int, ndarray, ndarray]
+        mode: int,
+        nn_con: int,
+        nn_jac: int,
+        ne_jac: int,
+        xn_vect: ndarray,
+        n_state: int,
+    ) -> tuple[int, ndarray, ndarray]:
         """Evaluate the constraint functions and their gradient.
 
         Use the snOpt conventions (from
@@ -341,30 +360,26 @@ class SnOpt(OptimizationLibrary):
                 n_state = 1: first call to driver.cb_opt_objective_snoptb.
                 n_state > 1, snOptB is calling subroutine for the last time and:
                 n_state = 2       and the current x is optimal
-                n_state  = 3, the problem appears to be infeasible
-                n_state  = 4, the problem appears to be unbounded;
-                n_state  = 5,  an iterations limit was reached.
+                n_state = 3, the problem appears to be infeasible
+                n_state = 4, the problem appears to be unbounded;
+                n_state = 5,  an iterations limit was reached.
 
         Returns:
             The solution status, the evaluation of the constraint function and
-                its gradient.
+            its gradient.
         """
         if mode == 0:
             cstr, status = self.__snoptb_create_c(xn_vect)
-            dcstr = (
-                ones(
-                    (
-                        (self.__n_eq_constraints + self.__n_ineq_constraints)
-                        * xn_vect.shape[0]
-                    )
-                )
-                * 666.0
+            dcstr = full(
+                (self.__n_eq_constraints + self.__n_ineq_constraints)
+                * xn_vect.shape[0],
+                666.0,
             )
             status = 1
 
         elif mode == 1:
             dcstr, status = self.__snoptb_create_dc(xn_vect)
-            cstr = ones((self.__n_eq_constraints + self.__n_ineq_constraints,)) * 666.0
+            cstr = full((self.__n_eq_constraints + self.__n_ineq_constraints,), 666.0)
 
         elif mode == 2:
             cstr, c_status = self.__snoptb_create_c(xn_vect)
@@ -379,13 +394,13 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     @staticmethod
     def cb_snopt_dummy_func(
-        mode,  # type: int
-        nn_con,  # type: int
-        nn_jac,  # type: int
-        ne_jac,  # type: int
-        xn_vect,  # type: ndarray
-        n_state,  # type: int
-    ):  # type: (...) -> float
+        mode: int,
+        nn_con: int,
+        nn_jac: int,
+        ne_jac: int,
+        xn_vect: ndarray,
+        n_state: int,
+    ) -> float:
         """Return a dummy output for unconstrained problems.
 
         Args:
@@ -406,9 +421,9 @@ class SnOpt(OptimizationLibrary):
                 n_state = 1: first call to driver.cb_opt_objective_snoptb.
                 n_state > 1, snOptB is calling subroutine for the last time and:
                 n_state = 2       and the current x is optimal
-                n_state  = 3, the problem appears to be infeasible
-                n_state  = 4, the problem appears to be unbounded;
-                n_state  = 5,  an iterations limit was reached.
+                n_state = 3, the problem appears to be infeasible
+                n_state = 4, the problem appears to be unbounded;
+                n_state = 5,  an iterations limit was reached.
 
         Returns:
             A dummy output.
@@ -416,8 +431,8 @@ class SnOpt(OptimizationLibrary):
         return 1.0
 
     def __preprocess_snopt_constraints(
-        self, names  # type: ndarray(dtype=np_str)
-    ):  # type: (...) -> SnOptPreprocessType
+        self, names: ndarray(dtype=np_str)
+    ) -> SnOptPreprocessType:
         """Set the snopt parameters according to the constraints.
 
         Args:
@@ -439,7 +454,7 @@ class SnOpt(OptimizationLibrary):
             ceqlist = ["c_eq" + str(i) for i in range(self.__n_eq_constraints)]
             names = append(names, array(ceqlist, dtype=str))
         if self.__n_ineq_constraints > 0:
-            min_inf = ones(self.__n_ineq_constraints) * -INFINITY
+            min_inf = full(self.__n_ineq_constraints, -INFINITY)
             blc = append(blc, min_inf)
             buc = append(buc, zeros(self.__n_ineq_constraints))
             cieqlist = ["c_ie" + str(i) for i in range(self.__n_ineq_constraints)]
@@ -449,16 +464,14 @@ class SnOpt(OptimizationLibrary):
         if n_constraints == 0:
             n_constraints = 1
             funcon = self.cb_snopt_dummy_func
-            blc = append(blc, ones((1,)) * -INFINITY)
-            buc = append(buc, ones((1,)) * INFINITY)
+            blc = append(blc, full((1,), -INFINITY))
+            buc = append(buc, full((1,), INFINITY))
             names = append(names, array(["dummy"], dtype=np_str))
         else:
             funcon = self.cb_opt_constraints_snoptb
         return funcon, blc, buc, names, n_constraints
 
-    def _run(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: OptionType) -> OptimizationResult:
         """Run the algorithm, to be overloaded by subclasses.
 
         Args:

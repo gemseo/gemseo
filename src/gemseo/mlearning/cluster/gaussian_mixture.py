@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -69,10 +67,13 @@ This clustering algorithm relies on the GaussianMixture class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.mixture.GaussianMixture.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, NoReturn, Optional, Union
+from typing import ClassVar
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
 
 from numpy import ndarray
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
@@ -80,6 +81,7 @@ from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -87,44 +89,45 @@ LOGGER = logging.getLogger(__name__)
 class GaussianMixture(MLPredictiveClusteringAlgo):
     """The Gaussian mixture clustering algorithm."""
 
-    ABBR = "GaussMix"
+    SHORT_ALGO_NAME: ClassVar[str] = "GMM"
+    LIBRARY: Final[str] = "scikit-learn"
 
     def __init__(
         self,
-        data,  # type:Dataset
-        transformer=None,  # type: Optional[TransformerType]
-        var_names=None,  # type: Optional[Iterable[str]]
-        n_components=5,  # type: int
-        **parameters  # type: Optional[Union[int,float,str,bool]]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        var_names: Iterable[str] | None = None,
+        n_components: int = 5,
+        **parameters: int | float | str | bool | None,
+    ) -> None:
         """
         Args:
             n_components: The number of components of the Gaussian mixture.
         """
-        super(GaussianMixture, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             var_names=var_names,
             n_components=n_components,
-            **parameters
+            **parameters,
         )
         self.algo = SKLGaussianMixture(n_components, **parameters)
 
     def _fit(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         self.algo.fit(data)
         self.labels = self.algo.predict(data)
 
     def _predict(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.predict(data)
 
     def _predict_proba_soft(
         self,
-        data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.predict_proba(data)

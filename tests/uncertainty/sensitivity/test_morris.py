@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,21 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array, inf, pi
-
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.morris.oat import OATSensitivity
+from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from numpy import allclose
+from numpy import array
+from numpy import pi
+from numpy.testing import assert_almost_equal
 
 FUNCTION = {
     "name": "my_function",
@@ -51,7 +51,7 @@ def morris():
     """Morris analysis for the Ishigami function."""
     discipline = create_discipline(
         "AnalyticDiscipline",
-        expressions_dict=FUNCTION["expression"],
+        expressions=FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 
@@ -59,7 +59,7 @@ def morris():
     for variable in FUNCTION["variables"]:
         space.add_random_variable(**FUNCTION["distributions"][variable])
 
-    analysis = MorrisAnalysis(discipline, space, n_samples=None, n_replicates=5)
+    analysis = MorrisAnalysis([discipline], space, n_samples=None, n_replicates=5)
     analysis.compute_indices()
 
     return analysis
@@ -159,7 +159,7 @@ def test_morris_sort_parameters(morris, output, expected):
 def test_morris_with_bad_input_dimension():
     """Check that a ValueError is raised if an input dimension is not equal to 1."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_random_variable(
         "x1", "OTUniformDistribution", minimum=-pi, maximum=pi, size=2
@@ -172,11 +172,11 @@ def test_morris_with_bad_input_dimension():
 def test_morris_with_nsamples():
     """Check the number of replicates when the number of samples is specified."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
     space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    morris = MorrisAnalysis(discipline, space, n_samples=7)
+    morris = MorrisAnalysis([discipline], space, n_samples=7)
     assert morris.n_replicates == 2
 
 
@@ -187,13 +187,26 @@ def test_morris_outputs_bounds(morris, output):
 
 @pytest.fixture
 def oat():
-    """A OAT discipline."""
-    expressions = {"y1": "x1+x2", "y2": "x1-x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    """A One-At-a-Time (OAT) discipline."""
+
+    def py_func(x1, x2):
+        y1 = array([x1 + x2])
+        y2 = array([x1 - x2, x1 - x2])
+        return y1, y2
+
+    discipline = AutoPyDiscipline(py_func)
     space = ParameterSpace()
-    space.add_variable("x1", l_b=-1.0, u_b=1.0)
-    space.add_variable("x2", l_b=-1.0, u_b=1.0)
-    return OATSensitivity(discipline, space, 0.2)
+    space.add_variable("x1", l_b=-1.0, u_b=1.0, value=0)
+    space.add_variable("x2", l_b=-1.0, u_b=1.0, value=0)
+    scenario = DOEScenario(
+        [discipline],
+        formulation="MDF",
+        objective_name="y1",
+        design_space=space,
+    )
+    scenario.add_observable("y2")
+
+    return _OATSensitivity(scenario, space, 0.2)
 
 
 def test_oat_get_io_names(oat):
@@ -217,28 +230,36 @@ def test_oat_get_fd_name(oat):
 def test_oat_execute(oat, x1, x2, fd):
     """Check the execute method."""
     oat.execute({"x1": array([x1]), "x2": array([x2])})
-    assert allclose(oat.local_data["fd!y1!x1"][0], fd[0])
-    assert allclose(oat.local_data["fd!y1!x2"][0], fd[1])
-    assert allclose(oat.local_data["fd!y2!x1"][0], fd[2])
-    assert allclose(oat.local_data["fd!y2!x2"][0], fd[3])
+    assert_almost_equal(oat.local_data["fd!y1!x1"], fd[0])
+    assert_almost_equal(oat.local_data["fd!y1!x2"], fd[1])
+    assert_almost_equal(oat.local_data["fd!y2!x1"], fd[2])
+    assert_almost_equal(oat.local_data["fd!y2!x2"], fd[3])
 
 
 def test_oat_bounds(oat):
     """Check the estimation of the output bounds."""
-    assert oat.output_range == {"y1": [inf, -inf], "y2": [inf, -inf]}
     oat.execute({"x1": array([-1.0]), "x2": array([-1.0])})
     oat.execute({"x1": array([1.0]), "x2": array([1.0])})
-    assert oat.output_range == {"y1": [-2.0, 2.0], "y2": [-0.4, 0.4]}
+    expected = {"y1": [[-2.0], [2.0]], "y2": [[-0.4, -0.4], [0.4, 0.4]]}
+    assert_almost_equal(oat.output_range["y1"], expected["y1"])
+    assert_almost_equal(oat.output_range["y2"], expected["y2"])
 
 
 @pytest.mark.parametrize("step", [-0.1, 0.0, 0.5, 0.6])
 def test_oat_with_wrong_step(step):
     """Check that a ValueError is raised when the step is not in ]0,0.5[."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
     space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
+
+    scenario = DOEScenario(
+        [discipline],
+        formulation="MDF",
+        objective_name="y",
+        design_space=space,
+    )
 
     expected = (
         "Relative variation step must be "
@@ -246,13 +267,13 @@ def test_oat_with_wrong_step(step):
     )
 
     with pytest.raises(ValueError, match=expected):
-        OATSensitivity(discipline, space, step=step)
+        _OATSensitivity(scenario, space, step=step)
 
 
 def test_normalize(morris):
     discipline = create_discipline(
         "AnalyticDiscipline",
-        expressions_dict=FUNCTION["expression"],
+        expressions=FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 
@@ -260,7 +281,7 @@ def test_normalize(morris):
     for variable in FUNCTION["variables"]:
         space.add_random_variable(**FUNCTION["distributions"][variable])
 
-    analysis = MorrisAnalysis(discipline, space, n_samples=None, n_replicates=5)
+    analysis = MorrisAnalysis([discipline], space, n_samples=None, n_replicates=5)
     analysis.compute_indices(normalize=True)
     for output_name, output_value in morris.mu_.items():
         lower = analysis.outputs_bounds[output_name][0]
@@ -287,3 +308,35 @@ def test_normalize(morris):
                 morris.max[output_name][0][input_name],
                 analysis.max[output_name][0][input_name] * (upper - lower),
             )
+
+
+def test_morris_multiple_disciplines():
+    """Test the Morris Analysis for more than one discipline."""
+    expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
+    d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
+    d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
+    d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
+
+    space = ParameterSpace()
+
+    for variable in ["x1", "x2", "x3"]:
+        space.add_random_variable(
+            variable, "OTUniformDistribution", minimum=-10, maximum=10
+        )
+
+    morris = MorrisAnalysis([d1, d2, d3], space, 5)
+    morris.compute_indices()
+
+    assert morris.dataset.get_names("inputs") == ["x1", "x2", "x3"]
+    assert morris.dataset.get_names("outputs") == [
+        "fd!f!x1",
+        "fd!f!x2",
+        "fd!f!x3",
+        "fd!y1!x1",
+        "fd!y1!x2",
+        "fd!y1!x3",
+        "fd!y2!x1",
+        "fd!y2!x2",
+        "fd!y2!x3",
+    ]
+    assert morris.dataset.n_samples == 5

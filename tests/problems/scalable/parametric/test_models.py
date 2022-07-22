@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
+from gemseo.problems.scalable.parametric.core.models import TMMainModel
+from gemseo.problems.scalable.parametric.core.models import TMSubModel
+from gemseo.problems.scalable.parametric.core.variables import get_constraint_name
+from gemseo.problems.scalable.parametric.core.variables import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variables import get_x_local_name
+from gemseo.problems.scalable.parametric.core.variables import OBJECTIVE_NAME
+from gemseo.problems.scalable.parametric.core.variables import X_SHARED_NAME
 from numpy import array
-
-from gemseo.problems.scalable.parametric.core.models import TMMainModel, TMSubModel
-from gemseo.problems.scalable.parametric.core.variables import (
-    OBJECTIVE_NAME,
-    X_SHARED_NAME,
-    get_constraint_name,
-    get_coupling_name,
-    get_x_local_name,
-)
 
 
 @pytest.fixture
@@ -128,7 +121,7 @@ def test_tm_sub_model(varnames):
 
     out = model()
     assert isinstance(out, dict)
-    assert set(out.keys()) == set([y_0])
+    assert set(out.keys()) == {y_0}
     assert out[y_0] == pytest.approx(array([2.52631579, 2.425]), abs=1e-8)
 
     jac = model(jacobian=True)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from copy import deepcopy
 
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_design_space, create_discipline, create_scenario
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
 
@@ -44,7 +41,7 @@ def sobieski_bilevel_scenario():
 
 
 @pytest.fixture
-def dummy_bilevel_scenario():  # type (...) -> MDOScenario
+def dummy_bilevel_scenario() -> MDOScenario:
     """Create a dummy BiLevel scenario.
 
     It has to be noted that there is no strongly coupled discipline in this example.
@@ -126,7 +123,13 @@ def test_get_sub_options_grammar_errors():
 
 def test_get_sub_options_grammar():
     """Test that the MDAJacobi sub-options can be retrieved."""
-    BiLevel.get_default_sub_options_values(mda_name="MDAJacobi")
+    sub_options_schema = BiLevel.get_sub_options_grammar(main_mda_name="MDAJacobi")
+    assert sub_options_schema.name == "MDAJacobi"
+
+    sub_options_values = BiLevel.get_default_sub_options_values(
+        main_mda_name="MDAJacobi"
+    )
+    assert "acceleration" in sub_options_values.keys()
 
 
 def test_bilevel_aerostructure():
@@ -147,7 +150,7 @@ def test_bilevel_aerostructure():
         "lift": "(sweep + 0.2*thick_airfoils - 2.*displ)/3000.",
     }
     aerodynamics = create_discipline(
-        "AnalyticDiscipline", name="Aerodynamics", expressions_dict=aero_formulas
+        "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
     )
     struc_formulas = {
         "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels + 200.0*forces",
@@ -155,11 +158,11 @@ def test_bilevel_aerostructure():
         "displ": "2*sweep + 3*thick_panels - 2.*forces",
     }
     structure = create_discipline(
-        "AnalyticDiscipline", name="Structure", expressions_dict=struc_formulas
+        "AnalyticDiscipline", name="Structure", expressions=struc_formulas
     )
     mission_formulas = {"range": "8e11*lift/(mass*drag)"}
     mission = create_discipline(
-        "AnalyticDiscipline", name="Mission", expressions_dict=mission_formulas
+        "AnalyticDiscipline", name="Mission", expressions=mission_formulas
     )
     sub_scenario_options = {
         "max_iter": 2,
@@ -195,7 +198,7 @@ def test_bilevel_aerostructure():
         objective_name="range",
         design_space=design_space_system,
         maximize_objective=True,
-        mda_name="MDAJacobi",
+        main_mda_name="MDAJacobi",
         tolerance=1e-8,
     )
     system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
@@ -207,9 +210,7 @@ def test_bilevel_aerostructure():
 
 def test_grammar_type():
     """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline(
-        expressions_dict={"y1": "z+x1+y2", "y2": "z+x2+2*y1"}
-    )
+    discipline = AnalyticDiscipline({"y1": "z+x1+y2", "y2": "z+x2+2*y1"})
     design_space = DesignSpace()
     design_space.add_variable("x1")
     design_space.add_variable("x2")

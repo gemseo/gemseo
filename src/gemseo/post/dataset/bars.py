@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,51 +12,56 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a bar plot from a :class:`.Dataset`. """
-from __future__ import division, unicode_literals
-
-from typing import List, Mapping
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from numpy import arange, linspace
+from numpy import arange
+from numpy import linspace
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
 class BarPlot(DatasetPlot):
     """Barplot visualization."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
-        n_digits=1,  # type: int
-    ):  # type: (...) -> List[Figure]
+        dataset: Dataset,
+        n_digits: int = 1,
+    ) -> None:
         """
         Args:
             n_digits: The number of digits to print the different bar values.
         """
+        super().__init__(dataset, n_digits=n_digits)
+
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         # radar solid grid lines
         all_data, _, sizes = self.dataset.get_all_data(False, False)
         variables_names = self.dataset.columns_names
         dimension = sum(sizes.values())
         series_names = self.dataset.row_names
 
-        if self.color is None:
+        if not self.color:
             colormap = plt.cm.get_cmap(self.colormap)
-            self.color = {
-                name: colormap(color)
-                for name, color in zip(series_names, linspace(0, 1, len(all_data)))
-            }
+            self.color = [colormap(color) for color in linspace(0, 1, len(all_data))]
 
-        fig, axe = plt.subplots()
-        axe.tick_params(labelsize=self.font_size)
+        fig, axes = self._get_figure_and_axes(fig, axes)
+
+        axes.tick_params(labelsize=self.font_size)
 
         discretization = arange(dimension)
         width = 0.75 / len(all_data)
@@ -65,15 +69,16 @@ class BarPlot(DatasetPlot):
         positions = [
             discretization + index * width + width / 2 for index in range(dimension)
         ]
-        for position, name, data in zip(positions, series_names, all_data):
-            data = data.tolist()
+        for position, name, data, color in zip(
+            positions, series_names, all_data, self.color
+        ):
             subplots.append(
-                axe.bar(
+                axes.bar(
                     position,
-                    data,
+                    data.tolist(),
                     width,
                     label=name,
-                    color=self.color[name],
+                    color=color,
                 )
             )
 
@@ -84,8 +89,8 @@ class BarPlot(DatasetPlot):
                     pos = 3
                 else:
                     pos = -12
-                axe.annotate(
-                    "{}".format(round(height, n_digits)),
+                axes.annotate(
+                    f"{round(height, self._param.n_digits)}",
                     xy=(rect.get_x() + rect.get_width() / 2, height),
                     xytext=(0, pos),  # 3 points vertical offset
                     textcoords="offset points",
@@ -93,8 +98,10 @@ class BarPlot(DatasetPlot):
                     va="bottom",
                 )
 
-        axe.set_xticks(discretization)
-        axe.set_xticklabels(variables_names)
-        axe.set_title(self.title, fontsize=self.font_size * 1.2)
-        axe.legend(fontsize=self.font_size)
+        axes.set_xticks(discretization)
+        axes.set_xticklabels(variables_names)
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
+        axes.set_title(self.title, fontsize=self.font_size * 1.2)
+        axes.legend(fontsize=self.font_size)
         return [fig]

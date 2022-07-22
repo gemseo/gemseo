@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Provide base test class stub for testing bilevel also for |g| plugins."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
-from typing import Callable, Dict
+from typing import Callable
 
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiProblem,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-
-# TODO: remove when PEP 484 type hints will be used
-FixtureFunc = Callable[[Dict[str, float]], MDOScenario]
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
-def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
+def create_sobieski_bilevel_scenario() -> Callable[[dict[str, float]], MDOScenario]:
     """Create a function to generate a Sobieski BiLevel Scenario.
 
     Returns:
@@ -54,7 +47,7 @@ def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
         struct = SobieskiStructure()
         mission = SobieskiMission()
 
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         sc_prop = MDOScenario(
             disciplines=[propulsion],
             formulation="DisciplinaryOpt",
@@ -89,14 +82,14 @@ def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
         for sc in sub_scenarios:
             sc.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
 
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         sc_system = MDOScenario(
             sub_disciplines,
             formulation="BiLevel",
             objective_name="y_4",
             design_space=ds.filter(["x_shared", "y_14"]),
             maximize_objective=True,
-            **options
+            **options,
         )
         sc_system.set_differentiation_method("finite_differences", step=1e-6)
         return sc_system

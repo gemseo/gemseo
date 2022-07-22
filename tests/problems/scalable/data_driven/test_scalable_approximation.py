@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # INITIAL AUTHORS - initial API and implementation and/or
 #                   initial documentation
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-from os.path import dirname, join
+from os.path import dirname
+from os.path import join
 
 import numpy as np
 import pytest
-from past.utils import old_div
-
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalApproximation
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
-from gemseo.problems.sobieski.wrappers import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 
 HDF_CACHE_PATH = join(dirname(__file__), "dataset.hdf5")
 
@@ -66,13 +60,13 @@ def test_build_model(sobieski_aerodynamics):
 
         :param n_samples: number of samples
         """
-        return old_div(np.arange(n_samples), (n_samples - 1.0))
+        return np.arange(n_samples) / (n_samples - 1.0)
 
     # MDL: I think that the following lines are wrong because because
     # scalable_func must take in inputs a 1D numpy array whose length
     # is equal to the input dimension...
     #
-    # for n_in in xrange(10, 1010, 100):
+    # for n_in in range(10, 1010, 100):
     #    fout = scalable_func(get_samples(n_in))
     #    assert -1e-3 <= fout <= 1.001
 

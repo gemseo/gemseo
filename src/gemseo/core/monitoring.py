@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
@@ -22,14 +20,13 @@
 Monitoring mechanism to track |g| execution (update events)
 ***********************************************************
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from six import with_metaclass
-
+from gemseo.core.scenario import Scenario
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 
 
-class Monitoring(with_metaclass(SingleInstancePerAttributeId, object)):
+class Monitoring(metaclass=SingleInstancePerAttributeId):
     """This class implements the observer pattern.
 
     It is a singleton, it is called by |g| core classes like MDODicipline whenever an
@@ -37,58 +34,56 @@ class Monitoring(with_metaclass(SingleInstancePerAttributeId, object)):
     add_observer and are notified whenever a discipline status change occurs.
     """
 
-    def __init__(self, scenario):
-        """Initializes the monitoring.
-
-        :param scenario: the scenario to be monitored.
-        :type scenario: MDOScenario
+    def __init__(self, scenario: Scenario) -> None:
+        """
+        Args:
+            scenario: The scenario to be monitored.
         """
         self._observers = []
         self.workflow = scenario.get_expected_workflow()
         self.workflow.set_observer(self)
         self.workflow.enable()
 
-    def add_observer(self, observer):
-        """Registers an observer object interested in observable update events.
+    def add_observer(self, observer) -> None:
+        """Register an observer object interested in observable update events.
 
-        :param observer: object to be notified
+        Args:
+            observer: The object to be notified.
         """
         if observer not in self._observers:
             self._observers.append(observer)
 
-    def remove_observer(self, observer):
-        """Unsubscribes the given observer.
+    def remove_observer(self, observer) -> None:
+        """Unsubscribe the given observer.
 
-        :param observer: observer to be removed
+        Args:
+            observer: The observer to be removed.
         """
         if observer in self._observers:
             self._observers.remove(observer)
 
-    def remove_all_observers(self):
-        """Unsubscribes all observers."""
+    def remove_all_observers(self) -> None:
+        """Unsubscribe all observers."""
         self._observers = []
 
-    def update(self, atom):
-        """Notifies observers that the corresponding observable object is updated.
+    def update(self, atom) -> None:
+        """Notify the observers that the corresponding observable object is updated.
+
         Observers have to know what to retrieve from the observable object.
 
-        :param atom: updated object
+        Args:
+            atom: The updated object.
         """
         for obs in self._observers:
             obs.update(atom)
 
-    def get_statuses(self):
-        """Gets the statuses of all disciplines.
+    def get_statuses(self) -> dict[str, str]:
+        """Get the statuses of all disciplines.
 
-        :returns: a dictionary of all statuses, keys are the atom ids
-        :rtype: dict
+        Returns:
+            These statuses associated with the atom ids.
         """
-        return self.workflow.get_state_dict()
+        return self.workflow.get_statuses()
 
-    def __str__(self):
-        """Returns the string representation of the workflow.
-
-        :returns: string representation of the workflow
-        :rtype: str
-        """
+    def __str__(self) -> str:
         return str(self.workflow)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -28,14 +26,21 @@ where the data has no notion of input or output.
 This concept is implemented through the :class:`.MLUnsupervisedAlgo` class,
 which inherits from the :class:`.MLAlgo` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Iterable, NoReturn, Optional, Sequence
+from typing import ClassVar
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
+from typing import Sequence
 
-from numpy import hstack, ndarray
+from numpy import hstack
+from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class MLUnsupervisedAlgo(MLAlgo):
@@ -48,34 +53,35 @@ class MLUnsupervisedAlgo(MLAlgo):
         input_names (List[str]): The names of the variables.
     """
 
-    ABBR = "MLUnupervisedAlgo"
+    SHORT_ALGO_NAME: ClassVar[str] = "MLUnsupervisedAlgo"
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
-        var_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        var_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             var_names: The names of the variables.
                 If None, consider all variables mentioned in the learning dataset.
         """
-        super(MLUnsupervisedAlgo, self).__init__(
+        super().__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )
         self.var_names = var_names or data.variables
 
     def _learn(
         self,
-        indices,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> None
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
         if set(self.var_names) == set(self.learning_set.variables):
             data = []
             for group in self.learning_set.groups:
                 sub_data = self.learning_set.get_data_by_group(group)
-                if group in self.transformer:
+                if fit_transformers and group in self.transformer:
                     sub_data = self.transformer[group].fit_transform(sub_data)
                 data.append(sub_data)
             data = hstack(data)
@@ -83,7 +89,7 @@ class MLUnsupervisedAlgo(MLAlgo):
             data = []
             for name in self.var_names:
                 sub_data = self.learning_set.get_data_by_names([name], False)
-                if name in self.transformer:
+                if fit_transformers and name in self.transformer:
                     sub_data = self.transformer[name].fit_transform(sub_data)
                 data.append(sub_data)
             data = hstack(data)
@@ -95,8 +101,8 @@ class MLUnsupervisedAlgo(MLAlgo):
 
     def _fit(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Fit model on data.
 
         Args:

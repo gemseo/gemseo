@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,30 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import unicode_literals
-
 import json
+from pathlib import Path
 
 import pytest
-from numpy import ones
-
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import ones
 
 DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
@@ -102,18 +96,14 @@ def create_disciplines_from_desc(disc_desc):
     disciplines = []
     data = ones(1)
 
-    if PY2:
-        # python 2 dictionaries are not ordered, neither the OrderedDict ctor
-        disc_desc_items = sorted(disc_desc.items())
-    else:
-        disc_desc_items = disc_desc.items()
+    disc_desc_items = disc_desc.items()
 
     for name, io_names in disc_desc_items:
         disc = MDODiscipline(name)
         input_d = {k: data for k in io_names[0]}
-        disc.input_grammar.initialize_from_base_dict(input_d)
+        disc.input_grammar.update_from_data(input_d)
         output_d = {k: data for k in io_names[1]}
-        disc.output_grammar.initialize_from_base_dict(output_d)
+        disc.output_grammar.update_from_data(output_d)
         disciplines += [disc]
 
     return disciplines
@@ -145,7 +135,7 @@ def test_write_full_graph(tmp_wd, name_and_graph):
     This also checks the expected contents of a graph.
     """
     name, graph = name_and_graph
-    file_name = "{}.full_graph.pdf".format(name)
+    file_name = f"{name}.full_graph.pdf"
     graph.write_full_graph(file_name)
     assert_dot_file(file_name)
 
@@ -156,7 +146,7 @@ def test_write_condensed_graph(tmp_wd, name_and_graph):
     This also checks the expected contents of a graph.
     """
     name, graph = name_and_graph
-    file_name = "{}.condensed_graph.pdf".format(name)
+    file_name = f"{name}.condensed_graph.pdf"
     graph.write_condensed_graph(file_name)
     assert_dot_file(file_name)
 
@@ -165,29 +155,17 @@ def test_couplings(tmp_wd, name_and_graph):
     """Test the couplings against references stored in json files."""
     name, graph = name_and_graph
     couplings = graph.get_disciplines_couplings()
-    file_path = Path("{}.couplings.json".format(name))
+    file_path = Path(f"{name}.couplings.json")
 
     # dump a json of the couplings where the Discipline objects have been converted to
     # a string to allow dumping and comparison
 
-    if PY2:
-        # workaround, see https://stackoverflow.com/a/36003774
-        x = json.dumps(
-            couplings,
-            ensure_ascii=False,
-            cls=DisciplineEncoder,
-            indent=4,
-        )
-        if isinstance(x, str):
-            x = unicode(x, "UTF-8")  # noqa: F821
-        file_path.write_text(x)
-    else:
-        json.dump(
-            couplings,
-            file_path.open("w", encoding="utf-8"),
-            cls=DisciplineEncoder,
-            indent=4,
-        )
+    json.dump(
+        couplings,
+        file_path.open("w", encoding="utf-8"),
+        cls=DisciplineEncoder,
+        indent=4,
+    )
 
     # read back the just created json and the reference
     couplings = json.load(file_path.open())
@@ -205,4 +183,4 @@ class DisciplineEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, MDODiscipline):
             return str(o)
-        return super(DisciplineEncoder, self).default(o)
+        return super().default(o)

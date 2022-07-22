@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class for the empirical estimation of statistics from a dataset.
 
 Overview
@@ -45,17 +42,19 @@ By default,
 this name is the concatenation of 'EmpiricalStatistics'
 and the name of the :class:`.Dataset`.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, Iterable, Optional
+from typing import Iterable
 
 from numpy import all as np_all
 from numpy import max as np_max
 from numpy import mean
 from numpy import min as np_min
-from numpy import ndarray, quantile, std, var
+from numpy import ndarray
+from numpy import quantile
+from numpy import std
+from numpy import var
 from scipy.stats import moment
 
 from gemseo.core.dataset import Dataset
@@ -76,9 +75,8 @@ class EmpiricalStatistics(Statistics):
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
-        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
         >>>
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
@@ -97,38 +95,38 @@ class EmpiricalStatistics(Statistics):
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = discipline.cache.export_to_dataset()
+        >>> dataset = scenario.export_to_dataset(opt_naming=False)
         >>>
         >>> statistics = EmpiricalStatistics(dataset)
         >>> mean = statistics.mean()
     """
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
-        dataset,  # type: Dataset,
-        variables_names=None,  # type: Optional[Iterable[str]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None # noqa: D107,D205,D212,D415
+        dataset: Dataset,
+        variables_names: Iterable[str] | None = None,
+        name: str | None = None,
+    ) -> None:
         name = name or dataset.name
-        super(EmpiricalStatistics, self).__init__(dataset, variables_names, name)
+        super().__init__(dataset, variables_names, name)
 
-    def compute_maximum(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: np_max(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_mean(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: mean(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_minimum(self):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: np_min(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_probability(
+    def compute_probability(  # noqa: D102
         self,
-        thresh,  # type: float
-        greater=True,  # type: bool
-    ):  # type: (...) -> Dict[str,ndarray]  # noqa: D102
+        thresh: float,
+        greater: bool = True,
+    ) -> dict[str, ndarray]:
         if greater:
             result = {
                 name: mean(np_all(self.dataset[name] >= thresh[name], 1))
@@ -141,31 +139,31 @@ class EmpiricalStatistics(Statistics):
             }
         return result
 
-    def compute_quantile(
+    def compute_quantile(  # noqa: D102
         self,
-        prob,  # type:float
-    ):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+        prob: float,
+    ) -> dict[str, ndarray]:
         result = {name: quantile(self.dataset[name], prob, 0) for name in self.names}
         return result
 
-    def compute_standard_deviation(
+    def compute_standard_deviation(  # noqa: D102
         self,
-    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    ) -> dict[str, ndarray]:
         result = {name: std(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_variance(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: var(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_moment(
+    def compute_moment(  # noqa: D102
         self,
-        order,  # type: int
-    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+        order: int,
+    ) -> dict[str, ndarray]:
         result = {name: moment(self.dataset[name], order, 0) for name in self.names}
         return result
 
-    def compute_range(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         lower = self.compute_minimum()
         upper = self.compute_maximum()
         result = {name: upper[name] - lower[name] for name in self.names}

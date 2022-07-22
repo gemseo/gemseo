@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,35 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy import array, isclose, ones
-
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.utils.py23_compat import Path
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy import isclose
+from numpy import ones
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -219,32 +211,32 @@ def generate_disciplines_from_desc(
         input_d = {k: data for k in desc[1]}
         output_d = {k: data for k in desc[2]}
         disc = MDODiscipline(name)
-        disc.input_grammar.initialize_from_base_dict(input_d)
-        disc.output_grammar.initialize_from_base_dict(output_d)
+        disc.input_grammar.update_from_data(input_d)
+        disc.output_grammar.update_from_data(output_d)
         disciplines.append(disc)
     return disciplines
 
 
 def test_16_disc_parallel():
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    MDAChain(disciplines, sub_mda_class="MDAJacobi")
+    MDAChain(disciplines, inner_mda_name="MDAJacobi")
 
 
 @pytest.mark.parametrize(
     "in_gtype", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
 )
 def test_simple_grammar_type(in_gtype):
-    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D, in_gtype)
+    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(
         disciplines,
-        sub_mda_class="MDAJacobi",
+        inner_mda_name="MDAJacobi",
         grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
     )
 
     assert type(mda.input_grammar) == SimpleGrammar
     assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
-    for smda in mda.sub_mda_list:
-        assert type(smda.input_grammar) == SimpleGrammar
+    for inner_mda in mda.inner_mdas:
+        assert type(inner_mda.input_grammar) == SimpleGrammar
 
 
 def test_mix_sim_jsongrammar(sellar_disciplines):
@@ -292,7 +284,7 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
         inputs=["x"], outputs=["obj"], linearization_mode=linearization_mode
     )
 
-    assert mda.normed_residual == mda.sub_mda_list[0].normed_residual
+    assert mda.normed_residual == mda.inner_mdas[0].normed_residual
 
 
 def test_no_coupling_jac():
@@ -321,26 +313,39 @@ def test_sub_coupling_structures(sellar_disciplines):
 def test_log_convergence(sellar_disciplines):
     mda_chain = MDAChain(sellar_disciplines)
     assert not mda_chain.log_convergence
-    for mda in mda_chain.sub_mda_list:
+    for mda in mda_chain.inner_mdas:
         assert not mda.log_convergence
 
     mda_chain.log_convergence = True
     assert mda_chain.log_convergence
-    for mda in mda_chain.sub_mda_list:
+    for mda in mda_chain.inner_mdas:
         assert mda.log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of MDAChain in parallel.
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`
+            a parallel DOE scenario for a particular `main_mda_name`
             and n_samples.
     """
     obj = generate_parallel_doe_data("MDAChain", 7)
-    assert isclose(array([obj]), array([608.175]), atol=1e-3)
+    assert isclose(array([-obj]), array([608.175]), atol=1e-3)
+
+
+def test_mda_chain_self_coupling():
+    """Test that a nested MDAChain is not detected as a self-coupled discipline."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"y1": "x"},
+            {"c1": "y1+x+0.2*c2"},
+            {"c2": "y1+x+1.-0.3*c1"},
+            {"obj": "x+c1+c2"},
+        )
+    )
+    mdachain_lower = MDAChain(disciplines, name="mdachain_lower")
+    mdachain_root = MDAChain([mdachain_lower], name="mdachain_root")
+
+    assert mdachain_root.mdo_chain.disciplines[0] == mdachain_lower
+    assert len(mdachain_root.mdo_chain.disciplines) == 1

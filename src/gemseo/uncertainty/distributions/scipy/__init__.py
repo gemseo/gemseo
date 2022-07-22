@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Scipy-based capabilities for probability distributions.
 
 This package interfaces capabilities
@@ -44,7 +42,7 @@ are documented in such a way that a newbie could easily apprehend them.
 Composed distribution
 ---------------------
 
-A :code:`SPDistribution` has a :attr:`.SPDistribution.COMPOSED_DISTRIBUTION`
+A :code:`SPDistribution` has a :attr:`.SPDistribution._COMPOSED_DISTRIBUTION`
 attribute referencing :class:`.SPComposedDistribution`
 which is a class to build a composed distribution
 related to given random variables from a list of :class:`.SPDistribution` objects
@@ -57,3 +55,4 @@ based on the SciPy library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
+from __future__ import annotations

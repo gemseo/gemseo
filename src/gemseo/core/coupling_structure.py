@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,23 +19,26 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #          Arthur Piat: greatly improve the N2 layout
 """Graph-based analysis of the weak and strong couplings between several disciplines."""
-
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import itertools
 import logging
-from typing import Dict, List, Sequence, Set, Tuple, Union
+from pathlib import Path
+from typing import Dict
+from typing import List
+from typing import Sequence
+from typing import Set
+from typing import Tuple
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Axes
 from matplotlib.figure import Figure
 from matplotlib.text import Text
-from numpy import array
 from pylab import gca
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_html import N2HTML
-from gemseo.utils.py23_compat import Path, string_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ GraphType = Dict[int, Set[int]]
 ComponentType = Tuple[int]
 
 
-class MDOCouplingStructure(object):
+class MDOCouplingStructure:
     """Structure of the couplings between several disciplines.
 
     The methods of this class include the computation of weak, strong or all couplings.
@@ -61,8 +62,8 @@ class MDOCouplingStructure(object):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+    ) -> None:
         """
         Args:
             disciplines: The disciplines that possibly exchange coupling variables.
@@ -71,10 +72,17 @@ class MDOCouplingStructure(object):
         self.graph = DependencyGraph(disciplines)
         self.sequence = self.graph.get_execution_sequence()
 
+        self._weak_couplings = None
+        self._weakly_coupled_disc = None
+        self._strong_couplings = None
+        self._strongly_coupled_disc = None
+        self._output_couplings = None
+        self._all_couplings = None
+
     @staticmethod
     def is_self_coupled(
-        discipline,  # type: MDODiscipline
-    ):  # type: (...) -> bool
+        discipline: MDODiscipline,
+    ) -> bool:
         """Test if the discipline is self-coupled.
 
         Self-coupling means that one of its outputs is also an input.
@@ -85,20 +93,31 @@ class MDOCouplingStructure(object):
         Returns:
             Whether the discipline is self-coupled.
         """
-        return (
-            len(
-                set(discipline.get_input_data_names())
-                & set(discipline.get_output_data_names())
-            )
-            > 0
+        self_c_vars = set(discipline.get_input_data_names()) & set(
+            discipline.get_output_data_names()
         )
 
+        if discipline.residual_variables:
+            states = discipline.residual_variables.values()
+            self_c_vars = self_c_vars - set(states)
+        return len(self_c_vars) > 0
+
+    @property
+    def strongly_coupled_disciplines(self) -> list[MDODiscipline]:
+        """The disciplines that are strongly coupled, ie that lie in cycles in the
+        coupling graphs."""
+        if self._strongly_coupled_disc is None:
+            self._strongly_coupled_disc = self.get_strongly_coupled_disciplines(
+                True, False
+            )
+        return self._strongly_coupled_disc
+
     # methods that determine strong/weak/all couplings
-    def strongly_coupled_disciplines(
+    def get_strongly_coupled_disciplines(
         self,
-        add_self_coupled=True,  # type: bool
-        by_group=False,  # type: bool
-    ):  # type: (...) -> Union[List[MDODiscipline],List[List[MDODiscipline]]]
+        add_self_coupled: bool = True,
+        by_group: bool = False,
+    ) -> list[MDODiscipline] | list[list[MDODiscipline]]:
         """Determines the strongly coupled disciplines, that is the disciplines that
         occur in (possibly different) MDAs.
 
@@ -129,12 +148,20 @@ class MDOCouplingStructure(object):
                                 strong_disciplines.append([discipline])
                             else:
                                 strong_disciplines.append(discipline)
+
         return strong_disciplines
 
-    def weakly_coupled_disciplines(self):  # type: (...) -> List[MDODiscipline]
+    @property
+    def weakly_coupled_disciplines(self) -> list[MDODiscipline]:
+        """The disciplines that do not appear in cycles in the coupling graph."""
+        if self._weakly_coupled_disc is None:
+            self._compute_weakly_coupled()
+        return self._weakly_coupled_disc
+
+    def _compute_weakly_coupled(self) -> None:
         """Determine the weakly coupled disciplines.
 
-        These are the disciplines that do not occur in MDAs.
+        These are the disciplines that do not appear in cycles in the coupling graph.
 
         Returns:
             The weakly coupled disciplines.
@@ -145,9 +172,17 @@ class MDOCouplingStructure(object):
                 # find single disciplines
                 if len(component) == 1 and not self.is_self_coupled(component[0]):
                     weak_disciplines.append(component[0])
-        return weak_disciplines
+        self._weakly_coupled_disc = weak_disciplines
 
-    def strong_couplings(self):  # type: (...) -> List[str]
+    @property
+    def strong_couplings(self) -> list[str]:
+        """The outputs of the strongly coupled disciplines that are also inputs of a
+        strongly coupled discipline."""
+        if self._strong_couplings is None:
+            self._compute_strong_couplings()
+        return self._strong_couplings
+
+    def _compute_strong_couplings(self) -> list[str]:
         """Determine the strong couplings.
 
         These are the outputs of the strongly coupled disciplines
@@ -156,21 +191,18 @@ class MDOCouplingStructure(object):
         Returns:
             The names of the strongly coupling variables.
         """
-        strong_disciplines = self.strongly_coupled_disciplines(
-            add_self_coupled=True, by_group=True
-        )
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline
         strong_couplings = set()
 
-        for group in strong_disciplines:
-            inputs = itertools.chain(*[disc.get_input_data_names() for disc in group])
-            outputs = itertools.chain(*[disc.get_output_data_names() for disc in group])
+        for group in self.get_strongly_coupled_disciplines(by_group=True):
+            inputs = itertools.chain(*(disc.get_input_data_names() for disc in group))
+            outputs = itertools.chain(*(disc.get_output_data_names() for disc in group))
             strong_couplings.update(set(inputs) & set(outputs))
 
-        return sorted(list(strong_couplings))
+        self._strong_couplings = sorted(strong_couplings)
 
-    def weak_couplings(self):  # type: (...) -> List[str]
+    def _compute_weak_couplings(self) -> None:
         """Determine the weak couplings.
 
         These are the outputs of the weakly coupled disciplines.
@@ -178,48 +210,42 @@ class MDOCouplingStructure(object):
         Returns:
             The names of the weakly coupling variables.
         """
-        weak_disciplines = self.weakly_coupled_disciplines()
         # determine strong couplings = the outputs of the weakly coupled
         # disciplines that are inputs of any other discipline
         weak_couplings = set()
-        for weak_discipline in weak_disciplines:
+        for weak_discipline in self.weakly_coupled_disciplines:
             weak_couplings.update(weak_discipline.get_output_data_names())
-        return sorted(list(weak_couplings))
+        self._weak_couplings = sorted(weak_couplings)
 
-    def input_couplings(
-        self,
-        discipline,  # type: MDODiscipline
-    ):  # type: (...) -> List[str]
-        """Compute all the input coupling variables of a discipline.
+    @property
+    def weak_couplings(self) -> list[str]:
+        """The outputs of the weakly coupled disciplines."""
+        if self._weak_couplings is None:
+            self._compute_weak_couplings()
+        return self._weak_couplings
 
-        Args:
-            discipline: The discipline.
+    @property
+    def all_couplings(self) -> list[str]:
+        """The inputs of disciplines that are also ouputs of other disciplines."""
+        if self._all_couplings is None:
+            self._compute_all_couplings()
+        return self._all_couplings
 
-        Returns:
-            The names of the input coupling variables.
-        """
-        input_names = discipline.get_input_data_names()
-        strong_couplings = self.strong_couplings()
-        return sorted([name for name in input_names if name in strong_couplings])
-
-    def get_all_couplings(self):  # type: (...) -> List[str]
-        """Compute all the weak and strong coupling variables.
-
-        Returns:
-            The names of the coupling variables.
-        """
+    def _compute_all_couplings(self) -> None:
+        """Compute the inputs of disciplines that are also ouputs of other
+        disciplines."""
         inputs = []
         outputs = []
         for discipline in self.disciplines:
             inputs += discipline.get_input_data_names()
             outputs += discipline.get_output_data_names()
-        return sorted(list(set(inputs) & set(outputs)))
+        self._all_couplings = sorted(list(set(inputs) & set(outputs)))
 
-    def output_couplings(
+    def get_output_couplings(
         self,
-        discipline,  # type: MDODiscipline
-        strong=True,  # type: bool
-    ):  # type: (...) -> List[str]
+        discipline: MDODiscipline,
+        strong: bool = True,
+    ) -> list[str]:
         """Compute the output coupling variables of a discipline, either strong or weak.
 
         Args:
@@ -231,16 +257,36 @@ class MDOCouplingStructure(object):
         """
         output_names = discipline.get_output_data_names()
         if strong:
-            couplings = self.strong_couplings()
+            couplings = self.strong_couplings
         else:
-            couplings = self.get_all_couplings()
+            couplings = self.all_couplings
+        return sorted(name for name in output_names if name in couplings)
 
-        return sorted([name for name in output_names if name in couplings])
+    def get_input_couplings(
+        self,
+        discipline: MDODiscipline,
+        strong: bool = True,
+    ) -> list[str]:
+        """Compute all the input coupling variables of a discipline.
+
+        Args:
+            discipline: The discipline.
+            strong: If True, consider the strong couplings. Otherwise, the weak ones.
+
+        Returns:
+            The names of the input coupling variables.
+        """
+        input_names = discipline.get_input_data_names()
+        if strong:
+            couplings = self.strong_couplings
+        else:
+            couplings = self.all_couplings
+        return sorted(name for name in input_names if name in couplings)
 
     def find_discipline(
         self,
-        output,  # type: str
-    ):  # type: (...) -> MDODiscipline
+        output: str,
+    ) -> MDODiscipline:
         """Find which discipline produces a given output.
 
         Args:
@@ -253,50 +299,40 @@ class MDOCouplingStructure(object):
             TypeError: If the name of the output is not a string.
             ValueError: If the output is not an output of the discipline.
         """
-        if not isinstance(output, string_types):
+        if not isinstance(output, str):
             raise TypeError("Output shall be a string")
+
         for discipline in self.disciplines:
             if discipline.is_output_existing(output):
                 return discipline
-        raise ValueError("{} is not the output of a discipline".format(output))
 
-    def plot_n2_chart(
+        raise ValueError(f"{output} is not the output of a discipline.")
+
+    def __draw_n2_chart(
         self,
-        file_path="n2.pdf",  # type: str
-        show_data_names=True,  # type:bool
-        save=True,  # type:bool
-        show=False,  # type: bool
-        figsize=(15, 10),  # type: Tuple[int]
-        open_browser=False,  # type:bool
-    ):  # type: (...) -> None
-        """Generate a N2 plot for the disciplines.
+        file_path: str | Path,
+        show_data_names: True,
+        save: bool,
+        show: bool,
+        fig_size: tuple[float, float],
+    ) -> None:
+        """Draw the N2 chart for the disciplines.
 
         Args:
             file_path: The name of the file path of the figure.
-            show_data_names: If ``True``, show the names of the coupling data ;
+            show_data_names: Whether to show the names of the coupling data;
                 otherwise,
                 circles are drawn,
-                which size depend on the number of coupling names.
-            save: If True, save the figure to file_path.
-            show: If True, show the plot.
-            figsize: The width and height of the figure.
-            open_browser: If True, open a browser and display an interactive N2 chart.
-
-        Raises:
-            ValueError: If there is only 1 discipline.
+                whose size depends on the number of coupling names.
+            save: Whether to save the figure to file_path.
+            show: Whether to display the static N2 chart on screen.
+            fig_size: The width and height of the figure in inches.
         """
-        output_directory_path = Path(file_path).parent
-        html_file_name = "n2.html"
-        html_file_path = output_directory_path / html_file_name
-        N2HTML(html_file_path, open_browser).from_graph(self.graph)
-
-        fig = plt.figure(figsize=figsize)
+        fig = plt.figure(figsize=fig_size)
         plt.grid(True)
         axe = gca()
         axe.grid(True, linestyle="-", color="black", lw=1)
         n_disciplines = len(self.disciplines)
-        if n_disciplines == 1:
-            raise ValueError("N2 Diagrams can be generated for at least 2 disciplines.")
         ax_ticks = list(range(n_disciplines + 1))
         axe.xaxis.set_ticks(ax_ticks)
         axe.yaxis.set_ticks(ax_ticks)
@@ -326,39 +362,65 @@ class MDOCouplingStructure(object):
 
         couplings = self.graph.get_disciplines_couplings()
 
-        max_coupling_length = array([len(coupling[2]) for coupling in couplings]).max()
-
-        for source, destination, variables in couplings:
-            source_position = self.disciplines.index(source)
-            destination_position = self.disciplines.index(destination)
-            if show_data_names:
-                variables_names = plt.text(
-                    destination_position + 0.5,
-                    n_disciplines - source_position - 0.5,
-                    "\n".join(variables),
-                    verticalalignment="center",
-                    horizontalalignment="center",
-                )
-                self._check_size_text(variables_names, fig, n_disciplines)
-            else:
-                circle = plt.Circle(
-                    (0.5 + destination_position, n_disciplines - 0.5 - source_position),
-                    len(variables) / (3.0 * max_coupling_length),
-                    color="blue",
-                )
-                axe.add_artist(circle)
+        if couplings:
+            self.__add_couplings(couplings, show_data_names, n_disciplines, fig, axe)
 
         if save:
-            plt.savefig(file_path)
+            plt.savefig(str(file_path))
+
         if show:
             plt.show()
 
+    def plot_n2_chart(
+        self,
+        file_path: str | Path = "n2.pdf",
+        show_data_names: bool = True,
+        save: bool = True,
+        show: bool = False,
+        fig_size: tuple[float, float] = (15.0, 10.0),
+        open_browser: bool = False,
+    ) -> None:
+        """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
+
+        A static N2 chart is a figure generated with the matplotlib library
+        that can be saved to ``file_path``, displayed on screen or both;
+        the extension of ``file_path`` must be recognized by matplotlib.
+
+        A dynamic N2 chart is a HTML file with interactive features such as
+        reordering the disciplines,
+        expanding or collapsing the groups of strongly coupled disciplines
+        and
+        displaying information on disciplines or couplings.
+
+        Args:
+            file_path: The file path to save the static N2 chart.
+            show_data_names: Whether to show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
+            save: Whether to save the static N2 chart.
+            show: Whether to display the static N2 chart on screen.
+            fig_size: The width and height of the static N2 chart in inches.
+            open_browser: Whether to display the interactive N2 chart in a browser.
+
+        Raises:
+            ValueError: When there is less than two disciplines.
+        """
+        if len(self.disciplines) < 2:
+            raise ValueError("N2 diagrams need at least two disciplines.")
+
+        html_file_path = Path(file_path).parent / "n2.html"
+        N2HTML(html_file_path, open_browser).from_graph(self.graph)
+
+        if save or show:
+            self.__draw_n2_chart(file_path, show_data_names, save, show, fig_size)
+
     @staticmethod
     def _check_size_text(
-        text,  # type: Text
-        figure,  # type: Figure
-        n_disciplines,  # type: int
-    ):  # type: (...)-> None
+        text: Text,
+        figure: Figure,
+        n_disciplines: int,
+    ) -> None:
         """Adapt the size of the figure based on the size of the text to display.
 
         Args:
@@ -378,3 +440,49 @@ class MDOCouplingStructure(object):
         if height > size_max_box[1]:
             length_l = round(height * n_disciplines / figure.dpi) + 1
             figure.set_size_inches(inches[0], length_l)
+
+    def __add_couplings(
+        self,
+        couplings: Sequence[tuple[MDODiscipline, MDODiscipline, list[str]]],
+        show_data_names: bool,
+        n_disciplines: int,
+        fig: Figure,
+        axe: Axes,
+    ) -> None:
+        """Add the existing couplings to the N2 chart.
+
+        Args:
+            couplings: The discipline couplings.
+            show_data_names: If ``True``, show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
+            n_disciplines: The number of disciplines being considered.
+            fig: The figure where the couplings will be added.
+            axe: The axes of the figure.
+        """
+
+        max_coupling_size = max(len(variables) for _, _, variables in couplings)
+
+        for source, destination, variables in couplings:
+            source_position = self.disciplines.index(source)
+            destination_position = self.disciplines.index(destination)
+            if show_data_names:
+                variables_names = plt.text(
+                    destination_position + 0.5,
+                    n_disciplines - source_position - 0.5,
+                    "\n".join(variables),
+                    verticalalignment="center",
+                    horizontalalignment="center",
+                )
+                self._check_size_text(variables_names, fig, n_disciplines)
+            else:
+                circle = plt.Circle(
+                    (
+                        0.5 + destination_position,
+                        n_disciplines - 0.5 - source_position,
+                    ),
+                    len(variables) / (3.0 * max_coupling_size),
+                    color="blue",
+                )
+                axe.add_artist(circle)

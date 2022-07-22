@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Remi Lafage
@@ -33,31 +31,35 @@ A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matri
 the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
 Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import webbrowser
 from json import dumps
 from multiprocessing import RLock
-from os.path import basename, splitext
+from os.path import basename
+from os.path import splitext
+from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Union
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.execution_sequence import (
-    AtomicExecSequence,
-    CompositeExecSequence,
-    LoopExecSequence,
-    ParallelExecSequence,
-    SerialExecSequence,
-)
-from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
+from gemseo.core.execution_sequence import AtomicExecSequence
+from gemseo.core.execution_sequence import CompositeExecSequence
+from gemseo.core.execution_sequence import LoopExecSequence
+from gemseo.core.execution_sequence import ParallelExecSequence
+from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.monitoring import Monitoring
 from gemseo.core.scenario import Scenario
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda import MDA
 from gemseo.utils.locks import synchronized
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 
@@ -73,16 +75,16 @@ IdsType = Any
 XdsmType = Dict[str, Any]
 
 
-class XDSMizer(object):
+class XDSMizer:
     """Build the XDSM diagram of a scenario as a JSON structure."""
 
     def __init__(
         self,
-        scenario,  # type: Scenario
-        hashref="root",  # type: str
-        level=0,  # type: int
-        expected_workflow=None,  # type: Optional[CompositeExecSequence]
-    ):  # type: (...) -> None
+        scenario: Scenario,
+        hashref: str = "root",
+        level: int = 0,
+        expected_workflow: CompositeExecSequence | None = None,
+    ) -> None:
         """
 
         Args:
@@ -110,8 +112,8 @@ class XDSMizer(object):
 
     def initialize(
         self,
-        workflow=None,  # type: Optional[CompositeExecSequence]
-    ):  # type: (...) -> None
+        workflow: CompositeExecSequence | None = None,
+    ) -> None:
         """Initialize the XDSM from a workflow.
 
         The initialization also creates sub-XDSM diagram accordingly.
@@ -138,7 +140,7 @@ class XDSMizer(object):
                     self.root_atom = atom
                 else:  # sub-scenario
                     name = atom.discipline.name
-                    self.to_hashref[atom] = "{}_scn-{}-{}".format(name, level, num)
+                    self.to_hashref[atom] = f"{name}_scn-{level}-{num}"
                     sub_workflow = XDSMizer._find_sub_workflow(self.workflow, atom)
                     self.sub_xdsmizers.append(
                         XDSMizer(
@@ -149,11 +151,11 @@ class XDSMizer(object):
 
     def monitor(
         self,
-        outdir=".",  # type: Optional[str]
-        outfilename="xdsm.json",  # type: str
-        print_statuses=False,  # type: bool
-        latex_output=False,  # type: bool
-    ):  # type: (...) -> None
+        outdir: str | None = ".",
+        outfilename: str = "xdsm.json",
+        print_statuses: bool = False,
+        latex_output: bool = False,
+    ) -> None:
         """Monitor the discipline execution by generating XDSM json file on discipline
         status update.
 
@@ -175,8 +177,8 @@ class XDSMizer(object):
 
     def update(
         self,
-        atom,  # type: AtomicExecSequence
-    ):  # type: (...) -> None  # pylint: disable=unused-argument
+        atom: AtomicExecSequence,
+    ) -> None:  # pylint: disable=unused-argument
         """Generate a new XDSM regarding the atom status update.
 
         Args:
@@ -192,13 +194,13 @@ class XDSMizer(object):
 
     def run(
         self,
-        output_directory_path=None,  # type: Optional[str]
-        latex_output=False,  # type: bool
-        outfilename="xdsm.html",  # type: str
-        html_output=True,  # type: bool
-        json_output=False,  # type: bool
-        open_browser=False,  # type: bool
-    ):  # type: (...) -> XdsmType
+        output_directory_path: str | None = None,
+        latex_output: bool = False,
+        outfilename: str = "xdsm.html",
+        html_output: bool = True,
+        json_output: bool = False,
+        open_browser: bool = False,
+    ) -> XdsmType:
         """Generate a XDSM diagram from the process.
 
         By default,
@@ -234,7 +236,7 @@ class XDSMizer(object):
             output_directory_path = Path(output_directory_path)
 
         if json_output:
-            json_path = output_directory_path / "{}.json".format(outfile_basename)
+            json_path = output_directory_path / f"{outfile_basename}.json"
             with json_path.open("w") as file_stream:
                 file_stream.write(xdsm_json)
 
@@ -250,13 +252,13 @@ class XDSMizer(object):
             LOGGER.info("Generating HTML XDSM file in : %s", out_file_path)
             generate_xdsm_html(xdsm, out_file_path)
             if open_browser:
-                url = "file://{}".format(out_file_path)
+                url = f"file://{out_file_path}"
                 webbrowser.open(url, new=2)  # open in new tab
             return out_file_path
 
         return xdsm
 
-    def get_all_sub_xdsmizers(self):  # type: (...) -> List[XDSMizer]
+    def get_all_sub_xdsmizers(self) -> list[XDSMizer]:
         """Retrieve all the sub-xdsmizers corresponding to the sub-scenarios.
 
         Returns:
@@ -271,8 +273,8 @@ class XDSMizer(object):
     @synchronized
     def xdsmize(
         self,
-        algoname="Optimizer",  # type: str
-    ):  # type: (...) -> Dict[str,Any]
+        algoname: str = "Optimizer",
+    ) -> dict[str, Any]:
         """Build the data structure to be used to generate the JSON file.
 
         Args:
@@ -298,7 +300,7 @@ class XDSMizer(object):
             }
             for sub_xdsmizer in self.get_all_sub_xdsmizers():
                 if sub_xdsmizer.scenario.name.endswith("ing"):
-                    name = "{}er".format(sub_xdsmizer.scenario.name[:-3])
+                    name = f"{sub_xdsmizer.scenario.name[:-3]}er"
                 elif sub_xdsmizer.scenario.name.endswith("Scenario"):
                     if isinstance(sub_xdsmizer.scenario, DOEScenario):
                         name = "Trade-Off"
@@ -314,8 +316,8 @@ class XDSMizer(object):
 
     def _create_nodes(
         self,
-        algoname,  # type: str
-    ):  # type: (...) ->  List[NodeType]# pylint: disable=too-many-branches
+        algoname: str,
+    ) -> list[NodeType]:  # pylint: disable=too-many-branches
         """Create the nodes of the XDSM from the scenarios and the disciplines.
 
         Args:
@@ -324,7 +326,7 @@ class XDSMizer(object):
         nodes = []
         self.to_id = {}
 
-        statuses = self.workflow.get_state_dict()
+        statuses = self.workflow.get_statuses()
 
         # Optimization
         self.to_id[self.root_atom] = OPT_ID
@@ -388,16 +390,16 @@ class XDSMizer(object):
 
         return nodes
 
-    def _create_edges(self):  # type: (...) -> List[EdgeType]
+    def _create_edges(self) -> list[EdgeType]:
         """Create the edges of the XDSM from the dataflow of the scenario."""
         edges = []
         # convenient method to factorize code for creating and appending edges
 
         def add_edge(
-            from_edge,  # type: MDODiscipline
-            to_edge,  # type: MDODiscipline
-            varnames,  # type: List[str]
-        ):  # type: (...) -> None
+            from_edge: MDODiscipline,
+            to_edge: MDODiscipline,
+            varnames: list[str],
+        ) -> None:
             """Add an edge from a discipline to another with variables names as label.
 
             Args:
@@ -481,8 +483,8 @@ class XDSMizer(object):
 
     @staticmethod
     def _get_single_level_atoms(
-        workflow,  # type: CompositeExecSequence
-    ):  # type: (...) -> List[AtomicExecSequence]
+        workflow: CompositeExecSequence,
+    ) -> list[AtomicExecSequence]:
         """Retrieve the list of atoms of the given workflow.
 
         This method does not look into the loop execution sequences
@@ -496,21 +498,23 @@ class XDSMizer(object):
             The atomic execution sequences.
         """
         atoms = []
-        for seq in workflow.sequence_list:
-            if isinstance(seq, LoopExecSequence):
-                atoms.append(seq.atom_controller)
-                if not seq.atom_controller.discipline.is_scenario():
-                    atoms += XDSMizer._get_single_level_atoms(seq.iteration_sequence)
-            elif isinstance(seq, AtomicExecSequence):
-                atoms.append(seq)
+        for sequence in workflow.sequences:
+            if isinstance(sequence, LoopExecSequence):
+                atoms.append(sequence.atom_controller)
+                if not sequence.atom_controller.discipline.is_scenario():
+                    atoms += XDSMizer._get_single_level_atoms(
+                        sequence.iteration_sequence
+                    )
+            elif isinstance(sequence, AtomicExecSequence):
+                atoms.append(sequence)
             else:
-                atoms += XDSMizer._get_single_level_atoms(seq)
+                atoms += XDSMizer._get_single_level_atoms(sequence)
         return atoms
 
     def _find_atom(
         self,
-        discipline,  # type: MDODiscipline
-    ):  # type: (...) -> AtomicExecSequence
+        discipline: MDODiscipline,
+    ) -> AtomicExecSequence:
         """Find the atomic sequence corresponding to a given discipline.
 
         Args:
@@ -531,16 +535,14 @@ class XDSMizer(object):
                     atom = atom_i
         if atom is None:
             disciplines = [a.discipline for a in self.atoms]
-            raise ValueError(
-                "Discipline {} not found in {}".format(discipline, disciplines)
-            )
+            raise ValueError(f"Discipline {discipline} not found in {disciplines}")
         return atom
 
     @staticmethod
     def _find_sub_workflow(
-        workflow,  # type: CompositeExecSequence
-        atom_controller,  # type: AtomicExecSequence
-    ):  # type: (...) -> Optional[LoopExecSequence]
+        workflow: CompositeExecSequence,
+        atom_controller: AtomicExecSequence,
+    ) -> LoopExecSequence | None:
         """Find the sub-workflow from a workflow and controller atom in it.
 
         Args:
@@ -553,32 +555,32 @@ class XDSMizer(object):
             None if the list of execution sequences of the original workflow is empty.
         """
         sub_workflow = None
-        for seq in workflow.sequence_list:
-            if isinstance(seq, LoopExecSequence):
-                if seq.atom_controller.uuid == atom_controller.uuid:
-                    sub_workflow = seq
+        for sequence in workflow.sequences:
+            if isinstance(sequence, LoopExecSequence):
+                if sequence.atom_controller.uuid == atom_controller.uuid:
+                    sub_workflow = sequence
                     return sub_workflow
 
                 sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
-                    seq.iteration_sequence, atom_controller
+                    sequence.iteration_sequence, atom_controller
                 )
-            elif not isinstance(seq, AtomicExecSequence):
+            elif not isinstance(sequence, AtomicExecSequence):
                 sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
-                    seq, atom_controller
+                    sequence, atom_controller
                 )
 
         return sub_workflow
 
-    def _create_workflow(self):  # type: (...) -> List[str,IdsType]
+    def _create_workflow(self) -> list[str, IdsType]:
         """Manage the creation of the XDSM workflow creation from a formulation one."""
         workflow = [USER_ID, expand(self.workflow, self.to_id)]
         return workflow
 
 
 def expand(
-    wks,  # type: CompositeExecSequence
-    to_id,  # type: Mapping[str,str]
-):  # type: (...) -> IdsType
+    wks: CompositeExecSequence,
+    to_id: Mapping[str, str],
+) -> IdsType:
     """Expand the workflow structure as an ids structure using to_id mapping.
 
     The expansion preserve the structure
@@ -595,13 +597,13 @@ def expand(
     """
     if isinstance(wks, SerialExecSequence):
         res = []
-        for seq in wks.sequence_list:
-            res += expand(seq, to_id)
+        for sequence in wks.sequences:
+            res += expand(sequence, to_id)
         ids = res
     elif isinstance(wks, ParallelExecSequence):
         res = []
-        for seq in wks.sequence_list:
-            res += expand(seq, to_id)
+        for sequence in wks.sequences:
+            res += expand(sequence, to_id)
         ids = [{"parallel": res}]
     elif isinstance(wks, LoopExecSequence):
         if (
@@ -615,5 +617,5 @@ def expand(
     elif isinstance(wks, AtomicExecSequence):
         ids = [to_id[wks]]
     else:
-        raise Exception("Bad execution sequence: found {}".format(wks))
+        raise Exception(f"Bad execution sequence: found {wks}")
     return ids

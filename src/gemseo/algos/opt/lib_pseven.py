@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,84 +12,50 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Wrapper for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
+from __future__ import annotations
 
-from __future__ import unicode_literals
+import logging
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Mapping
+from typing import MutableMapping
 
-from enum import Enum
-from math import sqrt
-from typing import Any, Dict, List, Mapping, Optional, Union
-
+import numpy
 from da import p7core
 from numpy import ndarray
 
-from gemseo.algos.opt.core.pseven_problem_adapter import CostType, PSevenProblem
+from gemseo.algos.opt.core.pseven_problem_adapter import PSevenProblem
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-)
-from gemseo.utils.base_enum import CamelCaseEnum
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FtolReached
+from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.algos.stop_criteria import MaxIterReachedException
+from gemseo.algos.stop_criteria import MaxTimeReached
+from gemseo.algos.stop_criteria import XtolReached
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 
 
-class DiffScheme(CamelCaseEnum):
-    """The differentiation schemes of pSeven."""
+@dataclass
+class PSevenAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the NLopt library."""
 
-    FIRST_ORDER = 0
-    SECOND_ORDER = 1
-    # GTOpt switches between first and second order
-    # depending on the estimated distance to optimality.
-    ADAPTIVE = 2
-    AUTO = 3  # GTOpt is left free to choose.
+    library_name: str = "pSeven"
+    website: str = "https://datadvance.net/product/pseven/manual/"
 
 
-class DiffType(CamelCaseEnum):
-    """The differentiation types of pSeven."""
-
-    NUMERICAL = 0  # conventional numerical differentiation
-    # framed simplex-based derivatives, recommended for noisy problems
-    FRAMED = 1
-    AUTO = 2  # GTOpt is left free to choose.
-
-
-class GlobalMethod(Enum):
-    """The globalization methods of pSeven.
-
-    A item is represented with the name of its key.
-    """
-
-    RL = 0  # random linkages
-    PM = 1  # plain multistart
-    MS = 2  # surrogate model-based multistart
-
-    def __str__(self):  # type: (...) -> str
-        return self.name
-
-
-class LogLevel(CamelCaseEnum):
-    """The logging levels of pSeven."""
-
-    DEBUG = 0
-    INFO = 1
-    WARN = 2
-    ERROR = 3
-    FATAL = 4
-
-
-class Smoothness(CamelCaseEnum):
-    """The functions smoothness levels of pSeven."""
-
-    SMOOTH = 0  # all functions are to be considered smooth
-    NOISY = 1  # at least one function is noisy with noise level at most 10 %
-    AUTO = 2  # GTOpt is free to assume whatever seems appropriate.
+LOGGER = logging.getLogger(__name__)
 
 
 class PSevenOpt(OptimizationLibrary):
@@ -109,8 +74,6 @@ class PSevenOpt(OptimizationLibrary):
         "max_threads": "GTOpt/MaxParallel",
         "seed": "GTOpt/Seed",
         "time_limit": "GTOpt/TimeLimit",
-        "grad_tol": "GTOpt/GradientTolerance",
-        "grad_tol_is_abs": "GTOpt/AbsoluteGradientTolerance",
         "max_batch_size": "GTOpt/BatchSize",
         "detect_nan_clusters": "GTOpt/DetectNaNClusters",
         "diff_scheme": "GTOpt/DiffScheme",
@@ -119,7 +82,15 @@ class PSevenOpt(OptimizationLibrary):
         "ensure_feasibility": "GTOpt/EnsureFeasibility",
         "local_search": "GTOpt/LocalSearch",
         "restore_analytic_func": "GTOpt/RestoreAnalyticResponses",
+        "responses_scalability": "GTOpt/ResponsesScalability",
     }
+
+    # Initial sample
+    __SAMPLE_X = "sample_x"
+    __SAMPLE_F = "sample_f"
+    __SAMPLE_C = "sample_c"
+
+    LIBRARY_NAME = "pSeven"
 
     # Governing methods
     # Not yet used.
@@ -138,142 +109,130 @@ class PSevenOpt(OptimizationLibrary):
     __SQ2P = "S2P"
     __LOCAL_METHODS = (__FD, __MOM, __NCG, __NLS, __POWELL, __QP, __SQP, __SQ2P)
 
-    __WEBSITE = "https://datadvance.net/product/pseven/manual/"
-
-    def __init__(self):  # type: (...) -> None # noqa: D107
-        super(PSevenOpt, self).__init__()
-        self.lib_dict = {
-            "PSEVEN": {
-                self.INTERNAL_NAME: "pSeven",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "pSeven's Generic Tool for Optimization (GTOpt).",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_FD": {
-                self.INTERNAL_NAME: self.__FD,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "pSeven's feasible direction method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_MOM": {
-                self.INTERNAL_NAME: self.__MOM,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "pSeven's method of multipliers.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_NCG": {
-                self.INTERNAL_NAME: self.__NCG,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.DESCRIPTION: "pSeven's nonlinear conjugate gradient method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_NLS": {
-                self.INTERNAL_NAME: self.__NLS,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.DESCRIPTION: "pSeven's nonlinear simplex method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_POWELL": {
-                self.INTERNAL_NAME: self.__POWELL,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.DESCRIPTION: "pSeven's Powell conjugate direction method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_QP": {
-                self.INTERNAL_NAME: self.__QP,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "pSeven's quadratic programming method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_SQP": {
-                self.INTERNAL_NAME: self.__SQP,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "pSeven's sequential quadratic programming method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_SQ2P": {
-                self.INTERNAL_NAME: self.__SQ2P,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.DESCRIPTION: "pSeven's sequential quadratic constrained quadratic "
-                "programming method.",
-                self.WEBSITE: self.__WEBSITE,
-            },
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.descriptions = {
+            "PSEVEN": PSevenAlgorithmDescription(
+                algorithm_name="PSEVEN",
+                description="pSeven's Generic Tool for Optimization (GTOpt).",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                handle_integer_variables=True,
+                internal_algorithm_name="pSeven",
+            ),
+            "PSEVEN_FD": PSevenAlgorithmDescription(
+                algorithm_name="Feasible direction",
+                description="pSeven's feasible direction method.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=self.__FD,
+            ),
+            "PSEVEN_MOM": PSevenAlgorithmDescription(
+                algorithm_name="MOM",
+                description="pSeven's method of multipliers.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=self.__MOM,
+            ),
+            "PSEVEN_NCG": PSevenAlgorithmDescription(
+                algorithm_name="NCG",
+                description="pSeven's nonlinear conjugate gradient method.",
+                internal_algorithm_name=self.__NCG,
+            ),
+            "PSEVEN_NLS": PSevenAlgorithmDescription(
+                algorithm_name="NLS",
+                description="pSeven's nonlinear simplex method.",
+                internal_algorithm_name=self.__NLS,
+            ),
+            "PSEVEN_POWELL": PSevenAlgorithmDescription(
+                algorithm_name="POWELL",
+                description="pSeven's Powell conjugate direction method.",
+                internal_algorithm_name=self.__POWELL,
+            ),
+            "PSEVEN_QP": PSevenAlgorithmDescription(
+                algorithm_name="QP",
+                description="pSeven's quadratic programming method.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=self.__QP,
+            ),
+            "PSEVEN_SQP": PSevenAlgorithmDescription(
+                algorithm_name="SQP",
+                description="pSeven's sequential quadratic programming method.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=self.__SQP,
+            ),
+            "PSEVEN_SQ2P": PSevenAlgorithmDescription(
+                algorithm_name="SQ2P",
+                description=(
+                    "pSeven's sequential quadratic constrained quadratic "
+                    "programming method."
+                ),
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algorithm_name=self.__SQ2P,
+            ),
         }
 
     def _get_options(
         self,
-        max_iter=99,  # type: int
-        evaluation_cost_type=None,  # type: Optional[Mapping[str, CostType]]
-        expensive_evaluations=None,  # type: Optional[Mapping[str, int]]
-        sample_x=None,  # type: Optional[Union[List[float],List[ndarray]]]
-        sample_f=None,  # type: Optional[Union[List[float],List[ndarray]]]
-        sample_c=None,  # type: Optional[Union[List[float],List[ndarray]]]
-        constraints_smoothness=Smoothness.AUTO,  # type: Smoothness
-        global_phase_intensity=None,  # type: Optional[float]
-        max_expensive_func_iter=0,  # type: int
-        max_func_iter=0,  # type: int
-        objectives_smoothness=Smoothness.AUTO,  # type: Smoothness
-        deterministic=None,  # type: Optional[bool]
-        log_level=LogLevel.INFO,  # type: LogLevel
-        verbose_log=False,  # type: bool
-        max_threads=0,  # type: int
-        seed=100,  # type: int
-        time_limit=0,  # type: int
-        grad_tol=1e-5,  # type: float
-        grad_tol_is_abs=False,  # type: bool
-        max_batch_size=0,  # type: int
-        detect_nan_clusters=True,  # type: bool
-        diff_scheme=DiffScheme.AUTO,  # type: DiffScheme
-        diff_type=DiffType.AUTO,  # type: DiffType
-        diff_step=1.1920929e-06,  # type: float
-        ensure_feasibility=False,  # type: bool
-        local_search=False,  # type: bool
-        restore_analytic_func=True,  # type: bool
-        globalization_method=None,  # type: Optional[GlobalMethod]
-        surrogate_based=None,  # type: Optional[bool]
-        **kwargs  # type: Any
-    ):  # type: (...) -> Dict
+        max_iter: int = 99,
+        evaluation_cost_type: str | Mapping[str, str] | None = None,
+        expensive_evaluations: Mapping[str, int] | None = None,
+        sample_x: list[float] | list[ndarray] | None = None,
+        sample_f: list[float] | list[ndarray] | None = None,
+        sample_c: list[float] | list[ndarray] | None = None,
+        constraints_smoothness: str = "Auto",
+        global_phase_intensity: str | float = "Auto",
+        max_expensive_func_iter: int = 0,
+        max_func_iter: int = 0,
+        objectives_smoothness: str = "Auto",
+        deterministic: str | bool = "Auto",
+        log_level: str = "Error",
+        verbose_log: bool = False,
+        max_threads: int = 0,
+        seed: int = 100,
+        time_limit: int = 0,
+        max_batch_size: int = 0,
+        detect_nan_clusters: bool = True,
+        diff_scheme: str = "Auto",
+        diff_type: str = "Auto",
+        diff_step: float = 1.1920929e-06,
+        ensure_feasibility: bool = False,
+        local_search: str = "Disabled",
+        restore_analytic_func: str | bool = "Auto",
+        responses_scalability: int = 1,
+        globalization_method: str | None = None,
+        surrogate_based: bool | None = None,
+        use_gradient: bool = True,
+        ftol_abs: float = 1e-14,
+        xtol_abs: float = 1e-14,
+        ftol_rel: float = 1e-8,
+        xtol_rel: float = 1e-8,
+        stop_crit_n_x: int = 3,
+        normalize_design_space: bool = True,
+        eq_tolerance: float = 1e-2,
+        ineq_tolerance: float = 1e-4,
+        log_path: str | None = None,
+        **kwargs: Any,
+    ) -> dict:
         """Set the default options values.
 
         Args:
             max_iter: The maximum number of evaluations.
             evaluation_cost_type: The evaluation cost type of each function of the
-                problem.
-                If None, the evaluation cost types default to "Cheap".
+                problem: "Cheap" or "Expensive".
+                If a string, then the same cost type is set for all the functions.
+                If None, the evaluation cost types are set by pSeven.
             expensive_evaluations: The maximal number of expensive evaluations for
                 each function of the problem. By default, set automatically by pSeven.
             sample_x: A sample of design points (in addition to the problem initial
                 design).
             sample_f: The objectives values at the design points of the sample.
             sample_c: The constraints values at the design points of the sample.
-            constraints_smoothness: The assumed smoothness of the constraints functions.
+            constraints_smoothness: The assumed smoothness of the constraints functions:
+                "Smooth", "Noisy" or "Auto".
             global_phase_intensity: The configuration of global searching algorithms.
                 This option has different meanings for expensive and non-expensive
                 optimization problems. Refer to the pSeven Core API documentation.
@@ -282,33 +241,28 @@ class PSevenOpt(OptimizationLibrary):
                 expensive response, excluding the evaluations of initial guesses.
             max_func_iter: The maximum number of evaluations for any response,
                 including the evaluations of initial guesses.
-            objectives_smoothness: The assumed smoothness of the objective functions.
+            objectives_smoothness: The assumed smoothness of the objective functions:
+                "Smooth", "Noisy" or "Auto".
             deterministic: Whether to require optimization process to be reproducible
                 using the passed seed value. Defaults to "Auto".
-            log_level: The minimum log level.
+            log_level: The minimum log level:
+                "Debug", "Info", "Warn", "Error" or "Fatal".
             verbose_log: Whether to enable verbose logging.
             max_threads: The maximum number of parallel threads to use when solving.
             seed: The random seed for deterministic mode.
             time_limit: The maximum allowed time to solve a problem in seconds.
                 Defaults to 0, unlimited.
-            grad_tol: The tolerance on the infinity-norm of the gradient (or optimal
-                descent for constrained and multi-objective problems) at which
-                optimization stops.
-                If 'gradient_tol_is_abs' is False then the tolerance is relative to
-                the infinity-norm of the current objectives values; otherwise the
-                tolerance is absolute.
-                The value 0.0 deactivate the gradient-based stopping criterion.
-            grad_tol_is_abs: Whether 'grad_tol' should be regarded as an absolute
-                tolerance. See 'grad_tol' for details.
             max_batch_size: The maximum number of points in an evaluation batch.
                 The (default) value 0 allows the optimizer to use any batch size.
             detect_nan_clusters: Whether to detect and avoid design space areas that
                 yield NaN values (for at least one function).
                 This option has no effect in the absence of "expensive" functions.
             diff_scheme: The order of the differentiation scheme (when the analytic
-                derivatives are unavailable).
+                derivatives are unavailable):
+                "FirstOrder", "SecondOrder", "Adaptive" or "Auto".
             diff_type: The strategy for differentiation (when the analytic
-                derivatives are unavailable).
+                derivatives are unavailable):
+                "Numerical", "Framed" or "Auto".
             diff_step: The numerical differentiation step size.
             ensure_feasibility: Whether to restrict the evaluations of the objectives
                 to feasible designs only.
@@ -320,40 +274,33 @@ class PSevenOpt(OptimizationLibrary):
                 linear and quadratic functions.
                 Once the analytic forms are restored the original functions will not
                 be evaluated anymore.
-            globalization_method: The globalization method.
-                If None, set automatically depending on the problem.
+            responses_scalability: The maximum number of concurrent response evaluations
+                supported by the problem.
+            globalization_method: The globalization method:
+                "RL" (random linkages),
+                "PM" (plain multistart),
+                or "MS" (surrogate model-based multistart)
+                If None, set automatically by pSeven depending on the problem.
             surrogate_based: Whether to use surrogate models.
                 If None, set automatically depending on the problem.
+            use_gradient: Whether to use the functions derivatives.
+            ftol_abs: The absolute tolerance on the objective function.
+            xtol_abs: The absolute tolerance on the design parameters.
+            ftol_rel: The relative tolerance on the objective function.
+            xtol_rel: The relative tolerance on the design parameters.
+            normalize_design_space: If True, normalize the design variables between 0
+                and 1.
+            stop_crit_n_x: The number of design vectors to take into account in the
+                stopping criteria.
+            eq_tolerance: The tolerance on the equality constraints.
+            ineq_tolerance: The tolerance on the inequality constraints.
+            log_path: The path where to save the pSeven log.
+                If None, the pSeven log will not be saved.
             **kwargs: Other driver options.
 
         Returns:
             The processed options.
-
-        Raises:
-            ValueError: If the value for one the following option is invalid:
-                objectives smoothness,
-                constraints smoothness,
-                logging level,
-                differentiation scheme,
-                differentiation type,
-                globalization method.
         """
-        # Check the options
-        self.__check_pseven_options(
-            evaluation_cost_type,
-            expensive_evaluations,
-            constraints_smoothness,
-            objectives_smoothness,
-            log_level,
-            diff_scheme,
-            diff_type,
-            globalization_method,
-        )
-
-        # Process the options
-        if globalization_method is not None:
-            globalization_method = str(globalization_method)
-
         processed_options = self._process_options(
             max_iter=max_iter,
             evaluation_cost_type=evaluation_cost_type,
@@ -361,231 +308,69 @@ class PSevenOpt(OptimizationLibrary):
             sample_x=sample_x,
             sample_f=sample_f,
             sample_c=sample_c,
-            constraints_smoothness=str(constraints_smoothness),
+            constraints_smoothness=constraints_smoothness,
             global_phase_intensity=global_phase_intensity,
             max_expensive_func_iter=max_expensive_func_iter,
             max_func_iter=max_func_iter,
-            objectives_smoothness=str(objectives_smoothness),
+            objectives_smoothness=objectives_smoothness,
             deterministic=deterministic,
-            log_level=str(log_level),
+            log_level=log_level,
             verbose_log=verbose_log,
             max_threads=max_threads,
             seed=seed,
             time_limit=time_limit,
-            grad_tol=grad_tol,
-            grad_tol_is_abs=grad_tol_is_abs,
             max_batch_size=max_batch_size,
             detect_nan_clusters=detect_nan_clusters,
-            diff_scheme=str(diff_scheme),
-            diff_type=str(diff_type),
+            diff_scheme=diff_scheme,
+            diff_type=diff_type,
             diff_step=diff_step,
             ensure_feasibility=ensure_feasibility,
             local_search=local_search,
             restore_analytic_func=restore_analytic_func,
+            responses_scalability=responses_scalability,
             globalization_method=globalization_method,
             surrogate_based=surrogate_based,
-            **kwargs
+            use_gradient=use_gradient,
+            ftol_rel=ftol_rel,
+            ftol_abs=ftol_abs,
+            xtol_rel=xtol_rel,
+            xtol_abs=xtol_abs,
+            stop_crit_n_x=stop_crit_n_x,
+            normalize_design_space=normalize_design_space,
+            eq_tolerance=eq_tolerance,
+            ineq_tolerance=ineq_tolerance,
+            log_path=log_path,
+            **kwargs,
         )
-
-        gtopt_local_search = "GTOpt/LocalSearch"
-
-        if processed_options[gtopt_local_search]:
-            processed_options[gtopt_local_search] = "Forced"
-        else:
-            processed_options[gtopt_local_search] = "Disabled"
-
-        # Disable pSeven's internal stopping criterion based on successive designs
-        processed_options["GTOpt/CoordinateTolerance"] = 0.0
-
-        # Disable pSeven's internal stopping criterion based on successive objectives
-        processed_options["GTOpt/ObjectiveTolerance"] = 0.0
-
-        # Set the tolerance on the constraints (N.B. relative to the infinity-norm)
-        processed_options[
-            "GTOpt/ConstraintsTolerance"
-        ] = self.__compute_constraints_tolerance()
 
         # Set the pSeven's techniques
         self.__set_pseven_techniques(processed_options)
 
         return processed_options
 
-    def __check_pseven_options(
-        self,
-        evaluation_cost_type,  # type: Mapping[str, CostType]
-        expensive_evaluations,  # type: Mapping[str, int]
-        constraints_smoothness,  # type: Smoothness
-        objectives_smoothness,  # type: Smoothness
-        log_level,  # type: LogLevel
-        diff_scheme,  # type: DiffScheme
-        diff_type,  # type: DiffType
-        globalization_method,  # type: GlobalMethod
-    ):  # type: (...) -> None
-        """Check pSeven's options.
-
-        Args:
-            evaluation_cost_type: The evaluation cost type of each function of the
-                problem.
-                If None, the evaluation cost types default to "Cheap".
-            expensive_evaluations: The maximal number of expensive evaluations for
-                each function of the problem.
-                 If None, set automatically by pSeven.
-            constraints_smoothness: The assumed smoothness of the constraints functions.
-            objectives_smoothness: The assumed smoothness of the objective functions.
-            log_level: The minimum log level.
-            diff_scheme: The order of the differentiation scheme (when the analytic
-                derivatives are unavailable).
-            diff_type: The strategy for differentiation (when the analytic derivatives
-                are unavailable).
-            globalization_method: The globalization method.
-
-        Raises:
-            ValueError: If the value for one the following option is invalid:
-                objectives smoothness,
-                constraints smoothness,
-                logging level,
-                differentiation scheme,
-                differentiation type,
-                globalization method.
-        """
-        if evaluation_cost_type is not None:
-            self.__check_evaluation_cost_type(evaluation_cost_type)
-
-        if expensive_evaluations is not None:
-            self.__check_expensive_evaluations(expensive_evaluations)
-
-        if not isinstance(objectives_smoothness, Smoothness):
-            raise ValueError(
-                "Unknown objectives smoothness: {}".format(objectives_smoothness)
-            )
-
-        if not isinstance(constraints_smoothness, Smoothness):
-            raise ValueError(
-                "Unknown constraints smoothness: {}".format(constraints_smoothness)
-            )
-
-        if not isinstance(log_level, LogLevel):
-            raise ValueError("Unknown log level: {}".format(log_level))
-
-        if not isinstance(diff_scheme, DiffScheme):
-            raise ValueError("Unknown differentiation scheme: {}".format(diff_scheme))
-
-        if not isinstance(diff_type, DiffType):
-            raise ValueError("Unknown differentiation type: {}".format(diff_type))
-
-        if globalization_method is not None and not isinstance(
-            globalization_method, GlobalMethod
-        ):
-            raise ValueError(
-                "Unknown globalization method: {}".format(globalization_method)
-            )
-
-    def __check_evaluation_cost_type(
-        self,
-        evaluation_cost_type,  # type: Mapping[str, CostType]
-    ):  # type: (...) -> None
-        """Check the evaluation cost types.
-
-        Args:
-            evaluation_cost_type: The evaluation cost type of each function of the
-                problem.
-
-        Raises:
-            ValueError: If a function name does not refer to a function of the problem,
-                or if a cost type is invalid.
-        """
-        functions_names = [
-            self.problem.get_objective_name()
-        ] + self.problem.get_constraints_names()
-
-        if evaluation_cost_type is not None:
-            for func_name, func_type in evaluation_cost_type.items():
-                if func_name not in functions_names:
-                    raise ValueError("Unknown function name: {}".format(func_name))
-                if not isinstance(func_type, CostType):
-                    raise ValueError(
-                        "Unknown cost type for function '{}': {}".format(
-                            func_name, func_type
-                        )
-                    )
-
-    def __check_expensive_evaluations(
-        self,
-        expensive_evaluations,  # type: Mapping[str, int]
-    ):  # type: (...) -> None
-        """Check the numbers of expensive evaluations.
-
-        Args:
-            expensive_evaluations: The maximal number of expensive evaluations for
-                each function of the problem.
-
-        Raises:
-            ValueError: If a function name does not refer to a function of the problem.
-            TypeError: If a number of expensive evaluations is not an integer.
-        """
-        functions_names = [
-            self.problem.get_objective_name()
-        ] + self.problem.get_constraints_names()
-
-        for func_name, eval_number in expensive_evaluations.items():
-            if func_name not in functions_names:
-                raise ValueError("Unknown function name: {}".format(func_name))
-            if not isinstance(eval_number, int):
-                raise TypeError(
-                    "Non-integer evaluations number for function '{}': {}".format(
-                        func_name, eval_number
-                    )
-                )
-
-    def __compute_constraints_tolerance(self):  # type: (...) -> Optional[float]
-        """Compute the pSeven tolerance on the constraints.
-
-        This tolerance is relative to the infinity norm.
-        """
-        tolerance = None
-
-        if self.problem.has_eq_constraints() and self.problem.has_ineq_constraints():
-            tolerance = min(self.problem.eq_tolerance, self.problem.ineq_tolerance)
-        elif self.problem.has_eq_constraints():
-            tolerance = self.problem.eq_tolerance
-        elif self.problem.has_ineq_constraints():
-            tolerance = self.problem.ineq_tolerance
-
-        if tolerance:
-            init_x = self.problem.design_space.get_current_x()
-            constr_dim = sum(
-                [constraint(init_x).size for constraint in self.problem.constraints]
-            )
-            tolerance /= sqrt(constr_dim)
-            # N.B. ||c(x)||_2 <= sqrt(constr_dim) * ||c(x)||_inf
-
-        return tolerance
-
     def __set_pseven_techniques(
         self,
-        options,  # type: Dict[str, Any]
-    ):  # type: (...) -> None
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Get the pSeven techniques from the options."""
-        techniques_list = list()
-        internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+        technique_names = list()
+        internal_algo_name = self.descriptions[self.algo_name].internal_algorithm_name
 
         if internal_algo_name in self.__LOCAL_METHODS:
-            techniques_list.append(internal_algo_name)
+            technique_names.append(internal_algo_name)
 
         globalization_method = options.pop("globalization_method", None)
         if globalization_method is not None:
-            techniques_list.append(globalization_method)
+            technique_names.append(globalization_method)
 
         surrogate_based = options.pop("surrogate_based", None)
         if surrogate_based is not None and surrogate_based:
-            techniques_list.append(self.__SBO)
+            technique_names.append(self.__SBO)
 
-        if techniques_list:
-            options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
+        if technique_names:
+            options["GTOpt/Techniques"] = "[" + ", ".join(technique_names) + "]"
 
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm.
 
         Args:
@@ -593,6 +378,124 @@ class PSevenOpt(OptimizationLibrary):
 
         Returns:
             The result of the optimization.
+        """
+        self.__check_functions()
+
+        # Pop GEMSEO options
+        normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION)
+        max_iter = options.pop(self.MAX_ITER)
+        del options[self.F_TOL_ABS]
+        del options[self.F_TOL_REL]
+        del options[self.X_TOL_ABS]
+        del options[self.X_TOL_REL]
+        del options[self.STOP_CRIT_NX]
+
+        # Create the pSeven problem
+        initial_x, lower_bnd, upper_bnd = self.get_x0_and_bounds_vects(normalize_ds)
+        pseven_problem = PSevenProblem(
+            self.problem,
+            options.pop("evaluation_cost_type"),
+            options.pop("expensive_evaluations"),
+            lower_bnd,
+            upper_bnd,
+            initial_x,
+            use_gradient=options.pop("use_gradient"),
+        )
+
+        # Set up the solver and its logger
+        solver = p7core.gtopt.Solver()
+        log_path = options.pop("log_path")
+        if log_path is None:
+            # Direct the logging to the standard output
+            stream = sys.stdout
+        else:
+            # Direct the logging to a file
+            stream = Path(log_path).open("w")
+
+        solver.set_logger(
+            p7core.loggers.StreamLogger(stream, options["GTOpt/LogLevel"])
+        )
+
+        # Disable pSeven stopping criteria
+        options["GTOpt/CoordinateTolerance"] = 0.0
+        options["GTOpt/ObjectiveTolerance"] = 0.0
+        options["GTOpt/GradientTolerance"] = 0.0
+
+        # Set the tolerance on the constraints to the minimum: the tolerances on the
+        # constraints are effectively enforced in the definition of the constraints of
+        # the PSevenProblem.
+        options["GTOpt/ConstraintsTolerance"] = 0.01 * numpy.finfo(numpy.float32).eps
+
+        # Grab the initial samples from the options
+        samples = self.__get_samples(options, normalize_ds)
+
+        # Check whether the evaluations budget is sufficient for the expensive functions
+        self.__check_expensive_evaluations_budget(options, samples, max_iter)
+
+        # Run the algorithm and return the result
+        try:
+            result = solver.solve(pseven_problem, options=options, **samples)
+        except p7core.exceptions.UserEvaluateException as exception:
+            # Check whether a GEMSEO stopping criterion was raised during an
+            # evaluation called by pSeven
+            for criterion in [
+                MaxIterReachedException,
+                FunctionIsNan,
+                DesvarIsNan,
+                XtolReached,
+                FtolReached,
+                MaxTimeReached,
+            ]:
+                if str(exception).startswith(criterion.__name__):
+                    raise criterion
+
+            raise exception
+        else:
+            status = result.status
+
+        # Close the log file
+        if log_path is not None:
+            stream.close()
+
+        return self.get_optimum_from_database(str(status), status.id)
+
+    def __get_samples(
+        self,
+        options: MutableMapping[str, Any],
+        normalize_design_space: bool,
+    ) -> dict[str, ndarray]:
+        """Get the pSeven initial samples.
+
+        Args:
+            options: The processed options.
+            normalize_design_space: Whether the design space is normalized.
+
+        Returns:
+            The pSeven initial samples.
+        """
+        samples = dict()
+        sample_x = options.pop(self.__SAMPLE_X)
+        if sample_x is not None:
+            if normalize_design_space:
+                sample_x = [
+                    self.problem.design_space.normalize_vect(point)
+                    for point in sample_x
+                ]
+
+            samples[self.__SAMPLE_X] = sample_x
+
+            for option in [self.__SAMPLE_F, self.__SAMPLE_C]:
+                sample_functions = options.pop(option)
+                if sample_functions is not None:
+                    samples[option] = sample_functions
+        else:
+            del options[self.__SAMPLE_F]
+            del options[self.__SAMPLE_C]
+
+        return samples
+
+    def __check_functions(self) -> None:
+        """Check that the algorithm is consistent with the problem functions.
 
         Raises:
             RuntimeError: If a solver for constrained problems is called on
@@ -601,24 +504,21 @@ class PSevenOpt(OptimizationLibrary):
                 whose objective is neither quadratic nor linear
                 or one of whose constraints are not linear.
         """
-        problem = self.problem
-        options.pop("max_iter")
-
-        # Check the functions
         if self.internal_algo_name in [
             self.__MOM,
             self.__QP,
             self.__SQP,
             self.__SQ2P,
         ]:
-            if not problem.constraints:
+            if not self.problem.constraints:
                 raise RuntimeError(
-                    "{} requires at least one constraint".format(self.algo_name)
+                    f"{self.algo_name} requires at least one constraint."
                 )
 
         if self.internal_algo_name == self.__QP:
             if not isinstance(
-                problem.nonproc_objective, (MDOQuadraticFunction, MDOLinearFunction)
+                self.problem.nonproc_objective,
+                (MDOQuadraticFunction, MDOLinearFunction),
             ):
                 # TODO: support several objectives
                 raise TypeError(
@@ -627,7 +527,7 @@ class PSevenOpt(OptimizationLibrary):
                     )
                 )
 
-            for constraint in problem.nonproc_constraints:
+            for constraint in self.problem.nonproc_constraints:
                 if not isinstance(constraint, MDOLinearFunction):
                     raise TypeError(
                         "{} requires the constraints to be linear,"
@@ -636,46 +536,37 @@ class PSevenOpt(OptimizationLibrary):
                         )
                     )
 
-        # Create the pSeven problem
-        normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
-        initial_x, lower_bnd, upper_bnd = self.get_x0_and_bounds_vects(normalize_ds)
-        evaluation_cost_type = options.pop("evaluation_cost_type", None)
-        expensive_evaluations = options.pop("expensive_evaluations", None)
+    def __check_expensive_evaluations_budget(
+        self,
+        options,  # type: Dict[str, Any]
+        samples,  # type: Dict[str, ndarray]
+        max_iter,  # type: int
+    ):  # type: (...) -> None
+        """Check whether the expensive evaluations budget is sufficient.
 
-        # Grab the initial sample from the options
-        sample = dict()
-        sample_x = options.pop("sample_x", None)
-        if sample_x is not None:
-            if normalize_ds:
-                sample["sample_x"] = [
-                    problem.design_space.normalize_vect(point) for point in sample_x
-                ]
-            else:
-                sample["sample_x"] = sample_x
+        Args:
+            options: The pSeven options.
+            samples: The additional initial guesses.
+            max_iter: The maximum number of evaluated designs.
+        """
+        max_expensive_iter = options.get("GTOpt/MaximumExpensiveIterations")
+        if max_expensive_iter is None:
+            return
 
-        for option in ["sample_f", "sample_c"]:
-            sample_option = options.pop(option, None)
-            if sample_option is not None:
-                sample[option] = sample_option
+        number_of_initial_guesses = 0
+        if self.problem.design_space.has_current_value():
+            number_of_initial_guesses += 1
 
-        pseven_problem = PSevenProblem(
-            problem,
-            evaluation_cost_type,
-            expensive_evaluations,
-            lower_bnd,
-            upper_bnd,
-            initial_x,
-        )
+        if self.__SAMPLE_X in samples:
+            number_of_initial_guesses += len(samples[self.__SAMPLE_X])
 
-        # Run the algorithm and return the result
-        try:
-            result = p7core.gtopt.Solver().solve(
-                pseven_problem, options=options, **sample
+        if max_iter < max_expensive_iter + number_of_initial_guesses:
+            LOGGER.warning(
+                "The evaluations budget (%s=%d) is to small to compute the "
+                "expensive functions at both the initial guesses (%d) and the "
+                "iterates (%d).",
+                self.MAX_ITER,
+                max_iter,
+                number_of_initial_guesses,
+                max_expensive_iter,
             )
-        except p7core.exceptions.UserEvaluateException:
-            # Gemseo terminated pSeven during evaluation as a stopping criterion was met
-            status = p7core.status.USER_TERMINATED
-        else:
-            status = result.status
-
-        return self.get_optimum_from_database(str(status), status.id)

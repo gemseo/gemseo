@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "maximize_objective": {
+      "description": "If True, the objective function is maximized.",
+      "type": "boolean"
+    },
+    "grammar_type": {
+      "description": "The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.",
+      "type": "string"
+    },
+    "main_mda_name": {
+      "description": "The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.",
+      "type": "string"
+    },
+    "inner_mda_name": {
+      "description": "The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "grammar_type",
+    "inner_mda_name",
+    "main_mda_name",
+    "maximize_objective"
+  ]
+}

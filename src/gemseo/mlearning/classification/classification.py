@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -32,14 +30,22 @@ wherever possible.
 This concept is implemented through the :class:`.MLClassificationAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Dict, Iterable, Optional, Sequence, Union
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
+from typing import Union
 
-from numpy import ndarray, unique, zeros
+from numpy import ndarray
+from numpy import unique
+from numpy import zeros
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.core.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
@@ -63,35 +69,36 @@ class MLClassificationAlgo(MLSupervisedAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type: TransformerType
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
-        super(MLClassificationAlgo, self).__init__(
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
-            **parameters
+            **parameters,
         )
         self.n_classes = None
 
     def _learn(
         self,
-        indices,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> None
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
         self.n_classes = unique(output_data).shape[0]
-        super(MLClassificationAlgo, self)._learn(indices)
+        super()._learn(indices, fit_transformers=fit_transformers)
 
     @MLSupervisedAlgo.DataFormatters.format_input_output
     def predict_proba(
         self,
-        input_data,  # type: DataType
-        hard=True,  # type: bool
-    ):  # type: (...)-> ndarray
+        input_data: DataType,
+        hard: bool = True,
+    ) -> ndarray:
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specified these input data either as a numpy array,
@@ -119,9 +126,9 @@ class MLClassificationAlgo(MLSupervisedAlgo):
 
     def _predict_proba(
         self,
-        input_data,  # type: ndarray
-        hard=True,  # type: bool
-    ):  # type: (...)-> ndarray
+        input_data: ndarray,
+        hard: bool = True,
+    ) -> ndarray:
         """Predict the probability of belonging to each class.
 
         Args:
@@ -140,8 +147,8 @@ class MLClassificationAlgo(MLSupervisedAlgo):
 
     def _predict_proba_hard(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Return 1 if the data belongs to a class, 0 otherwise.
 
         Args:
@@ -161,8 +168,8 @@ class MLClassificationAlgo(MLSupervisedAlgo):
 
     def _predict_proba_soft(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Predict the probability of belonging to each class.
 
         Args:
@@ -174,7 +181,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         """
         raise NotImplementedError
 
-    def _get_objects_to_save(self):  # type: (...) -> SavedObjectType
-        objects = super(MLClassificationAlgo, self)._get_objects_to_save()
+    def _get_objects_to_save(self) -> SavedObjectType:
+        objects = super()._get_objects_to_save()
         objects["n_classes"] = self.n_classes
         return objects

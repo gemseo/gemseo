@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
-from numpy import hstack, isfinite, vstack, zeros
+from __future__ import annotations
+
+from typing import Iterable
+
+from numpy import hstack
+from numpy import isfinite
+from numpy import ndarray
+from numpy import vstack
+from numpy import zeros
 
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 
 
-def build_constraints_matrices(constraints, constraint_type):
+def build_constraints_matrices(
+    constraints: Iterable[MDOLinearFunction], constraint_type: str
+) -> tuple[ndarray | None, ndarray | None]:
     """Build the constraints matrices associated with passed linear constraints.
 
-    :param constraints: list of linear constraints
-    :type constraints: list(MDOLinearFunction)
-    :param constraint_type: type of constraint to consider
-    :type constraint_type: str
-    :returns: left-hand side matrix, right-hand side vector
-    :rtype: ndarray or None, ndarray or None
+    Args:
+        constraints: The linear constraints.
+        constraint_type: The type of constraint to consider.
+
+    Returns:
+        The left-hand side matrix, the right-hand side vector
     """
     # Check the constraint type
     valid_types = [MDOLinearFunction.TYPE_INEQ, MDOLinearFunction.TYPE_EQ]
@@ -44,33 +52,37 @@ def build_constraints_matrices(constraints, constraint_type):
         )
 
     # Filter the constraints to consider
-    cstr_list = [cstr for cstr in constraints if cstr.f_type == constraint_type]
-    if not cstr_list:
+    constraints = [
+        constraint for constraint in constraints if constraint.f_type == constraint_type
+    ]
+    if not constraints:
         return None, None
 
     # Check that the constraint are linear
-    for cstr in cstr_list:
-        if not isinstance(cstr, MDOLinearFunction):
+    for constraint in constraints:
+        if not isinstance(constraint, MDOLinearFunction):
             raise TypeError(
-                'Constraint "{}" is not an MDOLinearFunction'.format(cstr.name)
+                f'The constraint "{constraint.name}" is not an MDOLinearFunction.'
             )
 
     # Build the constraints matrices
-    lhs_matrix = vstack([cstr.coefficients for cstr in cstr_list])
-    rhs_vector = hstack([-cstr.value_at_zero for cstr in cstr_list])
+    lhs_matrix = vstack([constraint.coefficients for constraint in constraints])
+    rhs_vector = hstack([-constraint.value_at_zero for constraint in constraints])
 
     return lhs_matrix, rhs_vector
 
 
-def build_bounds_matrices(bounds, upper):
-    """Return the constraint matrices corresponding to bounds.
+def build_bounds_matrices(
+    bounds: ndarray, upper: bool
+) -> tuple[ndarray | None, ndarray | None]:
+    """Return the constraint matrices corresponding to bound.
 
-    :param bounds: value of the bounds
-    :type bounds: ndarray
-    :param upper: if True the bounds are considered upper bounds
-    :type upper: bool
-    :return: left-hand side matrix, right-hand side vector
-    :rtype: ndarray, ndarray
+    Args:
+        bounds: The value of the bounds.
+        upper: Whether the bounds are considered as upper bounds.
+
+    Returns:
+        The left-hand side matrix, the right-hand side vector.
     """
     is_finite = isfinite(bounds)
     n_finite = is_finite.sum()

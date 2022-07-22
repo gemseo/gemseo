@@ -1,0 +1,137 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+..
+   Contributors:
+          :author: Francois Gallard
+          :author: Matthias De Lozzo
+
+.. _caching:
+
+Caching and recording discipline data
+=====================================
+
+|g| offers various features that allow to record and cache the values of discipline inputs and outputs, as well as its jacobian.
+
+Introduction
+------------
+
+Executing a discipline triggers a simulation which can be costly.
+
+- The first need for caching is to avoid duplicate simulations with the same inputs.
+- Then, the generated data contain valuable information which one may want to analyze after or during the execution,
+  so storing this data on the disk is useful.
+- Finally, in case of machine crash, restarting the MDO process from scratch may be a waste of computational resources.
+  Again, storing the input and output data on the disk avoids duplicate execution in case of crash.
+
+In |g|, each :class:`.MDODiscipline` has a cache.
+
+.. code::
+
+   >>> from gemseo.api import create_discipline
+   >>> discipline = create_discipline('AnalyticDiscipline', name='my_discipline', expressions={'y':'2*x'})
+   >>> print(discipline.cache)
+   my_discipline
+   | Type: SimpleCache
+   | Input names: None
+   | Output names: None
+   | Length: 0
+   | Tolerance: 0.0
+
+Setting a cache policy
+----------------------
+
+All disciplines have the :attr:`.MDODiscipline.SIMPLE_CACHE` cache policy enabled by default.
+Other ones are :attr:`.MDODiscipline.MEMORY_FULL_CACHE` and
+:attr:`.MDODiscipline.HDF5_CACHE`.
+
+The cache policy can be defined by means of the :meth:`.MDODiscipline.set_cache_policy` method:
+
+.. currentmodule:: gemseo.core.discipline
+.. automethod:: MDODiscipline.set_cache_policy
+   :noindex:
+
+.. code::
+
+   >>> from gemseo.api import create_discipline
+   >>> discipline = create_discipline('AnalyticDiscipline', name='my_discipline', expressions={'y':'2*x'})
+   >>> print(discipline.cache)
+   my_discipline
+   | Type: SimpleCache
+   | Input names: None
+   | Output names: None
+   | Length: 0
+   | Tolerance: 0.0
+   >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+   >>> print(discipline.cache)
+   my_discipline
+   | Type: MemoryFullCache
+   | Input names: None
+   | Output names: None
+   | Length: 0
+   | Tolerance: 0.0
+
+The different cache policies
+----------------------------
+
+Simple cache: storing the last execution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The simplest cache strategy in |g| only stores the last execution data (inputs, outputs, and eventually the Jacobian matrix) in memory.
+
+This cache strategy is implemented by means of the :class:`.SimpleCache` class:
+
+.. currentmodule:: gemseo.caches.simple_cache
+.. autoclass:: SimpleCache
+   :noindex:
+
+Memory cache: recording all executions in memory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :class:`.MemoryFullCache` is the in-memory version of the :class:`.HDF5Cache`.
+It allows to store several executions of a discipline in terms of both inputs, outputs and jacobian values into a dictionary.
+
+This cache strategy is implemented by means of the :class:`.MemoryFullCache` class:
+
+.. currentmodule:: gemseo.caches.memory_full_cache
+.. autoclass:: MemoryFullCache
+   :noindex:
+
+HDF5 cache: recording all executions on the disk
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When all the execution data of the discipline shall be stored on the disk, the `HDF5  <https://support.hdfgroup.org/HDF5/>`_ cache policy can be used.
+`HDF5  <https://support.hdfgroup.org/HDF5/>`_ is a standard file format for storing simulation data. The following description is proposed
+by the `HDF5 website <https://support.hdfgroup.org/HDF5/>`_:
+
+    *"HDF5 is a data model, library, and file format for storing and managing data. It supports an unlimited variety of datatypes, and is designed for flexible and efficient I/O and for high volume and complex data. HDF5 is portable and is extensible, allowing applications to evolve in their use of HDF5. The HDF5 Technology suite includes tools and applications for managing, manipulating, viewing, and analyzing data in the HDF5 format."*
+
+`HDF5  <https://support.hdfgroup.org/HDF5/>`_ manipulation libraries exist at least in C++, C, Java, Fortran and Python languages.
+
+The `HDFView application <https://support.hdfgroup.org/products/java/hdfview/>`_ can be used to explore the data of the cache.
+To manipulate the data, one may use the :class:`.HDF5Cache` class, which can import the file and read all the data,
+or the data of a specific execution.
+
+.. figure:: /_images/HDFView_cache.png
+    :scale: 70 %
+
+    HDFView of the cache generated by a MDF DOE scenario execution on the SSBJ test case
+
+This cache strategy is implemented by means of the :class:`.HDF5Cache` class:
+
+.. currentmodule:: gemseo.caches.hdf5_cache
+.. autoclass:: HDF5Cache
+   :noindex:
+
+[DEV] The abstract caches
+-------------------------
+
+- :class:`.MemoryFullCache` and :class:`.HDF5Cache` inherit from :class:`.AbstractFullCache`.
+- :class:`.AbstractFullCache` and :class:`.SimpleCache` inherit from :class:`.AbstractCache`.
+- Both :class:`.AbstractCache` and :class:`.AbstractFullCache` are abstract classes.
+- Any class inheriting from :class:`.AbstractCache` can be instantiated from the :class:`.CacheFactory`.

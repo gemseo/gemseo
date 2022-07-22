@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,42 +12,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
 from os.path import exists
 from random import shuffle
 
 import pytest
-from numpy import array
-
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.api import create_discipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sellar.sellar import (
-    C_1,
-    C_2,
-    OBJ,
-    Y_1,
-    Y_2,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sellar.sellar import C_1
+from gemseo.problems.sellar.sellar import C_2
+from gemseo.problems.sellar.sellar import OBJ
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.testing import image_comparison
+from numpy import array
 
-from .test_dependency_graph import DISC_DESCRIPTIONS, create_disciplines_from_desc
+from .test_dependency_graph import create_disciplines_from_desc
+from .test_dependency_graph import DISC_DESCRIPTIONS
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -60,14 +53,14 @@ class TestCouplingStructure(unittest.TestCase):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         coupling_structure = MDOCouplingStructure(disciplines)
 
-        strong_couplings = coupling_structure.strong_couplings()
-        weak_couplings = coupling_structure.weak_couplings()
+        strong_couplings = coupling_structure.strong_couplings
+        weak_couplings = coupling_structure.weak_couplings
         assert strong_couplings == [Y_1, Y_2]
         assert weak_couplings == [C_1, C_2, OBJ]
 
-        input_coupl = coupling_structure.input_couplings(disciplines[1])
+        input_coupl = coupling_structure.get_input_couplings(disciplines[1])
         assert input_coupl == [Y_1]
-        input_coupl = coupling_structure.input_couplings(disciplines[2])
+        input_coupl = coupling_structure.get_input_couplings(disciplines[2])
         assert input_coupl == [Y_1, Y_2]
         self.assertRaises(TypeError, coupling_structure.find_discipline, self)
 
@@ -76,9 +69,13 @@ class TestCouplingStructure(unittest.TestCase):
     def test_strong_weak_coupling(self):
         disciplines = [SobieskiStructure(), SobieskiMission()]
         coupling_structure = MDOCouplingStructure(disciplines)
-        s1_o_strong = coupling_structure.output_couplings(disciplines[0], strong=True)
+        s1_o_strong = coupling_structure.get_output_couplings(
+            disciplines[0], strong=True
+        )
         assert len(s1_o_strong) == 0
-        s1_o_weak = coupling_structure.output_couplings(disciplines[0], strong=False)
+        s1_o_weak = coupling_structure.get_output_couplings(
+            disciplines[0], strong=False
+        )
         assert s1_o_weak == ["y_14"]
 
     def test_n2(self):
@@ -107,16 +104,18 @@ class TestCouplingStructure(unittest.TestCase):
         assert exists(fname)
 
         coupling_structure = MDOCouplingStructure([disciplines[0]])
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="N2 diagrams need at least two disciplines."
+        ):
             coupling_structure.plot_n2_chart("n2_3.png", False, show=False, save=True)
 
     def test_n2_many_io(self):
         a = MDODiscipline("a")
         b = MDODiscipline("b")
-        a.input_grammar.initialize_from_data_names(["i" + str(i) for i in range(30)])
-        a.output_grammar.initialize_from_data_names(["o" + str(i) for i in range(30)])
-        b.output_grammar.initialize_from_data_names(["i" + str(i) for i in range(30)])
-        b.input_grammar.initialize_from_data_names(["o" + str(i) for i in range(30)])
+        a.input_grammar.update(["i" + str(i) for i in range(30)])
+        a.output_grammar.update(["o" + str(i) for i in range(30)])
+        b.output_grammar.update(["i" + str(i) for i in range(30)])
+        b.input_grammar.update(["o" + str(i) for i in range(30)])
 
         cpl = MDOCouplingStructure([a, b])
         cpl.plot_n2_chart(save=True, show=False)
@@ -126,18 +125,18 @@ class TestCouplingStructure(unittest.TestCase):
         sc_disc.execute()
 
         coupl = MDOCouplingStructure([sc_disc])
-        assert coupl.get_all_couplings() == ["y"]
-        assert coupl.strongly_coupled_disciplines() == [sc_disc]
-        assert coupl.weakly_coupled_disciplines() == []
-        assert coupl.weak_couplings() == []
-        assert coupl.strong_couplings() == ["y"]
+        assert coupl.all_couplings == ["y"]
+        assert coupl.strongly_coupled_disciplines == [sc_disc]
+        assert coupl.weakly_coupled_disciplines == []
+        assert coupl.weak_couplings == []
+        assert coupl.strong_couplings == ["y"]
 
 
 class SelfCoupledDisc(MDODiscipline):
     def __init__(self):
         MDODiscipline.__init__(self)
-        self.input_grammar.initialize_from_data_names(["y"])
-        self.output_grammar.initialize_from_data_names(["y"])
+        self.input_grammar.update(["y"])
+        self.output_grammar.update(["y"])
         self.default_inputs["y"] = array([0.2])
 
     def _run(self):
@@ -154,10 +153,8 @@ def get_strong_couplings(analytic_expressions):
     Returns:
         The strong couplings.
     """
-    disciplines = [
-        AnalyticDiscipline(expressions_dict=desc) for desc in analytic_expressions
-    ]
-    return MDOCouplingStructure(disciplines).strong_couplings()
+    disciplines = [AnalyticDiscipline(desc) for desc in analytic_expressions]
+    return MDOCouplingStructure(disciplines).strong_couplings
 
 
 def test_strong_couplings_basic():
@@ -187,3 +184,78 @@ def test_strong_couplings_self_coupled():
     )
 
     assert coupl == ["c1", "c2", "cs"]
+
+
+@pytest.mark.parametrize(
+    "show_data_names,descriptions,baseline_images",
+    [
+        (
+            False,
+            ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}),
+            ["n_2_no_coupling"],
+        ),
+        (True, ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}), ["n_2_no_coupling"]),
+        (
+            False,
+            ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
+            ["n_2_coupling_no_names"],
+        ),
+        (
+            True,
+            ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
+            ["n_2_coupling_names"],
+        ),
+    ],
+)
+@image_comparison(None)
+def test_n2_no_coupling(
+    tmp_wd, baseline_images, show_data_names, descriptions, pyplot_close_all
+):
+    """Test that an N2 plot is generated correctly when there are no couplings.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        baseline_images: The reference images to be compared.
+        show_data_names: If ``True``, show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
+        descriptions: The inputs and outputs to create analytic disciplines.
+        pyplot_close_all: Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    disciplines = [
+        AnalyticDiscipline(desc, name=f"discipline_{next(iter(desc))}")
+        for desc in descriptions
+    ]
+
+    MDOCouplingStructure(disciplines).plot_n2_chart(
+        f"{baseline_images[0]}.png", show_data_names, save=True, show=False
+    )
+
+
+def test_coupl_properties():
+    """Test the weak_couplings and get_input_couplings on the Sellar problem."""
+    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
+    coupl = MDOCouplingStructure(disciplines)
+    scd = coupl.strongly_coupled_disciplines
+    assert id(scd) == id(coupl.strongly_coupled_disciplines)
+
+    wcp = coupl.weak_couplings
+    assert id(wcp) == id(coupl.weak_couplings)
+
+    assert coupl.get_input_couplings(disciplines[0]) == ["y_2"]
+
+    assert coupl.get_input_couplings(disciplines[1]) == ["y_1"]
+
+    assert coupl.get_input_couplings(disciplines[2], strong=True) == ["y_1", "y_2"]
+
+    assert sorted(coupl.get_input_couplings(disciplines[2], strong=False)) == [
+        "y_1",
+        "y_2",
+    ]
+
+    disciplines = create_discipline(["Sellar1", "SellarSystem"])
+    coupl = MDOCouplingStructure(disciplines)
+    assert coupl.get_input_couplings(disciplines[1], strong=False) == ["y_1"]
+    assert coupl.get_input_couplings(disciplines[1], strong=True) == []

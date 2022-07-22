@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,28 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistics.statistics import Statistics
+from numpy import allclose
+from numpy import array
 
 
 @pytest.fixture(scope="module")
 def dataset():
-    discipline = AnalyticDiscipline(
-        expressions_dict={"obj": "x_1+x_2", "cstr": "x_1-x_2"}
-    )
+    discipline = AnalyticDiscipline({"obj": "x_1+x_2", "cstr": "x_1-x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", 1, "float", 1.0, 10.0, 5.0)
@@ -180,3 +175,13 @@ def test_empstats_moment(mc_datasets):
     assert allclose(tmp["obj"][0], 0.0)
     assert allclose(tmp["x_1"][0], 0.0)
     assert allclose(tmp["x_2"][0], 0.0)
+
+
+def test_variation_coefficient():
+    """Check compute_variation_coefficient()."""
+
+    class NewStatistics(Statistics):
+        compute_mean = lambda self: {"x": 2}  # noqa: E731
+        compute_standard_deviation = lambda self: {"x": 6}  # noqa: E731
+
+    assert NewStatistics(Dataset()).compute_variation_coefficient() == {"x": 3}

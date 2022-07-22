@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,32 +12,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import json
 import unittest
 from copy import deepcopy
-from os.path import abspath, dirname, exists, join
+from pathlib import Path
+from typing import Any
+from typing import Mapping
+from typing import Union
 
 import pytest
-
+from gemseo.algos.design_space import DesignSpace
+from gemseo.api import create_discipline
+from gemseo.core.chain import MDOChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.mdo_scenario import MDODiscipline, MDOScenario
+from gemseo.core.mdo_scenario import MDODiscipline
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.utils.xdsmizer import XDSMizer, expand
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.xdsmizer import EdgeType
+from gemseo.utils.xdsmizer import expand
+from gemseo.utils.xdsmizer import NodeType
+from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsmizer import XdsmType
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -83,8 +86,8 @@ class TestXDSMizer(unittest.TestCase):
             disciplines,
             formulation=formulation,
             objective_name="y_4",
-            design_space=SobieskiProblem().read_design_space(),
-            **options
+            design_space=SobieskiProblem().design_space,
+            **options,
         )
 
         sc.formulation.minimize_objective = False
@@ -93,19 +96,19 @@ class TestXDSMizer(unittest.TestCase):
     def test_xdsmize_mdf(self):
         """Test xdsmization of Sobieski problem solved with MDF with and without
         constraint."""
-        scenario = self.build_mdo_scenario("MDF", sub_mda_class="MDAGaussSeidel")
+        scenario = self.build_mdo_scenario("MDF", inner_mda_name="MDAGaussSeidel")
         options = {
             "output_directory_path": ".",
             "html_output": False,
             "json_output": True,
             "outfilename": "xdsmized_sobieski_mdf.json",
         }
-        self._assert_xdsm(scenario, **options)
+        assert_xdsm(scenario, **options)
 
         # with constraints
         options["outfilename"] = "xdsmized_sobieski_cstr_mdf.json"
         scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
-        self._assert_xdsm(scenario, **options)
+        assert_xdsm(scenario, **options)
 
         # without outdir
         xdsmizer = XDSMizer(scenario)
@@ -137,18 +140,18 @@ class TestXDSMizer(unittest.TestCase):
             "json_output": True,
             "outfilename": "xdsmized_sobieski_idf.json",
         }
-        self._assert_xdsm(scenario, **options)
+        assert_xdsm(scenario, **options)
 
         # with constraints
         options["outfilename"] = "xdsmized_sobieski_cstr_idf.json"
         for c_name in ["g_1", "g_2", "g_3"]:
             scenario.add_constraint(c_name, "ineq")
-        self._assert_xdsm(scenario, **options)
+        assert_xdsm(scenario, **options)
 
     def test_xdsmize_bilevel(self):
         """Test xdsmization of Sobieski problem solved with bilevel."""
 
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         # Disciplinary optimization
         propulsion = SobieskiPropulsion()
         aerodynamics = SobieskiAerodynamics()
@@ -224,7 +227,7 @@ class TestXDSMizer(unittest.TestCase):
             "json_output": True,
             "outfilename": "xdsmized_sobieski_bilevel.json",
         }
-        self._assert_xdsm(system_scenario, **options)
+        assert_xdsm(system_scenario, **options)
 
         system_scenario_par = MDOScenario(
             sub_disciplines,
@@ -240,82 +243,149 @@ class TestXDSMizer(unittest.TestCase):
         )
         system_scenario_par.add_constraint(["g_1", "g_2", "g_3"], "ineq")
 
-    #         system_scenario_par.xdsmize()
 
-    def _assert_xdsm(self, scenario, **options):
-        """Assert XDSM equality taking file 'ref_<fname> as reference.
+@pytest.fixture()
+def elementary_discipline():
+    """Build an elementary analytic discipline from input and output names.
 
-        :param scenario: the scenario to be xdsmize
-        @options options for xdsmise function
-        :param **options:
-        """
-        fname = options["outfilename"]
-        xdsmizer = XDSMizer(scenario)
-        # xdsm_json = xdsmizer.run(**options)
-        # self._assert_xdsm_json(fname, xdsm_json)
-        xdsmizer.run(**options)
-        self._assert_xdsm_file_ok(fname)
+    The discipline is such as ``output_name = input_name``.
+    """
 
-    def _assert_xdsm_file_ok(self, fname):
-        """Tests XDSM equality taking file 'ref_<fname> as reference and new generated
-        file <fname>
+    def _elementary_discipline(input_name, output_name):
+        return create_discipline(
+            "AnalyticDiscipline", expressions={output_name: input_name}
+        )
 
-        :param fname: filename containing generated XDSM
-        """
-        ref_filepath = join(dirname(abspath(__file__)), "data", fname)
-        # Erase reference files
-        #         import shutil
-        #         shutil.copyfile(fname, ref_filepath)
-        self.assertTrue(exists(ref_filepath), ref_filepath + " not found!")
-        with open(ref_filepath, "r") as ref_file:
-            xdsm_str = ref_file.read()
-        expected = json.loads(xdsm_str)
+    return _elementary_discipline
 
-        new_filepath = fname
-        assert exists(new_filepath)
-        with open(new_filepath, "r") as new_file:
-            xdsm_str = new_file.read()
-        xdsm_json = json.loads(xdsm_str)
-        self._assert_xdsm_equal(expected, xdsm_json)
 
-    def _assert_xdsm_equal(self, expected, xdsm_json):
-        """
+def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
+    """Test the XDSM representation of nested ``MDOChain``s.
 
-        :param expected: param xdsm_json:
-        :param xdsm_json:
+    Here, we build a 3-levels nested chain.
+    """
 
-        """
-        self.assertEqual(sorted(expected.keys()), sorted(xdsm_json.keys()))
-        for key in expected:
-            self._assert_level_xdsm_equal(expected[key], xdsm_json[key])
+    def get_name(x: int) -> str:
+        return f"x_{x}"
 
-    def _assert_level_xdsm_equal(self, expected, xdsm_json):
-        """
+    deep_chain = MDOChain(
+        [
+            elementary_discipline(get_name(1), get_name(2)),
+            elementary_discipline(get_name(2), get_name(3)),
+        ]
+    )
 
-        :param expected: param xdsm_json:
-        :param xdsm_json:
+    inter_chain = MDOChain(
+        [deep_chain, elementary_discipline(get_name(3), get_name(4))]
+    )
 
-        """
-        self.assertEqual(len(expected["nodes"]), len(xdsm_json["nodes"]))
-        for expected_node in expected["nodes"]:
-            found = False
-            for node in xdsm_json["nodes"]:
-                if node["id"] == expected_node["id"]:
-                    self.assertEqual(expected_node["name"], node["name"])
-                    self.assertEqual(expected_node["type"], node["type"])
-                    found = True
-            self.assertTrue(found, "Node " + str(expected_node) + " not found")
-        for expected_edge in expected["edges"]:
-            found = False
-            for edge in xdsm_json["edges"]:
-                if (
-                    edge["from"] == expected_edge["from"]
-                    and edge["to"] == expected_edge["to"]
-                ):
-                    self.assertSetEqual(
-                        set(expected_edge["name"].split(", ")),
-                        set(edge["name"].split(", ")),
-                    )
-                    found = True
-            self.assertTrue(found, "Edge " + str(expected_edge) + " not found")
-        self.assertListEqual(expected["workflow"], xdsm_json["workflow"])
+    main_chain = [inter_chain, elementary_discipline(get_name(4), get_name(5))]
+
+    design_space = DesignSpace()
+    design_space.add_variable(get_name(1))
+
+    nested_chains = MDOScenario(
+        main_chain,
+        formulation="DisciplinaryOpt",
+        objective_name=get_name(5),
+        design_space=design_space,
+    )
+
+    options = {
+        "html_output": False,
+        "json_output": True,
+        "outfilename": "xdsmized_nested_chains.json",
+    }
+
+    assert_xdsm(nested_chains, **options)
+
+
+def assert_xdsm(scenario: MDOScenario, **options: Mapping[str, Any]) -> None:
+    """Build and check the XDSM representation generated from a scenario.
+
+    Args:
+        scenario: The scenario from which the XDSM is generated.
+        **options: The options for the XDSMizer.
+    """
+    fname = options["outfilename"]
+    xdsmizer = XDSMizer(scenario)
+    xdsmizer.run(**options)
+    assert_xdsm_file_ok(fname, fname)
+
+
+def assert_xdsm_file_ok(generated_file: str, ref_file: str) -> None:
+    """Check the equality of two XDSM files (json).
+
+    Args:
+        generated_file: The name of the generated file.
+        ref_file: The name of the reference file.
+            This reference file must be located into the ``data`` directory.
+    """
+    current_dir = Path(__file__).parent
+    ref_filepath = current_dir / "data" / ref_file
+
+    assert ref_filepath.exists(), (
+        f"Reference {str(ref_filepath)} not found in data " f"directory."
+    )
+
+    with open(ref_filepath) as ref_file:
+        xdsm_str = ref_file.read()
+    expected = json.loads(xdsm_str)
+
+    new_filepath = Path(generated_file)
+    assert new_filepath.exists(), f"Generated {str(new_filepath)} not found."
+
+    with open(new_filepath) as new_file:
+        xdsm_str = new_file.read()
+    xdsm_json = json.loads(xdsm_str)
+
+    assert_xdsm_equal(expected, xdsm_json)
+
+
+def assert_xdsm_equal(expected: XdsmType, generated: XdsmType) -> None:
+    """Check the equality of two XDSM structures.
+
+    Args:
+        expected: The expected XDSM structure to be compared with.
+        generated: The generated XDSM structure.
+    """
+    assert sorted(expected.keys()) == sorted(generated.keys())
+
+    for key in expected:
+        assert_level_xdsm_equal(expected[key], generated[key])
+
+
+def assert_level_xdsm_equal(
+    expected: Mapping[str, Union[NodeType, EdgeType]],
+    generated: Mapping[str, Union[NodeType, EdgeType]],
+) -> None:
+    """Check the equality of ``nodes`` and ``edges`` in two different XDSM structures.
+
+    Args:
+        expected: The expected data to be compared with.
+        generated: The generated data.
+    """
+    assert len(expected["nodes"]) == len(generated["nodes"])
+
+    for expected_node in expected["nodes"]:
+        found = False
+        for node in generated["nodes"]:
+            if node["id"] == expected_node["id"]:
+                assert expected_node["name"] == node["name"]
+                assert expected_node["type"] == node["type"]
+                found = True
+        assert found, f"Node {str(expected_node)} not found."
+
+    for expected_edge in expected["edges"]:
+        found = False
+        for edge in generated["edges"]:
+            if (
+                edge["from"] == expected_edge["from"]
+                and edge["to"] == expected_edge["to"]
+            ):
+                assert set(expected_edge["name"].split(", ")) == set(
+                    edge["name"].split(", ")
+                )
+                found = True
+        assert found, f"Edge {str(expected_edge)} not found."
+    assert expected["workflow"] == generated["workflow"]

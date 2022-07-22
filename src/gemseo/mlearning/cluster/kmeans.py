@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -70,18 +68,22 @@ This clustering algorithm relies on the KMeans class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cluster.KMeans.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import ClassVar
+from typing import Iterable
+from typing import Mapping
 
-from numpy import finfo, ndarray
+from numpy import finfo
+from numpy import ndarray
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,19 +91,20 @@ LOGGER = logging.getLogger(__name__)
 class KMeans(MLPredictiveClusteringAlgo):
     """The k-means clustering algorithm."""
 
-    ABBR = "K-means"
+    SHORT_ALGO_NAME: ClassVar[str] = "KMeans"
+    LIBRARY: Final[str] = "scikit-learn"
 
     EPS = finfo(float).eps
 
     def __init__(
         self,
-        data,  # type:Dataset
-        transformer=None,  # type: Optional[TransformerType]
-        var_names=None,  # type: Optional[Iterable[str]]
-        n_clusters=5,  # type: int
-        random_state=0,  # type: Optional[int]
-        **parameters  # type: Optional[Union[int,float,bool,str]]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        var_names: Iterable[str] | None = None,
+        n_clusters: int = 5,
+        random_state: int | None = 0,
+        **parameters: int | float | bool | str | None,
+    ) -> None:
         """
         Args:
             n_clusters: The number of clusters of the K-means algorithm.
@@ -109,32 +112,32 @@ class KMeans(MLPredictiveClusteringAlgo):
                 If not None,
                 the integer is used to make the initialization deterministic.
         """
-        super(KMeans, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             var_names=var_names,
             n_clusters=n_clusters,
             random_state=random_state,
-            **parameters
+            **parameters,
         )
         self.algo = SKLKmeans(n_clusters, random_state=random_state, **parameters)
 
     def _fit(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> None
+        data: ndarray,
+    ) -> None:
         self.labels = self.algo.fit_predict(data)
 
     def _predict(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.predict(data)
 
     def _predict_proba_soft(
         self,
-        data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        data: ndarray,
+    ) -> ndarray:
         centers = self.algo.cluster_centers_
         distances = norm(data[:, None] - centers, axis=2)
         inverse_distances = 1 / (distances + self.EPS)

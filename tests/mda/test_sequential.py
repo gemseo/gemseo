@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-import sys
+from pathlib import Path
 
 import numpy as np
-import pytest
-
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
-from gemseo.mda.sequential_mda import GSNewtonMDA, MDASequential
-from gemseo.problems.sellar.sellar import Y_1, Y_2
-from gemseo.utils.py23_compat import Path
+from gemseo.mda.sequential_mda import GSNewtonMDA
+from gemseo.mda.sequential_mda import MDASequential
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
 
 
 def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
@@ -83,16 +76,12 @@ def test_log_convergence(sellar_disciplines):
         assert not sub_mda.log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of GaussSeidel in parallel.
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`.
+            a parallel DOE scenario for a particular `main_mda_name`.
     """
     obj = generate_parallel_doe_data("GSNewtonMDA")
-    assert np.isclose(np.array([obj]), np.array([608.175]), atol=1e-3)
+    assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)

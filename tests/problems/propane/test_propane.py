@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
 
-from numpy import array, complex128, concatenate, float64, ones, zeros
-from numpy.linalg import norm
-
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.propane.propane import (
-    PropaneComb1,
-    PropaneComb2,
-    PropaneComb3,
-    PropaneReaction,
-    get_design_space,
-)
+from gemseo.problems.propane.propane import get_design_space
+from gemseo.problems.propane.propane import PropaneComb1
+from gemseo.problems.propane.propane import PropaneComb2
+from gemseo.problems.propane.propane import PropaneComb3
+from gemseo.problems.propane.propane import PropaneReaction
+from numpy import array
+from numpy import complex128
+from numpy import concatenate
+from numpy import float64
+from numpy import ones
+from numpy import zeros
+from numpy.linalg import norm
 
 
 class TestPropaneScenario(unittest.TestCase):
@@ -41,7 +38,7 @@ class TestPropaneScenario(unittest.TestCase):
 
     def get_current_x(self):
         """"""
-        return get_design_space().get_current_x()
+        return get_design_space().get_current_value()
 
     def get_inputs_by_names(self, data_names):
         """
@@ -103,7 +100,7 @@ class TestPropaneScenario(unittest.TestCase):
         scenario.execute(run_inputs)
         obj_opt = scenario.optimization_result.f_opt
 
-        x_opt = scenario.design_space.get_current_x()
+        x_opt = scenario.design_space.get_current_value()
         return obj_opt, x_opt
 
     def test_init_mdf(self):

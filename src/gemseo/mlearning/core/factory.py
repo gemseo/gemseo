@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -22,42 +20,42 @@
 """The factory to create the machine learning algorithms.
 
 This module contains a factory to instantiate a :class:`.MLAlgo` from its class name.
-This factory also provides a list of available machine learning algorithms and allows to
-test if a machine learning algorithm is available.
+This factory also provides a list of available machine learning algorithms and allows
+testing if a machine learning algorithm is available.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import pickle
-from typing import List, Optional, Union
+from pathlib import Path
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
-from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
-from gemseo.utils.py23_compat import Path
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MLAlgoFactory(object):
+class MLAlgoFactory:
     """This factory instantiates a :class:`.MLAlgo` from its class name.
 
-    The class can be either internal to |g| or external. In this second case, it can be
-    either implemented in a module referenced in the "GEMSEO_PATH" or in a module The
-    class can be either internal to |g| or external. In the second case, it can be
-    either implemented in a module referenced in the GEMSEO_PATH environment variable or
-    in a module starting with "gemseo_" and referenced in the PYTHONPATH environment
-    variable.
+    The class can be either internal or external. In this second case, it can be either
+    implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class
+    can be either internal or external. In the second case, it can be either implemented
+    in a module referenced in the ``GEMSEO_PATH`` environment variable or in a module
+    starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.factory = Factory(MLAlgo, ("gemseo.mlearning",))
 
     def create(
         self,
-        ml_algo,  # type: str
-        **options  # type: Optional[Union[Dataset,TransformerType,MLAlgoParameterType]]
-    ):  # type: (...) -> MLAlgo
+        ml_algo: str,
+        **options: Dataset | TransformerType | MLAlgoParameterType | None,
+    ) -> MLAlgo:
         """Create an instance of a machine learning algorithm.
 
         Args:
@@ -71,14 +69,14 @@ class MLAlgoFactory(object):
         return self.factory.create(ml_algo, **options)
 
     @property
-    def models(self):  # type: (...) -> List[str]
+    def models(self) -> list[str]:
         """The available machine learning algorithms."""
         return self.factory.classes
 
     def is_available(
         self,
-        ml_algo,  # type: str
-    ):  # type: (...) -> bool
+        ml_algo: str,
+    ) -> bool:
         """Check the availability of a machine learning algorithm.
 
         Args:
@@ -91,8 +89,8 @@ class MLAlgoFactory(object):
 
     def load(
         self,
-        directory,  # type:Union[str,Path]
-    ):  # type: (...) -> MLAlgo
+        directory: str | Path,
+    ) -> MLAlgo:
         """Load an instance of machine learning algorithm from the disk.
 
         Args:
@@ -108,7 +106,7 @@ class MLAlgoFactory(object):
         model = self.factory.create(
             objects.pop("algo_name"),
             data=objects.pop("data"),
-            **objects.pop("parameters")
+            **objects.pop("parameters"),
         )
         for key, value in objects.items():
             setattr(model, key, value)

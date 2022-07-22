@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -48,9 +46,13 @@ while each feature corresponds to a given spatial point :math:`x`.
 `More information about Burgers' equation
 <https://en.wikipedia.org/wiki/Burgers%27_equation>`_
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from numpy import exp, hstack, linspace, pi, square
+from numpy import exp
+from numpy import hstack
+from numpy import linspace
+from numpy import pi
+from numpy import square
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
@@ -58,7 +60,7 @@ from gemseo.core.discipline import MDODiscipline
 
 class BurgersDiscipline(MDODiscipline):
     def __init__(self):
-        super(BurgersDiscipline, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["x", "z"])
         self.output_grammar.initialize_from_data_names(["f", "g"])
 
@@ -68,26 +70,25 @@ class BurgersDataset(Dataset):
 
     def __init__(
         self,
-        name="Burgers",
-        by_group=True,
-        n_samples=30,
-        n_x=501,
-        fluid_viscosity=0.1,
-        categorize=True,
-    ):
-        """Constructor.
-
-        :param str name: name of the dataset.
-        :param bool by_group: if True, store the data by group. Otherwise,
-            store them by variables. Default: True.
-        :param int n_samples: number of samples. Default: 30.
-        :param int n_x: number of spatial points. Default: 501.
-        :param float fluid_viscosity: fluid viscosity. Default: 0.1.
-        :param bool categorize: distinguish between the different groups of
-            variables. Default: True.
-        :parma bool opt_naming: use an optimization naming. Default: True.
+        name: str = "Burgers",
+        by_group: bool = True,
+        n_samples: int = 30,
+        n_x: int = 501,
+        fluid_viscosity: float = 0.1,
+        categorize: bool = True,
+    ) -> None:
         """
-        super(BurgersDataset, self).__init__(name, by_group)
+        Args:
+            name: The name of the dataset.
+            by_group: Whether to store the data by group.
+                Otherwise, store them by variables.
+            n_samples: The number of samples.
+            n_x: The number of spatial points.
+            fluid_viscosity: The fluid viscosity.
+            categorize: Whether to distinguish
+                between the different groups of variables.
+        """
+        super().__init__(name, by_group)
 
         time = linspace(0, 2, n_samples)[:, None]
         space = linspace(0, 2 * pi, n_x)[None, :]

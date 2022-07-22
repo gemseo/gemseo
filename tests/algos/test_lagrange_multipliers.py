@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,267 +12,192 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-import unittest
 from copy import deepcopy
-from os.path import dirname, join
+from pathlib import Path
 
 import numpy as np
-from numpy import array
-
+import pytest
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import create_discipline, create_scenario
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.derivatives_approx import comp_best_step
+from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.utils.derivatives.derivatives_approx import comp_best_step
+from numpy import array
 
-DS_FILE = join(dirname(__file__), "sobieski_design_space.txt")
+
+DS_FILE = Path(__file__).parent / "sobieski_design_space.txt"
+NLOPT_OPTIONS = {
+    "eq_tolerance": 1e-11,
+    "ftol_abs": 1e-14,
+    "ftol_rel": 1e-14,
+    "ineq_tolerance": 1e-11,
+    "normalize_design_space": False,
+    "xtol_abs": 1e-14,
+    "xtol_rel": 1e-14,
+}
 
 
-class TestLagrangeMultipliers(unittest.TestCase):
-    """"""
+@pytest.fixture
+def problem() -> Power2:
+    """The Power2 optimization problem."""
+    return Power2()
 
-    NLOPT_OPTIONS = {
-        "eq_tolerance": 1e-11,
-        "ftol_abs": 1e-14,
-        "ftol_rel": 1e-14,
-        "ineq_tolerance": 1e-11,
-        "normalize_design_space": False,
-        "xtol_abs": 1e-14,
-        "xtol_rel": 1e-14,
-    }
 
-    def test_lagrange_notanoptproblem(self):
-        self.assertRaises(ValueError, LagrangeMultipliers, "not_a_problem")
+def test_lagrange_notanoptproblem():
+    with pytest.raises(
+        ValueError,
+        match=("LagrangeMultipliers must be initialized with an OptimizationProblem."),
+    ):
+        LagrangeMultipliers("not_a_problem")
 
-    def test_lagrange_solutionisnone(self):
-        problem = Power2()
-        self.assertRaises(ValueError, LagrangeMultipliers, problem)
 
-    def test_lagrange_pow2_too_many_acts(self):
-        """"""
-        problem = Power2()
-        problem.design_space.set_current_x(array([0.5, 0.9, -0.5]))
-        problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
+def test_lagrange_solutionisnone(problem):
+    with pytest.raises(ValueError, match="The optimization problem was not solved."):
+        LagrangeMultipliers(problem)
+
+
+@pytest.mark.parametrize("upper_bound", [False, True])
+def test_lagrange_pow2_too_many_acts(problem, upper_bound):
+    problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
+    if upper_bound:
+        problem.design_space.set_current_value(array([0.5, 0.9, -0.5]))
         problem.design_space.set_upper_bound("x", array([1.0, 1.0, 0.9]))
-        OptimizersFactory().execute(
-            problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
-        )
-        lagrange = LagrangeMultipliers(problem)
-        x_opt = problem.solution.x_opt
-        x_n = problem.design_space.normalize_vect(x_opt)
-        problem.evaluate_functions(x_n, eval_jac=True, normalize=True)
-        lagrangian = lagrange.compute(x_opt)
-        assert "upper_bounds" in lagrangian
-        assert "lower_bounds" in lagrangian
-        assert "equality" in lagrangian
-        assert "inequality" not in lagrangian
 
-    def test_lagrange_pow2_nact_ndim(self):
-        """"""
+    OptimizersFactory().execute(
+        problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
+    )
+    lagrange = LagrangeMultipliers(problem)
+    x_opt = problem.solution.x_opt
+    x_n = problem.design_space.normalize_vect(x_opt)
+    problem.evaluate_functions(x_n, eval_jac=True, normalize=True)
+    lagrangian = lagrange.compute(x_opt)
+    assert ("upper_bounds" in lagrangian) is upper_bound
+    assert "lower_bounds" in lagrangian
+    assert "equality" in lagrangian
+    assert ("inequality" not in lagrangian) is upper_bound
+
+
+@pytest.mark.parametrize("normalize,eps,tol", [(False, 1e-5, 1e-7), (True, 1e-3, 1e-8)])
+def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
+    options = deepcopy(NLOPT_OPTIONS)
+    options["normalize_design_space"] = normalize
+    problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
+    OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+    lagrange = LagrangeMultipliers(problem)
+    lagrangian = lagrange.compute(problem.solution.x_opt)
+
+    def obj(lb):
         problem = Power2()
-        problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
-        OptimizersFactory().execute(
-            problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
-        )
-        lagrange = LagrangeMultipliers(problem)
-        x_opt = problem.solution.x_opt
-        x_n = problem.design_space.normalize_vect(x_opt)
-        problem.evaluate_functions(x_n, eval_jac=True, normalize=True)
-        lagrangian = lagrange.compute(x_opt)
-        assert "upper_bounds" not in lagrangian
-        assert "lower_bounds" in lagrangian
-        assert "equality" in lagrangian
-        assert "inequality" in lagrangian
+        dspace = problem.design_space
+        dspace.set_current_value(array([1.0, 0.9, 1.0]))
+        dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
+        OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+        return problem.solution.f_opt
 
-    def test_lagrangian_validation_lbound(self):
+    df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
+    df_anal = lagrangian["lower_bounds"][1]
+    err = abs((df_fd - df_anal) / df_anal)
+    assert err < tol
+
+
+def test_lagrangian_validation_eq(problem):
+    OptimizersFactory().execute(problem, "NLOPT_SLSQP", **NLOPT_OPTIONS)
+
+    lagrange = LagrangeMultipliers(problem)
+    lagrangian = lagrange.compute(problem.solution.x_opt)
+
+    def obj(eq_val):
+        problem2 = Power2()
+        problem2.constraints[-1] = problem2.constraints[-1] + eq_val
+        OptimizersFactory().execute(problem2, "NLOPT_SLSQP", **NLOPT_OPTIONS)
+        return problem2.solution.f_opt
+
+    eps = 1e-5
+    df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
+    df_anal = lagrangian["equality"][1]
+    err = abs((df_fd - df_anal) / df_fd)
+    assert err < 1e-6
+
+
+def test_lagrangian_validation_ineq_normalize():
+    options = deepcopy(NLOPT_OPTIONS)
+    options["normalize_design_space"] = True
+
+    def obj(eq_val):
+        problem2 = Power2()
+        problem2.constraints[-2] = problem2.constraints[-2] + eq_val
+        OptimizersFactory().execute(problem2, "NLOPT_SLSQP", **options)
+        return problem2.solution.f_opt
+
+    def obj_grad(eq_val):
         problem = Power2()
-        problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
-        OptimizersFactory().execute(problem, "NLOPT_SLSQP", **self.NLOPT_OPTIONS)
-        lagrange = LagrangeMultipliers(problem)
-        lagrangian = lagrange.compute(problem.solution.x_opt)
-
-        def obj(lb):
-            problem = Power2()
-            dspace = problem.design_space
-            dspace.set_current_x(array([1.0, 0.9, 1.0]))
-            dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
-            OptimizersFactory().execute(problem, "NLOPT_SLSQP", **self.NLOPT_OPTIONS)
-            return problem.solution.f_opt
-
-        eps = 1e-5
-        df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
-        df_anal = lagrangian["lower_bounds"][1]
-        err = abs((df_fd - df_anal) / df_anal)
-        assert err < 1e-7
-
-    def test_lagrangian_validation_lbound_normalize(self):
-        problem = Power2()
-        options = deepcopy(self.NLOPT_OPTIONS)
-        options["normalize_design_space"] = True
-        problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
+        problem.constraints[-2] = problem.constraints[-2] + eq_val
         OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
         lagrange = LagrangeMultipliers(problem)
-        lagrangian = lagrange.compute(problem.solution.x_opt)
+        x_opt = problem.solution.x_opt
+        lagrangian = lagrange.compute(x_opt)
+        df_anal = lagrangian["inequality"][1][1]
 
-        def obj(lb):
-            problem = Power2()
-            dspace = problem.design_space
-            dspace.set_current_x(array([1.0, 0.9, 1.0]))
-            dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
-            OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
-            return problem.solution.f_opt
+        return df_anal
 
-        eps = 1e-3
-        df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
-        df_anal = lagrangian["lower_bounds"][1]
-        err = abs((df_fd - df_anal) / df_anal)
-        assert err < 1e-8
+    eps = 1e-4
+    obj_ref = obj(0.0)
 
-    def test_lagrangian_validation_eq(self):
-        problem = Power2()
-        OptimizersFactory().execute(problem, "NLOPT_SLSQP", **self.NLOPT_OPTIONS)
+    _, _, opt_step = comp_best_step(obj(eps), obj_ref, obj(-eps), eps, 1e-8)
+    df_anal = obj_grad(0.0)
 
-        lagrange = LagrangeMultipliers(problem)
-        lagrangian = lagrange.compute(problem.solution.x_opt)
+    df_fd = (obj(opt_step) - obj(-opt_step)) / (2 * opt_step)
+    err = abs((df_fd - df_anal) / df_fd)
+    assert err < 1e-3
 
-        def obj(eq_val):
-            problem2 = Power2()
-            problem2.constraints[-1] = problem2.constraints[-1] + eq_val
-            OptimizersFactory().execute(problem2, "NLOPT_SLSQP", **self.NLOPT_OPTIONS)
-            return problem2.solution.f_opt
 
-        eps = 1e-5
-        df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
-        df_anal = lagrangian["equality"][1]
-        err = abs((df_fd - df_anal) / df_fd)
-        assert err < 1e-7
+@pytest.mark.parametrize("constraint_type", ["eq", "ineq"])
+def test_lagrangian_constraint(constraint_type):
+    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 
-    def test_lagrangian_validation_ineq_normalize(self):
+    design_space = SellarDesignSpace()
+    scenario = create_scenario(
+        disciplines,
+        formulation="MDF",
+        objective_name="obj",
+        design_space=design_space,
+    )
 
-        options = deepcopy(self.NLOPT_OPTIONS)
-        options["normalize_design_space"] = True
+    scenario.add_constraint("c_1", constraint_type)
+    scenario.add_constraint("c_2", constraint_type)
 
-        def obj(eq_val):
-            problem2 = Power2()
-            problem2.constraints[-2] = problem2.constraints[-2] + eq_val
-            OptimizersFactory().execute(problem2, "NLOPT_SLSQP", **options)
-            return problem2.solution.f_opt
+    scenario.execute({"max_iter": 50, "algo": "SLSQP"})
+    problem = scenario.formulation.opt_problem
+    lagrange = LagrangeMultipliers(problem)
 
-        def obj_grad(eq_val):
-            problem = Power2()
-            problem.constraints[-2] = problem.constraints[-2] + eq_val
-            OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
-            lagrange = LagrangeMultipliers(problem)
-            x_opt = problem.solution.x_opt
-            lagrangian = lagrange.compute(x_opt)
-            df_anal = lagrangian["inequality"][1][1]
+    lag = lagrange.compute(problem.solution.x_opt)
 
-            return df_anal
+    if constraint_type == "eq":
+        assert lagrange.EQUALITY in lag
+    else:
+        assert lagrange.INEQUALITY in lag
 
-        eps = 1e-4
-        obj_ref = obj(0.0)
+    for c_vals in lag.values():
+        assert (c_vals[-1] > 0).all()
 
-        _, _, opt_step = comp_best_step(obj(eps), obj_ref, obj(-eps), eps, 1e-8)
-        df_anal = obj_grad(0.0)
 
-        df_fd = (obj(opt_step) - obj(-opt_step)) / (2 * opt_step)
-        err = abs((df_fd - df_anal) / df_fd)
-        assert err < 1e-3
-
-    def test_lagrangian_eq(self):
-        disciplines = create_discipline(
-            [
-                "SobieskiStructure",
-                "SobieskiPropulsion",
-                "SobieskiAerodynamics",
-                "SobieskiMission",
-            ]
-        )
-        scenario = create_scenario(
-            disciplines,
-            formulation="MDF",
-            objective_name="y_4",
-            design_space=DS_FILE,
-            tolerance=1e-12,
-            max_mda_iter=20,
-            warm_start=True,
-            maximize_objective=True,
-            use_lu_fact=True,
-            linear_solver_tolerance=1e-15,
-        )
-        for cstr in ["g_1", "g_2", "g_3"]:
-            scenario.add_constraint(cstr, "eq")
-        run_inputs = {
-            "max_iter": 10,
-            "algo": "SLSQP",
-            "algo_options": {
-                "ftol_rel": 1e-10,
-                "ineq_tolerance": 2e-3,
-                "normalize_design_space": True,
-            },
-        }
-        scenario.execute(run_inputs)
-        problem = scenario.formulation.opt_problem
-        lagrange = LagrangeMultipliers(problem)
-        lagrange.compute(problem.solution.x_opt)
-
-    def test_lagrangian_ineq(self):
-        disciplines = create_discipline(
-            [
-                "SobieskiStructure",
-                "SobieskiPropulsion",
-                "SobieskiAerodynamics",
-                "SobieskiMission",
-            ]
-        )
-        scenario = create_scenario(
-            disciplines,
-            formulation="MDF",
-            objective_name="y_4",
-            design_space=DS_FILE,
-            tolerance=1e-12,
-            max_mda_iter=20,
-            warm_start=True,
-            maximize_objective=True,
-            use_lu_fact=True,
-            linear_solver_tolerance=1e-15,
-        )
-        for cstr in ["g_1", "g_2", "g_3"]:
-            scenario.add_constraint(cstr, "ineq")
-        run_inputs = {
-            "max_iter": 10,
-            "algo": "SLSQP",
-            "algo_options": {
-                "ftol_rel": 1e-10,
-                "ineq_tolerance": 2e-3,
-                "normalize_design_space": True,
-            },
-        }
-        scenario.execute(run_inputs)
-        problem = scenario.formulation.opt_problem
-        lagrange = LagrangeMultipliers(problem)
-        lagrange.compute(problem.solution.x_opt)
-
-    def test_lagrange_store(self):
-        problem = Power2()
-        options = deepcopy(self.NLOPT_OPTIONS)
-        options["normalize_design_space"] = True
-        OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
-        lagrange = LagrangeMultipliers(problem)
-        lagrange.active_lb_names = [0]
-        lagrange._store_multipliers(np.ones(10))
-        lagrange.active_lb_names = []
-        lagrange.active_ub_names = [0]
-        lagrange._store_multipliers(-1 * np.ones(10))
-        lagrange.active_lb_names = []
-        lagrange.active_ub_names = []
-        lagrange.active_ineq_names = [0]
-        lagrange._store_multipliers(-1 * np.ones(10))
+def test_lagrange_store(problem):
+    options = deepcopy(NLOPT_OPTIONS)
+    options["normalize_design_space"] = True
+    OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+    lagrange = LagrangeMultipliers(problem)
+    lagrange.active_lb_names = [0]
+    lagrange._store_multipliers(np.ones(10))
+    lagrange.active_lb_names = []
+    lagrange.active_ub_names = [0]
+    lagrange._store_multipliers(-1 * np.ones(10))
+    lagrange.active_lb_names = []
+    lagrange.active_ub_names = []
+    lagrange.active_ineq_names = [0]
+    lagrange._store_multipliers(-1 * np.ones(10))

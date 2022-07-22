@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,17 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: François Gallard : initial Scilab version
 #        :author: Arthur Piat : conversion Scilab to Matlab
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 """Definition of the Matlab parser.
 
 Overview
@@ -35,17 +31,16 @@ detect inputs and outputs.
 This class is basically used through the :class:`.MatlabDiscipline` class
 in order to build a discipline based on the Matlab function.
 """
+from __future__ import annotations
 
 import logging
 import re
-from typing import Optional, Union
-
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MatlabParser(object):
+class MatlabParser:
     """Parse Matlab file to identify inputs and outputs.
 
     Examples:
@@ -61,9 +56,7 @@ class MatlabParser(object):
     RE_FUNCTION = re.compile(r"=(.*?)\(")
     RE_ARGS = re.compile(r"\((.*?)\)")
 
-    def __init__(
-        self, full_path=None  # type: Optional[str]
-    ):  # type: (...) -> None
+    def __init__(self, full_path: str | None = None) -> None:
         # noqa: D205,D212,D415
         """
         Args:
@@ -79,12 +72,12 @@ class MatlabParser(object):
             self.parse(full_path)
 
     @property
-    def function_name(self):  # type: (...) -> str
+    def function_name(self) -> str:
         """Return the name of the function."""
         return self.__fct_name
 
     @property
-    def directory(self):  # type: (...) -> Path
+    def directory(self) -> Path:
         """Return the directory of the function."""
         return self.__fct_dir
 
@@ -98,9 +91,7 @@ class MatlabParser(object):
         """Return the outputs."""
         return self.__outputs
 
-    def __check_path(
-        self, file_path  # type: Union[str, Path]
-    ):  # type: (...) -> None
+    def __check_path(self, file_path: str | Path) -> None:
         """Check the format of the file.
 
         Args:
@@ -113,7 +104,7 @@ class MatlabParser(object):
                 * If the matlab function is neither a script nor a function.
         """
         if not file_path.exists():
-            raise IOError(
+            raise OSError(
                 "The function directory for Matlab "
                 "sources {} does not exists.".format(str(file_path))
             )
@@ -138,9 +129,9 @@ class MatlabParser(object):
 
     def __parse_function_inputs_outputs(
         self,
-        line,  # type: str
-        function_name,  # type: str
-    ):  # type: (...) -> None
+        line: str,
+        function_name: str,
+    ) -> None:
         """Parse inputs and outputs.
 
         Args:
@@ -177,7 +168,7 @@ class MatlabParser(object):
         re_output_groups = self.RE_OUTPUTS.search(line)
 
         if re_output_groups is None:
-            raise ValueError("Function {} has no output".format(fname))
+            raise ValueError(f"Function {fname} has no output")
 
         arg_str = re_output_groups.group(0).strip()
         arg_str = arg_str.replace("[", "").replace("]", "")
@@ -189,16 +180,14 @@ class MatlabParser(object):
 
         re_args_groups = self.RE_ARGS.search(line)
         if re_args_groups is None:
-            raise ValueError("Function {} has no argument.".format(fname))
+            raise ValueError(f"Function {fname} has no argument.")
 
         arg_str = re_args_groups.group(0).strip()[1:-1].strip()
         args = arg_str.split(",")
         self.__inputs = [args_str.strip() for args_str in args]
         LOGGER.debug("And arguments are: %s", args)
 
-    def parse(
-        self, path  # type: str
-    ):  # type: (...) -> None
+    def parse(self, path: str) -> None:
         """Parse a .m file in order to get inputs and outputs.
 
         Args:
@@ -222,4 +211,4 @@ class MatlabParser(object):
                     break
 
         if not is_parsed:
-            raise ValueError("The given file {} is not a matlab function.".format(path))
+            raise ValueError(f"The given file {path} is not a matlab function.")

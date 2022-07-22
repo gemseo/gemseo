@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,19 +19,17 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test principal component analysis dimension reduction."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import linspace, ndarray
-
 from gemseo.mlearning.transform.dimension_reduction.kpca import KPCA
+from numpy import linspace
+from numpy import ndarray
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
 
 @pytest.fixture
-def data():  # type: (...) -> ndarray
+def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return linspace(0, 1, N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
@@ -48,10 +44,18 @@ def test_constructor():
 
 
 def test_learn(data):
-    """Test learn."""
+    """Test learn with the default number of components (None)."""
+    kpca = KPCA()
+    kpca.fit(data)
+    assert kpca.n_components == len(kpca.algo.eigenvalues_)
+
+
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
     kpca.fit(data)
+    assert kpca.n_components == n_components
 
 
 def test_transform(data):

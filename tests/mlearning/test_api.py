@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,64 +12,63 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning API."""
-from __future__ import division, unicode_literals
-
-from typing import Dict, List, Tuple
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 import pytest
-from numpy import arange, array, atleast_2d, hstack, ndarray
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_dataset
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.mlearning.api import (
-    create_classification_model,
-    create_clustering_model,
-    create_mlearning_model,
-    create_regression_model,
-    get_classification_models,
-    get_classification_options,
-    get_clustering_models,
-    get_clustering_options,
-    get_mlearning_models,
-    get_mlearning_options,
-    get_regression_models,
-    get_regression_options,
-    import_classification_model,
-    import_clustering_model,
-    import_mlearning_model,
-    import_regression_model,
-)
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning.api import create_classification_model
+from gemseo.mlearning.api import create_clustering_model
+from gemseo.mlearning.api import create_mlearning_model
+from gemseo.mlearning.api import create_regression_model
+from gemseo.mlearning.api import get_classification_models
+from gemseo.mlearning.api import get_classification_options
+from gemseo.mlearning.api import get_clustering_models
+from gemseo.mlearning.api import get_clustering_options
+from gemseo.mlearning.api import get_mlearning_models
+from gemseo.mlearning.api import get_mlearning_options
+from gemseo.mlearning.api import get_regression_models
+from gemseo.mlearning.api import get_regression_options
+from gemseo.mlearning.api import import_classification_model
+from gemseo.mlearning.api import import_clustering_model
+from gemseo.mlearning.api import import_mlearning_model
+from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import arange
+from numpy import array
+from numpy import atleast_2d
+from numpy import hstack
+from numpy import ndarray
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [
-    "LinearRegression",
-    "PolynomialRegression",
-    "GaussianProcessRegression",
-    "PCERegression",
-    "RBFRegression",
-    "MixtureOfExperts",
+    "LinearRegressor",
+    "PolynomialRegressor",
+    "GaussianProcessRegressor",
+    "PCERegressor",
+    "RBFRegressor",
+    "MOERegressor",
 ]
 AVAILABLE_CLASSIFICATION_MODELS = ["KNNClassifier", "RandomForestClassifier"]
 AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
@@ -81,7 +79,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def classification_data():  # type: (...) -> Tuple[ndarray,List[str],Dict[str,str]]
+def classification_data() -> Tuple[ndarray, List[str], Dict[str, str]]:
     """The dataset used to train the classification algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
@@ -93,7 +91,7 @@ def classification_data():  # type: (...) -> Tuple[ndarray,List[str],Dict[str,st
 
 
 @pytest.fixture
-def cluster_data():  # type:(...) -> Tuple[ndarray,List[str]]
+def cluster_data() -> Tuple[ndarray, List[str]]:
     """The dataset used to train the clustering algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
@@ -139,7 +137,7 @@ def test_get_clustering_models():
 
 def test_create_mlearning_model(dataset, classification_data, cluster_data):
     """Test creation of model."""
-    model = create_mlearning_model("LinearRegression", dataset)
+    model = create_mlearning_model("LinearRegressor", dataset)
     assert model.algo is not None
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
@@ -153,7 +151,7 @@ def test_create_mlearning_model(dataset, classification_data, cluster_data):
 
 def test_create_regression_model(dataset):
     """Test creation of regression model."""
-    model = create_regression_model("LinearRegression", dataset)
+    model = create_regression_model("LinearRegressor", dataset)
     assert model.algo is not None
 
     probability_space = ParameterSpace()
@@ -164,7 +162,7 @@ def test_create_regression_model(dataset):
         "x_2", "OTUniformDistribution", minimum=0, maximum=1
     )
     model = create_regression_model(
-        "PCERegression",
+        "PCERegressor",
         dataset,
         probability_space=probability_space,
         transformer={"inputs": MinMaxScaler()},
@@ -190,7 +188,7 @@ def test_create_clustering_model(cluster_data):
 
 def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_path):
     """Test import of model."""
-    model = create_mlearning_model("LinearRegression", dataset)
+    model = create_mlearning_model("LinearRegressor", dataset)
     model.learn()
     dirname = model.save(path=str(tmp_path))
     loaded_model = import_mlearning_model(dirname)
@@ -213,7 +211,7 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
 
 def test_import_regression_model(dataset, tmp_path):
     """Test import of regression model."""
-    model = create_regression_model("LinearRegression", dataset)
+    model = create_regression_model("LinearRegressor", dataset)
     model.learn()
     dirname = model.save(path=str(tmp_path))
     loaded_model = import_regression_model(dirname)
@@ -244,7 +242,7 @@ def test_import_clustering_model(cluster_data, tmp_path):
 
 def test_get_mlearning_options():
     """Test correct retrieval of model options."""
-    properties = get_mlearning_options("LinearRegression")["properties"]
+    properties = get_mlearning_options("LinearRegressor")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
     properties = get_mlearning_options("KNNClassifier")["properties"]
@@ -257,7 +255,7 @@ def test_get_mlearning_options():
 
 def test_get_regression_options():
     """Test correct retrieval of regression model options."""
-    properties = get_regression_options("LinearRegression")["properties"]
+    properties = get_regression_options("LinearRegressor")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
 

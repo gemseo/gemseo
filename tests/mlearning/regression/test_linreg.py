@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,40 +12,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test linear regression module."""
-
-from __future__ import division, unicode_literals
-
-from typing import Tuple
-
 import pytest
-from numpy import allclose, array
-from sklearn.linear_model import ElasticNet, Lasso, Ridge
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.dimension_reduction.pls import PLS
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
+from numpy import array
+from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import Ridge
 
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
@@ -57,38 +51,29 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> LinearRegression
-    """A trained LinearRegression."""
-    linreg = LinearRegression(dataset)
+def model(dataset) -> LinearRegressor:
+    """A trained LinearRegressor."""
+    linreg = LinearRegressor(dataset)
     linreg.learn()
     return linreg
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> LinearRegression
-    """A trained LinearRegression with inputs and outputs scaling."""
-    linreg = LinearRegression(
+def model_with_transform(dataset) -> LinearRegressor:
+    """A trained LinearRegressor with inputs and outputs scaling."""
+    linreg = LinearRegressor(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
     )
     linreg.learn()
     return linreg
 
 
-@pytest.fixture
-def models_with_pls(
-    dataset,
-):  # type: (...) -> Tuple[ LinearRegression,LinearRegression]
-    """Two trained LinearRegression with inputs or outputs scaling."""
-    linreg1 = LinearRegression(dataset, transformer={"inputs": PLS(n_components=2)})
-    linreg1.learn()
-    linreg2 = LinearRegression(dataset, transformer={"outputs": PLS(n_components=2)})
-    return linreg1, linreg2
-
-
 def test_constructor(dataset):
     """Test construction."""
-    model_ = LinearRegression(dataset)
+    model_ = LinearRegressor(dataset)
     assert model_.algo is not None
+    assert model_.SHORT_ALGO_NAME == "LinReg"
+    assert model_.LIBRARY == "scikit-learn"
 
 
 @pytest.mark.parametrize(
@@ -97,7 +82,7 @@ def test_constructor(dataset):
 )
 def test_constructor_penalty(dataset, l2_penalty_ratio, type):
     """Test construction."""
-    model_ = LinearRegression(
+    model_ = LinearRegressor(
         dataset, penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio
     )
     assert isinstance(model_.algo, type)
@@ -107,7 +92,7 @@ def test_constructor_penalty(dataset, l2_penalty_ratio, type):
 
 def test_learn(dataset):
     """Test learn."""
-    model_ = LinearRegression(dataset)
+    model_ = LinearRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
 
@@ -128,7 +113,7 @@ def test_coefficients_with_transform(dataset, model_with_transform):
     model_with_transform.get_coefficients(as_dict=False)
     model_with_transform.get_coefficients(as_dict=True)
 
-    model_with_pca = LinearRegression(
+    model_with_pca = LinearRegressor(
         dataset, transformer={dataset.OUTPUT_GROUP: PCA(n_components=1)}
     )
     model_with_pca.learn()
@@ -153,7 +138,7 @@ def test_intercept(model):
 
 def test_intercept_with_output_dimension_change(dataset):
     """Verify that an error is raised."""
-    model = LinearRegression(dataset, transformer={"outputs": PCA(n_components=2)})
+    model = LinearRegressor(dataset, transformer={"outputs": PCA(n_components=2)})
     model.learn()
     with pytest.raises(
         ValueError,
@@ -200,14 +185,15 @@ def test_prediction_with_transform(model_with_transform):
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
-def test_prediction_with_pls(models_with_pls):
+def test_prediction_with_pls(dataset):
     """Test prediction."""
+    model = LinearRegressor(dataset, transformer={"inputs": PLS(n_components=2)})
+    model.learn()
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
         "x_1": array([[1.0], [0.0], [-1.0]]),
         "x_2": array([[2.0], [0.0], [1.0]]),
     }
-    model = models_with_pls[0]
     prediction = model.predict(input_value)
     another_prediction = model.predict(another_input_value)
     assert isinstance(prediction, dict)
@@ -216,8 +202,18 @@ def test_prediction_with_pls(models_with_pls):
     assert allclose(prediction["y_2"], array([-9.0]))
     assert allclose(another_prediction["y_1"], array([[9.0], [1.0], [2.0]]))
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
-    model = models_with_pls[1]
-    with pytest.raises(NotImplementedError):
+
+
+def test_prediction_with_pls_failure(dataset):
+    """Test that PLS does not work with output group."""
+    model = LinearRegressor(dataset, transformer={"outputs": PLS(n_components=2)})
+    with pytest.raises(
+        NotImplementedError,
+        match=(
+            "The transformer PLS cannot be applied to the outputs "
+            "to build a supervised machine learning algorithm."
+        ),
+    ):
         model.learn()
 
 

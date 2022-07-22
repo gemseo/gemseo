@@ -16,18 +16,11 @@ External Dependencies
 
 GEMSEO depends on software with compatible licenses that are listed below.
 
-`backports.functools-lru-cache <https://github.com/jaraco/backports.functools_lru_cache>`_
+`docstring-inheritance <https://antoined.github.io/docstring-inheritance/>`_
     MIT
-
-`custom-inherit <https://github.com/rsokl/custom_inherit>`_
-    MIT
-
-`enum34 <https://pypi.org/project/enum34/>`_
-    BSD
 
 `Fast JSON schema <https://github.com/horejsek/python-fastjsonschema>`_
     BSD 3-Clause
-    (Only for Python 3, for Python 2.7, FastJsonschema is embedded in GEMSEO source code)
 
 `genson <https://github.com/wolverdude/genson/>`_
     MIT
@@ -38,7 +31,7 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/graphviz-logo.png
         :target: https://github.com/xflr6/graphviz
 
-`H5py <https://www.h5py.org/>`_
+`h5py <https://www.h5py.org/>`_
     BSD 3-Clause
 
 `jinja2 <https://palletsprojects.com/p/jinja/>`_
@@ -77,14 +70,8 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pandas-logo.svg
         :target: https://pandas.pydata.org/
 
-`pathlib2 <https://github.com/mcmtroffaes/pathlib2>`_
-    MIT
-
-`pyDOE <https://github.com/tisimst/pyDOE>`_
+`pdfo <https://www.pdfo.net>`_
     BSD 3-Clause
-
-    .. image:: /_static/dependencies/pydoe-logo.png
-        :target: https://github.com/tisimst/pyDOE
 
 `pyDOE2 <https://github.com/clicumu/pyDOE2>`_
     BSD 3-Clause
@@ -92,9 +79,8 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pydoe-logo.png
         :target: https://github.com/clicumu/pyDOE2
 
-`PySide2 <https://wiki.qt.io/index.php?title=Qt_for_Python>`_
+`PySide6 <https://wiki.qt.io/Qt_for_Python>`_
     GNU LGPL v3.0
-    (When PySide 2 is unavailable, PyQt is used, distributed under the GNU GPL v3.0.)
 
 `Pytest <https://pytest.org>`_
     MIT
@@ -107,9 +93,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
 
     .. image:: /_static/dependencies/python-logo.svg
         :target: https://www.python.org/
-
-`Python-future <https://github.com/PythonCharmers/python-future>`_
-    MIT
 
 `pyXDSM <https://github.com/mdolab/pyXDSM>`_
     Apache v2.0
@@ -132,13 +115,7 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/scipy-logo.png
         :target: https://www.scipy.org/scipylib/
 
-`setuptools <https://setuptools.readthedocs.io/>`_
-    MIT
-
 `snopt-python <https://github.com/snopt/snopt-python>`_
-    MIT
-
-`six <https://github.com/benjaminp/six>`_
     MIT
 
 `SymPy <https://www.sympy.org/>`_
@@ -147,7 +124,7 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/sympy-logo.svg
         :target: https://www.sympy.org/
 
-`typing <https://github.com/python/typing>`_
+`typing-extensions <https://pypi.org/project/typing-extensions>`_
     Python Software License
 
 `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
@@ -156,8 +133,8 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `xlwings CE <https://www.xlwings.org/>`_
     BSD 3-Clause
 
-    .. image:: /_static/dependencies/xlwings-logo.svg
-        :target: https://www.xlwings.org/
+`python-xxhash <https://github.com/ifduyue/python-xxhash>`_
+    BSD 2-Clause
 
 Internal Dependencies
 ---------------------
@@ -167,24 +144,14 @@ GEMSEO source code includes software with compatible licenses that are listed be
 colormap
     CC0 1.0
 
-`Fast Json schema <https://github.com/horejsek/python-fastjsonschema>`_
-    MIT
-    (Only used in Python 2.7, otherwise it is an external dependency)
-
 `prettytable <https://github.com/kxxoling/PTable>`_
     BSD 3-Clause
 
 `Reorder.js <https://github.com/jdfekete/reorder.js>`_
     BSD 3-Clause
 
-`pyXDSM <https://github.com/mdolab/pyXDSM>`_
-    Apache v2.0
-
 `SOMPY <https://github.com/sevamoo/SOMPY>`_
     Apache v2.0
-
-`versioneer <https://github.com/python-versioneer/python-versioneer>`_
-    CC0 1.0
 
 `WhatsOpt-CLI <https://github.com/OneraHub/WhatsOpt-CLI>`_
     Apache v2.0
@@ -192,13 +159,32 @@ colormap
     .. image:: /_static/dependencies/whatsopt-logo.svg
         :target: https://github.com/OneraHub/WhatsOpt-CLI
 
-External application
---------------------
+External applications
+---------------------
 
 Some external applications are used by GEMSEO,
 but not linked with the application,
-for documentation generation,
+for development,
+documentation generation,
 training or example purposes.
+
+`black <https://black.readthedocs.io>`_
+    MIT
+
+`flake8 <https://flake8.pycqa.org>`_
+    MIT
+
+`pre-commit <https://pre-commit.com>`_
+    MIT
+
+`reorder-python-imports <https://github.com/asottile/reorder_python_imports>`_
+    MIT
+
+`setuptools <https://setuptools.readthedocs.io/>`_
+    MIT
+
+`setuptools_scm <https://github.com/pypa/setuptools_scm>`_
+    MIT
 
 `Sphinx <http://www.sphinx-doc.org/>`_
     Sphinx

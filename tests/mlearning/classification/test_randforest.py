@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,23 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test random forest classification module."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array, array_equal, linspace, ndarray, zeros
-from numpy.random import permutation, seed
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import linspace
+from numpy import ndarray
+from numpy import zeros
+from numpy.random import permutation
+from numpy.random import seed
 
 seed(12345)
 
@@ -66,7 +67,7 @@ def dataset():
 
 
 @pytest.fixture
-def model_1d(dataset):  # type: (...) -> RandomForestClassifier
+def model_1d(dataset) -> RandomForestClassifier:
     """A trained RandomForestClassifier with y_1 as single output."""
     algo = RandomForestClassifier(dataset, output_names=["y_1"])
     algo.learn()
@@ -74,7 +75,7 @@ def model_1d(dataset):  # type: (...) -> RandomForestClassifier
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> RandomForestClassifier
+def model(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     algo = RandomForestClassifier(dataset)
     algo.learn()
@@ -82,7 +83,7 @@ def model(dataset):  # type: (...) -> RandomForestClassifier
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> RandomForestClassifier
+def model_with_transform(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier using input scaling."""
     algo = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
     algo.learn()
@@ -93,6 +94,8 @@ def test_constructor(dataset):
     """Test construction."""
     algo = RandomForestClassifier(dataset)
     assert algo.algo is not None
+    assert algo.SHORT_ALGO_NAME == "RF"
+    assert algo.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset):

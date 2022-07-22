@@ -199,6 +199,7 @@ function matrix(json, collapsed_groups=null, initial_order="group") {
       .attr("dy", ".32em")
       .attr("text-anchor", "end")
       .text(function(d, i) { return matrix.nodes[i].name; })
+      .attr('font-size', fontSize+'px')
       .style("cursor","help")
       .insert("title").text(function(d, i) { return matrix.nodes[i].name; });
 
@@ -219,6 +220,7 @@ function matrix(json, collapsed_groups=null, initial_order="group") {
       .attr("dy", ".32em")
       .attr("text-anchor", "start")
       .text(function(d, i) { return matrix.nodes[i].name; })
+      .attr('font-size', fontSize+'px')
       .style("cursor","help")
       .insert("title").text(function(d, i) { return matrix.nodes[i].name; });
 
@@ -249,17 +251,24 @@ function matrix(json, collapsed_groups=null, initial_order="group") {
         .style("fill-opacity", function(d) { return (d.x == d.y && !matrix.nodes[d.x].is_group)? 1 : 0;})
         .on("mouseover", mouseover)
         .on("mouseout", mouseout)
+        .on("contextmenu",contextmenu)
         .on("click", mouseclick);
   }
 
+  function contextmenu(d){
+    d3.event.preventDefault();
+    group = matrix.nodes[d.x].group
+    if (group != 0){
+        expand_collapse_group(group, svg);
+        checked = document.getElementById("check_" + group).checked;
+        document.getElementById("check_" + group).checked = !checked;
+    }
+  }
+
   function mouseclick(p) {
-        // Get the modal
-        var modal = document.getElementById("myModal");
+        var elem = document.querySelector("#matrix-sidenav");
+        var instance = M.Sidenav.getInstance(elem);
 
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-
-        // Get the modal content
         if (p.x != p.y){
             d3.select("#modal-body")
                 .html(matrix[p.y][p.x].description);
@@ -267,18 +276,11 @@ function matrix(json, collapsed_groups=null, initial_order="group") {
             d3.select("#modal-body")
                 .html(matrix.nodes[p.x].description);
         }
-        // When the user clicks on the button, open the modal
-        modal.style.display = "block";
+        instance.open();
 
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-          modal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
+          if (event.target == instance) {
+            instance.close();
           }
         }
     }

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from unittest import TestCase
 
-from numpy import inf
-from scipy.optimize.optimize import rosen, rosen_der
-
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from numpy import inf
+from scipy.optimize.optimize import rosen
+from scipy.optimize.optimize import rosen_der
 
 from .opt_lib_test_base import OptLibraryTestBase
 
@@ -74,17 +70,15 @@ class TestScipy(TestCase):
 
         self.assertFalse(
             opt_library.is_algorithm_suited(
-                opt_library.lib_dict["TNC"], opt_library.problem
+                opt_library.descriptions["TNC"], opt_library.problem
             )
         )
 
         opt_library.problem.pb_type = OptimizationProblem.NON_LINEAR_PB
-        opt_library.lib_dict["SLSQP"][
-            opt_library.PROBLEM_TYPE
-        ] = OptimizationProblem.LINEAR_PB
+        opt_library.descriptions["SLSQP"].problem_type = OptimizationProblem.LINEAR_PB
         self.assertFalse(
             opt_library.is_algorithm_suited(
-                opt_library.lib_dict["SLSQP"], opt_library.problem
+                opt_library.descriptions["SLSQP"], opt_library.problem
             )
         )
 
@@ -200,3 +194,8 @@ class TestScipy(TestCase):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("SCIPY"):
     setattr(TestScipy, test_method.__name__, test_method)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyOpt.LIBRARY_NAME == "SciPy"

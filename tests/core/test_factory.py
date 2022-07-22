@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
-
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
-from gemseo.utils.py23_compat import PY2, Path, importlib_metadata
+from gemseo.utils.python_compatibility import importlib_metadata
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
@@ -57,7 +52,7 @@ def test_print_configuration(tmp_path, reset_factory):
     formulations = ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
 
     for formulation in formulations:
-        pattern = "\\|\\s+{}\\s+\\|\\s+Yes\\s+\\|.+\\|".format(formulation)
+        pattern = f"\\|\\s+{formulation}\\s+\\|\\s+Yes\\s+\\|.+\\|"
         assert re.findall(pattern, repr(factory))
 
 
@@ -71,7 +66,7 @@ def test_unknown_class(reset_factory):
 def test_create_error(reset_factory):
     """Verify that Factory.create catches bad sub-classes."""
     factory = Factory(MDOFormulation)
-    msg = "Class dummy is not available!\nAvailable ones are: "
+    msg = "Class dummy is not available; \navailable ones are: "
     with pytest.raises(ImportError, match=msg):
         factory.create("dummy")
 
@@ -83,7 +78,7 @@ def test_create_bad_option(reset_factory):
         factory.create("MDF", bad_option="bad_value")
 
 
-def test_parse_docstrings(reset_factory):
+def test_parse_docstrings(reset_factory, tmp_wd):
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
     formulations = factory.classes
 
@@ -97,26 +92,19 @@ def test_parse_docstrings(reset_factory):
         opt_vals = factory.get_default_options_values(form)
         assert len(opt_vals) >= 1
 
-        grammar = factory.get_options_grammar(form)
-        grammar.load_data(opt_vals, raise_exception=True)
+        grammar = factory.get_options_grammar(form, write_schema=True)
+        file_name = f"{grammar.name}.json"
+        assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
+
+        grammar.validate(opt_vals, raise_exception=True)
 
         opt_doc = factory.get_options_doc(form)
-        data_names = grammar.get_data_names()
+        data_names = grammar.keys()
         assert "name" not in data_names
         assert "design_space" not in data_names
         assert "objective_name" not in data_names
         for item in data_names:
             assert item in opt_doc
-
-
-def test_ext_plugin_syspath(monkeypatch, reset_factory):
-    """Verify that plugins are discovered from the python path."""
-    monkeypatch.syspath_prepend(DATA)
-    # Add a new dummy item in sys.path because the first item will be removed,
-    # and monkeypatch can only prepend.
-    monkeypatch.syspath_prepend("")
-    # There could be more classes available with the plugins
-    assert "DummyBiLevel" in Factory(MDOFormulation).classes
 
 
 def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
@@ -142,7 +130,7 @@ assert 'DummyBiLevel' in Factory(MDOFormulation).classes
 
     with pytest.raises(subprocess.CalledProcessError) as exc_info:
         subprocess.check_output(
-            "{} {}".format(sys.executable, module_path),
+            f"{sys.executable} {module_path}",
             shell=True,
             stderr=subprocess.STDOUT,
         )
@@ -171,7 +159,6 @@ def test_wanted_classes(monkeypatch, reset_factory):
     assert "DummyBiLevel" in Factory(MDOFormulation).classes
 
 
-@pytest.mark.skipif(PY2, reason="plugin entry points are not supported for Python 2")
 def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
     """Verify that the classes found are the expected ones."""
 
@@ -187,3 +174,9 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
 
     # There could be more classes available with the plugins
     assert "DummyBiLevel" in Factory(MDOFormulation).classes
+
+
+def test_get_library_name(reset_factory):
+    """Verify that the library names found are the expected ones."""
+    factory = Factory(MDOFormulation, ("gemseo.formulations",))
+    assert factory.get_library_name("MDF") == "gemseo"

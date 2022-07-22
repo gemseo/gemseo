@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-import sys
-
-import pytest
-from numpy import array, isclose
-
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sobieski.chains import SobieskiMDAJacobi
+from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from numpy import array
+from numpy import isclose
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -42,28 +33,28 @@ def test_jacobi_sobieski():
     mda.default_inputs["x_shared"] += 0.02
     mda.warm_start = True
     mda.execute()
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
 
 def test_secant_acceleration(tmp_wd):
     tolerance = 1e-12
     mda = SobieskiMDAJacobi(tolerance=tolerance, max_mda_iter=30, acceleration=None)
     mda.execute()
-    nit1 = mda.residual_history[-1][-1]
+    nit1 = len(mda.residual_history)
 
     mda = SobieskiMDAJacobi(
         tolerance=tolerance, max_mda_iter=30, acceleration=mda.SECANT_ACCELERATION
     )
     mda.execute()
     mda.plot_residual_history(False, True, filename="Jacobi_secant.pdf")
-    nit2 = mda.residual_history[-1][-1]
+    nit2 = len(mda.residual_history)
 
     mda = SobieskiMDAJacobi(
         tolerance=tolerance, max_mda_iter=30, acceleration=mda.M2D_ACCELERATION
     )
     mda.execute()
     mda.plot_residual_history(False, True, filename="Jacobi_m2d.pdf")
-    nit3 = mda.residual_history[-1][-1]
+    nit3 = len(mda.residual_history)
     assert nit2 < nit1
     assert nit3 < nit1
     assert nit3 < nit2
@@ -87,7 +78,7 @@ def test_jacobi_sellar(sellar_disciplines):
     mda = MDAJacobi(sellar_disciplines)
     mda.execute()
 
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
 
 def test_expected_workflow():
@@ -128,17 +119,13 @@ def test_log_convergence(sellar_disciplines):
     assert mda._log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of Jacobi in parallel.
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`
+            a parallel DOE scenario for a particular `main_mda_name`
             and n_samples.
     """
     obj = generate_parallel_doe_data("MDAJacobi", 7)
-    assert isclose(array([obj]), array([608.175]), atol=1e-3)
+    assert isclose(array([-obj]), array([608.175]), atol=1e-3)

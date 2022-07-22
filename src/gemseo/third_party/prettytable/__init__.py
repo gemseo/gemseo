@@ -33,14 +33,7 @@
 # Taken from :
 # https://github.com/kxxoling/PTable
 # https://pypi.python.org/pypi/PTable
-
 """
 A pretty table in the shell or in a file
 """
-from __future__ import ( division, 
-                        unicode_literals)
-
-
 from gemseo.third_party.prettytable.prettytable import PrettyTable
-
-

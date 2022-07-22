@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,28 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
 from math import exp
 
 import numpy as np
-
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.aerostructure.aerostructure import (
-    Aerodynamics,
-    Mission,
-    Structure,
-    get_inputs,
-)
+from gemseo.problems.aerostructure.aerostructure import Aerodynamics
+from gemseo.problems.aerostructure.aerostructure import get_inputs
+from gemseo.problems.aerostructure.aerostructure import Mission
+from gemseo.problems.aerostructure.aerostructure import Structure
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -106,7 +98,7 @@ class TestAerostructure(unittest.TestCase):
         """Evaluate objective function."""
         mission = Mission()
         design_space = AerostructureDesignSpace()
-        indata = design_space.get_current_x_dict()
+        indata = design_space.get_current_value(as_dict=True)
         indata["lift"] = np.array([exp(-11)])
         indata["mass"] = np.array([exp(1)])
         indata["drag"] = np.array([1])
@@ -231,7 +223,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         # run the optimizer
         scenario.execute(run_inputs)
         obj_opt = scenario.optimization_result.f_opt
-        xopt = scenario.design_space.get_current_x_dict()
+        xopt = scenario.design_space.get_current_value(as_dict=True)
         sweep = xopt["sweep"]
         thick_airfoils = xopt["thick_airfoils"]
         thick_panels = xopt["thick_panels"]

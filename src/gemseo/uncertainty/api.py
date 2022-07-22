@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The API for uncertainty quantification and management."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Iterable, List, Optional, Sequence
+from typing import Collection
+from typing import Iterable
+from typing import Sequence
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
@@ -32,7 +32,7 @@ from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis  # noqa:
 from gemseo.uncertainty.statistics.statistics import Statistics
 
 
-def get_available_distributions():  # type: (...) -> List[str]
+def get_available_distributions() -> list[str]:
     """Get the available distributions."""
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
@@ -41,11 +41,11 @@ def get_available_distributions():  # type: (...) -> List[str]
 
 
 def create_distribution(
-    variable,  # type: str
-    distribution_name,  # type: str,
-    dimension=1,  # type: int
-    **options
-):  # type: (...) -> Distribution
+    variable: str,
+    distribution_name: str,
+    dimension: int = 1,
+    **options,
+) -> Distribution:
     """Create a distribution.
 
     Args:
@@ -78,7 +78,7 @@ def create_distribution(
     )
 
 
-def get_available_sensitivity_analyses():  # type: (...) -> List[str]
+def get_available_sensitivity_analyses() -> list[str]:
     """Get the available sensitivity analyses."""
     from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
@@ -87,14 +87,14 @@ def get_available_sensitivity_analyses():  # type: (...) -> List[str]
 
 
 def create_statistics(
-    dataset,  # type: Dataset
-    variables_names=None,  # type: Optional[Iterable[str]]
-    tested_distributions=None,  # type: Optional[Sequence[str]]
-    fitting_criterion="BIC",  # type: str
+    dataset: Dataset,
+    variables_names: Iterable[str] | None = None,
+    tested_distributions: Sequence[str] | None = None,
+    fitting_criterion: str = "BIC",
     selection_criterion="best",
-    level=0.05,  # type: float
-    name=None,  # type: Optional[str]
-):  # type: (...) -> Statistics
+    level: float = 0.05,
+    name: str | None = None,
+) -> Statistics:
     """Create a statistics toolbox, either parametric or empirical.
 
     If parametric, the toolbox selects a distribution from candidates,
@@ -133,9 +133,8 @@ def create_statistics(
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
-        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
         >>>
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
@@ -154,7 +153,7 @@ def create_statistics(
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = discipline.cache.export_to_dataset()
+        >>> dataset = scenario.export_to_dataset(opt_naming=False)
         >>>
         >>> statistics = create_statistics(dataset)
         >>> mean = statistics.mean()
@@ -180,16 +179,16 @@ def create_statistics(
 
 
 def create_sensitivity_analysis(
-    analysis,  # type: str
-    discipline,  # type: MDODiscipline
-    parameter_space,  # type: ParameterSpace
-    **options
-):  # type: (...) -> SensitivityAnalysis
+    analysis: str,
+    disciplines: Collection[MDODiscipline],
+    parameter_space: ParameterSpace,
+    **options,
+) -> SensitivityAnalysis:
     """Create the sensitivity analysis.
 
     Args:
         analysis: The name of a sensitivity analysis class.
-        discipline: A discipline.
+        disciplines: The disciplines.
         parameter_space: A parameter space.
         **options: The DOE algorithm options.
 
@@ -202,7 +201,7 @@ def create_sensitivity_analysis(
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>>
         >>> parameter_space = create_parameter_space()
@@ -214,7 +213,7 @@ def create_sensitivity_analysis(
         ... )
         >>>
         >>> analysis = create_sensitivity_analysis(
-        ...     "CorrelationIndices", discipline, parameter_space, n_samples=1000
+        ...     "CorrelationIndices", [discipline], parameter_space, n_samples=1000
         ... )
         >>> indices = analysis.compute_indices()
     """
@@ -227,4 +226,4 @@ def create_sensitivity_analysis(
         name += "Analysis"
     name = name[0].upper() + name[1:]
 
-    return factory.create(name, discipline, parameter_space, **options)
+    return factory.create(name, disciplines, parameter_space, **options)

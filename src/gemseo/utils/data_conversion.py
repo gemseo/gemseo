@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,607 +12,433 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Conversion from a NumPy array to a dictionary of NumPy arrays and vice versa."""
-from __future__ import division, unicode_literals
+"""A set of functions to convert data structures."""
+from __future__ import annotations
 
 import collections
 from copy import deepcopy
-from typing import TYPE_CHECKING, Dict, Iterable, List, Mapping, Optional, Union
-
-from numpy import array, hstack, ndarray, vstack, zeros
-
-if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
-
-
-class DataConversion(object):
-    """Methods to juggle NumPy arrays and dictionaries of Numpy arrays."""
-
-    FLAT_JAC_SEP = "!d$_$d!"
-
-    @staticmethod
-    def dict_to_array(
-        data_dict,  # type: Mapping[str,ndarray]
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> ndarray
-        """Concatenate some values of a mapping associating values to names.
-
-        This allows to convert:
-
-        .. code-block:: python
-
-            {'x': array([1.])}, 'y': array([2., 3.])}
-
-        to:
-
-        .. code-block:: python
-
-            array([1., 2., 3.])
-
-        Args:
-            data_dict: The mapping to be converted;
-                it associates values to names.
-            data_names: The names to be used for the concatenation.
-
-        Returns:
-            The concatenation of the values for the provided names.
-        """
-        if not data_names:
-            return array([])
-
-        return hstack([data_dict[name] for name in data_names])
-
-    @staticmethod
-    def list_of_dict_to_array(
-        data_list,  # type: Iterable[Mapping[str,Union[ndarray,Mapping[str,ndarray]]]]
-        data_names,  # type: Iterable[str]
-        group=None,  # type: Optional[str]
-    ):  # type: (...) -> ndarray
-        """Concatenate some values of mappings associating values to names.
-
-        The names can be either grouped:
-
-        .. code-block:: python
-
-            [
-                {'group1':
-                    {'x': array([3.])},
-                 'group2':
-                    {'y': array([1., 1.])}
-                },
-                {'group1':
-                    {'x': array([6.])},
-                 'group2':
-                    {'y': array([2., 2.])}
-                }
-            ]
-
-        or ungrouped:
-
-        .. code-block:: python
-
-            [
-                {'x': array([3.]), 'y': array([1., 1.])},
-                {'x': array([6.]), 'y': array([2., 2.])}
-            ]
-
-        For both cases,
-        if ``data_names=["y", "x"]``,
-        the returned object will be
-
-        .. code-block:: python
-
-            array([[1., 1., 3.],
-                   [2., 2., 6.]])
-
-        Args:
-            data_list: The mappings to be converted;
-                it associates values to names, possibly classified by groups.
-            data_names: The names to be used for the concatenation.
-            group: The name of the group to be considered.
-                If None, the data is assumed to have no group.
-
-        Returns:
-            The concatenation of the values of the passed names.
-        """
-        dict_to_array = DataConversion.dict_to_array
-        if group is None:
-            return array([dict_to_array(data, data_names) for data in data_list])
-
-        return vstack([dict_to_array(data[group], data_names) for data in data_list])
-
-    @staticmethod
-    def array_to_dict(
-        data_array,  # type: ndarray
-        data_names,  # type: Iterable[str]
-        data_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Convert an NumPy array into a dictionary of NumPy arrays indexed by names.
-
-        This allows to convert:
-
-        .. code-block:: python
-
-            array([1., 2., 3.])
-
-        to:
-
-        .. code-block:: python
-
-            {'x': array([1.])}, 'y': array([2., 3.])}
-
-        Args:
-            data_array: The data array to be converted.
-            data_names: The names to be used as keys of the dictionary.
-                The data array must contain the values of these names in the same order,
-                e.g. ``data_array=array([1.,2.])`` and ``data_names=["x","y"]``
-                implies that ``x=array([1.])`` and ``x=array([2.])``.
-            data_sizes: The sizes of the variables
-                e.g. ``data_array=array([1.,2.,3.])``, ``data_names=["x","y"]``
-                and ``data_sizes={"x":2,"y":1}`` implies that
-                ``x=array([1.,2.])`` and ``x=array([3.])``.
-
-        Returns:
-            The data mapped to the names.
-
-        Raises:
-            ValueError: If the number of dimensions of the data array is greater than 2.
-        """
-        if data_array.ndim > 2:
-            raise ValueError("Invalid data dimension >2 !")
-
-        current_position = 0
-        array_dict = {}
-        for data_name in data_names:
-            array_dict[data_name] = data_array[
-                ..., current_position : current_position + data_sizes[data_name]
-            ]
-            current_position += data_sizes[data_name]
-
-        return array_dict
-
-    @staticmethod
-    def jac_2dmat_to_dict(
-        flat_jac,  # type: ndarray
-        outputs,  # type: Iterable[str]
-        inputs,  # type: Iterable[str]
-        data_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
-        """Convert a full Jacobian matrix into elementary Jacobian matrices.
-
-        The full Jacobian matrix is passed as a two-dimensional NumPy array.
-        Its first dimension represents the outputs
-        and its second one represents the inputs.
-
-        Args:
-            flat_jac: The full Jacobian matrix.
-            inputs: The names of the inputs.
-            outputs: The names of the outputs.
-            data_sizes: The sizes of the inputs and outputs.
-
-        Returns:
-            The Jacobian matrices indexed by the names of the inputs and outputs.
-            Precisely,
-            ``jac[output][input]`` is a two-dimensional NumPy array
-            representing the Jacobian matrix
-            for the input ``input`` and output ``output``,
-            with the output components in the first dimension
-            and the output components in the second one.
-        """
-        output_index = 0
-        jacobian = {}
-        for output_name in outputs:
-            output_jacobian = jacobian[output_name] = jacobian[output_name] = {}
-            output_size = data_sizes[output_name]
-            input_index = 0
-            for input_name in inputs:
-                input_size = data_sizes[input_name]
-                output_jacobian[input_name] = flat_jac[
-                    output_index : output_index + output_size,
-                    input_index : input_index + input_size,
-                ]
-                input_index += input_size
-
-            output_index += output_size
-
-        return jacobian
-
-    @staticmethod
-    def jac_3dmat_to_dict(
-        jac,  # type: ndarray
-        outputs,  # type: Iterable[str]
-        inputs,  # type: Iterable[str]
-        data_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
-        """Convert several full Jacobian matrices into elementary Jacobian matrices.
-
-        The full Jacobian matrices are passed as a three-dimensional NumPy array.
-        Its first dimension represents the different full Jacobian matrices,
-        its second dimension represents the outputs
-        and its third one represents the inputs.
-
-        Args:
-            jac: The full Jacobian matrices.
-            inputs: The names of the inputs.
-            outputs: The names of the outputs.
-            data_sizes: The sizes of the inputs and outputs.
-
-        Returns:
-            The Jacobian matrices indexed by the names of the inputs and outputs.
-            Precisely,
-            ``jac[output][input]`` is a three-dimensional NumPy array
-            where ``jac[output][input][i]`` represents the ``i``-th Jacobian matrix
-            for the input ``input`` and output ``output``,
-            with the output components in the first dimension
-            and the output components in the second one.
-        """
-        output_index = 0
-        jacobian = {}
-        for output_name in outputs:
-            output_jacobian = jacobian[output_name] = {}
-            output_size = data_sizes[output_name]
-            input_index = 0
-            for input_name in inputs:
-                input_size = data_sizes[input_name]
-                output_jacobian[input_name] = jac[
-                    :,
-                    output_index : output_index + output_size,
-                    input_index : input_index + input_size,
-                ]
-                input_index += input_size
-
-            output_index += output_size
-
-        return jacobian
-
-    @staticmethod
-    def dict_jac_to_2dmat(
-        jac_dict,  # type: Mapping[str,Mapping[str,ndarray]]
-        outputs,  # type: Iterable[str]
-        inputs,  # type: Iterable[str]
-        data_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> ndarray
-        """Convert elementary Jacobian matrices into a full Jacobian matrix.
-
-        Args:
-            jac_dict: The elementary Jacobian matrices
-                indexed by the names of the inputs and outputs.
-            inputs: The names of the inputs.
-            outputs: The names of the outputs.
-            data_sizes: The sizes of the inputs and outputs.
-
-        Returns:
-            The full Jacobian matrix
-            whose first dimension represents the outputs
-            and the second one represents the inputs,
-            both preserving the order of variables passed as arguments.
-        """
-        n_outputs = sum((data_sizes[output_name] for output_name in outputs))
-        n_inputs = sum((data_sizes[input_name] for input_name in inputs))
-        flat_jac = zeros((n_outputs, n_inputs))
-        output_index = 0
-        for output_name in outputs:
-            output_jac_dict = jac_dict[output_name]
-            output_size = data_sizes[output_name]
-            input_index = 0
-            for input_name in inputs:
-                input_size = data_sizes[input_name]
-                flat_jac[
-                    output_index : output_index + output_size,
-                    input_index : input_index + input_size,
-                ] = output_jac_dict[input_name]
-                input_index += input_size
-
-            output_index += output_size
-
-        return flat_jac
-
-    @staticmethod
-    def dict_jac_to_dict(
-        jac_dict,  # type: Mapping[str,Mapping[str,ndarray]]
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Reindex a mapping of elementary Jacobian matrices by Jacobian names.
-
-        A Jacobian name is built with the method :meth:`.flat_jac_name`
-        from the input and output names.
-
-        Args:
-            jac_dict: The elementary Jacobian matrices
-                indexed by input and output names.
-
-        Returns:
-            The elementary Jacobian matrices index by Jacobian names.
-        """
-
-        jacobian = {}
-        for output_name, jac_dict_loc in jac_dict.items():
-            for input_name, jac_value in jac_dict_loc.items():
-                jac_name = DataConversion.flat_jac_name(output_name, input_name)
-                jacobian[jac_name] = jac_value
-
-        return jacobian
-
-    @staticmethod
-    def flat_jac_name(
-        out_name,  # type: str
-        inpt_name,  # type: str
-    ):  # type: (...) -> str
-        """Concatenate the name of the output and input, with a separator.
-
-        Args:
-            out_name: The name of the output.
-            inpt_name: The name of the input.
-
-        Returns:
-            The name of the output concatenated with the name of the input.
-        """
-        return out_name + DataConversion.FLAT_JAC_SEP + inpt_name
-
-    @staticmethod
-    def dict_to_jac_dict(
-        flat_jac_dict,  # type:Mapping[str,ndarray]
-    ):  # type: (...) -> Mapping[str,Mapping[str,ndarray]]
-        """Reindex a mapping of elementary Jacobian matrices by input and output names.
-
-        Args:
-            flat_jac_dict: The elementary Jacobian matrices index by Jacobian names.
-                A Jacobian name is built with the method :meth:`.flat_jac_name`
-                from the input and output names.
-
-        Returns:
-            The elementary Jacobian matrices index by input and output names.
-        """
-
-        jac_names = [
-            jac_name.split(DataConversion.FLAT_JAC_SEP) for jac_name in flat_jac_dict
-        ]
-        output_names = set(jac_name[0] for jac_name in jac_names)
-        input_names = set(jac_name[1] for jac_name in jac_names)
-
-        jacobian = {}
-        for output_name in output_names:
-            output_jacobian = jacobian[output_name] = {}
-            for input_name in input_names:
-                jac_name = DataConversion.flat_jac_name(output_name, input_name)
-                output_jacobian[input_name] = flat_jac_dict[jac_name]
-
-        return jacobian
-
-    @staticmethod
-    def update_dict_from_array(
-        reference_input_data,  # type: Mapping[str,ndarray]
-        data_names,  # type: Iterable[str]
-        values_array,  # type: ndarray
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Update a data mapping from data array and names.
-
-        The order of the data in the array follows the order of the data names.
-
-        Args:
-            reference_input_data: The reference data to be updated.
-            data_names: The names for which to update the data.
-            values_array: The data with which to update the reference one.
-
-        Returns:
-            The updated data mapping.
-
-        Raises:
-            TypeError: If the data with which to update the reference one
-                is not a NumPy array.
-            ValueError:
-                * If a name for which to update the data is missing
-                  from the reference data.
-                * If the size of the data with which to update the reference one
-                  is inconsistent with the reference data.
-        """
-        if not isinstance(values_array, ndarray):
-            raise TypeError(
-                "Values array must be a numpy.ndarray, "
-                "got instead: {}.".format(type(values_array))
-            )
-
-        data = dict(deepcopy(reference_input_data))
-
-        if not data_names:
-            return data
-
-        i_min = i_max = 0
-        for data_name in data_names:
-
-            data_value = reference_input_data.get(data_name)
-            if data_value is None:
-                raise ValueError(
-                    "Reference data has no item named: {}.".format(data_name)
-                )
-
-            i_max = i_min + data_value.size
-            if len(values_array) < i_max:
-                raise ValueError(
-                    "Inconsistent input array size of values array {} "
-                    "with reference data shape {} "
-                    "for data named: {}.".format(
-                        values_array, data_value.shape, data_name
-                    )
-                )
-
-            data[data_name] = values_array[i_min:i_max].reshape(data_value.shape)
-            data[data_name] = data[data_name].astype(data_value.dtype)
-            i_min = i_max
-
-        if i_max != values_array.size:
+from typing import Any
+from typing import Generator
+from typing import Iterable
+from typing import Mapping
+
+from numpy import array
+from numpy import concatenate
+from numpy import ndarray
+
+STRING_SEPARATOR = "#&#"
+
+
+def concatenate_dict_of_arrays_to_array(
+    dict_of_arrays: Mapping[str, ndarray],
+    names: Iterable[str],
+) -> ndarray:
+    """Concatenate some values of a dictionary of NumPy arrays.
+
+    The concatenation is done according to the last dimension of the NumPy arrays.
+    This dimension apart, the NumPy arrays must have the same shape.
+
+    Example:
+        >>> result = concatenate_dict_of_arrays_to_array(
+        ...     {'x': array([1.]), 'y': array([2.]), 'z': array([3., 4.])}, ['x', 'z']
+        ... )
+        >>> print(result)
+        array([1., 3., 4.])
+
+    Args:
+        dict_of_arrays: The dictionary of NumPy arrays.
+        names: The keys of the dictionary for which to concatenate the values.
+
+    Returns:
+        The concatenated array if ``names`` is not empty, otherwise an empty array.
+    """
+    if not names:
+        return array([])
+
+    return concatenate([dict_of_arrays[key] for key in names], -1)
+
+
+dict_to_array = concatenate_dict_of_arrays_to_array
+
+
+def split_array_to_dict_of_arrays(
+    array: ndarray,
+    names_to_sizes: Mapping[str, int],
+    *names: Iterable[str],
+    check_consistency: bool = False,
+) -> dict[str, ndarray | dict[str, ndarray]]:
+    """Split a NumPy array into a dictionary of NumPy arrays.
+
+    Example:
+        >>> result_1 = split_array_to_dict_of_arrays(
+        ...     array([1., 2., 3.]), {"x": 1, "y": 2}, ["x", "y"]
+        ... )
+        >>> print(result_1)
+        {'x': array([1.]), 'y': array([2., 3.])}
+        >>> result_2 = split_array_to_dict_of_arrays(
+        ...     array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]),
+        ...     {"y1": 1, "y2": 2, "x2": 2, "x1": 1},
+        ...     ["y1", "y2"],
+        ...     ["x1", "x2"]
+        ... )
+        >>> print(result_2)
+        {
+            "y1": {"x1": array([[1.0]]), "x2": array([[2.0, 3.0]])},
+            "y2": {"x1": array([[4.0], [7.0]]), "x2": array([[5.0, 6.0], [8.0, 9.0]])},
+        }
+
+    Args:
+        array: The NumPy array.
+        names_to_sizes: The sizes of the values related to names.
+        *names: The names related to the NumPy array dimensions,
+            starting from the last one;
+            in the second example (see ``result_2``),
+            the last dimension of ``array`` represents the variables ``["y1", "y2"]``
+            while the penultimate one represents the variables ``["x1", "x2"]``.
+        check_consistency: Whether to check the consistency of the sizes of ``*names``
+            with the ``array`` shape.
+
+    Returns:
+        A dictionary of NumPy arrays related to ``*names``.
+
+    Raises:
+        ValueError: When ``check_consistency`` is ``True`` and
+            the sizes of the ``*names`` is inconsistent with the ``array`` shape.
+    """
+    dimension = -len(names)
+    if check_consistency:
+        variables_size = sum(names_to_sizes[name] for name in names[0])
+        array_dimension_size = array.shape[dimension]
+        if variables_size != array_dimension_size:
             raise ValueError(
-                "Inconsistent data shapes:\n"
-                "could not use the whole data array of shape {} "
-                "(only reached max index = {}),\n"
-                "while updating data dictionary keys {}\n"
-                " of shapes : {}.".format(
-                    values_array.shape,
-                    i_max,
-                    data_names,
-                    [
-                        (data_name, reference_input_data[data_name].shape)
-                        for data_name in data_names
-                    ],
-                )
+                "The total size of the elements ({}) "
+                "and the size of the last dimension of the array ({}) "
+                "are different.".format(variables_size, array_dimension_size)
             )
 
+    result = {}
+    first_index = 0
+    for name in names[0]:
+        size = names_to_sizes[name]
+        indices = [slice(None)] * array.ndim
+        indices[dimension] = slice(first_index, first_index + size)
+        if dimension == -1:
+            result[name] = array[tuple(indices)]
+        else:
+            result[name] = split_array_to_dict_of_arrays(
+                array[tuple(indices)],
+                names_to_sizes,
+                *names[1:],
+                check_consistency=check_consistency,
+            )
+
+        first_index += size
+
+    return result
+
+
+array_to_dict = split_array_to_dict_of_arrays
+
+
+def update_dict_of_arrays_from_array(
+    dict_of_arrays: Mapping[str, ndarray],
+    names: Iterable[str],
+    array: ndarray,
+    copy: bool = True,
+    cast_complex: bool = False,
+) -> Mapping[str, ndarray]:
+    """Update some values of a dictionary of NumPy arrays from a NumPy array.
+
+    The order of the data in ``array`` follows the order of ``names``.
+    The original data type is kept
+    except if `array` is complex and ``cast_complex`` is ``False``.
+
+    Example:
+        >>> result = update_dict_of_arrays_from_array(
+        ...     {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])},
+        ...     ["y", "z"],
+        ...     array([0.5, 1.0, 2.0])
+        ... )
+        >>> print(result)
+        {"x": array([0.0, 1.0]), "y": array([0.5]), "z": array([1, 2])}
+
+    Args:
+        dict_of_arrays: The dictionary of NumPy arrays to be updated.
+        names: The keys of the dictionary for which to update the values.
+        array: The NumPy array with which to update the dictionary of NumPy arrays.
+        copy: Whether to update a copy ``reference_input_data``.
+        copy: Whether to update ``dict_of_arrays`` or a copy of ``dict_of_arrays``.
+        cast_complex: Whether to cast ``array`` when its data type is complex.
+
+    Returns:
+        A deep copy of ``dict_of_arrays``
+        whose values of ``names``, if any, have been updated with ``array``.
+
+    Raises:
+        TypeError: If ``array`` is not a NumPy array.
+        ValueError:
+
+            * If a name of ``names`` is not a key of ``dict_of_arrays``.
+            * If the size of ``array`` is inconsistent
+              with the shapes of the values of ``dict_of_arrays``.
+    """
+    if not isinstance(array, ndarray):
+        raise TypeError(f"The array must be a NumPy one, got instead: {type(array)}.")
+
+    if copy:
+        data = deepcopy(dict_of_arrays)
+    else:
+        data = dict_of_arrays
+
+    if not names:
         return data
 
-    @staticmethod
-    def deepcopy_datadict(
-        data_dict,  # type: Mapping[str,ndarray]
-        keys=None,  # type:Optional[Iterable[str]]
-    ):
-        """Perform a deep copy of a data mapping.
+    i_min = 0
+    i_max = 0
+    full_size = array.size
+    try:
+        for data_name in names:
+            data_value = dict_of_arrays[data_name]
+            i_max = i_min + data_value.size
+            new_data_value = array[range(i_min, i_max)]
+            is_complex = new_data_value.dtype.kind == "c"
+            if not is_complex or (is_complex and cast_complex):
+                new_data_value = new_data_value.astype(data_value.dtype)
 
-        This treats the NumPy arrays specially
-        using ``array.copy()`` instead of ``deepcopy``.
-
-        Args:
-            data_dict: The data mapping to be copied.
-            keys: The keys of the mapping to be considered.
-                If None, consider all the mapping keys.
-
-        Returns:
-            A deep copy of the data mapping.
-        """
-        deep_copy = {}
-        selected_keys = data_dict.keys()
-        if keys is not None:
-            selected_keys = [
-                key for key in keys if key in set(keys) & set(selected_keys)
-            ]
-
-        for key in selected_keys:
-            value = data_dict[key]
-            if isinstance(value, ndarray):
-                deep_copy[key] = value.copy()
-            else:
-                deep_copy[key] = deepcopy(value)
-
-        return deep_copy
-
-    @staticmethod
-    def __get_all_disciplines(
-        disciplines,  # type: Iterable[MDODiscipline]
-        recursive,  # type: bool
-    ):  # type: (...) -> List[MDODiscipline]
-        """Return both disciplines and sub-disciplines.
-
-        Args:
-            disciplines: The disciplines.
-            recursive: If True,
-                search for the inputs of the sub-disciplines,
-                when some disciplines are scenarios.
-
-        Returns:
-            Both disciplines and sub-disciplines.
-        """
-
-        all_disciplines = [
-            discipline for discipline in disciplines if not discipline.is_scenario()
-        ]
-        if recursive:
-            scenarios = [
-                discipline for discipline in disciplines if discipline.is_scenario()
-            ]
-            sub_disciplines = list(
-                set.union(*(set(scenario.disciplines) for scenario in scenarios))
+            data[data_name] = new_data_value
+            i_min = i_max
+    except IndexError as err:
+        if full_size < i_max:
+            raise ValueError(
+                "Inconsistent input array size of values array {} "
+                "with reference data shape {} "
+                "for data named: {}.".format(array, data_value.shape, data_name)
             )
-            return sub_disciplines + all_disciplines
+        else:
+            raise err
 
-        return all_disciplines
-
-    @staticmethod
-    def get_all_inputs(
-        disciplines,  # type: Iterable[MDODiscipline]
-        recursive=False,  # type: bool
-    ):  # type: (...) -> List[str]
-        """Return all the input names of the disciplines.
-
-        Args:
-            disciplines: The disciplines.
-            recursive: If True,
-                search for the inputs of the sub-disciplines,
-                when some disciplines are scenarios.
-
-        Returns:
-            The names of the inputs.
-        """
-        get_disciplines = DataConversion.__get_all_disciplines
-        return list(
-            set.union(
-                *(
-                    set(discipline.get_input_data_names())
-                    for discipline in get_disciplines(disciplines, recursive=recursive)
-                )
+    if i_max != full_size:
+        raise ValueError(
+            "Inconsistent data shapes: "
+            "could not use the whole data array of shape {} "
+            "(only reached max index = {}), "
+            "while updating data dictionary names {} "
+            "of shapes: {}.".format(
+                array.shape,
+                i_max,
+                names,
+                [(data_name, dict_of_arrays[data_name].shape) for data_name in names],
             )
         )
 
-    @staticmethod
-    def get_all_outputs(
-        disciplines,  # type: Iterable[MDODiscipline]
-        recursive=False,  # type: bool
-    ):  # type: (...) -> List[str]
-        """Return all the output names of the disciplines.
-
-        Args:
-            disciplines: The disciplines.
-            recursive: If True,
-                search for the outputs of the sub-disciplines,
-                when some disciplines are scenarios.
-
-        Returns:
-            The names of the outputs.
-        """
-        get_disciplines = DataConversion.__get_all_disciplines
-        return list(
-            set.union(
-                *(
-                    set(discipline.get_output_data_names())
-                    for discipline in get_disciplines(disciplines, recursive=recursive)
-                )
-            )
-        )
+    return data
 
 
-def flatten_mapping(
-    mapping,  # type: Mapping
-    parent_key="",  # type: str
-    sep="_",  # type: str
-):  # type: (...) -> Dict
+def deepcopy_dict_of_arrays(
+    dict_of_arrays: Mapping[str, ndarray],
+    names: Iterable[str] | None = None,
+) -> dict[str, ndarray]:
+    """Perform a deep copy of a dictionary of NumPy arrays.
+
+    This treats the NumPy arrays specially
+    using ``array.copy()`` instead of ``deepcopy``.
+
+    Example:
+        >>> result = deepcopy_dict_of_arrays(
+        ...     {"x": array([1.]), "y": array([2.])}, ["x"]
+        ... )
+        >>> print(result)
+        >>> {"x": array([1.])}
+
+    Args:
+        dict_of_arrays: The dictionary of NumPy arrays to be copied.
+        names: The keys of the dictionary for which to deepcopy the items.
+            If None, consider all the dictionary keys.
+
+    Returns:
+        A deep copy of the dictionary of NumPy arrays.
+    """
+    deep_copy = {}
+    selected_keys = dict_of_arrays.keys()
+    if names is not None:
+        selected_keys = [name for name in names if name in selected_keys]
+        # TODO: either let the following block raise a KeyError or log a warning
+
+    for key in selected_keys:
+        value = dict_of_arrays[key]
+        if isinstance(value, ndarray):
+            deep_copy[key] = value.copy()
+        else:
+            deep_copy[key] = deepcopy(value)
+
+    return deep_copy
+
+
+def nest_flat_bilevel_dict(
+    flat_dict: Mapping[str, Any],
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
+    """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
+
+    Example:
+        >>> result = nest_flat_bilevel_dict({"a_b": 1, "c_b": 2}, "_")
+        >>> print(result)
+        {"a": {"b": 1}, "c": {"b": 2}}
+
+    Args:
+        flat_dict: The dictionary to be nested.
+        separator: The keys separator, to be used as ``{parent_key}{sep}{child_key}``.
+
+    Returns:
+        A nested dictionary.
+    """
+    keys = [key.split(separator) for key in flat_dict]
+    top_keys = {key[0] for key in keys}
+    sub_keys = {key[1] for key in keys}
+    nested_dict = {}
+    for top_key in top_keys:
+        top_value = nested_dict[top_key] = {}
+        for sub_key in sub_keys:
+            key = separator.join([top_key, sub_key])
+            top_value[sub_key] = flat_dict[key]
+
+    return nested_dict
+
+
+def nest_flat_dict(
+    flat_dict: Mapping[str, Any],
+    prefix: str = "",
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
+    """Nest a flat dictionary.
+
+    Example:
+        >>> result = nest_flat_dict({"a_b": 1, "c_b": 2}, separator="_")
+        >>> print(result)
+        {"a": {"b": 1}, "c": {"b": 2}}
+
+    Args:
+        flat_dict: The dictionary to be nested.
+        prefix: The prefix to be removed from the keys.
+        separator: The keys separator,
+            to be used as ``{parent_key}{separator}{child_key}``.
+
+    Returns:
+        A nested dictionary.
+    """
+    nested_dict = {}
+    for key, value in flat_dict.items():
+        if key.startswith(prefix):
+            key = key[len(prefix) :]
+        __nest_flat_mapping(nested_dict, key, value, separator)
+
+    return nested_dict
+
+
+def __nest_flat_mapping(
+    mapping: Mapping[str, Any],
+    key: str,
+    value: Any,
+    separator: str,
+) -> None:
+    """Nest a flat mapping.
+
+    Args:
+        mapping: The mapping to be nested.
+        key: The current key.
+        value: The current value.
+        separator: The keys separator,
+            to be used as ``{parent_key}{separator}{child_key}``.
+    """
+    keys = key.split(separator)
+    top_key = keys[0]
+    sub_keys = separator.join(keys[1:])
+    if sub_keys:
+        __nest_flat_mapping(mapping.setdefault(top_key, {}), sub_keys, value, separator)
+    else:
+        mapping[top_key] = value
+
+
+def flatten_nested_bilevel_dict(
+    nested_dict: Mapping[str, Any],
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
+    """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
+
+    Example:
+        >>> result = flatten_nested_bilevel_dict({"y": {"x": array([[1.0], [2.0]])}})
+        >>> print(result)
+        {"y#&#x": array([[1.0], [2.0]])}
+
+    Args:
+        nested_dict: The dictionary to be flattened.
+        separator: The keys separator,
+            to be used as ``{parent_key}{separator}{child_key}``.
+
+    Returns:
+        A flat dictionary.
+    """
+    flat_dict = {}
+    for top_key, top_value in nested_dict.items():
+        for sub_key, sub_value in top_value.items():
+            key = separator.join([top_key, sub_key])
+            flat_dict[key] = sub_value
+
+    return flat_dict
+
+
+def flatten_nested_dict(
+    nested_dict: Mapping[str, Any],
+    prefix: str = "",
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
+    """Flatten a nested dictionary.
+
+    Example:
+        >>> result = flatten_nested_dict({"y": {"x": array([[1.0], [2.0]])}})
+        >>> print(result)
+        {"y#&#x": array([[1.0], [2.0]])}
+
+    Args:
+        nested_dict: The dictionary to be flattened.
+        prefix: The prefix to be prepended to the keys.
+        separator: The keys separator,
+            to be used as ``{parent_key}{separator}{child_key}``.
+
+    Returns:
+        A flat dictionary.
+    """
+    return dict(__flatten_nested_mapping(nested_dict, prefix, separator))
+
+
+def __flatten_nested_mapping(
+    nested_mapping: Mapping[str, Any],
+    parent_key: str,
+    separator: str,
+) -> Generator[tuple[str, Any], None, None]:
     """Flatten a nested mapping.
 
     Args:
-        mapping: The mapping to be flattened.
+        nested_mapping: The mapping to be flattened.
         parent_key: The key for which ``mapping`` is the value.
-        sep: The keys separator, to be used as ``{parent_key}{sep}{child_key}``.
+        separator: The keys separator,
+            to be used as ``{parent_key}{separator}{child_key}``.
+
+    Yields:
+        The new keys and values of the mapping.
     """
-    return dict(_flatten_mapping(mapping, parent_key, sep))
+    for key, value in nested_mapping.items():
+        if parent_key:
+            new_key = separator.join([parent_key, key])
+        else:
+            new_key = key
 
-
-def _flatten_mapping(
-    mapping,  # type: Mapping
-    parent_key,  # type: str
-    sep,  # type: str
-):  # type: (...) -> Dict
-    """Flatten a nested mapping.
-
-    Args:
-        mapping: The mapping to be flattened.
-        parent_key: The key for which ``mapping`` is the value.
-        sep: The keys separator, to be used as ``{parent_key}{sep}{child_key}``.
-    """
-    for key, value in mapping.items():
-        new_key = parent_key + sep + key if parent_key else key
-        if isinstance(value, collections.Mapping):
-            for item in flatten_mapping(value, new_key, sep=sep).items():
-                yield item
+        if isinstance(value, collections.abc.Mapping):
+            yield from flatten_nested_dict(value, new_key, separator=separator).items()
         else:
             yield new_key, value

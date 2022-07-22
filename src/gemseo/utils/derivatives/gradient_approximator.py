@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,33 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Gradient approximation."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import Sequence
 
-import six
-from custom_inherit import DocInheritMeta
-from numpy import array, finfo, float64, ndarray
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+from numpy import array
+from numpy import finfo
+from numpy import float64
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.factory import Factory
-from gemseo.utils.py23_compat import xrange
 
 EPSILON = finfo(float).eps
 LOGGER = logging.getLogger(__name__)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class GradientApproximator(object):
+class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
     """A gradient approximator.
 
     Attributes:
@@ -50,13 +44,13 @@ class GradientApproximator(object):
 
     def __init__(
         self,
-        f_pointer,  # type: Callable[[ndarray],ndarray]
-        step=1e-6,  # type: float
-        parallel=False,  # type: bool
-        design_space=None,  # type: Optional[DesignSpace]
-        normalize=True,  # type: bool
-        **parallel_args  # type: Union[int,bool,float]
-    ):  # type: (...) -> None
+        f_pointer: Callable[[ndarray], ndarray],
+        step: float = 1e-6,
+        parallel: bool = False,
+        design_space: DesignSpace | None = None,
+        normalize: bool = True,
+        **parallel_args: int | bool | float,
+    ) -> None:
         """
         Args:
             f_pointer: The pointer to the function to derive.
@@ -78,34 +72,34 @@ class GradientApproximator(object):
         self._normalize = normalize
 
     @property
-    def _parallel(self):  # type: (...) -> bool
+    def _parallel(self) -> bool:
         """Whether to differentiate the function in parallel."""
         return self.__parallel
 
     @property
-    def _par_args(self):  # type: (...) -> Union[int,bool,float]
+    def _par_args(self) -> int | bool | float:
         """The parallel execution options."""
         return self.__par_args
 
     @property
-    def step(self):  # type: (...) -> float
+    def step(self) -> float:
         """The default approximation step."""
         return self._step
 
     @step.setter
     def step(
         self,
-        value,  # type: float
-    ):  # type: (...) -> None
+        value: float,
+    ) -> None:
         self._step = value
 
     def f_gradient(
         self,
-        x_vect,  # type: ndarray
-        step=None,  # type: Optional[float]
-        x_indices=None,  # type: Optional[Sequence[int]]
-        **kwargs  # type: Any
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        step: float | None = None,
+        x_indices: Sequence[int] | None = None,
+        **kwargs: Any,
+    ) -> ndarray:
         """Approximate the gradient of the function for a given input vector.
 
         Args:
@@ -139,12 +133,12 @@ class GradientApproximator(object):
 
     def _compute_parallel_grad(
         self,
-        input_values,  # type: ndarray
-        n_perturbations,  # type: int
-        input_perturbations,  # type: ndarray
-        step,  # type: float
-        **kwargs  # type: Any
-    ):  # type: (...) -> ndarray
+        input_values: ndarray,
+        n_perturbations: int,
+        input_perturbations: ndarray,
+        step: float,
+        **kwargs: Any,
+    ) -> ndarray:
         """Approximate the gradient in parallel.
 
         Args:
@@ -161,12 +155,12 @@ class GradientApproximator(object):
 
     def _compute_grad(
         self,
-        input_values,  # type: ndarray
-        n_perturbations,  # type: int
-        input_perturbations,  # type: ndarray
-        step,  # type: Union[float,ndarray]
-        **kwargs  # type: Any
-    ):  # type: (...) -> ndarray
+        input_values: ndarray,
+        n_perturbations: int,
+        input_perturbations: ndarray,
+        step: float | ndarray,
+        **kwargs: Any,
+    ) -> ndarray:
         """Approximate the gradient.
 
         Args:
@@ -184,11 +178,11 @@ class GradientApproximator(object):
 
     def generate_perturbations(
         self,
-        n_dim,  # type: int
-        x_vect,  # type: ndarray
-        x_indices=None,  # type: Optional[Sequence[int]]
-        step=None,  # type: Optional[float]
-    ):  # type: (...) -> Tuple[ndarray,Union[float,ndarray]]
+        n_dim: int,
+        x_vect: ndarray,
+        x_indices: Sequence[int] | None = None,
+        step: float | None = None,
+    ) -> tuple[ndarray, float | ndarray]:
         """Generate the input perturbations from the differentiation step.
 
         These perturbations will be used to compute the output ones.
@@ -211,16 +205,16 @@ class GradientApproximator(object):
             step = self.step
 
         if x_indices is None:
-            x_indices = xrange(n_dim)
+            x_indices = range(n_dim)
 
         return self._generate_perturbations(x_vect, x_indices, step)
 
     def _generate_perturbations(
         self,
-        input_values,  # type: ndarray
-        input_indices,  # type: List[int]
-        step,  # type: float
-    ):  # type: (...) -> Tuple[ndarray,Union[float,ndarray]]
+        input_values: ndarray,
+        input_indices: list[int],
+        step: float,
+    ) -> tuple[ndarray, float | ndarray]:
         """Generate the input perturbations from the differentiation step.
 
         These perturbations will be used to compute the output ones.
@@ -239,10 +233,10 @@ class GradientApproximator(object):
         raise NotImplementedError
 
 
-class GradientApproximationFactory(object):
+class GradientApproximationFactory:
     """A factory to create gradient approximators."""
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.factory = Factory(GradientApproximator, ("gemseo.utils.derivatives",))
         self.__aliases = {
             self.factory.get_class(class_name).ALIAS: class_name
@@ -251,12 +245,12 @@ class GradientApproximationFactory(object):
 
     def create(
         self,
-        name,  # type:str
-        f_pointer,  # type: Callable
-        step=None,  # type: Optional[float]
-        parallel=False,  # type: bool
-        **parallel_args
-    ):  # type: (...) -> GradientApproximator
+        name: str,
+        f_pointer: Callable,
+        step: float | None = None,
+        parallel: bool = False,
+        **parallel_args,
+    ) -> GradientApproximator:
         """Create a gradient approximator.
 
         Args:
@@ -285,11 +279,11 @@ class GradientApproximationFactory(object):
             )
 
     @property
-    def gradient_approximators(self):  # type: (...) -> List[str]
+    def gradient_approximators(self) -> list[str]:
         """The gradient approximators."""
         return self.factory.classes
 
-    def is_available(self, class_name):  # type:(...) -> bool
+    def is_available(self, class_name) -> bool:
         """Whether a gradient approximator is available.
 
         Args:

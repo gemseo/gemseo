@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -26,26 +24,27 @@ A :class:`.Curves` plot represents samples of a functional variable
 and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
 and the mesh as a metadata.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List, Mapping, Optional, Sequence
+from typing import Sequence
 
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
 class Curves(DatasetPlot):
     """Plot curves y_i over the mesh x."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
-        mesh,  # type: str
-        variable,  # type: str
-        samples=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> List[Figure]
+        dataset: Dataset,
+        mesh: str,
+        variable: str,
+        samples: Sequence[int] | None = None,
+    ) -> None:
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
@@ -53,35 +52,45 @@ class Curves(DatasetPlot):
             samples: The indices of the samples to plot.
                 If None, plot all the samples.
         """
+        super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         def lines_gen():
             """Linestyle generator."""
             yield "-"
             for i in range(1, self.dataset.n_samples):
                 yield 0, (i, 1, 1, 1)
 
+        variable = self._param.variable
+        samples = self._param.samples
         if samples is not None:
-            output = self.dataset[variable][variable][samples, :].T
+            output = self.dataset[variable][samples, :].T
         else:
-            output = self.dataset[variable][variable].T
+            output = self.dataset[variable].T
             samples = range(output.shape[1])
         n_samples = output.shape[1]
 
-        self._set_color(properties, n_samples)
-        self._set_linestyle(properties, n_samples, [line for line in lines_gen()])
+        self._set_color(n_samples)
+        self._set_linestyle(n_samples, [line for line in lines_gen()])
 
         data = (output.T, self.linestyle, self.color, samples)
+        mesh = self._param.mesh
+
+        fig, axes = self._get_figure_and_axes(fig, axes)
         for output, line_style, color, sample in zip(*data):
-            plt.plot(
+            axes.plot(
                 self.dataset.metadata[mesh],
                 output,
                 linestyle=line_style,
                 color=color,
                 label=self.dataset.row_names[sample],
             )
-        plt.xlabel(self.xlabel or mesh)
-        plt.ylabel(self.ylabel or "{}({})".format(variable, mesh))
-        plt.legend(loc=self.legend_location)
-        fig = plt.gcf()
-        fig.set_size_inches(*self.figsize)
+        axes.set_xlabel(self.xlabel or mesh)
+        axes.set_ylabel(self.ylabel or f"{variable}({mesh})")
+        axes.set_title(self.title)
+        axes.legend(loc=self.legend_location)
         return [fig]

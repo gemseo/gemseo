@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create a joint probability distribution from the OpenTURNS library.
 
 The :class:`.OTComposedDistribution` class is a concrete class
@@ -39,8 +36,12 @@ based on the OpenTURNS library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Iterable, Sequence
+from typing import Callable
+from typing import Iterable
+from typing import Sequence
+from typing import TYPE_CHECKING
 
 import openturns as ots
 
@@ -60,15 +61,15 @@ class OTComposedDistribution(ComposedDistribution):
 
     def __init__(
         self,
-        distributions,  # type: Sequence[OTDistribution]
-        copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
-    ):  # type: (...) -> None # noqa: D205,D212,D415
-        """
+        distributions: Sequence[OTDistribution],
+        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             distributions: The distributions.
             copula: A name of copula.
         """
-        super(OTComposedDistribution, self).__init__(distributions, copula)
+        super().__init__(distributions, copula)
         marginals = [
             marginal
             for distribution in distributions
@@ -84,19 +85,17 @@ class OTComposedDistribution(ComposedDistribution):
                 index += 1
         self._set_bounds(distributions)
 
-    def compute_samples(
+    def compute_samples(  # noqa: D102
         self,
-        n_samples=1,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        n_samples: int = 1,
+    ) -> ndarray:
         sample = array(self.distribution.getSample(n_samples))
         return sample
 
-    def compute_cdf(
+    def compute_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         tmp = []
         for index, value in enumerate(vector):
             id1 = self._mapping[index][0]
@@ -105,11 +104,10 @@ class OTComposedDistribution(ComposedDistribution):
             tmp.append(self.marginals[id1].marginals[id2].computeCDF(value))
         return array(tmp)
 
-    def compute_inverse_cdf(
+    def compute_inverse_cdf(  # noqa: D102
         self,
-        vector,  # type: ndarray
-    ):  # noqa: D102
-        # type: (...) -> Iterable[float]
+        vector: ndarray,
+    ) -> Iterable[float]:
         tmp = []
         for index, value in enumerate(vector):
             id1 = self._mapping[index][0]
@@ -117,18 +115,16 @@ class OTComposedDistribution(ComposedDistribution):
             tmp.append(self.marginals[id1].marginals[id2].computeQuantile(value)[0])
         return array(tmp)
 
-    def _pdf(
+    def _pdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         id1 = self._mapping[index][0]
         id2 = self._mapping[index][1]
 
         def pdf(
-            point,  # type: float
-        ):
-            # type: (...) -> float
+            point: float,
+        ) -> float:
             """Probability Density Function (PDF).
 
             Args:
@@ -141,18 +137,16 @@ class OTComposedDistribution(ComposedDistribution):
 
         return pdf
 
-    def _cdf(
+    def _cdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         id1 = self._mapping[index][0]
         id2 = self._mapping[index][1]
 
         def cdf(
-            level,  # type: float
-        ):
-            # type: (...) -> float
+            level: float,
+        ) -> float:
             """Cumulative Density Function (CDF).
 
             Args:

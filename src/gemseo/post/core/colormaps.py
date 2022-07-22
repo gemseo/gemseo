@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # New matplotlib colormaps by Nathaniel J. Smith, Stefan van der Walt,
 # and (in the case of viridis) Eric Firing.
 #
@@ -28,10 +26,11 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """Custom color maps for plots."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import matplotlib as mpl
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import ListedColormap
 
 __all__ = ["MAGMA", "INFERNO", "PLASMA", "VIRIDIS", "PARULA", "RG_SEISMIC"]
 
@@ -1152,11 +1151,9 @@ for (name, data) in (
     ("viridis", VIRIDIS_DATA),
     ("parula", PARULA_DATA),
 ):
-
     CMAPS[name] = ListedColormap(data, name=name)
 
-cmaps_from_list = LinearSegmentedColormap.from_list
-CMAPS["rg_seismic"] = cmaps_from_list(
+CMAPS["rg_seismic"] = LinearSegmentedColormap.from_list(
     "rg_seismic", RG_SEISMIC_DATA, mpl.rcParams["image.lut"]
 )
 MAGMA = CMAPS["magma"]

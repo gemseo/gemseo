@@ -209,13 +209,10 @@
 #
 # This code was modified by Francois Gallard, IRT Saint Exupery
 # for integration within |g|
-
 """
 Self Organizing Maps
 ********************
 """
-from __future__ import  division, unicode_literals
-
 import itertools
 import logging
 import os

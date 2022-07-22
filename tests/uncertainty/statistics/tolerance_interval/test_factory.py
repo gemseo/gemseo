@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,8 +13,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the factory used to create instances of :class:`.ToleranceInterval`."""
-import pytest
+import re
 
+import pytest
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
 )
@@ -37,11 +37,11 @@ def test_create_fail():
     """Check the creation of a ToleranceInterval from the ToleranceIntervalFactory."""
     factory = ToleranceIntervalFactory()
 
-    expected = (
-        "Class WrongNameToleranceInterval is not available!\n"
-        "Available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, "
+    expected = re.escape(
+        "Class WrongNameToleranceInterval is not available; \n"
+        "available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, "
         "NormalToleranceInterval, UniformToleranceInterval, "
-        "WeibullMinToleranceInterval, WeibullToleranceInterval"
+        "WeibullMinToleranceInterval, WeibullToleranceInterval."
     )
 
     with pytest.raises(ImportError, match=expected):

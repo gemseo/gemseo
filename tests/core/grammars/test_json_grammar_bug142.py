@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Reproducer for issue #142."""
-
-from __future__ import division, unicode_literals
+from pathlib import Path
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import Path
 
 TEST_PATH = Path(__file__).parent / "data"
 
@@ -35,22 +30,18 @@ class _MyDisciplineA(MDODiscipline):
     """A test class."""
 
     def __init__(self):
-        super(_MyDisciplineA, self).__init__()
-        output_grammar_file = TEST_PATH / "grammar_test_bug142.json"
-        output_grammar_json = JSONGrammar(name="X", schema_file=output_grammar_file)
-        self.input_grammar.initialize_from_data_names(["A"])
-        self.output_grammar.update_from(output_grammar_json)
+        super().__init__()
+        self.input_grammar.update(["A"])
+        self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
 
 class _MyDisciplineB(MDODiscipline):
     """A test class."""
 
     def __init__(self):
-        super(_MyDisciplineB, self).__init__()
-        input_grammar_file = TEST_PATH / "grammar_test_bug142.json"
-        input_grammar_json = JSONGrammar(name="X", schema_file=input_grammar_file)
-        self.input_grammar.update_from(input_grammar_json)
-        self.output_grammar.initialize_from_data_names(["B"])
+        super().__init__()
+        self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
+        self.output_grammar.update(["B"])
 
 
 def test_bug142():

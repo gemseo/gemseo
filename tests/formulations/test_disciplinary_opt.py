@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
 import unittest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiMission,
-    SobieskiProblem,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
 class TestDisciplinaryOpt(unittest.TestCase):
@@ -38,7 +32,7 @@ class TestDisciplinaryOpt(unittest.TestCase):
 
     def test_multiple_disc(self):
         """"""
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         dopt = DisciplinaryOpt([SobieskiStructure(), SobieskiMission()], "y_4", ds)
         dopt.get_expected_dataflow()
         dopt.get_expected_workflow()
@@ -46,16 +40,16 @@ class TestDisciplinaryOpt(unittest.TestCase):
     def test_init(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         dopt = DisciplinaryOpt([sm], "y_4", ds)
         assert dopt.get_expected_dataflow() == []
-        assert dopt.get_expected_workflow().sequence_list[0].discipline == sm
-        assert len(dopt.get_expected_workflow().sequence_list) == 1
+        assert dopt.get_expected_workflow().sequences[0].discipline == sm
+        assert len(dopt.get_expected_workflow().sequences) == 1
 
 
 def test_grammar_type():
     """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
     grammar_type = discipline.SIMPLE_GRAMMAR_TYPE

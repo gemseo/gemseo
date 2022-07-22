@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,15 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Box plots to quantify optimum robustness."""
-from __future__ import division, unicode_literals
+"""Boxplots to quantify the robustness of the optimum."""
+from __future__ import annotations
 
 import logging
 from math import sqrt
@@ -30,6 +28,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import zeros
 from numpy.random import normal
+from numpy.random import seed
 
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -54,62 +53,74 @@ class Robustness(OptPostProcessor):
 
     def _plot(
         self,
-        stddev=0.01,  # type: float
-    ):  # type: (...) -> None
+        stddev: float = 0.01,
+    ) -> None:
         """
         Args:
-            stddev: The standard deviation of the inputs as fraction of x bounds.
+            stddev: The standard deviation of the normal uncertain variable
+                to be added to the optimal design value;
+                expressed as a fraction of the bounds of the design variables.
         """
+        seed(0)
         self._add_figure(self.__boxplot(stddev))
 
     def __boxplot(
         self,
-        stddev=0.01,  # type: float
-    ):  # type: (...) -> Figure
+        standard_deviation: float = 0.01,
+    ) -> Figure:
         """Plot the Hessian of the function.
 
         Args:
-            stddev: The standard deviation of the inputs as fraction of x bounds.
+            standard_deviation: The standard deviation of the normal uncertain variable
+                to be added to the optimal design value;
+                expressed as a fraction of the bounds of the design variables.
 
         Returns:
             A plot of the Hessian of the function.
         """
-        robustness = RobustnessQuantifier(self.database, "SR1")
-        n_x = self.opt_problem.get_dimension()
+        problem = self.opt_problem
+        design_space = problem.design_space
+        bounds_range = design_space.get_upper_bounds() - design_space.get_lower_bounds()
+        n_x = problem.get_dimension()
         cov = zeros((n_x, n_x))
-        upper_bounds = self.opt_problem.design_space.get_upper_bounds()
-        lower_bounds = self.opt_problem.design_space.get_lower_bounds()
-        bounds_range = upper_bounds - lower_bounds
-        cov[list(range(n_x)), list(range(n_x))] = (stddev * bounds_range) ** 2
+        cov[range(n_x), range(n_x)] = (standard_deviation * bounds_range) ** 2
 
-        data = []
-        funcs_names = []
+        robustness = RobustnessQuantifier(self.database, "SR1")
+        function_samples = []
+        function_names = []
         for func in self.opt_problem.get_all_functions():
-            func_name = func.name
+            func_name = database_func_name = func.name
+            if self._change_obj and func_name == self._neg_obj_name:
+                func_name = self._obj_name
+
             dim = func.dim
-            for i in range(dim):
-                b0_mat = zeros((n_x, n_x))
+            at_most_niter = int(1.5 * n_x)
+            for func_index in range(dim):
                 robustness.compute_approximation(
-                    funcname=func_name,
-                    at_most_niter=int(1.5 * n_x),
-                    func_index=i,
-                    b0_mat=b0_mat,
+                    funcname=database_func_name,
+                    at_most_niter=at_most_niter,
+                    func_index=func_index,
+                    b0_mat=zeros((n_x, n_x)),
                 )
                 x_ref = robustness.x_ref
                 mean = robustness.compute_expected_value(x_ref, cov)
-                var = robustness.compute_variance(x_ref, cov)
-                if var > 0:  # Otherwise normal doesnt work
-                    data.append(normal(loc=mean, scale=sqrt(var), size=500))
+                if self._change_obj:
+                    mean = -mean
+
+                variance = robustness.compute_variance(x_ref, cov)
+                if variance > 0:  # Otherwise normal doesnt work
+                    function_samples.append(
+                        normal(loc=mean, scale=sqrt(variance), size=500)
+                    )
                     legend = func_name
                     if dim > 1:
-                        legend += "_" + str(i + 1)
-                    funcs_names.append(legend)
+                        legend += f" ({func_index})"
+                    function_names.append(legend)
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         fig.suptitle(
-            "Box plot of the optimization functions "
-            "with normalized stddev {}".format(stddev)
+            "Boxplot of the optimization functions "
+            f"with normalized stddev {standard_deviation}"
         )
-        plt.boxplot(data, showfliers=False, labels=funcs_names)
-
+        plt.boxplot(function_samples, showfliers=False, labels=function_names)
         return fig

@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "name": "grammar_1",
+    "properties": {
+        "name": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+        "contains": "foo"
+        }
+    },
+    "required":  ["name"],
+    "additionalProperties": false
+}

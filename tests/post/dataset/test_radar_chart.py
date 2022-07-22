@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,28 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Test the class RadarChart plotting samples on a radar chart."""
-
-from __future__ import division, unicode_literals
-
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array
-
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
-from gemseo.utils.py23_compat import PY2
-
-pytestmark = pytest.mark.skipif(
-    PY2, reason="image comparison does not work with python 2"
-)
+from gemseo.utils.testing import image_comparison
+from matplotlib import pyplot as plt
+from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -52,28 +41,36 @@ def dataset():
 # - the kwargs to be passed to RadarChart._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, ["RadarChart"]),
-    "with_display_zero": ({"display_zero": False}, ["RadarChart_without_zero"]),
-    "with_connect": ({"connect": True}, ["RadarChart_connect"]),
-    "with_radial_ticks": ({"radial_ticks": True}, ["RadarChart_radial_ticks"]),
-    "with_n_levels": ({"n_levels": 3}, ["RadarChart_n_levels"]),
+    "default": ({}, {}, ["RadarChart"]),
+    "with_display_zero": ({"display_zero": False}, {}, ["RadarChart_without_zero"]),
+    "with_connect": ({"connect": True}, {}, ["RadarChart_connect"]),
+    "with_radial_ticks": ({"radial_ticks": True}, {}, ["RadarChart_radial_ticks"]),
+    "with_n_levels": ({"n_levels": 3}, {}, ["RadarChart_n_levels"]),
+    "with_properties": (
+        {},
+        {"title": "The title"},
+        ["RadarChart_properties"],
+    ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
-    """Test images created by RadarChart._plot against references.
+@pytest.mark.parametrize("fig_and_axes", [False, True])
+@image_comparison(None)
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
+    """Test images created by RadarChart._plot against references."""
+    plot = RadarChart(dataset, **kwargs)
+    if fig_and_axes:
+        fig = plt.figure(figsize=plot.fig_size)
+        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
+    else:
+        fig, axes = (None, None)
 
-    Args:
-        kwargs (dict): The optional arguments to pass to RadarChart._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    RadarChart(dataset)._plot(properties={}, **kwargs)
+    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)

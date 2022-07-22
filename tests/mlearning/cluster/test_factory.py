@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,10 +19,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClusteringModelFactory class in gemseo.mlearning.cluster.factory."""
-from __future__ import division, unicode_literals
-
 import pytest
-
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 from gemseo.problems.dataset.iris import IrisDataset
 
@@ -32,7 +27,7 @@ N_CLUSTERS = 3
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> IrisDataset
+def dataset() -> IrisDataset:
     """The dataset used to train the clustering algorithms."""
     return IrisDataset()
 
@@ -41,9 +36,11 @@ def test_constructor():
     """Test ClusteringModelFactory constructor."""
     factory = ClusteringModelFactory()
     # plugins may add classes
-    assert set(factory.models) <= set(
-        ["GaussianMixture", "KMeans", "MLPredictiveClusteringAlgo"]
-    )
+    assert set(factory.models) <= {
+        "GaussianMixture",
+        "KMeans",
+        "MLPredictiveClusteringAlgo",
+    }
 
 
 def test_create(dataset):
@@ -67,7 +64,7 @@ def test_available_clustering_models():
     """Test the getter of available clustering models."""
     factory = ClusteringModelFactory()
     assert "KMeans" in factory.models
-    assert "LinearRegression" not in factory.models
+    assert "LinearRegressor" not in factory.models
 
 
 def test_is_available():

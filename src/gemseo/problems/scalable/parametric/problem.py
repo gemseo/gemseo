@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,17 +21,15 @@
 Scalable problem
 ================
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.problems.scalable.parametric.core.problem import TMProblem
 from gemseo.problems.scalable.parametric.core.variables import get_u_local_name
-from gemseo.problems.scalable.parametric.disciplines import (
-    TMMainDiscipline,
-    TMSubDiscipline,
-)
+from gemseo.problems.scalable.parametric.disciplines import TMMainDiscipline
+from gemseo.problems.scalable.parametric.disciplines import TMSubDiscipline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -120,7 +116,7 @@ class TMScalableProblem(TMProblem):
         :return: instance of the design space
         :rtype: DesignSpace
         """
-        d_s = super(TMScalableProblem, self).get_design_space()
+        d_s = super().get_design_space()
         design_space = ParameterSpace()
         for name in d_s.names:
             size = d_s.sizes[name]

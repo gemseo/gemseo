@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
@@ -25,40 +23,40 @@
 #        :author: Nicolas Roussouly: GEMSEO integration
 #
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Definition of the matlab engine singleton for workspace handling.
 
 Overview
 --------
 
-This module contains the :class:`.__MatlabEngine` class
+This module contains the :class:`.MatlabEngine` class
 which enables to build the Matlab workspace.
 The Matlab workspace must be seen as the Matlab "area"
 where Matlab functions are executed as well as Matlab variables live.
 The engine is basically used when creating a :class:`.MatlabDiscipline` instance
 and therefore is not directly handled by the user.
-However, a :class:`.__MatlabEngine` instance can be used
+However, a :class:`.MatlabEngine` instance can be used
 outside a :class:`.MatlabDiscipline`
 in order to directly call Matlab functions
 and/or accessing to some variables into the Matlab workspace.
 
-Since :class:`.__MatlabEngine` is private, it cannot be used directly from the module.
+Since :class:`.MatlabEngine` is private, it cannot be used directly from the module.
 It is rather used through the function :func:`.get_matlab_engine`
 which enables to create only one instance with respect to the ``workspace_name``
 (i.e. the instance is unique if the workspace name is the same
 when calling several times the function).
-Following this, :class:`.__MatlabEngine` acts like a singleton.
+Following this, :class:`.MatlabEngine` acts like a singleton.
 """
+from __future__ import annotations
 
 import logging
 import os
 from enum import Enum
-from typing import List, Optional, Tuple, Union  # noqa F401
+from functools import lru_cache
+from pathlib import Path
 
 import matlab.engine
 from numpy import ndarray  # noqa F401
 
-from gemseo.utils.py23_compat import Path, lru_cache
 from gemseo.wrappers.matlab.matlab_data_processor import double2array
 
 LOGGER = logging.getLogger(__name__)
@@ -73,8 +71,8 @@ class ParallelType(Enum):
 
 @lru_cache()
 def get_matlab_engine(
-    workspace_name="matlab",  # type: str
-):  # type: (...) -> __MatlabEngine
+    workspace_name: str = "matlab",
+) -> MatlabEngine:
     """Return a new matlab engine.
 
     LRU cache decorator enables to cache the instance
@@ -95,10 +93,10 @@ def get_matlab_engine(
         >>> # make sure that engines are the same
         >>> eng1 is eng2
     """
-    return __MatlabEngine(workspace_name)
+    return MatlabEngine(workspace_name)
 
 
-class __MatlabEngine:
+class MatlabEngine:
     """Wrapper around the matlab execution engine.
 
     Since this class is private, an instance should be built through
@@ -124,9 +122,7 @@ class __MatlabEngine:
         >>> print(eng1.is_closed)
     """
 
-    def __init__(
-        self, engine_name  # type: str
-    ):  # type: (...) -> None
+    def __init__(self, engine_name: str) -> None:
         # noqa: D205,D212,D415
         """
         Args:
@@ -143,21 +139,21 @@ class __MatlabEngine:
         self.add_path(str(Path(__file__).parent))
 
     @property
-    def paths(self):  # type: (...) -> List[str]
+    def paths(self) -> list[str]:
         """Return the paths."""
         return self.__paths
 
     @property
-    def is_parallel(self):  # type: (...) -> bool
+    def is_parallel(self) -> bool:
         """Return True if parallel is active."""
         return self.__is_parallel
 
     @property
-    def is_closed(self):  # type: (...) -> bool
+    def is_closed(self) -> bool:
         """Return True if the matlab engine is closed."""
         return self.__is_closed
 
-    def start_engine(self):  # type: (...) -> None
+    def start_engine(self) -> None:
         """Start the matlab engine."""
         LOGGER.info('Starting Matlab engine named "%s".', self.__engine_name)
         self.__matlab = matlab.engine.start_matlab()
@@ -167,9 +163,7 @@ class __MatlabEngine:
             self.__matlab.addpath(path)
         self.__is_closed = False
 
-    def exist(
-        self, name  # type: Union[str, Path]
-    ):  # type: (...) -> Tuple[bool, Optional[str]]
+    def exist(self, name: str | Path) -> tuple[bool, str | None]:
         """Check if the given matlab object exists.
 
         Args:
@@ -213,14 +207,12 @@ class __MatlabEngine:
 
         return is_existant, file_types[out]
 
-    def close_session(self):  # type: (...) -> None
+    def close_session(self) -> None:
         """Close the matlab session."""
         self.__matlab.quit()
         self.__is_closed = True
 
-    def add_toolbox(
-        self, toolbox_name  # type: str
-    ):  # type: (...) -> None
+    def add_toolbox(self, toolbox_name: str) -> None:
         """Add a toolbox to the engine.
 
         The toolbox added would be needed for the functions
@@ -233,9 +225,7 @@ class __MatlabEngine:
         """
         self.__toolboxes.add(toolbox_name)
 
-    def remove_toolbox(
-        self, toolbox_name  # type: str
-    ):  # type: (...) -> None
+    def remove_toolbox(self, toolbox_name: str) -> None:
         """Remove a toolbox from the engine.
 
         Args:
@@ -245,9 +235,9 @@ class __MatlabEngine:
 
     def add_path(
         self,
-        path,  # type: Union[str, Path]
-        add_subfolder=False,  # type: bool
-    ):  # type: (...) -> None
+        path: str | Path,
+        add_subfolder: bool = False,
+    ) -> None:
         """Add a path to the matlab engine search directories.
 
         Args:
@@ -272,10 +262,10 @@ class __MatlabEngine:
 
     def execute_function(
         self,
-        func_name,  # type: str
-        *args,  # type: float
-        **kwargs  # type: float
-    ):  # type: (...) -> Union[float, ndarray]
+        func_name: str,
+        *args: float,
+        **kwargs: float,
+    ) -> float | ndarray:
         """Executes a Matlab function called "func_name".
 
         Args:
@@ -305,9 +295,9 @@ class __MatlabEngine:
 
     def start_parallel_computing(
         self,
-        n_parallel_workers,  # type: int
-        parallel_type=ParallelType.LOCAL,  # type: ParallelType
-    ):  # type: (...) -> None
+        n_parallel_workers: int,
+        parallel_type: ParallelType = ParallelType.LOCAL,
+    ) -> None:
         """Start the parallel pool of matlab for parallel computing.
 
         This feature only works if parallel toolbox is available.
@@ -350,7 +340,7 @@ class __MatlabEngine:
                 "computed in parallel."
             )
 
-    def end_parallel_computing(self):  # type: (...) -> None
+    def end_parallel_computing(self) -> None:
         """End the parallel computing.
 
         Raises:
@@ -371,7 +361,7 @@ class __MatlabEngine:
         else:
             self.__is_parallel = False
 
-    def get_toolboxes(self):  # type: (...) -> List[str]
+    def get_toolboxes(self) -> list[str]:
         """Return all toolboxes to be checked before launching this engine.
 
         Returns:
@@ -379,9 +369,7 @@ class __MatlabEngine:
         """
         return self.__toolboxes
 
-    def execute_script(
-        self, script_name  # type: str
-    ):  # type: (...) -> None
+    def execute_script(self, script_name: str) -> None:
         """Execute a script in the current workspace.
 
         After executing the script, the workspace point to the path
@@ -400,9 +388,7 @@ class __MatlabEngine:
         # now execute the script
         self.execute_function("run", script_name, nargout=0)
 
-    def get_variable(
-        self, item  # type: str
-    ):  # type: (...) -> ndarray
+    def get_variable(self, item: str) -> ndarray:
         """Get any variable in the workspace.
 
         Args:

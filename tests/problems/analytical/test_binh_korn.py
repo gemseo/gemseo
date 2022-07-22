@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test of the Binh-Korn problem."""
 import pytest
-from numpy import array
-
 from gemseo.problems.analytical.binh_korn import BinhKorn
+from numpy import array
 
 
 @pytest.fixture()
-def binh_korn():  # type: (...) -> BinhKorn
+def binh_korn() -> BinhKorn:
     """Fixture for the Binh-Korn optimization problem.
 
     Returns:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,33 +12,40 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Driver library tests."""
-
-from __future__ import division, unicode_literals
+from unittest import mock
 
 import pytest
-from numpy import array
-
+from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
-from gemseo.api import configure_logger
+from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2
+from numpy import array
 
 
 class MyDriver(DriverLib):
     pass
 
 
-def test_max_iter_fail():
-    """Check that a ValueError is raised for an invalid `max_iter` input."""
+@pytest.fixture(scope="module")
+def optimization_problem():
+    """A mock optimization problem."""
+    design_space = mock.Mock()
+    design_space.dimension = 2
+    problem = mock.Mock()
+    problem.dimension = 2
+    problem.design_space = design_space
+    return problem
 
-    MyDriver()._pre_run(None, None)
+
+def test_max_iter_fail(optimization_problem):
+    """Check that a ValueError is raised for an invalid `max_iter` input."""
+    MyDriver()._pre_run(optimization_problem, None)
     with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):
         MyDriver().init_iter_observer(max_iter=-1, message="message")
 
@@ -74,15 +80,13 @@ def test_require_grad():
 
     class MyDriver(DriverLib):
         def __init__(self):
-            super(MyDriver, self).__init__()
-            self.lib_dict = {
-                "SLSQP": {
-                    DriverLib.INTERNAL_NAME: "SLSQP",
-                    DriverLib.REQUIRE_GRAD: True,
-                    DriverLib.POSITIVE_CONSTRAINTS: True,
-                    DriverLib.HANDLE_EQ_CONS: True,
-                    DriverLib.HANDLE_INEQ_CONS: True,
-                }
+            super().__init__()
+            self.descriptions = {
+                "SLSQP": DriverDescription(
+                    algorithm_name="SLSQP",
+                    internal_algorithm_name="SLSQP",
+                    require_gradient=True,
+                )
             }
 
     with pytest.raises(ValueError, match="Algorithm toto is not available."):
@@ -97,8 +101,6 @@ def test_new_iteration_callback_xvect(caplog):
     Args:
         caplog: Fixture to access and control log capturing.
     """
-    if PY2:
-        configure_logger("GEMSEO")
     problem = Power2()
     problem.database.store(
         array([0.79499653, 0.20792012, 0.96630481]),
@@ -108,7 +110,15 @@ def test_new_iteration_callback_xvect(caplog):
     test_driver = DriverLib()
     test_driver.problem = problem
     test_driver._max_time = 0
-    test_driver.init_iter_observer(max_iter=2, message="Toto")
+    test_driver.init_iter_observer(max_iter=2, message="")
     test_driver.new_iteration_callback()
 
-    assert "Toto" in caplog.text
+    assert "...   0%|" in caplog.text
+
+
+@pytest.mark.parametrize("activate_progress_bar", [False, True])
+def test_progress_bar(activate_progress_bar):
+    """Check the activation of the progress bar from the options of a DriverLib."""
+    driver = OptimizersFactory().create("SLSQP")
+    driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
+    assert (driver._DriverLib__progress_bar is None) is not activate_progress_bar

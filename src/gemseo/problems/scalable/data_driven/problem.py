@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #         documentation
@@ -46,23 +44,27 @@ on the problem dimension.
 .. seealso:: :class:`.MDODiscipline`, :class:`.ScalableDiscipline`
    and :class:`.Scenario`
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import os
 from copy import deepcopy
 
-from numpy import array, ones, random, where, zeros
+from numpy import array
+from numpy import full
+from numpy import ones
+from numpy import random
+from numpy import where
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import (
-    create_design_space,
-    create_scenario,
-    generate_coupling_graph,
-    generate_n2_plot,
-    get_all_inputs,
-)
+from gemseo.api import create_design_space
+from gemseo.api import create_scenario
+from gemseo.api import generate_coupling_graph
+from gemseo.api import generate_n2_plot
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.scenario import Scenario
+from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.utils.string_tools import MultiLineString
@@ -70,7 +72,7 @@ from gemseo.utils.string_tools import MultiLineString
 LOGGER = logging.getLogger(__name__)
 
 
-class ScalableProblem(object):
+class ScalableProblem:
     """Scalable problem."""
 
     def __init__(
@@ -82,7 +84,7 @@ class ScalableProblem(object):
         ineq_constraints=None,
         maximize_objective=False,
         sizes=None,
-        **parameters
+        **parameters,
     ):
         """Constructor.
 
@@ -134,9 +136,7 @@ class ScalableProblem(object):
         eq_constraints = None
         if self.eq_constraints is not None:
             eq_constraints = ", ".join(self.eq_constraints)
-        sizes = [
-            name + " ({})".format(size) for name, size in self.scaled_sizes.items()
-        ]
+        sizes = [name + f" ({size})" for name, size in self.scaled_sizes.items()]
         sizes = ", ".join(sizes)
         optimize = "maximize" if self.maximize_objective else "minimize"
         msg = MultiLineString()
@@ -227,40 +227,42 @@ class ScalableProblem(object):
                     "ScalableDiagonalModel",
                     self.data[disc],
                     new_varsizes,
-                    **copied_parameters
+                    **copied_parameters,
                 )
             )
             self.scaled_sizes.update(deepcopy(new_varsizes))
 
     def create_scenario(
         self,
-        formulation="DisciplinaryOpt",
-        scenario_type="MDO",
-        start_at_equilibrium=False,
-        active_probability=0.1,
-        feasibility_level=0.5,
-        **options
-    ):
-        """Create MDO scenario from the scalable disciplines.
+        formulation: str = "DisciplinaryOpt",
+        scenario_type: str = "MDO",
+        start_at_equilibrium: bool = False,
+        active_probability: float = 0.1,
+        feasibility_level: float = 0.5,
+        **options,
+    ) -> Scenario:
+        """Create a :class:`.Scenario` from the scalable disciplines.
 
-        :param str formulation: MDO formulation. Default: 'DisciplinaryOpt'.
-        :param str scenario_type: type of scenario ('MDO' or 'DOE').
-            Default: 'MDO'.
-        :param bool start_at_equilibrium: start at equilibrium
-            using a preliminary MDA. Default: True.
-        :param float active_probability: probability to set the inequality
-            constraints as active at initial step of the optimization.
-            Default: 0.1.
-        :param float feasibility_level: offset of satisfaction for inequality
-            constraints. Default: 0.5.
-        :param options: formulation options.
+        Args:
+            formulation: The MDO formulation to use for the scenario.
+            scenario_type: The type of scenario, either ``MDO`` or ``DOE``.
+            start_at_equilibrium: Whether to start at equilibrium using a preliminary
+                MDA.
+            active_probability: The probability to set the inequality constraints as
+                active at the initial step of the optimization.
+            feasibility_level: The offset of satisfaction for inequality
+                constraints.
+            **options: The formulation options.
+
+        Returns:
+            The :class:`.Scenario` from the scalable disciplines.
         """
-        equilibrium = None
+        equilibrium = {}
         if start_at_equilibrium:
             equilibrium = self.__get_equilibrium()
+
         disciplines = self.scaled_disciplines
         design_space = self._create_design_space(disciplines, formulation)
-        max_obj = self.maximize_objective
         if formulation == "BiLevel":
             self.scenario = self._create_bilevel_scenario(disciplines, **options)
         else:
@@ -270,10 +272,9 @@ class ScalableProblem(object):
                 self.objective_function,
                 deepcopy(design_space),
                 scenario_type=scenario_type,
-                maximize_objective=max_obj,
-                **options
+                maximize_objective=self.maximize_objective,
+                **options,
             )
-        equilibrium = {} if not isinstance(equilibrium, dict) else equilibrium
         self.__add_ineq_constraints(active_probability, feasibility_level, equilibrium)
         self.__add_eq_constraints(equilibrium)
         return self.scenario
@@ -284,7 +285,7 @@ class ScalableProblem(object):
         :param list(MDODiscipline) disciplines: list of MDODiscipline
         """
         cpl_structure = MDOCouplingStructure(disciplines)
-        st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines()
+        st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines
         wk_cpl_disciplines = cpl_structure.weakly_coupled_disciplines()
         obj = self.objective_function
         max_obj = self.maximize_objective
@@ -342,20 +343,31 @@ class ScalableProblem(object):
         :param str formulation: MDO formulation (default: 'DisciplinaryOpt')
         """
         design_space = create_design_space()
-        for varname in self.design_variables:
-            size = self.scaled_sizes[varname]
-            l_b = zeros(size)
-            u_b = ones(size)
-            value = 0.5 + zeros(size)
-            design_space.add_variable(varname, size, "float", l_b, u_b, value)
+        for name in self.design_variables:
+            size = self.scaled_sizes[name]
+            design_space.add_variable(
+                name,
+                size=size,
+                var_type="float",
+                l_b=zeros(size),
+                u_b=ones(size),
+                value=full(size, 0.5),
+            )
+
         if formulation == "IDF":
             coupling_structure = MDOCouplingStructure(disciplines)
-            all_couplings = set(coupling_structure.get_all_couplings())
-            for varname in all_couplings:
-                size = self.scaled_sizes[varname]
+            all_couplings = set(coupling_structure.all_couplings)
+            for name in all_couplings:
+                size = self.scaled_sizes[name]
                 design_space.add_variable(
-                    varname, size, "float", zeros(size), ones(size), 0.5 + zeros(size)
+                    name,
+                    size=size,
+                    var_type="float",
+                    l_b=zeros(size),
+                    u_b=ones(size),
+                    value=full(size, 0.5),
                 )
+
         return design_space
 
     def __get_equilibrium(self, mda_name="MDAJacobi", **options):

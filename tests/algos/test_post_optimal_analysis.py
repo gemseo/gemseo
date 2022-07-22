@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import unittest
-
-from numpy import allclose, array, dot
-from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from numpy import allclose
+from numpy import array
+from numpy import dot
+from numpy.linalg import norm
 
 
 class TestPostOptimalAnalysis(unittest.TestCase):
@@ -84,7 +80,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         opt_problem = OptimizationProblem(design_space)
         if minimize:
             obj_func = MDOFunction(
-                lambda xy: norm(xy) ** 2 + p ** 2,
+                lambda xy: norm(xy) ** 2 + p**2,
                 "f",
                 jac=lambda xy: 2.0 * xy,
                 expr="x^2+y^2+p^2",
@@ -94,7 +90,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             )
         else:
             obj_func = MDOFunction(
-                lambda xy: -(norm(xy) ** 2 + p ** 2),
+                lambda xy: -(norm(xy) ** 2 + p**2),
                 "f",
                 jac=lambda xy: -2.0 * xy,
                 expr="-x^2-y^2-p^2",

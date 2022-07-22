@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
@@ -35,14 +33,14 @@ This module implements the Binh and Korn multi-objective problem:
    & 0 \leq x \leq 5.0\\
    & 0 \leq y \leq 3.0
    \end{aligned}
-
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Tuple
 
-from numpy import array, ndarray, zeros
+from numpy import array
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -54,17 +52,11 @@ LOGGER = logging.getLogger(__name__)
 class BinhKorn(OptimizationProblem):
     """Binh and Korn optimization problem.
 
-    The constructor initializes the BinhKorn :class:`.OptimizationProblem`
-    by defining the :class:`.DesignSpace`,
-    the objective function and the constraints.
-
-    Attributes:
-        objective (MDOFunction): The objective function.
+    The constructor initializes the BinhKorn :class:`.OptimizationProblem` by defining
+    the :class:`.DesignSpace`, the objective function and the constraints.
     """
 
-    def __init__(
-        self, initial_values=(1.0, 1.0)  # type: Tuple[float, float]
-    ):
+    def __init__(self, initial_values: tuple[float, float] = (1.0, 1.0)):
         """
         Args:
             initial_values: Initial value of the design variables.
@@ -73,7 +65,7 @@ class BinhKorn(OptimizationProblem):
         design_space.add_variable("x", 1, l_b=0.0, u_b=5.0, value=initial_values[0])
         design_space.add_variable("y", 1, l_b=0.0, u_b=3.0, value=initial_values[1])
 
-        super(BinhKorn, self).__init__(design_space)
+        super().__init__(design_space)
         self.objective = MDOFunction(
             self.__compute_binhkorn,
             name="compute_binhkorn",
@@ -102,10 +94,10 @@ class BinhKorn(OptimizationProblem):
         )
         self.add_ineq_constraint(ineq2)
 
+    @staticmethod
     def __compute_binhkorn(
-        self,
-        x_dv,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the objective of analytical function.
 
         Args:
@@ -119,9 +111,10 @@ class BinhKorn(OptimizationProblem):
         obj[1] = (x_dv[0] - 5.0) ** 2 + (x_dv[1] - 5.0) ** 2
         return obj
 
+    @staticmethod
     def __compute_ineq_constraint1(
-        self, x_dv  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the first constraint function.
 
         Args:
@@ -132,9 +125,10 @@ class BinhKorn(OptimizationProblem):
         """
         return array([(x_dv[0] - 5.0) ** 2 + x_dv[1] - 25.0])
 
+    @staticmethod
     def __compute_ineq_constraint2(
-        self, x_dv  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the first constraint function.
 
         Args:
@@ -147,8 +141,8 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_binhkorn_jac(
-        x_dv,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the gradient of objective.
 
         Args:
@@ -167,7 +161,7 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_ineq_constraint1_jac(
-        x_dv,  # type: ndarray
+        x_dv: ndarray,
     ):  # (...) -> ndarray
         """Compute the first inequality constraint jacobian.
 
@@ -185,7 +179,7 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_ineq_constraint2_jac(
-        x_dv,  # type: ndarray
+        x_dv: ndarray,
     ):  # (...) -> ndarray
         """Compute the second inequality constraint jacobian.
 

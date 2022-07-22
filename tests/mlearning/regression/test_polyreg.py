@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial regression module."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array, hstack, linspace, meshgrid, sqrt, zeros
-from scipy.special import comb
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from numpy import allclose
+from numpy import array
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
+from numpy import sqrt
+from numpy import zeros
+from scipy.special import comb
 
 LEARNING_SIZE = 50
 DEGREE = 5
@@ -62,9 +63,9 @@ def dataset():
     x_2 = linspace(-1, 2, root_learning_size)
     x_1, x_2 = meshgrid(x_1, x_2)
     x_1, x_2 = x_1.flatten()[:, None], x_2.flatten()[:, None]
-    y_1 = 1 + x_1 + x_2 ** 2
-    y_2 = 3 + 4 * x_1 * x_2 + 5 * x_1 ** 3
-    y_3 = 10 * x_1 * x_2 ** 2 + 7 * x_2 ** 5
+    y_1 = 1 + x_1 + x_2**2
+    y_2 = 3 + 4 * x_1 * x_2 + 5 * x_1**3
+    y_3 = 10 * x_1 * x_2**2 + 7 * x_2**5
 
     data = hstack([x_1, x_2, y_1, y_2, y_3])
     variables = ["x_1", "x_2", "y_1", "y_2", "y_3"]
@@ -83,14 +84,15 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_from_cache():  # type: (...) -> Dataset
+def dataset_from_cache() -> Dataset:
     """The dataset used to train the regression algorithms."""
-    expressions_dict = {
-        "y_1": "1 + x_1 + x_2**2",
-        "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
-        "y_3": "10*x_1*x_2**2 + 7*x_2**5",
-    }
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline(
+        {
+            "y_1": "1 + x_1 + x_2**2",
+            "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
+            "y_3": "10*x_1*x_2**2 + 7*x_2**5",
+        }
+    )
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_2", l_b=-1, u_b=2)
@@ -102,35 +104,35 @@ def dataset_from_cache():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> PolynomialRegression
-    """A trained PolynomialRegression."""
-    polyreg = PolynomialRegression(dataset, degree=DEGREE)
+def model(dataset) -> PolynomialRegressor:
+    """A trained PolynomialRegressor."""
+    polyreg = PolynomialRegressor(dataset, degree=DEGREE)
     polyreg.learn()
     return polyreg
 
 
 @pytest.fixture
-def model_without_intercept(dataset):  # type: (...) -> PolynomialRegression
-    """A trained PolynomialRegression without intercept fitting."""
-    polyreg = PolynomialRegression(dataset, degree=DEGREE, fit_intercept=False)
+def model_without_intercept(dataset) -> PolynomialRegressor:
+    """A trained PolynomialRegressor without intercept fitting."""
+    polyreg = PolynomialRegressor(dataset, degree=DEGREE, fit_intercept=False)
     polyreg.learn()
     return polyreg
 
 
 def test_constructor(dataset):
-    model_ = PolynomialRegression(dataset, degree=2)
+    model_ = PolynomialRegressor(dataset, degree=2)
     assert model_.algo is not None
 
 
 def test_degree(dataset):
     """Test correct handling of incorrect degree ( < 1)."""
     with pytest.raises(ValueError):
-        PolynomialRegression(dataset, degree=0)
+        PolynomialRegressor(dataset, degree=0)
 
 
 def test_learn(dataset):
     """Test learn."""
-    model_ = PolynomialRegression(dataset, degree=2)
+    model_ = PolynomialRegressor(dataset, degree=2)
     model_.learn()
     assert model_.algo is not None
 
@@ -148,7 +150,7 @@ def test_get_coefficients(model):
 
 
 def test_intercept(model, model_without_intercept):
-    """Test intercept parameter from LinearRegression class.
+    """Test intercept parameter from LinearRegressor class.
 
     Should be 0.0, as fit_intercept is False (replaced by include_bias).
     """
@@ -192,7 +194,7 @@ def test_prediction_jacobian(model):
 
 def test_jacobian_constant(dataset):
     """Test Jacobians linear polynomials."""
-    model_ = PolynomialRegression(dataset, degree=1)
+    model_ = PolynomialRegressor(dataset, degree=1)
     model_.learn()
     model_.predict_jacobian(INPUT_VALUE)
     model_.predict_jacobian(ANOTHER_INPUT_VALUE)

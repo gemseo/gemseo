@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -26,55 +24,90 @@ of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
 Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 :math:`z` as a parameter and the mesh as a metadata.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List, Mapping, Optional, Sequence
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
 class Surfaces(DatasetPlot):
     """Plot surfaces y_i over the mesh x."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
-        mesh,  # type: str
-        variable,  # type: str
-        samples=None,  # type:Optional[Sequence[int]]
-        add_points=False,  # type: bool
-    ):  # type: (...) -> List[Figure]
+        dataset: Dataset,
+        mesh: str,
+        variable: str,
+        samples: Sequence[int] | None = None,
+        add_points: bool = False,
+        fill: bool = True,
+        levels: int | Sequence[int] = None,
+    ) -> None:
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot. If None, plot all samples.
             add_points: If True then display the samples over the surface plot.
+            fill: Whether to generate a filled contour plot.
+            levels: Either the number of contour lines
+                or the values of the contour lines in increasing order.
+                If ``None``, select them automatically.
         """
-        color = properties.get(self.COLOR) or "blue"
-        colormap = properties.get(self.COLORMAP) or "Blues"
+        super().__init__(
+            dataset,
+            mesh=mesh,
+            variable=variable,
+            samples=samples,
+            add_points=add_points,
+            fill=fill,
+            levels=levels,
+        )
+
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
+        mesh = self._param.mesh
+        variable = self._param.variable
+        samples = self._param.samples
         x_data = self.dataset.metadata[mesh][:, 0]
         y_data = self.dataset.metadata[mesh][:, 1]
         if samples is not None:
-            outputs = self.dataset[variable][variable][samples, :]
+            samples = self.dataset[variable][samples, :]
         else:
-            outputs = self.dataset[variable][variable]
+            samples = self.dataset[variable]
 
-        sample = 0
-        fig = []
-        for z_data, variable_component in zip(outputs, self.dataset.row_names):
-            fig.append(plt.figure())
-            axes = fig[-1].add_subplot(1, 1, 1)
+        options = {"cmap": self.colormap}
+        levels = self._param.levels
+        if levels is not None:
+            options["levels"] = levels
+
+        figs = []
+        for sample, sample_name in zip(samples, self.dataset.row_names):
+            fig = plt.figure(figsize=self.fig_size)
+            axes = fig.add_subplot(1, 1, 1)
             triangle = mtri.Triangulation(x_data, y_data)
-            tcf = axes.tricontourf(triangle, z_data, cmap=colormap)
-            if add_points:
-                axes.scatter(x_data, y_data, color=color)
-            axes.set_title("{} - {}".format(variable, variable_component))
-            fig[-1].colorbar(tcf)
-            fig[-1] = plt.gcf()
-            sample += 1
-        return fig
+            if self._param.fill:
+                tcf = axes.tricontourf(triangle, sample, **options)
+            else:
+                tcf = axes.tricontour(triangle, sample, **options)
+
+            if self._param.add_points:
+                axes.scatter(x_data, y_data, color=self.color or None)
+
+            axes.set_xlabel(self.xlabel)
+            axes.set_ylabel(self.ylabel)
+            axes.set_title(f"{self.title or self.zlabel or variable} - {sample_name}")
+            fig.colorbar(tcf)
+            figs.append(fig)
+
+        return figs

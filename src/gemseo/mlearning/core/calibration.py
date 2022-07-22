@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
@@ -51,12 +49,16 @@ and the machine learning algorithm.
 The inputs of this discipline are hyper-parameters of the machine learning algorithm
 while the output is the quality criterion.
 """
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Union
 
-from typing import Dict, Iterable, Optional, Union
-
-from numpy import argmax, argmin, array, ndarray
+from numpy import argmin
+from numpy import array
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -66,7 +68,9 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
 MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
@@ -98,14 +102,14 @@ class MLAlgoAssessor(MDODiscipline):
 
     def __init__(
         self,
-        algo,  # type: str
-        dataset,  # type: Dataset
-        parameters,  # type: Iterable[str]
-        measure,  # type: MLQualityMeasure
-        measure_options=None,  # type: Optional[MeasureOptionsType]
-        transformer=None,  # type: Optional[TransformerType]
-        **algo_options  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        algo: str,
+        dataset: Dataset,
+        parameters: Iterable[str],
+        measure: type[MLQualityMeasure],
+        measure_options: MeasureOptionsType | None = None,
+        transformer: Mapping[str, TransformerType] | None = None,
+        **algo_options: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             algo: The name of a machine learning algorithm.
@@ -116,7 +120,7 @@ class MLAlgoAssessor(MDODiscipline):
                 If "multioutput" is missing,
                 it is added with False as value.
                 If None, do not use quality measure options.
-            transformer (Dict[str,Transformer]): The strategies
+            transformer: The strategies
                 to transform the variables.
                 The values are instances of :class:`.Transformer`
                 while the keys are the names of
@@ -127,14 +131,14 @@ class MLAlgoAssessor(MDODiscipline):
                 the :class:`.Transformer` will be applied
                 to all the variables of this group.
                 If None, do not transform the variables.
-            **options: The options of the machine learning algorithm.
+            **algo_options: The options of the machine learning algorithm.
 
         Raises:
             ValueError: If the measure option "multioutput" is True.
         """
-        super(MLAlgoAssessor, self).__init__()
-        self.input_grammar.initialize_from_data_names(parameters)
-        self.output_grammar.initialize_from_data_names([self.CRITERION, self.LEARNING])
+        super().__init__()
+        self.input_grammar.update(parameters)
+        self.output_grammar.update([self.CRITERION, self.LEARNING])
         self.algo = algo
         self.measure = measure
         self.measure_options = measure_options or {}
@@ -147,7 +151,7 @@ class MLAlgoAssessor(MDODiscipline):
             raise ValueError("MLAlgoAssessor does not support multioutput.")
         self.measure_options[self.MULTIOUTPUT] = False
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run method.
 
         This method creates a new instance of the machine learning algorithm, from the
@@ -172,7 +176,7 @@ class MLAlgoAssessor(MDODiscipline):
         self.algos.append(algo)
 
 
-class MLAlgoCalibration(object):
+class MLAlgoCalibration:
     """Calibration of a machine learning algorithm.
 
     Attributes:
@@ -190,15 +194,15 @@ class MLAlgoCalibration(object):
 
     def __init__(
         self,
-        algo,  # type: str
-        dataset,  # type: Dataset
-        parameters,  # type: Iterable[str]
-        calibration_space,  # type: DesignSpace
-        measure,  # type: MLQualityMeasure
-        measure_options=None,  # type: Optional[MeasureOptionsType]
-        transformer=None,  # type: Optional[TransformerType]
-        **algo_options  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        algo: str,
+        dataset: Dataset,
+        parameters: Iterable[str],
+        calibration_space: DesignSpace,
+        measure: MLQualityMeasure,
+        measure_options: MeasureOptionsType | None = None,
+        transformer: TransformerType | None = None,
+        **algo_options: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             algo: The name of a machine learning algorithm.
@@ -220,12 +224,11 @@ class MLAlgoCalibration(object):
             measure,
             measure_options,
             transformer,
-            **algo_options
+            **algo_options,
         )
         self.algo_assessor = disc
         self.calibration_space = calibration_space
         self.maximize_objective = not measure.SMALLER_IS_BETTER
-        disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
         self.dataset = None
         self.optimal_parameters = None
         self.optimal_criterion = None
@@ -234,8 +237,8 @@ class MLAlgoCalibration(object):
 
     def execute(
         self,
-        input_data,  # type: ScenarioInputDataType
-    ):  # type: (...) -> None
+        input_data: ScenarioInputDataType,
+    ) -> None:
         """Calibrate the machine learning algorithm from a driver.
 
         The driver can be either a DOE or an optimizer.
@@ -261,28 +264,20 @@ class MLAlgoCalibration(object):
                 self.calibration_space,
                 maximize_objective=self.maximize_objective,
             )
-        self.scenario.disciplines[0].cache.clear()
+        self.scenario.add_observable(self.algo_assessor.LEARNING)
         self.scenario.execute(input_data)
-        x_opt = self.scenario.design_space.get_current_x_dict()
+        x_opt = self.scenario.design_space.get_current_value(as_dict=True)
         f_opt = self.scenario.get_optimum().f_opt
-        cache = self.scenario.disciplines[0].cache
-        self.dataset = cache.export_to_dataset(by_group=False)
-        if self.maximize_objective:
-            algo_opt = self.algos[
-                argmax(self.get_history(self.algo_assessor.CRITERION))
-            ]
-        else:
-            algo_opt = self.algos[
-                argmin(self.get_history(self.algo_assessor.CRITERION))
-            ]
+        self.dataset = self.scenario.export_to_dataset(by_group=False, opt_naming=False)
+        algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
         self.optimal_parameters = x_opt
         self.optimal_criterion = f_opt
         self.optimal_algorithm = algo_opt
 
     def get_history(
         self,
-        name,  # type: str
-    ):  # type: (...) -> ndarray
+        name: str,
+    ) -> ndarray:
         """Return the history of a variable.
 
         Args:
@@ -292,9 +287,12 @@ class MLAlgoCalibration(object):
             The history of the variable.
         """
         if self.dataset is not None:
-            return self.dataset.data[name]
+            if name == self.algo_assessor.CRITERION and self.maximize_objective:
+                return -self.dataset.data["-" + name]
+            else:
+                return self.dataset.data[name]
 
     @property
-    def algos(self):  # type: (...) -> MLAlgo
+    def algos(self) -> MLAlgo:
         """The trained machine learning algorithms."""
         return self.scenario.disciplines[0].algos

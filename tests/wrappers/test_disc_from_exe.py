@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,31 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import sys
 from copy import deepcopy
-from os.path import dirname, join
+from os.path import dirname
+from os.path import join
 from typing import List
 from unittest import mock
 
 import pytest
-from numpy import array
-
 from gemseo.api import create_discipline
-from gemseo.wrappers.disc_from_exe import (
-    DiscFromExe,
-    FoldersIter,
-    Parsers,
-    parse_key_value_file,
-    parse_outfile,
-    parse_template,
-)
+from gemseo.wrappers.disc_from_exe import DiscFromExe
+from gemseo.wrappers.disc_from_exe import FoldersIter
+from gemseo.wrappers.disc_from_exe import parse_key_value_file
+from gemseo.wrappers.disc_from_exe import parse_outfile
+from gemseo.wrappers.disc_from_exe import parse_template
+from gemseo.wrappers.disc_from_exe import Parsers
+from numpy import array
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
@@ -58,7 +53,7 @@ def xfail_if_windows_unc_issue(tmpdir, use_shell=True):
 def test_disc_from_exe_network_path_windows():
     """Test that a network location cannot be userd as a workdir under Windows."""
 
-    def _mock_list_out_dir(self):  # type: (...) -> List[str]
+    def _mock_list_out_dir(self) -> List[str]:
         """Mock of _list_out_dir.
 
         This mock method is needed as an existing workdir is needed by _list_out_dir.
@@ -81,7 +76,7 @@ def test_disc_from_exe_network_path_windows():
 @pytest.mark.parametrize("use_shell", [True, False])
 def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
     sum_path = join(DIRNAME, "sum_data.py")
-    exec_cmd = "python {} -i input.json -o output.json".format(sum_path)
+    exec_cmd = f"python {sum_path} -i input.json -o output.json"
 
     disc = create_discipline(
         "DiscFromExe",
@@ -109,7 +104,7 @@ def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
 
 def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     disc = create_discipline(
         "DiscFromExe",
@@ -165,7 +160,7 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
     xfail_if_windows_unc_issue, tmp_wd, folders_iter
 ):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     disc = create_discipline(
         "DiscFromExe",
@@ -193,7 +188,7 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
 )
 def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, parser):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     disc = create_discipline(
         "DiscFromExe",
@@ -213,7 +208,7 @@ def test_disc_from_exe_invalid_folder_iter(xfail_if_windows_unc_issue, tmp_wd):
     """Test that a ValueError Exception is raised if an incorrect folder iter is
     provided."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     with pytest.raises(
         ValueError, match="wrong_folder_iter is not a valid folder_iter value."
@@ -322,11 +317,11 @@ def test_parse_key_value_file():
 
 
 def test_parse_outfile():
-    with open(join(DIRNAME, "output_template.cfg"), "r") as infile:
+    with open(join(DIRNAME, "output_template.cfg")) as infile:
         out_template = infile.readlines()
 
     _, out_pos = parse_template(out_template, False)
-    with open(join(DIRNAME, "output.cfg"), "r") as infile:
+    with open(join(DIRNAME, "output.cfg")) as infile:
         output = infile.readlines()
     values = parse_outfile(out_pos, output)
 

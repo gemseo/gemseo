@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 20 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 import re
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 from unittest import mock
 
 import pytest
+from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_openturns import OpenTURNS
+from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import unique
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
-
-from .utils import execute_problem, generate_test_functions, get_problem
+from .utils import execute_problem
+from .utils import generate_test_functions
+from .utils import get_problem
 
 DOE_LIB_NAME = "OpenTURNS"
 
@@ -111,10 +110,8 @@ def test_check_stratified_options():
     with pytest.raises(
         KeyError,
         match=re.escape(
-            (
-                "Missing parameter 'levels', "
-                "tuple of normalized levels in [0,1] you need in your design."
-            )
+            "Missing parameter 'levels', "
+            "tuple of normalized levels in [0,1] you need in your design."
         ),
     ):
         lib._OpenTURNS__check_stratified_options(dimension, options)
@@ -149,7 +146,7 @@ def test_opt_lhs_wrong_properties(options):
             algo_name="OT_OPT_LHS",
             dim=2,
             n_samples=3,
-            **options
+            **options,
         )
 
 
@@ -192,14 +189,14 @@ def test_algos(algo_name, dim, n_samples, options):
     problem = get_problem(dim)
     doe_library = DOEFactory().create(DOE_LIB_NAME)
     doe_library.execute(problem, algo_name=algo_name, dim=dim, **options)
-    assert doe_library.samples.shape == (n_samples, dim)
+    assert doe_library.unit_samples.shape == (n_samples, dim)
 
 
 def get_expected_nsamples(
-    algo,  # type: str
-    dim,  # type: int
-    n_samples=None,  # type:Optional[int]
-):  # type: (...) -> int
+    algo: str,
+    dim: int,
+    n_samples: Optional[int] = None,
+) -> int:
     """Returns the expected number of samples.
 
     This number depends on the dimension of the problem.
@@ -241,9 +238,9 @@ def get_expected_nsamples(
 
 
 def get_options(
-    algo_name,  # type: str
-    dim,  # type: int
-):  # type: (...) -> Dict[str,Any]
+    algo_name: str,
+    dim: int,
+) -> Dict[str, Any]:
     """Returns the options of the algorithms.
 
     Args:
@@ -276,7 +273,7 @@ def variables_space():
     design_space.variables_names = ["x"]
     design_space.variables_sizes = {"x": 2}
     design_space.dimension = 2
-    design_space.untransform_vect = lambda doe: doe
+    design_space.untransform_vect = lambda doe, no_check: doe
     return design_space
 
 
@@ -313,3 +310,8 @@ def test_compute_stratified_doe(variables_space, name, size):
         variables_space, centers=[0.0] * variables_space.dimension, levels=[0.1]
     )
     assert doe.shape == (size, variables_space.dimension)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert OpenTURNS.LIBRARY_NAME == "OpenTURNS"

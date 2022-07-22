@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,16 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A k-means classification of the optimization history."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Optional, Tuple, Union
+from pathlib import Path
 
 from numpy import array
 from numpy import int as np_int
@@ -30,7 +28,6 @@ from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,15 +47,15 @@ class KMeans(OptPostProcessor):
 
     def _run(
         self,
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Path]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-        fig_size=None,  # type: Optional[Tuple[float, float]]
-        n_clusters=5,  # type: int
-    ):  # type: (...) -> None
+        save: bool = True,
+        show: bool = False,
+        file_path: Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+        fig_size: tuple[float, float] | None = None,
+        n_clusters: int = 5,
+    ) -> None:
         """
         Args:
             n_clusters: The number of clusters.
@@ -67,8 +64,8 @@ class KMeans(OptPostProcessor):
 
     def __build_clusters(
         self,
-        n_clusters=5,  # type: int
-    ):  # type: (...) -> None
+        n_clusters: int = 5,
+    ) -> None:
         """Build the clusters.
 
         Args:
@@ -84,4 +81,4 @@ class KMeans(OptPostProcessor):
         y_pred = algorithm.labels_.astype(np_int)
         for x_vars, y_vars in zip(x_history, y_pred):
             self.database.store(x_vars, {"KM_cluster": int(y_vars)})
-            self.out_data_dict[tuple(x_vars.real)] = y_vars
+            self.materials_for_plotting[tuple(x_vars.real)] = y_vars

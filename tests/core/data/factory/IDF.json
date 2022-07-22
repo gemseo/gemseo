@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "maximize_objective": {
+      "description": "If True, the objective function is maximized.",
+      "type": "boolean"
+    },
+    "normalize_constraints": {
+      "description": "If True, the outputs of the coupling consistency constraints are scaled.",
+      "type": "boolean"
+    },
+    "n_processes": {
+      "description": "The maximum simultaneous number of threads, if ``use_threading`` is True, or processes otherwise, used to parallelize the execution.",
+      "type": "integer"
+    },
+    "use_threading": {
+      "description": "Whether to use threads instead of processes to parallelize the execution; multiprocessing will copy (serialize) all the disciplines, while threading will share all the memory. This is important to note if you want to execute the same discipline multiple times, you shall use multiprocessing.",
+      "type": "boolean"
+    },
+    "start_at_equilibrium": {
+      "description": "If True, an MDA is used to initialize the coupling variables.",
+      "type": "boolean"
+    },
+    "grammar_type": {
+      "description": "The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "grammar_type",
+    "maximize_objective",
+    "n_processes",
+    "normalize_constraints",
+    "start_at_equilibrium",
+    "use_threading"
+  ]
+}

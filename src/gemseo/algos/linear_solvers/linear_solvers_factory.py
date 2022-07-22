@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,13 +16,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """A factory to instantiate linear solvers from their class names."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Any, List
+from typing import Any
 
 from numpy import ndarray
 
@@ -37,39 +34,31 @@ LOGGER = logging.getLogger(__name__)
 class LinearSolversFactory(DriverFactory):
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self):  # type: (...) -> None
-        super(LinearSolversFactory, self).__init__(
-            LinearSolverLib, "gemseo.algos.linear_solvers"
-        )
+    def __init__(self) -> None:
+        super().__init__(LinearSolverLib, "gemseo.algos.linear_solvers")
 
     @property
-    def linear_solvers(self):  # type: (...) -> List[str]
-        """Return the available classes names.
-
-        Returns:
-             The names of the classes.
-        """
+    def linear_solvers(self) -> list[str]:
+        """The names of the available classes."""
         return self.factory.classes
 
-    def is_available(
-        self, solver_name  # type: str
-    ):
+    def is_available(self, solver_name: str) -> bool:
         """Check the availability of a LinearSolver.
 
         Args:
             solver_name: The name of the LinearSolver.
 
         Returns:
-            Whether the LinearSolver is available.
+            Whether the :class:`.LinearSolver` is available.
         """
-        return super(LinearSolversFactory, self).is_available(solver_name)
+        return super().is_available(solver_name)
 
     def execute(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        **options  # type: Any
-    ):  # type: (...) -> ndarray
+        problem: LinearProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> ndarray:
         """Execute the driver.
 
         Find the appropriate library and execute the driver on the problem to solve
@@ -79,7 +68,7 @@ class LinearSolversFactory(DriverFactory):
             problem: The linear equations and right hand side
              (lhs, rhs) that defines the linear problem. XXX is a tuple expected?
             algo_name: The algorithm name.
-            options: The options for the algorithm,
+            **options: The options for the algorithm,
                 see associated JSON file.
 
         Returns:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -24,13 +22,16 @@
 The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
 fit(), transform(), fit_transform() and inverse_transform() methods.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Optional, Sequence
+from typing import Sequence
 
-from numpy import eye, matmul, ndarray
+from numpy import eye
+from numpy import matmul
+from numpy import ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class Pipeline(Transformer):
@@ -42,9 +43,9 @@ class Pipeline(Transformer):
 
     def __init__(
         self,
-        name="Pipeline",  # type: str
-        transformers=None,  # type:Optional[Sequence[Transformer]]
-    ):  # type: (...) -> None
+        name: str = "Pipeline",
+        transformers: Sequence[Transformer] | None = None,
+    ) -> None:
         """
         Args:
             name: A name for this pipeline.
@@ -54,10 +55,10 @@ class Pipeline(Transformer):
                 transformers is an empty list or None, then the pipeline
                 transformer behaves like an identity transformer.
         """
-        super(Pipeline, self).__init__(name)
+        super().__init__(name)
         self.transformers = transformers or []
 
-    def duplicate(self):  # type: (...) -> Pipeline
+    def duplicate(self) -> Pipeline:
         """Duplicate the current object.
 
         Returns:
@@ -66,11 +67,11 @@ class Pipeline(Transformer):
         transformers = [trans.duplicate() for trans in self.transformers]
         return self.__class__(self.name, transformers)
 
-    def fit(
+    def _fit(
         self,
-        data,  # type: ndarray
-        **options  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         """Fit the transformer pipeline to the data.
 
         All the transformers are fitted, transforming the data in place.
@@ -79,12 +80,12 @@ class Pipeline(Transformer):
             data: The data to be fitted.
         """
         for transformer in self.transformers:
-            data = transformer.fit_transform(data, **options)
+            data = transformer.fit_transform(data, *args)
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Transform the data.
 
         The data is transformed sequentially,
@@ -102,8 +103,8 @@ class Pipeline(Transformer):
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Perform an inverse transform on the data.
 
         The data is inverse transformed sequentially,
@@ -121,8 +122,8 @@ class Pipeline(Transformer):
 
     def compute_jacobian(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Compute the Jacobian of the ``pipeline.transform()``.
 
         Args:
@@ -139,8 +140,8 @@ class Pipeline(Transformer):
 
     def compute_jacobian_inverse(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Compute the Jacobian of the ``pipeline.inverse_transform()``.
 
         Args:

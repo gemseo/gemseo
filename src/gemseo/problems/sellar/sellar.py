@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
@@ -77,12 +75,18 @@ constraints and objective:
   this :class:`.MDODiscipline` computes both objective and constraints
   from :math:`y_1`, :math:`y_2`, :math:`x_{local}` and :math:`x_{shared,2}`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from cmath import exp, sqrt
-from typing import Dict, Iterable, List, Optional
+from cmath import exp
+from cmath import sqrt
+from typing import Iterable
 
-from numpy import array, atleast_2d, complex128, ndarray, ones, zeros
+from numpy import array
+from numpy import atleast_2d
+from numpy import complex128
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -98,8 +102,8 @@ R_2 = "r_2"
 
 
 def get_inputs(
-    names=None,  # type: Optional[Iterable[str]]
-):  # type: (...) -> Dict[str,ndarray]
+    names: Iterable[str] | None = None,
+) -> dict[str, ndarray]:
     """Generate an initial solution for the MDO problem.
 
     Args:
@@ -122,12 +126,14 @@ def get_inputs(
 class SellarSystem(MDODiscipline):
     """The discipline to compute the objective and constraints of the Sellar problem."""
 
-    def __init__(self):  # type: (...) -> None
-        super(SellarSystem, self).__init__(auto_detect_grammar_files=True)
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update(["x_local", "x_shared", "y_1", "y_2"])
+        self.output_grammar.update(["obj", "c_1", "c_2"])
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(
             [X_LOCAL, X_SHARED, Y_1, Y_2]
         )
@@ -138,11 +144,11 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_obj(
-        x_local,  # type: ndarray
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        x_local: ndarray,
+        x_shared: ndarray,
+        y_1: ndarray,
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the objective :math:`obj`.
 
         Args:
@@ -158,8 +164,8 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_c_1(
-        y_1,  # type: ndarray
-    ):  # type: (...) -> float
+        y_1: ndarray,
+    ) -> float:
         """Evaluate the constraint :math:`c_1`.
 
         Args:
@@ -172,8 +178,8 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_c_2(
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the constraint :math:`c_2`.
 
         Args:
@@ -186,9 +192,9 @@ class SellarSystem(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._init_jacobian(inputs, outputs, with_zeros=True)
         x_local, _, y_1, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_1, Y_2])
         self.jac[C_1][Y_1] = atleast_2d(array([-2.0 * y_1]))
@@ -202,56 +208,25 @@ class SellarSystem(MDODiscipline):
 class Sellar1(MDODiscipline):
     """The discipline to compute the coupling variable :math:`y_1`."""
 
-    def __init__(
-        self,
-        residual_form=False,  # type: bool
-    ):  # type: (...) -> None
-        """
-        Args:
-            residual_form: If True,
-                then only residuals are computed,
-                not the coupling variables.
-        """
-        self.residual_form = residual_form
-        super(Sellar1, self).__init__(auto_detect_grammar_files=True)
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
-        if residual_form:
-            self.residual_variables = [R_1]
-            self.output_grammar.remove_item(Y_1)
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update(["x_local", "x_shared", "y_2"])
+        self.output_grammar.update(["y_1"])
+        self.default_inputs = get_inputs(self.input_grammar.keys())
 
-        else:
-            self.output_grammar.remove_item(R_1)
-            self.input_grammar.remove_item(Y_1)
-
-        self.default_inputs = get_inputs(self.input_grammar.get_data_names())
-
-    def get_attributes_to_serialize(self):  # type: (...) -> List[str]
-        base_d = super(Sellar1, self).get_attributes_to_serialize()
-        base_d.append("residual_form")
-        return base_d
-
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
-        if self.residual_form:
-            y_1 = self.get_inputs_by_name(Y_1)
-            r_1_out = array(
-                [self.compute_r_1(x_local, x_shared, y_1, y_2)], dtype=complex128
-            )
-            self.store_local_data(r_1=r_1_out)
-        else:
-            # functional form
-            y_1_out = array(
-                [self.compute_y_1(x_local, x_shared, y_2)], dtype=complex128
-            )
-            self.store_local_data(y_1=y_1_out)
+        # functional form
+        y_1_out = array([self.compute_y_1(x_local, x_shared, y_2)], dtype=complex128)
+        self.store_local_data(y_1=y_1_out)
 
     @staticmethod
     def compute_y_1(
-        x_local,  # type: ndarray
-        x_shared,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        x_local: ndarray,
+        x_shared: ndarray,
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the first coupling equation in functional form.
 
         Args:
@@ -264,31 +239,11 @@ class Sellar1(MDODiscipline):
         """
         return sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])
 
-    @staticmethod
-    def compute_r_1(
-        x_local,  # type: ndarray
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
-        """Evaluate the first coupling equation in residual form.
-
-        Args:
-            x_local: The design variables local to the first discipline.
-            x_shared: The shared design variables.
-            y_1: The coupling variable coming from the first discipline.
-            y_2: The coupling variable coming from the second discipline.
-
-        Returns:
-            The value of the residues related to the first discipline.
-        """
-        return Sellar1.compute_y_1(x_local, x_shared, y_2) - y_1[0]
-
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._init_jacobian(inputs, outputs, with_zeros=True)
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
@@ -300,60 +255,28 @@ class Sellar1(MDODiscipline):
         )
         self.jac[Y_1][Y_2] = atleast_2d(array([-0.1 * inv_denom]))
 
-        if self.residual_form:
-            self.jac[R_1][X_LOCAL] = atleast_2d(self.jac[Y_1][X_LOCAL])
-            self.jac[R_1][X_SHARED] = atleast_2d(self.jac[Y_1][X_SHARED])
-            self.jac[R_1][Y_2] = atleast_2d(self.jac[Y_1][Y_2])
-            self.jac[R_1][Y_1] = -ones((1, 1))
-            del self.jac[Y_1]
-
 
 class Sellar2(MDODiscipline):
     """The discipline to compute the coupling variable :math:`y_2`."""
 
-    def __init__(
-        self,
-        residual_form=False,  # type: bool
-    ):  # type: (...) -> None
-        """
-        Args:
-            residual_form: If True,
-                then only residuals are computed,
-                not the coupling variables.
-        """
-        self.residual_form = residual_form
-        super(Sellar2, self).__init__(auto_detect_grammar_files=True)
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
-        if residual_form:
-            self.residual_variables = [R_2]
-            self.output_grammar.remove_item(Y_2)
-        else:
-            self.output_grammar.remove_item(R_2)
-            self.input_grammar.remove_item(Y_2)
-        self.default_inputs = get_inputs(self.input_grammar.get_data_names())
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update(["x_shared", "y_1"])
+        self.output_grammar.update(["y_2"])
+        self.default_inputs = get_inputs(self.input_grammar.keys())
 
-    def get_attributes_to_serialize(self):
-        base_d = super(Sellar2, self).get_attributes_to_serialize()
-        base_d.append("residual_form")
-        return base_d
-
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x_shared, y_1 = self.get_inputs_by_name([X_SHARED, Y_1])
 
-        if self.residual_form:
-            y_2 = self.get_inputs_by_name(Y_2)
-            r_2_out = array([self.compute_r_2(x_shared, y_1, y_2)], dtype=complex128)
-            self.store_local_data(r_2=r_2_out)
-        else:
-            # functional form
-            y_2_out = array([self.compute_y_2(x_shared, y_1)], dtype=complex128)
-            self.store_local_data(y_2=y_2_out)
+        self.store_local_data(
+            y_2=array([self.compute_y_2(x_shared, y_1)], dtype=complex128)
+        )
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._init_jacobian(inputs, outputs, with_zeros=True)
         y_1 = self.get_inputs_by_name(Y_1)
         self.jac[Y_2] = {}
@@ -366,18 +289,11 @@ class Sellar2(MDODiscipline):
         else:
             self.jac[Y_2][Y_1] = ones((1, 1))
 
-        if self.residual_form:
-            self.jac[R_2][X_LOCAL] = self.jac[Y_2][X_LOCAL]
-            self.jac[R_2][X_SHARED] = self.jac[Y_2][X_SHARED]
-            self.jac[R_2][Y_1] = self.jac[Y_2][Y_1]
-            self.jac[R_2][Y_2] = -ones((1, 1))
-            del self.jac[Y_2]
-
     @staticmethod
     def compute_y_2(
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-    ):  # type: (...) -> float
+        x_shared: ndarray,
+        y_1: ndarray,
+    ) -> float:
         """Evaluate the second coupling equation in functional form.
 
         Args:
@@ -395,21 +311,3 @@ class Sellar2(MDODiscipline):
         else:
             y_2 = -y_1[0] + out
         return y_2
-
-    @staticmethod
-    def compute_r_2(
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
-        """Evaluate the second coupling equation in residual form.
-
-        Args:
-            x_shared: The shared design variables.
-            y_1: The coupling variable coming from the first discipline.
-            y_2: The coupling variable coming from the second discipline.
-
-        Returns:
-            The value of the residues related to the second discipline.
-        """
-        return Sellar2.compute_y_2(x_shared, y_1) - y_2[0]

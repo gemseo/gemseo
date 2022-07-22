@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                  initial documentation
@@ -45,18 +43,20 @@ Otherwise the model uses default values.
 
    The :class:`.ScalableDiagonalModel` class overloads :class:`.ScalableModel`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 
-from numpy import ones, where, zeros
+from numpy import full
+from numpy import where
+from numpy import zeros
 
 from gemseo.core.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ScalableModel(object):
+class ScalableModel:
     """Scalable model."""
 
     ABBR = "sm"
@@ -87,10 +87,7 @@ class ScalableModel(object):
         :return: default inputs.
         :rtype: dict
         """
-        default_inputs = {}
-        for name in self.inputs_names:
-            default_inputs[name] = 0.5 * ones(self.sizes[name])
-        return default_inputs
+        return {name: full(self.sizes[name], 0.5) for name in self.inputs_names}
 
     def scalable_function(self, input_value=None):
         """Evaluate the scalable function.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -31,24 +29,20 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
    :mod:`~gemseo.mlearning.transform.scaler.scaler`
    :mod:`~gemseo.mlearning.transform.dimension_reduction.dimension_reduction`
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import NoReturn, Optional, Union
+from typing import NoReturn
+from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
+
+from gemseo.core.factory import Factory
 
 TransformerFitOptionType = Union[float, int, str]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-    )
-)
-class Transformer(object):
+class Transformer(metaclass=GoogleDocstringInheritanceMeta):
     """Transformer baseclass.
 
     Attributes:
@@ -60,9 +54,9 @@ class Transformer(object):
 
     def __init__(
         self,
-        name="Transformer",  # type: str
-        **parameters  # type: Optional[Union[float,int,str,bool]]
-    ):  # type: (...) -> None
+        name: str = "Transformer",
+        **parameters: bool | int | float | ndarray | str | None,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
@@ -70,8 +64,9 @@ class Transformer(object):
         """
         self.name = name
         self.parameters = parameters
+        self.is_fitted = False
 
-    def duplicate(self):  # type: (...) -> Transformer
+    def duplicate(self) -> Transformer:
         """Duplicate the current object.
 
         Returns:
@@ -81,9 +76,22 @@ class Transformer(object):
 
     def fit(
         self,
-        data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> NoReturn:
+        """Fit the transformer to the data.
+
+        Args:
+            data: The data to be fitted.
+        """
+        self._fit(data, *args)
+        self.is_fitted = True
+
+    def _fit(
+        self,
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> NoReturn:
         """Fit the transformer to the data.
 
         Args:
@@ -93,8 +101,8 @@ class Transformer(object):
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Transform the data.
 
         Args:
@@ -107,8 +115,8 @@ class Transformer(object):
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Perform an inverse transform on the data.
 
         Args:
@@ -121,9 +129,9 @@ class Transformer(object):
 
     def fit_transform(
         self,
-        data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> ndarray:
         """Fit the transformer to the data and transform the data.
 
         Args:
@@ -137,8 +145,8 @@ class Transformer(object):
 
     def compute_jacobian(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Compute Jacobian of transformer.transform().
 
         Args:
@@ -151,8 +159,8 @@ class Transformer(object):
 
     def compute_jacobian_inverse(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Compute Jacobian of the transformer.inverse_transform().
 
         Args:
@@ -163,5 +171,12 @@ class Transformer(object):
         """
         raise NotImplementedError
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         return self.__class__.__name__
+
+
+class TransformerFactory(Factory):
+    """A factory of :class:`.Transformer`."""
+
+    def __init__(self) -> None:
+        super().__init__(Transformer, ("gemseo.mlearning.transform",))

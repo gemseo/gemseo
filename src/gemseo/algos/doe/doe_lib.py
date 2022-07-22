@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -23,23 +21,33 @@
 DOE library base class wrapper
 ******************************
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import traceback
+from dataclasses import dataclass
 from multiprocessing import current_process
-from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import MutableMapping
+from typing import Tuple
+from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
-from numpy import ndarray, savetxt
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+from numpy import ndarray
+from numpy import savetxt
 from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.parallel_execution import SUBPROCESS_NAME, ParallelExecution
+from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.core.parallel_execution import SUBPROCESS_NAME
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,17 +55,32 @@ DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
 DOELibraryOutputType = Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class DOELibrary(DriverLib):
+@dataclass
+class DOEAlgorithmDescription(DriverDescription):
+    """The description of a DOE algorithm."""
+
+    handle_integer_variables: bool = True
+
+    minimum_dimension: int = 1
+    """The minimum dimension of the parameter space."""
+
+
+class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class to use for DOE library link See DriverLib."""
 
-    MIN_DIMS = "min_dims"
+    unit_samples: ndarray | None
+    """The input samples transformed in :math:`[0,1]`."""
+
+    samples: ndarray | None
+    """The input samples."""
+
+    seed: int
+    """The seed to be used for replicability reasons.
+
+    It increments with each generation of samples
+    so that repeating the generation of sets of :math:`N` leads to different sets.
+    """
+
     DESIGN_ALGO_NAME = "Design algorithm"
     SAMPLES_TAG = "samples"
     PHIP_CRITERIA = "phi^p"
@@ -70,28 +93,38 @@ class DOELibrary(DriverLib):
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
     SEED = "seed"
+    _NORMALIZE_DS = False
 
     def __init__(self):
         """Constructor Abstract class."""
-        super(DOELibrary, self).__init__()
+        super().__init__()
+        self.unit_samples = None
         self.samples = None
         self.seed = 0
 
     @staticmethod
-    def compute_phip_criteria(samples, power=10.0):
+    def compute_phip_criteria(samples: ndarray, power: float = 10.0) -> float:
         r"""Compute the :math:`\phi^p` space-filling criterion.
 
         See Morris & Mitchell, Exploratory designs for computational experiments, 1995.
 
-        :param samples: design variables list
-        :param power: The power p of the :math:`\phi^p` criteria.
+        Args:
+            samples: The samples of the input variables.
+            power: The power :math:`p` of the :math:`\phi^p` criterion.
+
+        Returns:
+            The :math:`\phi^p` space-filling criterion.
         """
 
-        def compute_distance(sample, other_sample):
+        def compute_distance(sample: ndarray, other_sample: ndarray) -> float:
             r"""Compute the distance used by the :math:`\phi^p` criterion.
 
-            :param sample: A sample.
-            :param other_sample: Another sample.
+            Args:
+                sample: A sample.
+                other_sample: Another sample.
+
+            Returns:
+                The distance between those samples.
             """
             return sum(abs(sample - other_sample)) ** (-power)
 
@@ -105,57 +138,53 @@ class DOELibrary(DriverLib):
 
     def _pre_run(
         self,
-        problem,  # type: OptimizationProblem
-        algo_name,  # type: str
-        **options  # type: DOELibraryOptionType
-    ):  # type: (...) -> None
-        super(DOELibrary, self)._pre_run(problem, algo_name, **options)
-
+        problem: OptimizationProblem,
+        algo_name: str,
+        **options: DOELibraryOptionType,
+    ) -> None:
+        super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
-        LOGGER.info("%s", problem)
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
-        self.samples = self._generate_samples(**options)
+        self.unit_samples = self._generate_samples(**options)
+        self.samples = self.problem.design_space.untransform_vect(
+            self.unit_samples, no_check=True
+        )
 
-        # Initialize the order as it is not necessarily guaranteed
-        # when using parallel execution.
-        unnormalize_vect = self.problem.design_space.unnormalize_vect
-        round_vect = self.problem.design_space.round_vect
-        for sample in self.samples:
-            self.problem.database.store(
-                round_vect(unnormalize_vect(sample)), {}, add_iter=True
-            )
+        if options.get(self.N_PROCESSES, 1) > 1:
+            # Initialize the order as it is not necessarily guaranteed
+            # when using parallel execution.
+            for sample in self.samples:
+                self.problem.database.store(sample, {}, add_iter=True)
 
-        self.init_iter_observer(len(self.samples), "DOE sampling")
+        self.init_iter_observer(len(self.unit_samples), " ")
         self.problem.add_callback(self.new_iteration_callback)
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
+    def _generate_samples(self, **options: Any) -> ndarray:
+        """Generate the samples of the input variables.
 
-        :param options: the options dict for the algorithm,
-               see associated JSON file
+        Args:
+            **options: The options of the DOE algorithm.
         """
         raise NotImplementedError()
 
-    def __call__(self, n_samples, dimension, **options):
-        """Generate samples in the unit hypercube.
+    def __call__(self, n_samples: int, dimension: int, **options: Any) -> ndarray:
+        """Generate a design of experiments in the unit hypercube.
 
-        :param int n_samples: number of samples.
-        :param int dimension: parameter space dimension.
-        :param options: options passed to the DOE algorithm.
-        :returns: samples.
-        :rtype: ndarray
+        Args:
+            n_samples: The number of samples.
+            dimension: The dimension of the input space.
+            **options: The options of the DOE algorithm.
+
+        Returns:
+            A design of experiments in the unit hypercube.
         """
-        options = self.__get_algorithm_options(options, n_samples, dimension)
-        return self._generate_samples(**options)
+        return self._generate_samples(
+            **self.__get_algorithm_options(options, n_samples, dimension)
+        )
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
-
-        :param options: the options dict for the algorithm,
-            see associated JSON file
-        """
+    def _run(self, **options: Any) -> OptimizationResult:
         eval_jac = options.get(self.EVAL_JAC, False)
         n_processes = options.get(self.N_PROCESSES, 1)
         wait_time_between_samples = options.get(self.WAIT_TIME_BETWEEN_SAMPLES, 0)
@@ -164,10 +193,10 @@ class DOELibrary(DriverLib):
 
     def _generate_fullfact(
         self,
-        dimension,
-        n_samples=None,  # type: Optional[int]
-        levels=None,  # type: Optional[Union[int, Iterable[int]]]
-    ):  # type: (...) -> ndarray
+        dimension: int,
+        n_samples: int | None = None,
+        levels: int | Iterable[int] | None = None,
+    ) -> ndarray:
         """Generate a full-factorial DOE.
 
         Generate a full-factorial DOE based on either the number of samples,
@@ -217,9 +246,7 @@ class DOELibrary(DriverLib):
 
         return self._generate_fullfact_from_levels(levels)
 
-    def _generate_fullfact_from_levels(
-        self, levels  # Iterable[int]
-    ):  # type: (...) -> ndarray
+    def _generate_fullfact_from_levels(self, levels) -> ndarray:  # Iterable[int]
         """Generate the full-factorial DOE from levels per input direction.
 
         Args:
@@ -230,13 +257,15 @@ class DOELibrary(DriverLib):
         """
         raise NotImplementedError()
 
-    def _compute_fullfact_levels(self, n_samples, dimension):
+    def _compute_fullfact_levels(self, n_samples: int, dimension: int) -> list[int]:
         """Compute the number of levels per input dimension for a full factorial design.
 
-        :param n_samples: number of samples
-        :param int dimension: parameter space dimension.
-        :returns: The number of levels per input dimension.
-        :rtype: List[int]
+        Args:
+            n_samples: The number of samples.
+            dimension: The dimension of the input space.
+
+        Returns:
+            The number of levels per input dimension.
         """
         n_samples_dir = int(n_samples ** (1.0 / dimension))
         LOGGER.info(
@@ -248,28 +277,26 @@ class DOELibrary(DriverLib):
         )
         LOGGER.info(
             "Final number of samples for DOE = %s vs %s requested",
-            str(n_samples_dir ** dimension),
+            str(n_samples_dir**dimension),
             str(n_samples),
         )
         return [n_samples_dir] * dimension
 
-    def export_samples(self, doe_output_file):
-        """Export samples generated by DOE library to a csv file.
+    def export_samples(self, doe_output_file: Path | str) -> None:
+        """Export the samples generated by DOE library to a CSV file.
 
-        :param doe_output_file: export file name
-        :type doe_output_file: string
+        Args:
+            doe_output_file: The path to the output file.
         """
-        if self.samples is None:
+        if self.unit_samples is None:
             raise RuntimeError("Samples are None, execute method before export.")
-        savetxt(doe_output_file, self.samples, delimiter=",")
+        savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
-    def _worker(
-        self, sample  # type: ndarray
-    ):  # type: (...) -> DOELibraryOutputType
+    def _worker(self, sample: ndarray) -> DOELibraryOutputType:
         """Wrap the evaluation of the functions for parallel execution.
 
         Args:
-            sample: The values for the evaluation of the functions.
+            sample: A point from the unit hypercube.
 
         Returns:
             The computed values.
@@ -277,26 +304,30 @@ class DOELibrary(DriverLib):
         if current_process().name == SUBPROCESS_NAME:
             self.deactivate_progress_bar()
             self.problem.database.clear_listeners()
-        return self.problem.evaluate_functions(sample, self.eval_jac)
+
+        return self.problem.evaluate_functions(
+            x_vect=self.problem.design_space.untransform_vect(sample, no_check=True),
+            eval_jac=self.eval_jac,
+            eval_observables=True,
+            normalize=False,
+        )
 
     def evaluate_samples(
         self,
-        eval_jac=False,  # type: bool
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
+        eval_jac: bool = False,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
     ):
         """Evaluate all the functions of the optimization problem at the samples.
 
         Args:
-            eval_jac: Whether to evaluate the jacobian.
-            n_processes: The number of processes used to evaluate the samples.
+            eval_jac: Whether to evaluate the Jacobian.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
                 evaluation, in seconds.
         """
         self.eval_jac = eval_jac
-        sample_to_design = self.problem.design_space.untransform_vect
-        unnormalize_grad = self.problem.design_space.unnormalize_grad
-        round_vect = self.problem.design_space.round_vect
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
             # Create a list of tasks: execute functions
@@ -309,14 +340,12 @@ class DOELibrary(DriverLib):
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution
             for sample in self.samples:
-                x_u = sample_to_design(sample)
-                x_r = round_vect(x_u)
-                database.store(x_r, {}, add_iter=True)
+                database.store(sample, {}, add_iter=True)
 
             def store_callback(
-                index,  # type: int
-                outputs,  # type: DOELibraryOutputType
-            ):  # type: (...) -> None
+                index: int,
+                outputs: DOELibraryOutputType,
+            ) -> None:
                 """Store the outputs in the database.
 
                 Args:
@@ -326,14 +355,12 @@ class DOELibrary(DriverLib):
                 out, jac = outputs
                 if jac:
                     for key, val in jac.items():
-                        val = unnormalize_grad(val)
                         out["@" + key] = val
-                x_u = sample_to_design(self.samples[index])
-                x_r = round_vect(x_u)
-                database.store(x_r, out)
+
+                database.store(self.samples[index], out)
 
             # The list of inputs of the tasks is the list of samples
-            parallel.execute(self.samples, exec_callback=store_callback)
+            parallel.execute(self.unit_samples, exec_callback=store_callback)
             # We added empty entries by default to keep order in the database
             # but when the DOE point is failed, this is not consistent
             # with the serial exec, so we clean the DB
@@ -344,33 +371,46 @@ class DOELibrary(DriverLib):
                 LOGGER.warning(
                     "Wait time between samples option is ignored" " in sequential run."
                 )
-            for x_norm in self.samples:
+            for sample in self.samples:
                 try:
-                    self.problem.evaluate_functions(x_norm, eval_jac)
+                    self.problem.evaluate_functions(
+                        x_vect=sample,
+                        eval_jac=self.eval_jac,
+                        normalize=False,
+                    )
                 except ValueError:
                     LOGGER.error(
                         "Problem with evaluation of sample :"
                         "%s result is not taken into account "
                         "in DOE.",
-                        str(x_norm),
+                        str(sample),
                     )
                     LOGGER.error(traceback.format_exc())
 
     @staticmethod
-    def is_algorithm_suited(algo_dict, problem):
-        """Checks if the algorithm is suited to the problem according to its algo dict.
+    def is_algorithm_suited(
+        algorithm_description: DOEAlgorithmDescription, problem: OptimizationProblem
+    ) -> bool:
+        """Check if the algorithm is suited to the problem according to its description.
 
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
         """
         return True
 
     @staticmethod
     def _rescale_samples(samples):
-        """When the samples are out of the [0,1] bounds, rescales them.
+        """When the samples are out of the [0, 1] bounds, rescales them.
 
-        :param samples: the samples to rescale
-        :returns: samples normed ndarray
+        Args:
+            samples: The samples to rescale.
+
+        Returns:
+            The samples scaled in the interval [0, 1].
         """
         if (not (samples >= 0.0).all()) or (not (samples <= 1.0).all()):
             max_s = samples.max()
@@ -384,11 +424,11 @@ class DOELibrary(DriverLib):
 
     def compute_doe(
         self,
-        variables_space,  # type: DesignSpace
-        size=None,  # type: Optional[int]
-        unit_sampling=False,  # type: bool
-        **options  # type: DOELibraryOptionType
-    ):  # type: (...) -> ndarray
+        variables_space: DesignSpace,
+        size: int | None = None,
+        unit_sampling: bool = False,
+        **options: DOELibraryOptionType,
+    ) -> ndarray:
         """Compute a design of experiments (DOE) in a variables space.
 
         Args:
@@ -409,14 +449,14 @@ class DOELibrary(DriverLib):
         if unit_sampling:
             return doe
 
-        return variables_space.untransform_vect(doe)
+        return variables_space.untransform_vect(doe, no_check=True)
 
     def __get_algorithm_options(
         self,
-        options,  # type: Mapping[str, DOELibraryOptionType]
-        size,  # type: Optional[int]
-        dimension,  # type: int
-    ):  # type: (...) -> Dict[str,DOELibraryOptionType]
+        options: MutableMapping[str, DOELibraryOptionType],
+        size: int | None,
+        dimension: int,
+    ) -> dict[str, DOELibraryOptionType]:
         """Return the algorithm options from initial ones.
 
         Args:

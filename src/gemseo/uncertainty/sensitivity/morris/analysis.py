@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Class for the estimation of Morris indices.
 
 OAT technique
@@ -70,23 +67,28 @@ where :math:`\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}`.
 
 This methodology relies on the :class:`.MorrisAnalysis` class.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from pathlib import Path
+from typing import Any
+from typing import Collection
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.uncertainty.sensitivity.analysis import IndicesType, SensitivityAnalysis
-from gemseo.uncertainty.sensitivity.morris.oat import OATSensitivity
-from gemseo.utils.py23_compat import Path
+from gemseo.disciplines.utils import get_all_outputs
+from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -187,7 +189,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>>
         >>> parameter_space = create_parameter_space()
@@ -202,7 +204,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         ... )
         >>>
         >>> analysis = MorrisAnalysis(
-        ...     discipline, parameter_space, n_samples=None, n_replicates=5
+        ...     [discipline], parameter_space, n_samples=None, n_replicates=5
         ... )
         >>> indices = analysis.compute_indices()
     """
@@ -211,24 +213,31 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type:DesignSpace
-        n_samples,  # type: Optional[int]
-        algo=None,  # type: Optional[str]
-        algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
-        n_replicates=5,  # type: int
-        step=0.05,  # type: float
-    ):  # type: (...) -> None
-        # noqa: D205,D212,D415
-        r"""
+        disciplines: Collection[MDODiscipline],
+        parameter_space: ParameterSpace,
+        n_samples: int | None,
+        algo: str | None = None,
+        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        n_replicates: int = 5,
+        step: float = 0.05,
+        formulation: str = "MDF",
+        **formulation_options: Any,
+    ) -> None:
+        r"""# noqa: D205,D212,D415
         Args:
             n_replicates: The number of times
-                the OAT method is repeated. Used only if :attr:`n_samples` is None.
+                the OAT method is repeated. Used only if ``n_samples`` is None.
                 Otherwise, this number is the greater integer :math:`r`
-                such that :math:`r(d+1)\leq` :attr:`n_samples`
+                such that :math:`r(d+1)\leq` ``n_samples``
                 and :math:`r(d+1)` is the number of samples actually carried out.
             step: The finite difference step of the OAT method.
+
+        Raises:
+            ValueError: If at least one input dimension is not equal to 1.
         """
+        if parameter_space.dimension != len(parameter_space.variables_names):
+            raise ValueError("Each input dimension must be equal to 1.")
+
         self.mu_ = None
         self.mu_star = None
         self.sigma = None
@@ -240,40 +249,45 @@ class MorrisAnalysis(SensitivityAnalysis):
             self.__n_replicates = n_replicates
         else:
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
-        self.__outputs = discipline.get_output_data_names()
 
-        if parameter_space.dimension != len(parameter_space.variables_names):
-            raise ValueError("Each input dimension must be equal to 1.")
+        disciplines = list(disciplines)
+        self.__outputs = get_all_outputs(disciplines)
 
-        self.__diff_discipline = OATSensitivity(discipline, parameter_space, step)
-        super(MorrisAnalysis, self).__init__(
-            self.__diff_discipline, parameter_space, n_replicates, algo, algo_options
+        scenario = self._create_scenario(
+            disciplines,
+            get_all_outputs(disciplines)[0],
+            formulation,
+            formulation_options,
+            parameter_space,
+        )
+
+        self.__diff_discipline = _OATSensitivity(scenario, parameter_space, step)
+        super().__init__(
+            [self.__diff_discipline], parameter_space, n_replicates, algo, algo_options
         )
         self._main_method = "Morris(mu*)"
-        self.default_output = list(discipline.get_output_data_names())
+        self.default_output = get_all_outputs(disciplines)
 
     @property
-    def outputs_bounds(self):  # type: (...) -> Dict[str, List[float]]
+    def outputs_bounds(self) -> dict[str, list[float]]:
         """The empirical bounds of the outputs."""
         return self.__diff_discipline.output_range
 
     @property
-    def n_replicates(self):  # type: (...) -> int
+    def n_replicates(self) -> int:
         """The number of OAT replicates."""
         return self.__n_replicates
 
     def compute_indices(
         self,
-        outputs=None,  # type: Optional[Sequence[str]]
-        normalize=False,  # type: bool
-    ):  # type: (...) -> Dict[str,IndicesType]
-        # noqa: D205 D212 D415
-        """
+        outputs: Sequence[str] | None = None,
+        normalize: bool = False,
+    ) -> dict[str, IndicesType]:
+        """# noqa: D205 D212 D415
         Args:
             normalize: Whether to normalize the indices
                 with the empirical bounds of the outputs.
         """
-        # noqa: D102
         fd_data = self.dataset.get_data_by_group(self.dataset.OUTPUT_GROUP, True)
         output_names = outputs or self.default_output
         if not isinstance(output_names, list):
@@ -325,9 +339,9 @@ class MorrisAnalysis(SensitivityAnalysis):
         return self.indices
 
     @property
-    def indices(
+    def indices(  # noqa: D102
         self,
-    ):  # type: (...) -> Dict[str,IndicesType] # noqa: D102
+    ) -> dict[str, IndicesType]:
         return {
             "mu": self.mu_,
             "mu_star": self.mu_star,
@@ -338,27 +352,29 @@ class MorrisAnalysis(SensitivityAnalysis):
         }
 
     @property
-    def main_indices(
+    def main_indices(  # noqa: D102
         self,
-    ):  # type: (...) -> IndicesType # noqa: D102
+    ) -> IndicesType:
         return self.mu_star
 
     def plot(
         self,
-        output,  # type: Union[str,Tuple[str,int]]
-        inputs=None,  # type: Optional[Iterable[str]]
-        title=None,  # type: Optional[str]
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        offset=1,  # type: float
-        lower_mu=None,  # type: Optional[float]
-        lower_sigma=None,  # type: Optional[float]
-    ):  # type: (...) -> None # noqa: D417
-        r"""Plot the Morris indices for each input variable.
+        output: str | tuple[str, int],
+        inputs: Iterable[str] | None = None,
+        title: str | None = None,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        offset: float = 1,
+        lower_mu: float | None = None,
+        lower_sigma: float | None = None,
+    ) -> None:
+        r"""# noqa: D415,D417
+
+        Plot the Morris indices for each input variable.
 
         For :math:`i\in\{1,\ldots,d\}`,
         plot :math:`\mu_i^*` in function of :math:`\sigma_i`.
@@ -381,7 +397,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
-        output = "{}({})".format(output[0], output[1])
+        output = f"{output[0]}({output[1]})"
         default_title = "Sampling: {}(size={}) - Relative step: {} - Output: {}"
         default_title = default_title.format(
             self._algo_name, self.__n_replicates, self.__step, output

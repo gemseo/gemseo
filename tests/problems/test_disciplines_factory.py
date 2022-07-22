@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,20 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-
-from __future__ import division, unicode_literals
+from pathlib import Path
 
 import pytest
-
 from gemseo.problems.disciplines_factory import DisciplinesFactory
-from gemseo.utils.py23_compat import Path
 
 DATA = Path(__file__).parent / "data"
 
@@ -34,7 +28,7 @@ DATA = Path(__file__).parent / "data"
 # place
 
 
-def test_init(monkeypatch):
+def test_init(monkeypatch, reset_factory):
     monkeypatch.setenv("GEMSEO_PATH", DATA)
 
     fact1 = DisciplinesFactory()
@@ -42,7 +36,7 @@ def test_init(monkeypatch):
     fact1.update()
     assert "DummyDisciplineIMP" in fact1.disciplines
 
-    gemseo_path = "{}:{}".format(DATA, DATA)
+    gemseo_path = f"{DATA}:{DATA}"
     monkeypatch.setenv("GEMSEO_PATH", gemseo_path)
     fact1.update()
 
@@ -57,7 +51,7 @@ def test_init(monkeypatch):
     fact2.update()
 
 
-def test_create(monkeypatch):
+def test_create(monkeypatch, reset_factory):
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     fact = DisciplinesFactory()
     dummy = fact.create("DummyDisciplineIMP", opts1=1)

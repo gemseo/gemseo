@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,21 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create a triangular distribution from the OpenTURNS library.
 
 This class inherits from :class:`.OTDistribution`.
 """
-
-from __future__ import division, unicode_literals
-
-from typing import Optional
+from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
@@ -46,18 +40,17 @@ class OTTriangularDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable,  # type: str
-        minimum=0.0,  # type: float
-        mode=0.5,  # type: float
-        maximum=1.0,  # type: float
-        dimension=1,  # type: int
-        transformation=None,  # type: Optional[str]
-        lower_bound=None,  # type: Optional[float]
-        upper_bound=None,  # type: Optional[float]
-        threshold=0.5,  # type: float
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        minimum: float = 0.0,
+        mode: float = 0.5,
+        maximum: float = 1.0,
+        dimension: int = 1,
+        transformation: str | None = None,
+        lower_bound: float | None = None,
+        upper_bound: float | None = None,
+        threshold: float = 0.5,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the triangular random variable.
             minimum: The minimum of the triangular random variable.
@@ -78,7 +71,7 @@ class OTTriangularDistribution(OTDistribution):
             self._MODE: mode,
             self._UPPER: maximum,
         }
-        super(OTTriangularDistribution, self).__init__(
+        super().__init__(
             variable,
             "Triangular",
             (minimum, mode, maximum),

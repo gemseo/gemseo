@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,24 +13,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test clustering measure module."""
-from __future__ import absolute_import, division, unicode_literals
-
 import pytest
-from numpy import array
-
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.cluster import (
-    MLClusteringAlgo,
-    MLPredictiveClusteringAlgo,
-)
-from gemseo.mlearning.qual_measure.cluster_measure import (
-    MLClusteringMeasure,
-    MLPredictiveClusteringMeasure,
-)
+from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
+from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
+from gemseo.mlearning.qual_measure.cluster_measure import MLClusteringMeasure
+from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClusteringMeasure
+from numpy import array
 
 
 @pytest.fixture
-def learning_data():  # type: (...) -> Dataset
+def learning_data() -> Dataset:
     """The dataset used to train the clustering algorithms."""
     dataset = Dataset()
     dataset.set_from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
@@ -39,7 +31,7 @@ def learning_data():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def test_data():  # type: (...) -> Dataset
+def test_data() -> Dataset:
     """The dataset used to test the performance clustering algorithms."""
     dataset = Dataset()
     dataset.set_from_array(array([[1, 0.5]]), ["x", "y"])

@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 
+<html>
+
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
+<head>
 <title>Multidisciplinary coupling graph</title>
 
 <!-- style.css -->
@@ -13,7 +16,10 @@
 <!-- button.css -->
 <style type="text/css">{}</style>
 
-    <!-- d3.vs.js -->
+<!-- materialize.min.css -->
+<style type="text/css">{}</style>
+
+<!-- d3.vs.js -->
 <script type="text/javascript">{}</script>
 
 <!-- d3.parcoords.js -->
@@ -49,36 +55,204 @@
 <!-- save_png.js -->
 <script type="text/javascript">{}</script>
 
-<h1>Multidisciplinary coupling graph
-<span style='font-size: small;'>powered by&nbsp;</span>
-<a href="https://gemseo.readthedocs.io/" target="_blank">
-<img src="https://gemseo.readthedocs.io/en/latest/_static/logo-small.png"
-style='height:0.5em;'/>
-</a>
-</h1>
+<!-- materialize.js -->
+<script type="text/javascript">{}</script>
 
-<aside style="margin-top:80px;">
+<style type="text/css">
+@font-face {{
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./MaterialIcons-Regular.ttf');
+}}
+.material-icons {{
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
 
-    <p>
-    <a href="#help"><button class="myButton help">Help</button></a>
-    <button class="myButton save" onclick="save_json()">Save</button>
-    <button class="myButton export" onclick="save_png()">Export</button>
-    </p>
-    <h2>Sort the disciplines</h2>
-        <select id="order">
-            <option value="group">by coupling group</option>
-            <option value="count">by coupling frequency</option>
-            <option value="name">by discipline name</option>
-        </select>
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
 
-    <div id="groups"></div>
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
 
-</aside>
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}}
+</style>
 
-<div id="myModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <p id="modal-body"></p>
+<script type="text/javascript">
+
+document.addEventListener('DOMContentLoaded', function() {{
+    var elems = document.querySelectorAll('.sidenav');
+    var instances = M.Sidenav.init(elems, {{edge: 'right'}});
+}});
+
+  document.addEventListener('DOMContentLoaded', function() {{
+    var elems = document.querySelectorAll('.collapsible');
+    var instances = M.Collapsible.init(elems);
+  }});
+
+  document.addEventListener('DOMContentLoaded', function() {{
+    var elems = document.querySelectorAll('.fixed-action-btn');
+    var instances = M.FloatingActionButton.init(elems,{{
+      direction: 'top'
+    }});
+  }});
+
+  document.addEventListener('DOMContentLoaded', function() {{
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems);
+  }});
+
+  document.addEventListener('DOMContentLoaded', function() {{
+    var elems = document.querySelectorAll('.tooltipped');
+    var instances = M.Tooltip.init(elems);
+  }});
+
+  document.addEventListener('DOMContentLoaded', function() {{
+    var elems = document.querySelectorAll('select');
+    var instances = M.FormSelect.init(elems);
+  }});
+
+</script>
+
+</head>
+
+<body>
+
+   <div style="position: relative;">
+   <div style="position: absolute; top: 0px; right: 0px; padding-top: 10px; padding-right: 10px; width: 10%;">{}</div>
+   </div>
+
+  <div id="slide-out-order" class="sidenav">
+        <h5>Reorder the disciplines</h5>
+        <div class="input-field col s12">
+            <select id="order">
+                <option value="group">by groups of strongly coupled disciplines</option>
+                <option value="count">from the most coupled discipline to the least one</option>
+                <option value="name">in alphabetical order</option>
+            </select>
+        </div>
+  </div>
+
+  <div id="slide-out-groups" class="sidenav">
+        <h5>Strongly coupled disciplines</h5>
+        Click on a group to edit its name or view its disciplines
+        and use its checkbox to expand it or collapse it on the graph.
+        <div id="groups"></div>
+  </div>
+
+  <div id="slide-out-help" class="sidenav">
+            <p>
+                A <b>multidisciplinary coupling graph</b> is a particular
+                <a href="https://en.wikipedia.org/wiki/N2_chart" target="_blank">
+                N<sup>2</sup> chart</a>.
+                Its diagonal elements are the disciplines.
+                A discipline takes its inputs vertically
+                and returns its outputs horizontally.
+                The links between disciplines are located
+                outside the diagonal as coloured squares.
+                In other words,
+                if the cell (i,j) is colored,
+                the j<sup>th</sup> discipline takes as input
+                some outputs of the i<sup>th</sup> discipline;
+                we talk about <i>bi-disciplinary coupling</i>.
+                The disciplines that are strongly coupled to each other
+                are part of the same group, represented by a color
+                whose intensity increases with the number of coupling variables.
+            </p>
+
+        <blockquote>
+         Click on a diagonal element to get details
+         about the corresponding discipline or group of disciplines
+         or on a non-diagonal element to get details about the bi-disciplinary coupling variables
+         (the variable dimensions are in parenthesis).
+         Right click on a diagonal element to expand or collapse the related group.
+         </blockquote>
+        <p>
+            A group consists of disciplines
+            that are strongly <i>coupled<sup> (1)</sup></i> to each other
+            and weakly coupled to those in other groups,
+            except for the first one which contains the disciplines
+            that are only <i>weakly<sup> (2)</sup></i> coupled
+            between themselves and with others.
+        </p>
+
+        <p>
+            <i>
+                <sup>(1)</sup> A and B are strongly coupled
+                if A depends on B and B depends on A.
+            </i>
+        </p>
+
+        <p>
+            <i>
+                <sup>(2)</sup> A and B are weakly coupled
+                if either A depends on B or B depends on A,
+                but not both.
+            </i>
+        </p>
+  </div>
+
+  <div style="position: fixed; bottom: 10px; right: 20px; line-height: 4em;">
+  <ul>
+    <li>
+        <a class="sidenav-trigger btn-floating deep-purple tooltipped" data-target="slide-out-groups" data-position="left" data-tooltip="Expand & Collapse">
+        <i class="material-icons" style="padding-top: 4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24" viewBox="0 0 24 24" width="24"><g><rect fill="none" height="24" width="24"/></g><g><g><g><path d="M15,3l2.3,2.3l-2.89,2.87l1.42,1.42L18.7,6.7L21,9V3H15z M3,9l2.3-2.3l2.87,2.89l1.42-1.42L6.7,5.3L9,3H3V9z M9,21 l-2.3-2.3l2.89-2.87l-1.42-1.42L5.3,17.3L3,15v6H9z M21,15l-2.3,2.3l-2.87-2.89l-1.42,1.42l2.89,2.87L15,21h6V15z" fill="white"/></g></g></g></svg>        </i>
+        </a>
+    </li>
+    <li>
+        <a class="sidenav-trigger btn-floating red tooltipped" data-target="slide-out-order" data-position="left" data-tooltip="Reorder">
+        <i class="material-icons" style="padding-top: 4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none" /><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" stroke="white" fill="white"/></svg>
+        </i>
+        </a>
+    </li>
+    <li>
+        <a class="sidenav-trigger btn-floating blue-grey tooltipped" data-target="slide-out-help" data-position="left" data-tooltip="Help">
+        <i class="material-icons" style="padding-top: 4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" fill="white"/></svg>
+        </i>
+        </a>
+    </li>
+    <li>
+        <a onclick="save_png()" class="btn-floating green tooltipped" data-position="left" data-tooltip="Export to PNG">
+        <i class="material-icons" style="padding-top: 4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M6 9.99h2v7H6zm8 3h2v4h-2zm-4-6h2v10h-2zM20 7V4h-2v3h-3v2h3v3h2V9h3V7zm-2 12H4V5h12V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5h-2v5z"  fill="white"/></svg>
+        </i>
+        </a>
+    </li>
+    <li>
+        <a onclick="save_json()" class="btn-floating blue tooltipped" onclick="save_json()" data-position="left" data-tooltip="Save to JSON">
+        <i class="material-icons" style="padding-top: 4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="white"/></svg>
+        </i></a>
+    </li>
+  </ul>
+  </div>
+
+<div class="container">
+<div class="row">
+
+</div>
+
+<div class="row">
+        <div id="matrix"></div>
+</div>
+<div id="matrix-sidenav" class="sidenav">
+  <div id="modal-body">
   </div>
 </div>
 
@@ -86,39 +260,50 @@ style='height:0.5em;'/>
 
 <script type="text/javascript">
     String.prototype.visualLength = function() {{
-    var ruler = document.getElementById("ruler");
-    ruler.innerHTML = this+'___';
-    return ruler.offsetWidth;
+        var ruler = document.getElementById("ruler");
+        ruler.innerHTML = this + '___';
+        return ruler.offsetWidth;
     }}
 
     var json = {};
-    var max_node = null;
-    var max_margin = 0;
+    var longestDisciplineName = null;
+    var labelsWidth = 0;
+    var nodeVisualLength = 0;
     json.nodes.forEach(function(node){{
-        if(node.name.length>max_margin){{
-            max_node = node.name;
-            max_margin = node.name.length;
+        nodeVisualLength = node.name.visualLength();
+        if(nodeVisualLength>labelsWidth){{
+            longestDisciplineName = node.name;
+            labelsWidth = nodeVisualLength;
         }}
     }});
-    max_margin = max_node.visualLength();
 
-var margin = {{top: max_margin, right: 0, bottom: 10, left: max_margin}},
-    width = 720,
-    height = 720;
+    var totalHeight = window.innerHeight * 0.95;
+    nodeVisualLength = 0;
+    var labelsRatio = 0.25;
+    var labelsWidth = totalHeight*labelsRatio;
+    var fontSize = 0;
+    while (nodeVisualLength <= labelsWidth) {{
+        fontSize += 0.1;
+        document.getElementById("ruler").style.fontSize = fontSize+"px";
+        nodeVisualLength = longestDisciplineName.visualLength();
+    }}
+    fontSize = Math.min(fontSize-0.1, 12);
+    document.getElementById("ruler").style.fontSize = fontSize+"px";
+    labelsWidth = longestDisciplineName.visualLength();
 
-document.getElementsByTagName('html')[0].style.minWidth = 1040+margin.left+max_margin+"px";
+var width = totalHeight - labelsWidth,
+    height = totalHeight - labelsWidth;
 
 var x = d3.scale.ordinal().rangeBands([0, width]),
     z = d3.scale.linear().domain([0, 4]).clamp(true),
     c = d3.scale.category10().domain(d3.range(10));
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#matrix").append("svg")
     .attr("id","svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .style("margin-left", -margin.left + "px")
+    .attr("width", width+labelsWidth)
+    .attr("height", height+labelsWidth)
   .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + labelsWidth + "," + labelsWidth + ")");
 
     var initial_collapsed_nodes = [...Array(json.groups.length).keys()]
     initial_collapsed_nodes.shift();
@@ -148,106 +333,10 @@ for (i = 0; i < toggler.length; i++) {{
   }});
 }}
 
-
 </script>
 
-<footer>
+</div>
 
-    <a id="help"></a>
+</body>
 
-    <h2>Help</h2>
-
-        <h3>Read the graph</h3>
-
-            <p>
-                The multidisciplinary coupling graph is a particular
-                <a href="https://en.wikipedia.org/wiki/N2_chart" target="_blank">
-                N<sup>2</sup> chart</a>:
-                <ul>
-                    <li>
-                        Its diagonal elements are the disciplines.
-                    </li>
-                    <li>
-                        A discipline takes its inputs vertically
-                        and returns its outputs horizontally.</li>
-                    <li>
-                        The links between disciplines are located
-                        outside the diagonal as coloured squares;
-                        in other words,
-                        if the cell (i,j) is colored,
-                        the j<sup>th</sup> discipline takes as input
-                        some outputs of the i<sup>th</sup> discipline;
-                        we talk about <i>bi-disciplinary coupling</i>.
-                    </li>
-                    <li>
-                        The disciplines that are strongly coupled to each other
-                        are part of the same group, represented by a color
-                        whose intensity increases with the number of coupling variables.
-                    </li>
-                </ul>
-            </p>
-
-        <h3>Handle the graph</h3>
-
-            <h4>Disciplinary details</h4>
-
-                Click on a diagonal element to get details
-                about the corresponding discipline or group of disciplines.
-
-            <h4>Coupling details</h4>
-
-                Click on a non-diagonal element to get details
-                about the bi-disciplinary coupling.
-
-            <h4>Sorting</h4>
-
-                There are different criteria to sort the disciplines:
-                <ul>
-                    <li>
-                        <b>coupling group</b>:
-                        the disciplines of the same group are placed side by side;
-                    </li>
-                    <li>
-                        <b>coupling frequency</b>:
-                        the disciplines are classified
-                        by decreasing order of bi-disciplinary coupling;
-                    </li>
-                    <li>
-                        <b>discipline name</b>:
-                        the disciplines are classified in alphabetical order.
-                    </li>
-                </ul>
-
-            <h4>Grouping</h4>
-
-                <p>
-                    On the right side,
-                    click on a group of disciplines to change its name
-                    and click on its checkbox to expand it or collapse it.
-                </p>
-
-                <p>
-                    A group consists of disciplines
-                    that are strongly <i>coupled<sup> (1)</sup></i> to each other
-                    and weakly coupled to those in other groups,
-                    except for the first one which contains the disciplines
-                    that are only <i>weakly<sup> (2)</sup></i> coupled
-                    between themselves and with others.
-                </p>
-
-                <p>
-                    <i>
-                        <sup>(1)</sup> A and B are strongly coupled
-                        if A depends on B and B depends on A.
-                    </i>
-                </p>
-
-                <p>
-                    <i>
-                        <sup>(2)</sup> A and B are weakly coupled
-                        if either A depends on B or B depends on A,
-                        but not both.
-                    </i>
-                </p>
-
-</footer>
+</html>

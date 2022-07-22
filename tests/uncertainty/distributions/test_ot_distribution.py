@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,19 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array, inf, ndarray
-from numpy.random import randn, seed
-from openturns import RandomGenerator
-
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
@@ -36,6 +28,13 @@ from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
+from numpy import allclose
+from numpy import array
+from numpy import inf
+from numpy import ndarray
+from numpy.random import randn
+from numpy.random import seed
+from openturns import RandomGenerator
 
 
 def test_constructor():

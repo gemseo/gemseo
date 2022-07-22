@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -79,8 +77,6 @@ Coupling
 
 - :meth:`~gemseo.api.generate_n2_plot`
 - :meth:`~gemseo.api.generate_coupling_graph`
-- :meth:`~gemseo.api.get_all_inputs`
-- :meth:`~gemseo.api.get_all_outputs`
 
 Design space
 ------------
@@ -149,52 +145,43 @@ Surrogates
 API functions
 *************
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import re
-from typing import (  # noqa F401
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from collections import namedtuple
+from typing import Any
+from typing import Iterable
+from typing import Mapping
+from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import ndarray
-from six import string_types
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 
 if TYPE_CHECKING:
     from logging import Logger
     from matplotlib.figure import Figure
+    from gemseo.algos.doe.doe_lib import DOELibraryOptionType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
-    from gemseo.algos.parameter_space import ParameterSpace  # noqa:F401
+    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
     from gemseo.core.dataset import Dataset
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
-    from gemseo.core.surrogate_disc import SurrogateDiscipline  # noqa:F401
+    from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.mda.mda import MDA
     from gemseo.mlearning.core.ml_algo import TransformerType
-    from gemseo.problems.scalable.data_driven.discipline import (  # noqa:F401
+    from gemseo.problems.scalable.data_driven.discipline import (
         ScalableDiscipline,
     )
 
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
-from gemseo.utils.py23_compat import Path
+
+from pathlib import Path
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from the API.
@@ -207,27 +194,27 @@ LOGGER = logging.getLogger(__name__)
 
 
 def generate_n2_plot(
-    disciplines,  # type: Sequence[MDODiscipline]
-    file_path="n2.pdf",  # type: Union[str,Path]
-    show_data_names=True,  # type: bool
-    save=True,  # type: bool
-    show=False,  # type: bool
-    figsize=(15, 10),  # type: Tuple[int]
-    open_browser=False,  # type: bool
-):  # type: (...) -> None
+    disciplines: Sequence[MDODiscipline],
+    file_path: str | Path = "n2.pdf",
+    show_data_names: bool = True,
+    save: bool = True,
+    show: bool = False,
+    fig_size: tuple[float, float] = (15.0, 10.0),
+    open_browser: bool = False,
+) -> None:
     """Generate a N2 plot from disciplines.
 
     Args:
         disciplines: The disciplines from which the N2 chart is generated.
-        file_path: The path of the file to save the figure.
-        show_data_names: If ``True``, show the names of the coupling data ;
+        file_path: The file path to save the static N2 chart.
+        show_data_names: Whether to show the names of the coupling data ;
             otherwise,
             circles are drawn,
-            the size of which depends on the number of coupling names.
-        save: If True, save the figure to the file_path.
-        show: If True, show the plot.
-        figsize: The width and height of the figure.
-        open_browser: If True, open a browser and display an interactive N2 chart.
+            whose size depends on the number of coupling names.
+        save: Whether to save the static N2 chart.
+        show: Whether to show the static N2 chart.
+        fig_size: The width and height of the static N2 chart.
+        open_browser: Whether to display the interactive N2 chart in a browser.
 
     Examples
     --------
@@ -238,22 +225,20 @@ def generate_n2_plot(
     See also
     --------
     generate_coupling_graph
-    get_all_inputs
-    get_all_outputs
     """
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
     coupling_structure = MDOCouplingStructure(disciplines)
     coupling_structure.plot_n2_chart(
-        file_path, show_data_names, save, show, figsize, open_browser
+        file_path, show_data_names, save, show, fig_size, open_browser
     )
 
 
 def generate_coupling_graph(
-    disciplines,  # type: Sequence[MDODiscipline]
-    file_path="coupling_graph.pdf",  # type: Union[str,Path]
-    full=True,  # type: bool
-):  # type: (...) -> None
+    disciplines: Sequence[MDODiscipline],
+    file_path: str | Path = "coupling_graph.pdf",
+    full: bool = True,
+) -> None:
     """Generate a graph of the couplings between disciplines.
 
     Args:
@@ -271,8 +256,6 @@ def generate_coupling_graph(
     See also
     --------
     generate_n2_plot
-    get_all_inputs
-    get_all_outputs
     """
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
@@ -283,7 +266,7 @@ def generate_coupling_graph(
         coupling_structure.graph.export_reduced_graph(file_path)
 
 
-def get_available_formulations():  # type: (...) -> List[str]
+def get_available_formulations() -> list[str]:
     """Return the names of the available formulations.
 
     Returns:
@@ -307,7 +290,7 @@ def get_available_formulations():  # type: (...) -> List[str]
     return MDOFormulationsFactory().formulations
 
 
-def get_available_opt_algorithms():  # type: (...) -> List[str]
+def get_available_opt_algorithms() -> list[str]:
     """Return the names of the available optimization algorithms.
 
     Returns:
@@ -330,7 +313,7 @@ def get_available_opt_algorithms():  # type: (...) -> List[str]
     return OptimizersFactory().algorithms
 
 
-def get_available_doe_algorithms():  # type: (...) -> List[str]
+def get_available_doe_algorithms() -> list[str]:
     """Return the names of the available design of experiments (DOEs) algorithms.
 
     Returns:
@@ -353,7 +336,7 @@ def get_available_doe_algorithms():  # type: (...) -> List[str]
     return DOEFactory().algorithms
 
 
-def get_available_surrogates():  # type: (...) -> List[str]
+def get_available_surrogates() -> list[str]:
     """Return the names of the available surrogate disciplines.
 
     Returns:
@@ -363,7 +346,7 @@ def get_available_surrogates():  # type: (...) -> List[str]
     --------
     >>> from gemseo.api import get_available_surrogates
     >>> print(get_available_surrogates())
-    ['RBFRegression', 'GaussianProcessRegression', 'LinearRegression', 'PCERegression']
+    ['RBFRegressor', 'GaussianProcessRegressor', 'LinearRegressor', 'PCERegressor']
 
     See also
     --------
@@ -375,7 +358,7 @@ def get_available_surrogates():  # type: (...) -> List[str]
     return get_regression_models()
 
 
-def get_available_disciplines():  # type: (...) -> List[str]
+def get_available_disciplines() -> list[str]:
     """Return the names of the available disciplines.
 
     Returns:
@@ -386,7 +369,7 @@ def get_available_disciplines():  # type: (...) -> List[str]
     >>> from gemseo.api import get_available_disciplines
     >>> print(get_available_disciplines())
     ['RosenMF', 'SobieskiAerodynamics', 'ScalableKriging', 'DOEScenario',
-    'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1',
+    'MDOScenario', 'SobieskiMission', 'SobieskiDiscipline', 'Sellar1',
     'Sellar2', 'MDOChain', 'SobieskiStructure', 'AutoPyDiscipline',
     'Structure', 'SobieskiPropulsion', 'Scenario', 'AnalyticDiscipline',
     'MDOScenarioAdapter', 'ScalableDiscipline', 'SellarSystem', 'Aerodynamics',
@@ -409,10 +392,10 @@ def get_available_disciplines():  # type: (...) -> List[str]
 
 
 def get_surrogate_options_schema(
-    surrogate_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    surrogate_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the available options for a surrogate discipline.
 
     Args:
@@ -440,10 +423,10 @@ def get_surrogate_options_schema(
 
 
 def get_algorithm_options_schema(
-    algorithm_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    algorithm_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of an algorithm.
 
     Args:
@@ -479,14 +462,14 @@ def get_algorithm_options_schema(
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
             schema = _get_schema(opts_gram, output_json, pretty_print)
             return schema
-    raise ValueError("Algorithm named {} is not available.".format(algorithm_name))
+    raise ValueError(f"Algorithm named {algorithm_name} is not available.")
 
 
 def get_discipline_inputs_schema(
-    discipline,  # type: MDODiscipline
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    discipline: MDODiscipline,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the inputs of a discipline.
 
     Args:
@@ -516,10 +499,10 @@ def get_discipline_inputs_schema(
 
 
 def get_discipline_outputs_schema(
-    discipline,  # type: MDODiscipline
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    discipline: MDODiscipline,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the outputs of a discipline.
 
     Args:
@@ -548,7 +531,7 @@ def get_discipline_outputs_schema(
     return _get_schema(discipline.output_grammar, output_json, pretty_print)
 
 
-def get_available_post_processings():  # type: (...) -> List[str]
+def get_available_post_processings() -> list[str]:
     """Return the names of the available optimization post-processings.
 
     Returns:
@@ -574,10 +557,10 @@ def get_available_post_processings():  # type: (...) -> List[str]
 
 
 def get_post_processing_options_schema(
-    post_proc_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    post_proc_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a post-processing.
 
     Args:
@@ -599,18 +582,22 @@ def get_post_processing_options_schema(
     execute_post
     get_available_post_processings
     """
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.post.post_factory import PostFactory
 
-    post_proc = PostFactory().create(OptimizationProblem(None), post_proc_name)
+    problem = OptimizationProblem(DesignSpace())
+    problem.objective = MDOFunction(lambda x: x, "f")
+    post_proc = PostFactory().create(problem, post_proc_name)
     return _get_schema(post_proc.opt_grammar, output_json, pretty_print)
 
 
 def get_formulation_options_schema(
-    formulation_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    formulation_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a formulation.
 
     Args:
@@ -642,11 +629,11 @@ def get_formulation_options_schema(
 
 
 def get_formulation_sub_options_schema(
-    formulation_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-    **formulation_options  # type: Any
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    formulation_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+    **formulation_options: Any,
+) -> str | dict[str, Any]:
     """Return the schema of the sub-options of a formulation.
 
     Args:
@@ -663,7 +650,7 @@ def get_formulation_sub_options_schema(
     --------
     >>> from gemseo.api import get_formulation_sub_options_schema
     >>> schema = get_formulation_sub_options_schema('MDF',
-    >>>                                             main_mda_class='MDAJacobi',
+    >>>                                             main_mda_name='MDAJacobi',
     >>>                                             pretty_print=True)
 
     See also
@@ -682,9 +669,9 @@ def get_formulation_sub_options_schema(
 
 
 def get_formulations_sub_options_defaults(
-    formulation_name,  # type: str
-    **formulation_options  # type: Any
-):  # type: (...) -> Dict[str,Any]
+    formulation_name: str,
+    **formulation_options: Any,
+) -> dict[str, Any]:
     """Return the default values of the sub-options of a formulation.
 
     Args:
@@ -699,7 +686,7 @@ def get_formulations_sub_options_defaults(
     --------
     >>> from gemseo.api import get_formulations_sub_options_defaults
     >>> get_formulations_sub_options_defaults('MDF',
-    >>>                                       main_mda_class='MDAJacobi')
+    >>>                                       main_mda_name='MDAJacobi')
 
     See also
     --------
@@ -718,8 +705,8 @@ def get_formulations_sub_options_defaults(
 
 
 def get_formulations_options_defaults(
-    formulation_name,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    formulation_name: str,
+) -> dict[str, Any]:
     """Return the default values of the options of a formulation.
 
     Args:
@@ -734,9 +721,9 @@ def get_formulations_options_defaults(
     --------
     >>> from gemseo.api import get_formulations_options_defaults
     >>> get_formulations_options_defaults('MDF')
-    {'main_mda_class': 'MDAChain',
+    {'main_mda_name': 'MDAChain',
      'maximize_objective': False,
-     'sub_mda_class': 'MDAJacobi'}
+     'inner_mda_name': 'MDAJacobi'}
 
     See also
     --------
@@ -753,10 +740,10 @@ def get_formulations_options_defaults(
 
 
 def get_discipline_options_schema(
-    discipline_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    discipline_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of a discipline.
 
     Args:
@@ -789,10 +776,10 @@ def get_discipline_options_schema(
 
 
 def get_scenario_options_schema(
-    scenario_type,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    scenario_type: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a scenario.
 
     Args:
@@ -818,16 +805,16 @@ def get_scenario_options_schema(
     get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
-        raise ValueError("Unknown scenario type {}".format(scenario_type))
+        raise ValueError(f"Unknown scenario type {scenario_type}")
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
     return get_discipline_options_schema(scenario_class, output_json, pretty_print)
 
 
 def get_scenario_inputs_schema(
-    scenario,  # type: Scenario
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    scenario: Scenario,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the inputs of a scenario.
 
     Args:
@@ -861,8 +848,8 @@ def get_scenario_inputs_schema(
 
 
 def get_discipline_options_defaults(
-    discipline_name,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    discipline_name: str,
+) -> dict[str, Any]:
     """Return the default values of the options of a discipline.
 
     Args:
@@ -915,11 +902,7 @@ def get_scenario_differentiation_modes():
     return OptimizationProblem.DIFFERENTIATION_METHODS
 
 
-# TODO: to be deprecated
-get_scenario_differenciation_modes = get_scenario_differentiation_modes
-
-
-def get_available_scenario_types():  # type: (...) -> List[str]
+def get_available_scenario_types() -> list[str]:
     """Return the names of the available scenario types.
 
     Returns:
@@ -942,10 +925,10 @@ def get_available_scenario_types():  # type: (...) -> List[str]
 
 
 def _get_schema(
-    json_grammar,  # type: Optional[JSONGrammar]
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Optional[Union[str,Dict[str,Any]]]
+    json_grammar: JSONGrammar | None,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any] | None:
     """Return the schema of a JSON grammar.
 
     Args:
@@ -956,10 +939,13 @@ def _get_schema(
     Returns:
         The schema of the JSON grammar if any.
     """
+    from gemseo.third_party.prettytable import PrettyTable
+
     if json_grammar is None:
         return None
-    schema = json_grammar.schema
-    dict_schema = schema.to_dict()
+
+    dict_schema = json_grammar.schema
+
     if pretty_print:
         if "name" in dict_schema:
             title = dict_schema["name"].replace("_", " ")
@@ -990,12 +976,14 @@ def _get_schema(
         table.min_width = 25
         print(table)  # noqa: T001
         LOGGER.info("%s", table)
+
     if output_json:
-        return schema.to_json()
+        return json_grammar.to_json()
+
     return dict_schema
 
 
-def get_available_mdas():  # type: (...) -> List[str]
+def get_available_mdas() -> list[str]:
     """Return the names of the available multidisciplinary analyses (MDAs).
 
     Returns:
@@ -1017,10 +1005,10 @@ def get_available_mdas():  # type: (...) -> List[str]
 
 
 def get_mda_options_schema(
-    mda_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    mda_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a multidisciplinary analysis (MDA).
 
     Args:
@@ -1048,83 +1036,17 @@ def get_mda_options_schema(
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_all_inputs(
-    disciplines,  # type: Iterable[MDODiscipline]
-    recursive=False,  # type: bool
-):  # type: (...) -> List[str]
-    """Return all the input names of the disciplines.
-
-    Args:
-        disciplines: The disciplines.
-        recursive: If True,
-            search for the inputs of the sub-disciplines,
-            when some disciplines are scenarios.
-
-    Returns:
-        The names of the inputs.
-
-    Examples
-    --------
-    >>> from gemseo.api import create_discipline, get_all_inputs
-    >>> disciplines = create_discipline(['Sellar1', 'Sellar2'])
-    >>> get_all_inputs(disciplines)
-    ['y_0', 'x_shared', 'y_1', 'x_local']
-
-    See also
-    --------
-    generate_n2_plot
-    generate_coupling_graph
-    get_all_outputs
-    """
-    from gemseo.utils.data_conversion import DataConversion
-
-    return DataConversion.get_all_inputs(disciplines, recursive)
-
-
-def get_all_outputs(
-    disciplines,  # type: Iterable[MDODiscipline]
-    recursive=False,  # type: bool
-):  # type: (...) -> List[str]
-    """Return all the output names of the disciplines.
-
-    Args:
-        disciplines: The disciplines.
-        recursive: If True,
-            search for the outputs of the sub-disciplines,
-            when some disciplines are scenarios.
-
-    Returns:
-        The names of the outputs.
-
-    Examples
-    --------
-    >>> from gemseo.api import create_discipline, get_all_outputs
-    >>> disciplines = create_discipline(['Sellar1', 'Sellar2'])
-    >>> get_all_outputs(disciplines)
-    ['y_1', 'y_0']
-
-    See also
-    --------
-    generate_n2_plot
-    generate_coupling_graph
-    get_all_inputs
-    """
-    from gemseo.utils.data_conversion import DataConversion
-
-    return DataConversion.get_all_outputs(disciplines, recursive)
-
-
 def create_scenario(
-    disciplines,  # type: Sequence[MDODiscipline]
-    formulation,  # type: str
-    objective_name,  # type: str
-    design_space,  # type: Union[DesignSpace,str,Path]
-    name=None,  # type: Optional[str]
-    scenario_type="MDO",  # type: str
-    grammar_type="JSONGrammar",  # type: str
-    maximize_objective=False,  # type: bool
-    **options  # type: Any
-):  # type: (...) -> Scenario
+    disciplines: Sequence[MDODiscipline],
+    formulation: str,
+    objective_name: str,
+    design_space: DesignSpace | str | Path,
+    name: str | None = None,
+    scenario_type: str = "MDO",
+    grammar_type: str = "JSONGrammar",
+    maximize_objective: bool = False,
+    **options: Any,
+) -> Scenario:
     """Initialize a scenario.
 
     Args:
@@ -1167,7 +1089,7 @@ def create_scenario(
     if not isinstance(disciplines, list):
         disciplines = [disciplines]
 
-    if isinstance(design_space, (string_types, Path)):
+    if isinstance(design_space, (str, Path)):
         design_space = read_design_space(design_space)
 
     if scenario_type == "MDO":
@@ -1179,7 +1101,7 @@ def create_scenario(
             name,
             grammar_type=grammar_type,
             maximize_objective=maximize_objective,
-            **options
+            **options,
         )
 
     if scenario_type == "DOE":
@@ -1191,26 +1113,27 @@ def create_scenario(
             name,
             grammar_type=grammar_type,
             maximize_objective=maximize_objective,
-            **options
+            **options,
         )
 
     raise ValueError(
-        "Unknown scenario type: {}, use one of : 'MDO' or 'DOE'.".format(scenario_type)
+        f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
     )
 
 
 def configure_logger(
-    logger_name=None,  # type: Optional[str]
-    level=logging.INFO,  # type: str
-    date_format="%H:%M:%S",  # type: str
-    message_format="%(levelname)8s - %(asctime)s: %(message)s",  # type: str
-    filename=None,  # type: Optional[Union[str,Path]]
-    filemode="a",  # type: str
-):  # type: (...) -> Logger
+    logger_name: str | None = None,
+    level: int = logging.INFO,
+    date_format: str = "%H:%M:%S",
+    message_format: str = "%(levelname)8s - %(asctime)s: %(message)s",
+    filename: str | Path | None = None,
+    filemode: str = "a",
+) -> Logger:
     """Configure |g| logging.
 
     Args:
-        logger_name: The name of the logger to configure, i.e. the root logger.
+        logger_name: The name of the logger to configure.
+            If ``None``, return the root logger.
         level: The logging level, either 'DEBUG', 'INFO', 'WARNING' and 'CRITICAL'.
         date_format: The logging date format.
         message_format: The logging message format.
@@ -1218,20 +1141,13 @@ def configure_logger(
         filemode: The logging output file mode,
             either 'w' (overwrite) or 'a' (append).
 
-    Examples
-    --------
-    >>> import logging
-    >>> configure_logger(logging.WARNING)
+    Examples:
+        >>> import logging
+        >>> configure_logger(level=logging.WARNING)
     """
-    if logger_name == "GEMSEO":
-        # TODO: deprecate this at some point.
-        # For backward compatibility, create the logger named after the modules
-        # and set an alias pointing to the same logger instance.
-        logger = logging.getLogger("gemseo")
-        logging.Logger.manager.loggerDict["GEMSEO"] = logger
-    else:
-        logger = logging.getLogger(logger_name)
+    from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
 
+    logger = logging.getLogger(logger_name)
     logger.setLevel(level)
     formatter = logging.Formatter(fmt=message_format, datefmt=date_format)
 
@@ -1254,8 +1170,8 @@ def configure_logger(
 
 
 def create_discipline(
-    discipline_name,  # type: Union[str,Iterable[str]]
-    **options  # type: Any
+    discipline_name: str | Iterable[str],
+    **options: Any,
 ):
     """Instantiate one or more disciplines.
 
@@ -1289,20 +1205,22 @@ def create_discipline(
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
     factory = DisciplinesFactory()
-    if isinstance(discipline_name, string_types):
+    if isinstance(discipline_name, str):
         return factory.create(discipline_name, **options)
 
     return [factory.create(d_name, **options) for d_name in discipline_name]
 
 
 def import_discipline(
-    file_path,  # type: Union[str,Path]
-):  # type: (...) -> MDODiscipline
+    file_path: str | Path, cls: type[MDODiscipline] | None = None
+) -> MDODiscipline:
     """Import a discipline from a pickle file.
 
     Args:
         file_path: The path to the file containing the discipline
             saved with the method :meth:`.MDODiscipline.serialize`.
+        cls: A class of discipline.
+            If ``None``, use ``MDODiscipline``.
 
     Returns:
         The discipline.
@@ -1316,17 +1234,20 @@ def import_discipline(
     get_discipline_options_schema
     get_discipline_options_defaults
     """
-    from gemseo.core.discipline import MDODiscipline
+    if cls is None:
+        from gemseo.core.discipline import MDODiscipline
 
-    return MDODiscipline.deserialize(file_path)
+        cls = MDODiscipline
+
+    return cls.deserialize(file_path)
 
 
 def create_scalable(
-    name,  # type: str
-    data,  # type: Dataset
-    sizes=None,  # type: Mapping[str,int]
-    **parameters  # type: Any
-):  # type: (...) -> ScalableDiscipline
+    name: str,
+    data: Dataset,
+    sizes: Mapping[str, int] = None,
+    **parameters: Any,
+) -> ScalableDiscipline:
     """Create a scalable discipline from a dataset.
 
     Args:
@@ -1346,15 +1267,15 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate,  # type: Union[str,MLRegressionAlgo]
-    data=None,  # type: Optional[Dataset]
-    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[TransformerType]
-    disc_name=None,  # type: Optional[str]
-    default_inputs=None,  # type: Optional[Dict[str,ndarray]]
-    input_names=None,  # type: Optional[Iterable[str]]
-    output_names=None,  # type: Optional[Iterable[str]]
-    **parameters  # type: Any
-):  # type: (...) -> SurrogateDiscipline
+    surrogate: str | MLRegressionAlgo,
+    data: Dataset | None = None,
+    transformer: TransformerType | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+    disc_name: str | None = None,
+    default_inputs: dict[str, ndarray] | None = None,
+    input_names: Iterable[str] | None = None,
+    output_names: Iterable[str] | None = None,
+    **parameters: Any,
+) -> SurrogateDiscipline:
     """Create a surrogate discipline, either from a dataset or a regression model.
 
     Args:
@@ -1375,7 +1296,7 @@ def create_surrogate(
             The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
-            If None, concatenate :attr:`.ABBR` and ``data.name``.
+            If None, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
         default_inputs: The default values of the inputs.
             If None, use the center of the learning input space.
         input_names: The names of the input variables.
@@ -1389,7 +1310,7 @@ def create_surrogate(
     get_available_surrogates
     get_surrogate_options_schema
     """
-    from gemseo.core.surrogate_disc import SurrogateDiscipline  # noqa:F811
+    from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
     return SurrogateDiscipline(
         surrogate,
@@ -1399,16 +1320,16 @@ def create_surrogate(
         default_inputs,
         input_names,
         output_names,
-        **parameters
+        **parameters,
     )
 
 
 def create_mda(
-    mda_name,  # type: str
-    disciplines,  # type: Sequence[MDODiscipline]
-    **options  # type: Any
-):  # type: (...) -> MDA
-    """Create an multidisciplinary analysis (MDA).
+    mda_name: str,
+    disciplines: Sequence[MDODiscipline],
+    **options: Any,
+) -> MDA:
+    """Create a multidisciplinary analysis (MDA).
 
     Args:
         mda_name: The name of the MDA.
@@ -1442,10 +1363,10 @@ def create_mda(
 
 
 def execute_post(
-    to_post_proc,  # type:Union[Scenario,OptimizationProblem,str,Path]
-    post_name,  # type: str
-    **options  # type: Any
-):  # type: (...) -> Dict[str,Figure]
+    to_post_proc: Scenario | OptimizationProblem | str | Path,
+    post_name: str,
+    **options: Any,
+) -> dict[str, Figure]:
     """Post-process a result.
 
     Args:
@@ -1483,19 +1404,19 @@ def execute_post(
         opt_problem = to_post_proc.formulation.opt_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
-    elif isinstance(to_post_proc, string_types):
+    elif isinstance(to_post_proc, str):
         opt_problem = OptimizationProblem.import_hdf(to_post_proc)
     else:
-        raise TypeError("Cannot post process type: {}".format(type(to_post_proc)))
+        raise TypeError(f"Cannot post process type: {type(to_post_proc)}")
     return PostFactory().execute(opt_problem, post_name, **options)
 
 
 def execute_algo(
-    opt_problem,  # type: OptimizationProblem
-    algo_name,  # type: str
-    algo_type="opt",  # type: str
-    **options  # type: Any
-):  # type: (...) -> OptimizationResult
+    opt_problem: OptimizationProblem,
+    algo_name: str,
+    algo_type: str = "opt",
+    **options: Any,
+) -> OptimizationResult:
     """Solve an optimization problem.
 
     Args:
@@ -1534,20 +1455,18 @@ def execute_algo(
 
         factory = DOEFactory()
     else:
-        raise ValueError(
-            "Unknown algo type: {}, please use 'doe' or 'opt' !".format(algo_type)
-        )
+        raise ValueError(f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !")
 
     return factory.execute(opt_problem, algo_name, **options)
 
 
 def monitor_scenario(
-    scenario,  # type: Scenario
+    scenario: Scenario,
     observer,
-):  # type: (...) -> None
+) -> None:
     """Add an observer to a scenario.
 
-    The observer must have an :meth:`update` method
+    The observer must have an ``update`` method
     that handles the execution status change of an atom.
     `update(atom)` is called everytime an atom execution changes.
 
@@ -1570,7 +1489,7 @@ def monitor_scenario(
     monitor.add_observer(observer)
 
 
-def print_configuration():  # type: (...) -> None
+def print_configuration() -> None:
     """Print the current configuration.
 
     The log message contains the successfully loaded modules
@@ -1589,6 +1508,9 @@ def print_configuration():  # type: (...) -> None
     from gemseo.post.post_factory import PostFactory
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
+    settings = _log_settings()
+    LOGGER.info("%s", settings)
+    print(settings)  # noqa: T001
     for factory in (
         DisciplinesFactory,
         OptimizersFactory,
@@ -1604,9 +1526,9 @@ def print_configuration():  # type: (...) -> None
 
 
 def read_design_space(
-    file_path,  # type: Union[str,Path]
-    header=None,  # type: Optional[str]
-):  # type: (...) -> DesignSpace
+    file_path: str | Path,
+    header: str | None = None,
+) -> DesignSpace:
     """Read a design space from a file.
 
     Args:
@@ -1647,13 +1569,13 @@ def read_design_space(
 
 
 def export_design_space(
-    design_space,  # type: DesignSpace
-    output_file,  # type: Union[str,Path],
-    export_hdf=False,  # type: bool
-    fields=None,  # type: Optional[Sequence[str]]
-    header_char="",  # type: str
-    **table_options  # type: Any
-):  # type: (...) -> None
+    design_space: DesignSpace,
+    output_file: str | Path,
+    export_hdf: bool = False,
+    fields: Sequence[str] | None = None,
+    header_char: str = "",
+    **table_options: Any,
+) -> None:
     """Save a design space to a text or HDF file.
 
     Args:
@@ -1666,7 +1588,7 @@ def export_design_space(
         header_char: The header character.
         **table_options: The names and values of additional attributes
             for the :class:`.PrettyTable` view
-            generated by :meth:`get_pretty_table`.
+            generated by :meth:`.DesignSpace.get_pretty_table`.
 
     Examples
     --------
@@ -1686,7 +1608,7 @@ def export_design_space(
         design_space.export_to_txt(output_file, fields, header_char, **table_options)
 
 
-def create_design_space():  # type: (...) -> DesignSpace
+def create_design_space() -> DesignSpace:
     """Create an empty design space.
 
     Returns:
@@ -1717,7 +1639,7 @@ def create_design_space():  # type: (...) -> DesignSpace
     return DesignSpace()
 
 
-def create_parameter_space():  # type: (...) -> ParameterSpace
+def create_parameter_space() -> ParameterSpace:
     """Create an empty parameter space.
 
     Returns:
@@ -1728,7 +1650,7 @@ def create_parameter_space():  # type: (...) -> ParameterSpace
     return ParameterSpace()
 
 
-def get_available_caches():  # type: (...) -> List[str]
+def get_available_caches() -> list[str]:
     """Return the names of the available caches.
 
     Returns:
@@ -1751,10 +1673,10 @@ def get_available_caches():  # type: (...) -> List[str]
 
 
 def create_cache(
-    cache_type,  # type: str
-    name=None,  # type: Optional[str]
-    **options  # type: Any
-):  # type: (...) -> AbstractCache
+    cache_type: str,
+    name: str | None = None,
+    **options: Any,
+) -> AbstractCache:
     """Return a cache.
 
     Args:
@@ -1794,16 +1716,16 @@ def create_cache(
 
 
 def create_dataset(
-    name,  # type: str
-    data,  # type: Union[ndarray,str,Path]
-    variables=None,  # type: Optional[List[str]]
-    sizes=None,  # type: Optional[Dict[str,int]]
-    groups=None,  # type: Optional[Dict[str,str]]
-    by_group=True,  # type: bool
-    delimiter=",",  # type: str
-    header=True,  # type: bool
-    default_name=None,  # type: Optional[str]
-):  # type: (...) -> Dataset
+    name: str,
+    data: ndarray | str | Path,
+    variables: list[str] | None = None,
+    sizes: dict[str, int] | None = None,
+    groups: dict[str, str] | None = None,
+    by_group: bool = True,
+    delimiter: str = ",",
+    header: bool = True,
+    default_name: str | None = None,
+) -> Dataset:
     """Create a dataset from a NumPy array or a data file.
 
     Args:
@@ -1852,12 +1774,12 @@ def create_dataset(
 
 
 def load_dataset(
-    dataset,  # type: str
-    **options  # type: Any
-):  # type: (...) -> Dataset
+    dataset: str,
+    **options: Any,
+) -> Dataset:
     """Instantiate a dataset.
 
-    Typically, benchmark datasets can be found in :mod:`gemseo.problems.dataset`.
+    Typically, benchmark datasets can be found in :mod:`gemseo.core.dataset`.
 
     Args:
         dataset: The name of the dataset (its class name).
@@ -1875,12 +1797,12 @@ def load_dataset(
 
 
 def compute_doe(
-    variables_space,  # type: DesignSpace
-    algo_name,  # type: str
-    size=None,  # type: Optional[int]
-    unit_sampling=False,  # type: bool
-    **options  # type: DOELibraryOptionType
-):  # type: (...) -> ndarray
+    variables_space: DesignSpace,
+    algo_name: str,
+    size: int | None = None,
+    unit_sampling: bool = False,
+    **options: DOELibraryOptionType,
+) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 
     Args:
@@ -1908,7 +1830,160 @@ def compute_doe(
     get_algorithm_options_schema
     execute_algo
     """
+    from gemseo.algos.doe.doe_factory import DOEFactory
+
     library = DOEFactory().create(algo_name)
     return library.compute_doe(
         variables_space, size=size, unit_sampling=unit_sampling, **options
     )
+
+
+def _log_settings() -> None:
+    from gemseo.algos.driver_lib import DriverLib
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.utils.string_tools import MultiLineString
+
+    add_de_prefix = lambda x: "" if x else "de"  # noqa: E731
+    add_not_prefix = lambda x: "" if x else " not"  # noqa: E731
+    text = MultiLineString()
+    text.add("Settings")
+    text.indent()
+    text.add("MDODiscipline")
+    text.indent()
+    text.add(
+        "The caches are {}activated.",
+        add_de_prefix(MDODiscipline.activate_cache),
+    )
+    text.add(
+        "The counters are {}activated.",
+        add_de_prefix(MDODiscipline.activate_counters),
+    )
+    text.add(
+        "The input data are{} checked before running the discipline.",
+        add_not_prefix(MDODiscipline.activate_input_data_check),
+    )
+    text.add(
+        "The output data are{} checked after running the discipline.",
+        add_not_prefix(MDODiscipline.activate_output_data_check),
+    )
+    text.dedent()
+    text.add("MDOFunction")
+    text.indent()
+    text.add(
+        "The counters are {}activated.",
+        add_de_prefix(MDOFunction.activate_counters),
+    )
+    text.dedent()
+    text.add("DriverLib")
+    text.indent()
+    text.add(
+        "The progress bar is {}activated.",
+        add_de_prefix(DriverLib.activate_progress_bar),
+    )
+    return text
+
+
+AlgorithmFeatures = namedtuple(
+    "AlgorithmFeature",
+    [
+        "algorithm_name",
+        "library_name",
+        "root_package_name",
+        "handle_equality_constraints",
+        "handle_inequality_constraints",
+        "handle_float_variables",
+        "handle_integer_variables",
+        "handle_multiobjective",
+        "require_gradient",
+    ],
+)
+
+
+def get_algorithm_features(
+    algorithm_name: str,
+) -> AlgorithmFeatures:
+    """Return the features of an optimization algorithm.
+
+    Args:
+        algorithm_name: The name of the optimization algorithm.
+
+    Returns:
+        The features of the optimization algorithm.
+
+    Raises:
+        ValueError: When the optimization algorithm does not exist.
+    """
+    from gemseo.algos.opt.opt_factory import OptimizersFactory
+
+    factory = OptimizersFactory()
+    if not factory.is_available(algorithm_name):
+        raise ValueError(
+            f"{algorithm_name} is not the name of an optimization algorithm."
+        )
+
+    driver = factory.create(algorithm_name)
+    description = driver.descriptions[algorithm_name]
+    return AlgorithmFeatures(
+        algorithm_name=description.algorithm_name,
+        library_name=description.library_name,
+        root_package_name=factory.factory.get_library_name(driver.__class__.__name__),
+        handle_equality_constraints=description.handle_equality_constraints,
+        handle_inequality_constraints=description.handle_inequality_constraints,
+        handle_float_variables=True,
+        handle_integer_variables=description.handle_integer_variables,
+        handle_multiobjective=description.handle_multiobjective,
+        require_gradient=description.require_gradient,
+    )
+
+
+def configure(
+    activate_discipline_counters: bool = True,
+    activate_function_counters: bool = True,
+    activate_progress_bar: bool = True,
+    activate_discipline_cache: bool = True,
+    check_input_data: bool = True,
+    check_output_data: bool = True,
+    check_desvars_bounds: bool = True,
+) -> None:
+    """Update the configuration of |g| if needed.
+
+    This could be useful to speed up calculations in presence of cheap disciplines
+    such as analytic formula and surrogate models.
+
+    Warning:
+        This function should be called before calling anything from |g|.
+
+    Args:
+        activate_discipline_counters: Whether to activate the counters
+            attached to the disciplines,
+            in charge of counting their execution time,
+            number of evaluations
+            and number of linearizations.
+        activate_function_counters: Whether to activate the counters
+            attached to the functions,
+            in charge of counting their number of evaluations.
+        activate_progress_bar: Whether to activate the progress bar
+            attached to the drivers,
+            in charge to log the execution of the process:
+            iteration, execution time and objective value.
+        activate_discipline_cache: Whether to activate the discipline cache.
+        check_input_data: Whether to check the input data of a discipline
+            before execution.
+        check_output_data: Whether to check the output data of a discipline
+            before execution.
+        check_desvars_bounds: Whether to check the membership of design variables
+            in the bounds when evaluating the functions in OptimizationProblem.
+    """
+    from gemseo.algos.driver_lib import DriverLib
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+    MDODiscipline.activate_counters = activate_discipline_counters
+    MDOFunction.activate_counters = activate_function_counters
+    DriverLib.activate_progress_bar = activate_progress_bar
+    MDODiscipline.activate_input_data_check = check_input_data
+    MDODiscipline.activate_output_data_check = check_output_data
+    MDODiscipline.activate_cache = activate_discipline_cache
+    OptimizationProblem.activate_bound_check = check_desvars_bounds

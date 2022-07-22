@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #    initial documentation
@@ -94,24 +92,29 @@ and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from cmath import sqrt
-from os.path import dirname, join
+from pathlib import Path
 
-from numpy import array, complex128, ones, zeros
+from numpy import array
+from numpy import complex128
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 
 
 def get_design_space(to_complex=True):
-    """Reads the design space file.
+    """Read the design space file.
 
-    :param to_complex: if True, current x is a complex vector
+    Args:
+        to_complex: Whether the current design point is a complex vector.
     """
     ds_read = DesignSpace.read_from_txt(
-        join(dirname(__file__), "propane_design_space.txt")
+        Path(__file__).parent / "propane_design_space.txt"
     )
     if to_complex:
         ds_read.to_complex()
@@ -119,17 +122,20 @@ def get_design_space(to_complex=True):
 
 
 class PropaneReaction(MDODiscipline):
+    """Propane's objective and constraints discipline.
 
-    """Propane's objective and constraints discipline This discipline's outputs are the
-    objective function and partial terms used in inequality constraints.
+    This discipline's outputs are
+    the objective function and partial terms used in inequality constraints.
 
-    Note: the equations have been decoupled (y_i = y_i(x_shared)). Otherwise,
-    the solvers may find iterates for
-    which discipline analyses are not computable.
+    Note:
+        The equations have been decoupled (y_i = y_i(x_shared)).
+        Otherwise,
+        the solvers may find iterates
+        for which discipline analyses are not computable.
     """
 
-    def __init__(self):
-        super(PropaneReaction, self).__init__(auto_detect_grammar_files=True)
+    def __init__(self) -> None:
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {
             "x_shared": ones(4, dtype=complex128),
             "y_1": ones(2, dtype=complex128),
@@ -138,12 +144,10 @@ class PropaneReaction(MDODiscipline):
         }
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):
-        """Compute the outputs of the propane combustion model."""
+    def _run(self) -> None:
         inputs = ["y_1", "y_2", "y_3", "x_shared"]
         y_1, y_2, y_3, x_shared = self.get_inputs_by_name(inputs)
-        f2_list = [self.f_2(x_shared, y_1, y_2, y_3)]
-        f_2 = array(f2_list, dtype=complex128)
+        f_2 = array([self.f_2(x_shared, y_1, y_2, y_3)], dtype=complex128)
         f_6 = array([self.f_6(x_shared, y_1, y_3)], dtype=complex128)
         f_7 = array([self.f_7(x_shared, y_1, y_3)], dtype=complex128)
         f_9 = array([self.f_9(x_shared, y_1, y_3)], dtype=complex128)
@@ -153,20 +157,21 @@ class PropaneReaction(MDODiscipline):
         self.store_local_data(f_2=-f_2, f_6=-f_6, f_7=-f_7, f_9=-f_9, obj=obj)
 
     @classmethod
-    def f_2(cls, x_shared, y_1, y_2, y_3):
-        """First term of a sum of four in the objective function. Is also a nonnegative
-        constraint at system level.
+    def f_2(
+        cls, x_shared: ndarray, y_1: ndarray, y_2: ndarray, y_3: ndarray
+    ) -> ndarray:
+        """Compute the first term of the objective function.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_1: first coupling variable
-        :type y_1: ndarray
-        :param y_2: second coupling variable
-        :type y_2: ndarray
-        :param y_3: third coupling variable
-        :type y_3: ndarray
-        :returns: f2(x_shared, y_1, y_2, y_3)
-        :rtype: float
+        It is also a non-negative constraint at system level.
+
+        Args:
+            x_shared: The shared design variables.
+            y_1: The first coupling variable.
+            y_2: The second coupling variable.
+            y_3: The third coupling variable.
+
+        Returns:
+            The first term of the objective function.
         """
         return (
             2.0 * x_shared[0]
@@ -181,66 +186,65 @@ class PropaneReaction(MDODiscipline):
 
     @classmethod
     def f_6(cls, x_shared, y_1, y_3):
-        """Second term of a sum of four in the objective function. Is also a nonnegative
-        constraint at system level.
+        """Compute the second term of the objective function.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_1: first coupling variable
-        :type y_1: ndarray
-        :param y_3: third coupling variable
-        :type y_3: ndarray
-        :returns: f6(x, y)
-        :rtype: float
+        It is also a non-negative constraint at system level.
+
+        Args:
+            x_shared: The shared design variables.
+            y_1: The first coupling variable.
+            y_3: The third coupling variable.
+
+        Returns:
+            The second term of the objective function.
         """
         return sqrt(y_1[0] * y_1[1]) - sqrt(40.0 * x_shared[0] / y_3[2]) * x_shared[2]
 
     @classmethod
     def f_7(cls, x_shared, y_1, y_3):
-        """Third term of a sum of four in the objective function. Is also a nonnegative
-        constraint at system level.
+        """Compute the third term of the objective function.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_1: first coupling variable
-        :type y_1: ndarray
-        :param y_3: third coupling variable
-        :type y_3: ndarray
-        :returns: f7(x, y)
-        :rtype: float
+        It is also a non-negative constraint at system level.
+
+        Args:
+            x_shared: The shared design variables.
+            y_1: The first coupling variable.
+            y_3: The third coupling variable.
+
+        Returns:
+            The third term of the objective function.
         """
         return sqrt(x_shared[0] * y_1[0]) - sqrt(40.0 * y_1[1] / y_3[2]) * x_shared[3]
 
     @classmethod
     def f_9(cls, x_shared, y_1, y_3):
-        """Fourth term of a sum of four in the objective function. Is also a nonnegative
-        constraint at system level.
+        """Compute the fourth term of the objective function.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_1: first coupling variable
-        :type y_1: ndarray
-        :param y_3: third coupling variable
-        :type y_3: ndarray
-        :returns: f9(x, y)
-        :rtype: float
+        It is also a non-negative constraint at system level.
+
+        Args:
+            x_shared: The shared design variables.
+            y_1: The first coupling variable.
+            y_3: The third coupling variable.
+
+        Returns:
+            The fourth term of the objective function.
         """
         return x_shared[0] * sqrt(x_shared[1]) - y_1[1] * y_3[0] * sqrt(40.0 / y_3[2])
 
 
 class PropaneComb1(MDODiscipline):
+    """The first set of equations of the propane combustion.
 
-    """Propane combustion 1st set of equations This discipline is characterized by two
-    governing equations."""
+    This discipline is characterized by two coupling equations in functional form.
+    """
 
-    def __init__(self):
-        super(PropaneComb1, self).__init__(auto_detect_grammar_files=True)
+    def __init__(self) -> None:
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):
-        """Solve 2 coupling equations in functional form and compute coupling variables
-        Y0 and y_1."""
+    def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
         y_1_out = zeros(2, dtype=complex128)
         y_1_out[0] = self.compute_y0(x_shared)
@@ -248,12 +252,14 @@ class PropaneComb1(MDODiscipline):
         self.store_local_data(y_1=y_1_out)
 
     @classmethod
-    def compute_y0(cls, x_shared):
+    def compute_y0(cls, x_shared: ndarray) -> ndarray:
         """Solve the first coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable y0
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y0.
         """
         return -x_shared[0] * (x_shared[2] + x_shared[3] - 8.0) / 6.0
 
@@ -261,25 +267,27 @@ class PropaneComb1(MDODiscipline):
     def compute_y1(cls, x_shared):
         """Solve the second coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable y1
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y1.
         """
         return 3.0 - x_shared[0]
 
 
 class PropaneComb2(MDODiscipline):
-    """Propane combustion 2nd set of equations This discipline is characterized by two
-    governing equations."""
+    """The second set of equations of the propane combustion.
 
-    def __init__(self):
-        super(PropaneComb2, self).__init__(auto_detect_grammar_files=True)
+    This discipline is characterized by two coupling equations in functional form.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):
-        """Solve 2 coupling equations in functional form and compute coupling variables
-        y_2 and y_3."""
+    def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
         y_2_out = zeros(2, dtype=complex128)
         y_2_out[0] = self.compute_y2(x_shared)
@@ -287,12 +295,14 @@ class PropaneComb2(MDODiscipline):
         self.store_local_data(y_2=y_2_out)
 
     @classmethod
-    def compute_y2(cls, x_shared):
+    def compute_y2(cls, x_shared: ndarray) -> ndarray:
         """Solve the third coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable y_2
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y2.
         """
         return (x_shared[0] - 3.0) * (x_shared[2] + x_shared[3] - 8.0) / 6.0
 
@@ -300,9 +310,11 @@ class PropaneComb2(MDODiscipline):
     def compute_y3(cls, x_shared):
         """Solve the fourth coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable y_3
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y3.
         """
         y_3 = -(x_shared[0] - 3.0) * x_shared[0]
         y_3 *= x_shared[2] + x_shared[3] - 2.0 * x_shared[1] + 94.0
@@ -311,17 +323,17 @@ class PropaneComb2(MDODiscipline):
 
 
 class PropaneComb3(MDODiscipline):
+    """The third set of equations of the propane combustion.
 
-    """This discipline is characterized by three governing equations."""
+    This discipline is characterized by three coupling equations in functional form.
+    """
 
-    def __init__(self):
-        super(PropaneComb3, self).__init__(auto_detect_grammar_files=True)
+    def __init__(self) -> None:
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):
-        """Solve 3 coupling equations in functional form and compute coupling variables
-        y_4, Y5 and Y6."""
+    def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
         y_3_out = zeros(3, dtype=complex128)
         y_3_out[0] = self.compute_y4(x_shared)
@@ -333,9 +345,11 @@ class PropaneComb3(MDODiscipline):
     def compute_y4(cls, x_shared):
         """Solve the fifth coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable y_4
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y4.
         """
         return 40.0 - 2.0 * x_shared[1]
 
@@ -343,9 +357,11 @@ class PropaneComb3(MDODiscipline):
     def compute_y5(cls, x_shared):
         """Solve the sixth coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable Y5
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y5.
         """
         y_5 = x_shared[0] ** 2
         y_5 *= x_shared[2] + x_shared[3] - 2.0 * x_shared[1] + 94.0
@@ -356,9 +372,11 @@ class PropaneComb3(MDODiscipline):
     def compute_y6(cls, x_shared):
         """Solve the seventh coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :returns: coupling variable Y6
+        Args:
+            x_shared: The shared design variables.
+
+        Returns:
+            The coupling variable y6.
         """
         y_6 = 200.0 * (x_shared[0] - 3.0) ** 2
         y_6 *= x_shared[2] + x_shared[3] - 2.0 * x_shared[1] + 94.0

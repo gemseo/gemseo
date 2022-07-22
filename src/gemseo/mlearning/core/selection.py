@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -25,11 +23,7 @@
 Machine learning is used to find relations or underlying structures in data.
 There is however no algorithm that is universally better than the others
 for an arbitrary problem.
-As for optimization, there is *no free lunch* for machine learning [wolpert]_.
-
-.. [wolpert] Wolpert, David H.
-   "The lack of a priori distinctions between learning algorithms."
-   Neural computation 8.7 (1996): 1341-1390.
+As for optimization, there is *no free lunch* for machine learning :cite:`wolpert`.
 
 Provided a quality measure,
 one can thus compare the performances of different machine learning algorithms.
@@ -50,12 +44,10 @@ using the class :class:`.MLAlgoCalibration`.
    :mod:`~gemseo.mlearning.core.ml_algo`
    :mod:`~gemseo.mlearning.core.calibration`
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 from itertools import product
-from typing import Optional, Sequence, Tuple, Union
-
-from six import string_types
+from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -63,16 +55,14 @@ from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import (
-    MLQualityMeasure,
-    MLQualityMeasureFactory,
-)
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.qual_measure.quality_measure import (
     OptionType as MeasureOptionType,
 )
 
 
-class MLAlgoSelection(object):
+class MLAlgoSelection:
     """Machine learning algorithm selector.
 
     Attributes:
@@ -89,12 +79,12 @@ class MLAlgoSelection(object):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        measure,  # type: Union[str,MLQualityMeasure]
-        eval_method=MLQualityMeasure.LEARN,  # type: str
-        samples=None,  # type: Optional[Sequence[int]]
-        **measure_options  # type:MeasureOptionType
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        measure: str | MLQualityMeasure,
+        eval_method: str = MLQualityMeasure.LEARN,
+        samples: Sequence[int] | None = None,
+        **measure_options: MeasureOptionType,
+    ) -> None:
         """
         Args:
             dataset: The learning dataset.
@@ -112,7 +102,7 @@ class MLAlgoSelection(object):
             ValueError: If the unsupported "multioutput" option is enabled.
         """
         self.dataset = dataset
-        if isinstance(measure, string_types):
+        if isinstance(measure, str):
             self.measure = MLQualityMeasureFactory().get_class(measure)
         else:
             self.measure = measure
@@ -133,11 +123,11 @@ class MLAlgoSelection(object):
 
     def add_candidate(
         self,
-        name,  # type:str
-        calib_space=None,  # type: Optional[DesignSpace]
-        calib_algo=None,  # type: Optional[ScenarioInputDataType]
-        **option_lists
-    ):  # type: (...) -> None
+        name: str,
+        calib_space: DesignSpace | None = None,
+        calib_algo: ScenarioInputDataType | None = None,
+        **option_lists,
+    ) -> None:
         """Add a machine learning algorithm candidate.
 
         Args:
@@ -148,7 +138,7 @@ class MLAlgoSelection(object):
                 If None, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
-                e.g. {"algo": "fullfact", "n_samples": 10}).
+                e.g. {"algo": "fullfact", "n_samples": 10}.
                 If None, do not perform calibration.
             **option_lists: The parameters
                 for the machine learning algorithm candidate.
@@ -159,7 +149,7 @@ class MLAlgoSelection(object):
 
         Examples:
             >>> selector.add_candidate(
-            >>>     "LinearRegression",
+            >>>     "LinearRegressor",
             >>>     penalty_level=[0, 0.1, 1, 10, 20],
             >>>     l2_penalty_ratio=[0, 0.5, 1],
             >>>     fit_intercept=[True],
@@ -186,7 +176,7 @@ class MLAlgoSelection(object):
                     calib_space,
                     self.measure,
                     self.measure_options,
-                    **params
+                    **params,
                 )
                 calib.execute(calib_algo)
                 algo_new = calib.optimal_algorithm
@@ -203,8 +193,8 @@ class MLAlgoSelection(object):
 
     def select(
         self,
-        return_quality=False,  # type:bool
-    ):  # type: (...) -> Union[MLAlgo,Tuple[MLAlgo,float]]
+        return_quality: bool = False,
+    ) -> MLAlgo | tuple[MLAlgo, float]:
         """Select the best model.
 
         The model is chosen through a grid search

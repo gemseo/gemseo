@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,29 +12,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Test the class AndrewsCurves plotting samples as curves."""
-
-from __future__ import division, unicode_literals
-
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array
-
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
-from gemseo.utils.py23_compat import PY2, PY3
+from gemseo.utils.testing import image_comparison
+from matplotlib import pyplot as plt
+from numpy import array
 
-pytestmark = [
-    pytest.mark.skipif(PY2, reason="image comparison does not work with python 2"),
-    pytest.mark.xfail(PY3, reason="fail with Python3 and coverage"),
-]
+pytestmark = [pytest.mark.xfail(reason="fail with Python3 and coverage")]
 
 
 @pytest.fixture(scope="module")
@@ -56,35 +46,40 @@ def dataset():
 # - the kwargs to be passed to ParallelCoordinates._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, ["AndrewsCurves"]),
+    "default": ({}, {}, ["AndrewsCurves"]),
+    "with_properties": (
+        {},
+        {
+            "xlabel": "The xlabel",
+            "ylabel": "The ylabel",
+            "title": "The title",
+        },
+        ["AndrewsCurves_properties"],
+    ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
-    """Test images created by AndrewsCurves._plot against references.
-
-    Args:
-        kwargs (dict): The optional arguments to pass to AndrewsCurves._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    AndrewsCurves(dataset)._plot({}, classifier="c")
+@pytest.mark.parametrize("fig_and_axes", [False, True])
+@image_comparison(None)
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
+    """Test images created by AndrewsCurves._plot against references."""
+    plot = AndrewsCurves(dataset, **kwargs)
+    fig, axes = (
+        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
+    )
+    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)
 
 
 def test_error(dataset):
-    """Test an error is raised when a wrong name is given.
-
-    Args:
-        dataset (Dataset): A dataset.
-    """
+    """Test an error is raised when a wrong name is given."""
     expected = "Classifier must be one of these names: c, x, y, z"
     with pytest.raises(ValueError, match=expected):
-        AndrewsCurves(dataset)._plot({}, classifier="foo")
+        AndrewsCurves(dataset, classifier="foo")._plot()

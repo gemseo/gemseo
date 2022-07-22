@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "maximize_objective": {
+      "description": "If True, the objective function is maximized.",
+      "type": "boolean"
+    },
+    "grammar_type": {
+      "description": "The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "grammar_type",
+    "maximize_objective"
+  ]
+}

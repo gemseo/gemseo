@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -49,33 +47,33 @@ by means of the :code:`classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from typing import Sequence
 
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from pandas import DataFrame
+from pandas.plotting import scatter_matrix
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-try:
-    from pandas.plotting import scatter_matrix
-except ImportError:
-    from pandas import scatter_matrix
 
 
 class ScatterMatrix(DatasetPlot):
     """Scatter plot matrix."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
-        classifier=None,  # type: Optional[str]
-        kde=False,  # type: bool
-        size=25,  # type: int
-        marker="o",  # type: str
-    ):  # type: (...) -> List[Figure]
+        dataset: Dataset,
+        variable_names: Sequence[str] | None = None,
+        classifier: str | None = None,
+        kde: bool = False,
+        size: int = 25,
+        marker: str = "o",
+        plot_lower: bool = True,
+        plot_upper: bool = True,
+    ) -> None:
         """
         Args:
             classifier: The name of the variable to build the cluster.
@@ -84,92 +82,90 @@ class ScatterMatrix(DatasetPlot):
                 Otherwise, use histograms.
             size: The size of the points.
             marker: The marker for the points.
+            plot_lower: Whether to plot the lower part.
+            plot_upper: Whether to plot the upper part.
         """
-        figsize_x = properties.get(self.FIGSIZE_X) or 10
-        figsize_y = properties.get(self.FIGSIZE_Y) or 10
+        super().__init__(
+            dataset,
+            variable_names=variable_names,
+            classifier=classifier,
+            kde=kde,
+            size=size,
+            marker=marker,
+            plot_lower=plot_lower,
+            plot_upper=plot_upper,
+        )
+
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
+        variable_names = self._param.variable_names
+        classifier = self._param.classifier
+        kde = self._param.kde
+        size = self._param.size
+        marker = self._param.marker
+        if variable_names is None:
+            variable_names = self.dataset.variables
+
         if classifier is not None and classifier not in self.dataset.variables:
             raise ValueError(
-                "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variables)
+                f"{classifier} cannot be used as a classifier "
+                f"because it is not a variable name; "
+                f"available ones are: {self.dataset.variables}."
             )
+
         if kde:
             diagonal = "kde"
         else:
             diagonal = "hist"
-        dataframe = self.dataset.export_to_dataframe()
-        if classifier is None:
-            self._scatter_matrix(
-                dataframe, diagonal, size, marker, figsize_x, figsize_y
-            )
-        else:
-            self._scatter_matrix_for_group(
-                classifier, dataframe, diagonal, size, marker, figsize_x, figsize_y
-            )
-        return [plt.gcf()]
 
-    def _scatter_matrix_for_group(
-        self,
-        classifier,  # type: str
-        dataframe,  # type: DataFrame
-        diagonal,  # type: str
-        size,  # type: int
-        marker,  # type: str
-        figsize_x,  # type: int
-        figsize_y,  # type: int
-    ):  # type: (...) -> None
-        """Scatter matrix plot for group.
+        dataframe = self.dataset.export_to_dataframe(variable_names=variable_names)
+        kwargs = {}
+        if classifier is not None:
+            palette = dict(enumerate("bgrcmyk"))
+            groups = self.dataset.get_data_by_names([classifier], False)[:, 0:1]
+            kwargs["color"] = [palette[group[0] % len(palette)] for group in groups]
+            _, variable_name = self._get_label(classifier)
+            dataframe = dataframe.drop(labels=variable_name, axis=1)
 
-        Args:
-            classifier: The name of the variable to group the data.
-            dataframe: The data to plot.
-            diagonal: The type of distribution representation, either "kde" or "hist".
-            size: The size of the points.
-            marker: The marker for the points.
-            figsize_x: The size of the figure in horizontal direction (inches).
-            figsize_y: The size of the figure in vertical direction (inches).
-        """
-        palette = dict(enumerate("bgrcmyk"))
-        groups = self.dataset.get_data_by_names([classifier], False)[:, 0:1]
-        colors = [palette[group[0] % len(palette)] for group in groups]
-        _, varname = self._get_label(classifier)
-        dataframe = dataframe.drop(varname, 1)
         dataframe.columns = self._get_variables_names(dataframe)
-        scatter_matrix(
+        fig, axes = self._get_figure_and_axes(fig, axes, self.fig_size)
+        sub_axes = scatter_matrix(
             dataframe,
             diagonal=diagonal,
-            color=colors,
             s=size,
             marker=marker,
-            figsize=(figsize_x, figsize_y),
+            figsize=self.fig_size,
+            ax=axes,
+            **kwargs,
         )
 
-    def _scatter_matrix(
-        self,
-        dataframe,  # type: DataFrame
-        diagonal,  # type: str
-        size,  # type: int
-        marker,  # type: str
-        figsize_x,  # type: int
-        figsize_y,  # type: int
-    ):  # type: (...) -> None
-        """Scatter matrix plot for group.
+        n_cols = sub_axes.shape[0]
+        if not (self._param.plot_lower and self._param.plot_upper):
+            for i in range(n_cols):
+                for j in range(n_cols):
+                    sub_axes[i, j].get_xaxis().set_visible(False)
+                    sub_axes[i, j].get_yaxis().set_visible(False)
 
-        Args:
-            dataframe: The data to plot.
-            diagonal: The type of distribution representation, either "kde" or "hist".
-            size: The size of the points.
-            marker: The marker for the points.
-            figsize_x: The size of the figure in horizontal direction (inches).
-            figsize_y: The size of the figure in vertical direction (inches).
+        if not self._param.plot_lower:
+            for i in range(n_cols):
+                for j in range(i):
+                    sub_axes[i, j].set_visible(False)
 
-        Returns:
-            The figure.
-        """
-        dataframe.columns = self._get_variables_names(dataframe)
-        scatter_matrix(
-            dataframe,
-            diagonal=diagonal,
-            figsize=(figsize_x, figsize_y),
-            s=size,
-            marker=marker,
-        )
+            for i in range(n_cols):
+                sub_axes[i, i].get_xaxis().set_visible(True)
+                sub_axes[i, i].get_yaxis().set_visible(True)
+
+        if not self._param.plot_upper:
+            for i in range(n_cols):
+                for j in range(i + 1, n_cols):
+                    sub_axes[i, j].set_visible(False)
+
+            for i in range(n_cols):
+                sub_axes[-1, i].get_xaxis().set_visible(True)
+                sub_axes[i, 0].get_yaxis().set_visible(True)
+
+        plt.suptitle(self.title)
+        return [fig]

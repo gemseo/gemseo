@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,19 +19,18 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test principal component analysis dimension reduction."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, arange, ndarray
-
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
+from numpy import allclose
+from numpy import arange
+from numpy import ndarray
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
 
 @pytest.fixture
-def data():  # type: (...) -> ndarray
+def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
@@ -48,10 +45,18 @@ def test_constructor():
 
 
 def test_learn(data):
-    """Test learn."""
+    """Test learn with the default number of components (None)."""
+    pca = PCA()
+    pca.fit(data)
+    assert pca.n_components == pca.algo.n_components_
+
+
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
+    assert pca.n_components == n_components
 
 
 def test_transform(data):

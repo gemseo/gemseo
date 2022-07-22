@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,12 +20,16 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction consistency constraint subclass to support formulations."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Sequence
+from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import eye, ndarray, ones_like, zeros
+from numpy import eye
+from numpy import ndarray
+from numpy import ones_like
+from numpy import zeros
 
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -42,9 +45,9 @@ class ConsistencyCstr(MDOFunction):
 
     def __init__(
         self,
-        output_couplings,  # type: Sequence[str]
-        formulation,  # type: MDOFormulation
-    ):  # type: (...) -> None
+        output_couplings: Sequence[str],
+        formulation: MDOFormulation,
+    ) -> None:
         """
         Args:
             output_couplings: The names of the output couplings.
@@ -64,11 +67,13 @@ class ConsistencyCstr(MDOFunction):
         else:
             self.__norm_fact = 1.0
 
+        self.__dv_len = self.__formulation.design_space.variables_sizes
+
         expr = ""
         for out_c in self.__output_couplings:
-            expr += "{0}({1}) - {0}\n".format(out_c, ", ".join(self.__dv_names_of_disc))
+            expr += f"{out_c}({', '.join(self.__dv_names_of_disc)}) - {out_c}\n"
 
-        super(ConsistencyCstr, self).__init__(
+        super().__init__(
             self._coupl_min_x,
             self.__coupl_func.name,
             args=self.__dv_names_of_disc,
@@ -80,8 +85,8 @@ class ConsistencyCstr(MDOFunction):
 
     def _coupl_min_x(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Compute the consistency constraints.
 
         Args:
@@ -99,8 +104,8 @@ class ConsistencyCstr(MDOFunction):
 
     def _coupl_min_x_jac(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Compute the gradient of the consistency constraints.
 
         Args:
@@ -121,12 +126,12 @@ class ConsistencyCstr(MDOFunction):
             o_min = 0
             o_max = 0
             for out in self.__output_couplings:
-                o_len = self.__formulation._get_dv_length(out)
+                o_len = self.__dv_len[out]
                 i_min = 0
                 i_max = 0
                 o_max += o_len
                 for x_i in x_names:
-                    x_len = self.__formulation._get_dv_length(x_i)
+                    x_len = self.__dv_len[x_i]
                     i_max += x_len
                     if x_i == out:
                         x_jac_2d[o_min:o_max, i_min:i_max] = eye(x_len)

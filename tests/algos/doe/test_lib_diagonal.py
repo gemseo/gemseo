@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from unittest import mock
 
 import pytest
+from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_scalable import DiagonalDOE
 from numpy import array
 from numpy.testing import assert_equal
 from pytest import approx
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.lib_scalable import DiagonalDOE
-
-from .utils import check_problem_execution, execute_problem
+from .utils import check_problem_execution
+from .utils import execute_problem
 
 DOE_LIB_NAME = "DiagonalDOE"
 
@@ -61,7 +56,7 @@ def test_diagonal_doe():
     doe_library = execute_problem(
         DOE_LIB_NAME, algo_name="DiagonalDOE", dim=dim, n_samples=n_samples
     )
-    samples = doe_library.samples
+    samples = doe_library.unit_samples
     assert samples.shape == (n_samples, dim)
     assert samples[4, 0] == approx(0.4, rel=0.0, abs=0.1)
 
@@ -110,3 +105,8 @@ def test_reverse(variables_space, reverse, samples):
     library = DOEFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
     assert_equal(doe, samples)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert DiagonalDOE.LIBRARY_NAME == "GEMSEO"

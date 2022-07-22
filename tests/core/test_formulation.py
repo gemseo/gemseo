@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,27 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
 import math
 import unittest
 
 import numpy as np
-
+import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from numpy.dual import norm
 
 
 class TestMDOFormulation(unittest.TestCase):
@@ -42,7 +39,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_generator(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         f = MDOFormulation([sm], "y_4", ds)
         args = ["toto"]
         self.assertRaises(Exception, f._get_generator_with_inputs, *args)
@@ -52,7 +49,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_cstrs(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         f = MDOFormulation([sm], "y_4", ds)
         prob = f.opt_problem
         assert not prob.has_constraints()
@@ -81,9 +78,12 @@ class TestMDOFormulation(unittest.TestCase):
     #         self.assertRaises(Exception, f.get_discipline_run_inputs, None)
 
     def test_jac_sign(self):
-        """"""
+        """Check the evaluation and linearization of the sinus MDOFunction."""
+        # TODO: this test should be removed as it does not check MDOFormulation.
         sm = SobieskiMission()
-        f = MDOFormulation([sm], "y_4", ["x_shared"])
+        design_space = DesignSpace()
+        design_space.add_variable("x_shared")
+        f = MDOFormulation([sm], "y_4", design_space)
 
         g = MDOFunction(
             math.sin,
@@ -101,14 +101,14 @@ class TestMDOFormulation(unittest.TestCase):
 
     def test_get_x0(self):
         """"""
-        _ = MDOFormulation(
-            [SobieskiMission()], "y_4", SobieskiProblem().read_design_space()
-        )
+        _ = MDOFormulation([SobieskiMission()], "y_4", SobieskiProblem().design_space)
 
     def test_add_user_defined_constraint_error(self):
-        """"""
+        """Check that an error is raised when adding a constraint with wrong type."""
         sm = SobieskiMission()
-        f = MDOFormulation([sm], "y_4", ["x_shared"])
+        design_space = DesignSpace()
+        design_space.add_variable("x_shared")
+        f = MDOFormulation([sm], "y_4", design_space)
         self.assertRaises(Exception, f.add_constraint, "y_4", "None", "None")
 
     # =========================================================================
@@ -125,7 +125,7 @@ class TestMDOFormulation(unittest.TestCase):
 
     def test_get_values_array_from_dict(self):
         """"""
-        a = DataConversion.dict_to_array({}, [])
+        a = concatenate_dict_of_arrays_to_array({}, [])
         self.assertIsInstance(a, type(np.array([])))
 
     def test_get_mask_from_datanames(self):
@@ -147,26 +147,36 @@ class TestMDOFormulation(unittest.TestCase):
         f = MDOFormulation([sm], "y_4", design_space)
 
         x = np.concatenate([rid[n] for n in dvs])
-        f.mask_x(dvs, x, dvs)
-        f.mask_x(dvs, x)
-        f.mask_x_swap_order(dvs, x, dvs)
+        c = f.mask_x_swap_order(dvs, x, dvs)
+        expected = np.array(
+            [
+                0.05,
+                4.5e04,
+                1.6,
+                5.5,
+                55.0,
+                1000.0,
+                50606.9741711000024,
+                7306.20262123999964,
+            ]
+        )
+        assert norm(c - expected) < 1e-14
+        x_values_dict = f._get_dv_indices(dvs)
+        assert x_values_dict == {"x_shared": (0, 4, 4), "y_14": (4, 8, 4)}
 
-        f._get_x_mask_swap(dvs)
-        self.assertRaises(Exception, f._get_x_mask_swap, dvs, ["toto"])
+        with pytest.raises(KeyError):
+            f.mask_x_swap_order(dvs + ["toto"], x)
 
-        self.assertRaises(ValueError, f.mask_x_swap_order, dvs + ["toto"], x)
-        #         x_masked = f.mask_x_swap_order(dvs, x[0:3])
-
-        f.mask_x_swap_order(
+        ff = f.mask_x_swap_order(
             ["x_shared"],
             x_vect=np.zeros(19),
             all_data_names=design_space.variables_names,
         )
+        assert (ff == np.zeros(4)).all()
 
         design_space.remove_variable("x_shared")
         design_space.add_variable("x_shared", 10)
-        self.assertRaises(ValueError, f.mask_x, dvs, x)
-        self.assertRaises(ValueError, f.mask_x_swap_order, dvs, x)
+        self.assertRaises(IndexError, f.mask_x_swap_order, dvs, x)
 
     def test_remove_sub_scenario_dv_from_ds(self):
         ds2 = DesignSpace()
@@ -181,15 +191,6 @@ class TestMDOFormulation(unittest.TestCase):
         f2._remove_sub_scenario_dv_from_ds()
         assert "x" not in f2.design_space.variables_names
 
-    def test_wrong_inputs(self):
-        """"""
-        dvs = ["x_shared", "y_14"]
-
-        design_space = DesignSpace()
-        for name in dvs:
-            design_space.add_variable(name, 1)
-        self.assertRaises(TypeError, MDOFormulation, [], "y_4", design_space)
-
     def test_get_obj(self):
         """"""
         sm = SobieskiMission()
@@ -202,42 +203,42 @@ class TestMDOFormulation(unittest.TestCase):
         f = MDOFormulation([sm], "Y5", design_space)
         self.assertRaises(Exception, lambda: f.get_objective())
 
-    def test_get_x_mask(self):
-        sm = SobieskiMission()
-        dvs = ["x_shared", "y_14"]
-
-        design_space = DesignSpace()
-        for name in dvs:
-            design_space.add_variable(name, 1)
-
-        f = MDOFormulation([sm], "y_4", design_space)
-        x = np.concatenate([np.ones(1)] * 2)
-        xm = f.mask_x(dvs, x, dvs)
-        f.unmask_x(dvs, xm)
-        f.unmask_x_swap_order(dvs, xm)
-        f.mask_x_swap_order(dvs, x, dvs)
-        f.unmask_x_swap_order(dvs, x, dvs, x_full=x)
-        self.assertTrue([True for i in range(len(dvs))], f._get_x_mask_swap(dvs, dvs))
-        f._get_x_mask_swap(dvs)
-
-        design_space.remove_variable("x_shared")
-        design_space.add_variable("x_shared", 10)
-        self.assertRaises(ValueError, f.unmask_x_swap_order, dvs, x)
-
     def test_get_expected_workflow(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         f = MDOFormulation([sm], "Y5", ds)
         self.assertRaises(Exception, f.get_expected_workflow)
 
 
 def test_grammar_type():
     """Check that the grammar type is correctly stored."""
-    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
     formulation = MDOFormulation(
         [discipline], "y", design_space, grammar_type="a_grammar_type"
     )
     assert formulation._grammar_type == "a_grammar_type"
+
+
+def test_remove_unused_variable_logger(caplog):
+    """Check that a message is logged when an unused variable is removed.
+
+    Args:
+        caplog: Fixture to access and control log capturing.
+    """
+    y1 = AnalyticDiscipline({"y1": "x1+y2"})
+    y2 = AnalyticDiscipline({"y2": "x2+y1"})
+    y3 = AnalyticDiscipline({"toto": "x3+y1+y2"})
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    design_space.add_variable("x2")
+    design_space.add_variable("y1")
+    design_space.add_variable("toto")
+    formulation = MDOFormulation([y1, y2, y3], "y2", design_space)
+    formulation._remove_unused_variables()
+    assert (
+        "Variable toto was removed from the Design Space, it is not an input of any "
+        "discipline." in caplog.text
+    )

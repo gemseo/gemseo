@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,25 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test radial basis function regression module."""
-from __future__ import division, unicode_literals
-
 import pytest
-from numpy import allclose, array
-from scipy.interpolate.rbf import Rbf
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.rbf import RBFRegression
+from gemseo.mlearning.regression.rbf import RBFRegressor
+from numpy import allclose
+from numpy import array
+from scipy.interpolate.rbf import Rbf
 
 LEARNING_SIZE = 9
 
@@ -43,10 +39,11 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"}
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline(
+        {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"}
+    )
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
@@ -57,57 +54,59 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> RBFRegression
-    """A trained RBFRegression."""
-    rbf = RBFRegression(dataset)
+def model(dataset) -> RBFRegressor:
+    """A trained RBFRegressor."""
+    rbf = RBFRegressor(dataset)
     rbf.learn()
     return rbf
 
 
 @pytest.fixture
-def model_with_custom_function(dataset):  # type: (...) -> RBFRegression
-    """A trained RBFRegression  f(r) = r**2 - 1 as kernel function."""
+def model_with_custom_function(dataset) -> RBFRegressor:
+    """A trained RBFRegressor  f(r) = r**2 - 1 as kernel function."""
 
     def der_function(input_data, norm_input_data, eps):
-        return 2 * input_data / eps ** 2
+        return 2 * input_data / eps**2
 
-    rbf = RBFRegression(
-        dataset, function=(lambda r: r ** 2 - 1), der_function=der_function
+    rbf = RBFRegressor(
+        dataset, function=(lambda r: r**2 - 1), der_function=der_function
     )
     rbf.learn()
     return rbf
 
 
 @pytest.fixture
-def model_with_1d_output(dataset):  # type: (...) -> RBFRegression
-    """A trained RBFRegression with y_1 as output."""
-    rbf = RBFRegression(dataset, output_names=["y_1"])
+def model_with_1d_output(dataset) -> RBFRegressor:
+    """A trained RBFRegressor with y_1 as output."""
+    rbf = RBFRegressor(dataset, output_names=["y_1"])
     rbf.learn()
     return rbf
 
 
 def test_get_available_functions():
     """Test available RBFs."""
-    for function in RBFRegression.AVAILABLE_FUNCTIONS:
-        assert hasattr(Rbf, "_h_{}".format(function))
+    for function in RBFRegressor.AVAILABLE_FUNCTIONS:
+        assert hasattr(Rbf, f"_h_{function}")
 
 
 def test_constructor(dataset):
     """Test construction."""
-    model_ = RBFRegression(dataset)
+    model_ = RBFRegressor(dataset)
     assert model_.algo is None
+    assert model_.SHORT_ALGO_NAME == "RBF"
+    assert model_.LIBRARY == "SciPy"
 
 
 def test_jacobian_not_implemented(dataset):
     """Test cases where the Jacobian is not implemented."""
     # Test unimplemented norm
-    rbf = RBFRegression(dataset, norm="canberra")
+    rbf = RBFRegressor(dataset, norm="canberra")
     rbf.learn()
     with pytest.raises(NotImplementedError):
         rbf.predict_jacobian(INPUT_VALUE)
 
     # Test rbf function without derivative
-    rbf = RBFRegression(dataset, function=(lambda x: x - 5))
+    rbf = RBFRegressor(dataset, function=(lambda x: x - 5))
     rbf.learn()
     with pytest.raises(NotImplementedError):
         rbf.predict_jacobian(INPUT_VALUE)
@@ -115,7 +114,7 @@ def test_jacobian_not_implemented(dataset):
 
 def test_learn(dataset):
     """Test learn."""
-    model_ = RBFRegression(dataset)
+    model_ = RBFRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
 
@@ -167,8 +166,8 @@ def test_pred_single_out(model_with_1d_output):
 
 def test_predict_jacobian(dataset):
     """Test prediction."""
-    for function in RBFRegression.AVAILABLE_FUNCTIONS:
-        model_ = RBFRegression(dataset, function=function)
+    for function in RBFRegressor.AVAILABLE_FUNCTIONS:
+        model_ = RBFRegressor(dataset, function=function)
         model_.learn()
         jacobian = model_.predict_jacobian(INPUT_VALUE)
         jacobians = model_.predict_jacobian(INPUT_VALUES)

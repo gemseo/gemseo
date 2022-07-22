@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,24 +12,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Self Organizing Maps to display high dimensional design spaces."""
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from math import floor, sqrt
+from math import floor
+from math import sqrt
 
 import matplotlib
-from numpy import array, bincount, float64, int32, isnan, logical_not
+from numpy import array
+from numpy import bincount
+from numpy import float64
+from numpy import int32
+from numpy import isnan
+from numpy import logical_not
 from numpy import max as np_max
-from numpy import mean, mgrid
+from numpy import mean
+from numpy import mgrid
 from numpy import min as np_min
-from numpy import ndarray, nonzero, unique, where, zeros
+from numpy import ndarray
+from numpy import nonzero
+from numpy import unique
+from numpy import where
+from numpy import zeros
 from pylab import plt
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -51,20 +59,20 @@ class SOM(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(SOM, self).__init__(opt_problem)
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
         self.som = None
         self.cmap = PARULA
 
     @staticmethod
     def __build_som_from_vars(
-        x_vars,  # type: ndarray
-        som_grid_nx=5,  # type:int
-        som_grid_ny=5,  # type:int
-        initmethod="pca",  # type:str
-        verbose="off",  # type:str
-    ):  # type: (...) -> SOM
+        x_vars: ndarray,
+        som_grid_nx: int = 5,
+        som_grid_ny: int = 5,
+        initmethod: str = "pca",
+        verbose: str = "off",
+    ) -> SOM:
         """Builds the SOM from the design variables history.
 
         Args:
@@ -94,31 +102,31 @@ class SOM(OptPostProcessor):
 
     def _plot(
         self,
-        n_x=4,  # type: int
-        n_y=4,  # type: int
-        annotate=False,  # type: bool
-    ):  # type: (...) -> None
+        n_x: int = 4,
+        n_y: int = 4,
+        annotate: bool = False,
+    ) -> None:
         """
         Args:
             n_x: The number of grids in x.
             n_y: The number of grids in y.
             annotate: If True, add label of neuron value to SOM plot.
         """
-        criteria_list = [
+        criteria = [
             self.opt_problem.get_objective_name()
         ] + self.opt_problem.get_constraints_names()
         all_data = self.database.get_all_data_names()
         # Ensure that the data is available in the database
-        for crit in criteria_list:
-            if crit not in all_data:
-                criteria_list.remove(crit)
+        for criterion in criteria:
+            if criterion not in all_data:
+                criteria.remove(criterion)
         figure = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         figure.suptitle("Self Organizing Maps of the design space", fontsize=14)
         subplot_number = 0
         self.__compute(n_x, n_y)
-        for criteria in criteria_list:
+        for criterion in criteria:
             f_hist, _ = self.database.get_complete_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criteria]
+                ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
@@ -133,51 +141,41 @@ class SOM(OptPostProcessor):
         if (subplot_number % grid_size_x) > 0:
             grid_size_y += 1
 
-        fig_indx = 1
-        for criteria in criteria_list:
+        for index, criterion in enumerate(criteria):
             f_hist, _ = self.database.get_complete_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criteria]
+                ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
             if isinstance(f_hist[0][3], ndarray):
-                dim_val = f_hist[0][3].size
-                for k in range(dim_val):
-                    f_hist_scalar = []
-                    for f_h in f_hist:
-                        scal_list = f_h[0:3]
-                        scal_list.append(f_h[3][k])
-                        f_hist_scalar.append(scal_list)
-                    criteria_name = criteria + "_" + str(k)
+                for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(
-                        f_hist_scalar,
-                        criteria_name,
-                        fig_indx,
+                        [f_h[0:3] + [f_h[3][k]] for f_h in f_hist],
+                        f"{criterion}_{k}",
+                        index + 1,
                         grid_size_x=grid_size_x,
                         grid_size_y=grid_size_y,
                         annotate=annotate,
                     )
-                    fig_indx += 1
 
             else:
                 self.__plot_som_from_scalar_data(
                     f_hist,
-                    criteria,
-                    fig_indx,
+                    criterion,
+                    index + 1,
                     grid_size_x=grid_size_x,
                     grid_size_y=grid_size_y,
                     annotate=annotate,
                 )
-                fig_indx += 1
 
         self._add_figure(figure)
 
     def __plot_som_from_scalar_data(
         self,
-        f_hist_scalar,  # type: ndarray
-        criteria,  # type: str
-        fig_indx,  # type: int
-        grid_size_x=3,  # type: int
-        grid_size_y=20,  # type: int
-        annotate=False,  # type: bool
+        f_hist_scalar: ndarray,
+        criteria: str,
+        fig_indx: int,
+        grid_size_x: int = 3,
+        grid_size_y: int = 20,
+        annotate: bool = False,
     ):
         """Builds the SOM plot after computation for a given criteria.
 
@@ -208,7 +206,7 @@ class SOM(OptPostProcessor):
         axe = plt.subplot(grid_size_y, grid_size_x, fig_indx)
         minv = np_min(mat_ij[non_empty])
         maxv = np_max(mat_ij[non_empty])
-        self.out_data_dict[fig_indx] = mat_ij
+        self.materials_for_plotting[fig_indx] = mat_ij
         im1 = axe.imshow(
             mat_ij,
             vmin=minv - 0.01 * abs(minv),
@@ -241,8 +239,8 @@ class SOM(OptPostProcessor):
 
     def __compute(
         self,
-        som_grid_nx=5,  # type: int
-        som_grid_ny=5,  # type: int
+        som_grid_nx: int = 5,
+        som_grid_ny: int = 5,
     ):
         """Build the SOM from optimization history.
 
@@ -256,7 +254,7 @@ class SOM(OptPostProcessor):
         som_cluster_index = self.som.project_data(x_vars)
         som_coord = array(self.som.ind_to_xy(som_cluster_index), dtype=int32)
         coord_2d_offset = self.__coord2d_to_coords_offsets(som_coord)
-        self.out_data_dict["SOM"] = coord_2d_offset
+        self.materials_for_plotting["SOM"] = coord_2d_offset
         for i, x_vars in enumerate(x_history):
             self.database.store(
                 x_vars,
@@ -271,9 +269,9 @@ class SOM(OptPostProcessor):
 
     @staticmethod
     def __coord2d_to_coords_offsets(
-        som_coord,  # type: ndarray
-        max_ofset=0.6,  # type: float
-    ):  # type: (...) -> ndarray
+        som_coord: ndarray,
+        max_ofset: float = 0.6,
+    ) -> ndarray:
         """Takes a coord array from SOM and adds an offset to the coordinates of the
         elements in the cluster so that they can be distinguished at display.
 

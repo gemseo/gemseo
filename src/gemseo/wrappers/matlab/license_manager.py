@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
@@ -22,7 +20,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Arthur Piat
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 """Definition of the Matlab license manager.
 
 Overview
@@ -32,17 +29,17 @@ This module contains the :class:`.LicenseManager`
 which enables to check the presence of any toolbox licenses
 of the Matlab installation.
 """
+from __future__ import annotations
 
 import logging
-from typing import List, Optional
+from pathlib import Path
 
-from gemseo.utils.py23_compat import Path
-from gemseo.wrappers.matlab.engine import __MatlabEngine
+from gemseo.wrappers.matlab.engine import MatlabEngine
 
 LOGGER = logging.getLogger(__name__)
 
 
-class LicenseManager(object):
+class LicenseManager:
     """Manage Matlab License.
 
     The licenseManager was created to enables de-synchronised
@@ -53,7 +50,6 @@ class LicenseManager(object):
 
     Attributes:
         engine: The MatlabEngine instance.
-        licenses: The list of license toolbox that must be used.
 
     Examples:
         >>> # Build a new matlab engine
@@ -70,9 +66,7 @@ class LicenseManager(object):
     DISTRIB_COMP_TOOL = "distrib_computing_toolbox"
     CURVE_FIT_TOOL = "Curve_Fitting_Toolbox"
 
-    def __init__(
-        self, engine  # type: __MatlabEngine
-    ):  # type: (...) -> None
+    def __init__(self, engine: MatlabEngine) -> None:
         # noqa: D205,D212,D415
         """
         Args:
@@ -91,7 +85,7 @@ class LicenseManager(object):
 
     @property
     def licenses(self):
-        """Get and set all licences."""
+        """The licences."""
         return self.__licenses
 
     @licenses.setter
@@ -100,10 +94,10 @@ class LicenseManager(object):
 
     def check_licenses(
         self,
-        licenses=None,  # type: Optional[List[str]]
-        pause_frac=60,  # type: float
-        pause_const=20,  # type: float
-    ):  # type: (...) -> None
+        licenses: list[str] | None = None,
+        pause_frac: float = 60,
+        pause_const: float = 20,
+    ) -> None:
         """Check that the Matlab licenses exist.
 
         The method fetches all the needed licenses thanks to the
@@ -132,9 +126,9 @@ class LicenseManager(object):
 
     def start_parallel_computing(
         self,
-        n_parallel_workers=4,  # type: int
-        cluster_name="local",  # type: str
-    ):  # type: (...) -> bool
+        n_parallel_workers: int = 4,
+        cluster_name: str = "local",
+    ) -> bool:
         """Start parallel computing in MatlabEngine.
 
         Args:
@@ -146,6 +140,6 @@ class LicenseManager(object):
         self.check_licenses(self.DISTRIB_COMP_TOOL)
         self.__engine.start_parallel_computing(n_parallel_workers, cluster_name)
 
-    def end_parallel_computing(self):  # type: (...) -> bool
+    def end_parallel_computing(self) -> bool:
         """Stop parallel computing in matlab engine."""
         self.__engine.end_parallel_computing()

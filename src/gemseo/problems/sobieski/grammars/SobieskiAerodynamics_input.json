@@ -1,0 +1,44 @@
+{
+    "name": "SobieskiAerodynamics_input",
+    "required": [ "x_2","y_32", "x_shared","y_12"],
+    "properties": {
+        "x_2": {
+            "items": {
+                "type": "number"
+            },
+			"type": "array",
+            "description":"friction coefficient"
+        },
+        "y_32": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description":"entengine scale factor"
+        },
+        "x_shared": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description":"shared design variable vector,\n thickness/chord ratio, altitude,\n Mach ,\n aspect ratio,\n wing sweep,\n wing surface area"
+        },
+        "y_12": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description":" total aircraft weight, wing twist"
+        },
+        "c_4": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description":"minimum drag coefficient"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#SobieskiAerodynamics_input"
+}

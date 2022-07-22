@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,50 +12,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Tests for the class SensitivityAnalysis."""
-
-from __future__ import division, unicode_literals
-
-import sys
-
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array, linspace, pi, sin
-from numpy.testing import assert_array_equal
-
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.py23_compat import PY2
-
-pytestmark = pytest.mark.skipif(
-    PY2, reason="image comparison does not work with python 2"
-)
+from gemseo.utils.testing import image_comparison
+from numpy import array
+from numpy import linspace
+from numpy import pi
+from numpy import sin
+from numpy.testing import assert_array_equal
 
 
 @pytest.fixture
-def discipline():  # type: (...) -> AnalyticDiscipline
+def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
-    expressions = {"y": "x1+2*x2+3*x3"}
-    return create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
 @pytest.fixture
-def parameter_space():  # type: (...) -> ParameterSpace
+def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()
     for name in ["x1", "x2", "x3"]:
@@ -68,15 +56,15 @@ class Ishigami1D(MDODiscipline):
     """A version of the Ishigami function indexed by a 1D variable."""
 
     def __init__(self):
-        super(Ishigami1D, self).__init__()
-        self.input_grammar.initialize_from_data_names(["x1", "x2", "x3"])
-        self.output_grammar.initialize_from_data_names(["y"])
+        super().__init__()
+        self.input_grammar.update(["x1", "x2", "x3"])
+        self.output_grammar.update(["out"])
 
     def _run(self):
         x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
         time = linspace(0, 1, 100)
-        output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3 ** 4 * sin(x_1) * time
-        self.store_local_data(y=output)
+        output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
+        self.store_local_data(out=output)
 
 
 class MockSensitivityAnalysis(SensitivityAnalysis):
@@ -130,13 +118,13 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
 
 
 @pytest.fixture
-def mock_sensitivity_analysis():  # type: (...) -> MockSensitivityAnalysis
+def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
     return MockSensitivityAnalysis()
 
 
 @pytest.fixture
-def second_mock_sensitivity_analysis():  # type: (...) -> SecondMockSensitivityAnalysis
+def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
     return SecondMockSensitivityAnalysis()
 
@@ -159,7 +147,7 @@ BARPLOT_TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=BARPLOT_TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all):
     """Check that a Barplot is created with plot_bar."""
     mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
@@ -198,16 +186,16 @@ def test_plot_comparison(discipline, parameter_space):
         discipline: A discipline of interest.
         parameter_space: The parameter space related to this discipline.
     """
-    spearman = CorrelationAnalysis(discipline, parameter_space, 10)
+    spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
-    pearson = CorrelationAnalysis(discipline, parameter_space, 10)
+    pearson = CorrelationAnalysis([discipline], parameter_space, 10)
     pearson.main_method = pearson._PEARSON
     pearson.compute_indices()
-    plot = pearson.plot_comparison(spearman, "y", save=False, show=False, title="foo")
+    plot = pearson.plot_comparison(spearman, "out", save=False, show=False, title="foo")
     assert plot.title == "foo"
     assert isinstance(plot, BarPlot)
     plot = pearson.plot_comparison(
-        spearman, "y", save=False, show=False, use_bar_plot=False
+        spearman, "out", save=False, show=False, use_bar_plot=False
     )
     assert isinstance(plot, RadarChart)
 
@@ -249,7 +237,7 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
 
 
 @pytest.fixture(scope="module")
-def ishigami():  # type: (...) -> SobolAnalysis
+def ishigami() -> SobolAnalysis:
     """Return the Sobol' analysis for the Ishigami function."""
     space = ParameterSpace()
     for variable in ["x1", "x2", "x3"]:
@@ -257,33 +245,35 @@ def ishigami():  # type: (...) -> SobolAnalysis
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol_analysis = SobolAnalysis(Ishigami1D(), space, 100)
+    sobol_analysis = SobolAnalysis([Ishigami1D()], space, 100)
     sobol_analysis.main_method = "total"
     sobol_analysis.compute_indices()
     return sobol_analysis
 
 
 ONE_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, ["1d_field"]),
-    "standardize": ({"standardize": True}, ["1d_field_standardize"]),
-    "inputs": ({"inputs": ["x1", "x3"]}, ["1d_field_inputs"]),
+    "without_option": ({}, ["1d_field"], "out"),
+    "without_option_with_tuple": ({}, ["1d_field"], ("out", 0)),
+    "standardize": ({"standardize": True}, ["1d_field_standardize"], "out"),
+    "inputs": ({"inputs": ["x1", "x3"]}, ["1d_field_inputs"], "out"),
     "inputs_standardize": (
         {"standardize": True, "inputs": ["x1", "x3"]},
         ["1d_field_inputs_standardize"],
+        "out",
     ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, baseline_images, output",
     ONE_D_FIELD_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None, extensions=["png"])
-def test_plot_1d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
+def test_plot_1d_field(kwargs, baseline_images, output, ishigami, pyplot_close_all):
     """Check if a 1D field is well plotted."""
-    ishigami.plot_field("y", save=False, show=False, **kwargs)
+    ishigami.plot_field(output, save=False, show=False, **kwargs)
 
 
 TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
@@ -292,26 +282,22 @@ TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
 
 
 TWO_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, ["2d_field_{}".format(i) for i in range(3)]),
+    "without_option": ({}, [f"2d_field_{i}" for i in range(3)]),
     "standardize": (
         {"standardize": True},
-        ["2d_field_standardize_{}".format(i) for i in range(3)],
+        [f"2d_field_standardize_{i}" for i in range(3)],
     ),
     "inputs": (
         {"inputs": ["x1", "x3"]},
-        ["2d_field_inputs_{}".format(i) for i in range(2)],
+        [f"2d_field_inputs_{i}" for i in range(2)],
     ),
     "inputs_standardize": (
         {"standardize": True, "inputs": ["x1", "x3"]},
-        ["2d_field_inputs_standardize_{}".format(i) for i in range(2)],
+        [f"2d_field_inputs_standardize_{i}" for i in range(2)],
     ),
 }
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 6),
-    reason="Image comparison based on Surfaces does not work with Python 3.6",
-)
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TWO_D_FIELD_TEST_PARAMETERS.values(),
@@ -323,7 +309,7 @@ def test_plot_2d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])
-    ishigami.plot_field("y", save=False, show=False, mesh=mesh, **kwargs)
+    ishigami.plot_field("out", save=False, show=False, mesh=mesh, **kwargs)
 
 
 def test_standardize_indices():
@@ -344,3 +330,21 @@ def test_standardize_indices():
         ],
     }
     assert standardized_indices == expected_standardized_indices
+
+
+def test_multiple_disciplines(parameter_space):
+    """Test a SensitivityAnalysis with multiple disciplines.
+
+    Args:
+        parameter_space: A parameter space for the analysis.
+    """
+    expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
+    d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
+    d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
+    d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
+
+    sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+
+    assert sensitivity_analysis.dataset.get_names("inputs") == ["x1", "x2", "x3"]
+    assert sensitivity_analysis.dataset.get_names("outputs") == ["f", "y1", "y2"]
+    assert sensitivity_analysis.dataset.n_samples == 5

@@ -1,0 +1,37 @@
+{% macro display_weblinks(weblinks, target) %}
+            {%- for weblink in weblinks %}<a href="{{weblink.url}}" target="{{target}}">&nbsp;{{weblink.text}}</a>{{ "," if not loop.last else "" }}{%- endfor %}.
+{% endmacro %}
+
+{% macro display_button(text, url, icon) %}
+          <div class="col" style="text-align: center;">
+            <a href="{{url}}" role="button" class="button-blocksection-global">
+              <i class="{{icon}}" class="button-blocksection-global"></i>
+              <span class="button-blocksection"><br/>{{text}}</span>
+            </a>
+          </div>
+{% endmacro %}
+
+{% macro displayblock(block) %}
+    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h4 class="sk-card-title">{{block.title}}</h4>
+          <p class="card-text">{{block.description}}</p>
+          {%- if block.algorithms %}
+          <p class="card-text"><strong>Algorithms:</strong>{{ display_weblinks(block.algorithms, "_self") }}</p>
+          {%- endif %}
+          {%- if block.features %}
+          <p class="card-text"><strong>Features:</strong>{{ display_weblinks(block.features, "_self") }}</p>
+          {%- endif %}
+          {%- if block.dependencies %}
+          <p class="card-text card-dependencies">Based on {{ display_weblinks(block.dependencies, "_blank") }}</p>
+          {%- endif %}
+        </div>
+        <div class="row">
+          {%- if block.info %}{{ display_button("Read more", block.info, "fas fa-info") }}{%- endif %}
+          {%- if block.examples %}{{ display_button("Examples", block.examples, "far fa-eye") }}{%- endif %}
+          {%- if block.options %}{{ display_button("Algorithms", block.options, "fa fa-cogs") }}{%- endif %}
+        </div>
+      </div>
+    </div>
+{% endmacro %}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,15 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Gauss Seidel algorithm for solving MDAs."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any
+from typing import Mapping
+from typing import Sequence
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -57,20 +57,20 @@ class MDAGaussSeidel(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        max_mda_iter=10,  # type: int
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        over_relax_factor=1.0,  # type: float
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        max_mda_iter: int = 10,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        over_relax_factor: float = 1.0,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+    ) -> None:
         """
         Args:
             over_relax_factor: The relaxation coefficient,
@@ -79,7 +79,7 @@ class MDAGaussSeidel(MDA):
                 If ``over_relax_factor =1.``, it is deactivated.
         """
         self.chain = MDOChain(disciplines, grammar_type=grammar_type)
-        super(MDAGaussSeidel, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
@@ -100,8 +100,8 @@ class MDAGaussSeidel(MDA):
         self._compute_input_couplings()
 
     def _initialize_grammars(self):
-        self.input_grammar.update_from(self.chain.input_grammar)
-        self.output_grammar.update_from(self.chain.output_grammar)
+        self.input_grammar.update(self.chain.input_grammar)
+        self.output_grammar.update(self.chain.output_grammar)
 
     def _run(self):
         # Run the disciplines in a sequential way
@@ -112,9 +112,8 @@ class MDAGaussSeidel(MDA):
 
         relax = self.over_relax_factor
         use_relax = relax != 1.0
-        # store initial residual
-        current_iter = 0
-        while not self._termination(current_iter) or current_iter == 0:
+
+        while not self._stop_criterion_is_reached or self._current_iter == 0:
             for discipline in self.disciplines:
                 discipline.execute(self.local_data)
                 outs = discipline.get_output_data()
@@ -139,12 +138,8 @@ class MDAGaussSeidel(MDA):
             self._compute_residual(
                 current_couplings,
                 new_couplings,
-                current_iter,
-                first=current_iter == 0,
                 log_normed_residual=self.log_convergence,
             )
-            # store current residuals
-            current_iter += 1
             current_couplings = new_couplings
 
         for discipline in self.disciplines:  # Update all outputs without relax

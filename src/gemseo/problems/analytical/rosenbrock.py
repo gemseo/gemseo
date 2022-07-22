@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,7 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Damien Guenot
@@ -23,12 +21,17 @@
 The Rosenbrock analytic problem
 *******************************
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 
-from numpy import array, atleast_2d, ones, zeros
-from scipy.optimize import rosen, rosen_der
+from numpy import array
+from numpy import atleast_2d
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -50,63 +53,57 @@ class Rosenbrock(OptimizationProblem):
     :math:`[-0.2,0.2]^{n_x}`.
     """
 
-    def __init__(self, n_x=2, l_b=-2.0, u_b=2.0, scalar_var=False, initial_guess=None):
+    def __init__(
+        self,
+        n_x: int = 2,
+        l_b: float = -2.0,
+        u_b: float = 2.0,
+        scalar_var: bool = False,
+        initial_guess: ndarray | None = None,
+    ) -> None:
         """
-        The constructor initializes the Rosenbrock
-        :class:`.OptimizationProblem`
-        by defining the :class:`.DesignSpace` and
-        the objective function.
-
-        :param n_x: problem dimension
-        :type n_x: int
-        :param l_b: lower bound (common value to all variables)
-        :type l_b: float
-        :param u_b: upper bound (common value to all variables)
-        :type u_b: float
-        :param scalar_var: if True the design space will
-            contain only scalar variables
-            (as many as the problem dimension); if False
-            the design space will contain a
-            single multidimensional variable (whose size
-            equals the problem dimension)
-        :type scalar_var: bool
-        :param initial_guess: initial guess for optimal solution
-        :type initial_guess: numpy array
+        Args:
+            n_x: The dimension of the design space.
+            l_b: The lower bound (common value to all variables).
+            u_b: The upper bound (common value to all variables).
+            scalar_var: If ``True``,
+                the design space will contain only scalar variables
+                (as many as the problem dimension);
+                if ``False``,
+                the design space will contain a single multidimensional variable
+                (whose size equals the problem dimension).
+            initial_guess: The initial guess for optimal solution.
         """
         design_space = DesignSpace()
         if scalar_var:
-            args = ["x" + str(i) for i in range(1, n_x + 1)]
+            args = [f"x{i}" for i in range(1, n_x + 1)]
             for arg in args:
                 design_space.add_variable(arg, l_b=l_b, u_b=u_b)
         else:
             args = ["x"]
             design_space.add_variable("x", size=n_x, l_b=l_b, u_b=u_b)
         if initial_guess is None:
-            design_space.set_current_x(zeros(n_x))
+            design_space.set_current_value(zeros(n_x))
         else:
-            design_space.set_current_x(initial_guess)
+            design_space.set_current_value(initial_guess)
 
-        super(Rosenbrock, self).__init__(design_space)
-        expr = "sum(100*(x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2"
+        super().__init__(design_space)
         self.objective = MDOFunction(
             rosen,
             name="rosen",
             f_type=MDOFunction.TYPE_OBJ,
             jac=rosen_der,
-            expr=expr,
+            expr="sum(100*(x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2",
             args=args,
         )
 
-    def get_solution(self):
+    def get_solution(self) -> tuple[ndarray, float]:
         """Return the theoretical optimal value.
 
-        :returns: design variables values of optimized values,
-            function value at optimum
-        :rtype: numpy array
+        Returns:
+            The design variables and the objective at optimum.
         """
-        x_opt = ones(self.design_space.dimension)
-        f_opt = 0.0
-        return x_opt, f_opt
+        return ones(self.design_space.dimension), 0.0
 
 
 class RosenMF(MDODiscipline):
@@ -122,17 +119,15 @@ class RosenMF(MDODiscipline):
     are provided as input data.
     """
 
-    def __init__(self, dimension=2):
-        """The constructor defines the default inputs of the :class:`.MDODiscipline`,
-        namely the default design parameter values and the fidelity.
-
-        :param dimension: problem dimension
-        :type dimension: int
+    def __init__(self, dimension: int = 2) -> None:
         """
-        super(RosenMF, self).__init__(auto_detect_grammar_files=True)
+        Args:
+            dimension: The dimension of the design space.
+        """
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x": zeros(dimension), "fidelity": array([1.0])}
 
-    def _run(self):
+    def _run(self) -> None:
         fidelity = self.local_data["fidelity"]
         x_val = self.local_data["x"]
         self.local_data["rosen"] = fidelity * rosen(x_val)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Abstract class defining the concept of probability distribution.
 
 Overview
@@ -74,23 +71,28 @@ or for all marginals (:meth:`.Distribution.plot_all`).
 Lastly, we can compute realizations of the random variable
 by means of the :meth:`.Distribution.compute_samples` method.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Callable, Iterable, List, Mapping, Optional, Tuple, Union
+from pathlib import Path
+from typing import Callable
+from typing import Iterable
+from typing import Mapping
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
-from numpy import arange, array, ndarray
-from past.utils import old_div
+from numpy import arange
+from numpy import array
+from numpy import ndarray
 
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,8 +100,7 @@ StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 
 
-@six.add_metaclass(DocInheritMeta(abstract_base_class=True))
-class Distribution(object):
+class Distribution(metaclass=GoogleDocstringInheritanceMeta):
     """Probability distribution related to a random variable.
 
     The dimension of the random variable can be greater than 1. In this case,
@@ -154,14 +155,13 @@ class Distribution(object):
 
     def __init__(
         self,
-        variable,  # type: str
-        interfaced_distribution,  # type: str
-        parameters,  # type: ParametersType
-        dimension=1,  # type: int
-        standard_parameters=None,  # type: Optional[StandardParametersType]
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        interfaced_distribution: str,
+        parameters: ParametersType,
+        dimension: int = 1,
+        standard_parameters: StandardParametersType | None = None,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
@@ -189,7 +189,7 @@ class Distribution(object):
         else:
             self.standard_parameters = standard_parameters
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE, default_name="distribution_{}".format(self.variable_name)
+            FileType.FIGURE, default_name=f"distribution_{self.variable_name}"
         )
         msg = MultiLineString()
         msg.add("Define the random variable: {}", variable)
@@ -198,16 +198,14 @@ class Distribution(object):
         msg.add("Dimension: {}", dimension)
         LOGGER.debug("%s", msg)
 
-    def __str__(self):
-        # type: (...) -> str
+    def __str__(self) -> str:
         parameters = pretty_repr(self.standard_parameters)
-        return "{}({})".format(self.distribution_name, parameters)
+        return f"{self.distribution_name}({parameters})"
 
     def compute_samples(
         self,
-        n_samples=1,  # type: int
-    ):
-        # type: (...) -> ndarray
+        n_samples: int = 1,
+    ) -> ndarray:
         """Sample the random variable.
 
         Args:
@@ -223,9 +221,8 @@ class Distribution(object):
 
     def compute_cdf(
         self,
-        vector,  # type: Iterable[float]
-    ):
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         """Evaluate the cumulative density function (CDF).
 
         Evaluate the CDF of the components of the random variable
@@ -241,9 +238,8 @@ class Distribution(object):
 
     def compute_inverse_cdf(
         self,
-        vector,  # type: Iterable[float]
-    ):
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         """Evaluate the inverse of the cumulative density function (ICDF).
 
         Args:
@@ -256,20 +252,17 @@ class Distribution(object):
         raise NotImplementedError
 
     @property
-    def mean(self):
-        # type: (...) -> ndarray
+    def mean(self) -> ndarray:
         """The analytical mean of the random variable."""
         raise NotImplementedError
 
     @property
-    def standard_deviation(self):
-        # type: (...) -> ndarray
+    def standard_deviation(self) -> ndarray:
         """The analytical standard deviation of the random variable."""
         raise NotImplementedError
 
     @property
-    def range(self):
-        # type: (...) -> List[ndarray]
+    def range(self) -> list[ndarray]:
         """The numerical range.
 
         The numerical range is the interval defined by
@@ -287,8 +280,7 @@ class Distribution(object):
         return value
 
     @property
-    def support(self):
-        # type: (...) -> List[ndarray]
+    def support(self) -> list[ndarray]:
         """The mathematical support.
 
         The mathematical support is the interval defined by
@@ -307,14 +299,13 @@ class Distribution(object):
 
     def plot_all(
         self,
-        show=True,  # type: bool
-        save=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-    ):
-        # type: (...) -> List[Figure]
+        show: bool = True,
+        save: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+    ) -> list[Figure]:
         """Plot both probability and cumulative density functions for all components.
 
         Args:
@@ -352,15 +343,14 @@ class Distribution(object):
 
     def plot(
         self,
-        index=0,  # type: int
-        show=True,  # type: bool
-        save=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-    ):
-        # type: (...) -> Figure
+        index: int = 0,
+        show: bool = True,
+        save: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+    ) -> Figure:
         """Plot both probability and cumulative density functions for a given component.
 
         Args:
@@ -384,13 +374,13 @@ class Distribution(object):
         """
         variable_name = self.variable_name
         if self.dimension > 1:
-            variable_name = "{}({})".format(variable_name, index)
+            variable_name = f"{variable_name}({index})"
         l_b = self.num_lower_bound[index]
         u_b = self.num_upper_bound[index]
-        x_values = arange(l_b, u_b, old_div((u_b - l_b), 100))
+        x_values = arange(l_b, u_b, (u_b - l_b) / 100)
         y1_values = [self._pdf(index)(x_value) for x_value in x_values]
         fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig.suptitle("Probability distribution of {}".format(variable_name))
+        fig.suptitle(f"Probability distribution of {variable_name}")
         ax1.plot(x_values, y1_values)
         ax1.set_xlabel(variable_name)
         ax1.set_title("PDF")
@@ -414,9 +404,8 @@ class Distribution(object):
 
     def _pdf(
         self,
-        index,  # type: int
-    ):
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         """Get the probability density function of a marginal.
 
         Args:
@@ -428,9 +417,8 @@ class Distribution(object):
         """
 
         def pdf(
-            point,  # type: float
-        ):
-            # type: (...) -> float
+            point: float,
+        ) -> float:
             """Probability Density Function (PDF).
 
             Args:
@@ -445,9 +433,8 @@ class Distribution(object):
 
     def _cdf(
         self,
-        index,  # type: int
-    ):
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         """Get the cumulative density function of a marginal.
 
         Args:
@@ -459,9 +446,8 @@ class Distribution(object):
         """
 
         def cdf(
-            level,  # type: float
-        ):
-            # type: (...) -> float
+            level: float,
+        ) -> float:
             """Cumulative Density Function (CDF).
 
             Args:

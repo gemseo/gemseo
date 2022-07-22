@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,55 +12,98 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-
-from __future__ import division, unicode_literals
-
-from unittest import TestCase
-
+import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
+from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.problems.analytical.power_2 import Power2
 
 
-class TestOptLib(TestCase):
-    """"""
+OPT_LIB_NAME = "ScipyOpt"
 
-    OPT_LIB_NAME = "ScipyOpt"
 
-    def test_handles(self):
-        factory = OptimizersFactory()
-        if factory.is_available(self.OPT_LIB_NAME):
-            lib = factory.create(self.OPT_LIB_NAME)
-        else:
-            raise ImportError("Scipy is not available")
-        assert not lib.algorithm_handles_eqcstr("L-BFGS-B")
-        assert not lib.algorithm_handles_ineqcstr("L-BFGS-B")
-        assert lib.algorithm_handles_eqcstr("SLSQP")
-        assert lib.algorithm_handles_ineqcstr("SLSQP")
+@pytest.fixture()
+def power() -> Power2:
+    """The power-2 optimization problem with inequality and equality constraints."""
+    return Power2()
 
-        power = Power2()
-        assert not lib.is_algorithm_suited(lib.lib_dict["L-BFGS-B"], power)
 
-        self.assertRaises(ValueError, lib._pre_run, power, "SLSQP")
+@pytest.fixture(scope="module")
+def lib() -> OptimizersFactory:
+    """The factory of optimizers."""
+    factory = OptimizersFactory()
+    if factory.is_available(OPT_LIB_NAME):
+        return factory.create(OPT_LIB_NAME)
 
+    raise ImportError("SciPy is not available.")
+
+
+@pytest.mark.parametrize(
+    "name,handle_eq,handle_ineq", [("L-BFGS-B", False, False), ("SLSQP", True, True)]
+)
+def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq):
+    """Check algorithm_handles_eqcstr() and algorithm_handles_ineqcstr()."""
+    assert lib.algorithm_handles_eqcstr(name) is handle_eq
+    assert lib.algorithm_handles_ineqcstr(name) is handle_ineq
+
+
+@pytest.mark.parametrize(
+    "name,remove_eq_constraint,suited",
+    [("L-BFGS-B", False, False), ("SLSQP", True, True), ("L-BFGS-B", True, False)],
+)
+def test_is_algorithm_suited(lib, power, name, remove_eq_constraint, suited):
+    """Check is_algorithm_suited."""
+    if remove_eq_constraint:
         power.constraints = power.constraints[0:1]
+    assert lib.is_algorithm_suited(lib.descriptions[name], power) is suited
 
-        assert lib.is_algorithm_suited(lib.lib_dict["SLSQP"], power)
-        # With only inequality constraints
-        assert not lib.is_algorithm_suited(lib.lib_dict["L-BFGS-B"], power)
 
-        self.assertRaises(
-            ValueError, lib._check_constraints_handling, "L-BFGS-B", power
-        )
+def test_pre_run_fail(lib, power):
+    """Check that pre_run raises an exception if maxiter cannot be determined."""
+    with pytest.raises(
+        ValueError, match="Could not determine the maximum number of iterations."
+    ):
+        lib._pre_run(power, "SLSQP")
 
-        self.assertRaises(KeyError, lib.algorithm_handles_eqcstr, "TOTO")
 
-        algo_name = "L-BFGS-B"
-        del lib.lib_dict[algo_name][lib.HANDLE_INEQ_CONS]
-        assert not lib.algorithm_handles_ineqcstr("L-BFGS-B")
+def test_check_constraints_handling_fail(lib, power):
+    """Test that check_constraints_handling can raise an exception."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Requested optimization algorithm L-BFGS-B "
+            "can not handle equality constraints."
+        ),
+    ):
+        lib._check_constraints_handling("L-BFGS-B", power)
+
+
+def test_algorithm_handles_eqcstr_fail(lib, power):
+    """Test that algorithm_handles_eqcstr can raise an exception."""
+    with pytest.raises(KeyError, match="Algorithm TOTO not in library ScipyOpt."):
+        lib.algorithm_handles_eqcstr("TOTO")
+
+
+def test_optimization_algorithm():
+    """Check the default settings of OptimizationAlgorithmDescription."""
+    lib = OptimizationLibrary()
+    lib.descriptions["new_algo"] = OptimizationAlgorithmDescription(
+        algorithm_name="bar", internal_algorithm_name="foo"
+    )
+    algo = lib.descriptions["new_algo"]
+    assert not lib.algorithm_handles_ineqcstr("new_algo")
+    assert not lib.algorithm_handles_eqcstr("new_algo")
+    assert not algo.handle_inequality_constraints
+    assert not algo.handle_equality_constraints
+    assert not algo.handle_integer_variables
+    assert not algo.require_gradient
+    assert not algo.positive_constraints
+    assert not algo.handle_multiobjective
+    assert algo.description == ""
+    assert algo.website == ""
+    assert algo.library_name == ""

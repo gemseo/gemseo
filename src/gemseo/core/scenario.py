@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,36 +12,40 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """The base class for the scenarios."""
+from __future__ import annotations
 
-from __future__ import division, unicode_literals
-
-import inspect
 import logging
+import timeit
+from datetime import timedelta
 from os import remove
-from os.path import basename, exists
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
-
-from six import string_types
+from os.path import basename
+from os.path import exists
+from pathlib import Path
+from typing import Any
+from typing import Mapping
+from typing import Sequence
+from typing import Union
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
+from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,31 +55,31 @@ ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, flo
 class Scenario(MDODiscipline):
     """Base class for the scenarios.
 
-    The instantiation of a :class:`Scenario`
+    The instantiation of a :class:`.Scenario`
     creates an :class:`.OptimizationProblem`,
     by linking :class:`.MDODiscipline` objects with an :class:`.MDOFormulation`
     and defining both the objective to minimize or maximize
     and the :class:`.DesignSpace` on which to solve the problem.
     Constraints can also be added to the :class:`.OptimizationProblem`
-    with the :meth:`add_constraint` method,
-    as well as observables with the :meth:`add_observable` method.
+    with the :meth:`.Scenario.add_constraint` method,
+    as well as observables with the :meth:`.Scenario.add_observable` method.
 
     Then,
-    the :meth:`execute` method takes
+    the :meth:`.Scenario.execute` method takes
     a driver (see :class:`.DriverLib`) with options as input data
     and uses it to solve the optimization problem.
     This driver is in charge of executing the multidisciplinary process.
 
     To view the results,
-    use the :meth:`post_process` method after execution
-    with one of the available post-processors that can be listed by :attr:`posts`.
+    use the :meth:`.Scenario.post_process` method after execution
+    with one of the available post-processors that can be listed by :attr:`.Scenario.posts`.
 
     Attributes:
         disciplines (List(MDODiscipline)): The disciplines.
         formulation (MDOFormulation): The MDO formulation.
         formulation_name (str): The name of the MDO formulation.
         optimization_result (OptimizationResult): The optimization result.
-        post_factory (PostFactory): The factory for post-processors.
+        post_factory (Optional[PostFactory]): The factory for post-processors if any.
     """
 
     # Constants for input variables in json schema
@@ -85,19 +88,27 @@ class Scenario(MDODiscipline):
     L_BOUNDS = "l_bounds"
     ALGO = "algo"
     ALGO_OPTIONS = "algo_options"
+    activate_input_data_check = True
+    activate_output_data_check = True
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "_algo_name",
+        "_algo_factory",
+        "clear_history_before_run",
+        "disciplines",
+        "formulation",
+    )
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        formulation,  # type: str
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options  # type: Any
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        formulation: str,
+        objective_name: str | Sequence[str],
+        design_space: DesignSpace,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        **formulation_options: Any,
+    ) -> None:
         """
         Args:
             disciplines: The disciplines
@@ -106,6 +117,7 @@ class Scenario(MDODiscipline):
             formulation: The name of the MDO formulation,
                 also the name of a class inheriting from :class:`.MDOFormulation`.
             objective_name: The name of the objective.
+                If a sequence is passed, a vector objective function is created.
             design_space: The design space.
             name: The name to be given to this scenario.
                 If None, use the name of the class.
@@ -121,29 +133,51 @@ class Scenario(MDODiscipline):
         self._algo_factory = None
         self._opt_hist_backup_path = None
         self._gen_opt_backup_plot = False
+        self._algo_name = None
+        self._lib = None
 
         self._check_disciplines()
         self._init_algo_factory()
         self._form_factory = self._formulation_factory
-        super(Scenario, self).__init__(name=name, grammar_type=grammar_type)
-        self._init_base_grammar(self.__class__.__name__)
+        super().__init__(
+            name=name, grammar_type=grammar_type, auto_detect_grammar_files=True
+        )
         self._init_formulation(
             formulation,
             objective_name,
             design_space,
             grammar_type=grammar_type,
-            **formulation_options
+            **formulation_options,
         )
         self.formulation.opt_problem.database.name = self.name
-        self.post_factory = PostFactory()
+        self.__post_factory = None
         self._update_input_grammar()
+        self.clear_history_before_run = False
 
     @property
-    def _formulation_factory(self):  # type:(...) -> MDOFormulationsFactory
+    def use_standardized_objective(self) -> bool:
+        """Whether to use the standardized :attr:`.OptimizationProblem.objective` for
+        logging and post-processing."""
+        return self.formulation.opt_problem.use_standardized_objective
+
+    @use_standardized_objective.setter
+    def use_standardized_objective(self, value: bool) -> None:
+        self.formulation.opt_problem.use_standardized_objective = value
+
+    @property
+    def post_factory(self) -> PostFactory | None:
+        """The factory of post-processors."""
+        if self.__post_factory is None:
+            self.__post_factory = PostFactory()
+
+        return self.__post_factory
+
+    @property
+    def _formulation_factory(self) -> MDOFormulationsFactory:
         """The factory of MDO formulations."""
         return MDOFormulationsFactory()
 
-    def _check_disciplines(self):  # type: (...) -> None
+    def _check_disciplines(self) -> None:
         """Check that two disciplines do not compute the same output.
 
         Raises:
@@ -160,36 +194,15 @@ class Scenario(MDODiscipline):
             all_outs = all_outs | outs
 
     @property
-    def design_space(self):  # type: (...) -> DesignSpace
+    def design_space(self) -> DesignSpace:
         """The design space on which the scenario is performed."""
         return self.formulation.design_space
 
-    def _init_base_grammar(
-        self,
-        name,  # type: str
-    ):  # type: (...) -> None
-        """Initialize the base grammars from the inputs and outputs of the scenario.
-
-        This ensures that subclasses have base scenario inputs and outputs.
-        This method can be overloaded by subclasses if this is not desired.
-
-        Args:
-            name: The name of the scenario,
-                used as a base name for the JSON schemas to import:
-                `name_input.json` and `name_output.json`.
-        """
-        comp_dir = str(Path(inspect.getfile(self.__class__)).parent)
-        input_grammar_file = self.auto_get_grammar_file(True, name, comp_dir)
-        output_grammar_file = self.auto_get_grammar_file(False, name, comp_dir)
-        self._instantiate_grammars(
-            input_grammar_file, output_grammar_file, grammar_type=self.grammar_type
-        )
-
     def set_differentiation_method(
         self,
-        method="user",  # type: Optional[str]
-        step=1e-6,  # type: float
-    ):  # type: (...) -> None
+        method: str | None = "user",
+        step: float = 1e-6,
+    ) -> None:
         """Set the differentiation method for the process.
 
         Args:
@@ -205,13 +218,13 @@ class Scenario(MDODiscipline):
 
     def add_constraint(
         self,
-        output_name,  # type: Union[str,Sequence[str]]
-        constraint_type=MDOFunction.TYPE_EQ,  # type: str
-        constraint_name=None,  # type: Optional[str]
-        value=None,  # type: Optional[float]
-        positive=False,  # type:bool
-        **kwargs
-    ):  # type: (...) -> None
+        output_name: str | Sequence[str],
+        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_name: str | None = None,
+        value: float | None = None,
+        positive: bool = False,
+        **kwargs,
+    ) -> None:
         """Add a design constraint.
 
         This constraint is in addition to those created by the formulation,
@@ -249,15 +262,15 @@ class Scenario(MDODiscipline):
             constraint_name=constraint_name,
             value=value,
             positive=positive,
-            **kwargs
+            **kwargs,
         )
 
     def add_observable(
         self,
-        output_names,  # type: Sequence[str]
-        observable_name=None,  # type: Optional[Sequence[str]]
-        discipline=None,  # type: Optional[MDODiscipline]
-    ):  # type: (...) -> None
+        output_names: Sequence[str],
+        observable_name: Sequence[str] | None = None,
+        discipline: MDODiscipline | None = None,
+    ) -> None:
         """Add an observable to the optimization problem.
 
         The repartition strategy of the observable is defined in the formulation class.
@@ -275,11 +288,11 @@ class Scenario(MDODiscipline):
 
     def _init_formulation(
         self,
-        formulation,  # type: str
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        **formulation_options  # type: Any
-    ):  # type: (...) -> None
+        formulation: str,
+        objective_name: str,
+        design_space: DesignSpace,
+        **formulation_options: Any,
+    ) -> None:
         """Initialize the MDO formulation.
 
         Args:
@@ -290,7 +303,7 @@ class Scenario(MDODiscipline):
             **formulation_options: The options
                 to be passed to the :class:`.MDOFormulation`.
         """
-        if not isinstance(formulation, string_types):
+        if not isinstance(formulation, str):
             raise TypeError(
                 "Formulation must be specified by its name; "
                 "please use GEMSEO_PATH to specify custom formulations."
@@ -300,12 +313,12 @@ class Scenario(MDODiscipline):
             disciplines=self.disciplines,
             objective_name=objective_name,
             design_space=design_space,
-            **formulation_options
+            **formulation_options,
         )
         self.formulation_name = formulation
         self.formulation = form_inst
 
-    def get_optim_variables_names(self):  # type: (...) -> List[str]
+    def get_optim_variables_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
 
         Returns:
@@ -313,7 +326,7 @@ class Scenario(MDODiscipline):
         """
         return self.formulation.get_optim_variables_names()
 
-    def get_optimum(self):  # type: (...) -> Optional[OptimizationResult]
+    def get_optimum(self) -> OptimizationResult | None:
         """Return the optimization results.
 
         Returns:
@@ -324,10 +337,10 @@ class Scenario(MDODiscipline):
 
     def save_optimization_history(
         self,
-        file_path,  # type: str
-        file_format=OptimizationProblem.HDF5_FORMAT,  # type: str
-        append=False,  # type: bool
-    ):  # type: (...) -> None
+        file_path: str,
+        file_format: str = OptimizationProblem.HDF5_FORMAT,
+        append: bool = False,
+    ) -> None:
         """Save the optimization history of the scenario to a file.
 
         Args:
@@ -351,13 +364,13 @@ class Scenario(MDODiscipline):
 
     def set_optimization_history_backup(
         self,
-        file_path,  # type: str
-        each_new_iter=False,  # type:bool
-        each_store=True,  # type:bool
-        erase=False,  # type:bool
-        pre_load=False,  # type:bool
-        generate_opt_plot=False,  # type:bool
-    ):  # type: (...) -> None
+        file_path: str,
+        each_new_iter: bool = False,
+        each_store: bool = True,
+        erase: bool = False,
+        pre_load: bool = False,
+        generate_opt_plot: bool = False,
+    ) -> None:
         """Set the backup file for the optimization history during the run.
 
         Args:
@@ -398,8 +411,14 @@ class Scenario(MDODiscipline):
             each_store=each_store,
         )
 
-    def _execute_backup_callback(self):  # type: (...) -> None
-        """A callback function to backup optimization history."""
+    def _execute_backup_callback(self, option: Any = None) -> None:
+        """A callback function to backup optimization history.
+
+        Args:
+            option: Any input value which is not used within the current function,
+               but need to be defined for the generic mechanism of the
+               callback functions usage in :class:`.OptimizationProblem`.
+        """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
         if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
             basepath = basename(self._opt_hist_backup_path).split(".")[0]
@@ -408,41 +427,55 @@ class Scenario(MDODiscipline):
             )
 
     @property
-    def posts(self):  # type: (...) -> List[str]
+    def posts(self) -> list[str]:
         """The available post-processors."""
         return self.post_factory.posts
 
     def post_process(
         self,
-        post_name,  # type: str
-        **options  # type: Union[OptPostProcessorOptionType,Path]
-    ):  # type: (...) -> OptPostProcessor
+        post_name: str,
+        **options: OptPostProcessorOptionType | Path,
+    ) -> OptPostProcessor:
         """Post-process the optimization history.
 
         Args:
             post_name: The name of the post-processor,
                 i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
-            options: The options for the post-processor.
+            **options: The options for the post-processor.
         """
-        post = self.post_factory.execute(
+        return self.post_factory.execute(
             self.formulation.opt_problem, post_name, **options
         )
-        return post
 
-    def _run_algorithm(self):  # type: (...) -> OptimizationResult
+    def _run(self) -> None:
+        t_0 = timeit.default_timer()
+        LOGGER.info(" ")
+        LOGGER.info("*** Start %s execution ***", self.name)
+        LOGGER.info("%s", repr(self))
+        # Clear the database when multiple runs are performed, see MDOScenarioAdapter.
+        if self.clear_history_before_run:
+            self.formulation.opt_problem.database.clear()
+
+        self._run_algorithm()
+        LOGGER.info(
+            "*** End %s execution (time: %s) ***",
+            self.name,
+            timedelta(seconds=timeit.default_timer() - t_0),
+        )
+
+    def _run_algorithm(self) -> OptimizationResult:
         """Run the driver algorithm."""
         raise NotImplementedError()
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
         msg.add("Disciplines: {}", pretty_repr(self.disciplines, delimiter=" "))
-        msg.add("MDOFormulation: {}", self.formulation.__class__.__name__)
-        msg.add("Algorithm: {}", self.local_data.get(self.ALGO))
+        msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return str(msg)
 
-    def get_disciplines_statuses(self):  # type: (...) -> Dict[str,str]
+    def get_disciplines_statuses(self) -> dict[str, str]:
         """Retrieve the statuses of the disciplines.
 
         Returns:
@@ -453,34 +486,46 @@ class Scenario(MDODiscipline):
             statuses[disc.__class__.__name__] = disc.status
         return statuses
 
-    def print_execution_metrics(self):  # type: (...)-> None
-        """Print the total number of executions and cumulated runtime by discipline."""
+    def __get_execution_metrics(self) -> MultiLineString:
+        """Return the execution metrics of the scenarios."""
         n_lin = 0
         n_calls = 0
-        LOGGER.info("* Scenario Executions statistics *")
+        msg = MultiLineString()
+        msg.add("Scenario Execution Statistics")
+        msg.indent()
         for disc in self.disciplines:
-            LOGGER.info("* Discipline: %s", disc.name)
-            LOGGER.info("Executions number: %s", str(disc.n_calls))
-            LOGGER.info("Execution time:  %s s", str(disc.exec_time))
+            msg.add("Discipline: {}", disc.name)
+            msg.indent()
+            msg.add("Executions number: {}", disc.n_calls)
+            msg.add("Execution time: {} s", disc.exec_time)
+            msg.add("Linearizations number: {}", disc.n_calls_linearize)
+            msg.dedent()
 
             n_calls += disc.n_calls
-            LOGGER.info("Linearizations number: %s", str(disc.n_calls_linearize))
-
             n_lin += disc.n_calls_linearize
-        LOGGER.info("Total number of executions calls %s", str(n_calls))
-        LOGGER.info("Total number of linearizations %s", str(n_lin))
+
+        msg.add("Total number of executions calls: {}", n_calls)
+        msg.add("Total number of linearizations: {}", n_lin)
+        return msg
+
+    def print_execution_metrics(self) -> None:
+        """Print the total number of executions and cumulated runtime by discipline."""
+        if MDODiscipline.activate_counters:
+            LOGGER.info("%s", self.__get_execution_metrics())
+        else:
+            LOGGER.info("The discipline counters are disabled.")
 
     def xdsmize(
         self,
-        monitor=False,  # type: bool
-        outdir=".",  # type: Optional[str]
-        print_statuses=False,  # type: bool
-        outfilename="xdsm.html",  # type: str
-        latex_output=False,  # type: bool
-        open_browser=False,  # type: bool
-        html_output=True,  # type: bool
-        json_output=False,  # type: bool
-    ):  # type: (...) -> None
+        monitor: bool = False,
+        outdir: str | None = ".",
+        print_statuses: bool = False,
+        outfilename: str = "xdsm.html",
+        latex_output: bool = False,
+        open_browser: bool = False,
+        html_output: bool = True,
+        json_output: bool = False,
+    ) -> None:
         """Create a JSON file defining the XDSM related to the current scenario.
 
         Args:
@@ -516,42 +561,92 @@ class Scenario(MDODiscipline):
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.formulation.get_expected_dataflow()
 
-    def get_expected_workflow(self):  # type: (...) -> LoopExecSequence
+    def get_expected_workflow(self) -> LoopExecSequence:
         exp_wf = self.formulation.get_expected_workflow()
         return ExecutionSequenceFactory.loop(self, exp_wf)
 
-    def _init_algo_factory(self):  # type: (...) -> None
-        """Initalize the factory of algorithms."""
+    def _init_algo_factory(self) -> None:
+        """Initialize the factory of algorithms."""
         raise NotImplementedError()
 
-    def get_available_driver_names(self):  # type: (...) -> List[str]
+    def get_available_driver_names(self) -> list[str]:
         """The available drivers."""
         return self._algo_factory.algorithms
 
-    def _update_input_grammar(self):  # type: (...) -> None
+    def _update_input_grammar(self) -> None:
         """Update the input grammar from the names of available drivers."""
-        available_algos = self.get_available_driver_names()
-        algo_grammar = {"type": "string", "enum": available_algos}
-        # TODO: Implement a cleaner solution to handle SimpleGrammar,
-        #  use enum not str.
-
         if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-            self.input_grammar.set_item_value("algo", algo_grammar)
+            self.input_grammar.update(
+                {"algo": {"type": "string", "enum": self.get_available_driver_names()}}
+            )
         else:
             self._update_grammar_input()
 
-    def _update_grammar_input(self):  # type: (...) -> None
+    def _update_grammar_input(self) -> None:
         """Update the inputs of a Grammar."""
         raise NotImplementedError()
 
     @staticmethod
-    def is_scenario():  # type: (...) -> bool
+    def is_scenario() -> bool:
         """Indicate if the current object is a :class:`.Scenario`.
 
         Returns:
             True if the current object is a :class:`.Scenario`.
         """
         return True
+
+    def export_to_dataset(
+        self,
+        name: str | None = None,
+        by_group: bool = True,
+        categorize: bool = True,
+        opt_naming: bool = True,
+        export_gradients: bool = False,
+    ) -> Dataset:
+        """Export the database of the optimization problem to a :class:`.Dataset`.
+
+        The variables can be classified into groups:
+        :attr:`.Dataset.DESIGN_GROUP` or :attr:`.Dataset.INPUT_GROUP`
+        for the design variables
+        and :attr:`.Dataset.FUNCTION_GROUP` or :attr:`.Dataset.OUTPUT_GROUP`
+        for the functions
+        (objective, constraints and observables).
+
+        Args:
+            name: The name to be given to the dataset.
+                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
+            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
+                in the sense of one unique NumPy array per group.
+                If ``categorize`` is ``False``,
+                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
+                If ``categorize`` is ``True``,
+                the groups can be either
+                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                if ``opt_naming`` is ``True``,
+                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+                If ``by_group`` is ``False``, store the data by variable names.
+            categorize: Whether to distinguish
+                between the different groups of variables.
+                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+            opt_naming: Whether to use
+                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                as groups.
+                Otherwise,
+                use :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+            export_gradients: Whether to export the gradients of the functions
+                (objective function, constraints and observables)
+                if the latter are available in the database of the optimization problem.
+
+        Returns:
+            A dataset built from the database of the optimization problem.
+        """
+        return self.formulation.opt_problem.export_to_dataset(
+            name=name,
+            by_group=by_group,
+            categorize=categorize,
+            opt_naming=opt_naming,
+            export_gradients=export_gradients,
+        )

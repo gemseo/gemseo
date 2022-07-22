@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,29 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create or execute a post-processor from its class name."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Set, Union
+from pathlib import Path
 
 from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.factory import Factory
-from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
-from gemseo.utils.py23_compat import Path, string_types
+from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PostFactory(object):
+class PostFactory:
     """Post-processing factory to run optimization post-processors.
 
     List the available post-processors on the current configuration
@@ -50,14 +48,14 @@ class PostFactory(object):
         self.executed_post = []
 
     @property
-    def posts(self):  # type: (...) -> List[str]
+    def posts(self) -> list[str]:
         """The available post processors."""
         return self.factory.classes
 
     def is_available(
         self,
-        name,  # type: str
-    ):  # type: (...) -> bool
+        name: str,
+    ) -> bool:
         """Check the availability of a post-processor.
 
         Args:
@@ -70,9 +68,9 @@ class PostFactory(object):
 
     def create(
         self,
-        opt_problem,  # type: OptimizationProblem
-        post_name,  # type: str
-    ):  # type: (...) -> OptPostProcessor
+        opt_problem: OptimizationProblem,
+        post_name: str,
+    ) -> OptPostProcessor:
         """Create a post-processor from its class name.
 
         Args:
@@ -83,16 +81,16 @@ class PostFactory(object):
 
     def execute(
         self,
-        opt_problem,  # type: Union[str,OptimizationProblem]
-        post_name,  # type: str
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-        **options  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> Dict[str,Figure]
+        opt_problem: str | OptimizationProblem,
+        post_name: str,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+        **options: OptPostProcessorOptionType,
+    ) -> dict[str, Figure]:
         """Post-process an optimization problem.
 
         Args:
@@ -113,7 +111,7 @@ class PostFactory(object):
                 If None, use a default file extension.
             **options: The options of the post-processor.
         """
-        if isinstance(opt_problem, string_types):
+        if isinstance(opt_problem, str):
             opt_problem = OptimizationProblem.import_hdf(opt_problem)
         post = self.create(opt_problem, post_name)
         post.execute(
@@ -123,12 +121,12 @@ class PostFactory(object):
             file_name=file_name,
             file_extension=file_extension,
             directory_path=directory_path,
-            **options
+            **options,
         )
         self.executed_post.append(post)
         return post
 
-    def list_generated_plots(self):  # type:(...) -> Set[str]
+    def list_generated_plots(self) -> set[str]:
         """The generated plot files."""
         plots = []
         for post in self.executed_post:

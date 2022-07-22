@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,29 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
 from copy import copy
 from math import sqrt
 from unittest import TestCase
 
 import pytest
-from numpy import isnan, nan
-from scipy.optimize import rosen, rosen_der
-
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_pdfo import PDFOOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from numpy import isnan
+from numpy import nan
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 from .opt_lib_test_base import OptLibraryTestBase
 
@@ -178,3 +175,8 @@ def get_pb_options(pb_name):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("PDFOOpt", get_options, get_pb_options):
     setattr(TestPDFO, test_method.__name__, test_method)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert PDFOOpt.LIBRARY_NAME == "PDFO"

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,19 +18,25 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Individual Discipline Feasible (IDF) formulation."""
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Iterable, List, Sequence, Tuple
+from typing import Iterable
+from typing import Sequence
 
 from numpy import abs as np_abs
-from numpy import concatenate, eye, ndarray, ones_like, zeros
+from numpy import concatenate
+from numpy import eye
+from numpy import ndarray
+from numpy import ones_like
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
+from gemseo.core.execution_sequence import ExecutionSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
@@ -51,54 +56,62 @@ class IDF(MDOFormulation):
     with respect to the local, global design variables and coupling variables
     is made at the top level.
 
-    The disciplinary analysis is made at a each optimization iteration
+    The disciplinary analysis is made at each optimization iteration
     while the multidisciplinary analysis is made at the optimum.
     """
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        maximize_objective=False,  # type: bool
-        normalize_constraints=True,  # type: bool
-        parallel_exec=False,  # type: bool
-        use_threading=True,  # type: bool
-        start_at_equilibrium=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        objective_name: str,
+        design_space: DesignSpace,
+        maximize_objective: bool = False,
+        normalize_constraints: bool = True,
+        n_processes: int = 1,
+        use_threading: bool = True,
+        start_at_equilibrium: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    ) -> None:
         """
         Args:
             normalize_constraints: If True,
                 the outputs of the coupling consistency constraints are scaled.
-            parallel_exec: If True,
-                all constraints and objectives are computed in parallel.
-                At every iteration,
-                all disciplines are executed in parallel.
-                Otherwise,
-                a separate constraint is created for each discipline with couplings.
-            use_threading: If True and parallel_exec=True,
-                the disciplines are run in parallel using multi-threading.
-                If False and parallel_exec=True, multi-processing is used.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
+            use_threading: Whether to use threads instead of processes
+                to parallelize the execution;
+                multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note
+                if you want to execute the same discipline multiple times,
+                you shall use multiprocessing.
             start_at_equilibrium: If True,
                 an MDA is used to initialize the coupling variables.
         """
-        super(IDF, self).__init__(
+        super().__init__(
             disciplines,
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
         )
-        if parallel_exec:
+        if n_processes > 1:
+            LOGGER.info(
+                "Running IDF formulation in parallel on n_processes = %s",
+                n_processes,
+            )
             self._parallel_exec = MDOParallelChain(
-                self.disciplines, use_threading=use_threading, grammar_type=grammar_type
+                self.disciplines,
+                use_threading=use_threading,
+                grammar_type=grammar_type,
+                n_processes=n_processes,
             )
         else:
             self._parallel_exec = None
 
         self.coupling_structure = MDOCouplingStructure(disciplines)
-        self.all_couplings = self.coupling_structure.get_all_couplings()
+        self.all_couplings = self.coupling_structure.all_couplings
         self._update_design_space()
         self.normalize_constraints = normalize_constraints
         self._build_constraints()
@@ -107,12 +120,12 @@ class IDF(MDOFormulation):
         if start_at_equilibrium:
             self._compute_equilibrium()
 
-    def _compute_equilibrium(self):  # type: (...) -> None
+    def _compute_equilibrium(self) -> None:
         """Run an MDA to compute the initial target couplings at equilibrium.
 
         The values at equilibrium are set in the initial design space.
         """
-        current_x = self.design_space.get_current_x_dict()
+        current_x = self.design_space.get_current_value(as_dict=True)
         # run MDA to initialize target coupling variables
         mda = MDAChain(self.disciplines)
         res = mda.execute(current_x)
@@ -135,11 +148,11 @@ class IDF(MDOFormulation):
             missing = strong_couplings - variables_names
             raise ValueError(
                 "IDF formulation needs coupling variables as design variables, "
-                "missing variables: %s" % missing
+                f"missing variables: {missing}."
             )
-        self._set_defaultinputs_from_ds()
+        self._set_default_input_values_from_design_space()
 
-    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
+    def get_top_level_disc(self) -> list[MDODiscipline]:
         # All functions and constraints are built from the top level disc
         # If we are in parallel mode: return the parallel execution
         if self._parallel_exec is not None:
@@ -149,8 +162,8 @@ class IDF(MDOFormulation):
 
     def _get_normalization_factor(
         self,
-        output_couplings,  # type:Iterable[str]
-    ):  # type: (...) -> ndarray
+        output_couplings: Iterable[str],
+    ) -> ndarray:
         """Compute [abs(ub-lb)] for all output couplings.
 
         Args:
@@ -168,8 +181,8 @@ class IDF(MDOFormulation):
 
     def _generate_consistency_cstr(
         self,
-        output_couplings,  # type: Sequence[str]
-    ):  # type: (...) -> MDOFunction
+        output_couplings: Sequence[str],
+    ) -> MDOFunction:
         """Generate the consistency constraints for a discipline.
 
         Args:
@@ -187,8 +200,8 @@ class IDF(MDOFormulation):
             norm_fact = 1.0
 
         def coupl_min_x(
-            x_vec,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            x_vec: ndarray,
+        ) -> ndarray:
             """Function to compute the consistency constraints.
 
             Args:
@@ -205,8 +218,8 @@ class IDF(MDOFormulation):
             return coupl - x_sw
 
         def coupl_min_x_jac(
-            x_vec,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            x_vec: ndarray,
+        ) -> ndarray:
             """Function to compute the gradient of the consistency constraints.
 
             Args:
@@ -266,7 +279,7 @@ class IDF(MDOFormulation):
             f_type=MDOFunction.TYPE_EQ,
         )
 
-    def _build_constraints(self):  # type: (...) -> None
+    def _build_constraints(self) -> None:
         """Build the constraints.
 
         In IDF formulation,
@@ -274,7 +287,7 @@ class IDF(MDOFormulation):
         """
         # Building constraints per generator couplings
         for discipline in self.disciplines:
-            couplings = self.coupling_structure.output_couplings(
+            couplings = self.coupling_structure.get_output_couplings(
                 discipline, strong=False
             )
             if couplings:
@@ -283,10 +296,10 @@ class IDF(MDOFormulation):
 
     def get_expected_workflow(
         self,
-    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
+    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         return ExecutionSequenceFactory.parallel(self.disciplines)
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return []

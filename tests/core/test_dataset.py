@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,26 +12,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 """Test the dataset module."""
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
-from os.path import join
+import re
+from pathlib import Path
 
 import numpy as np
 import pytest
-from numpy import allclose, arange, array, concatenate, nan, ones, savetxt, zeros
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
-from gemseo.core.dataset import LOGICAL_OPERATORS, Dataset
+from gemseo.core.dataset import Dataset
+from gemseo.core.dataset import LOGICAL_OPERATORS
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.string_tools import MultiLineString
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import concatenate
+from numpy import nan
+from numpy import ones
+from numpy import savetxt
+from numpy import zeros
+from numpy.testing import assert_equal
 
 
 @pytest.fixture
@@ -79,33 +84,9 @@ def file_dataset(tmp_path):
     variables = ["in_1", "in_2", "out_1"]
     sizes = {"in_1": 2, "in_2": 3, "out_1": 2}
     groups = {"in_1": "inputs", "in_2": "inputs", "out_1": "outputs"}
-    filename = join(str(tmp_path), "dataset.txt")
+    filename = tmp_path / "dataset.txt"
     savetxt(filename, data, delimiter=",")
     return filename, data, variables, sizes, groups
-
-
-@pytest.fixture
-def header_file_dataset(tmp_path):
-    inputs = arange(50).reshape(10, 5)
-    outputs = arange(20).reshape(10, 2)
-    data = concatenate([inputs, outputs], axis=1)
-    filename = join(str(tmp_path), "dataset_with_header.txt")
-    header = ",".join(["a", "b", "c", "d", "e", "f", "g"])
-    savetxt(filename, data, delimiter=",", header=header, comments="")
-    return filename, data
-
-
-@pytest.fixture
-def txt_io_dataset():
-    inpt = array([["1", "2"], ["3", "4"]])
-    out = array([["a"], ["b"]])
-    data = concatenate([inpt, out], axis=1)
-    variables = ["var_1", "var_2"]
-    sizes = {"var_1": 2, "var_2": 1}
-    groups = {"var_1": "input", "var_2": "output"}
-    dataset = Dataset()
-    dataset.set_from_array(data, variables, sizes, groups)
-    return dataset
 
 
 def test_is_empty():
@@ -170,7 +151,7 @@ def test_remove(io_dataset):
 
 
 def test_logical_operators():
-    assert set(LOGICAL_OPERATORS.keys()) == set(["==", "<", "<=", ">", ">=", "!="])
+    assert set(LOGICAL_OPERATORS.keys()) == {"==", "<", "<=", ">", ">=", "!="}
     assert LOGICAL_OPERATORS["=="](1, 1)
     assert not LOGICAL_OPERATORS["=="](1, 2)
     assert LOGICAL_OPERATORS["!="](1, 2)
@@ -200,7 +181,7 @@ def test_find_and_compare(io_dataset):
         comparison = data.compare("in_1", "+", 0)
 
     comparison = data.compare("in_1", "==", 0)
-    assert (comparison == array([True] + [False] * 9)).all()
+    assert_equal(comparison, array([True] + [False] * 9))
 
     comparison = data.compare("in_1", "==", 0)
     indices = data.find(comparison)
@@ -223,7 +204,7 @@ def test_isnan():
     dataset = Dataset()
     dataset.set_from_array(array([[1.0, 2.0], [3.0, nan], [5.0, 6.0], [nan, 8.0]]))
     is_nan = dataset.is_nan()
-    assert (is_nan == array([False, True, False, True])).all()
+    assert_equal(is_nan, [False, True, False, True])
     assert len(dataset) == 4
     dataset.remove(is_nan)
     assert len(dataset) == 2
@@ -231,10 +212,10 @@ def test_isnan():
 
 def test_find_and_remove(io_dataset):
     data = io_dataset
-    assert 0 in data["in_1"]["in_1"][:, 0]
+    assert 0 in data["in_1"][:, 0]
     assert len(data) == 10
     data.remove(data.compare("in_1", "==", 0))
-    assert 0 not in data["in_1"]["in_1"][:, 0]
+    assert 0 not in data["in_1"][:, 0]
     assert len(data) == 9
 
 
@@ -368,13 +349,33 @@ def test_add_group(dataset, ungroup_dataset):
 
 
 def test_export_to_dataframe(dataset):
-    assert len(dataset.export_to_dataframe()) == len(dataset)
+    """Check the dataframe resulting from a dataset export."""
+    variables = ["i1", "o2", "o1", "i2"]
+    sizes = {"i1": 1, "i2": 2, "o1": 1, "o2": 2}
+    dataset = Dataset()
+    dataset.set_from_array(arange(12).reshape(2, 6), variables, sizes)
+    df = dataset.export_to_dataframe()
+    for column, expected_column in zip(
+        df.columns.values,
+        [
+            ("parameters", "i1", "0"),
+            ("parameters", "i2", "0"),
+            ("parameters", "i2", "1"),
+            ("parameters", "o1", "0"),
+            ("parameters", "o2", "0"),
+            ("parameters", "o2", "1"),
+        ],
+    ):
+        assert column == expected_column
+
+    assert_equal(df.values, array([[0, 4, 5, 3, 1, 2], [6, 10, 11, 9, 7, 8]]))
 
 
 def test_get_columns_names():
+    """Check the default names of the dataset columns."""
     dataset = Dataset()
     dataset.set_from_array(array([[1.0], [1.0]]))
-    assert dataset._get_columns_names() == ["x_0"]
+    assert dataset.get_column_names() == ["x_0"]
 
 
 def test_get_data_by_group(io_dataset, ungroup_dataset):
@@ -407,11 +408,15 @@ def test_get_data_by_names(io_dataset):
     assert data.shape[1] == 2
 
 
-def test_get_all_data(io_dataset):
-    data = io_dataset.get_all_data(by_group=False, as_dict=True)
-    assert "in_1" in data
-    assert "in_2" in data
-    assert "out_1" in data
+@pytest.mark.parametrize(
+    "by_group,expected_keys",
+    [(False, ["in_1", "in_2", "out_1"]), (True, ["inputs", "outputs"])],
+)
+def test_get_all_data(io_dataset, by_group, expected_keys):
+    """Check that get_all_data returns a dictionary correctly indexed."""
+    data = io_dataset.get_all_data(by_group=by_group, as_dict=True)
+    for key in expected_keys:
+        assert key in data
 
 
 def test_n_variables(io_dataset):
@@ -423,110 +428,112 @@ def test_n_samples(io_dataset):
     assert io_dataset.n_samples == 10
 
 
-# def test_dataset_with_txt_array(txt_io_dataset):
-#     assert_allclose(txt_io_dataset.data['output'], array([[0.], [1.]]))
-#
-#
-# def test_export_io_dataset_to_cache(io_dataset):
-#     cache = io_dataset.export_to_cache()
-#     first_data = cache.get_data(1)
-#     assert_allclose(first_data['inputs']['in_1'], array([0, 1]))
-#     assert_allclose(first_data['inputs']['in_2'], array([2, 3, 4]))
-#     assert_allclose(first_data['outputs']['out_1'], array([0, 1]))
-#     assert_allclose(cache.get_last_cached_inputs()['in_1'],
-#                     array([45, 46]))
-#     assert_allclose(cache.get_last_cached_inputs()['in_2'],
-#                     array([47, 48, 49]))
-#     assert_allclose(cache.get_last_cached_outputs()['out_1'],
-#                     array([18, 19]))
-
-
-def test_export_dataset_to_cache(dataset, tmp_path):
-    cache = dataset.export_to_cache()
-    assert cache.name == "my_dataset"
-    assert cache.get_length() == 10
-    for name, value in cache.get_last_cached_inputs().items():
-        assert (dataset[9][name] == value).all()
-
-    filename = join(str(tmp_path), "cache.hdf5")
+@pytest.mark.parametrize("cache_type", ["MemoryFullCache", "HDF5Cache"])
+@pytest.mark.parametrize("inputs", [None, ["var_1"]])
+@pytest.mark.parametrize("outputs", [None, ["var_2"]])
+def test_export_dataset_to_cache(dataset, tmp_path, cache_type, inputs, outputs):
+    """Check that a dataset is correctly exported to a cache."""
+    input_names = inputs or ["var_1", "var_2"]
+    output_names = outputs or []
     cache = dataset.export_to_cache(
-        cache_type=dataset.HDF5_CACHE, cache_hdf_file=filename
+        cache_type=cache_type,
+        cache_hdf_file=str(tmp_path / "cache.hdf5"),
+        inputs=inputs,
+        outputs=outputs,
     )
-    assert cache.get_length() == 10
-    for name, value in cache.get_last_cached_inputs().items():
+    assert len(cache) == 10
+    for name, value in cache.last_entry.inputs.items():
         assert (dataset[9][name] == value).all()
 
+    for input_name in cache.input_names:
+        assert input_name in input_names
 
-#
-# def test_dataset_with_file(file_dataset, header_file_dataset):
-#     grp = Dataset.DEFAULT_GROUP
-#     filename, data, variables, sizes, groups = file_dataset
-#     dataset = Dataset()
-#     dataset.set_from_file(filename, variables, sizes, header=False)
-#     assert_allclose(dataset.data[grp], data)
-#     assert dataset.get_names(grp) == ['in_1', 'in_2', 'out_1']
-#     dataset = Dataset()
-#     dataset.set_from_file(filename, header=False)
-#     assert dataset.get_names(grp) == ['x_' + str(i) for i in range(7)]
-#     filename, data = header_file_dataset
-#     dataset = Dataset()
-#     dataset.set_from_file(filename, header=True)
-#     assert dataset.get_names(grp) == ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-#     assert_allclose(dataset.data[grp], data)
+    for output_name in cache.output_names:
+        assert output_name in output_names
 
 
-def test_getitem(dataset, data):
-    with pytest.raises(TypeError):
-        # item is a bad item
-        dataset[{}]
-    with pytest.raises(TypeError):
-        # item is a list with bad elements
-        dataset[[{}]]
-    with pytest.raises(TypeError):
-        # item is a tuple whose first element is a list with bad elements
-        dataset[([{}], "var_1")]
-    with pytest.raises(TypeError):
-        # item is a tuple whose first element is a bad element
-        dataset[({}, "var_1")]
-    with pytest.raises(TypeError):
-        # item is a tuple whose second element is a list with bad elements
-        dataset[(1, [{}])]
-    with pytest.raises(TypeError):
-        # item is a tuple whose second element is a bad element
-        dataset[(1, {})]
-    with pytest.raises(ValueError):
-        dataset["dummy"]
-    with pytest.raises(ValueError):
-        dataset[1000]
-    res = dataset["var_1"]
-    assert allclose(res["var_1"], data[:, 0:1])
-    res = dataset["var_2"]
-    assert allclose(res["var_2"], data[:, 1:3])
-    res = dataset[["var_1", "var_2"]]
-    assert allclose(res["var_1"], data[:, 0:1])
-    assert allclose(res["var_2"], data[:, 1:3])
-    res = dataset[2]
-    assert allclose(res["var_1"], data[2:3, 0:1])
-    assert allclose(res["var_2"], data[2:3, 1:3])
-    res = dataset[[2, 3]]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
-    res = dataset[2:4]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
-    res = dataset[(2, "var_1")]
-    assert allclose(res["var_1"], data[2:3, 0:1])
-    res = dataset[(2, ["var_1", "var_2"])]
-    assert allclose(res["var_1"], data[2:3, 0:1])
-    assert allclose(res["var_2"], data[2:3, 1:3])
-    res = dataset[([2, 3], "var_1")]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    res = dataset[([2, 3], ["var_1", "var_2"])]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
-    res = dataset[(slice(2, 4), ["var_1", "var_2"])]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
+@pytest.mark.parametrize(
+    "filename,header,expected_names",
+    [
+        ("data_without_header.csv", False, ["x_0", "x_1", "x_2", "x_3"]),
+        ("data_with_header.csv", True, ["a", "b", "c", "d"]),
+    ],
+)
+def test_dataset_from_file(filename, header, expected_names):
+    """Check the construction of a dataset from a CSV file."""
+    file_path = Path(__file__).parent / "data" / "dataset" / filename
+    dataset = Dataset()
+    dataset.set_from_file(file_path, header=header)
+    assert_equal(dataset.data[dataset.PARAMETER_GROUP], [[1, 2, 3, 4], [-1, -2, -3, 4]])
+    assert dataset.columns_names == expected_names
+
+
+@pytest.fixture(scope="module")
+def x_dataset():
+    dataset = Dataset()
+    dataset.add_variable("x", array([[1.0], [-1.0]]))
+    dataset.add_variable("y", array([[2.0, 3.0], [-2.0, -3.0]]))
+    return dataset
+
+
+@pytest.mark.parametrize(
+    "item,expected",
+    [
+        (0, {"x": array([1.0]), "y": array([2.0, 3.0])}),
+        ([0], {"x": array([[1.0]]), "y": array([[2.0, 3.0]])}),
+        ([1, 0], {"x": array([[-1.0], [1.0]]), "y": array([[-2.0, -3.0], [2.0, 3.0]])}),
+        (
+            slice(0, 2),
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        (
+            Ellipsis,
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        ("x", array([[1.0], [-1.0]])),
+        (["x"], {"x": array([[1.0], [-1.0]])}),
+        (
+            ["x", "y"],
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        ((0, "x"), array([1.0])),
+        (([0], "x"), array([[1.0]])),
+        ((0, ["x"]), {"x": array([1.0])}),
+        ((0, ["x", "y"]), {"x": array([1.0]), "y": array([2.0, 3.0])}),
+        (([0], ["x"]), {"x": array([[1.0]])}),
+        (
+            ([1, 0], ["x", "y"]),
+            {"x": array([[-1.0], [1.0]]), "y": array([[-2.0, -3.0], [2.0, 3.0]])},
+        ),
+        (
+            (slice(0, 2), ["x", "y"]),
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        (
+            (Ellipsis, ["x", "y"]),
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+    ],
+)
+def test_getitem(x_dataset, item, expected):
+    """Check the access to an item."""
+    assert_equal(x_dataset[item], expected)
+
+
+@pytest.mark.parametrize(
+    "item,error,msg",
+    [
+        ("dummy", KeyError, "There is not variable named 'dummy' in the dataset."),
+        (1000, KeyError, "Entries must be integers between -2 and 1; got 1000."),
+        ((0, 1), TypeError, Dataset._Dataset__GETITEM_ERROR_MESSAGE),
+        ([1, "x"], TypeError, Dataset._Dataset__GETITEM_ERROR_MESSAGE),
+        (1.0, TypeError, Dataset._Dataset__GETITEM_ERROR_MESSAGE),
+    ],
+)
+def test_getitem_raising_error(x_dataset, item, error, msg):
+    """Check that accessing an unknown item raises an error."""
+    with pytest.raises(error, match=re.escape(msg)):
+        x_dataset[item]
 
 
 def test_plot(dataset, tmp_path):
@@ -537,7 +544,7 @@ def test_plot(dataset, tmp_path):
 
 
 def test_export_to_dataset():
-    disc = AnalyticDiscipline(expressions_dict={"obj": "x1+x2", "cstr": "x1-x2"})
+    disc = AnalyticDiscipline({"obj": "x1+x2", "cstr": "x1-x2"})
     disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
     d_s = DesignSpace()
     d_s.add_variable("x1", 1, "float", 0, 1, 0.5)
@@ -549,12 +556,12 @@ def test_export_to_dataset():
     assert "x2" in dataset.get_names(dataset.INPUT_GROUP)
     assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
     assert "cstr" in dataset.get_names(dataset.OUTPUT_GROUP)
-    dataset = disc.cache.export_to_dataset(inputs_names=["x1"])
+    dataset = disc.cache.export_to_dataset(input_names=["x1"])
     assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
     assert "x2" not in dataset.get_names(dataset.INPUT_GROUP)
     assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
     assert "cstr" in dataset.get_names(dataset.OUTPUT_GROUP)
-    dataset = disc.cache.export_to_dataset(outputs_names=["obj"])
+    dataset = disc.cache.export_to_dataset(output_names=["obj"])
     assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
     assert "x2" in dataset.get_names(dataset.INPUT_GROUP)
     assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
@@ -564,9 +571,7 @@ def test_export_to_dataset():
 def test_row_names(io_dataset):
     """Check row_names property and setter."""
     assert io_dataset.row_names == [str(val) for val in range(len(io_dataset))]
-    io_dataset.row_names = [
-        "sample_{}".format(index) for index in range(len(io_dataset))
-    ]
+    io_dataset.row_names = [f"sample_{index}" for index in range(len(io_dataset))]
     assert io_dataset.row_names == io_dataset.row_names
 
 
@@ -599,3 +604,73 @@ def test_get_normalized_dataset(io_dataset, excluded_groups, excluded_variables)
         else:
             assert allclose(np.min(data, 0), zeros(data.shape[1]))
             assert allclose(np.max(data, 0), ones(data.shape[1]))
+
+
+def test_malformed_groups():
+    """Check that passing malformed groups raises an error."""
+    dataset = Dataset()
+    with pytest.raises(
+        TypeError,
+        match=("groups must be a dictionary of the form {variable_name: group_name}."),
+    ):
+        dataset.set_from_array(array([[1]]), variables=["x"], groups={"x": 1})
+
+
+def test_malformed_variables():
+    """Check that passing malformed variables raises an error."""
+    dataset = Dataset()
+    with pytest.raises(
+        TypeError,
+        match=("variables must be a list of string variable names."),
+    ):
+        dataset.set_from_array(array([[1]]), variables=1)
+
+
+def test_malformed_sizes():
+    """Check that passing malformed sizes raises an error."""
+    dataset = Dataset()
+    with pytest.raises(
+        ValueError,
+        match=(
+            re.escape(
+                "The sum of the variable sizes (2) "
+                "must be equal to the data dimension (1)."
+            )
+        ),
+    ):
+        dataset.set_from_array(array([[1]]), variables=["x"], sizes={"x": 2})
+
+
+@pytest.mark.parametrize("by_group", [False, True])
+def test_rename_variable(by_group):
+    """Check the renaming of a variable."""
+    data = array([[1]])
+    dataset = Dataset(by_group=by_group)
+    dataset.add_variable("x", data)
+    dataset.add_variable("a", data, cache_as_input=False)
+    dataset.rename_variable("x", "y")
+    dataset.rename_variable("a", "b")
+    assert dataset["y"] == data
+    assert dataset.sizes["y"] == 1
+    assert dataset._positions["y"] == [0, 0]
+    assert "x" not in dataset.sizes
+    if by_group:
+        assert "x" not in dataset.data[dataset.DEFAULT_GROUP]
+    else:
+        assert "x" not in dataset.data
+    assert "x" not in dataset._positions
+    assert "x" not in dataset._names[dataset.DEFAULT_GROUP]
+    assert "y" in dataset._names[dataset.DEFAULT_GROUP]
+    assert "x" not in dataset._cached_inputs
+    assert "y" in dataset._cached_inputs
+    assert "a" not in dataset._cached_outputs
+    assert "b" in dataset._cached_outputs
+
+
+@pytest.mark.parametrize("by_group", [False, True])
+def test_transform_variable(by_group):
+    """Check the transformation of a variable."""
+    dataset = Dataset(by_group=by_group)
+    dataset.add_variable("x", array([[1]]))
+    dataset.transform_variable("x", lambda x: -x)
+    assert dataset["x"] == array([[-1]])
