@@ -607,6 +607,26 @@ class OptimizationProblem:
     ) -> None:
         """Add a function to be observed.
 
+        When the :class:`.OptimizationProblem` is executed, the observables are called
+        following this sequence:
+
+            - The optimization algorithm calls the objective function with a normalized
+              ``x_vect``.
+            - The :meth:`.OptimizationProblem.preprocess_functions` wraps the function
+              as a :class:`.NormDBFunction`, which unnormalizes the ``x_vect`` before
+              evaluation.
+            - The unnormalized ``x_vect`` and the result of the evaluation are stored in
+              the :attr:`.OptimizationProblem.database`.
+            - The previous step triggers the
+              :attr:`.OptimizationProblem.new_iter_listeners`, which calls the
+              observables with the unnormalized ``x_vect``.
+            - The observables themselves are wrapped as a :class:`.NormDBFunction` by
+              :meth:`.OptimizationProblem.preprocess_functions`, but in this case the
+              input is always expected as unnormalized to avoid an additional
+              normalizing-unnormalizing step.
+            - Finally, the output is stored in the
+              :attr:`.OptimizationProblem.database`.
+
         Args:
             obs_func: An observable to be observed.
             new_iter: If True, then the observable will be called at each new iterate.
@@ -1125,11 +1145,12 @@ class OptimizationProblem:
                 self.nonproc_new_iter_observables.append(obs)
                 p_obs = self.__preprocess_func(
                     obs,
-                    is_function_input_normalized=is_function_input_normalized,
+                    is_function_input_normalized=False,
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
                 )
+
                 p_obs.special_repr = obs.special_repr
                 self.new_iter_observables[iobs] = p_obs
 
@@ -1158,9 +1179,6 @@ class OptimizationProblem:
         """
         if not self.new_iter_observables:
             return
-
-        if self.preprocess_options["is_function_input_normalized"]:
-            last_x = self.design_space.normalize_vect(last_x)
 
         for func in self.new_iter_observables:
             func(last_x)

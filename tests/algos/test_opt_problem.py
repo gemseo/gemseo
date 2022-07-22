@@ -36,6 +36,8 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.api import execute_algo
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -1474,3 +1476,24 @@ def test_constraint_name(has_default_name, value, positive, cstr_type, name):
         assert cstr_name == name
 
     assert problem.constraint_names["c"] == [cstr_name]
+
+
+def test_observables_normalization():
+    """Test that the observables are called at each iteration."""
+    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
+    design_space = DesignSpace()
+    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable(
+        "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
+    )
+    scenario = create_scenario(
+        disciplines, formulation="MDF", objective_name="obj", design_space=design_space
+    )
+    scenario.add_constraint("c_1", "ineq")
+    scenario.add_constraint("c_2", "ineq")
+    scenario.add_observable("y_1")
+    scenario.execute(input_data={"max_iter": 3, "algo": "SLSQP"})
+    total_iter = scenario.formulation.opt_problem.database.get_max_iteration()
+    n_obj_eval = scenario.formulation.opt_problem.database.get_func_history("y_1").size
+    n_obs_eval = scenario.formulation.opt_problem.database.get_func_history("obj").size
+    assert total_iter == n_obj_eval == n_obs_eval
