@@ -117,6 +117,17 @@ class JSONGrammar(BaseGrammar):
     def __iter__(self) -> Iterator[Any]:
         return iter(self.__schema_builder)
 
+    def rename_element(self, current_name: str, new_name: str) -> None:
+        self.__schema_builder.properties[
+            new_name
+        ] = self.__schema_builder.properties.pop(current_name)
+
+        required = self.__schema_builder.required
+        if current_name in required:
+            required.remove(current_name)
+            required.add(new_name)
+        self.__init_dependencies()
+
     def update(
         self,
         grammar: JSONGrammar | Iterable[str] | DictSchemaType,
@@ -132,6 +143,11 @@ class JSONGrammar(BaseGrammar):
             else:
                 schema_builder = grammar.__schema_builder
             self.__update(schema_builder)
+            self._update_namespaces_from_grammar(grammar)
+        elif isinstance(grammar, BaseGrammar):
+            raise TypeError(
+                f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
+            )
         elif isinstance(grammar, Mapping):
             if exclude_names:
                 schema = dict(grammar)
@@ -207,14 +223,14 @@ class JSONGrammar(BaseGrammar):
         self.__init_dependencies()
 
     def is_array(self, name: str) -> bool:
-        self.__check_name(name)
+        self._check_name(name)
         return "array" == self.schema["properties"][name].get("type")
 
     def restrict_to(
         self,
         names: Sequence[str],
     ) -> None:
-        self.__check_name(*names)
+        self._check_name(*names)
         for element_name in tuple(self.__schema_builder):
             if element_name not in names:
                 del self.__schema_builder[element_name]
@@ -426,15 +442,7 @@ class JSONGrammar(BaseGrammar):
         self.__validator = None
         self.__schema = {}
 
-    def __check_name(self, *names: str) -> None:
-        """Check that a name is valid.
-
-        Args:
-            *names: The names to be checked.
-
-        Raises:
-            KeyError: If the name is not valid.
-        """
+    def _check_name(self, *names: str) -> None:
         for name in names:
             if name not in self.__schema_builder:
                 raise KeyError(f"The name {name} is not in the grammar.")

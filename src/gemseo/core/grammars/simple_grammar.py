@@ -70,7 +70,7 @@ class SimpleGrammar(BaseGrammar):
         if names_to_types:
             self.update(names_to_types)
         if required_names is not None:
-            self.__check_name(*required_names)
+            self._check_name(*required_names)
             self.__required_names = set(required_names)
 
     def __delitem__(
@@ -176,6 +176,9 @@ class SimpleGrammar(BaseGrammar):
             elif element_name in self.__required_names:
                 self.__required_names.remove(element_name)
 
+        if isinstance(grammar, BaseGrammar):
+            self._update_namespaces_from_grammar(grammar)
+
     def clear(self) -> None:
         self.__names_to_types = {}
         self.__required_names = set()
@@ -217,7 +220,7 @@ class SimpleGrammar(BaseGrammar):
         self.update({name: type(value) for name, value in data.items()})
 
     def is_array(self, name: str) -> bool:
-        self.__check_name(name)
+        self._check_name(name)
         element_type = self.__names_to_types[name]
         if element_type is None:
             return False
@@ -228,7 +231,7 @@ class SimpleGrammar(BaseGrammar):
         self,
         names: Iterable[str],
     ) -> None:
-        self.__check_name(*names)
+        self._check_name(*names)
         for element_name in tuple(self.__names_to_types):
             if element_name not in names:
                 del self.__names_to_types[element_name]
@@ -252,15 +255,14 @@ class SimpleGrammar(BaseGrammar):
         if obj is not None and not isinstance(obj, type):
             raise TypeError(f"The element {name} must be a type or None: it is {obj}.")
 
-    def __check_name(self, *names: str) -> None:
-        """Check that a name is valid.
-
-        Args:
-            *names: The names to be checked.
-
-        Raises:
-            KeyError: If the name is not valid.
-        """
+    def _check_name(self, *names: str) -> None:
         for name in names:
             if name not in self.__names_to_types:
                 raise KeyError(f"The name {name} is not in the grammar.")
+
+    def rename_element(self, current_name: str, new_name: str) -> None:
+        self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)
+
+        if current_name in self.__required_names:
+            self.__required_names.remove(current_name)
+            self.__required_names.add(new_name)

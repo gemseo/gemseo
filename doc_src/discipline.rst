@@ -28,3 +28,4 @@ Discipline
    disciplines/discipline_interfacing_executable.rst
    disciplines/discipline_matlab.rst
    disciplines/jacobian_assembly.rst
+   disciplines/namespaces.rst

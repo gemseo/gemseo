@@ -25,6 +25,8 @@ from typing import MutableMapping
 
 import pandas as pd
 
+from gemseo.core.namespaces import NamespacesMapping
+
 Data = Mapping[str, Any]
 MutableData = MutableMapping[str, Any]
 
@@ -42,7 +44,7 @@ class DisciplineData(abc.MutableMapping):
 
     As compared to a standard dictionary,
     the methods of this class may hide the values bound to :class:`pandas.DataFrame`s
-    and instead expose the items of those latter as if they belong
+    and instead expose the items of those latter as if they belonged
     to the dictionary.
 
     If a dict-like object is provided when creating a :class:`DiscplineData` object,
@@ -111,10 +113,17 @@ class DisciplineData(abc.MutableMapping):
     """The character used to separate the shared dict key from the column of a
     pandas DataFrame."""
 
-    def __init__(self, data: MutableData) -> None:
+    def __init__(
+        self,
+        data: MutableData,
+        input_to_namespaced: NamespacesMapping = None,
+        output_to_namespaced: NamespacesMapping = None,
+    ) -> None:
         """
         Args:
             data: A dict-like object or a :class:`DisciplineData` object.
+            input_to_namespaced: The mapping from input data names to their prefixed names.
+            output_to_namespaced: The mapping from output data names to their prefixed names.
         """
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
@@ -123,7 +132,18 @@ class DisciplineData(abc.MutableMapping):
             self.__data = data
             self.__check_keys(*data)
 
-    def __getitem__(self, key: str) -> Any:
+        self.__input_to_namespaced = input_to_namespaced
+        self.__output_to_namespaced = output_to_namespaced
+
+    def __getitem_with_ns(self, key: str) -> Any:
+        """Return an item whose key contains a namespace prefix.
+
+        Args:
+            key: The required key.
+
+        Returns:
+            The item value, or None if the key is not present.
+        """
         if key in self.__data:
             value = self.__data[key]
             if isinstance(value, MutableMapping):
@@ -134,6 +154,21 @@ class DisciplineData(abc.MutableMapping):
         if self.SEPARATOR in key:
             df_key, column = key.split(self.SEPARATOR)
             return self.__data[df_key][column].to_numpy()
+
+    def __getitem__(self, key: str) -> Any:
+        value = self.__getitem_with_ns(key)
+        if value is not None:
+            return value
+
+        if self.__input_to_namespaced is not None:
+            key_with_ns = self.__input_to_namespaced.get(key)
+            if key_with_ns is not None:
+                return self.__getitem_with_ns(key_with_ns)
+
+        if self.__output_to_namespaced is not None:
+            key_with_ns = self.__output_to_namespaced.get(key)
+            if key_with_ns is not None:
+                return self.__getitem_with_ns(key_with_ns)
 
         raise KeyError(key)
 
