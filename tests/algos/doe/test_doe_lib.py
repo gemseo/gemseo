@@ -17,6 +17,10 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+from sys import platform
+
 import pytest
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
@@ -25,6 +29,8 @@ from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
@@ -73,6 +79,61 @@ def test_evaluate_samples_multiproc(doe):
         grad_ref = new_pb.objective.jac(sample)
         grad_sample = problem.database.get_f_of_x("@pow2", sample)
         assert (grad_ref == grad_sample).all()
+
+
+def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
+    """Compute the objective and observable variables.
+
+    Args:
+         x: The input x value.
+
+    Returns:
+        obj: The objective value.
+        obs: The observable value.
+    """
+    obj = x
+    obs = x + 1.0
+    return obj, obs
+
+
+def test_evaluate_samples_multiproc_with_observables(doe):
+    """Evaluate a DoE in // with multiprocessing and with observables."""
+
+    disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
+    disc.cache = None
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=3.0, value=2.0)
+
+    scenario = create_scenario(
+        [disc],
+        design_space=design_space,
+        objective_name="obj",
+        formulation="DisciplinaryOpt",
+        scenario_type="DOE",
+    )
+
+    samples = array(list([float(i)] for i in range(4)))
+    scenario.add_observable("obs")
+    scenario.execute(
+        {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
+    )
+
+    database = scenario.formulation.opt_problem.database
+    for i, (x, data) in enumerate(database.items()):
+        assert x.wrapped[0] == pytest.approx(float(i))
+        assert data["obj"] == float(i)
+        assert data["obs"] == float(i + 1)
+
+    # In multi-processing mode,
+    # the disciplinary calls are only made on the worker processes
+    # Under Linux, the counters are updated from the subprocesses counters,
+    # Under Windows, the discipline counters on the main process are not updated.
+    # Without leveraging the cache mechanism,
+    # the discipline shall be called 8 times.
+    if platform == "win32":
+        assert disc.n_calls == 0
+    else:
+        assert disc.n_calls == 8
 
 
 def test_phip_criteria():

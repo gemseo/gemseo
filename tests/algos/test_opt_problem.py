@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from functools import partial
+from math import sqrt
 from pathlib import Path
 from typing import Dict
 from typing import Tuple
@@ -542,14 +543,54 @@ def test_export_hdf(tmp_wd):
 
 
 def test_evaluate_functions():
+    """Evaluate the functions of the Power2 problem."""
     problem = Power2()
-    problem.evaluate_functions(
+    func, grad = problem.evaluate_functions(
         x_vect=array([1.0, 0.5, 0.2]),
         eval_jac=True,
         eval_obj=False,
         normalize=False,
     )
-    problem.evaluate_functions(normalize=False, no_db_no_norm=True, eval_obj=False)
+    assert "pow2" not in func
+    assert "pow2" not in grad
+    assert func["ineq1"] == pytest.approx(array([-0.5]))
+    assert func["ineq2"] == pytest.approx(array([0.375]))
+    assert func["eq"] == pytest.approx(array([0.892]))
+    assert grad["ineq1"] == pytest.approx(array([-3.0, 0.0, 0.0]))
+    assert grad["ineq2"] == pytest.approx(array([0.0, -0.75, 0.0]))
+    assert grad["eq"] == pytest.approx(array([0.0, 0.0, -0.12]))
+
+
+def test_evaluate_functions_no_gradient():
+    """Evaluate the functions of the Power2 problem without computing the gradients."""
+    problem = Power2()
+
+    func, grad = problem.evaluate_functions(
+        normalize=False, no_db_no_norm=True, eval_obj=False
+    )
+    assert "pow2" not in func
+    assert "pow2" not in grad
+    assert func["ineq1"] == pytest.approx(array([-0.5]))
+    assert func["ineq2"] == pytest.approx(array([-0.5]))
+    assert func["eq"] == pytest.approx(array([-0.1]))
+
+
+@pytest.mark.parametrize("no_db_no_norm", [True, False])
+def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm):
+    """Test the evaluation of the fuctions of a problem with observables."""
+    problem = pow2_problem
+    design_norm = "design norm"
+    observable = MDOFunction(norm, design_norm)
+    problem.add_observable(observable)
+    problem.preprocess_functions()
+    out = problem.evaluate_functions(
+        x_vect=array([1.0, 1.0, 1.0]),
+        normalize=False,
+        no_db_no_norm=no_db_no_norm,
+        eval_observables=True,
+    )
+    assert out[0]["pow2"] == pytest.approx(3.0)
+    assert out[0]["design norm"] == pytest.approx(sqrt(3.0))
 
 
 def test_evaluate_functions_non_preprocessed(constrained_problem):

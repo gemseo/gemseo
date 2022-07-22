@@ -968,6 +968,7 @@ class OptimizationProblem:
         x_vect: ndarray = None,
         eval_jac: bool = False,
         eval_obj: bool = True,
+        eval_observables: bool = False,
         normalize: bool = True,
         no_db_no_norm: bool = False,
     ) -> tuple[dict[str, float | ndarray], dict[str, ndarray]]:
@@ -1016,10 +1017,14 @@ class OptimizationProblem:
             functions = list(self.nonproc_constraints)
             if eval_obj:
                 functions += [self.nonproc_objective]
+            if eval_observables:
+                functions += self.nonproc_observables
         else:
             functions = list(self.constraints)
             if eval_obj:
                 functions += [self.objective]
+            if eval_observables:
+                functions += self.observables
 
         if not functions:
             return dict(), dict()

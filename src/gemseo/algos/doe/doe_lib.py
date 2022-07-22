@@ -308,6 +308,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         return self.problem.evaluate_functions(
             x_vect=self.problem.design_space.untransform_vect(sample, no_check=True),
             eval_jac=self.eval_jac,
+            eval_observables=True,
             normalize=False,
         )
 
