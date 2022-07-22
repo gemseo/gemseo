@@ -1,2 +1,0 @@
-The :meth:`.compute_approx_jac` method now returns the correct Jacobian when filtering by indices.
-With this fix, the :meth:`.check_jacobian` method no longer crashes when using indices.

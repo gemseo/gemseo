@@ -1,1 +1,0 @@
-An integer design variable can be added with a lower or upper bound explicitly defined as +/-inf.

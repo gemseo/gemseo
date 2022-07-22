@@ -1,1 +1,0 @@
-The variables of a DesignSpace can be renamed.

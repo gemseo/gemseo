@@ -1,1 +1,0 @@
-The option ``mutation`` of the Differential Evolution algorithm now checks the correct expected type.

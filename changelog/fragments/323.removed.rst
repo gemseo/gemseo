@@ -1,1 +1,0 @@
-API change: Remove :meth:`DesignSpace.get_current_x_normalized` and :meth:`DesignSpace.get_current_x_dict`.

@@ -1,1 +1,0 @@
-The ``XLSDiscipline`` no longer copies the original Excel file when both ``copy_xls_at_setstate`` and ``recreate_book_at_run`` are set to ``True``.

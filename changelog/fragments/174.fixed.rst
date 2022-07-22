@@ -1,1 +1,0 @@
-The method ``plot_n2_chart`` in MDOCouplingStructure no longer crashes when the provided disciplines have no couplings.

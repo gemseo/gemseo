@@ -1,1 +1,0 @@
-One can iterate an AbstractFullCache and handle it with square brackets, i.e. ``cache[input_data]``.

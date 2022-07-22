@@ -1,1 +1,0 @@
-Improved the way ``xlwings`` objects are handled when an ``XLSDiscipline`` runs in multiprocessing, multithreading, or both.

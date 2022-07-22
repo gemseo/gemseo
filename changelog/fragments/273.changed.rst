@@ -1,1 +1,0 @@
-MLQualityMeasure no longer refits the transformers with cross-validation and bootstrap techniques.

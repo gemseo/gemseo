@@ -1,2 +1,0 @@
-Disciplines and functions, with tests, for the resolution of 2D Topology Optimization problem by the SIMP approach were added in ``gemseo.problems.topo_opt``.
-In the documentation, 3 examples covering L-Shape, Short Cantilever and MBB structures are also added.

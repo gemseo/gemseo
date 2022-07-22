@@ -1,1 +1,0 @@
-ScatterMatrix can plot a limited number of variables.

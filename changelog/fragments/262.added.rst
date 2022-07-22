@@ -1,1 +1,0 @@
-The number and positions of levels of a ZvsXY or Surfaces can be changed.

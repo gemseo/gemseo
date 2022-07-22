@@ -1,1 +1,0 @@
-The given value in ``DesignSpace.add_variable`` is now cast to the proper ``var_type``.

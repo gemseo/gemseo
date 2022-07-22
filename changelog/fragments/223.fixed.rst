@@ -1,1 +1,0 @@
-Missing function and gradient values are now replaced with ``numpy.NaN`` when exporting a ``Database`` to a ``Dataset``.

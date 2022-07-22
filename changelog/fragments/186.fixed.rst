@@ -1,1 +1,0 @@
-An ``XLSDiscipline`` no longer crashes when called using multi-threading.

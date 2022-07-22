@@ -1,1 +1,0 @@
-The KLSVD wrapped from OpenTURNS can now use the stochastic algorithms.

@@ -27,6 +27,306 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 4.0.0 (2022-07-22)
+**************************
+
+Added
+-----
+
+- Disciplines can now use pandas DataFrame via their ``local_data``.
+  `#58 <https://gitlab.com/gemseo/dev/gemseo/-/issues/58>`_
+- Grammars can add namespaces to prefix the element names.
+  `#70 <https://gitlab.com/gemseo/dev/gemseo/-/issues/70>`_
+- Disciplines and functions, with tests, for the resolution of 2D Topology Optimization problem by the SIMP approach were added in ``gemseo.problems.topo_opt``.
+  In the documentation, 3 examples covering L-Shape, Short Cantilever and MBB structures are also added.
+  `#128 <https://gitlab.com/gemseo/dev/gemseo/-/issues/128>`_
+- A TransformerFactory.
+  `#154 <https://gitlab.com/gemseo/dev/gemseo/-/issues/154>`_
+- The RadarChart post-processor plots the constraints at optimum by default.
+    and provides access to the database elements from either the first or last index.
+  `#159 <https://gitlab.com/gemseo/dev/gemseo/-/issues/159>`_
+- OptimizationResult can store the optimum index.
+  `#161 <https://gitlab.com/gemseo/dev/gemseo/-/issues/161>`_
+- Changelog entries are managed by towncrier.
+  `#184 <https://gitlab.com/gemseo/dev/gemseo/-/issues/184>`_
+- An OptimizationProblem can be reset either fully or partially (database, current iteration, current design point, number of function calls or functions preprocessing).
+  Database.clear() can reset the iteration counter.
+  `#188 <https://gitlab.com/gemseo/dev/gemseo/-/issues/188>`_
+- The database attached to a Scenario can be cleared before running the driver.
+  `#193 <https://gitlab.com/gemseo/dev/gemseo/-/issues/193>`_
+- The variables of a DesignSpace can be renamed.
+  `#204 <https://gitlab.com/gemseo/dev/gemseo/-/issues/204>`_
+- The optimization history can be exported to a Dataset from a Scenario.
+  `#209 <https://gitlab.com/gemseo/dev/gemseo/-/issues/209>`_
+- A DatasetPlot can associate labels to the handled variables for a more meaningful display.
+  `#212 <https://gitlab.com/gemseo/dev/gemseo/-/issues/212>`_
+- One can iterate an AbstractFullCache and handle it with square brackets, i.e. ``cache[input_data]``.
+  `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
+- The bounds of the parameter length scales of a GaussianProcessRegression can be defined at instantiation.
+  `#228 <https://gitlab.com/gemseo/dev/gemseo/-/issues/228>`_
+- Observables included in the exported HDF file.
+  `#230 <https://gitlab.com/gemseo/dev/gemseo/-/issues/230>`_
+- ScatterMatrix can plot a limited number of variables.
+  `#236 <https://gitlab.com/gemseo/dev/gemseo/-/issues/236>`_
+- The Sobieski's SSBJ use case can now be used with physical variable names.
+  `#242 <https://gitlab.com/gemseo/dev/gemseo/-/issues/242>`_
+- The coupled adjoint can now account for disciplines with state residuals.
+  `#245 <https://gitlab.com/gemseo/dev/gemseo/-/issues/245>`_
+- Randomized cross-validation can now use a seed for the sake of reproducibility.
+  `#246 <https://gitlab.com/gemseo/dev/gemseo/-/issues/246>`_
+- The ``DriverLib`` now checks if the optimization or DOE algorithm handles integer variables.
+  `#247 <https://gitlab.com/gemseo/dev/gemseo/-/issues/247>`_
+- An MDODiscipline can automatically detect JSON grammar files from a user directory.
+  `#253 <https://gitlab.com/gemseo/dev/gemseo/-/issues/253>`_
+- Statistics can now estimate a margin.
+  `#255 <https://gitlab.com/gemseo/dev/gemseo/-/issues/255>`_
+- Observables can now be derived when the driver option ``eval_obs_jac`` is ``True`` (default: ``False``).
+  `#256 <https://gitlab.com/gemseo/dev/gemseo/-/issues/256>`_
+- ZvsXY can add series of points above the surface.
+  `#259 <https://gitlab.com/gemseo/dev/gemseo/-/issues/259>`_
+- The number and positions of levels of a ZvsXY or Surfaces can be changed.
+  `#262 <https://gitlab.com/gemseo/dev/gemseo/-/issues/262>`_
+- ZvsXY or Surfaces can use either isolines or filled surfaces.
+  `#263 <https://gitlab.com/gemseo/dev/gemseo/-/issues/263>`_
+- A MDOFunction can now be divided by another MDOFunction or a number.
+  `#267 <https://gitlab.com/gemseo/dev/gemseo/-/issues/267>`_
+- An MLAlgo cannot fit the transformers during the learning stage.
+  `#273 <https://gitlab.com/gemseo/dev/gemseo/-/issues/273>`_
+- The KLSVD wrapped from OpenTURNS can now use the stochastic algorithms.
+  `#274 <https://gitlab.com/gemseo/dev/gemseo/-/issues/274>`_
+- The lower or upper half of the ScatterMatrix can be hidden.
+  `#301 <https://gitlab.com/gemseo/dev/gemseo/-/issues/301>`_
+- A Scenario can use a standardized objective in logs and optimization result.
+  `#306 <https://gitlab.com/gemseo/dev/gemseo/-/issues/306>`_
+- ``Statistics`` can compute the coefficient of variation.
+  `#325 <https://gitlab.com/gemseo/dev/gemseo/-/issues/325>`_
+- Lines can use an abscissa variable and markers.
+  `#328 <https://gitlab.com/gemseo/dev/gemseo/-/issues/328>`_
+- The user can now define a Dirac distribution with OpenTURNS.
+  `#329 <https://gitlab.com/gemseo/dev/gemseo/-/issues/329>`_
+- It is now possible to select the number of processes on which to run an :class:`.IDF` formulation using the option ``n_processes``.
+  `#369 <https://gitlab.com/gemseo/dev/gemseo/-/issues/369>`_
+
+Fixed
+-----
+
+- Ensure that nested MDAChains are not detected as self-coupled disciplines.
+  `#138 <https://gitlab.com/gemseo/dev/gemseo/-/issues/138>`_
+- The method ``plot_n2_chart`` in MDOCouplingStructure no longer crashes when the provided disciplines have no couplings.
+  `#174 <https://gitlab.com/gemseo/dev/gemseo/-/issues/174>`_
+- The broken link to the GEMSEO logo used in the D3.js-based N2 chart is now repaired.
+  `#184 <https://gitlab.com/gemseo/dev/gemseo/-/issues/184>`_
+- An ``XLSDiscipline`` no longer crashes when called using multi-threading.
+  `#186 <https://gitlab.com/gemseo/dev/gemseo/-/issues/186>`_
+- The option ``mutation`` of the Differential Evolution algorithm now checks the correct expected type.
+  `#191 <https://gitlab.com/gemseo/dev/gemseo/-/issues/191>`_
+- SensitivityAnalysis can plot a field with an output name longer than one character.
+  `#194 <https://gitlab.com/gemseo/dev/gemseo/-/issues/194>`_
+- Fixed a typo in the ``monitoring`` section of the documentation referring to the method ``create_gannt_chart`` as ``create_gannt``.
+  `#196 <https://gitlab.com/gemseo/dev/gemseo/-/issues/196>`_
+- DOELibrary untransforms unit samples properly in the case of random variables.
+  `#197 <https://gitlab.com/gemseo/dev/gemseo/-/issues/197>`_
+- The string representations of the functions of an OptimizationProblem imported from an HDF file do not have bytes problems anymore.
+  `#201 <https://gitlab.com/gemseo/dev/gemseo/-/issues/201>`_
+- Fix normalization/unnormalization of functions and disciplines that only contain integer variables.
+  `#219 <https://gitlab.com/gemseo/dev/gemseo/-/issues/219>`_
+- Factories ``get_options_grammar`` methods provide the same content in the returned grammar and the dumped one.
+  `#220 <https://gitlab.com/gemseo/dev/gemseo/-/issues/220>`_
+- Dataset uses pandas to read CSV files more efficiently.
+  `#221 <https://gitlab.com/gemseo/dev/gemseo/-/issues/221>`_
+- Missing function and gradient values are now replaced with ``numpy.NaN`` when exporting a ``Database`` to a ``Dataset``.
+  `#223 <https://gitlab.com/gemseo/dev/gemseo/-/issues/223>`_
+- The method ``get_data_by_names`` in ``opt_problem`` no longer crashes when both ``as_dict`` and ``filter_feasible`` are set to True.
+  `#226 <https://gitlab.com/gemseo/dev/gemseo/-/issues/226>`_
+- MorrisAnalysis can again handle multidimensional outputs.
+  `#237 <https://gitlab.com/gemseo/dev/gemseo/-/issues/237>`_
+- The ``XLSDiscipline`` test run no longer leaves zombie processes in the background after the execution is finished.
+  `#238 <https://gitlab.com/gemseo/dev/gemseo/-/issues/238>`_
+- An ``MDAJacobi`` inside a ``DOEScenario`` no longer causes a crash when a sample raises a ``ValueError``.
+  `#239 <https://gitlab.com/gemseo/dev/gemseo/-/issues/239>`_
+- AnalyticDiscipline with absolute value can now be derived.
+  `#240 <https://gitlab.com/gemseo/dev/gemseo/-/issues/240>`_
+- The method ``hash_data_dict`` in ``AbstractFullCache`` returns deterministic hash values, fixing a bug introduced in GEMSEO 3.2.1.
+  `#251 <https://gitlab.com/gemseo/dev/gemseo/-/issues/251>`_
+- Lagrange Multipliers are ensured to be non negative.
+  `#261 <https://gitlab.com/gemseo/dev/gemseo/-/issues/261>`_
+- A QualityMeasure can now be applied to a MLAlgo built from a subset of the input names.
+  `#265 <https://gitlab.com/gemseo/dev/gemseo/-/issues/265>`_
+- The given value in ``DesignSpace.add_variable`` is now cast to the proper ``var_type``.
+  `#278 <https://gitlab.com/gemseo/dev/gemseo/-/issues/278>`_
+- The :meth:`.compute_approx_jac` method now returns the correct Jacobian when filtering by indices.
+  With this fix, the :meth:`.check_jacobian` method no longer crashes when using indices.
+  `#308 <https://gitlab.com/gemseo/dev/gemseo/-/issues/308>`_
+- An integer design variable can be added with a lower or upper bound explicitly defined as +/-inf.
+  `#311 <https://gitlab.com/gemseo/dev/gemseo/-/issues/311>`_
+- A PCERegressor can now be deepcopied before or after the training stage.
+  `#340 <https://gitlab.com/gemseo/dev/gemseo/-/issues/340>`_
+- A ``DOEScenario`` can now be serialized.
+  `#358 <https://gitlab.com/gemseo/dev/gemseo/-/issues/358>`_
+- An ``AnalyticDiscipline`` can now be serialized.
+  `#359 <https://gitlab.com/gemseo/dev/gemseo/-/issues/359>`_
+- :class:`.N2JSON` now works when a coupling variable has no default value, and displays ``"n/a"`` as variable dimension.
+  :class:`.N2JSON` now works when the default value of a coupling variable is an unsized object, e.g. ``array(1)``.
+  `#388 <https://gitlab.com/gemseo/dev/gemseo/-/issues/388>`_
+- The observables are now computed in parallel when executing a :class:`.DOEScenario` using more than one process.
+  `#391 <https://gitlab.com/gemseo/dev/gemseo/-/issues/391>`_
+
+Changed
+-------
+
+- The ``normalize`` argument of :meth:`.OptProblem.preprocess_functions` is now named ``is_function_input_normalized``.
+  `#22 <https://gitlab.com/gemseo/dev/gemseo/-/issues/22>`_
+- API changes:
+
+  - The MDAChain now takes ``inner_mda_name`` as argument instead of ``sub_mda_class``.
+  - The :class:`.MDF` formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of ``sub_mda_class``.
+  - The :class:`.BiLevel` formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
+  `#39 <https://gitlab.com/gemseo/dev/gemseo/-/issues/39>`_
+- The RadarChart post-processor uses all the constraints by default.
+  `#159 <https://gitlab.com/gemseo/dev/gemseo/-/issues/159>`_
+- Updating a dictionary of NumPy arrays from a complex array no longer converts the complex numbers to the original data type except if required.
+  `#177 <https://gitlab.com/gemseo/dev/gemseo/-/issues/177>`_
+- The D3.js-based N2 chart can now display the GEMSEO logo offline.
+  `#184 <https://gitlab.com/gemseo/dev/gemseo/-/issues/184>`_
+- API changes:
+
+  - The :class:`.AbstractFullCache`'s getters (:meth:`~.AbstractFullCache.get_data` and :meth:`~.AbstractFullCache.get_all_data`) return one or more :class:`.CacheItem`,
+  that is a namedtuple with variable groups as fields.
+  - In :class:`.AbstractFullCache`, ``varsizes`` is renamed as :attr:`~.AbstractFullCache.names_to_sizes` and ``max_length`` as :attr:`.AbstractFullCache.MAXSIZE`,
+  The number of items stored in an :class:`.AbstractCache` can no longer be obtained with ``get_length``, but ``__len__``.
+  `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
+- The grammars API has been changed to be more pythonic and expose an interface similar to a dictionary.
+  The behavior of the grammars has been made more consistent too.
+
+  API changes from old to new:
+  - ``grammar.load_data``: ``grammar.validate``
+  - ``grammar.is_data_name_existing(name)``: ``name in grammar``
+  - ``grammar.update_from``: ``grammar.update``
+  - ``grammar.remove_item(name)``: ``del grammar[name]``
+  - ``grammar.get_data_names``: ``grammar.keys()``
+  - ``grammar.is_all_data_names_existing(names)``: ``set(names) <= set(grammar.keys())``
+  - ``grammar.initialize_from_data_names``: ``grammar.update``
+  - ``grammar.initialize_from_base_dict``: ``grammar.update_from_data``
+  - ``grammar.is_type_array``: ``grammar.is_array``
+  - ``grammar.update_from_if_not_in``: use ``update`` with ``exclude_names``
+  - ``grammar.to_simple_grammar``: ``grammar.convert_to_simple_grammar()``
+  - ``grammar.is_required(name)``: ``name in grammar.required_names``
+  - ``grammar.set_item_value``: ``grammar.update_from_schema``
+  - ``grammar.remove_required(name)``: ``grammar.required_names.remove(name)``
+  - ``grammar.init_from_schema_file``: ``grammar.read``
+  - ``grammar.write_schema``: ``grammar.write``
+  - ``grammar.schema_dict``: ``grammar.schema``
+  - ``grammar.data_names``: ``grammar.keys()``
+  - ``grammar.data_types``: ``grammar.values()``
+  - ``grammar.update_elements``: ``grammar.update``
+  - ``grammar.update_required_elements``: has been removed
+  - ``JSONGrammar`` class attributes removed: ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``
+  - ``AbstractGrammar``: ``BaseGrammar``
+  `#215 <https://gitlab.com/gemseo/dev/gemseo/-/issues/215>`_
+- The default number of components used by a DimensionReduction transformer is based on data and depends on the related technique.
+  `#244 <https://gitlab.com/gemseo/dev/gemseo/-/issues/244>`_
+- Classes deriving from Discipline inherits the input and output grammar files of their first parent.
+  `#258 <https://gitlab.com/gemseo/dev/gemseo/-/issues/258>`_
+- The parameters of a DatasetPlot are now passed at instantiation.
+  `#260 <https://gitlab.com/gemseo/dev/gemseo/-/issues/260>`_
+- An MLQualityMeasure no longer trains an MLAlgo already trained.
+  `#264 <https://gitlab.com/gemseo/dev/gemseo/-/issues/264>`_
+- Accessing a unique entry of a Dataset no longer returns 2D arrays but 1D arrays.
+  Accessing a unique feature of a Dataset no longer returns a dictionary of arrays but an array.
+  `#270 <https://gitlab.com/gemseo/dev/gemseo/-/issues/270>`_
+- MLQualityMeasure no longer refits the transformers with cross-validation and bootstrap techniques.
+  `#273 <https://gitlab.com/gemseo/dev/gemseo/-/issues/273>`_
+- Improved the way ``xlwings`` objects are handled when an ``XLSDiscipline`` runs in multiprocessing, multithreading, or both.
+  `#276 <https://gitlab.com/gemseo/dev/gemseo/-/issues/276>`_
+- A ``CustomDOE`` can be used without specifying ``algo_name`` whose default value is ``"CustomDOE"`` now.
+  `#282 <https://gitlab.com/gemseo/dev/gemseo/-/issues/282>`_
+- The ``XLSDiscipline`` no longer copies the original Excel file when both ``copy_xls_at_setstate`` and ``recreate_book_at_run`` are set to ``True``.
+  `#287 <https://gitlab.com/gemseo/dev/gemseo/-/issues/287>`_
+- The post-processing algorithms plotting the objective function can now use the standardized objective when ``OptimizationProblem.use_standardized_objective`` is ``True``.
+  When post-processing a ``Scenario``, the name of a constraint passed to the ``OptPostProcessor`` should be the value of ``constraint_name`` passed to ``Scenario.add_constraint`` or the vale of ``output_name`` if ``None``.
+  `#302 <https://gitlab.com/gemseo/dev/gemseo/-/issues/302>`_
+- An :class:`MDOFormulation` now shows an ``INFO`` level message when a variable is removed from the design space because
+  it is not an input for any discipline in the formulation.
+  `#304 <https://gitlab.com/gemseo/dev/gemseo/-/issues/304>`_
+- It is now possible to carry out a ``SensitivityAnalysis`` with multiple disciplines.
+  `#310 <https://gitlab.com/gemseo/dev/gemseo/-/issues/310>`_
+- The classes of the regression algorithms are renamed as ``{Prefix}Regressor``.
+  `#322 <https://gitlab.com/gemseo/dev/gemseo/-/issues/322>`_
+- API changes:
+
+  - :attr:`.AlgoLib.lib_dict` renamed to :attr:`.AlgoLib.descriptions`.
+  - :attr:`.AnalyticDiscipline.expr_symbols_dict` renamed to :attr:`.AnalyticDiscipline.output_names_to_symbols`.
+  - :meth:`.AtomicExecSequence.get_state_dict` renamed to :meth:`.AtomicExecSequence.get_statuses`.
+  - :class:`.BasicHistory`: ``data_list`` renamed to ``variable_names``.
+  - :meth:`.CompositeExecSequence.get_state_dict` renamed to :meth:`.CompositeExecSequence.get_statuses`.
+  - :attr:`.CompositeExecSequence.sequence_list` renamed to :attr:`.CompositeExecSequence.sequences`.
+  - :class:`.ConstraintsHistory`: ``constraints_list`` renamed to ``constraint_names``
+  - :meth:`.MatlabDiscipline.__init__`: ``input_data_list`` and ``output_data_list`` renamed to ``input_names`` and ``output_names``.
+  - :attr:`.MDAChain.sub_mda_list` renamed to :attr:`.MDAChain.inner_mdas`.
+  - :meth:`.MDOFunctionGenerator.get_function`: ``input_names_list`` and ``output_names_list`` renamed to ``output_names`` and ``output_names``.
+  - :meth:`.MDOScenarioAdapter.__init__`: ``inputs_list`` and ``outputs_list`` renamed to ``input_names`` and ``output_names``.
+  - :attr:`.OptPostProcessor.out_data_dict` renamed to :attr:`.OptPostProcessor.materials_for_plotting`.
+  - :attr:`.ParallelExecution.input_data_list` renamed to :attr:`.ParallelExecution.input_values`.
+  - :attr:`.ParallelExecution.worker_list` renamed to :attr:`.ParallelExecution.workers`.
+  - :class:`.RadarChart`: ``constraints_list`` renamed to ``constraint_names``.
+  - :class:`.ScatterPlotMatrix`: ``variables_list`` renamed to ``variable_names``.
+  - :meth:`save_matlab_file`: ``dict_to_save`` renamed to ``data``.
+  - :meth:`.DesignSpace.get_current_x` renamed to :meth:`.DesignSpace.get_current_value`.
+  - :meth:`.DesignSpace.has_current_x` renamed to :meth:`.DesignSpace.has_current_value`.
+  - :meth:`.DesignSpace.set_current_x` renamed to :meth:`.DesignSpace.set_current_value`.
+  - :mod:`gemseo.utils.data_conversion`:
+    - ``FLAT_JAC_SEP`` renamed to ``STRING_SEPARATOR``
+    - :meth:`.DataConversion.dict_to_array` renamed to :meth:`.concatenate_dict_of_arrays_to_array`
+    - :meth:`.DataConversion.list_of_dict_to_array` removed
+    - :meth:`.DataConversion.array_to_dict` renamed to :meth:`.split_array_to_dict_of_arrays`
+    - :meth:`.DataConversion.jac_2dmat_to_dict` renamed to :meth:`.split_array_to_dict_of_arrays`
+    - :meth:`.DataConversion.jac_3dmat_to_dict` renamed to :meth:`.split_array_to_dict_of_arrays`
+    - :meth:`.DataConversion.dict_jac_to_2dmat` removed
+    - :meth:`.DataConversion.dict_jac_to_dict` renamed to :meth:`.flatten_nested_dict`
+    - :meth:`.DataConversion.flat_jac_name` removed
+    - :meth:`.DataConversion.dict_to_jac_dict` renamed to :meth:`.nest_flat_bilevel_dict`
+    - :meth:`.DataConversion.update_dict_from_array` renamed to :meth:`.update_dict_of_arrays_from_array`
+    - :meth:`.DataConversion.deepcopy_datadict` renamed to :meth:`.deepcopy_dict_of_arrays`
+    - :meth:`.DataConversion.get_all_inputs` renamed to :meth:`.get_all_inputs`
+    - :meth:`.DataConversion.get_all_outputs` renamed to :meth:`.get_all_outputs`
+    - :meth:`.DesignSpace.get_current_value` can now return a dictionary of NumPy arrays or normalized design values.
+  `#323 <https://gitlab.com/gemseo/dev/gemseo/-/issues/323>`_
+- API changes:
+
+  - The short names of some machine learning algorithms have been replaced by conventional acronyms.
+  - The class variable ``MLAlgo.ABBR`` was renamed as :attr:`.MLAlgo.SHORT_ALGO_NAME`.
+  `#337 <https://gitlab.com/gemseo/dev/gemseo/-/issues/337>`_
+- The constructor of :class:`.AutoPyDiscipline` now allows the user to select a custom name
+  instead of the name of the Python function.
+  `#339 <https://gitlab.com/gemseo/dev/gemseo/-/issues/339>`_
+- It is now possible to serialize an :class:`MDOFunction`.
+  `#342 <https://gitlab.com/gemseo/dev/gemseo/-/issues/342>`_
+- All ``MDA`` algos now count their iterations starting from ``0``.
+  The :attr:`.MDA.residual_history` is now a list of normed residuals.
+  The argument ``figsize`` in :meth:`.plot_residual_history` was renamed to ``fig_size`` to be consistent with other
+  ``OptPostProcessor`` algos.
+  `#343 <https://gitlab.com/gemseo/dev/gemseo/-/issues/343>`_
+- API change: ``fig_size`` is the unique name to identify the size of a figure and the occurrences of ``figsize``, ``figsize_x`` and ``figsize_y`` have been replaced by ``fig_size``, ``fig_size_x`` and ``fig_size_y``.
+  `#344 <https://gitlab.com/gemseo/dev/gemseo/-/issues/344>`_
+- API change: the option ``parallel_exec`` in :class:`.IDF` was replaced by ``n_processes``.
+  `#369 <https://gitlab.com/gemseo/dev/gemseo/-/issues/369>`_
+
+Removed
+-------
+
+- API change: The :class:`.AbstractCache` no longer offers the ``samples_indices`` property.
+  `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
+- API change: Remove :meth:`DesignSpace.get_current_x_normalized` and :meth:`DesignSpace.get_current_x_dict`.
+  `#323 <https://gitlab.com/gemseo/dev/gemseo/-/issues/323>`_
+
+Version 3.2.2 (March 2022)
+**************************
+
+Fixed
+-----
+
+- Cache may not be used because of the way data was hashed.
+
 Version 3.2.1 (November 2021)
 *****************************
 

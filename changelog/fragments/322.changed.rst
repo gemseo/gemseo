@@ -1,1 +1,0 @@
-The classes of the regression algorithms are renamed as ``{Prefix}Regressor``.

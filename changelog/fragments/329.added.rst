@@ -1,1 +1,0 @@
-The user can now define a Dirac distribution with OpenTURNS.

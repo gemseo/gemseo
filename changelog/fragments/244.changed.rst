@@ -1,1 +1,0 @@
-The default number of components used by a DimensionReduction transformer is based on data and depends on the related technique.

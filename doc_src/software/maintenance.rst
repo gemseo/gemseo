@@ -131,7 +131,7 @@ The update is done with `towncrier <https://github.com/twisted/towncrier>`_:
 
 .. code-block:: shell
 
-   towncrier build
+   towncrier build --version <expected version>
 
 Making a new release
 --------------------
