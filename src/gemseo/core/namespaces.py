@@ -26,11 +26,12 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Iterable
+from typing import List
 from typing import Mapping
 from typing import MutableMapping
 from typing import Union
 
-NamespacesMapping = MutableMapping[str, Union[str, list[str]]]
+NamespacesMapping = MutableMapping[str, Union[str, List[str]]]
 
 namespaces_separator = ":"
 
