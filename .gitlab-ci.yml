@@ -143,12 +143,12 @@ base-windows:
 # Define jobs for minor python env with this extended parent.
 .extended-tests:
   rules:
-    # For selecting from gitlab UI.
-    - if: '$TEST_ALL_ENVS == "false"'
-      when: never
     # Always run for commits pushed on the master branch.
     - if: '$CI_COMMIT_BRANCH == "master"'
       when: always
+    # For selecting from gitlab UI.
+    - if: '$TEST_ALL_ENVS == "false"'
+      when: never
     - !reference [.tests, rules]
   parallel:
     matrix:
