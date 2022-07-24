@@ -43,7 +43,7 @@ Added
 - A TransformerFactory.
   `#154 <https://gitlab.com/gemseo/dev/gemseo/-/issues/154>`_
 - The RadarChart post-processor plots the constraints at optimum by default.
-    and provides access to the database elements from either the first or last index.
+  and provides access to the database elements from either the first or last index.
   `#159 <https://gitlab.com/gemseo/dev/gemseo/-/issues/159>`_
 - OptimizationResult can store the optimum index.
   `#161 <https://gitlab.com/gemseo/dev/gemseo/-/issues/161>`_
