@@ -10,4 +10,4 @@
    Contributors:
           :author: Matthias De Lozzo
 
-.. include:: ../../../CHANGELOG.rst
+.. include:: ../../CHANGELOG.rst
