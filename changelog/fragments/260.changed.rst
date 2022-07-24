@@ -1,1 +1,0 @@
-The parameters of a DatasetPlot are now passed at instantiation.

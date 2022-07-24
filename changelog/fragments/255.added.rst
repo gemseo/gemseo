@@ -1,1 +1,0 @@
-Statistics can now estimate a margin.

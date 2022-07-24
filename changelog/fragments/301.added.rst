@@ -1,1 +1,0 @@
-The lower or upper half of the ScatterMatrix can be hidden.

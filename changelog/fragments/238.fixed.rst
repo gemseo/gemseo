@@ -1,1 +1,0 @@
-The ``XLSDiscipline`` test run no longer leaves zombie processes in the background after the execution is finished.

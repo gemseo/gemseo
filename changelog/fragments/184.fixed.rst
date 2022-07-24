@@ -1,1 +1,0 @@
-The broken link to the GEMSEO logo used in the D3.js-based N2 chart is now repaired.

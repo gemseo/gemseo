@@ -1,1 +1,0 @@
-A MDOFunction can now be divided by another MDOFunction or a number.

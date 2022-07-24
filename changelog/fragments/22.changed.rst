@@ -1,1 +1,0 @@
-The ``normalize`` argument of :meth:`.OptProblem.preprocess_functions` is now named ``is_function_input_normalized``.

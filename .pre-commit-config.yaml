@@ -3,7 +3,7 @@ exclude: ^src/gemseo/third_party
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.2.0
+  rev: v4.3.0
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
@@ -25,7 +25,7 @@ repos:
     - id: rst-inline-touching-normal
 
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.1.0
+  rev: v3.8.2
   hooks:
     - id: reorder-python-imports
       name: reorder python imports inside src
@@ -54,13 +54,13 @@ repos:
       ]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.32.1
+  rev: v2.37.2
   hooks:
     - id: pyupgrade
       args: [--py37-plus]
 
 - repo: https://github.com/psf/black
-  rev: 22.3.0
+  rev: 22.6.0
   hooks:
     - id: black
 
@@ -76,13 +76,13 @@ repos:
         - pep8-naming==0.12.1
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.27.0
+  rev: v2.28.1
   hooks:
     - id: commitizen
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.1.14
+  rev: v1.3.0
   hooks:
     - id: insert-license
       name: insert LGPL license

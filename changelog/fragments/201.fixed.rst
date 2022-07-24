@@ -1,1 +1,0 @@
-The string representations of the functions of an OptimizationProblem imported from an HDF file do not have bytes problems anymore.

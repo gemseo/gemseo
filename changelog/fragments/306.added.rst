@@ -1,1 +1,0 @@
-A Scenario can use a standardized objective in logs and optimization result.

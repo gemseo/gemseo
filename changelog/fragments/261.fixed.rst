@@ -1,1 +1,0 @@
-Lagrange Multipliers are ensured to be non negative.

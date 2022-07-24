@@ -1,1 +1,0 @@
-A QualityMeasure can now be applied to a MLAlgo built from a subset of the input names.

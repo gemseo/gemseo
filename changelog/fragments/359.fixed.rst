@@ -1,1 +1,0 @@
-An ``AnalyticDiscipline`` can now be serialized.

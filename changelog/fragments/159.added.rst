@@ -1,2 +1,0 @@
-The RadarChart post-processor plots the constraints at optimum by default.
-  and provides access to the database elements from either the first or last index.

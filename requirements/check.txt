@@ -6,17 +6,17 @@
 #
 cfgv==3.3.1
     # via pre-commit
-distlib==0.3.4
+distlib==0.3.5
     # via virtualenv
-filelock==3.7.0
+filelock==3.7.1
     # via virtualenv
-identify==2.5.0
+identify==2.5.2
     # via pre-commit
-nodeenv==1.6.0
+nodeenv==1.7.0
     # via pre-commit
 platformdirs==2.5.2
     # via virtualenv
-pre-commit==2.19.0
+pre-commit==2.20.0
     # via -r requirements/check.in
 pyyaml==6.0
     # via pre-commit
@@ -24,5 +24,8 @@ six==1.16.0
     # via virtualenv
 toml==0.10.2
     # via pre-commit
-virtualenv==20.14.1
+virtualenv==20.15.1
     # via pre-commit
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

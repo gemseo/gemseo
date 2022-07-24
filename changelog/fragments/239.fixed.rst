@@ -1,1 +1,0 @@
-An ``MDAJacobi`` inside a ``DOEScenario`` no longer causes a crash when a sample raises a ``ValueError``.

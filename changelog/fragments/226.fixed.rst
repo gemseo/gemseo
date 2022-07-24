@@ -1,1 +1,0 @@
-The method ``get_data_by_names`` in ``opt_problem`` no longer crashes when both ``as_dict`` and ``filter_feasible`` are set to True.

@@ -1,1 +1,0 @@
-API change: The :class:`.AbstractCache` no longer offers the ``samples_indices`` property.

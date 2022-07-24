@@ -1,1 +1,0 @@
-An MDODiscipline can automatically detect JSON grammar files from a user directory.

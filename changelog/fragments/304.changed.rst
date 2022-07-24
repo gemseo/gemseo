@@ -1,2 +1,0 @@
-An :class:`MDOFormulation` now shows an ``INFO`` level message when a variable is removed from the design space because
-it is not an input for any discipline in the formulation.

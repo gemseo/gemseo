@@ -1,1 +1,0 @@
-A DatasetPlot can associate labels to the handled variables for a more meaningful display.

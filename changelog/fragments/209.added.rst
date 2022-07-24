@@ -1,1 +1,0 @@
-The optimization history can be exported to a Dataset from a Scenario.

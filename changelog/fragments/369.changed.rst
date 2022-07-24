@@ -1,1 +1,0 @@
-API change: the option ``parallel_exec`` in :class:`.IDF` was replaced by ``n_processes``.

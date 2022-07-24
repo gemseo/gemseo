@@ -1,1 +1,0 @@
-The ``DriverLib`` now checks if the optimization or DOE algorithm handles integer variables.
