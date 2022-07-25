@@ -77,6 +77,59 @@ class MDA(MDODiscipline):
 
     activate_cache = True
 
+    tolerance: float
+    """The tolerance of the iterative direct coupling solver"""
+
+    linear_solver: str
+    """The name of the linear solver."""
+
+    linear_solver_tolerance: float
+    """The tolerance of the linear solver in the adjoint equation."""
+
+    linear_solver_options: dict[str, Any]
+    """The options of the linear solver."""
+
+    max_mda_iter: int
+    """The maximum iterations number for the MDA algorithm."""
+
+    disciplines: Sequence[MDODiscipline]
+    """The disciplines from which to compute the MDA."""
+
+    coupling_structure: MDOCouplingStructure
+    """The coupling structure to be used by the MDA."""
+
+    assembly: JacobianAssembly
+
+    residual_history: list
+    """The history of MDA residuals."""
+
+    reset_history_each_run: bool
+    """Whether to reset the history of MDA residuals before each run."""
+
+    warm_start: bool
+    """Whether the second iteration and ongoing start from the previous solution."""
+
+    norm0: float | None
+    """The reference residual, if any."""
+
+    normed_residual: float
+    """The normed residual."""
+
+    strong_couplings: list[str]
+    """The names of the strong coupling variables."""
+
+    all_couplings: list[str]
+    """The names of the coupling variables."""
+
+    matrix_type: str
+    """The type of the matrix."""
+
+    use_lu_fact: bool
+    """Whether to store a LU factorization of the matrix."""
+
+    lin_cache_tol_fact: float
+    """The tolerance factor to cache the Jacobian."""
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

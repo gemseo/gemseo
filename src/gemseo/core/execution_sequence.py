@@ -259,6 +259,12 @@ class CompositeExecSequence(ExecutionSequence):
     START_STR = "'"
     END_STR = "'"
 
+    sequences: list[ExecutionSequence]
+    """The inner execution sequences."""
+
+    disciplines: list[MDODiscipline]
+    """The disciplines."""
+
     def __init__(self, sequence=None):
         super().__init__(sequence)
         self.sequences = []
