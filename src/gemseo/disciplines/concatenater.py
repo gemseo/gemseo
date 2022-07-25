@@ -21,16 +21,18 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from numpy import diag
-from numpy import ones
+from numpy import concatenate
+from numpy import eye
 from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.python_compatibility import accumulate
 
 
-class ConcatenationDiscipline(MDODiscipline):
+class Concatenater(MDODiscipline):
     """Concatenate input variables into a single output variable.
+
+    These input variables can be scaled before concatenation.
 
     Example:
         >>> from gemseo.api import create_discipline
@@ -38,7 +40,7 @@ class ConcatenationDiscipline(MDODiscipline):
         >>> constraints_names = ['c1', 'c2']
         >>> output_name = ['c']
         >>> concatenation_disc = create_discipline(
-        ...     'ConcatenationDiscipline', constraints_names, output_name
+        ...     'Concatenater', constraints_names, output_name
         ... )
         >>> disciplines = [sellar_system_disc, concatenation_disc]
         >>> chain = create_discipline('MDOChain', disciplines=disciplines)
@@ -50,20 +52,32 @@ class ConcatenationDiscipline(MDODiscipline):
         self,
         input_variables: Sequence[str],
         output_variable: str,
+        input_coefficients: dict[str, float] = None,
     ) -> None:
         """# noqa: D205 D212 D415
         Args:
             input_variables: The input variables to concatenate.
             output_variable: The output variable name.
+            input_coefficients: The coefficients
+                related to the different input variables.
         """
         super().__init__()
         self.input_grammar.update(input_variables)
         self.output_grammar.update([output_variable])
         self.__output_variable = output_variable
+        self.__coefficients = dict.fromkeys(input_variables, 1.0)
+        if input_coefficients:
+            self.__coefficients.update(input_coefficients)
 
     def _run(self) -> None:
         """Run the discipline."""
-        self.local_data[self.__output_variable] = self.get_inputs_asarray()
+        input_data = self.get_input_data()
+        self.local_data[self.__output_variable] = concatenate(
+            [
+                self.__coefficients[input_name] * input_data[input_name]
+                for input_name in self.get_input_data_names()
+            ]
+        )
 
     def _compute_jacobian(
         self,
@@ -82,14 +96,13 @@ class ConcatenationDiscipline(MDODiscipline):
         """
         self._init_jacobian(inputs, outputs, with_zeros=True)
 
-        inputs_names = self.get_input_data_names()
-        inputs_sizes = [inp.size for inp in self.get_all_inputs()]
-        inputs_total_size = self.get_inputs_asarray().size
+        names = self.get_input_data_names()
+        sizes = [input.size for input in self.get_all_inputs()]
+        total_size = self.get_inputs_asarray().size
 
         # Instead of manually accumulating, we use the accumulate() iterator.
-        for name, size, start in zip(
-            inputs_names, inputs_sizes, accumulate(inputs_sizes, initial=0)
-        ):
-            val = zeros([inputs_total_size, size])
-            val[start : (start + size), :] = diag(ones(size))
-            self.jac[self.__output_variable][name] = val
+        jac = self.jac[self.__output_variable]
+        for name, size, start in zip(names, sizes, accumulate(sizes, initial=0)):
+            val = zeros([total_size, size])
+            val[start : (start + size), :] = self.__coefficients[name] * eye(size)
+            jac[name] = val
