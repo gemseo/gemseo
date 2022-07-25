@@ -1,0 +1,1 @@
+Fixed Lagrange Multipliers computation for equality active constraints.
