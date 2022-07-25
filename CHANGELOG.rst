@@ -60,8 +60,6 @@ Added
   `#209 <https://gitlab.com/gemseo/dev/gemseo/-/issues/209>`_
 - A :class:`.DatasetPlot` can associate labels to the handled variables for a more meaningful display.
   `#212 <https://gitlab.com/gemseo/dev/gemseo/-/issues/212>`_
-- One can iterate an :class:`.AbstractFullCache` and handle it with square brackets, i.e. ``cache[input_data]``.
-  `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
 - The bounds of the parameter length scales of a :class:`.GaussianProcessRegressor` can be defined at instantiation.
   `#228 <https://gitlab.com/gemseo/dev/gemseo/-/issues/228>`_
 - Observables included in the exported HDF file.
@@ -188,12 +186,30 @@ Changed
   `#177 <https://gitlab.com/gemseo/dev/gemseo/-/issues/177>`_
 - The D3.js-based N2 chart can now display the GEMSEO logo offline.
   `#184 <https://gitlab.com/gemseo/dev/gemseo/-/issues/184>`_
-- API changes:
+- The caches API has been changed to be more Pythonic and expose an interface similar to a dictionary.
+  One can iterate an :class:`.AbstractFullCache` and handle it with square brackets,
+  eg. ``output_data = cache[input_data].outputs``.
+  The entry of a cache is a :class:`.CacheEntry`
+  whose components ``entry.{inputs,outputs,jacobian}`` are dictionaries of NumPy arrays indexed by variable names.
 
-  - In :class:`.AbstractFullCache`, ``varsizes`` is renamed as :attr:`~.AbstractFullCache.names_to_sizes`.
-    The number of items stored in an :class:`.AbstractCache` can no longer be obtained with ``get_length``, but ``__len__``.
-    `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
-- The grammars API has been changed to be more Pythonic and expose an interface similar to a dictionary.
+  API changes from old to new:
+
+  - ``cache.inputs_names``: ``cache.input_names``
+  - ``cache.get_all_data``: ``[cache_entry for cache_entry in cache]``
+  - ``cache.get_data``: has been removed
+  - ``cache.get_length``: ``len(cache)``
+  - ``cache.get_outputs``: ``cache[input_data].outputs``
+  - ``cache.{INPUTS,JACOBIAN,OUTPUTS,SAMPLE}_GROUP``: have been removed
+  - ``cache.last_cached_inputs``: ``cache.last_entry.inputs``
+  - ``cache.last_cached_outputs``: ``cache.last_entry.outputs``
+  - ``cache.max_length``: has been removed
+  - ``cache.merge``: ``cache.update``
+  - ``cache.outputs_names``: ``cache.output_names``
+  - ``cache.varsizes``: ``cache.names_to_sizes``
+  - ``cache.samples_indices``: has been removed
+
+  `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
+- The grammars API has been changed to be more pythonic and expose an interface similar to a dictionary.
   The behavior of the grammars has been made more consistent too.
 
   API changes from old to new:
@@ -314,8 +330,6 @@ Changed
 Removed
 -------
 
-- API change: The :class:`.AbstractCache` no longer offers the ``samples_indices`` property.
-  `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
 - API change: Remove :meth:`DesignSpace.get_current_x_normalized` and :meth:`DesignSpace.get_current_x_dict`.
   `#323 <https://gitlab.com/gemseo/dev/gemseo/-/issues/323>`_
 
