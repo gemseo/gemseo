@@ -64,7 +64,7 @@ class OTComposedDistribution(ComposedDistribution):
         distributions: Sequence[OTDistribution],
         copula: str = ComposedDistribution._INDEPENDENT_COPULA,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             distributions: The distributions.
             copula: A name of copula.

@@ -104,9 +104,6 @@ class MatlabEngine:
     Using that latter function acts like a singleton,
     i.e. the returned instance is unique if the workspace name is the same.
 
-    Attributes:
-        __matlab: The matlab engine.
-
     Examples:
         >>> eng1 = get_matlab_engine()
         >>> # add new searching directory to workspace with sub-dir
@@ -121,6 +118,9 @@ class MatlabEngine:
         >>> eng1.close_session()
         >>> print(eng1.is_closed)
     """
+
+    __matlab: MatlabEngine
+    """The matlab engine."""
 
     def __init__(self, engine_name: str) -> None:
         # noqa: D205,D212,D415

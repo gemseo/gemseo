@@ -110,14 +110,19 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Statistics(metaclass=GoogleDocstringInheritanceMeta):
-    """Abstract class to interface a statistics library.
+    """Abstract class to interface a statistics library."""
 
-    Attributes:
-        dataset (Dataset): The dataset.
-        n_samples (int): The number of samples.
-        n_variables (int): The number of variables.
-        name (str): The name of the object.
-    """
+    dataset: Dataset
+    """The dataset."""
+
+    n_samples: int
+    """The number of samples."""
+
+    n_variables: int
+    """The number of variables."""
+
+    name: str
+    """The name of the object."""
 
     SYMBOLS = {}
 
@@ -127,7 +132,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         variables_names: Iterable[str] | None = None,
         name: str | None = None,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             dataset: A dataset.
             variables_names: The variables of interest.

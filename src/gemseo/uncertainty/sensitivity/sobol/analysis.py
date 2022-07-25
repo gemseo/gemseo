@@ -200,7 +200,7 @@ class SobolAnalysis(SensitivityAnalysis):
         outputs: Sequence[str] | None = None,
         algo: str = "Saltelli",
     ) -> dict[str, IndicesType]:
-        """# noqa:D205,D212,D415
+        """.. # noqa:D205,D212,D415
         Args:
             algo: The name of the algorithm to estimate the Sobol' indices
         """
@@ -371,7 +371,7 @@ class SobolAnalysis(SensitivityAnalysis):
         sort: bool = True,
         sort_by_total: bool = True,
     ):
-        r"""# noqa: D415,D417
+        r""".. # noqa: D415,D417
 
         Plot the first- and total-order Sobol' indices.
 

@@ -72,25 +72,34 @@ LOGGER = logging.getLogger(__name__)
 
 
 class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
-    r"""Approximation of the Hessian matrix from an optimization history.
+    r"""Approximation of the Hessian matrix from an optimization history."""
 
-    Attributes:
-        history (Database): The optimization history
-            containing input values, output values and Jacobian values.
-        x_ref (Optional[ndarray]): The value :math:`x_K`
-            of the input variables :math:`x`
-            at the iteration :math:`K` of the optimization history;
-            this is the point at which
-            the Hessian matrix and its inverse are approximated.
-        fgrad_ref (Optional[ndarray]): The value :math:`g_K`
-            of the gradient function :math:`g` of :math:`f` at :math:`x_K`.
-        f_ref (Optional[ndarray]): The value :math:`y_K` of the output
-            of :math:`f` at :math:`x_K`.
-        b_mat_history (List[ndarray]): The history :math:`B_0,B_1,\ldots,B_K`
-            of the approximations of the Hessian matrix :math:`B`.
-        h_mat_history (List[ndarray]): The history :math:`H_0,H_1,\ldots,H_K`
-            of the approximations of the inverse Hessian matrix :math:`H`.
+    history: Database
+    """The optimization history
+    containing input values, output values and Jacobian values.
     """
+
+    x_ref: ndarray | None
+    """The value :math:`x_K`
+    of the input variables :math:`x`
+    at the iteration :math:`K` of the optimization history;
+    this is the point at which
+    the Hessian matrix and its inverse are approximated."""
+
+    fgrad_ref: ndarray | None
+    """The value :math:`g_K`
+    of the gradient function :math:`g` of :math:`f` at :math:`x_K`."""
+
+    f_ref: ndarray | None
+    """The value :math:`y_K` of the output of :math:`f` at :math:`x_K`."""
+
+    b_mat_history: list[ndarray]
+    r"""The history :math:`B_0,B_1,\ldots,B_K`
+    of the approximations of the Hessian matrix :math:`B`."""
+
+    h_mat_history: list[ndarray]
+    r"""The history :math:`H_0,H_1,\ldots,H_K`
+    of the approximations of the inverse Hessian matrix :math:`H`."""
 
     def __init__(
         self,

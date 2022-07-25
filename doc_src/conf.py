@@ -88,10 +88,11 @@ sphinx_gallery_conf = {
 ################################################################################
 # Settings for autodoc.
 
-autodoc_default_options = {
-    "inherited-members": True,
-    "autosummary": True,
-}
+autodoc_default_options = {"members": True, "inherited-members": True}
+
+autodoc_member_order = "groupwise"
+
+autosummary_generate = True
 
 # Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"

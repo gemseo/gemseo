@@ -130,55 +130,78 @@ Module: :class:`{{modules[algo]}}`
 More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
-Mandatory and optional parameters:
-
 .. raw:: html
 
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
 
+{% set optional_parameters = [] %}
+{% for parameter in options[algo]|dictsort %}
+{% if parameter[1]['default'] != '' or parameter[0].startswith('**') %}
+{% set tmp = optional_parameters.append(parameter) %}
+{% endif %}
+{% endfor %}
+
+{% if optional_parameters and optional_parameters[0][0].startswith("**") %}
+{% set tmp = optional_parameters.append(optional_parameters[0]) %}
+{% set tmp = optional_parameters.pop(0) %}
+{% endif %}
+
+{% set required_parameters = [] %}
+{% for parameter in options[algo]|dictsort %}
+{% if parameter[1]['default'] == '' and not parameter[0].startswith('**') %}
+{% set tmp = required_parameters.append(parameter) %}
+{% endif %}
+{% endfor %}
+
+{% if required_parameters and required_parameters[0][0].startswith("*") %}
+{% set tmp = required_parameters.append(required_parameters[0]) %}
+{% set tmp = required_parameters.pop(0) %}
+{% endif %}
+
+{% if required_parameters %}
     <dl class="field-list simple">
-    <dt class="field-odd">Parameters</dt>
+    <dt class="field-odd">Required parameters</dt>
     <dd class="field-odd"><ul class="simple">
-
-{% for arg in options[algo]|dictsort %}
-{% if not arg[0].startswith('*') %}
+{% for arg in required_parameters %}
     <li>
 
 **{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
 
 {{arg[1]['description']}}
 
-{% if arg[1]['default'] != '' %}
-By default it is set to {{arg[1]['default']}}.
-{% endif %}
-
 .. raw:: html
 
     </li>
-{% endif %}
 {% endfor %}
-
-{% for arg in options[algo]|dictsort|reverse %}
-{% if arg[0].startswith('*') %}
-    <li>
-
-**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
-
-{{arg[1]['description']}}
-
-{% if arg[1]['default'] != '' %}
-By default it is set to {{arg[1]['default']}}.
-{% endif %}
-
-.. raw:: html
-
-    </li>
-{% endif %}
-{% endfor %}
-
     </ul>
     </dd>
     </dl>
+{% endif %}
+
+{% if optional_parameters %}
+    <dl class="field-list simple">
+    <dt class="field-odd">Optional parameters</dt>
+    <dd class="field-odd"><ul class="simple">
+
+{% for arg in optional_parameters %}
+    <li>
+
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+
+{{arg[1]['description']}}
+
+{% if not arg[0].startswith('*') %}
+By default it is set to {{arg[1]['default']}}.
+{% endif %}
+
+.. raw:: html
+
+    </li>
+{% endfor %}
+    </ul>
+    </dd>
+    </dl>
+{% endif %}
 
 {% endfor %}

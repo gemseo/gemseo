@@ -92,10 +92,10 @@ class Database:
           the iterations (when several iterations are stored for a same point,
           this means that the point has been replicated during the process at
           these iterations).
-
-    Attributes:
-        name (str): The name of the database.
     """
+
+    name: str
+    """The name of the database."""
 
     missing_value_tag = "NA"
     KEYSSEPARATOR = "__KEYSSEPARATOR__"

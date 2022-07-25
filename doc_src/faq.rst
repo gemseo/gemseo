@@ -50,17 +50,17 @@ in the order passed by the user.
 
 .. TODO add a code block showing an example
 
-Available options for DOE/Optimization
---------------------------------------
+Available options for algorithms
+--------------------------------
 
-Look at the :term:`JSON` schema
-with the name of the library or algorithm,
-in the :file:`gemseo/algos/doe/options`
-or :file:`gemseo/algos/opt/options` packages.
-Their list and meanings are also documented in the library wrapper
-(for instance :meth:`!gemseo.algos.opt.lib_scipy.ScipyOpt._get_options`).
-
-.. TODO add a code block showing an example
+See the available :ref:`DOEs <gen_doe_algos>`,
+:ref:`linear solvers <gen_linear_solver_algos>`,
+:ref:`MDO formulations <gen_formulation_algos>`,
+:ref:`MDAs <gen_mda_algos>`,
+:ref:`optimizers <gen_opt_algos>`,
+:ref:`post-processings <gen_post_algos>`
+and :ref:`machine learners <gen_mlearning_algos>`
+(accessible from the main page of the documentation).
 
 Coupling a simulation software to |g|
 -------------------------------------

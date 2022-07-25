@@ -70,20 +70,29 @@ class AutoPyDiscipline(MDODiscipline):
         {'x': array([0.]), 'y': array([0.]), 'z1': array([0.]), 'z2': array([1.])}
         >>> discipline.execute({'x': array([1.]), 'y':array([-3.2])})
         {'x': array([1.]), 'y': array([-3.2]), 'z1': array([-5.4]), 'z2': array([-4.4])}
-
-    Attributes:
-        py_func (Callable[[DataType, ..., DataType],DataType]): The Python function
-            to compute the outputs from the inputs.
-        use_arrays (bool):  Whether the function is expected
-            to take arrays as inputs and give outputs as arrays.
-        py_jac (Optional[Callable[[DataType, ..., DataType],ndarray]]): The Python
-            function to compute the Jacobian from the inputs.
-        in_names (List[str]): The names of the inputs.
-        out_names (List[str]): The names of the outputs.
-        data_processor (AutoDiscDataProcessor): A data processor
-            forcing input data to float and output data to arrays.
-        sizes (Dict[str,int]): The sizes of the input and output variables.
     """
+
+    py_func: Callable[[DataType, ..., DataType], DataType]
+    """The Python function to compute the outputs from the inputs."""
+
+    use_arrays: bool
+    """Whether the function is expected
+    to take arrays as inputs and give outputs as arrays."""
+
+    py_jac: Callable[[DataType, ..., DataType], ndarray] | None
+    """The Python function to compute the Jacobian from the inputs."""
+
+    in_names: list[str]
+    """The names of the inputs."""
+
+    out_names: list[str]
+    """The names of the outputs."""
+
+    data_processor: AutoDiscDataProcessor
+    """A data processor forcing input data to float and output data to arrays."""
+
+    sizes: dict[str, int]
+    """The sizes of the input and output variables."""
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("py_func", "out_names")
 
@@ -95,7 +104,7 @@ class AutoPyDiscipline(MDODiscipline):
         use_arrays: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             py_func: The Python function to compute the outputs from the inputs.
             py_jac: The Python function to compute the Jacobian from the inputs;
@@ -169,7 +178,7 @@ class AutoPyDiscipline(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Raises:
             RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
         """
@@ -247,19 +256,21 @@ class AutoPyDiscipline(MDODiscipline):
 class AutoDiscDataProcessor(DataProcessor):
     """A data processor forcing input data to float and output data to arrays.
 
-    Convert all |g| scalar input data to floats,
-    and convert all discipline output data to NumPy arrays.
-
-    Attributes:
-        out_names (Sequence[str]): The names of the outputs.
-        one_output (bool): Whether there is a single output.
+    Convert all |g| scalar input data to floats, and convert all discipline output data
+    to NumPy arrays.
     """
+
+    out_names: Sequence[str]
+    """The names of the outputs."""
+
+    one_output: bool
+    """Whether there is a single output."""
 
     def __init__(
         self,
         out_names: Sequence[str],
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             out_names: The names of the outputs.
         """

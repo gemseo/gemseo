@@ -39,6 +39,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
+from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -73,14 +74,22 @@ class Scenario(MDODiscipline):
     To view the results,
     use the :meth:`.Scenario.post_process` method after execution
     with one of the available post-processors that can be listed by :attr:`.Scenario.posts`.
-
-    Attributes:
-        disciplines (List(MDODiscipline)): The disciplines.
-        formulation (MDOFormulation): The MDO formulation.
-        formulation_name (str): The name of the MDO formulation.
-        optimization_result (OptimizationResult): The optimization result.
-        post_factory (Optional[PostFactory]): The factory for post-processors if any.
     """
+
+    disciplines: list[MDODiscipline]
+    """The disciplines."""
+
+    formulation: MDOFormulation
+    """The MDO formulation."""
+
+    formulation_name: str
+    """The name of the MDO formulation."""
+
+    optimization_result: OptimizationResult
+    """The optimization result."""
+
+    post_factory: PostFactory | None
+    """The factory for post-processors if any."""
 
     # Constants for input variables in json schema
     X_0 = "x_0"

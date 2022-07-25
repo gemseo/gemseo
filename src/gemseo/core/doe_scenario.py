@@ -38,13 +38,12 @@ LOGGER = logging.getLogger(__name__)
 class DOEScenario(Scenario):
     """A multidisciplinary scenario to be executed by a design of experiments (DOE).
 
-    A :class:`.DOEScenario` is a particular :class:`.Scenario`
-    whose driver is a DOE.
+    A :class:`.DOEScenario` is a particular :class:`.Scenario` whose driver is a DOE.
     This DOE must be implemented in a :class:`.DOELibrary`.
-
-    Attributes:
-        seed (int): The seed used by the random number generators for replicability.
     """
+
+    seed: int
+    """The seed used by the random number generators for replicability."""
 
     # Constants for input variables in json schema
     N_SAMPLES = "n_samples"

@@ -52,13 +52,16 @@ class MDOCouplingStructure:
     """Structure of the couplings between several disciplines.
 
     The methods of this class include the computation of weak, strong or all couplings.
-
-    Attributes:
-        disciplines (Sequence[MDODiscipline]): The disciplines.
-        graph (DependencyGraph): The directed graph of the disciplines.
-        sequence (List[List[Tuple[MDODiscipline]]]): The sequence of execution
-            of the disciplines.
     """
+
+    disciplines: Sequence[MDODiscipline]
+    """The disciplines."""
+
+    graph: DependencyGraph
+    """The directed graph of the disciplines."""
+
+    sequence: list[list[tuple[MDODiscipline]]]
+    """The sequence of execution of the disciplines."""
 
     def __init__(
         self,

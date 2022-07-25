@@ -80,6 +80,7 @@ from typing import Sequence
 import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
+from numpy import ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
@@ -108,80 +109,6 @@ class MorrisAnalysis(SensitivityAnalysis):
     The user can specify the DOE algorithm name to select the initial points, as
     well as the number of replicates and the relative step for the input variations.
 
-    Attributes:
-        mu_ (dict): The mean effects with the following structure:
-
-            .. code-block:: python
-
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-
-        mu_star (dict): The mean absolute effects with the following structure:
-
-            .. code-block:: python
-
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-
-        sigma (dict): The variability of the effects with the following structure:
-
-            .. code-block:: python
-
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-
-        relative_sigma (dict): The relative variability of the effects
-            with the following structure:
-
-            .. code-block:: python
-
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-
-        min (dict): The minimum effect with the following structure:
-
-            .. code-block:: python
-
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-
-        max (dict): The maximum effect with the following structure:
-
-            .. code-block:: python
-
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-
     Examples:
         >>> from numpy import pi
         >>> from gemseo.api import create_discipline, create_parameter_space
@@ -208,6 +135,89 @@ class MorrisAnalysis(SensitivityAnalysis):
         ... )
         >>> indices = analysis.compute_indices()
     """
+    mu_: dict[str, dict[str, ndarray]]
+    """The mean effects with the following structure:
+
+    .. code-block:: python
+
+        {
+            "output_name": [
+                {
+                    "input_name": data_array,
+                }
+            ]
+        }
+    """
+
+    mu_star: dict[str, dict[str, ndarray]]
+    """The mean absolute effects with the following structure:
+
+    .. code-block:: python
+
+        {
+            "output_name": [
+                {
+                    "input_name": data_array,
+                }
+            ]
+        }
+    """
+
+    sigma: dict[str, dict[str, ndarray]]
+    """The variability of the effects with the following structure:
+
+    .. code-block:: python
+
+        {
+            "output_name": [
+                {
+                    "input_name": data_array,
+                }
+            ]
+        }
+    """
+
+    relative_sigma: dict[str, dict[str, ndarray]]
+    """The relative variability of the effects with the following structure:
+
+    .. code-block:: python
+
+        {
+            "output_name": [
+                {
+                    "input_name": data_array,
+                }
+            ]
+        }
+    """
+
+    min: dict[str, dict[str, ndarray]]
+    """The minimum effect with the following structure:
+
+    .. code-block:: python
+
+        {
+            "output_name": [
+                {
+                    "input_name": data_array,
+                }
+            ]
+        }
+    """
+
+    max: dict[str, dict[str, ndarray]]
+    """The maximum effect with the following structure:
+
+    .. code-block:: python
+
+        {
+            "output_name": [
+                {
+                    "input_name": data_array,
+                }
+            ]
+        }
+    """
 
     DEFAULT_DRIVER = PyDOE.PYDOE_LHS
 
@@ -223,7 +233,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        r"""# noqa: D205,D212,D415
+        r""".. # noqa: D205,D212,D415
         Args:
             n_replicates: The number of times
                 the OAT method is repeated. Used only if ``n_samples`` is None.
@@ -283,7 +293,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         outputs: Sequence[str] | None = None,
         normalize: bool = False,
     ) -> dict[str, IndicesType]:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             normalize: Whether to normalize the indices
                 with the empirical bounds of the outputs.
@@ -372,7 +382,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         lower_mu: float | None = None,
         lower_sigma: float | None = None,
     ) -> None:
-        r"""# noqa: D415,D417
+        r""".. # noqa: D415,D417
 
         Plot the Morris indices for each input variable.
 

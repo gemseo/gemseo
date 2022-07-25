@@ -1,0 +1,23 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+The following people are the contributors to |g|'s development and maintenance:
+
+.. raw :: html
+
+    <style>
+        img.avatar {border-radius: 10px;}
+        div.avatar {text-align:center;}
+    </style>
+    <div class="sk-authors-container">
+{% for author in authors %}
+        <div class="avatar">
+            <img src="_static/authors/{{ author[2] }}" class="avatar"/><br/>{{ author[0] }}<br/>{{ author[1] }}
+        </div>
+{% endfor %}
+    </div>

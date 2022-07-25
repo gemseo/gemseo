@@ -46,7 +46,7 @@ class WeibullToleranceInterval(ToleranceInterval):
         shape: float,
         location: float,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             scale: The estimation of the scale of the Weibull distribution.
             shape: The estimation of the shape of the Weibull distribution.

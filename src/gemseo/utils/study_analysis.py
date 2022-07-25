@@ -62,16 +62,25 @@ class XLSStudyParser:
     not necessarily the one of the current sheet.
     All the design variables must be inputs of a discipline,
     not necessarily the one of the current sheet.
-
-    Attributes:
-        xls_study_path (str): The path to the Excel file.
-        frames (Dict[str,DataFrame]): The data frames created from the Excel file.
-        disciplines (Dict[str,MDODiscipline]): The disciplines.
-        scenarios (Dict[str,Dict[str,Union[str,List[str]]]]): The descriptions
-            of the scenarios parsed in the Excel file.
-        inputs (Set[str]): The input variables.
-        outputs (Set[str]): The output variables.
     """
+
+    xls_study_path: str
+    """The path to the Excel file."""
+
+    frames: dict[str, DataFrame]
+    """The data frames created from the Excel file."""
+
+    disciplines: dict[str, MDODiscipline]
+    """The disciplines."""
+
+    scenarios: dict[str, dict[str, str | list[str]]]
+    """The descriptions of the scenarios parsed in the Excel file."""
+
+    inputs: set[str]
+    """The input variables."""
+
+    outputs: set[str]
+    """The output variables."""
 
     SCENARIO_PREFIX = "Scenario"
     DISCIPLINE = "Discipline"
@@ -411,7 +420,7 @@ class StudyAnalysis:
         +================+====================+================+================+================+================+================+
         |      in1       |       out1         |     out2       |     Disc1      |     MDF        |  tolerance     |     0.1        |
         +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-        |                |                    |                |     Disc2      |                | main_mda_name |   MDAJacobi    |
+        |                |                    |                |     Disc2      |                | main_mda_name  |   MDAJacobi    |
         +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
 
     All the objective functions and constraints must be outputs of a discipline,
@@ -430,17 +439,26 @@ class StudyAnalysis:
 
     An arbitrary number of levels can be generated this way
     (three, four levels etc formulations).
-
-    Attributes:
-        xls_study_path (str): The path of the Excel file.
-        study (XLSStudyParser): The XLSStudyParser instance built from the Excel file.
-        disciplines_descr (Dict[str,MDODiscipline]): The descriptions of the disciplines
-            (including sub-scenario) parsed in the Excel file.
-        scenarios_descr (Dict[str,Dict[str,Union[str,List[str]]]]): The descriptions
-            of the scenarios parsed in the Excel file.
-        disciplines (Dict[str,MDODiscipline]): The disciplines.
-        scenarios (Dict[str,MDOScenario]): The scenarios.
     """  # noqa: B950
+
+    xls_study_path: str
+    """The path of the Excel file."""
+
+    study: XLSStudyParser
+    """The XLSStudyParser instance built from the Excel file."""
+
+    disciplines_descr: dict[str, MDODiscipline]
+    """The descriptions of the disciplines
+    (including sub-scenario) parsed in the Excel file."""
+
+    scenarios_descr: dict[str, dict[str, str | list[str]]]
+    """The descriptions of the scenarios parsed in the Excel file."""
+
+    disciplines: dict[str, MDODiscipline]
+    """The disciplines."""
+
+    scenarios: dict[str, MDOScenario]
+    """The scenarios."""
 
     AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
 

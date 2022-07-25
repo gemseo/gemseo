@@ -54,7 +54,7 @@ class Concatenater(MDODiscipline):
         output_variable: str,
         input_coefficients: dict[str, float] = None,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             input_variables: The input variables to concatenate.
             output_variable: The output variable name.
