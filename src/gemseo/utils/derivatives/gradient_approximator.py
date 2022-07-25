@@ -34,11 +34,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
-    """A gradient approximator.
+    """A gradient approximator."""
 
-    Attributes:
-        f_pointer (Callable): The pointer to the function to derive.
-    """
+    f_pointer: Callable[[ndarray], ndarray]
+    """The pointer to the function to derive."""
 
     ALIAS = None
 

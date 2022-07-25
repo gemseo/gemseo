@@ -73,7 +73,7 @@ def create_tree_file(modules_path, dct, parents, root):
             with open(modules_path / parent_rst, "a") as f:
                 f.write("      " + PKG_MSG.format(path, name))
                 if index + 1 == len(items):
-                    f.write("   </ul>\n")
+                    f.write("   </ul>\n\n")
                     f.write(f".. automodule:: {parent_path}\n")
                     f.write("   :noindex:\n\n")
             with open(modules_path / path_rst, "w") as f:
@@ -81,7 +81,7 @@ def create_tree_file(modules_path, dct, parents, root):
                 f.write(".. {}:\n\n".format(path.replace(".", "-")))
                 gparents = ""
                 f.write(".. raw:: html\n\n")
-                f.write("   <i class='fa fa-home'></i> ")
+                f.write("   <i class='fa fa-home' id='module-breadcrumb'></i> ")
                 for parent in parents:
                     gparents = gparents + "." + parent
                     if parent == root:
@@ -99,15 +99,15 @@ def create_tree_file(modules_path, dct, parents, root):
                 src_path = path.replace(".", "/")
                 f.write("      " + MOD_MSG.format(path, name, src_path))
                 if index + 1 == len(items):
-                    f.write("   </ul>\n")
+                    f.write("   </ul>\n\n")
                     f.write(f".. automodule:: {parent_path}\n")
                     f.write("   :noindex:\n\n")
-            with open(modules_path / f"tree_{path_rst}", "w") as f:
+            with open(modules_path / f"tmp_{path_rst}", "w") as f:
                 f.write(":orphan:\n\n")
-                f.write(".. _tree-{}:\n\n".format(path.replace(".", "-")))
+                f.write(f".. _{path}:\n\n")
                 gparents = ""
                 f.write(".. raw:: html\n\n")
-                f.write("   <i class='fa fa-home'></i> ")
+                f.write("   <i class='fa fa-home' id='module-breadcrumb'></i> ")
                 for parent in parents:
                     gparents = gparents + "." + parent
                     if parent == root:
@@ -125,9 +125,9 @@ def create_tree_file(modules_path, dct, parents, root):
                     for line in lines:
                         f.write(line)
             (modules_path / path_rst).unlink()
-            old_tree_path = modules_path / f"tree_{path}.rst"
-            new_tree_path = modules_path / path_rst
-            old_tree_path.rename(new_tree_path)
+            old_path = modules_path / f"tmp_{path}.rst"
+            new_path = modules_path / path_rst
+            old_path.rename(new_path)
 
 
 def main(modules_path, name):

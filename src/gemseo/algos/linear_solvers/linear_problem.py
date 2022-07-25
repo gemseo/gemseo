@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -36,22 +37,41 @@ class LinearProblem:
 
     It also contains the solution, and some properties of the system such as the symmetry
     or positive definiteness.
-
-    Attributes:
-        rhs (ndarray): The right-hand side of the equation.
-        lhs (ndarray, LinearOperator, spmatrix): The left-hand side of the equation.
-            If None, the problem can't be solved and the user has to set it after init.
-        solution (ndarray): The current solution of the problem.
-        is_converged (bool): If the solution is_converged.
-        convergence_info (int, str): The information provided by the solver if convergence
-            occurred or not.
-        is_symmetric (bool): Whether the LHS is symmetric.
-        is_positive_def (bool): Whether the LHS is positive definite.
-        is_lhs_linear_operator (bool): Whether the LHS is symmetric.
-        solver_options (Dict[str, Any]): The options passed to the solver.
-        solver_name (str): The solver name.
-        residuals_history (List[float]): The convergence history of residuals.
     """
+
+    rhs: ndarray
+    """The right-hand side of the equation."""
+
+    lhs: ndarray | LinearOperator | spmatrix
+    """The left-hand side of the equation.
+    If None, the problem can't be solved and the user has to set it after init."""
+
+    solution: ndarray
+    """The current solution of the problem."""
+
+    is_converged: bool
+    """If the solution is_converged."""
+
+    convergence_info: int | str
+    """The information provided by the solver if convergence occurred or not."""
+
+    is_symmetric: bool
+    """Whether the LHS is symmetric."""
+
+    is_positive_def: bool
+    """Whether the LHS is positive definite."""
+
+    is_lhs_linear_operator: bool
+    """Whether the LHS is symmetric."""
+
+    solver_options: dict[str, Any]
+    """The options passed to the solver."""
+
+    solver_name: str
+    """The solver name."""
+
+    residuals_history: list[float]
+    """The convergence history of residuals."""
 
     def __init__(
         self,

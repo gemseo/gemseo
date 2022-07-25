@@ -66,6 +66,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.scenario import Scenario
 from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -79,22 +80,31 @@ MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
 class MLAlgoAssessor(MDODiscipline):
     """Discipline assessing the quality of a machine learning algorithm.
 
-    This quality depends on the values of parameters to calibrate
-    with the :class:`.MLAlgoCalibration`.
-
-    Attributes:
-        algo (str): The name of a machine learning algorithm.
-        measure (MLQualityMeasure): The measure
-            to assess the machine learning algorithm.
-        measure_options (Dict[str,Union[int,Dataset]]): The options
-            of the quality measure.
-        parameters (List(str)): The parameters of the machine learning algorithm
-            to calibrate.
-        dataset (Dataset): The learning dataset.
-        transformer (TransformerType): The transformation strategy for data groups.
-        algos (List(MLAlgo)): The instances of the machine learning algorithm
-            (one per execution of the machine learning algorithm assessor).
+    This quality depends on the values of parameters to calibrate with the
+    :class:`.MLAlgoCalibration`.
     """
+
+    algo: str
+    """The name of a machine learning algorithm."""
+
+    measure: MLQualityMeasure
+    """The measure to assess the machine learning algorithm."""
+
+    measure_options: dict[str, int | Dataset]
+    """The options of the quality measure."""
+
+    parameters: list[str]
+    """The parameters of the machine learning algorithm."""
+
+    dataset: Dataset
+    """The learning dataset."""
+
+    transformer: TransformerType
+    """The transformation strategy for data groups."""
+
+    algos: list[MLAlgo]
+    """The instances of the machine learning algorithm
+    (one per execution of the machine learning algorithm assessor)."""
 
     CRITERION = "criterion"
     LEARNING = "learning"
@@ -177,20 +187,31 @@ class MLAlgoAssessor(MDODiscipline):
 
 
 class MLAlgoCalibration:
-    """Calibration of a machine learning algorithm.
+    """Calibration of a machine learning algorithm."""
 
-    Attributes:
-        algo_assessor (MLAlgoAssessor): The assessor for the machine learning algorithm.
-        calibration_space (DesignSpace): The space defining the calibration variables.
-        maximize_objective (bool): Whether to maximize the quality measure.
-        dataset (Dataset): The learning dataset.
-        optimal_parameters (Dict[str,ndarray]): The optimal parameters
-            for the machine learning algorithm.
-        optimal_criterion (float): The optimal quality measure.
-        optimal_algorithm (MLAlgo): The optimal machine learning algorithm.
-        scenario (Scenario): The scenario
-            used to calibrate the machine learning algorithm.
-    """
+    algo_assessor: MLAlgoAssessor
+    """The assessor for the machine learning algorithm."""
+
+    calibration_space: DesignSpace
+    """The space defining the calibration variables."""
+
+    maximize_objective: bool
+    """Whether to maximize the quality measure."""
+
+    dataset: Dataset
+    """The learning dataset."""
+
+    optimal_parameters: dict[str, ndarray]
+    """The optimal parameters for the machine learning algorithm."""
+
+    optimal_criterion: float
+    """The optimal quality measure."""
+
+    optimal_algorithm: MLAlgo
+    """The optimal machine learning algorithm."""
+
+    scenario: Scenario
+    """The scenario used to calibrate the machine learning algorithm."""
 
     def __init__(
         self,

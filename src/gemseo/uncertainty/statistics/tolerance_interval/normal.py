@@ -49,7 +49,7 @@ class NormalToleranceInterval(ToleranceInterval):
         mean: float,
         std: float,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             mean: The estimation of the mean of the normal distribution.
             std: The estimation of the standard deviation of the normal distribution.

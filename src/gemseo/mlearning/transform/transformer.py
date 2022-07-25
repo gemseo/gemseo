@@ -43,12 +43,13 @@ TransformerFitOptionType = Union[float, int, str]
 
 
 class Transformer(metaclass=GoogleDocstringInheritanceMeta):
-    """Transformer baseclass.
+    """Transformer baseclass."""
 
-    Attributes:
-        name (str): The name of the transformer.
-        parameters (str): The parameters of the transformer.
-    """
+    name: str
+    """The name of the transformer."""
+
+    parameters: str
+    """The parameters of the transformer."""
 
     CROSSED = False
 

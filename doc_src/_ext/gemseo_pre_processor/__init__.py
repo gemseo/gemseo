@@ -17,6 +17,7 @@ from pathlib import Path
 
 from sphinx.ext.autodoc.mock import mock
 
+from . import authors_template
 from . import generate_algos_doc
 from . import module_template
 from . import plugins_template
@@ -56,3 +57,4 @@ def builder_inited(app):
         module_template.main(_modules_path, name.replace("-", "_"))
 
     plugins_template.create_plugins_page(plugins, root_path)
+    authors_template.create_authors_page(root_path)

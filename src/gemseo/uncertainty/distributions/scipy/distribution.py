@@ -101,7 +101,7 @@ class SPDistribution(Distribution):
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,

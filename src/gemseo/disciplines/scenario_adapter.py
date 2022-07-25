@@ -47,14 +47,16 @@ LOGGER = logging.getLogger(__name__)
 class MDOScenarioAdapter(MDODiscipline):
     """An adapter class for MDO Scenario.
 
-    The specified input variables update the default input data
-    of the top level discipline
-    while the output ones filter the output data from the top level discipline outputs.
-
-    Attributes:
-        scenario (Scenario): The scenario to be adapted.
-        post_optimal_analysis (PostOptimalAnalysis): The post-optimal analysis.
+    The specified input variables update the default input data of the top level
+    discipline while the output ones filter the output data from the top level
+    discipline outputs.
     """
+
+    scenario: Scenario
+    """The scenario to be adapted."""
+
+    post_optimal_analysis: PostOptimalAnalysis
+    """The post-optimal analysis."""
 
     LOWER_BND_SUFFIX = "_lower_bnd"
     UPPER_BND_SUFFIX = "_upper_bnd"
@@ -84,7 +86,7 @@ class MDOScenarioAdapter(MDODiscipline):
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
         name: str | None = None,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.

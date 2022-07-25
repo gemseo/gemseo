@@ -62,11 +62,13 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 
     The inheriting classes shall overload the
     :meth:`!MLUnsupervisedAlgo._fit` method.
-
-    Attributes:
-        labels (List(int)): The indices of the clusters for the different samples.
-        n_clusters (int): The number of clusters.
     """
+
+    labels: list[int]
+    """The indices of the clusters for the different samples."""
+
+    n_clusters: int
+    """The number of clusters."""
 
     def __init__(
         self,

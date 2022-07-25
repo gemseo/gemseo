@@ -104,12 +104,16 @@ class MLSupervisedAlgo(MLAlgo):
 
     Inheriting classes shall overload the :meth:`!MLSupervisedAlgo._fit` and
     :meth:`!MLSupervisedAlgo._predict` methods.
-
-    Attributes:
-        input_names (List[str]): The names of the input variables.
-        input_space_center (Dict[str, ndarray]): The center of the input space.
-        output_names (List[str]): The names of the output variables.
     """
+
+    input_names: list[str]
+    """The names of the input variables."""
+
+    input_space_center: dict[str, ndarray]
+    """The center of the input space."""
+
+    output_names: list[str]
+    """The names of the output variables."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
     DEFAULT_TRANSFORMER: Final[dict[str, Transformer]] = {

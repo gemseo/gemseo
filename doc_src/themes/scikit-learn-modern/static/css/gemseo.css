@@ -234,36 +234,46 @@ a.gemseo-btn:hover {
 
 /* api docs */
 
-.class > dt, .function > dt, .method > dt {
-  border-left-color: rgb(163,20,100);
+.class > dt, .function > dt {
+  border-left-color: gray;
 }
 
-.class > dt {
-    border-left-width: 10px;
+.function > dt, .method > dt {
+  border-width: 0px;
+  background-color: white;
 }
 
-.method > dt, .function > dt {
-  border: 1px solid rgb(163,20,100);
+.class > dt, .function > dt {
     border-left-width: 5px;
 }
 
-.class {
-    border-left: 2px solid rgb(163,20,100);
+.class > dt > span.sig-name, .method > dt > span.sig-name, .function > dt > span.sig-name {
+    font-weight: bold;
 }
 
-.field-list > dt {
-    color:rgba(30, 154, 168);
-    background-color: rgba(30, 154, 168,0.1);
-    border: 1px solid rgba(30, 154, 168,0.3);
-}
-.field-list > dd {
-    border: 1px solid rgba(30, 154, 168,0.3);
+.property > dt > em.property, .attribute > dt > em.property {
+    font-weight: normal;
 }
 
-.field-even {
-  margin-top: 10px;
+.method > dt > em.sig-param > span.default_value,
+.method > dt > em.sig-param > span.o,
+.class > dt > em.sig-param > span.default_value,
+.class > dt > em.sig-param > span.o,
+.function > dt > em.sig-param > span.default_value,
+.function > dt > em.sig-param > span.o {
+    color: gray;
 }
 
-dl.field-list > dt:after {
-  content: "";
+.field-list > dt, .field-list > dd {
+    background-color: white;
+    border-color: white;
+}
+
+.method > dd, .function > dd, .attribute > dd, .property > dd {
+    margin-left: 20px;
+    border-left: 1px ridge gray;
+}
+
+.method {
+    margin-left: -7px;
 }

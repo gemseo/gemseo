@@ -42,11 +42,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MDOChain(MDODiscipline):
-    """Chain of disciplines that is based on a predefined order of execution.
+    """Chain of disciplines that is based on a predefined order of execution."""
 
-    Attributes:
-        disciplines (Sequence[MDODiscipline]): The chained disciplines.
-    """
+    disciplines: Sequence[MDODiscipline]
+    """The chained disciplines."""
 
     AVAILABLE_MODES = [
         JacobianAssembly.DIRECT_MODE,

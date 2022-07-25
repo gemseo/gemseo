@@ -136,6 +136,32 @@
     <div id="sk-page-content-wrapper">
       <div class="sk-page-content container-fluid body px-md-3" role="main">
         {% block body %}{% endblock %}
+        <script>
+          if (document.getElementById("module-breadcrumb")){
+            var ToC = "<div class='module-toc'>";
+            var el, title, link;
+            var module;
+            module = $("section").attr("id").split("module-").pop();
+            $(".sig-object").each(function() {
+                el = $(this);
+                link = "#" + el.attr("id");
+                let full_title = link.split(module).pop().split('.');
+                title = full_title.pop();
+                if (full_title.length > 1){
+                    title = "| " + title;
+                }
+                if (el.parent().attr("class").includes("method")){
+                    title += "()";
+                }
+                if (el.parent().attr("class").includes("function")){
+                    title += "()";
+                }
+                ToC += "<span style='overflow: hidden;white-space: nowrap; text-overflow: ellipsis;'><a href='" + link + "'>" + title + "</a></span></br>";
+            });
+            ToC += "</div>";
+            $(".sk-sidebar-toc").append(ToC);
+          }
+        </script>
       </div>
     <div class="container">
       <footer class="sk-content-footer">

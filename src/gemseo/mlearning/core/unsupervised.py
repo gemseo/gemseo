@@ -48,10 +48,10 @@ class MLUnsupervisedAlgo(MLAlgo):
 
     Inheriting classes shall overload the
     :meth:`!MLUnsupervisedAlgo._fit` method.
-
-    Attributes:
-        input_names (List[str]): The names of the variables.
     """
+
+    input_names: list[str]
+    """The names of the variables."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "MLUnsupervisedAlgo"
 

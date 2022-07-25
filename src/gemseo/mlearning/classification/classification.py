@@ -62,10 +62,10 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     Inheriting classes shall implement the :meth:`!MLSupervisedAlgo._fit` and
     :meth:`!MLClassificationAlgo._predict` methods, and
     :meth:`!MLClassificationAlgo._predict_proba_soft` method if possible.
-
-    Attributes:
-        n_classes (int): The number of classes.
     """
+
+    n_classes: int
+    """The number of classes."""
 
     def __init__(
         self,

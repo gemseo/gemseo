@@ -42,13 +42,13 @@ LOGGER = logging.getLogger(__name__)
 class MDOScenario(Scenario):
     """A multidisciplinary scenario to be executed by an optimizer.
 
-    A :class:`.MDOScenario` is a particular :class:`.Scenario`
-    whose driver is an optimization algorithm.
-    This algorithm must be implemented in an :class:`.OptimizationLibrary`.
-
-    Attributes:
-        clear_history_before_run (bool): If True, clear history before run.
+    A :class:`.MDOScenario` is a particular :class:`.Scenario` whose driver is an
+    optimization algorithm. This algorithm must be implemented in an
+    :class:`.OptimizationLibrary`.
     """
+
+    clear_history_before_run: bool
+    """If True, clear history before run."""
 
     # Constants for input variables in json schema
     MAX_ITER = "max_iter"

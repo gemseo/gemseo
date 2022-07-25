@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from typing import Callable
 from typing import Mapping
 
 from numpy import find_common_type
@@ -42,16 +43,15 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ScipyLinalgAlgos(LinearSolverLib):
-    """Wrapper for scipy linalg sparse linear solvers.
+    """Wrapper for scipy linalg sparse linear solvers."""
 
-    Attributes:
-       save_fpath (str): The path to the file to saved the problem when
-           it is not converged and the option save_when_fail
-           is active.
+    save_fpath: str
+    """The path to the file to saved the problem when
+    it is not converged and the option save_when_fail
+    is active."""
 
-       methods_map (Dict[str, Callable]): The mapping between the solver names
-           and the solvers methods in scipy.sparse.
-    """
+    methods_map: dict[str, Callable[[ndarray, ndarray, ...], tuple[ndarray, int]]]
+    """The mapping between the solver names and the solvers methods in scipy.sparse."""
 
     BASE_INFO_MSG = "scipy linear solver algorithm stop info: "
     OPTIONS_MAP = {
