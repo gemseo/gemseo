@@ -91,3 +91,4 @@ Contributors
 - Arthur Piat
 - Selime Gürol
 - Reda El Amri
+- Simone Coniglio

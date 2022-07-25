@@ -295,6 +295,11 @@ The following people are the contributors to |g|'s development and maintenance:
           Charlie<br/>Vanaret
     </div>
     </div>
+    <div class="avatar">
+          <img src='_static/authors/simone_coniglio.jpg' class='avatar' /><br />
+          Simone<br/>Coniglio
+    </div>
+    </div>
 
 Contributing
 ------------
