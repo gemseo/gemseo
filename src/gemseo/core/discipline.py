@@ -525,7 +525,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if inputs is None:
             inputs = self.get_input_data_names()
         in_diff = self._differentiated_inputs
-        self._differentiated_inputs = list(set(in_diff) | set(inputs))
+        self._differentiated_inputs = list(set(in_diff).union(inputs))
 
     def add_differentiated_outputs(
         self,
@@ -553,7 +553,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         out_diff = self._differentiated_outputs
         if outputs is None:
             outputs = self.get_output_data_names()
-        self._differentiated_outputs = list(set(out_diff) | set(outputs))
+        self._differentiated_outputs = list(set(out_diff).union(outputs))
 
     def __create_new_cache(
         self,
@@ -2029,7 +2029,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The name of the input and output variables.
         """
-        in_outs = set(self.output_grammar.keys()) | set(self.input_grammar.keys())
+        in_outs = set(self.output_grammar.keys()).union(self.input_grammar.keys())
         if with_namespaces:
             return list(in_outs)
         else:

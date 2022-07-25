@@ -44,6 +44,7 @@ from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import remove_prefix_from_dict
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.namespaces import remove_prefix_from_name
+from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
 from numpy import array
 
@@ -80,6 +81,13 @@ def test_remove_ns_prefix():
     data_dict = {"ac": 1, "a:b": 2}
     assert remove_prefix_from_dict(data_dict) == {"ac": 1, "b": 2}
     assert remove_prefix_from_list(data_dict.keys()) == ["ac", "b"]
+
+
+def test_split_namespace():
+    assert split_namespace("ns:bar") == ["ns", "bar"]
+    assert split_namespace("bar") == ["bar"]
+    assert split_namespace("ns:") == ["ns", ""]
+    assert split_namespace(":bar") == ["", "bar"]
 
 
 @pytest.mark.parametrize(
@@ -172,11 +180,29 @@ def test_chain_disc_ns_twice(grammar_type, chain_type):
     assert sorted(chain.get_input_data_names()) == sorted(["ns2:x", "ns1:x", "u"])
     assert sorted(chain.get_output_data_names()) == sorted(["ns2:y", "ns1:y"])
 
+    assert sorted(chain.get_input_data_names(with_namespaces=False)) == sorted(
+        ["x", "x", "u"]
+    )
+    assert sorted(chain.get_output_data_names(with_namespaces=False)) == sorted(
+        ["y", "y"]
+    )
+
     out = chain.execute(
         {"ns1:x": array([5.0]), "ns2:x": array([3.0]), "u": array([4.0])}
     )
     assert out["ns1:y"] == array([14.0])
     assert out["ns2:y"] == array([10.0])
+
+    assert sorted(chain.get_input_output_data_names(with_namespaces=False)) == [
+        "u",
+        "x",
+        "x",
+        "y",
+        "y",
+    ]
+
+    out_no_ns = chain.get_output_data(with_namespaces=False)
+    assert "y" in out_no_ns
 
     assert chain.check_jacobian(
         inputs=["ns2:x", "ns1:x", "u"], outputs=["ns1:y", "ns2:y"]
@@ -243,6 +269,9 @@ def test_json_grammar_grammar_add_namespace():
     assert g.to_namespaced == {"name1": "ns:name1"}
     assert "ns:name1" in g.required_names
 
+    with pytest.raises(ValueError, match="Variable ns:name1 has already a namespace."):
+        g.add_namespace("ns:name1", "ns2")
+
 
 def test_simple_grammar_add_namespace():
     """Tests SimpleGrammar namespaces handling."""
@@ -282,12 +311,16 @@ def test_namespaces_chain():
 
 
 def test_update_namespaces():
-    namespaces = {"a": "b", "c": ["a", "b"], "d": "e", "f": ["g"]}
-    update_namespaces(namespaces, {"a": "1", "c": ["1"], "x": "1"})
+    namespaces = {"a": "b", "c": ["a", "b"], "d": "e", "f": ["g"], "g": ["h"], "i": "j"}
+    update_namespaces(
+        namespaces, {"a": "1", "c": ["1"], "x": "1", "g": "1", "i": ["1"]}
+    )
     assert namespaces == {
         "a": ["b", "1"],
         "c": ["a", "b", "1"],
         "d": "e",
         "f": ["g"],
         "x": "1",
+        "g": ["h", "1"],
+        "i": ["j", "1"],
     }
