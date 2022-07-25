@@ -36,13 +36,17 @@ NamespacesMapping = MutableMapping[str, Union[str, List[str]]]
 namespaces_separator = ":"
 
 
-def split_namespace(data_name: str) -> tuple[str, str]:
+def split_namespace(data_name: str) -> list[str, str]:
     """Return the (namespace, name) pair from a data name.
 
     For instance if data_name = ``my:namesp:ace:a`` and the separator is ``:``,
     returns (``my:namesp:ace``,``a``).
 
     If there is no namespace prefix in ``data_name``, returns ``data_name``.
+
+    In case data_name contains the namespace separator but empty name,
+    or empty namespace,
+    returns the (namespace, name) pair, containing eventually empty strings.
 
     Args:
         data_name: The data name containing the namespace name.

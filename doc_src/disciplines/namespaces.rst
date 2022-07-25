@@ -12,8 +12,11 @@
 
 .. _namespaces:
 
+Namespaces
+==========
+
 What are namespaces?
-====================
+--------------------
 
 Namespaces are prefixes to input or output names of the :class:`.MDODiscipline` subclasses.
 The name of the variable is replaced by the namespace, a separator, ':' by default,
@@ -41,7 +44,7 @@ In terms of API this would result in the following example:
     >>>     return z
     >>>
     >>> a_disc = create_discipline("AutoPyDiscipline", py_func=func_a)
-    >>> b_disc = create_discipline("AutoPyDiscipline", py_func=func_a)
+    >>> b_disc = create_discipline("AutoPyDiscipline", py_func=func_b)
     >>> print("A inputs", list(a_disc.get_input_data_names()), ", outputs",
     ...    list(a_disc.get_output_data_names()))
     A inputs ['x'], outputs ['y']
@@ -71,7 +74,7 @@ In terms of API this would result in the following example:
     able to handle namespaces.
 
 Coupling control in MDAs
-========================
+------------------------
 
 Namespaces allow to control the couplings in MDAs by renaming a variable.
 This may change the coupling structure graph, as illustrated in the next figure.
@@ -83,10 +86,10 @@ This may change the coupling structure graph, as illustrated in the next figure.
 
 
 Impact on the MDODiscipline wrappers
-====================================
+------------------------------------
 
 The discipline that wraps a simulation code,
-such as :class:`.AutoPyDiscipline` that declares its input
+such as :class:`.AutoPyDiscipline`, declares its input
 and output names without the namespace prefix,
 in :meth:`.MDODiscipline.__init__`.
 
@@ -102,7 +105,7 @@ allows to define whether to return namespace prefixes or not.
 Besides, :class:`.BaseGrammar` has the attributes :attr:`.BaseGrammar.to_namespaced` and
 :attr:`.BaseGrammar.from_namespaced` that map the names with and without namespace prefixes.
 
-Finally, :meth:`.MDODiscipline.store_data` allows to pass variables names without namespace prefixes.
+Finally, :meth:`.MDODiscipline.store_local_data` allows to pass variables names without namespace prefixes.
 This allows to adapt wrappers to support namespaces with only minor modifications.
 
 For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and supports namespaces:

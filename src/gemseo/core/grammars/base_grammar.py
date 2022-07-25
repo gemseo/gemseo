@@ -222,6 +222,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
         self.to_namespaced[name] = new_name
         self.from_namespaced[new_name] = name
 
+    @abc.abstractmethod
     def _check_name(self, *names: str) -> None:
         """Check that the names of elements are valid.
 
@@ -231,6 +232,3 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
         Raises:
             KeyError: If a name is not valid.
         """
-        for name in names:
-            if name not in self:
-                raise KeyError(f"The name {name} is not in the grammar.")
