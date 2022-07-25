@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning API."""
+import pickle
+from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -45,6 +47,8 @@ from gemseo.mlearning.api import import_classification_model
 from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.api import import_mlearning_model
 from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from numpy import arange
 from numpy import array
@@ -216,6 +220,23 @@ def test_import_regression_model(dataset, tmp_path):
     dirname = model.save(path=str(tmp_path))
     loaded_model = import_regression_model(dirname)
     assert hasattr(loaded_model, "parameters")
+
+
+def test_import_regression_model_with_old_class_name():
+    """Test import of a regression model with an old class name.
+
+    An instance of LinearRegression has been saved with GEMSEO 3.2.2;
+    GEMSEO 3.0 renamed LinearRegression to LinearRegressor.
+
+    This test checks the use of the mapping MLFactory.__OLD_TO_NEW_NAMES.
+    """
+    directory = Path(__file__).parent / "old_algo"
+    loaded_model = import_regression_model(directory)
+    assert isinstance(loaded_model, LinearRegressor)
+    with (directory / MLAlgo.FILENAME).open("rb") as f:
+        objects = pickle.load(f)
+
+    assert objects.pop("algo_name") == "LinearRegression"
 
 
 def test_import_classification_model(classification_data, tmp_path):
