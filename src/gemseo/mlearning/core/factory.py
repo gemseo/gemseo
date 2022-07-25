@@ -28,6 +28,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
+from typing import Final
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
@@ -47,6 +48,17 @@ class MLAlgoFactory:
     in a module referenced in the ``GEMSEO_PATH`` environment variable or in a module
     starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
+
+    # GEMSEO 4.0 renamed several algorithms with the format "{Prefix}Regressor".
+    # This mapping allows to import algorithms using the old naming.
+    __OLD_TO_NEW_NAMES: Final = {
+        "GaussianProcessRegression": "GaussianProcessRegressor",
+        "LinearRegression": "LinearRegressor",
+        "MixtureOfExperts": "MOERegressor",
+        "PCERegression": "PCERegressor",
+        "PolynomialRegression": "PolynomialRegressor",
+        "RBFRegression": "RBFRegressor",
+    }
 
     def __init__(self) -> None:
         self.factory = Factory(MLAlgo, ("gemseo.mlearning",))
@@ -103,8 +115,9 @@ class MLAlgoFactory:
         directory = Path(directory)
         with (directory / MLAlgo.FILENAME).open("rb") as handle:
             objects = pickle.load(handle)
+        algo_name = objects.pop("algo_name")
         model = self.factory.create(
-            objects.pop("algo_name"),
+            self.__OLD_TO_NEW_NAMES.get(algo_name, algo_name),
             data=objects.pop("data"),
             **objects.pop("parameters"),
         )
