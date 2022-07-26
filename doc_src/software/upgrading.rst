@@ -21,94 +21,126 @@ API changes that impact user scripts code
 -----------------------------------------
 
 - In post-processing, ``fig_size`` is the unique name to identify the size of a figure and the occurrences of ``figsize``, ``figsize_x`` and ``figsize_y`` have been replaced by ``fig_size``, ``fig_size_x`` and ``fig_size_y``.
-- The argument ``parallel_exec`` in ``.IDF.__init__`` has been renamed to ``n_processes``.
-- The argument ``quantile`` of ``VariableInfluence`` has been renamed to ``level``.
-- ``BasicHistory``: ``data_list``  has been renamed to ``variable_names``.
-- ``MDAChain.sub_mda_list``  has been renamed to ``MDAChain.inner_mdas``.
-- ``RadarChart`` ``constraints_list``  has been renamed to ``constraint_names``.
-- ``ScatterPlotMatrix`` ``variables_list``  has been renamed to ``variable_names``.
-- All ``MDA`` algos now count their iterations starting from ``0``.
-- The ``MDA.residual_history`` is now a list of normed residuals.
-- The argument ``figsize`` in ``plot_residual_history`` was renamed to ``fig_size`` to be consistent with other ``OptPostProcessor`` algos.
-- ``ConstraintsHistory``: ``constraints_list``  has been renamed to ``constraint_names``.
-- The ``MDAChain`` now takes ``inner_mda_name`` as argument instead of ``sub_mda_class``.
-- The ``MDF`` formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of - ``sub_mda_class``.
-- The ``BiLevel`` formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
-- ``DesignSpace.get_current_x``  has been renamed to ``DesignSpace.get_current_value``.
-- ``DesignSpace.has_current_x``  has been renamed to ``DesignSpace.has_current_value``.
-- ``DesignSpace.set_current_x``  has been renamed to ``DesignSpace.set_current_value``.
-- Remove ``DesignSpace.get_current_x_normalized`` and ``DesignSpace.get_current_x_dict``.
+- The argument ``parallel_exec`` in :meth:`.IDF.__init__` has been renamed to ``n_processes``.
+- The argument ``quantile`` of :class:`.VariableInfluence` has been renamed to ``level``.
+- :class:`.BasicHistory`: ``data_list``  has been renamed to ``variable_names``.
+- ``MDAChain.sub_mda_list`` has been renamed to :attr:`.MDAChain.inner_mdas`.
+- :class:`.RadarChart`: ``constraints_list``  has been renamed to ``constraint_names``.
+- :class:`.ScatterPlotMatrix`: ``variables_list``  has been renamed to ``variable_names``.
+- All :class:`.MDA` algos now count their iterations starting from ``0``.
+- The :attr:`.MDA.residual_history` is now a list of normed residuals.
+- The argument ``figsize`` in :meth:`.MDA.plot_residual_history` was renamed to ``fig_size`` to be consistent with :class:`.OptPostProcessor` algos.
+- :class:`.ConstraintsHistory`: ``constraints_list``  has been renamed to ``constraint_names``.
+- The :class:`.MDAChain` now takes ``inner_mda_name`` as argument instead of ``sub_mda_class``.
+- The :class:`.MDF` formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of - ``sub_mda_class``.
+- The :class:`.BiLevel` formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
+- In :class:`.DesignSpace`:
+
+    - ``get_current_x``  has been renamed to :meth:`~.DesignSpace.get_current_value`.
+    - ``has_current_x``  has been renamed to :meth:`~.DesignSpace.has_current_value`.
+    - ``set_current_x``  has been renamed to :meth:`~.DesignSpace.set_current_value`.
+    - Remove ``get_current_x_normalized`` and ``get_current_x_dict``.
+
 - The short names of some machine learning algorithms have been replaced by conventional acronyms.
-- ``MatlabDiscipline.__init__``: ``input_data_list`` and ``output_data_list``  has been renamed to ``input_names`` and ``output_names``.
-- ``save_matlab_file`` ``dict_to_save``  has been renamed to ``data``.
-- In ``AbstractCache``, ``cache.get_length()`` has been replaced by ``len(cache)``.
-- In ``AbstractFullCache``, ``varsizes`` has been renamed to ``names_to_sizes`` and ``max_length`` to ``MAXSIZE``.
-- The ``AbstractFullCache``'s getters (``get_data`` and ``get_all_data``) now return one or more ``CacheItem``, that is a ``namedtuple`` with variable groups as fields.
+- :meth:`.MatlabDiscipline.__init__`: ``input_data_list`` and ``output_data_list``  has been renamed to ``input_names`` and ``output_names``.
+- :func:`.save_matlab_file`: ``dict_to_save``  has been renamed to ``data``.
+- The classes of the regression algorithms are renamed as ``{Prefix}Regressor``.
+- The class ``ConcatenationDiscipline`` has been renamed to :class:`.Concatenater`.
+- In Caches:
+
+  - ``inputs_names`` has been renamed to :attr:`~.AbstractCache.input_names`.
+  - ``get_all_data()`` has been replaced by ``[cache_entry for cache_entry in cache]``.
+  - ``get_data`` has been removed.
+  - ``get_length()`` has been replaced by ``len(cache)``.
+  - ``get_outputs(input_data)`` has been replaced by ``cache[input_data].outputs``.
+  - ``{INPUTS,JACOBIAN,OUTPUTS,SAMPLE}_GROUP`` have been removed.
+  - ``get_last_cached_inputs()`` has been replaced by ``cache.last_entry.inputs``.
+  - ``get_last_cached_outputs()`` has been replaced by ``cache.last_entry.outputs``.
+  - ``max_length`` has been removed.
+  - ``merge`` has been renamed to :meth:`~.AbstractFullCache.update`.
+  - ``outputs_names`` has been renamed to :attr:`~.AbstractCache.output_names`.
+  - ``varsizes`` has been renamed to :attr:`~.AbstractCache.names_to_sizes`.
+  - ``samples_indices`` has been removed.
 
 API changes that impact discipline wrappers
 -------------------------------------------
 
-- In Grammar, ``update_from`` has been renamed to ``update``
-- In Grammar, ``remove_item(name)`` has been replaced by ``del grammar[name]``
-- In Grammar, ``get_data_names`` has been renamed to ``keys``
-- In Grammar, ``initialize_from_data_names`` has been renamed to ``update``
-- In Grammar, ``initialize_from_base_dict`` has been renamed to ``update_from_data``
-- In Grammar, ``update_from_if_not_in`` has been renamed to now use ``update`` with ``exclude_names``
-- In Grammar, ``set_item_value`` has been renamed to ``update_from_schema``
-- In Grammar, ``remove_required(name)`` has been replaced by ``required_names.remove(name)``
-- In Grammar, ``data_names`` has been renamed to ``keys``
-- In Grammar, ``data_types`` has been renamed to ``values``
-- In Grammar, ``update_elements`` has been renamed to ``update``
-- In Grammar, ``update_required_elements`` has been removed
-- In Grammar, ``init_from_schema_file`` has been renamed to ``read``
+- In Grammar:
+
+    - ``update_from`` has been renamed to :meth:`~.BaseGrammar.update`.
+    - ``remove_item(name)`` has been replaced by ``del grammar[name]``.
+    - ``get_data_names`` has been renamed to :meth:`~.BaseGrammar.keys`.
+    - ``initialize_from_data_names`` has been renamed to :meth:`~.BaseGrammar.update`.
+    - ``initialize_from_base_dict`` has been renamed to :meth:`~.BaseGrammar.update_from_data`.
+    - ``update_from_if_not_in`` has been renamed to now use :meth:`~.BaseGrammar.update` with ``exclude_names``.
+    - ``set_item_value`` has been removed.
+    - ``remove_required(name)`` has been replaced by ``required_names.remove(name)``.
+    - ``data_names`` has been renamed to :meth:`~.BaseGrammar.keys`.
+    - ``data_types`` has been renamed to :meth:`~.BaseGrammar.values`.
+    - ``update_elements`` has been renamed to :meth:`~.BaseGrammar.update`.
+    - ``update_required_elements`` has been removed.
+    - ``init_from_schema_file`` has been renamed to :meth:`~.BaseGrammar.update_from_file`.
 
 API changes that affect plugin or features developers
 -----------------------------------------------------
 
-- ``AlgoLib.lib_dict``  has been renamed to ``AlgoLib.descriptions``.
-- ``gemseo.utils.data_conversion.FLAT_JAC_SEP``  has been renamed to ``STRING_SEPARATOR``.
-- ``DataConversion.dict_to_array``  has been renamed to ``concatenate_dict_of_arrays_to_array``.
-- ``DataConversion.list_of_dict_to_array`` removed.
-- ``DataConversion.array_to_dict``  has been renamed to ``split_array_to_dict_of_arrays``.
-- ``DataConversion.jac_2dmat_to_dict``  has been renamed to ``split_array_to_dict_of_arrays``.
-- ``DataConversion.jac_3dmat_to_dict``  has been renamed to ``split_array_to_dict_of_arrays``.
-- ``DataConversion.dict_jac_to_2dmat`` removed.
-- ``DataConversion.dict_jac_to_dict``  has been renamed to ``flatten_nested_dict``.
-- ``DataConversion.flat_jac_name`` removed.
-- ``DataConversion.dict_to_jac_dict``  has been renamed to ``nest_flat_bilevel_dict``.
-- ``DataConversion.update_dict_from_array``  has been renamed to ``update_dict_of_arrays_from_array``.
-- ``DataConversion.deepcopy_datadict``  has been renamed to ``deepcopy_dict_of_arrays``.
-- ``DataConversion.get_all_inputs``  has been renamed to ``get_all_inputs``.
-- ``DataConversion.get_all_outputs``  has been renamed to ``get_all_outputs``.
-- ``DesignSpace.get_current_value`` can now return a dictionary of NumPy arrays or normalized design values..
-- In ``AbstractCache``, ``samples_indices`` has been removed.
+- ``AlgoLib.lib_dict``  has been renamed to :attr:`.AlgoLib.descriptions`.
+- ``gemseo.utils.data_conversion.FLAT_JAC_SEP``  has been renamed to :attr:`.STRING_SEPARATOR`.
+- In :mod:`gemseo.utils.data_conversion`:
+
+    - ``DataConversion.dict_to_array``  has been renamed to :func:`.concatenate_dict_of_arrays_to_array`.
+    - ``DataConversion.list_of_dict_to_array`` removed.
+    - ``DataConversion.array_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
+    - ``DataConversion.jac_2dmat_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
+    - ``DataConversion.jac_3dmat_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
+    - ``DataConversion.dict_jac_to_2dmat`` removed.
+    - ``DataConversion.dict_jac_to_dict``  has been renamed to :func:`.flatten_nested_dict`.
+    - ``DataConversion.flat_jac_name`` removed.
+    - ``DataConversion.dict_to_jac_dict``  has been renamed to :func:`.nest_flat_bilevel_dict`.
+    - ``DataConversion.update_dict_from_array``  has been renamed to :func:`.update_dict_of_arrays_from_array`.
+    - ``DataConversion.deepcopy_datadict``  has been renamed to :func:`.deepcopy_dict_of_arrays`.
+    - ``DataConversion.get_all_inputs``  has been renamed to :func:`.get_all_inputs`.
+    - ``DataConversion.get_all_outputs``  has been renamed to :func:`.get_all_outputs`.
+
+- ``DesignSpace.get_current_value`` can now return a dictionary of NumPy arrays or normalized design values.
 - The method ``MDOFormulation.check_disciplines`` has been removed.
-- The class variable ``MLAlgo.ABBR`` has been renamed to ``MLAlgo.SHORT_ALGO_NAME``.
+- The class variable ``MLAlgo.ABBR`` has been renamed to :attr:`.MLAlgo.SHORT_ALGO_NAME`.
 - For ``OptResult`` and ``MDOFunction``: ``get_data_dict_repr`` has been renamed to ``to_dict``.
 - Remove plugin detection for packages with ``gemseo_`` prefix.
 - ``MDOFunctionGenerator.get_function``: ``input_names_list`` and ``output_names_list``  has been renamed to ``output_names`` and ``output_names``.
 - ``MDOScenarioAdapter.__init__``: ``inputs_list`` and ``outputs_list``  has been renamed to ``input_names`` and ``output_names``.
-- ``OptPostProcessor.out_data_dict``  has been renamed to ``OptPostProcessor.materials_for_plotting``.
-- ``ParallelExecution.input_data_list``  has been renamed to ``ParallelExecution.input_values``.
-- ``ParallelExecution.worker_list``  has been renamed to ``ParallelExecution.workers``.
-- In Grammar, ``is_type_array`` has been renamed to ``is_array``
+- ``OptPostProcessor.out_data_dict``  has been renamed to :attr:`.OptPostProcessor.materials_for_plotting`.
+
+- In :class:`.ParallelExecution`:
+
+    - ``input_data_list`` has been renamed to :attr:`~.ParallelExecution.input_values`.
+    - ``worker_list`` has been renamed to :attr:`~.ParallelExecution.workers`.
+
+- In Grammar, ``is_type_array`` has been renamed to :meth:`~.BaseGrammar.is_array`.
 
 Internal changes that rarely or not affect users
 ------------------------------------------------
 
-- In Grammar, ``load_data`` has been renamed to ``validate``
-- In Grammar, ``is_data_name_existing(name)`` has been renamed to ``name in grammar``
-- In Grammar, ``is_all_data_names_existing(names)`` has been replaced by ``set(names) <= set(keys())``
-- In Grammar, ``to_simple_grammar`` has been renamed to ``convert_to_simple_grammar``
-- In Grammar, ``is_required(name)`` has been renamed to ``name in required_names``
-- In Grammar, ``write_schema`` has been renamed to ``write``
-- In Grammar, ``schema_dict`` has been renamed to ``schema``
-- In Grammar, ``JSONGrammar`` class attributes removed has been renamed to ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``
-- ``AbstractGrammar`` has been renamed to ``BaseGrammar``
-- ``AnalyticDiscipline.expr_symbols_dict``  has been renamed to ``AnalyticDiscipline.output_names_to_symbols``.
-- ``AtomicExecSequence.get_state_dict``  has been renamed to ``AtomicExecSequence.get_statuses``.
-- ``CompositeExecSequence.get_state_dict``  has been renamed to ``CompositeExecSequence.get_statuses``.
-- ``CompositeExecSequence.sequence_list``  has been renamed to ``CompositeExecSequence.sequences``.
+- In Grammar:
+
+    - ``load_data`` has been renamed to :meth:`~.BaseGrammar.validate`.
+    - ``is_data_name_existing(name)`` has been renamed to ``name in grammar``.
+    - ``is_all_data_names_existing(names)`` has been replaced by ``set(names) <= set(keys())``.
+    - ``to_simple_grammar`` has been renamed to :meth:`~.BaseGrammar.convert_to_simple_grammar`.
+    - ``is_required(name)`` has been renamed to ``name in required_names``.
+    - ``write_schema`` has been renamed to :meth:`~.BaseGrammar.write`.
+    - ``schema_dict`` has been renamed to :attr:`~.BaseGrammar.schema`.
+    - ``JSONGrammar`` class attributes removed has been renamed to ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``.
+    - ``AbstractGrammar`` has been renamed to :class:`.BaseGrammar`.
+
+- ``AnalyticDiscipline.expr_symbols_dict``  has been renamed to :attr:`.AnalyticDiscipline.output_names_to_symbols`.
+- ``AtomicExecSequence.get_state_dict``  has been renamed to :meth:`AtomicExecSequence.get_statuses`.
+
+- In :class:`.CompositeExecSequence`:
+
+    - ``CompositeExecSequence.get_state_dict``  has been renamed to :meth:`CompositeExecSequence.get_statuses`.
+    - ``CompositeExecSequence.sequence_list``  has been renamed to :attr:`CompositeExecSequence.sequences`.
+
 - Remove ``gemseo.utils.multi_processing``.
 
 
