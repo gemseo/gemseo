@@ -1,0 +1,1 @@
+The transform module in machine learning now features two power transforms: :class:`.BoxCox` and :class:`.YeoJohnson`.
