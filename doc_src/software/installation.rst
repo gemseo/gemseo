@@ -76,6 +76,14 @@ in an anaconda environment named *gemseo* for Python 3.9 with
 
 You can change the Python version to 3.7, 3.8 or 3.10.
 
+Install without internet access
+*******************************
+
+If for some reasons you do not have access to internet from the target machine,
+such as behind a corporate firewall,
+you can use a
+`self-contained installer <https://mdo-ext.pf.irt-saintexupery.com/gemseo-installers>`_.
+
 Install from an archive
 ***********************
 
@@ -98,13 +106,13 @@ Install the core features of the development version with
 
 .. code-block:: console
 
-    pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop
+    pip install gemseo@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
 
 or the full features with:
 
 .. code-block:: console
 
-    pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop#egg=gemseo[all]
+    pip install gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
 
 Test the installation
 *********************
