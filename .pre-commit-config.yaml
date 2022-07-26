@@ -34,7 +34,9 @@ repos:
         src,
         --py37-plus,
         --add-import,
-        "from __future__ import annotations"
+        "from __future__ import annotations",
+        --replace-import,
+        "typing=gemseo.utils.python_compatibility:Final"
       ]
       files: ^src
     - id: reorder-python-imports
