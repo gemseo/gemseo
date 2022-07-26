@@ -1485,7 +1485,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         value: ndarray | Mapping[str, ndarray] | OptimizationResult,
     ) -> None:
-        """Set the current dseign value.
+        """Set the current design value.
 
         Args:
             value: The value of the current design.
