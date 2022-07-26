@@ -200,8 +200,8 @@ Changed
   - ``cache.get_length``: ``len(cache)``
   - ``cache.get_outputs``: ``cache[input_data].outputs``
   - ``cache.{INPUTS,JACOBIAN,OUTPUTS,SAMPLE}_GROUP``: have been removed
-  - ``cache.last_cached_inputs``: ``cache.last_entry.inputs``
-  - ``cache.last_cached_outputs``: ``cache.last_entry.outputs``
+  - ``cache.get_last_cached_inputs``: ``cache.last_entry.inputs``
+  - ``cache.get_last_cached_outputs``: ``cache.last_entry.outputs``
   - ``cache.max_length``: has been removed
   - ``cache.merge``: ``cache.update``
   - ``cache.outputs_names``: ``cache.output_names``
@@ -226,9 +226,9 @@ Changed
   - ``grammar.update_from_if_not_in``: use ``update`` with ``exclude_names``
   - ``grammar.to_simple_grammar``: ``grammar.convert_to_simple_grammar()``
   - ``grammar.is_required(name)``: ``name in grammar.required_names``
-  - ``grammar.set_item_value``: ``grammar.update_from_schema``
+  - ``grammar.set_item_value``: has been removed
   - ``grammar.remove_required(name)``: ``grammar.required_names.remove(name)``
-  - ``grammar.init_from_schema_file``: ``grammar.read``
+  - ``grammar.init_from_schema_file``: ``grammar.update_from_file``
   - ``grammar.write_schema``: ``grammar.write``
   - ``grammar.schema_dict``: ``grammar.schema``
   - ``grammar.data_names``: ``grammar.keys()``
