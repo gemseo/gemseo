@@ -146,7 +146,10 @@ class AutoPyDiscipline(MDODiscipline):
 
         def_func = self._get_defaults()
         self.default_inputs = to_arrays_dict(def_func)
-        self.sizes = None
+        self.__sizes = {}
+        self.__jac_shape = []
+        self.__in_names_with_namespaces = []
+        self.__out_names_with_namespaces = []
 
     def _get_defaults(self) -> dict[str, DataType]:
         """Return the default values of the input variables when available.
@@ -181,25 +184,47 @@ class AutoPyDiscipline(MDODiscipline):
         """.. # noqa: D205 D212 D415
         Raises:
             RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
+            ValueError: When the Jacobian shape is inconsistent.
         """
         if self.py_jac is None:
             raise RuntimeError("The analytic Jacobian is missing.")
 
-        if self.sizes is None:
-            self.sizes = {k: v.size for k, v in self.local_data.items()}
+        if not self.__sizes:
+            self.__sizes = {k: v.size for k, v in self.local_data.items()}
+
+            in_to_ns = self.input_grammar.to_namespaced
+            self.__in_names_with_namespaces = [
+                in_to_ns[name] if name in in_to_ns else name for name in self.in_names
+            ]
+            out_to_ns = self.output_grammar.to_namespaced
+            self.__out_names_with_namespaces = [
+                out_to_ns[name] if name in out_to_ns else name
+                for name in self.out_names
+            ]
+            n_rows = sum(
+                self.__sizes[output] for output in self.__out_names_with_namespaces
+            )
+            n_cols = sum(
+                self.__sizes[input] for input in self.__in_names_with_namespaces
+            )
+            self.__jac_shape = (n_rows, n_cols)
 
         func_jac = self.py_jac(**self.get_input_data(with_namespaces=False))
 
-        in_to_ns = self.input_grammar.to_namespaced
-        in_names_ns = [
-            in_to_ns[name] if name in in_to_ns else name for name in self.in_names
-        ]
-        out_to_ns = self.output_grammar.to_namespaced
-        out_names_ns = [
-            out_to_ns[name] if name in out_to_ns else name for name in self.out_names
-        ]
+        if len(func_jac.shape) < 2:
+            func_jac = atleast_2d(func_jac)
+        if func_jac.shape != self.__jac_shape:
+            msg = (
+                "The jacobian provided by the py_jac function is of wrong shape. "
+                "Expected {}, got {}."
+            ).format(self.__jac_shape, func_jac.shape)
+            raise ValueError(msg)
+
         self.jac = split_array_to_dict_of_arrays(
-            atleast_2d(func_jac), self.sizes, out_names_ns, in_names_ns
+            func_jac,
+            self.__sizes,
+            self.__out_names_with_namespaces,
+            self.__in_names_with_namespaces,
         )
 
     @staticmethod

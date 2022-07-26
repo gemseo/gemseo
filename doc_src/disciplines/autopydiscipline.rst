@@ -75,17 +75,19 @@ Optional arguments
 
 Optional arguments are:
 
-- :code:`py_jac=None`: The Python function to compute the jacobian which must return a 2D numpy array,
+- :code:`py_jac=None`: The Python function to compute the Jacobian which must return a 2D numpy array,
 - :code:`use_arrays=False`: if :code:`True`, the function is expected to take arrays as inputs and give outputs as arrays,
-- :code:`write_schema=False`: if :code:`True`, write the json schema on the disk.
+- :code:`grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE`: The type of grammar to be used.
 
-Here is an example of jacobian function:
+Here is an example of Jacobian function, returning a 2D matrix.
+The rows of the matrix correspond to the derivatives of the outputs,
+the columns correspond to the variables with respect to the outputs are derived.
 
 .. code::
 
-    def dfdxy(x=0., y=0.):
-        """Jacobian function of f"""
-        jac = array((2,1))
-        jac[0, 0] = 1
-        jac[1, 0] = 2
+    def dzdxy(x=0., y=0.):
+        """Jacobian function of z=f(x,y)"""
+        jac = array((1,2))
+        jac[0, 0] = 1.
+        jac[0, 1] = 2.
         return jac
