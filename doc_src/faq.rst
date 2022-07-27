@@ -112,7 +112,7 @@ to update the format of the file and fix the data hashes.
 |g| fails with openturns
 ------------------------
 
-Openturns implicitely requires the library *libnsl*
+Openturns implicitly requires the library *libnsl*
 that may not be installed by
 default on recent linux OSes.
 Under *CentOS* for instance,
@@ -145,3 +145,7 @@ is recommended as an alternative.
 The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
 it may also print the conclusion of an iteration ahead of another one that was concluded first. This
 is a consequence of the pickling process and does not affect the computations of the scenario.
+
+The execution of any script using parallel execution on Windows including, but not limited to, :class:`.DOEScenario`
+with ``n_processes > 1``, :class:`.HDF5Cache`, :class:`.MemoryFullCache`, :class:`.ParallelExecution`,
+:class:`.DiscParallelExecution`, must be protected by an ``if __name__ == '__main__':`` statement.

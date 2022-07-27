@@ -54,6 +54,9 @@ class MemoryFullCache(AbstractFullCache):
             or the process is multi-processed,
             there may be duplicate computations
             because the cache will not be shared among the processes.
+            This class relies on some multiprocessing features, it is therefore
+            necessary to protect its execution with an ``if __name__ == '__main__':``
+            statement when working on Windows.
         """
         super().__init__(tolerance, name)
         self.__is_memory_shared = is_memory_shared

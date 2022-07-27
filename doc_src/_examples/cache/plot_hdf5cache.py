@@ -30,27 +30,33 @@ from numpy import array
 
 configure_logger()
 
-###############################################################################
+# %%
+#
 # Import
 # ------
 # Let's first import the :class:`array` and the :class:`.HDF5Cache` classes.
 
 
-###############################################################################
+# %%
 # Create
 # ------
-# A instance of :class:`.HDF5Cache` can be instantiated with the following
+# An instance of :class:`.HDF5Cache` can be instantiated with the following
 # statement.  The user has to provide the file path of the HDF5 file, as well
 # as the node name, which usually is a discipline name.
+#
+# .. warning::
+#     The :class:`.HDF5Cache` relies on some multiprocessing features. When working on
+#     Windows, the execution of scripts containing instances of :class:`.HDF5Cache`
+#     must be protected by an ``if __name__ == '__main__':`` statement.
 
 cache = HDF5Cache("my_cache.hdf5", "node1")
 
-###############################################################################
+# %%
 # It is possible to see the principal attributes of the cache by printing it,
-# either using a print statement or using the logguer:
+# either using a print statement or using the logger:
 print(cache)
 
-###############################################################################
+# %%
 # Cache
 # -----
 # In this example, we manually add data in the cache from the data dictionary
@@ -64,7 +70,7 @@ cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
 print(cache)
 
-###############################################################################
+# %%
 # Get all data
 # ------------
 # We can now print some information from the cache, such as its length. We can
@@ -74,7 +80,7 @@ print(len(cache))
 for data in cache:
     print(data)
 
-###############################################################################
+# %%
 # Get last cached data
 # --------------------
 # It is also possible to display the last entry cached, for the inputs and the
@@ -84,7 +90,7 @@ last_entry = cache.last_entry
 print(last_entry.inputs)
 print(last_entry.outputs)
 
-###############################################################################
+# %%
 # Clear the cache
 # ---------------
 # It is also possible to clear the cache, which removes all the data which has

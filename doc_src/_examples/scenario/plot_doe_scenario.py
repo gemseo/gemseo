@@ -33,7 +33,8 @@ from gemseo.api import get_available_post_processings
 configure_logger()
 
 
-#############################################################################
+# %%
+#
 # Let :math:`(P)` be a simple optimization problem:
 #
 # .. math::
@@ -59,7 +60,7 @@ configure_logger()
 expressions = {"y": "x1+x2"}
 discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 
-#############################################################################
+# %%
 # Now, we want to minimize this :class:`.MDODiscipline`
 # over a design of experiments (DOE).
 #
@@ -73,7 +74,7 @@ design_space = create_design_space()
 design_space.add_variable("x1", 1, l_b=-5, u_b=5, var_type="integer")
 design_space.add_variable("x2", 1, l_b=-5, u_b=5, var_type="integer")
 
-#############################################################################
+# %%
 # Define the DOE scenario
 # -----------------------
 # Then, by means of the :meth:`~gemseo.api.create_scenario` API function,
@@ -84,7 +85,7 @@ scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
 
-#############################################################################
+# %%
 # Execute the DOE scenario
 # ------------------------
 # Lastly, we solve the :class:`.OptimizationProblem` included in the
@@ -95,7 +96,7 @@ scenario = create_scenario(
 
 scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
-#############################################################################
+# %%
 # The optimum results can be found in the execution log. It is also possible to
 # extract them by invoking the :meth:`.Scenario.get_optimum` method. It
 # returns a dictionary containing the optimum results for the
@@ -108,6 +109,7 @@ print(
     ),
 )
 
+# %%
 # Available DOE algorithms
 # ------------------------
 # In order to get the list of available DOE algorithms, use:
@@ -115,13 +117,15 @@ print(
 algo_list = get_available_doe_algorithms()
 print(f"Available algorithms: {algo_list}")
 
-#############################################################################
+# %%
 # Available post-processing
 # -------------------------
 # In order to get the list of available post-processing algorithms, use:
+
 post_list = get_available_post_processings()
 print(f"Available algorithms: {post_list}")
-#############################################################################
+
+# %%
 # You can also look at the examples:
 #
 # .. raw:: html
