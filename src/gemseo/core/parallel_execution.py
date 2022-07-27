@@ -195,6 +195,11 @@ class ParallelExecution:
         Raises:
             TypeError: If the `exec_callback` is not callable.
                 If the `task_submitted_callback` is not callable.
+
+        Warnings:
+            This class relies on multiprocessing features, it is therefore
+            necessary to protect its execution with an ``if __name__ == '__main__':``
+            statement when working on Windows.
         """
 
         n_tasks = len(input_values)

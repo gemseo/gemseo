@@ -59,6 +59,11 @@ class HDF5Cache(AbstractFullCache):
             hdf_node_path: The node of the HDF file.
             name: A name for the cache.
                 If ``None``, use ``hdf_note_path``.
+
+        Warnings:
+            This class relies on some multiprocessing features, it is therefore
+            necessary to protect its execution with an ``if __name__ == '__main__':``
+            statement when working on Windows.
         """
         self.__hdf_node_path = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
