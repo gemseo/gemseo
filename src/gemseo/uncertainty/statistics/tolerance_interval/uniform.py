@@ -41,7 +41,7 @@ class UniformToleranceInterval(ToleranceInterval):
         minimum: float,
         maximum: float,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             minimum: The estimation of the lower bound of the uniform distribution.
             maximum: The estimation of the upper bound of the uniform distribution.

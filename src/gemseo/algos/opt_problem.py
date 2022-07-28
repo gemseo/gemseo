@@ -1294,7 +1294,7 @@ class OptimizationProblem:
             ValueError: When the current value is not defined.
         """
         if not self.design_space.has_current_value():
-            raise ValueError("Current x is not defined in the design space.")
+            raise ValueError("The design space has no current value.")
 
         differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
             self.differentiation_method

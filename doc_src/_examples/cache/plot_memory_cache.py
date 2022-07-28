@@ -42,6 +42,12 @@ configure_logger()
 #
 # We can create an instance of the :class:`.MemoryFullCache` class. We can then
 # print it, and we can see it is empty.
+#
+# .. warning::
+#     The :class:`.MemoryFullCache` relies on some multiprocessing features.
+#     When working on Windows, the execution of scripts containing instances of
+#     :class:`.MemoryFullCache` must be protected by an
+#     ``if __name__ == '__main__':`` statement.
 
 cache = MemoryFullCache()
 print(cache)

@@ -62,7 +62,7 @@ class SPComposedDistribution(ComposedDistribution):
         distributions: Sequence[SPDistribution],
         copula: str = ComposedDistribution._INDEPENDENT_COPULA,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             distributions (list(SPDistribution)): The distributions.
             copula (str, optional): A name of copula.

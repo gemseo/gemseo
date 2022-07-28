@@ -35,11 +35,10 @@ from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class Pipeline(Transformer):
-    """Transformer pipeline.
+    """Transformer pipeline."""
 
-    Attributes:
-        transformers (Sequence(Transformer)): The sequence of transformers.
-    """
+    transformers: Sequence[Transformer]
+    """The sequence of transformers."""
 
     def __init__(
         self,

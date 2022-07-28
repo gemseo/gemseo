@@ -48,6 +48,7 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.core.cache import AbstractCache
+from gemseo.core.data_processor import DataProcessor
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.discipline_data import MutableData
 from gemseo.core.namespaces import remove_prefix_from_dict
@@ -98,24 +99,41 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     and the returned output data before they are stored in the :attr:`.cache`.
     A grammar can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar`,
     or your own which derives from :class:`.AbstractGrammar`.
-
-    Attributes:
-        input_grammar (BaseGrammar): The input grammar.
-        output_grammar (BaseGrammar): The output grammar.
-        data_processor (DataProcessor): A tool to pre- and post-process discipline data.
-        re_exec_policy (str): The policy to re-execute the same discipline.
-        residual_variables (Mapping[str, str]): The output variables
-            mapping to their inputs,
-            to be considered as residuals; they shall be equal to zero.
-        run_solves_residuals boolean: if True, the run method shall solve the residuals.
-        jac (Dict[str, Dict[str, ndarray]]): The Jacobians of the outputs wrt inputs
-            of the form ``{output: {input: matrix}}``.
-        exec_for_lin (bool): Whether the last execution was due to a linearization.
-        name (str): The name of the discipline.
-        cache (AbstractCache): The cache
-            containing one or several executions of the discipline
-            according to the cache policy.
     """
+
+    input_grammar: BaseGrammar
+    """The input grammar."""
+
+    output_grammar: BaseGrammar
+    """The output grammar."""
+
+    data_processor: DataProcessor
+    """A tool to pre- and post-process discipline data."""
+
+    re_exec_policy: str
+    """The policy to re-execute the same discipline."""
+
+    residual_variables: Mapping[str, str]
+    """The output variables mapping to their inputs,
+    to be considered as residuals; they shall be equal to zero.
+    """
+
+    run_solves_residuals: bool
+    """If True, the run method shall solve the residuals."""
+
+    jac: dict[str, dict[str, ndarray]]
+    """The Jacobians of the outputs wrt inputs
+    of the form ``{output: {input: matrix}}``."""
+
+    exec_for_lin: bool
+    """Whether the last execution was due to a linearization."""
+
+    name: str
+    """The name of the discipline."""
+
+    cache: AbstractCache
+    """The cache containing one or several executions of the discipline
+    according to the cache policy."""
 
     STATUS_VIRTUAL = "VIRTUAL"
     STATUS_PENDING = "PENDING"
@@ -525,7 +543,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if inputs is None:
             inputs = self.get_input_data_names()
         in_diff = self._differentiated_inputs
-        self._differentiated_inputs = list(set(in_diff) | set(inputs))
+        self._differentiated_inputs = list(set(in_diff).union(inputs))
 
     def add_differentiated_outputs(
         self,
@@ -553,7 +571,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         out_diff = self._differentiated_outputs
         if outputs is None:
             outputs = self.get_output_data_names()
-        self._differentiated_outputs = list(set(out_diff) | set(outputs))
+        self._differentiated_outputs = list(set(out_diff).union(outputs))
 
     def __create_new_cache(
         self,
@@ -1874,7 +1892,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """Store discipline data in local data.
 
         Args:
-            kwargs: The data to be stored in :attr:`.MDODiscipline.local_data`.
+            **kwargs: The data to be stored in :attr:`.MDODiscipline.local_data`.
         """
         out_ns = self.output_grammar.to_namespaced
         if not out_ns:
@@ -2029,7 +2047,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The name of the input and output variables.
         """
-        in_outs = set(self.output_grammar.keys()) | set(self.input_grammar.keys())
+        in_outs = set(self.output_grammar.keys()).union(self.input_grammar.keys())
         if with_namespaces:
             return list(in_outs)
         else:

@@ -326,6 +326,11 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
                 evaluation, in seconds.
+
+        Warnings:
+            This class relies on multiprocessing features when ``n_processes > 1``,
+            it is therefore necessary to protect its execution with an
+            ``if __name__ == '__main__':`` statement when working on Windows.
         """
         self.eval_jac = eval_jac
         if n_processes > 1:

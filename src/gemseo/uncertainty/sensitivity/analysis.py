@@ -88,11 +88,13 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows
     to compare the current :class:`.SensitivityAnalysis` with another one.
-
-    Attributes:
-        default_output (list(str)): The default outputs of interest.
-        dataset (Dataset): The dataset containing the discipline evaluations.
     """
+
+    default_output: list[str]
+    """The default outputs of interest."""
+
+    dataset: Dataset
+    """The dataset containing the discipline evaluations."""
 
     DEFAULT_DRIVER = None
 
@@ -107,7 +109,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.

@@ -131,19 +131,29 @@ class DesignSpace(collections.abc.MutableMapping):
     ``other_design_space["x"] = design_space["x"]``,
     ``del design_space["x"]``,
     ``for name, value in design_space["x"].items()``, ...
-
-    Attributes:
-        name (Optional[str]): The name of the space.
-        variables_names (List[str]): The names of the variables.
-        dimension (int): The total dimension of the space,
-            corresponding to the sum of the sizes of the variables.
-        variables_sizes (Dict[str,int]): The sizes of the variables.
-        variables_types (Dict[str,ndarray]): The types of the variables components,
-            which can be any :attr:`.DesignSpace.DesignVariableType`.
-        normalize (Dict[str,ndarray]): The normalization policies
-            of the variables components indexed by the variables names;
-            if `True`, the component can be normalized.
     """
+
+    name: str | None
+    """The name of the space."""
+
+    variables_names: list[str]
+    """The names of the variables."""
+
+    dimension: int
+    """The total dimension of the space,
+    corresponding to the sum of the sizes of the variables."""
+
+    variables_sizes: dict[str, int]
+    """The sizes of the variables."""
+
+    variables_types: dict[str, ndarray]
+    """The types of the variables components,
+    which can be any :attr:`.DesignSpace.DesignVariableType`."""
+
+    normalize: dict[str, ndarray]
+    """The normalization policies
+    of the variables components indexed by the variables names;
+    if `True`, the component can be normalized."""
 
     FLOAT = DesignVariableType.FLOAT
     INTEGER = DesignVariableType.INTEGER
@@ -1475,7 +1485,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         value: ndarray | Mapping[str, ndarray] | OptimizationResult,
     ) -> None:
-        """Set the current dseign value.
+        """Set the current design value.
 
         Args:
             value: The value of the current design.

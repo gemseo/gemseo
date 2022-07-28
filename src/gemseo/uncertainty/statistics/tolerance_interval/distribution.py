@@ -68,7 +68,7 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
         self,
         size: int,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             size: The number of samples.
         """

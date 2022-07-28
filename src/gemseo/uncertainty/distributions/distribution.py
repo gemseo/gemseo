@@ -75,6 +75,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 from typing import Callable
 from typing import Iterable
 from typing import Mapping
@@ -119,29 +120,44 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
     For example, some exponential distributions consider the notion of rate
     while other ones consider the notion of scale, which is the inverse of the rate...
     even in the background, the distribution is the same!
-
-    Attributes:
-        math_lower_bound (ndarray): The mathematical lower bound
-            of the random variable.
-        math_upper_bound (ndarray): The mathematical upper bound
-            of the random variable.
-        num_lower_bound (ndarray): The numerical lower bound
-            of the random variable.
-        num_upper_bound (ndarray): The numerical upper bound
-            of the random variable.
-        distribution (InterfacedDistributionClass): The probability distribution
-            of the random variable.
-        marginals (list(InterfacedDistributionClass)): The marginal distributions
-            of the components of the random variable.
-        dimension (int): The number of dimensions of the random variable.
-        variable_name (str): The name of the random variable.
-        distribution_name (str): The name of the probability distribution.
-        transformation (str): The transformation applied to the random variable,
-            e.g. 'sin(x)'.
-        parameters (tuple or dict): The parameters of the probability distribution.
-        standard_parameters (dict, optional): The standard representation
-            of the parameters of the distribution, used for its string representation.
     """
+
+    math_lower_bound: ndarray
+    """The mathematical lower bound of the random variable. """
+
+    math_upper_bound: ndarray
+    """The mathematical upper bound of the random variable."""
+
+    num_lower_bound: ndarray
+    """The numerical lower bound of the random variable."""
+
+    num_upper_bound: ndarray
+    """The numerical upper bound of the random variable."""
+
+    distribution: type
+    """The probability distribution of the random variable."""
+
+    marginals: list[type]
+    """The marginal distributions of the components of the random variable."""
+
+    dimension: int
+    """The number of dimensions of the random variable."""
+
+    variable_name: str
+    """The name of the random variable."""
+
+    distribution_name: str
+    """The name of the probability distribution."""
+
+    transformation: str
+    """The transformation applied to the random variable, e.g. 'sin(x)'."""
+
+    parameters: tuple[Any] | dict[str, Any]
+    """The parameters of the probability distribution."""
+
+    standard_parameters: dict[str, str] | None
+    """The standard representation of the parameters of the distribution,
+    used for its string representation."""
 
     _MU = "mu"
     _SIGMA = "sigma"
@@ -161,7 +177,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,

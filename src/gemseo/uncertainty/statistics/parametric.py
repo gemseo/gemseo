@@ -118,18 +118,6 @@ LOGGER = logging.getLogger(__name__)
 class ParametricStatistics(Statistics):
     """Parametric estimation of statistics.
 
-    Attributes:
-        fitting_criterion (str): The name of the goodness-of-fit criterion,
-            measuring how the distribution fits the data.
-        level (float): The test level,
-            i.e. risk of committing a Type 1 error,
-            that is an incorrect rejection of a true null hypothesis,
-            for criteria based on test hypothesis.
-        selection_criterion (str): The name of the selection criterion
-            to select a distribution from a list of candidates.
-        distributions (dict(str, dict(str, OTDistribution))): The probability
-            distributions of the random variables.
-
     Examples:
         >>> from gemseo.api import (
         ...     create_discipline,
@@ -167,6 +155,23 @@ class ParametricStatistics(Statistics):
         >>> mean = statistics.mean()
     """
 
+    fitting_criterion: str
+    """The name of the goodness-of-fit criterion,
+    measuring how the distribution fits the data."""
+
+    level: float
+    """The test level,
+    i.e. risk of committing a Type 1 error,
+    that is an incorrect rejection of a true null hypothesis,
+    for criteria based on test hypothesis."""
+
+    selection_criterion: str
+    """The name of the selection criterion
+    to select a distribution from a list of candidates."""
+
+    distributions: dict[str, dict[str, OTDistribution]]
+    """The probability distributions of the random variables."""
+
     AVAILABLE_DISTRIBUTIONS = sorted(
         OTDistributionFitter._AVAILABLE_DISTRIBUTIONS.keys()
     )
@@ -184,7 +189,7 @@ class ParametricStatistics(Statistics):
         selection_criterion: str = "best",
         name: str | None = None,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             distributions: The names of the distributions.
             fitting_criterion: The name of

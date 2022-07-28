@@ -88,10 +88,11 @@ sphinx_gallery_conf = {
 ################################################################################
 # Settings for autodoc.
 
-autodoc_default_options = {
-    "inherited-members": True,
-    "autosummary": True,
-}
+autodoc_default_options = {"members": True, "inherited-members": True}
+
+autodoc_member_order = "groupwise"
+
+autosummary_generate = True
 
 # Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"
@@ -269,10 +270,13 @@ html_context["meta_og_description"] = (
 )
 html_context["meta_og_root_url"] = "https://gemseo.readthedocs.io/en"
 html_context["plugins"] = {
+    "gemseo-calibration": "Capability to calibrate GEMSEO disciplines from data",
     "gemseo-java": "Interfacing Java code",
+    "gemseo-mlearning": "Miscellaneous machine learning capabilities",
     "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
     "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
-    "gemseo-scilab": "Intefacing Scilab functions",
+    "gemseo-scilab": "Interfacing Scilab functions",
+    "gemseo-umdo": "Capability for MDO under uncertainty",
 }
 
 ###############################################################################

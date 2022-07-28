@@ -60,7 +60,7 @@ class SurrogateDiscipline(MDODiscipline):
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             surrogate: Either the class name
                 or the instance of the :class:`.MLRegressionAlgo`.

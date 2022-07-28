@@ -365,9 +365,7 @@ def test_pb_type(pow2_problem):
 def test_differentiation_method_without_current_x(pow2_problem):
     """Check that a ValueError is raised when the current x is not defined."""
     pow2_problem.design_space.set_current_value({})
-    with pytest.raises(
-        ValueError, match=r"Current x is not defined in the design space\."
-    ):
+    with pytest.raises(ValueError, match=r"The design space has no current value\."):
         pow2_problem._OptimizationProblem__add_fd_jac("foo", False)
 
 

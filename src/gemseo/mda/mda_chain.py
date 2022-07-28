@@ -60,6 +60,9 @@ class MDAChain(MDA):
         "all_couplings",
     )
 
+    inner_mdas: list[MDA]
+    """The ordered MDAs."""
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

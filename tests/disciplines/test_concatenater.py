@@ -16,12 +16,12 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test for the :class:`.ConcatenationDiscipline`"""
+"""Test for the :class:`.Concatenater`"""
 from typing import Dict
 
 import pytest
 from gemseo.api import create_discipline
-from gemseo.disciplines.inputs_concatenation import ConcatenationDiscipline
+from gemseo.disciplines.concatenater import Concatenater
 from numpy import array
 from numpy import concatenate
 from numpy import diag
@@ -31,13 +31,20 @@ from numpy import zeros
 from numpy.testing import assert_array_equal
 
 
+@pytest.fixture(params=[None, {"c_1": 1.0, "c_2": -1.0}])
+def coefficients(request):
+    """The coefficients to scale the input variables."""
+    return request.param
+
+
 @pytest.fixture()
-def concatenation_disc():
+def concatenation_disc(coefficients):
     """Set-up fixture, creating a concatenation discipline."""
     return create_discipline(
-        "ConcatenationDiscipline",
+        "Concatenater",
         input_variables=["c_1", "c_2"],
         output_variable="c",
+        input_coefficients=coefficients,
     )
 
 
@@ -48,31 +55,32 @@ def input_data():
 
 
 def test_concatenation_discipline_execution(
-    concatenation_disc: ConcatenationDiscipline,
+    concatenation_disc: Concatenater,
     input_data: Dict[str, ndarray],
+    coefficients: Dict[str, float],
 ):
-    """Execution of a Concatenation Discipline.
-
-    Args:
-      concatenation_disc: An input ConcatenationDiscipline instance.
-      input_data: Input data fixture.
-    """
-    data = concatenation_disc.execute(input_data)
-    var_inputs = concatenation_disc.get_input_data_names()
-    expected = concatenate([input_data[var] for var in var_inputs])
-    assert_array_equal(data["c"], expected)
+    """Check the output data returned by Concatenater."""
+    if coefficients is None:
+        coefficients = {"c_1": 1.0, "c_2": 1.0}
+    output_data = concatenation_disc.execute(input_data)
+    input_names = concatenation_disc.get_input_data_names()
+    expected = concatenate(
+        [
+            input_data[input_name] * coefficients[input_name]
+            for input_name in input_names
+        ]
+    )
+    assert_array_equal(output_data["c"], expected)
 
 
 def test_concatenation_discipline_linearization(
-    concatenation_disc: ConcatenationDiscipline,
+    concatenation_disc: Concatenater,
     input_data: Dict[str, ndarray],
+    coefficients: Dict[str, float],
 ):
-    """Linearization of a Concatenation Discipline.
-
-    Args:
-      concatenation_disc: An input ConcatenationDiscipline instance.
-      input_data: Input data fixture.
-    """
+    """Check the Jacobian data returned by Concatenater."""
+    if coefficients is None:
+        coefficients = {"c_1": 1.0, "c_2": 1.0}
     jac = concatenation_disc.linearize(input_data, force_all=True)
     var_inputs = list(concatenation_disc.get_input_data_names())
 
@@ -83,7 +91,7 @@ def test_concatenation_discipline_linearization(
     for var in var_inputs:
         end = start + 2
         if var == "c_1":
-            c_c1[start:end, :] = diag(ones(2))
+            c_c1[start:end, :] = coefficients[var] * diag(ones(2))
         start += input_data[var].size
     assert_array_equal(jac["c"]["c_1"], c_c1)
 
@@ -92,6 +100,18 @@ def test_concatenation_discipline_linearization(
     for var in var_inputs:
         if var == "c_2":
             end = start + 3
-            c_c2[start:end, :] = diag(ones(3))
+            c_c2[start:end, :] = coefficients[var] * diag(ones(3))
         start += input_data[var].size
     assert_array_equal(jac["c"]["c_2"], c_c2)
+
+
+def test_check_gradient(
+    concatenation_disc: Concatenater, input_data: Dict[str, ndarray]
+):
+    """Test the Jacobian computation by finite differences."""
+    concatenation_disc.default_inputs = input_data
+    assert concatenation_disc.check_jacobian(
+        linearization_mode="auto",
+        threshold=1e-3,
+        step=1e-4,
+    )

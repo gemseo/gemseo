@@ -48,7 +48,7 @@ class LogNormalToleranceInterval(NormalToleranceInterval):
         std: float,
         location: float,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             mean: The estimation of the mean of the natural logarithm
                 of a log-normal distributed random variable.

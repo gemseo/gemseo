@@ -180,11 +180,12 @@ def test_lagrangian_constraint(constraint_type):
 
     if constraint_type == "eq":
         assert lagrange.EQUALITY in lag
+        assert len(lag[lagrange.EQUALITY][-1]) == 2
+
     else:
         assert lagrange.INEQUALITY in lag
-
-    for c_vals in lag.values():
-        assert (c_vals[-1] > 0).all()
+        for c_vals in lag.values():
+            assert (c_vals[-1] > 0).all()
 
 
 def test_lagrange_store(problem):

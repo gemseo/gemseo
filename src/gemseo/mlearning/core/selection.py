@@ -63,19 +63,24 @@ from gemseo.mlearning.qual_measure.quality_measure import (
 
 
 class MLAlgoSelection:
-    """Machine learning algorithm selector.
+    """Machine learning algorithm selector."""
 
-    Attributes:
-        dataset (Dataset): The learning dataset.
-        measure (str): The name of a quality measure
-            to measure the quality of the machine learning algorithms.
-        measure_options (Dict[str,Union[int,Dataset]]): The options for the method
-            to evaluate the quality measure.
-        factory (MLAlgoFactory): The factory
-            used for the instantiation of machine learning algorithms.
-        candidates (List[Tuple[MLAlgo,float]]): The candidate machine learning
-            algorithms, after possible calibration, and their quality measures.
-    """
+    dataset: Dataset
+    """The learning dataset."""
+
+    measure: str
+    """The name of a quality measure
+    to measure the quality of the machine learning algorithms."""
+
+    measure_options: dict[str, int | Dataset]
+    """The options for the method to evaluate the quality measure."""
+
+    factory: MLAlgoFactory
+    """The factory used for the instantiation of machine learning algorithms."""
+
+    candidates: list[tuple[MLAlgo, float]]
+    """The candidate machine learning algorithms,
+    after possible calibration, and their quality measures."""
 
     def __init__(
         self,

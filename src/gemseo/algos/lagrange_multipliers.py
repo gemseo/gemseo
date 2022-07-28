@@ -435,7 +435,8 @@ class LagrangeMultipliers:
                     "%s !",
                     str(names_neg),
                 )
-        if self.active_eq_names:
+        n_act = len(self.active_eq_names)
+        if n_act > 0:
             lag[self.EQUALITY] = (
                 self.active_eq_names,
                 multipliers[i_min : i_min + n_act],

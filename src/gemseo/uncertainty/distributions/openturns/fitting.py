@@ -119,12 +119,13 @@ MeasureType = Union[Tuple[bool, Mapping[str, float]], float]
 
 
 class OTDistributionFitter:
-    """Fit a probabilistic distribution from a data array.
+    """Fit a probabilistic distribution from a data array."""
 
-    Attributes:
-        variable (str): The name of the variable.
-        data (ndarray): The data array.
-    """
+    variable: str
+    """The name of the variable."""
+
+    data: ndarray
+    """The data array."""
 
     _AVAILABLE_DISTRIBUTIONS = {}
     for factory in ots.DistributionFactory.GetContinuousUniVariateFactories():
@@ -150,7 +151,7 @@ class OTDistributionFitter:
         variable: str,
         data: ndarray,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             variable: The name of the variable.
             data: A data array.

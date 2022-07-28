@@ -80,6 +80,21 @@ class ParallelExecution:
 
     N_CPUS = mp.cpu_count()
 
+    workers: ParallelExecutionWorkerType
+    """The objects that perform the tasks."""
+
+    n_processes: int
+    """The maximum simultaneous number of threads or processes."""
+
+    use_threading: bool
+    """Whether to use threads instead of processes to parallelize the execution."""
+
+    wait_time_between_fork: float
+    """The time to wait between two forks of the process/thread."""
+
+    input_values: ndarray | None
+    """The input values to be passed to the workers."""
+
     def __init__(
         self,
         workers: ParallelExecutionWorkerType,
@@ -97,7 +112,7 @@ class ParallelExecution:
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
-            use_threading: If True, use Threads instead of processes
+            use_threading: If True, use threads instead of processes
                 to parallelize the execution.
                 Multiprocessing will copy (serialize) all the disciplines,
                 while threading will share all the memory.
@@ -105,7 +120,7 @@ class ParallelExecution:
                 discipline multiple times, in which case you shall use
                 multiprocessing.
             wait_time_between_fork: The time to wait between two forks of the
-                process/Thread.
+                process/thread.
             exceptions_to_re_raise: The exceptions that should be raised again
                 when caught inside a worker. If None, all exceptions coming from
                 workers are caught and the execution is allowed to continue.
@@ -180,6 +195,11 @@ class ParallelExecution:
         Raises:
             TypeError: If the `exec_callback` is not callable.
                 If the `task_submitted_callback` is not callable.
+
+        Warnings:
+            This class relies on multiprocessing features, it is therefore
+            necessary to protect its execution with an ``if __name__ == '__main__':``
+            statement when working on Windows.
         """
 
         n_tasks = len(input_values)

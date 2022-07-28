@@ -46,17 +46,20 @@ class AnalyticDiscipline(MDODiscipline):
 
     Compute the Jacobian matrices by automatically differentiating the expressions.
 
-    Attributes:
-        expressions (Mapping[str,Union[str,Expr]]): The outputs
-            expressed as functions of the inputs.
-        output_names_to_symbols (Dict[str, List[str]]): The names of the inputs
-            associated to the outputs, e.g. ``{'out': ['in_1', 'in_2']}``.
-        input_names (List[str]): The names of the inputs.
-
     Example:
         >>> from gemseo.disciplines.analytic import AnalyticDiscipline
         >>> discipline = AnalyticDiscipline({'y_1': '2*x**2', 'y_2': '4*x**2+5+z**3'})
     """
+
+    expressions: Mapping[str, str | Expr]
+    """The outputs expressed as functions of the inputs."""
+
+    output_names_to_symbols: dict[str, list[str]]
+    """The names of the inputs
+    associated to the outputs, e.g. ``{'out': ['in_1', 'in_2']}``."""
+
+    input_names: list[str]
+    """The names of the inputs."""
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
         "expressions",
@@ -73,7 +76,7 @@ class AnalyticDiscipline(MDODiscipline):
         fast_evaluation: bool = True,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             expressions: The outputs expressed as functions of the inputs.
             name: The name of the discipline.

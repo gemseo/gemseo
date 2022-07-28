@@ -125,6 +125,13 @@ class Dataset:
     name: str
     """The name of the dataset."""
 
+    data: dict[str, ndarray]
+    """The data stored by variable names or group names.
+
+    The values are NumPy arrays
+    whose columns are features and rows are observations.
+    """
+
     sizes: dict[str, int]
     """The sizes of the variables."""
 

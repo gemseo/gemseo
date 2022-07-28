@@ -198,3 +198,31 @@ def test_auto_py_name(name, expected):
     """Test that the name of the AutoPyDiscipline is set correctly."""
     d1 = AutoPyDiscipline(f1, name=name)
     assert d1.name == expected
+
+
+def obj(a=1.0, b=2.0, c=3.0):
+    c1 = a + 2.0 * b + 3.0 * c
+    return c1
+
+
+def jac(a=1.0, b=2.0, c=3.0):
+    return array([[1.0, 2.0, 3.0]])
+
+
+def jac_wrong_shape(a=1.0, b=2.0, c=3.0):
+    return array([[1.0, 2.0, 3.0]]).T
+
+
+def test_jacobian_shape_mismatch():
+    """Tests the jacobian shape."""
+    disc = AutoPyDiscipline(py_func=obj, py_jac=jac)
+
+    assert disc.check_jacobian(step=1e-7, threshold=1e-5)
+
+    disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
+    msg = (
+        "The jacobian provided by the py_jac function is of wrong shape. "
+        r"Expected \(1, 3\), got \(3, 1\)."
+    )
+    with pytest.raises(ValueError, match=msg):
+        disc_wrong.linearize(force_all=True)

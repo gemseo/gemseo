@@ -32,6 +32,7 @@ from os import listdir
 from os import mkdir
 from os.path import join
 from pathlib import Path
+from typing import Callable
 from typing import Mapping
 from typing import Sequence
 from uuid import uuid1
@@ -107,23 +108,36 @@ class DiscFromExe(MDODiscipline):
       to provide a specific parser to the DiscFromExe,
       with the write_input_file_method
       and parse_outfile_method arguments of the constructor.
-
-    Attributes:
-        input_template (str): The path to the input template file.
-        output_template (str): The path to the output template file.
-        input_filename (str): The name of the input file.
-        output_filename (str): The name of the output file.
-        executable_command (str): The executable command.
-        parse_outfile (Callable[Mapping[str, Tuple[int]], Sequence[str]]):
-            The function used to parse the output file.
-        write_input_file
-            (Callable[[str, Mapping[str, ndarray], Mapping[str, Tuple[int]],
-            Sequence[int]], str]):
-            The function used to write the input file.
-        output_folder_basepath (str): The base path of the execution directories.
-        data_processor (DataProcessor): A data processor to be used before the execution
-            of the discipline.
     """
+
+    input_template: str
+    """The path to the input template file."""
+
+    output_template: str
+    """The path to the output template file."""
+
+    input_filename: str
+    """The name of the input file."""
+
+    output_filename: str
+    """The name of the output file."""
+
+    executable_command: str
+    """The executable command."""
+
+    parse_outfile: Callable[[Mapping[str, tuple[int]]], Sequence[str]]
+    """The function used to parse the output file."""
+
+    write_input_file: Callable[
+        [str, Mapping[str, ndarray], Mapping[str, tuple[int]], Sequence[int]], str
+    ]
+    """The function used to write the input file."""
+
+    output_folder_basepath: str
+    """The base path of the execution directories."""
+
+    data_processor: DataProcessor
+    """A data processor to be used before the execution of the discipline."""
 
     def __init__(
         self,

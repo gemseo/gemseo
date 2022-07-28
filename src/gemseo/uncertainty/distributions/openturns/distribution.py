@@ -105,7 +105,7 @@ class OTDistribution(Distribution):
         upper_bound: float | None = None,
         threshold: float = 0.5,
     ) -> None:
-        """# noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,

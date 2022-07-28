@@ -70,20 +70,29 @@ class AutoPyDiscipline(MDODiscipline):
         {'x': array([0.]), 'y': array([0.]), 'z1': array([0.]), 'z2': array([1.])}
         >>> discipline.execute({'x': array([1.]), 'y':array([-3.2])})
         {'x': array([1.]), 'y': array([-3.2]), 'z1': array([-5.4]), 'z2': array([-4.4])}
-
-    Attributes:
-        py_func (Callable[[DataType, ..., DataType],DataType]): The Python function
-            to compute the outputs from the inputs.
-        use_arrays (bool):  Whether the function is expected
-            to take arrays as inputs and give outputs as arrays.
-        py_jac (Optional[Callable[[DataType, ..., DataType],ndarray]]): The Python
-            function to compute the Jacobian from the inputs.
-        in_names (List[str]): The names of the inputs.
-        out_names (List[str]): The names of the outputs.
-        data_processor (AutoDiscDataProcessor): A data processor
-            forcing input data to float and output data to arrays.
-        sizes (Dict[str,int]): The sizes of the input and output variables.
     """
+
+    py_func: Callable[[DataType, ..., DataType], DataType]
+    """The Python function to compute the outputs from the inputs."""
+
+    use_arrays: bool
+    """Whether the function is expected
+    to take arrays as inputs and give outputs as arrays."""
+
+    py_jac: Callable[[DataType, ..., DataType], ndarray] | None
+    """The Python function to compute the Jacobian from the inputs."""
+
+    in_names: list[str]
+    """The names of the inputs."""
+
+    out_names: list[str]
+    """The names of the outputs."""
+
+    data_processor: AutoDiscDataProcessor
+    """A data processor forcing input data to float and output data to arrays."""
+
+    sizes: dict[str, int]
+    """The sizes of the input and output variables."""
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("py_func", "out_names")
 
@@ -95,7 +104,7 @@ class AutoPyDiscipline(MDODiscipline):
         use_arrays: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             py_func: The Python function to compute the outputs from the inputs.
             py_jac: The Python function to compute the Jacobian from the inputs;
@@ -137,7 +146,10 @@ class AutoPyDiscipline(MDODiscipline):
 
         def_func = self._get_defaults()
         self.default_inputs = to_arrays_dict(def_func)
-        self.sizes = None
+        self.__sizes = {}
+        self.__jac_shape = []
+        self.__in_names_with_namespaces = []
+        self.__out_names_with_namespaces = []
 
     def _get_defaults(self) -> dict[str, DataType]:
         """Return the default values of the input variables when available.
@@ -169,28 +181,50 @@ class AutoPyDiscipline(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Raises:
             RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
+            ValueError: When the Jacobian shape is inconsistent.
         """
         if self.py_jac is None:
             raise RuntimeError("The analytic Jacobian is missing.")
 
-        if self.sizes is None:
-            self.sizes = {k: v.size for k, v in self.local_data.items()}
+        if not self.__sizes:
+            self.__sizes = {k: v.size for k, v in self.local_data.items()}
+
+            in_to_ns = self.input_grammar.to_namespaced
+            self.__in_names_with_namespaces = [
+                in_to_ns[name] if name in in_to_ns else name for name in self.in_names
+            ]
+            out_to_ns = self.output_grammar.to_namespaced
+            self.__out_names_with_namespaces = [
+                out_to_ns[name] if name in out_to_ns else name
+                for name in self.out_names
+            ]
+            n_rows = sum(
+                self.__sizes[output] for output in self.__out_names_with_namespaces
+            )
+            n_cols = sum(
+                self.__sizes[input] for input in self.__in_names_with_namespaces
+            )
+            self.__jac_shape = (n_rows, n_cols)
 
         func_jac = self.py_jac(**self.get_input_data(with_namespaces=False))
 
-        in_to_ns = self.input_grammar.to_namespaced
-        in_names_ns = [
-            in_to_ns[name] if name in in_to_ns else name for name in self.in_names
-        ]
-        out_to_ns = self.output_grammar.to_namespaced
-        out_names_ns = [
-            out_to_ns[name] if name in out_to_ns else name for name in self.out_names
-        ]
+        if len(func_jac.shape) < 2:
+            func_jac = atleast_2d(func_jac)
+        if func_jac.shape != self.__jac_shape:
+            msg = (
+                "The jacobian provided by the py_jac function is of wrong shape. "
+                "Expected {}, got {}."
+            ).format(self.__jac_shape, func_jac.shape)
+            raise ValueError(msg)
+
         self.jac = split_array_to_dict_of_arrays(
-            atleast_2d(func_jac), self.sizes, out_names_ns, in_names_ns
+            func_jac,
+            self.__sizes,
+            self.__out_names_with_namespaces,
+            self.__in_names_with_namespaces,
         )
 
     @staticmethod
@@ -247,19 +281,21 @@ class AutoPyDiscipline(MDODiscipline):
 class AutoDiscDataProcessor(DataProcessor):
     """A data processor forcing input data to float and output data to arrays.
 
-    Convert all |g| scalar input data to floats,
-    and convert all discipline output data to NumPy arrays.
-
-    Attributes:
-        out_names (Sequence[str]): The names of the outputs.
-        one_output (bool): Whether there is a single output.
+    Convert all |g| scalar input data to floats, and convert all discipline output data
+    to NumPy arrays.
     """
+
+    out_names: Sequence[str]
+    """The names of the outputs."""
+
+    one_output: bool
+    """Whether there is a single output."""
 
     def __init__(
         self,
         out_names: Sequence[str],
     ) -> None:
-        """# noqa: D205 D212 D415
+        """.. # noqa: D205 D212 D415
         Args:
             out_names: The names of the outputs.
         """

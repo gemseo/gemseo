@@ -135,23 +135,29 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
     representation for end users.
     Derived classes shall overload the :meth:`.MLAlgo.learn`,
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
-
-    Attributes:
-        learning_set (Dataset): The learning dataset.
-        parameters (Dict[str,MLAlgoParameterType]): The parameters
-            of the machine learning algorithm.
-        transformer (Dict[str,Transformer]): The strategies to transform the variables.
-            The values are instances of :class:`.Transformer`
-            while the keys are the names of
-            either the variables
-            or the groups of variables,
-            e.g. "inputs" or "outputs" in the case of the regression algorithms.
-            If a group is specified,
-            the :class:`.Transformer` will be applied
-            to all the variables of this group.
-            If None, do not transform the variables.
-        algo (Any): The interfaced machine learning algorithm.
     """
+
+    learning_set: Dataset
+    """The learning dataset."""
+
+    parameters: dict[str, MLAlgoParameterType]
+    """The parameters of the machine learning algorithm."""
+
+    transformer: dict[str, Transformer]
+    """The strategies to transform the variables.
+    The values are instances of :class:`.Transformer`
+    while the keys are the names of
+    either the variables
+    or the groups of variables,
+    e.g. "inputs" or "outputs" in the case of the regression algorithms.
+    If a group is specified,
+    the :class:`.Transformer` will be applied
+    to all the variables of this group.
+    If None, do not transform the variables.
+    """
+
+    algo: Any
+    """The interfaced machine learning algorithm."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "MLAlgo"
     """The short name of the machine learning algorithm, often an acronym.

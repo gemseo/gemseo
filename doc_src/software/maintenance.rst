@@ -131,15 +131,13 @@ The update is done with `towncrier <https://github.com/twisted/towncrier>`_:
 
 .. code-block:: shell
 
-   towncrier build --version <expected version>
+   towncrier build --version <version number>
 
 Making a new release
 --------------------
 
 #. Create a release branch.
 #. Make sure the full test suite passes.
-#. Replace ``Unreleased`` by the new version in :file:`CHANGELOG.rst`.
-#. Hardcode the version number in :file:`conf.py`.
 #. Update the changelog.
 #. Push the branch.
 #. Build the docs for this branch on rtd, check the version and changelog.
@@ -151,4 +149,3 @@ Making a new release
 #. Update the recipe for conda-forge once the update bot sends the PR.
 #. Test the conda-forge packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
-#. Remove the hardcoded version number in :file:`conf.py`.

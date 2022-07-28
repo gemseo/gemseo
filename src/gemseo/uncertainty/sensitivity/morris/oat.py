@@ -83,7 +83,7 @@ class _OATSensitivity(MDODiscipline):
         parameter_space: DesignSpace,
         step: float,
     ) -> None:
-        """# noqa: D107 D205 D212 D415
+        """.. # noqa: D107 D205 D212 D415
         Args:
             scenario: The scenario for the analysis.
             parameter_space: A parameter space.

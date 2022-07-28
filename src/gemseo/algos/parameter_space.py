@@ -74,6 +74,8 @@ from typing import Iterable
 from typing import Mapping
 from typing import TYPE_CHECKING
 
+from gemseo.uncertainty.distributions.distribution import Distribution
+
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset
 
@@ -101,15 +103,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ParameterSpace(DesignSpace):
-    """Parameter space.
+    """Parameter space."""
 
-    Attributes:
-        uncertain_variables (List(str)): The names of the uncertain variables.
-        distributions (Dict(str,Distribution)): The marginal probability distributions
-            of the uncertain variables.
-        distribution (ComposedDistribution): The joint probability distribution
-            of the uncertain variables.
-    """
+    uncertain_variables: list[str]
+    """The names of the uncertain variables."""
+
+    distributions: dict[str, Distribution]
+    """The marginal probability distributions of the uncertain variables."""
+
+    distribution: ComposedDistribution
+    """The joint probability distribution of the uncertain variables."""
 
     _INITIAL_DISTRIBUTION = "Initial distribution"
     _TRANSFORMATION = "Transformation"

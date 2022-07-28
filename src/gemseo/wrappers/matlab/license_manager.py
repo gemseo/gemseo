@@ -48,9 +48,6 @@ class LicenseManager:
     in Matlab workspace.
     Parallel computing launch can be used with this tool.
 
-    Attributes:
-        engine: The MatlabEngine instance.
-
     Examples:
         >>> # Build a new matlab engine
         >>> eng = get_matlab_engine()
@@ -61,6 +58,9 @@ class LicenseManager:
         >>> # check licenses of the engine until all are available
         >>> lm.check_licenses()
     """
+
+    engine: MatlabEngine
+    """The MatlabEngine instance."""
 
     SIGNAL_TOOL = "signal_toolbox"
     DISTRIB_COMP_TOOL = "distrib_computing_toolbox"
