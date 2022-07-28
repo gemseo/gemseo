@@ -27,12 +27,18 @@ and this project adheres to
 
 .. towncrier release notes start
 
-Version 4.0.0 (2022-07-22)
+Version 4.0.0 (2022-07-28)
 **************************
 
 Added
 -----
 
+- :class:`.Concatenater` can now scale the inputs before concatenating them.
+  :class:`.LinearCombination` is a new discipline computing the weighted sum of its inputs.
+  :class:`.Splitter` is a new discipline splitting whose outputs are subsets of its unique input.
+  `#316 <https://gitlab.com/gemseo/dev/gemseo/-/issues/316>`_
+- The transform module in machine learning now features two power transforms: :class:`.BoxCox` and :class:`.YeoJohnson`.
+  `#341 <https://gitlab.com/gemseo/dev/gemseo/-/issues/341>`_
 - A :class:`.MDODiscipline` can now use a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ via its :attr:`~.MDODiscipline.local_data`.
   `#58 <https://gitlab.com/gemseo/dev/gemseo/-/issues/58>`_
 - Grammars can add :ref:`namespaces <namespaces>` to prefix the element names.
@@ -172,6 +178,8 @@ Fixed
 Changed
 -------
 
+- Fixed Lagrange Multipliers computation for equality active constraints.
+  `#345 <https://gitlab.com/gemseo/dev/gemseo/-/issues/345>`_
 - The ``normalize`` argument of :meth:`.OptimizationProblem.preprocess_functions` is now named ``is_function_input_normalized``.
   `#22 <https://gitlab.com/gemseo/dev/gemseo/-/issues/22>`_
 - API changes:

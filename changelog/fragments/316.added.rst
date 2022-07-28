@@ -1,3 +1,0 @@
-:class:`.Concatenater` can now scale the inputs before concatenating them.
-:class:`.LinearCombination` is a new discipline computing the weighted sum of its inputs.
-:class:`.Splitter` is a new discipline splitting whose outputs are subsets of its unique input.
