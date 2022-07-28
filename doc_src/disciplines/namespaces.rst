@@ -69,9 +69,9 @@ In terms of API this would result in the following example:
     :class:`.MDOChain`, :class:`.MDA` and its subclasses, :class:`.MDOParallelChain` etc.
     Scenarios can be created with disciplines handling namespaces.
     The main limitation is that not all wrappers and MDO test problems are
-    compatible with namespaces.
-    The last section of this page describes how to make your discipline wrappers
-    able to handle namespaces.
+    compatible with namespaces, which requires the modifications described at the end of this page.
+    Currently, the :class:`.AutoPyDiscipline` and :class:`.ConstrAggegationDisc` support namespaces
+    and can be used as examples.
 
 Coupling control in MDAs
 ------------------------
@@ -111,6 +111,7 @@ This allows to adapt wrappers to support namespaces with only minor modification
 For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and supports namespaces:
 
 .. code::
+
     def _run(self):
         output_values = self.py_func(**self.get_input_data(namespaces_prefix=False))
         self.store_local_data(**output_values)
