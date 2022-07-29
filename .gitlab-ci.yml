@@ -19,11 +19,12 @@ variables:
 
 workflow:
   # Prevent duplicated pipelines,
-  # see https://docs.gitlab.com/14.3/ee/ci/yaml/index.html#switch-between-branch-pipelines-and-merge-request-pipelines.
+  # see https://docs.gitlab.com/ee/ci/yaml/workflow.html#switch-between-branch-pipelines-and-merge-request-pipelines
   rules:
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
-    - when: always
+    - if: $CI_COMMIT_BRANCH
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
 # TODO: make the hierarchy more readable
@@ -110,6 +111,8 @@ check:
       - tox.ini
       - .gitlab-ci.yml
   after_script:
+    # Fix for showing covered line in gitlab MR.
+    - python -c "import re;s=re.sub('filename=\".*/site-packages', 'filename=\"src', open('$COVERAGE_FILE').read());open('$COVERAGE_FILE', 'w').write(s)"
     - codecov -t $CODECOV_TOKEN -f $COVERAGE_FILE --required
 
 # Common settings for windows tests jobs.
