@@ -21,10 +21,12 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives.derivatives_approx import comp_best_step
@@ -202,3 +204,106 @@ def test_lagrange_store(problem):
     lagrange.active_ub_names = []
     lagrange.active_ineq_names = [0]
     lagrange._store_multipliers(-1 * np.ones(10))
+
+
+@pytest.fixture
+def analytical_test_2d_ineq():
+    """Test for lagrange multiplier."""
+    disc = AnalyticDiscipline(
+        name="2D_test", expressions={"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}
+    )
+    ds = DesignSpace()
+    ds.add_variable("x", l_b=0.0, u_b=1.0, value=1)
+    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0)
+    scenario = create_scenario(
+        disciplines=[disc],
+        formulation="DisciplinaryOpt",
+        objective_name="f",
+        design_space=ds,
+    )
+    scenario.add_constraint("g", "ineq")
+    return scenario
+
+
+@pytest.fixture
+def analytical_test_2d_eq():
+    """Test for lagrange multiplier."""
+    disc = AnalyticDiscipline(
+        name="2D_test", expressions={"f": "(x)**2+(y)**2", "g": "x+y-1"}
+    )
+    ds = DesignSpace()
+    ds.add_variable("x", l_b=0.0, u_b=1.0, value=1)
+    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0)
+    scenario = create_scenario(
+        disciplines=[disc],
+        formulation="DisciplinaryOpt",
+        objective_name="f",
+        design_space=ds,
+    )
+    scenario.add_constraint("g", "eq")
+    return scenario
+
+
+@pytest.fixture
+def analytical_test_2d_mixed_rank_deficient():
+    """Test for lagrange multiplier."""
+    disc = AnalyticDiscipline(
+        name="2D_test",
+        expressions={
+            "f": "x**2+y**2+z**2",
+            "g": "x+y+z-1",
+            "h": "(x-1.)**2+(y-1)**2+(z-1)**2-4./3.",
+        },
+    )
+    ds = DesignSpace()
+    ds.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+    ds.add_variable("z", l_b=0.0, u_b=1.0, value=0.5)
+    scenario = create_scenario(
+        disciplines=[disc],
+        formulation="DisciplinaryOpt",
+        objective_name="f",
+        design_space=ds,
+    )
+    scenario.add_constraint("g", "ineq")
+    scenario.add_constraint("h", "eq")
+    return scenario
+
+
+def test_2d_ineq(analytical_test_2d_ineq):
+    """Test for lagrange multiplier inequality almost optimum."""
+    analytical_test_2d_ineq.execute({"max_iter": 50, "algo": "SLSQP"})
+    problem = analytical_test_2d_ineq.formulation.opt_problem
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    lag = lagrange.compute(
+        problem.solution.x_opt - epsilon * array([0.0, 1.0]),
+        ineq_tolerance=2.5 * epsilon,
+    )
+    assert pytest.approx(lag["inequality"][1], 1.1 * epsilon) == array([1.0])
+
+
+def test_2d_eq(analytical_test_2d_eq):
+    """Test for lagrange multiplier inequality almost optimum."""
+    analytical_test_2d_eq.execute({"max_iter": 50, "algo": "SLSQP"})
+    problem = analytical_test_2d_eq.formulation.opt_problem
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    lag = lagrange.compute(
+        problem.solution.x_opt - epsilon * array([0.0, 1.0]),
+        ineq_tolerance=2.5 * epsilon,
+    )
+    assert pytest.approx(lag["equality"][1], 1.1 * epsilon) == array([-1.0])
+
+
+def test_2d_mixed(analytical_test_2d_mixed_rank_deficient):
+    """Test for lagrange multiplier inequality almost optimum."""
+    analytical_test_2d_mixed_rank_deficient.execute({"max_iter": 50, "algo": "SLSQP"})
+    problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    lag_approx = lagrange.compute(
+        problem.solution.x_opt + epsilon * array([0.0, 1.0, 0.0]),
+        ineq_tolerance=2.5 * epsilon,
+    )
+    assert lag_approx["inequality"][1] > 0
