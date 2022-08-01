@@ -51,7 +51,7 @@ LOGGER = logging.getLogger(__name__)
 class MDARoot(MDA):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("strong_couplings",)
+    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("strong_couplings", "all_couplings")
 
     def __init__(
         self,
@@ -101,8 +101,7 @@ class MDARoot(MDA):
             self.output_grammar.update(disciplines.output_grammar)
 
     def execute_all_disciplines(
-        self,
-        input_local_data: Mapping[str, ndarray],
+        self, input_local_data: Mapping[str, ndarray], update_local_data=True
     ) -> None:
         """Execute all self.disciplines.
 
@@ -118,7 +117,12 @@ class MDARoot(MDA):
             discipline.reset_statuses_for_run()
             discipline.execute(deepcopy(input_local_data))
 
-        outputs = [discipline.get_output_data() for discipline in self.disciplines]
+        if update_local_data:
+            self._update_local_data_from_disciplines()
+
+    def _update_local_data_from_disciplines(self) -> None:
+        """Update the local data from disciplines."""
+        outputs = (discipline.get_output_data() for discipline in self.disciplines)
         for data in outputs:
             self.local_data.update(data)
 
@@ -200,49 +204,47 @@ class MDANewtonRaphson(MDARoot):
     def _newton_step(self) -> None:
         """Execute the full Newton step.
 
-        Compute the increment :math:`-[dR/dW]^{-1}.R` and run the disciplines.
+        Compute the increment :math:`-[dR/dW]^{-1}.R` and update the MDA local_data.
         """
-        newton_dict = self.assembly.compute_newton_step(
+        newton_step = self.assembly.compute_newton_step(
             self.local_data,
-            self.strong_couplings,
+            self.all_couplings,
             self.relax_factor,
             self.linear_solver,
             matrix_type=self.matrix_type,
             **self.linear_solver_options,
         )
-        # update current solution with Newton step
-        exec_data = deepcopy(self.local_data)
-        for c_var, c_step in newton_dict.items():
-            exec_data[c_var] += c_step
-        self.reset_disciplines_statuses()
-        self.execute_all_disciplines(exec_data)
+
+        # Update all the couplings with the Newton step.
+        for c_var, c_step in newton_step.items():
+            self.local_data[c_var] += c_step
 
     def _run(self) -> None:
+        self.local_data = deepcopy(self.local_data)
+
         if self.warm_start:
             self._couplings_warm_start()
-        # execute the disciplines
+
+        # First Newton step.
         current_couplings = self._current_input_couplings()
-        self.reset_disciplines_statuses()
-        self.execute_all_disciplines(self.local_data)
+        self._newton_step()
         new_couplings = self._current_input_couplings()
 
-        self._compute_residual(
-            current_couplings,
-            new_couplings,
-            log_normed_residual=self.log_convergence,
-        )
-        current_couplings = new_couplings
-
-        while not self._stop_criterion_is_reached:
-            self._newton_step()
-            new_couplings = self._current_input_couplings()
-
+        while True:
             self._compute_residual(
                 current_couplings,
                 new_couplings,
                 log_normed_residual=self.log_convergence,
             )
+
+            if self._stop_criterion_is_reached:
+                break
+
+            self._newton_step()
             current_couplings = new_couplings
+            new_couplings = self._current_input_couplings()
+
+        self._update_local_data_from_disciplines()
 
 
 class MDAQuasiNewton(MDARoot):

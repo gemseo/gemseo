@@ -185,8 +185,7 @@ class JacobianAssembly:
             discipline = self.coupling_structure.find_discipline(output)
             self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
-            size = next(iter(discipline.jac[output].values())).shape[0]
-            self.sizes[output] = size
+            self.sizes[output] = discipline.local_data[output].shape[0]
 
         # variables
         for variable in variables:
@@ -723,9 +722,28 @@ class JacobianAssembly:
             per coupling variable.
         """
         # linearize the disciplines
-        self._add_differentiated_inouts(couplings, couplings, couplings)
         for disc in self.coupling_structure.disciplines:
-            disc.linearize(in_data)
+            inputs_to_linearize = set(disc.get_input_data_names()).intersection(
+                couplings
+            )
+            outputs_to_linearize = set(disc.get_output_data_names()).intersection(
+                couplings
+            )
+
+            # If outputs and inputs to linearize not empty, then linearize
+            if inputs_to_linearize and outputs_to_linearize:
+                disc.add_differentiated_inputs(inputs_to_linearize)
+                disc.add_differentiated_outputs(outputs_to_linearize)
+                disc.linearize(in_data)
+            # Otherwise,
+            # Execute and populate with empty dicts the Jacobian
+            # with the outputs to linearize
+            # This will be needed when creating the dRes/dCoupling matrix.
+            else:
+                disc.execute(in_data)
+                disc.jac = {}
+                for out in outputs_to_linearize:
+                    disc.jac[out] = {}
 
         self.compute_sizes(couplings, couplings, couplings)
         n_couplings = self.compute_dimension(couplings)

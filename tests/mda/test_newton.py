@@ -21,6 +21,8 @@ import re
 
 import pytest
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.newton import MDAQuasiNewton
 from gemseo.problems.sellar.sellar import Sellar1
@@ -128,6 +130,26 @@ def test_raphson_sellar_sparse_complex():
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
     assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
+
+
+@pytest.mark.parametrize("use_cache", [True, False])
+def test_raphson_sellar_without_cache(use_cache):
+    """Test the execution of Newton on Sellar case.
+
+    This test also checks that each Newton step implies one disciplinary call, and one
+    disciplinary linearization, whatever a cache mechanism is used or not.
+    """
+    disciplines = [Sellar1(), Sellar2()]
+    if not use_cache:
+        for disc in disciplines:
+            disc.cache = None
+    mda = MDANewtonRaphson(disciplines)
+    mda.execute()
+
+    residual_length = len(mda.residual_history)
+    assert mda.residual_history[-1] < 1e-6
+    assert disciplines[0].n_calls == residual_length
+    assert disciplines[0].n_calls_linearize == residual_length
 
 
 def test_raphson_sellar():
@@ -246,3 +268,69 @@ def test_parallel_doe(mda_class, expected_obj, generate_parallel_doe_data):
     """
     obj = generate_parallel_doe_data(mda_class)
     assert isclose(array([obj]), array([expected_obj]), atol=1e-3)
+
+
+def test_weak_and_strong_couplings():
+    """Test the Newton method on a simple Analytic case with strong and weak
+    couplings."""
+    disc1 = AnalyticDiscipline(expressions={"z": "2*x"})
+    disc2 = AnalyticDiscipline(expressions={"i": "z + j"})
+    disc3 = AnalyticDiscipline(expressions={"j": "1 - 0.3*i"})
+    disc4 = AnalyticDiscipline(expressions={"obj": "i+j"})
+    disciplines = [disc1, disc2, disc3, disc4]
+    mda = MDANewtonRaphson(
+        disciplines,
+    )
+    mda.execute(
+        {"z": array([0.0]), "i": array([0.0]), "j": array([0.0]), "x": array([0.0])}
+    )
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))
+
+
+def test_weak_and_strong_couplings_two_cycles():
+    """Test the Newton method on a simple Analytic case.
+
+    Two strongly coupled cycles of disciplines are used in this test case.
+    """
+    disc1 = AnalyticDiscipline(expressions={"z": "2*x"})
+    disc2 = AnalyticDiscipline(expressions={"i": "z + 0.2*j"})
+    disc3 = AnalyticDiscipline(expressions={"j": "1. - 0.3*i"})
+    disc4 = AnalyticDiscipline(expressions={"k": "i+j"})
+    disc5 = AnalyticDiscipline(expressions={"l": "k + 0.2*m"})
+    disc6 = AnalyticDiscipline(expressions={"m": "1. - 0.3*l"})
+    disc7 = AnalyticDiscipline(expressions={"obj": "l+m"})
+    disciplines = [disc1, disc2, disc3, disc4, disc5, disc6, disc7]
+    mda = MDANewtonRaphson(
+        disciplines,
+    )
+    mda.linearization_mode = "adjoint"
+    mda.add_differentiated_inputs(["x"])
+    mda.add_differentiated_outputs(["obj"])
+    mda_input = {
+        "z": array([1.0]),
+        "i": array([0.0]),
+        "j": array([0.0]),
+        "k": array([0.0]),
+        "l": array([0.0]),
+        "x": array([0.0]),
+    }
+    out = mda.execute(mda_input)
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+
+    mda_ref = MDAChain(disciplines)
+    mda_ref.linearization_mode = "adjoint"
+    mda_ref.add_differentiated_inputs(["x"])
+    mda_ref.add_differentiated_outputs(["obj"])
+    out_ref = mda_ref.execute(mda_input)
+
+    for output_name in mda.get_output_data_names():
+        assert out[output_name] == pytest.approx(out_ref[output_name])
+
+    assert mda.check_jacobian(
+        input_data=mda_input,
+        inputs=["x"],
+        outputs=["obj"],
+        linearization_mode="adjoint",
+        threshold=1e-3,
+    )
