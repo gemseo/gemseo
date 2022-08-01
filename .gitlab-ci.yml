@@ -1,10 +1,9 @@
 default:
-  image: registry.gitlab.com/gemseo/dev/gemseo/multi-python
+  interruptible: true
 
-# Stages executed sequentially until a job fails.
 stages:
   - check
-  - tests
+  - test
 
 variables:
   TEST_ALL_ENVS:
@@ -31,28 +30,28 @@ workflow:
 # .base
 # .linux
 # .windows
-# .extended-tests
+# .extended-test
 #     check
 #     pylint
-#     .tests
-#         .tests-linux
+#     .test
+#         .test-linux
 #             py39
 #             py37,py38
-#         .tests-windows
+#         .test-windows
 #             py39-win
 #             py37-win,py38-win
 
 # Base job template.
 .base:
-  interruptible: true
   script:
     # Run a tox env named after a job name.
     - tox -e $TOX_ENV_NAME
 
 # Specific settings for linux jobs.
 .linux:
+  image: registry.gitlab.com/gemseo/dev/gemseo/multi-python
   tags:
-    - gemseo-docker
+    - irt
     - docker
   variables:
     # Caches on the CI runner host.
@@ -61,7 +60,7 @@ workflow:
 # Specific settings for windows jobs.
 .windows:
   tags:
-    - gemseo-windows-server-2012
+    - irt
     - windows-server-2012
   variables:
     # Caches on the CI runner host.
@@ -73,19 +72,24 @@ check:
   extends:
     - .base
     - .linux
+  tags:
+    - docker
   stage: check
   variables:
-    PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
+    PRE_COMMIT_HOME: ${CI_PROJECT_DIR}/.cache/pre-commit
     # Pass the cache locations through the tox env.
     TOX_TESTENV_PASSENV: PIP_CACHE_DIR PRE_COMMIT_HOME
     TOX_ENV_NAME: check
+  cache:
+    paths:
+      - ${PRE_COMMIT_HOME}
 
 # Tests stage.
 
-# Base tests job, common to all the tests jobs.
-.tests:
+# Base test job, common to all the tests jobs.
+.test:
   extends: .base
-  stage: tests
+  stage: test
   variables:
     COVERAGE_FILE: coverage.xml
     # The junitxml is for showing the number of tests if gitlab UI.
@@ -115,36 +119,36 @@ check:
     - python -c "import re;s=re.sub('filename=\".*/site-packages', 'filename=\"src', open('$COVERAGE_FILE').read());open('$COVERAGE_FILE', 'w').write(s)"
     - codecov -t $CODECOV_TOKEN -f $COVERAGE_FILE --required
 
-# Common settings for windows tests jobs.
-.tests-windows:
+# Common settings for windows test jobs.
+.test-windows:
   extends:
-    - .tests
+    - .test
     - .windows
 
-# Common settings for linux tests jobs.
-.tests-linux:
+# Common settings for linux test jobs.
+.test-linux:
   extends:
-    - .tests
+    - .test
     - .linux
 
-# Jobs for the tests stage.
+# Jobs for the test stage.
 
-.base-tests:
+.base-test:
   variables:
     TOX_ENV_NAME: py39-coverage
 
 base-linux:
   extends:
-    - .tests-linux
-    - .base-tests
+    - .test-linux
+    - .base-test
 
 base-windows:
   extends:
-    - .tests-windows
-    - .base-tests
+    - .test-windows
+    - .base-test
 
 # Define jobs for minor python env with this extended parent.
-.extended-tests:
+.extended-test:
   rules:
     # Always run for commits pushed on the master branch.
     - if: '$CI_COMMIT_BRANCH == "master"'
@@ -152,7 +156,7 @@ base-windows:
     # For selecting from gitlab UI.
     - if: '$TEST_ALL_ENVS == "false"'
       when: never
-    - !reference [.tests, rules]
+    - !reference [.test, rules]
   parallel:
     matrix:
       - TOX_ENV_NAME:
@@ -162,12 +166,15 @@ base-windows:
 
 extended-linux:
   extends:
-    - .tests-linux
+    - .test-linux
     # Last so its rules applies.
-    - .extended-tests
+    - .extended-test
 
 extended-windows:
   extends:
-    - .tests-windows
+    - .test-windows
     # Last so its rules applies.
-    - .extended-tests
+    - .extended-test
+
+include:
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
