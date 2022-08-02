@@ -21,9 +21,9 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Generator
-from typing import Iterable
+
+from numpy import ndarray
 
 from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
@@ -65,39 +65,31 @@ class SimpleCache(AbstractCache):
         self.__penultimate_input_data = {}
 
     def __iter__(self) -> Generator[CacheEntry]:
-        if self.__penultimate_input_data:
-            yield self.__penultimate_input_data
+        if self.penultimate_entry.inputs:
+            yield self.penultimate_entry
 
         yield self.last_entry
 
     def __len__(self) -> int:
         return bool(self.__penultimate_input_data) + bool(self.__last_input_data)
 
-    def __create_input_cache(
-        self,
-        input_data: Data,
-        output_names: Iterable[str] | None = None,
-    ) -> Data:
+    def __create_input_cache(self, input_data: Data) -> Data:
         """Create the input data.
 
         Args:
             input_data: The data containing the input data to cache.
-            output_names: The names of the outputs to cache.
-                If ``None``, consider all the outputs.
 
         Returns:
             A copy of the input data.
         """
-        if output_names is None:
-            cached_input_data = deepcopy_dict_of_arrays(input_data)
-        else:
-            cached_input_data = {k: v for k, v in input_data.items()}
-            # If also an output, keep a copy of the original input value
-            for output_name in output_names:
-                input_value = input_data.get(output_name)
-                if input_value is not None:
-                    cached_input_data[output_name] = deepcopy(input_value)
+        if not self._names_to_sizes:
+            for name, value in input_data.items():
+                if isinstance(value, ndarray):
+                    self._names_to_sizes[name] = value.size
+                else:
+                    self._names_to_sizes[name] = 1
 
+        cached_input_data = deepcopy_dict_of_arrays(input_data)
         if not self.__is_cached(self.__last_input_data, cached_input_data):
             self.__penultimate_input_data = self.__last_input_data
             self.__last_input_data = cached_input_data
@@ -138,6 +130,10 @@ class SimpleCache(AbstractCache):
     ) -> None:
         self.__input_data_for_outputs = self.__create_input_cache(input_data)
         self.__output_data = deepcopy_dict_of_arrays(output_data)
+        if not self._output_names:
+            self._output_names = sorted(output_data.keys())
+            for name, value in output_data.items():
+                self._names_to_sizes[name] = value.size
 
     def __getitem__(
         self,
@@ -172,7 +168,7 @@ class SimpleCache(AbstractCache):
         Returns:
             The cache entry corresponding to this cached input data.
         """
-        input_data = {}
+        input_data = cached_input_data
         output_data = {}
         jacobian_data = {}
         if self.__is_cached(self.__input_data_for_outputs, cached_input_data):
@@ -188,7 +184,11 @@ class SimpleCache(AbstractCache):
     @property
     def penultimate_entry(self) -> CacheEntry:
         """The penultimate cache entry."""
-        return self.__retrieve_entry(self.__penultimate_input_data)
+        entry = self.__retrieve_entry(self.__penultimate_input_data)
+        if entry.outputs or entry.jacobian:
+            return entry
+
+        return CacheEntry({}, {}, {})
 
     @property
     def last_entry(self) -> CacheEntry:

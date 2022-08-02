@@ -31,6 +31,7 @@ from gemseo.api import create_scenario
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
+from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
@@ -602,3 +603,52 @@ def test_setitem_empty_data(simple_cache, caplog):
             "Cannot add the entry to the cache "
             "as both output data and Jacobian data are missing."
         ) in caplog.text
+
+
+@pytest.mark.parametrize("first_jacobian", [None, {"y": {"x": array([[4.0]])}}])
+@pytest.mark.parametrize("second_jacobian", [None, {"y": {"x": array([[4.0]])}}])
+@pytest.mark.parametrize("first_outputs", [None, {"y": array([3.0])}])
+def test_export_to_dataset_and_entries(
+    simple_cache, first_jacobian, second_jacobian, first_outputs
+):
+    """Check exporting a simple cache to a dataset and entries.
+
+    Only the last observation should be exported, without its Jacobian.
+    """
+    first_inputs = {"x": array([2.0])}
+    second_inputs = {"x": array([1.0])}
+    second_outputs = {"y": array([2.0])}
+    simple_cache[first_inputs] = (first_outputs, first_jacobian)
+    simple_cache[second_inputs] = (second_outputs, second_jacobian)
+    dataset = simple_cache.export_to_dataset()
+    assert len(dataset) == 1
+    assert dataset["x"][0, 0] == 1.0
+    assert dataset["y"][0, 0] == 2.0
+
+    # Check penultimate_entry and last_entry
+    first_jacobian = first_jacobian or {}
+    second_jacobian = second_jacobian or {}
+    if second_outputs:
+        first_outputs = {}
+    if second_jacobian:
+        first_jacobian = {}
+    if not first_jacobian and not first_outputs:
+        first_inputs = {}
+    penultimate_entry = CacheEntry(
+        first_inputs,
+        first_outputs,
+        first_jacobian,
+    )
+    last_entry = CacheEntry(second_inputs, second_outputs, second_jacobian or {})
+    assert simple_cache.penultimate_entry == penultimate_entry
+    assert simple_cache.last_entry == last_entry
+
+    # Check __iter__
+    entries = [entry for entry in simple_cache]
+    if first_inputs:
+        assert len(entries) == 2
+        assert entries[0] == penultimate_entry
+        assert entries[1] == last_entry
+    else:
+        assert len(entries) == 1
+        assert entries[0] == last_entry
