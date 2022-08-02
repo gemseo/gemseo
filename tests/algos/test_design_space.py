@@ -1388,3 +1388,12 @@ def test_initialize_missing_current_values(l_b, u_b, value):
     )
     design_space.initialize_missing_current_values()
     assert_equal(design_space["x"].value, value)
+
+
+def test_export_import_with_none_value(tmp_wd):
+    """Check that a design space exported without default value can be imported."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    design_space.export_to_txt("foo.txt")
+    txt_design_space = DesignSpace.read_from_txt("foo.txt")
+    assert txt_design_space == design_space
