@@ -35,7 +35,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.formulation import MDOFormulation
+    from gemseo.core.base_formulation import BaseFormulation
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class FunctionFromDiscipline(MDOFunction):
     def __init__(
         self,
         output_names: Sequence[str],
-        mdo_formulation: MDOFormulation,
+        mdo_formulation: BaseFormulation,
         discipline: MDODiscipline | None = None,
         top_level_disc: bool = True,
         x_names: Sequence[str] | None = None,

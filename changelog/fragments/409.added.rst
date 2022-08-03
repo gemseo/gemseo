@@ -1,0 +1,1 @@
+A warning message is logged when an attempt is made to add an observable twice to an :class:`.OptimizationProblem` and the addition is cancelled.

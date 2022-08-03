@@ -1495,3 +1495,13 @@ def test_observables_normalization():
     n_obj_eval = scenario.formulation.opt_problem.database.get_func_history("y_1").size
     n_obs_eval = scenario.formulation.opt_problem.database.get_func_history("obj").size
     assert total_iter == n_obj_eval == n_obs_eval
+
+
+def test_observable_cannot_be_added_twice(caplog):
+    """Check that an observable cannot be added twice."""
+    problem = OptimizationProblem(DesignSpace())
+    problem.add_observable(MDOFunction(lambda x: x, "obs"))
+    problem.add_observable(MDOFunction(lambda x: x, "obs"))
+    assert "WARNING" in caplog.text
+    assert 'The optimization problem already observes "obs".' in caplog.text
+    assert len(problem.observables) == 1
