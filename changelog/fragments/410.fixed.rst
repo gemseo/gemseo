@@ -1,0 +1,1 @@
+``gemseo-template-grammar-editor`` now works with both pyside6 and pyside2.
