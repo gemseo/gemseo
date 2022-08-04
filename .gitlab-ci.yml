@@ -36,8 +36,8 @@ extended-test:
   extends:
     - test
   rules:
-    # Always run for commits pushed on the master branch.
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    # Always run for MR or commits pushed to the master branch.
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       when: always
     # For selecting from gitlab UI.
     - if: '$TEST_ALL_ENVS == "false"'

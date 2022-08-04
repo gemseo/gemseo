@@ -27,6 +27,30 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 4.0.1 (2022-08-04)
+**************************
+
+Added
+-----
+
+- :class:`.SimpleCache` can be exported to a :class:`.Dataset`.
+  `#404 <https://gitlab.com/gemseo/dev/gemseo/-/issues/404>`_
+- A warning message is logged when an attempt is made to add an observable twice to an :class:`.OptimizationProblem` and the addition is cancelled.
+  `#409 <https://gitlab.com/gemseo/dev/gemseo/-/issues/409>`_
+
+Fixed
+-----
+
+- The MDANewton MDA does not have anymore a Jacobi step interleaved in-between each Newton step.
+  `#400 <https://gitlab.com/gemseo/dev/gemseo/-/issues/400>`_
+- The :attr:`.AnalyticDiscipline.default_inputs` do not share anymore the same Numpy array.
+  `#406 <https://gitlab.com/gemseo/dev/gemseo/-/issues/406>`_
+- The Lagrange Multipliers computation is fixed for design points close to local optima.
+  `#408 <https://gitlab.com/gemseo/dev/gemseo/-/issues/408>`_
+- ``gemseo-template-grammar-editor`` now works with both pyside6 and pyside2.
+  `#410 <https://gitlab.com/gemseo/dev/gemseo/-/issues/410>`_
+
+
 Version 4.0.0 (2022-07-28)
 **************************
 
