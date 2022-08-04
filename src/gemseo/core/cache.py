@@ -168,9 +168,9 @@ class AbstractCache(ABCMapping):
         """
         self.tolerance = tolerance
         self.name = name if name is not None else self.__class__.__name__
-        self.__names_to_sizes = {}
+        self._names_to_sizes = {}
         self.__input_names = []
-        self.__output_names = []
+        self._output_names = []
 
     @property
     def input_names(self) -> list[str]:
@@ -182,23 +182,23 @@ class AbstractCache(ABCMapping):
     @property
     def output_names(self) -> list[str]:
         """The names of the outputs of the last entry."""
-        if not self.__output_names:
-            self.__output_names = sorted(self.last_entry.outputs.keys())
-        return self.__output_names
+        if not self._output_names:
+            self._output_names = sorted(self.last_entry.outputs.keys())
+        return self._output_names
 
     @property
     def names_to_sizes(self) -> dict[str, int]:
         """The sizes of the variables of the last entry."""
-        if not self.__names_to_sizes:
+        if not self._names_to_sizes:
             last_entry = self.last_entry
-            self.__names_to_sizes = {
+            self._names_to_sizes = {
                 name: data.size
                 for name, data in itertools.chain(
                     last_entry.inputs.items(), last_entry.outputs.items()
                 )
             }
 
-        return self.__names_to_sizes
+        return self._names_to_sizes
 
     def __str__(self) -> str:
         msg = MultiLineString()
@@ -266,14 +266,88 @@ class AbstractCache(ABCMapping):
     def clear(self) -> None:
         """Clear the cache."""
         self.__input_names = []
-        self.__output_names = []
-        self.__names_to_sizes = {}
+        self._output_names = []
+        self._names_to_sizes = {}
 
     @property
     @abc.abstractmethod
     def last_entry(self) -> CacheEntry:
         """The last cache entry."""
         ...
+
+    def export_to_dataset(
+        self,
+        name: str | None = None,
+        by_group: bool = True,
+        categorize: bool = True,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+    ) -> Dataset:
+        """Build a :class:`.Dataset` from the cache.
+
+        Args:
+            name: A name for the dataset.
+                If ``None``, use the name of the cache.
+            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
+                in the sense of one unique NumPy array per group.
+                If ``categorize`` is ``False``,
+                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
+                If ``categorize`` is ``True``,
+                the groups are stored
+                in :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+                If ``by_group`` is ``False``, store the data by variable names.
+            categorize: Whether to distinguish
+                between the different groups of variables.
+                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+            input_names: The names of the inputs to be exported.
+                If ``None``, use all the inputs.
+            output_names: The names of the outputs to be exported.
+                If ``None``, use all the outputs.
+
+        Returns:
+            A dataset version of the cache.
+        """
+        from gemseo.core.dataset import Dataset
+
+        dataset = Dataset(name or self.name, by_group)
+
+        input_names = input_names or self.input_names
+        output_names = output_names or self.output_names
+
+        # Set the different groups
+        input_group = output_group = dataset.DEFAULT_GROUP
+        cache_output_as_input = True
+        if categorize:
+            input_group = dataset.INPUT_GROUP
+            output_group = dataset.OUTPUT_GROUP
+            cache_output_as_input = False
+
+        # Add cache inputs and outputs
+        inputs = vstack(
+            [
+                concatenate_dict_of_arrays_to_array(data.inputs, input_names)
+                for data in self
+                if data.outputs
+            ]
+        )
+        data = split_array_to_dict_of_arrays(inputs, self.names_to_sizes, input_names)
+        for input_name, value in sorted(data.items()):
+            dataset.add_variable(input_name, value, input_group)
+
+        outputs = vstack(
+            [
+                concatenate_dict_of_arrays_to_array(data.outputs, output_names)
+                for data in self
+                if data.outputs
+            ]
+        )
+        data = split_array_to_dict_of_arrays(outputs, self.names_to_sizes, output_names)
+        for output_name, value in sorted(data.items()):
+            dataset.add_variable(
+                output_name, value, output_group, cache_as_input=cache_output_as_input
+            )
+
+        return dataset
 
 
 class AbstractFullCache(AbstractCache):
@@ -733,78 +807,6 @@ class AbstractFullCache(AbstractCache):
         new_cache.update(self)
         new_cache.update(other_cache)
         return new_cache
-
-    def export_to_dataset(
-        self,
-        name: str | None = None,
-        by_group: bool = True,
-        categorize: bool = True,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
-    ) -> Dataset:
-        """Build a :class:`.Dataset` from the cache.
-
-        Args:
-            name: A name for the dataset.
-                If ``None``, use the name of the cache.
-            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
-                in the sense of one unique NumPy array per group.
-                If ``categorize`` is ``False``,
-                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
-                If ``categorize`` is ``True``,
-                the groups are stored
-                in :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
-                If ``by_group`` is ``False``, store the data by variable names.
-            categorize: Whether to distinguish
-                between the different groups of variables.
-                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
-            input_names: The names of the inputs to be exported.
-                If ``None``, use all the inputs.
-            output_names: The names of the outputs to be exported.
-                If ``None``, use all the outputs.
-
-        Returns:
-            A dataset version of the cache.
-        """
-        from gemseo.core.dataset import Dataset
-
-        dataset = Dataset(name or self.name, by_group)
-
-        input_names = input_names or self.input_names
-        output_names = output_names or self.output_names
-
-        # Set the different groups
-        input_group = output_group = dataset.DEFAULT_GROUP
-        cache_output_as_input = True
-        if categorize:
-            input_group = dataset.INPUT_GROUP
-            output_group = dataset.OUTPUT_GROUP
-            cache_output_as_input = False
-
-        # Add cache inputs and outputs
-        inputs = vstack(
-            [
-                concatenate_dict_of_arrays_to_array(data.inputs, input_names)
-                for data in self
-            ]
-        )
-        data = split_array_to_dict_of_arrays(inputs, self.names_to_sizes, input_names)
-        for input_name, value in sorted(data.items()):
-            dataset.add_variable(input_name, value, input_group)
-
-        outputs = vstack(
-            [
-                concatenate_dict_of_arrays_to_array(data.outputs, output_names)
-                for data in self
-            ]
-        )
-        data = split_array_to_dict_of_arrays(outputs, self.names_to_sizes, output_names)
-        for output_name, value in sorted(data.items()):
-            dataset.add_variable(
-                output_name, value, output_group, cache_as_input=cache_output_as_input
-            )
-
-        return dataset
 
 
 def hash_data_dict(

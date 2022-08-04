@@ -183,9 +183,8 @@ class AnalyticDiscipline(MDODiscipline):
 
     def _init_default_inputs(self) -> None:
         """Initialize the default inputs of the discipline with zeros."""
-        zeros_array = zeros(1)
         self.default_inputs = {
-            input_name: zeros_array for input_name in self.get_input_data_names()
+            input_name: zeros(1) for input_name in self.get_input_data_names()
         }
 
     def _run(self) -> None:

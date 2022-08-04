@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 
+import numpy as np
 from numpy import arange
 from numpy import array
 from numpy import atleast_2d
@@ -32,6 +33,7 @@ from numpy import zeros
 from numpy.linalg import matrix_rank
 from numpy.linalg import norm
 from scipy.optimize import linprog
+from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
 
 from gemseo.algos.design_space import DesignSpace
@@ -172,14 +174,24 @@ class LagrangeMultipliers:
         ] * act_eq_constr_nb
         optim_result = linprog(zeros(act_constr_nb), A_eq=lhs, b_eq=rhs, bounds=bounds)
         if optim_result.status == 2:
-            LOGGER.warning("Lagrange multipliers appear not to exist")
-        if optim_result.success:
+            LOGGER.warning("The optimum does not satisfy exactly KKT conditions.")
+        if optim_result.success and act_constr_nb <= rank:
             mul = optim_result.x
         else:
             # If the linear optimization failed then obtain the Lagrange
             # multipliers as a solution of a least-square problem
-            mul, residuals = nnls(lhs, rhs)
-            LOGGER.info("Residuals norm = %s", str(norm(residuals)))
+            if act_eq_constr_nb == 0:
+                mul, residuals = nnls(lhs, rhs)
+                LOGGER.info("Residuals norm = %s", str(norm(residuals)))
+            else:
+                lower_bound = array(
+                    [0.0] * (act_constr_nb - act_eq_constr_nb)
+                    + [-np.inf] * act_eq_constr_nb
+                )
+                upper_bound = array([np.inf] * (act_constr_nb))
+                optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
+                mul = optim_result.x
+                LOGGER.info("Residuals norm = %s", str(optim_result.cost))
 
         # stores multipliers in a dictionary
         self._store_multipliers(mul)

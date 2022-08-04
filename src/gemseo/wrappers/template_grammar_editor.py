@@ -30,16 +30,32 @@ from os.path import dirname
 from os.path import exists
 from os.path import join
 
-from PySide6.QtCore import QRegularExpression
-from PySide6.QtGui import QAction
-from PySide6.QtGui import QColor
-from PySide6.QtGui import QIcon
-from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QApplication
-from PySide6.QtWidgets import QFileDialog
-from PySide6.QtWidgets import QInputDialog
-from PySide6.QtWidgets import QMainWindow
-from PySide6.QtWidgets import QTextEdit
+try:
+    from PySide6.QtCore import QRegularExpression
+    from PySide6.QtGui import QAction
+    from PySide6.QtGui import QColor
+    from PySide6.QtGui import QIcon
+    from PySide6.QtGui import QTextCursor
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QFileDialog
+    from PySide6.QtWidgets import QInputDialog
+    from PySide6.QtWidgets import QMainWindow
+    from PySide6.QtWidgets import QTextEdit
+
+    WITH_PYSIDE6 = True
+except ImportError:
+    from PySide2.QtCore import QRegExp
+    from PySide2.QtGui import QColor, QIcon, QTextCursor
+    from PySide2.QtWidgets import (
+        QAction,
+        QApplication,
+        QFileDialog,
+        QInputDialog,
+        QMainWindow,
+        QTextEdit,
+    )
+
+    WITH_PYSIDE6 = False
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +101,11 @@ class QtTemplateEditor(QMainWindow):
         self.q_text_e = QTextEdit(self)
         self._setup_toolbars()
 
-        self.q_text_e.setTabStopDistance(12)
+        if WITH_PYSIDE6:
+            self.q_text_e.setTabStopDistance(12)
+        else:
+            self.q_text_e.setTabStopWidth(12)
+
         self.setCentralWidget(self.q_text_e)
 
         self.setGeometry(100, 100, 600, 800)
@@ -220,28 +240,50 @@ class QtTemplateEditor(QMainWindow):
             sep: The regex that validates the text to highlight.
             color: The color to be used.
         """
-        # Set up the desired format for matches
-        color = QColor(color)
-        color.setAlpha(100)
-        # Set up the regex engine
-        regex = QRegularExpression(sep)
-        # Process the displayed document
-        match = regex.match(self.q_text_e.toPlainText())
-        index = match.capturedStart()
-        cursor = self.q_text_e.textCursor()
-
-        while index != -1:
-            # Select the matched text and apply the desired format
-            cursor.setPosition(index)
-            cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor, n=1)
-            char_fmt = cursor.charFormat()
-            char_fmt.setBackground(color)
-            cursor.setCharFormat(char_fmt)
-
-            # Move to the next match
-            pos = index + match.capturedLength()
-            match = regex.match(self.q_text_e.toPlainText(), pos)
+        if WITH_PYSIDE6:
+            # Set up the desired format for matches
+            color = QColor(color)
+            color.setAlpha(100)
+            # Set up the regex engine
+            regex = QRegularExpression(sep)
+            # Process the displayed document
+            match = regex.match(self.q_text_e.toPlainText())
             index = match.capturedStart()
+            cursor = self.q_text_e.textCursor()
+
+            while index != -1:
+                # Select the matched text and apply the desired format
+                cursor.setPosition(index)
+                cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor, n=1)
+                char_fmt = cursor.charFormat()
+                char_fmt.setBackground(color)
+                cursor.setCharFormat(char_fmt)
+
+                # Move to the next match
+                pos = index + match.capturedLength()
+                match = regex.match(self.q_text_e.toPlainText(), pos)
+                index = match.capturedStart()
+        else:
+            # Setup the desired format for matches
+            color = QColor(color)
+            color.setAlpha(100)
+            # Setup the regex engine
+            regex = QRegExp(sep)
+            # Process the displayed document
+            index = regex.indexIn(self.q_text_e.toPlainText(), 0)
+            cursor = self.q_text_e.textCursor()
+
+            while index != -1:
+                # Select the matched text and apply the desired format
+                cursor.setPosition(index)
+                cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor, n=1)
+                charfmt = cursor.charFormat()
+                charfmt.setBackground(color)
+                cursor.setCharFormat(charfmt)
+
+                # Move to the next match
+                pos = index + regex.matchedLength()
+                index = regex.indexIn(self.q_text_e.toPlainText(), pos)
 
 
 def main():
@@ -249,4 +291,7 @@ def main():
     app = QApplication(sys.argv)
     editor = QtTemplateEditor()
     editor.show()
-    sys.exit(app.exec())
+    if WITH_PYSIDE6:
+        sys.exit(app.exec())
+    else:
+        sys.exit(app.exec_())

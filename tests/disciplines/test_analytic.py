@@ -41,6 +41,18 @@ def expressions():
     return expr_dict
 
 
+def test_independent_default_inputs():
+    """Test that the default inputs are independent.
+
+    Reproducer for #406.
+    """
+    expr = {"obj": "x1 + x2 + x3"}
+    disc = AnalyticDiscipline(expr)
+    disc.execute()
+    disc.local_data["x1"] += 1.0
+    assert disc.local_data["x2"] == pytest.approx(0.0)
+
+
 def test_fast_expression_evaluation(expressions):
     disc = AnalyticDiscipline(expressions)
     input_data = {"x": array([1.0]), "z": array([1.0])}
