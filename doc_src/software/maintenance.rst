@@ -174,3 +174,11 @@ Making a new release for plugins
 #. Update the environments dependencies (:ref:`update-deps`)
     **without** setting the environment variable ``GEMSEO_PIP_REQ_SPEC``.
 #. Push develop.
+
+Mirroring to github
+-------------------
+
+To mirror a project from gitlab to github:
+
+- Clone the repository on github,
+- Enable push mirroring on the gitlab repository setting page.

@@ -1,1 +1,0 @@
-Add a table of capabilities for the options of the optimization algorithms.
