@@ -90,7 +90,7 @@
         {%- endif %}
         <div class="alert alert-warning p-1 mb-2" role="alert">
           <p class="text-center mb-0">
-            Please <a class="font-weight-bold" href="{{ pathto('aboutus')}}#citation">cite us</a> if you use the software.
+            Please <a class="font-weight-bold" href="{{ pathto('aboutus')}}{% if pagename != 'aboutus' %}#{% endif %}citation">cite us</a> if you use the software.
           </p>
         </div>
             {%- if meta and meta['parenttoc']|tobool %}
