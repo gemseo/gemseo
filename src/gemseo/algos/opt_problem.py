@@ -335,6 +335,7 @@ class OptimizationProblem:
         self.__parallel_differentiation_options = parallel_differentiation_options
         self.__eval_obs_jac = False
         self.constraint_names = {}
+        self.__observable_names = set()
 
     def __raise_exception_if_functions_are_already_preprocessed(self):
         """Raise an exception if the function have already been pre-processed."""
@@ -631,9 +632,15 @@ class OptimizationProblem:
             obs_func: An observable to be observed.
             new_iter: If True, then the observable will be called at each new iterate.
         """
+        name = obs_func.name
+        if name in self.__observable_names:
+            LOGGER.warning('The optimization problem already observes "%s".', name)
+            return
+
         self.check_format(obs_func)
         obs_func.f_type = MDOFunction.TYPE_OBS
         self.observables.append(obs_func)
+        self.__observable_names.add(name)
         if new_iter:
             self.new_iter_observables.append(obs_func)
 

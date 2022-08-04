@@ -79,6 +79,8 @@ and :file:`dependencies.rst` shall also be updated accordingly.
 Whenever a dependency defined in :file:`setup.cfg` is changed,
 update the requirements for the testing and ``doc`` environments of ``tox``:
 
+.. _update-deps:
+
 .. code-block:: shell
 
     tox -e update-deps-test-py37,update-deps-test-py38,update-deps-test-py39,update-deps-test-py310,update-deps-doc
@@ -149,3 +151,34 @@ Making a new release
 #. Update the recipe for conda-forge once the update bot sends the PR.
 #. Test the conda-forge packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
+#. Push develop.
+
+Making a new release for plugins
+--------------------------------
+
+#. Create a release branch.
+#. Update the required gemseo version in :file:`setup.cfg`.
+#. Update the environments dependencies (:ref:`update-deps`)
+    while setting the environment variable :command:`GEMSEO_PIP_REQ_SPEC="gemseo"`.
+#. Update the changelog.
+#. Push the branch.
+#. Make sure the full test suite passes.
+#. Merge to master.
+#. Tag.
+#. Run :command:`tox -e dist` to create the distribution archives.
+#. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
+#. Test the pypi packages.
+#. Update the recipe for conda-forge once the update bot sends the PR.
+#. Test the conda-forge packages.
+#. Merge master to develop so the last tag is a parent commit for defining the dev versions.
+#. Update the environments dependencies (:ref:`update-deps`)
+    **without** setting the environment variable ``GEMSEO_PIP_REQ_SPEC``.
+#. Push develop.
+
+Mirroring to github
+-------------------
+
+To mirror a project from gitlab to github:
+
+- Clone the repository on github,
+- Enable push mirroring on the gitlab repository setting page.
