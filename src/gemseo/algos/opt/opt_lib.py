@@ -58,7 +58,20 @@ class OptimizationAlgorithmDescription(DriverDescription):
 
 
 class OptimizationLibrary(DriverLib):
-    """Optimization library base class See DriverLib."""
+    """Base optimization library defining a collection of optimization algorithms.
+
+    Typically used as:
+
+    #. Instantiate an :class:`.OptimizationLibrary`.
+    #. Select the algorithm with :attr:`.algo_name`.
+    #. Solve an :class:`.OptimizationProblem` with :meth:`.execute`.
+
+    Note:
+        The missing current values
+        of the :class:`.DesignSpace` attached to the :class:`.OptimizationProblem`
+        are automatically initialized
+        with the method :meth:`.DesignSpace.initialize_missing_current_values`.
+    """
 
     MAX_ITER = "max_iter"
     F_TOL_REL = "ftol_rel"
@@ -174,6 +187,9 @@ class OptimizationLibrary(DriverLib):
 
         Specific method to be executed just before _run method call.
 
+        The missing current values of the :class:`.DesignSpace` are initialized
+        with the method :meth:`.DesignSpace.initialize_missing_current_values`.
+
         Args:
             problem: The optimization problem.
             algo_name: The name of the algorithm.
@@ -200,11 +216,14 @@ class OptimizationLibrary(DriverLib):
         self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
         self.init_iter_observer(max_iter, " ")
         problem.add_callback(self.new_iteration_callback)
-        eval_jac = self.is_algo_requires_grad(algo_name)
-        normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS)
         # First, evaluate all functions at x_0. Some algorithms don't do this
+        self.problem.design_space.initialize_missing_current_values()
         self.problem.evaluate_functions(
-            eval_jac=eval_jac, eval_obj=True, normalize=normalize
+            eval_jac=self.is_algo_requires_grad(algo_name),
+            eval_obj=True,
+            normalize=options.get(
+                self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
+            ),
         )
 
     @staticmethod
