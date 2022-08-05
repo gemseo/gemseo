@@ -1331,3 +1331,22 @@ def test_get_current_value(fbb_design_space, names, cast, normalize, as_dict):
         expected = fbb_design_space.dict_to_array(expected, variable_names=names)
 
     assert_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    "l_b,u_b,value",
+    [
+        (None, None, array([0, 0])),
+        (array([1, 2]), None, array([1, 2])),
+        (array([1, 2]), array([2, 4]), array([1, 3])),
+        (None, array([1, 2]), array([1, 2])),
+    ],
+)
+def test_initialize_missing_current_values(l_b, u_b, value):
+    """Check the initialization of the missing current values."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", size=2, var_type=design_space.INTEGER, l_b=l_b, u_b=u_b
+    )
+    design_space.initialize_missing_current_values()
+    assert_equal(design_space["x"].value, value)

@@ -45,6 +45,7 @@ from copy import deepcopy
 from numbers import Number
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -155,14 +156,15 @@ class DesignSpace(collections.abc.MutableMapping):
     of the variables components indexed by the variables names;
     if `True`, the component can be normalized."""
 
+    __VARIABLE_TYPES_TO_DTYPES: ClassVar[dict[str, str]] = {
+        DesignVariableType.FLOAT.value: "float64",
+        DesignVariableType.INTEGER.value: "int32",
+    }
+
     FLOAT = DesignVariableType.FLOAT
     INTEGER = DesignVariableType.INTEGER
     AVAILABLE_TYPES = [FLOAT, INTEGER]
     __TYPE_NAMES = tuple(x.value for x in DesignVariableType)
-    __TYPES_TO_DTYPES = {
-        DesignVariableType.FLOAT.value: "float64",
-        DesignVariableType.INTEGER.value: "int32",
-    }
     MINIMAL_FIELDS = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES = ["name", "lower_bound", "value", "upper_bound", "type"]
 
@@ -446,7 +448,8 @@ class DesignSpace(collections.abc.MutableMapping):
             if len(array_value) == 1 and size > 1:
                 array_value = full(size, value)
             self.__current_value[name] = array_value.astype(
-                self.__TYPES_TO_DTYPES[self.variables_types[name][0]], copy=False
+                self.__VARIABLE_TYPES_TO_DTYPES[self.variables_types[name][0]],
+                copy=False,
             )
             self._check_current_value(name)
 
@@ -533,7 +536,7 @@ class DesignSpace(collections.abc.MutableMapping):
         normalize = empty(size)
         for i in range(size):
             var_type = variables_types[i]
-            if var_type in self.__TYPES_TO_DTYPES:
+            if var_type in self.__VARIABLE_TYPES_TO_DTYPES:
                 if (
                     self._lower_bounds[name][i] == -inf
                     or self._upper_bounds[name][i] == inf
@@ -1527,7 +1530,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 if isinstance(variable_type, ndarray):
                     variable_type = variable_type[0]
                 if variable_type == DesignVariableType.INTEGER.value:
-                    value = value.astype(self.__TYPES_TO_DTYPES[variable_type])
+                    value = value.astype(self.__VARIABLE_TYPES_TO_DTYPES[variable_type])
                 self.__current_value[name] = value
 
         self.__update_current_metadata()
@@ -2216,3 +2219,45 @@ class DesignSpace(collections.abc.MutableMapping):
             self._current_value,
         ]:
             dictionary[new_name] = dictionary.pop(current_name)
+
+    def initialize_missing_current_values(self) -> None:
+        """Initialize the current values of the design variables when missing.
+
+        Use:
+
+        - the center of the design space when the lower and upper bounds are finite,
+        - the lower bounds when the upper bounds are infinite,
+        - the upper bounds when the lower bounds are infinite,
+        - zero when the lower and upper bounds are infinite.
+        """
+        for name, value in self.items():
+            if value.value is not None:
+                continue
+
+            current_value = []
+            for l_b_i, u_b_i in zip(value.l_b, value.u_b):
+                if l_b_i == -inf:
+                    if u_b_i == inf:
+                        current_value_i = 0
+                    else:
+                        current_value_i = u_b_i
+                else:
+                    if u_b_i == inf:
+                        current_value_i = l_b_i
+                    else:
+                        current_value_i = (l_b_i + u_b_i) / 2
+
+                current_value.append(current_value_i)
+
+            if self.FLOAT.value in value.var_type:
+                var_type = self.FLOAT.value
+            else:
+                var_type = self.INTEGER.value
+
+            self.set_current_variable(
+                name,
+                array(
+                    current_value,
+                    dtype=self.__VARIABLE_TYPES_TO_DTYPES[var_type],
+                ),
+            )

@@ -1,0 +1,2 @@
+:meth:`.DesignSpace.initialize_missing_current_values` sets the missing current design values to default ones.
+:class:`.OptimizationLibrary` initializes the missing design values to default ones before execution.
