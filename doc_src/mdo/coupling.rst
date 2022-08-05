@@ -10,6 +10,8 @@
    Contributors:
           :author:  Matthias De Lozzo
 
+.. _coupling_visualization:
+
 Coupling visualization
 ======================
 

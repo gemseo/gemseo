@@ -21,7 +21,7 @@
 Store observables
 =================
 """
-##############################################################################
+# %%
 # Introduction
 # ------------
 # In this example,
@@ -30,13 +30,13 @@ Store observables
 # This is useful in situations where we wish to access, post-process,
 # or save the values of discipline outputs that are not design variables,
 # constraints or objective functions.
-##############################################################################
+#
 # The Sellar problem
 # ------------------
 # We will consider in this example the Sellar problem:
 #
 # .. include:: /tutorials/_description/sellar_problem_definition.inc
-##############################################################################
+#
 # Imports
 # -------
 # All the imports needed for the tutorials are performed here.
@@ -51,7 +51,7 @@ from numpy import ones
 configure_logger()
 
 
-##############################################################################
+# %%
 # Create the problem disciplines
 # ------------------------------
 # In this section,
@@ -62,7 +62,7 @@ configure_logger()
 # to be used later on.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 
-##############################################################################
+# %%
 # Create and execute the scenario
 # -------------------------------
 #
@@ -76,7 +76,7 @@ design_space.add_variable(
     "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
 )
 
-##############################################################################
+# %%
 # Create the scenario
 # ^^^^^^^^^^^^^^^^^^^
 # In this section,
@@ -86,7 +86,7 @@ scenario = create_scenario(
     disciplines, formulation="MDF", objective_name="obj", design_space=design_space
 )
 
-##############################################################################
+# %%
 # Add the constraints
 # ^^^^^^^^^^^^^^^^^^^
 # Then,
@@ -94,7 +94,7 @@ scenario = create_scenario(
 scenario.add_constraint("c_1", "ineq")
 scenario.add_constraint("c_2", "ineq")
 
-##############################################################################
+# %%
 # Add the observables
 # ^^^^^^^^^^^^^^^^^^^
 # Only the design variables, objective function and constraints are stored by
@@ -105,12 +105,12 @@ scenario.add_constraint("c_2", "ineq")
 # If more than one output name is provided (as a list of strings),
 # the observable function returns a concatenated array of the output values.
 scenario.add_observable("y_1")
-##############################################################################
+# %%
 # It is also possible to add the observable with a custom name,
 # using the option `observable_name`. Let us store the variable `y_2` as `y2`.
 scenario.add_observable("y_2", observable_name="y2")
 
-##############################################################################
+# %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 # Then,
@@ -119,7 +119,7 @@ scenario.add_observable("y_2", observable_name="y2")
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
 scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 
-##############################################################################
+# %%
 # Access the observable variables
 # -------------------------------
 # Retrieve observables from a dataset
@@ -127,31 +127,31 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # In order to create a dataset, we use the
 # corresponding :class:`.OptimizationProblem`:
 opt_problem = scenario.formulation.opt_problem
-##############################################################################
+# %%
 # We can easily build a dataset from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the functions
 # (default option):
 dataset = opt_problem.export_to_dataset("sellar_problem")
 print(dataset)
-##############################################################################
+# %%
 # or by considering all features as default parameters:
 dataset = opt_problem.export_to_dataset("sellar_problem", categorize=False)
 print(dataset)
-##############################################################################
+# %%
 # or by using an input-output naming rather than an optimization naming:
 dataset = opt_problem.export_to_dataset("sellar_problem", opt_naming=False)
 print(dataset)
-##############################################################################
+# %%
 # Access observables by name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the observable data by name,
 # either as a dictionary indexed by the observable names (default option):
 print(dataset.get_data_by_names(["y_1", "y2"]))
-##############################################################################
+# %%
 # or as an array:
 print(dataset.get_data_by_names(["y_1", "y2"], False))
 
-##############################################################################
+# %%
 # Use the observables in a post-processing method
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Finally,
