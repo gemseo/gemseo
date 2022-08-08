@@ -168,7 +168,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             for sample in self.samples:
                 self.problem.database.store(sample, {}, add_iter=True)
 
-        self.init_iter_observer(len(self.unit_samples), " ")
+        self.init_iter_observer(len(self.unit_samples))
         self.problem.add_callback(self.new_iteration_callback)
 
     def _generate_samples(self, **options: Any) -> ndarray:

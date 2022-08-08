@@ -214,7 +214,7 @@ class OptimizationLibrary(DriverLib):
         self._xtol_rel = options.get(self.X_TOL_REL, 0.0)
         self._xtol_abs = options.get(self.X_TOL_ABS, 0.0)
         self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
-        self.init_iter_observer(max_iter, " ")
+        self.init_iter_observer(max_iter)
         problem.add_callback(self.new_iteration_callback)
         # First, evaluate all functions at x_0. Some algorithms don't do this
         self.problem.design_space.initialize_missing_current_values()

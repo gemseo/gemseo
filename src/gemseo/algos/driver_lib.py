@@ -220,7 +220,7 @@ class DriverLib(AlgoLib):
     def init_iter_observer(
         self,
         max_iter: int,
-        message: str,
+        message: str = "...",
     ) -> None:
         """Initialize the iteration observer.
 
@@ -243,7 +243,7 @@ class DriverLib(AlgoLib):
                 total=self.__max_iter,
                 desc=self.__message,
                 ascii=False,
-                bar_format="... {percentage:3.0f}%|{bar}{r_bar}",
+                bar_format="{desc} {percentage:3.0f}%|{bar}{r_bar}",
                 file=TqdmToLogger(),
             )
         else:
