@@ -124,7 +124,7 @@ class PyDOE(DOELibrary):
         levels: Sequence[int] | None = None,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
-        seed: int = 1,
+        seed: int | None = None,
         max_time: float = 0,
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:  # pylint: disable=W0221
@@ -153,6 +153,9 @@ class PyDOE(DOELibrary):
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             seed: The seed value.
+                If ``None``,
+                use the seed of the library,
+                namely :attr:`.PyDOE.seed`.
             max_time: The maximum runtime in seconds, disabled if 0.
             **kwargs: The additional arguments.
 
@@ -209,7 +212,7 @@ class PyDOE(DOELibrary):
         if self.algo_name == self.PYDOE_LHS:
             return pyDOE.lhs(
                 options[self.DIMENSION],
-                random_state=RandomState(options.get(self.SEED, self.seed)),
+                random_state=RandomState(options[self.SEED] or self.seed),
                 samples=options["n_samples"],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),

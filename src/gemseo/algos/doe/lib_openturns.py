@@ -149,7 +149,7 @@ class OpenTURNS(DOELibrary):
         temperature: str = "Geometric",
         annealing: bool = True,
         n_replicates: int = 1000,
-        seed: int = 1,
+        seed: int | None = None,
         max_time: float = 0,
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
@@ -175,6 +175,9 @@ class OpenTURNS(DOELibrary):
                 use crude Monte Carlo.
             n_replicates: The number of Monte Carlo replicates to optimize LHS.
             seed: The seed value.
+                If ``None``,
+                use the seed of the library,
+                namely :attr:`.OpenTURNS.seed`.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
             **kwargs: The additional arguments.
