@@ -12,8 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import logging
+
 import pytest
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -145,3 +148,15 @@ def test_fullfact_error(
 
     with pytest.raises(ValueError, match=error_msg):
         doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
+
+
+def test__compute_fullfact_levels(caplog):
+    """Check the WARNING logged when the number of samples is less than expected."""
+    DOELibrary._compute_fullfact_levels(10, 3)
+    message = (
+        "A full-factorial DOE of 10 samples in dimension 3 does not exist; "
+        "use 8 samples instead, i.e. the largest 3-th integer power less than 10."
+    )
+    _, log_level, log_message = caplog.record_tuples[0]
+    assert log_level == logging.WARNING
+    assert message in log_message

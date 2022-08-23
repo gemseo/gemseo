@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 from sys import platform
 
 import pytest
@@ -201,3 +202,22 @@ def test_transformation(doe_database, var):
     based on inverse transformation sampling.
     """
     assert doe_database[array([var])]["func"] == array([var])
+
+
+def test_pre_run_debug(doe, caplog):
+    """Check a DEBUG message logged just after sampling the input unit hypercube."""
+    caplog.set_level("DEBUG")
+    problem = Power2()
+    doe.execute(problem, "lhs", n_samples=2)
+    message = (
+        "The DOE algorithm lhs of PyDOE has generated 2 samples "
+        "in the input unit hypercube of dimension 3."
+    )
+    message_is_logged = False
+    for (_, log_level, log_message) in caplog.record_tuples:
+        if message in log_message:
+            message_is_logged = True
+            assert log_level == logging.DEBUG
+            break
+
+    assert message_is_logged
