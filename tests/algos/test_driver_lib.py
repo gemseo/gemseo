@@ -47,7 +47,7 @@ def test_max_iter_fail(optimization_problem):
     """Check that a ValueError is raised for an invalid `max_iter` input."""
     MyDriver()._pre_run(optimization_problem, None)
     with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):
-        MyDriver().init_iter_observer(max_iter=-1, message="message")
+        MyDriver().init_iter_observer(max_iter=-1)
 
 
 def test_no_algo_fail():
@@ -110,10 +110,19 @@ def test_new_iteration_callback_xvect(caplog):
     test_driver = DriverLib()
     test_driver.problem = problem
     test_driver._max_time = 0
-    test_driver.init_iter_observer(max_iter=2, message="")
+    test_driver.init_iter_observer(max_iter=2)
     test_driver.new_iteration_callback()
-
     assert "...   0%|" in caplog.text
+
+
+def test_init_iter_observer_message(caplog):
+    """Check the iteration prefix in init_iter_observer."""
+    test_driver = DriverLib()
+    test_driver.problem = Power2()
+    test_driver.init_iter_observer(max_iter=2)
+    assert "...   0%|" in caplog.text
+    test_driver.init_iter_observer(max_iter=2, message="foo")
+    assert "foo   0%|" in caplog.text
 
 
 @pytest.mark.parametrize("activate_progress_bar", [False, True])
