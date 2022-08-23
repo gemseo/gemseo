@@ -1053,18 +1053,21 @@ def create_scenario(
         disciplines: The disciplines
             used to compute the objective, constraints and observables
             from the design variables.
-        formulation: The name of the MDO formulation,
-            also the name of a class inheriting from :class:`.MDOFormulation`.
-        objective_name: The name of the objective.
-        design_space: The design space.
+        formulation: The class name of the :class:`.MDOFormulation`,
+            e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
+        objective_name: The name(s) of the discipline output(s) used as objective.
+            If multiple names are passed, the objective will be a vector.
+        design_space: The search space including at least the design variables
+            (some formulations requires additional variables,
+            e.g. :class:`.IDF` with the coupling variables).
         name: The name to be given to this scenario.
-            If None, use the name of the class.
-        scenario_type: The type of the scenario, e.g. "MDO" or "DOE".
-        grammar_type: The type of grammar to use for IO declaration,
-            e.g. "JSONGrammar" or "SimpleGrammar".
+            If ``None``, use the name of the class.
+        scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
+        grammar_type: The type of grammar to declare the input and output variables
+            either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
+            or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
         maximize_objective: Whether to maximize the objective.
-        **options: The options
-            to be passed to the :class:`.MDOFormulation`.
+        **formulation_options: The options of the :class:`.MDOFormulation`.
 
     Examples
     --------
@@ -1098,7 +1101,7 @@ def create_scenario(
             formulation,
             objective_name,
             design_space,
-            name,
+            name=name,
             grammar_type=grammar_type,
             maximize_objective=maximize_objective,
             **options,

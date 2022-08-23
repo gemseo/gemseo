@@ -1,0 +1,1 @@
+:class:`.Scenario` offers an keyword argument ``maximize_objective``, previously passed implicitly with ``**formulation_options``.
