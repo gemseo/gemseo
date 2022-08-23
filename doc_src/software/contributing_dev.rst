@@ -350,8 +350,7 @@ Initial setup
 * Go to the directory of your fork.
 * Add the reference upstream repository to you fork with:
 
-  * :command:`git remote add upstream`
-  * :command:`git@gitlab.com:gemseo/dev/gemseo.git`
+  * :command:`git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git`
 
 * Get access to the IRT CI:
 
