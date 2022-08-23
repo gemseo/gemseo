@@ -62,25 +62,9 @@ class MDOScenario(Scenario):
         design_space: DesignSpace,
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
-        """
-        Args:
-            disciplines: The disciplines
-                used to compute the objective, constraints and observables
-                from the design variables.
-            formulation: The name of the MDO formulation,
-                also the name of a class inheriting from :class:`.MDOFormulation`.
-            objective_name: The name of the objective.
-                If a sequence is passed, a vector objective function is created.
-            design_space: The design space.
-            name: The name to be given to this scenario.
-                If None, use the name of the class.
-            grammar_type: The type of grammar to use for IO declaration
-                , e.g. JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE.
-            **formulation_options: The options
-                to be passed to the :class:`.MDOFormulation`.
-        """
         # This loads the right json grammars from class name
         super().__init__(
             disciplines,
@@ -89,6 +73,7 @@ class MDOScenario(Scenario):
             design_space,
             name=name,
             grammar_type=grammar_type,
+            maximize_objective=maximize_objective,
             **formulation_options,
         )
 
