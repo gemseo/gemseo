@@ -148,6 +148,16 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
         self.unit_samples = self._generate_samples(**options)
+        LOGGER.debug(
+            (
+                "The DOE algorithm %s of %s has generated %s samples "
+                "in the input unit hypercube of dimension %s."
+            ),
+            self.algo_name,
+            self.__class__.__name__,
+            len(self.unit_samples),
+            self.unit_samples.shape[1],
+        )
         self.samples = self.problem.design_space.untransform_vect(
             self.unit_samples, no_check=True
         )
@@ -257,7 +267,8 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def _compute_fullfact_levels(self, n_samples: int, dimension: int) -> list[int]:
+    @staticmethod
+    def _compute_fullfact_levels(n_samples: int, dimension: int) -> list[int]:
         """Compute the number of levels per input dimension for a full factorial design.
 
         Args:
@@ -268,18 +279,20 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             The number of levels per input dimension.
         """
         n_samples_dir = int(n_samples ** (1.0 / dimension))
-        LOGGER.info(
-            "Full factorial design required. Number of samples along each"
-            " direction for a design vector of size %s with %s samples: %s",
-            str(dimension),
-            str(n_samples),
-            str(n_samples_dir),
-        )
-        LOGGER.info(
-            "Final number of samples for DOE = %s vs %s requested",
-            str(n_samples_dir**dimension),
-            str(n_samples),
-        )
+        final_n_samples = n_samples_dir**dimension
+        if final_n_samples != n_samples:
+            LOGGER.warning(
+                (
+                    "A full-factorial DOE of %s samples in dimension %s does not exist;"
+                    " use %s samples instead, "
+                    "i.e. the largest %s-th integer power less than %s."
+                ),
+                n_samples,
+                dimension,
+                final_n_samples,
+                dimension,
+                n_samples,
+            )
         return [n_samples_dir] * dimension
 
     def export_samples(self, doe_output_file: Path | str) -> None:
