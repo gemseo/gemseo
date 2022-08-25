@@ -76,7 +76,7 @@ class TestNLOPT(TestCase):
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizersFactory().execute(problem, "NLOPT_COBYLA")
 
-    def test_xtol_ftol_activation(self):
+    def test_tolerance_activation(self):
         def run_pb(algo_options):
             design_space = DesignSpace()
             design_space.add_variable("x1", 2, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
@@ -93,8 +93,16 @@ class TestNLOPT(TestCase):
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
-            # Check that the criteria is activated as ap
+            # Check that the criterion is activated asap
             assert len(pb.database) == 3
+        for tol_name in (
+            OptLib._OptimizationLibrary__KKT_TOL_ABS,
+            OptLib._OptimizationLibrary__KKT_TOL_REL,
+        ):
+            res, pb = run_pb({tol_name: 1e10})
+            assert tol_name in res.message
+            # Check that the KKT criterion is activated asap
+            assert len(pb.database) == 2
 
 
 def test_cast_to_float():

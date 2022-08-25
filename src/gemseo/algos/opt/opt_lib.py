@@ -28,6 +28,9 @@ from numpy import ndarray
 
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
+from gemseo.algos.first_order_stop_criteria import kkt_residual_computation
+from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import is_f_tol_reached
@@ -78,6 +81,8 @@ class OptimizationLibrary(DriverLib):
     F_TOL_ABS = "ftol_abs"
     X_TOL_REL = "xtol_rel"
     X_TOL_ABS = "xtol_abs"
+    __KKT_TOL_ABS = "kkt_tol_abs"
+    __KKT_TOL_REL = "kkt_tol_rel"
     STOP_CRIT_NX = "stop_crit_n_x"
     # Maximum step for the line search
     LS_STEP_SIZE_MAX = "max_ls_step_size"
@@ -94,6 +99,9 @@ class OptimizationLibrary(DriverLib):
         self._ftol_abs = 0.0
         self._xtol_rel = 0.0
         self._xtol_abs = 0.0
+        self.__kkt_abs_tol = 0.0
+        self.__kkt_rel_tol = 0.0
+        self.__ref_kkt_norm = None
         self._stop_crit_n_x = 3
 
     def __algorithm_handles(self, algo_name: str, eq_constraint: bool):
@@ -213,7 +221,10 @@ class OptimizationLibrary(DriverLib):
         self._ftol_abs = options.get(self.F_TOL_ABS, 0.0)
         self._xtol_rel = options.get(self.X_TOL_REL, 0.0)
         self._xtol_abs = options.get(self.X_TOL_ABS, 0.0)
+        self.__ineq_tolerance = options.get(self.INEQ_TOLERANCE, problem.ineq_tolerance)
         self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
+        self.__kkt_abs_tol = options.get(self.__KKT_TOL_ABS, 0.0)
+        self.__kkt_rel_tol = options.get(self.__KKT_TOL_REL, 0.0)
         self.init_iter_observer(max_iter)
         problem.add_callback(self.new_iteration_callback)
         # First, evaluate all functions at x_0. Some algorithms don't do this
@@ -267,6 +278,7 @@ class OptimizationLibrary(DriverLib):
                 tolerance is reached.
             XtolReached: If the defined relative or absolute x tolerance
                 is reached.
+            KKTReached: If the absolute tolerance on the KKT residual is reached.
         """
         # First check if the max_iter is reached and update the progress bar
         super().new_iteration_callback(x_vect)
@@ -274,7 +286,37 @@ class OptimizationLibrary(DriverLib):
             self.problem, self._ftol_rel, self._ftol_abs, self._stop_crit_n_x
         ):
             raise FtolReached()
+
         if is_x_tol_reached(
             self.problem, self._xtol_rel, self._xtol_abs, self._stop_crit_n_x
         ):
             raise XtolReached()
+
+        if self.descriptions[self.algo_name].require_gradient:
+            check_kkt = True
+            function_names = [self.problem.get_objective_name()]
+            function_names.extend(self.problem.get_constraints_names())
+            database = self.problem.database
+            for function_name in function_names:
+                if (
+                    database.get_f_of_x(
+                        database.get_gradient_name(function_name), x_vect
+                    )
+                    is None
+                ):
+                    check_kkt = False
+                    break
+            if check_kkt and (self.__ref_kkt_norm is None):
+                self.__ref_kkt_norm = kkt_residual_computation(
+                    self.problem, x_vect, self.__ineq_tolerance
+                )
+
+            if check_kkt and is_kkt_residual_norm_reached(
+                self.problem,
+                x_vect,
+                kkt_abs_tol=self.__kkt_abs_tol,
+                kkt_rel_tol=self.__kkt_rel_tol,
+                ineq_tolerance=self.__ineq_tolerance,
+                reference_residual=self.__ref_kkt_norm,
+            ):
+                raise KKTReached()

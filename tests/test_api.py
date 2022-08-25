@@ -144,7 +144,7 @@ def test_get_algorithm_options_schema(tmp_wd):
     """
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 10
+    assert len(schema_dict["properties"]) == 12
 
     schema_json = get_algorithm_options_schema("SLSQP", output_json=True)
     out_dict = json.loads(schema_json)

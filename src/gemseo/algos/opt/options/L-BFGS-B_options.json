@@ -42,6 +42,14 @@
         "max_iter":{
             "type": "integer",
             "minimum": 1
+        },
+        "kkt_tol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "kkt_tol_rel": {
+            "type": "number",
+            "minimum": 0.0
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",
