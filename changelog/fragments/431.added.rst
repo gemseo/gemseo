@@ -1,0 +1,1 @@
+:class:`.Timer` can be used as a context manager to measure the time spent within a ``with`` statement.
