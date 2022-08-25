@@ -228,6 +228,8 @@ class Nlopt(OptimizationLibrary):
         eq_tolerance: float = 1e-2,
         ineq_tolerance: float = 1e-4,
         init_step: float = 0.25,
+        kkt_tol_abs: float = 0.0,
+        kkt_tol_rel: float = 0.0,
         **kwargs: Any,
     ) -> dict[str, NLoptOptionsType]:
         r"""Retrieve the options of the Nlopt library.
@@ -244,6 +246,8 @@ class Nlopt(OptimizationLibrary):
                 Stop minimizing when an objective value :math:`\leq` stopval is
                 found, or stop maximizing when a value :math:`\geq` stopval
                 is found. If None, this termination condition will not be active.
+            kkt_tol_abs: The absolute tolerance on the KKT residual norm.
+            kkt_tol_rel: The relative tolerance on the KKT residual norm.
             normalize_design_space: If True, normalize the design variables between 0 and 1.
             eq_tolerance: The tolerance on the equality constraints.
             ineq_tolerance: The tolerance on the inequality constraints.
@@ -271,6 +275,8 @@ class Nlopt(OptimizationLibrary):
             eq_tolerance=eq_tolerance,
             ineq_tolerance=ineq_tolerance,
             init_step=init_step,
+            kkt_tol_abs=kkt_tol_abs,
+            kkt_tol_rel=kkt_tol_rel,
             **kwargs,
         )
 

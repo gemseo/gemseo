@@ -51,19 +51,6 @@ def problem() -> Power2:
     return Power2()
 
 
-def test_lagrange_notanoptproblem():
-    with pytest.raises(
-        ValueError,
-        match=("LagrangeMultipliers must be initialized with an OptimizationProblem."),
-    ):
-        LagrangeMultipliers("not_a_problem")
-
-
-def test_lagrange_solutionisnone(problem):
-    with pytest.raises(ValueError, match="The optimization problem was not solved."):
-        LagrangeMultipliers(problem)
-
-
 @pytest.mark.parametrize("upper_bound", [False, True])
 def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))

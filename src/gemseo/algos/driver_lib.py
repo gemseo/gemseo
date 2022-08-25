@@ -56,6 +56,7 @@ from tqdm.utils import disp_len
 from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -512,6 +513,11 @@ class DriverLib(AlgoLib):
                 message += "are closer than ftol_rel or ftol_abs."
             elif isinstance(error, MaxTimeReached):
                 message = f"Maximum time reached: {self._max_time} seconds."
+            elif isinstance(error, KKTReached):
+                message = (
+                    "The KKT residual norm is smaller than the tolerance "
+                    "kkt_tol_abs or kkt_tol_rel."
+                )
             message += " GEMSEO Stopped the driver"
         else:
             message = error.args[0]
