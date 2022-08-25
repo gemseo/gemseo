@@ -95,6 +95,7 @@ to be carefully tuned in order to maximize the generalization power of the model
 """
 from __future__ import annotations
 
+import inspect
 import logging
 import pickle
 from copy import deepcopy
@@ -376,3 +377,15 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
             "_trained": self._trained,
         }
         return objects
+
+    def _check_is_trained(self) -> None:
+        """Check if the algorithm is trained.
+
+        Raises:
+            RuntimeError: If the algorithm is not trained.
+        """
+        if not self.is_trained:
+            raise RuntimeError(
+                f"The {self.__class__.__name__} must be trained "
+                f"to access {inspect.stack()[1].function}."
+            )

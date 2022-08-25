@@ -1,0 +1,1 @@
+The :class:`.PCERegressor` has new properties related to the PCE output, namely its :attr:`~.PCERegressor.mean`, :attr:`~.PCERegressor.covariance`, :attr:`~.PCERegressor.variance` and :attr:`~.PCERegressor.standard_deviation`.
