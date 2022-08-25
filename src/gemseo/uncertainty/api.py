@@ -227,3 +227,6 @@ def create_sensitivity_analysis(
     name = name[0].upper() + name[1:]
 
     return factory.create(name, disciplines, parameter_space, **options)
+
+
+load_sensitivity_analysis = SensitivityAnalysis.load

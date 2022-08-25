@@ -25,10 +25,12 @@ from gemseo.uncertainty.api import create_sensitivity_analysis
 from gemseo.uncertainty.api import create_statistics
 from gemseo.uncertainty.api import get_available_distributions
 from gemseo.uncertainty.api import get_available_sensitivity_analyses
+from gemseo.uncertainty.api import load_sensitivity_analysis
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from numpy import pi
 from numpy.random import normal
+from numpy.testing import assert_equal
 
 
 def test_available_distribution():
@@ -74,3 +76,23 @@ def test_create_statistics():
     assert isinstance(stat, EmpiricalStatistics)
     stat = create_statistics(dataset, tested_distributions=["Normal", "Exponential"])
     assert isinstance(stat, ParametricStatistics)
+
+
+def test_load_sensitivity_analysis(tmp_wd):
+    discipline = AnalyticDiscipline(
+        {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
+    )
+    space = ParameterSpace()
+    for variable in ["x1", "x2", "x3"]:
+        space.add_random_variable(
+            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+        )
+    analysis = create_sensitivity_analysis(
+        "SobolAnalysis", [discipline], space, n_samples=1000
+    )
+    analysis.save("foo.pkl")
+
+    new_analysis = load_sensitivity_analysis("foo.pkl")
+    assert new_analysis.__class__.__name__ == new_analysis.__class__.__name__
+    assert_equal(new_analysis.dataset.data, analysis.dataset.data)
+    assert new_analysis.default_output == analysis.default_output

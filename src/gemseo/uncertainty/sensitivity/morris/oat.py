@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from typing import ClassVar
 from typing import Mapping
 
 from numpy import array
@@ -75,7 +76,8 @@ class _OATSensitivity(MDODiscipline):
     of a :class:`.DOEScenario`.
     """
 
-    _PREFIX = "fd"
+    _PREFIX: ClassVar[str] = "fd"
+    __SEPARATOR: ClassVar[str] = "!"
 
     def __init__(
         self,
@@ -177,10 +179,8 @@ class _OATSensitivity(MDODiscipline):
 
             previous_data = new_data
 
-    @staticmethod
-    def get_io_names(
-        fd_name: str,
-    ) -> tuple[str, str]:
+    @classmethod
+    def get_io_names(cls, fd_name: str) -> list[str, str]:
         """Get the output and input names from finite difference name.
 
         Args:
@@ -189,14 +189,9 @@ class _OATSensitivity(MDODiscipline):
         Returns:
             The output name, then the input name.
         """
-        split_name = fd_name.split("!")
-        return split_name[1], split_name[2]
+        return fd_name.split(cls.__SEPARATOR)[1:3]
 
-    def get_fd_name(
-        self,
-        input_name: str,
-        output_name: str,
-    ) -> str:
+    def get_fd_name(self, input_name: str, output_name: str) -> str:
         """Return the output name associated to an input name.
 
         Args:
@@ -206,7 +201,7 @@ class _OATSensitivity(MDODiscipline):
         Returns:
             The finite difference name.
         """
-        return f"{self._PREFIX}!{output_name}!{input_name}"
+        return self.__SEPARATOR.join([self._PREFIX, output_name, input_name])
 
     def __update_inputs(
         self,

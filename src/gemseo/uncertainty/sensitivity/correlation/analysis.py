@@ -106,13 +106,23 @@ class CorrelationAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
+        output_names: Iterable[str] | None = None,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
         self.__correlation = None
-        super().__init__(disciplines, parameter_space, n_samples)
+        super().__init__(
+            disciplines,
+            parameter_space,
+            n_samples=n_samples,
+            output_names=output_names,
+            algo=algo,
+            algo_options=algo_options,
+            formulation=formulation,
+            **formulation_options,
+        )
         self.main_method = self._SPEARMAN
 
     @SensitivityAnalysis.main_method.setter

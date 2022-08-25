@@ -21,17 +21,23 @@ import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from numpy.testing import assert_equal
 
 
-def test_correlation(tmp_path):
-    expressions = {"y1": "x1+2*x2", "y2": "x1-2*x2"}
-    varnames = ["x1", "x2"]
-    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
+@pytest.fixture
+def correlation() -> CorrelationAnalysis:
+    """A correlation analysis."""
+    discipline = create_discipline(
+        "AnalyticDiscipline", expressions={"y1": "x1+2*x2", "y2": "x1-2*x2"}
+    )
     space = ParameterSpace()
-    for name in varnames:
+    for name in ["x1", "x2"]:
         space.add_random_variable(name, "OTNormalDistribution")
+    return CorrelationAnalysis([discipline], space, 100)
 
-    correlation = CorrelationAnalysis([discipline], space, 100)
+
+def test_correlation(correlation, tmp_path):
+    varnames = ["x1", "x2"]
     correlation.compute_indices()
     indices = correlation.indices
     assert set(indices.keys()) == set(correlation._ALGORITHMS.keys())
@@ -68,3 +74,13 @@ def test_correlation_outputs(tmp_path):
     correlation = CorrelationAnalysis([discipline], space, 100)
     correlation.compute_indices("y1")
     assert {"y1"} == set(correlation.main_indices.keys())
+
+
+def test_save_load(correlation, tmp_wd):
+    """Check saving and loading a CorrelationAnalysis."""
+    correlation.save("foo.pkl")
+    new_correlation = CorrelationAnalysis.load("foo.pkl")
+    correlation.compute_indices()
+    new_correlation.compute_indices()
+    assert_equal(new_correlation.dataset.data, correlation.dataset.data)
+    assert new_correlation.default_output == correlation.default_output
