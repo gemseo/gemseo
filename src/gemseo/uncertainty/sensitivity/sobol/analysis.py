@@ -99,6 +99,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 from typing import Collection
 from typing import Iterable
 from typing import Mapping
@@ -171,11 +172,23 @@ class SobolAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
+        output_names: Iterable[str] | None = None,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        formulation: str = "MDF",
+        **formulation_options: Any,
     ) -> None:
         self.__sobol = None
-        super().__init__(disciplines, parameter_space, n_samples)
+        super().__init__(
+            disciplines,
+            parameter_space,
+            n_samples=n_samples,
+            output_names=output_names,
+            algo=algo,
+            algo_options=algo_options,
+            formulation=formulation,
+            **formulation_options,
+        )
         self.main_method = self._FIRST
 
     @SensitivityAnalysis.main_method.setter

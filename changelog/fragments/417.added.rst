@@ -1,0 +1,2 @@
+A :class:`.SensitivityAnalysis` can be saved on the disk (use :meth:`~.SensitivityAnalysis.save` and :meth:`~.SensitivityAnalysis.load`).
+A :class:`.SensitivityAnalysis` can be loaded from the disk with the function :func:`.load_sensitivity_analysis`.

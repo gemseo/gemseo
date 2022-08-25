@@ -226,6 +226,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None,
+        output_names: Iterable[str] | None = None,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
         n_replicates: int = 5,
@@ -248,12 +249,12 @@ class MorrisAnalysis(SensitivityAnalysis):
         if parameter_space.dimension != len(parameter_space.variables_names):
             raise ValueError("Each input dimension must be equal to 1.")
 
-        self.mu_ = None
-        self.mu_star = None
-        self.sigma = None
-        self.relative_sigma = None
-        self.min = None
-        self.max = None
+        self.mu_ = {}
+        self.mu_star = {}
+        self.sigma = {}
+        self.relative_sigma = {}
+        self.min = {}
+        self.max = {}
         self.__step = step
         if n_samples is None:
             self.__n_replicates = n_replicates
@@ -261,27 +262,33 @@ class MorrisAnalysis(SensitivityAnalysis):
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
 
         disciplines = list(disciplines)
-        self.__outputs = get_all_outputs(disciplines)
+        if not output_names:
+            output_names = get_all_outputs(disciplines)
 
         scenario = self._create_scenario(
             disciplines,
-            get_all_outputs(disciplines)[0],
+            output_names,
             formulation,
             formulation_options,
             parameter_space,
         )
 
-        self.__diff_discipline = _OATSensitivity(scenario, parameter_space, step)
+        discipline = _OATSensitivity(scenario, parameter_space, step)
         super().__init__(
-            [self.__diff_discipline], parameter_space, n_replicates, algo, algo_options
+            [discipline],
+            parameter_space,
+            n_samples=n_replicates,
+            algo=algo,
+            algo_options=algo_options,
         )
         self._main_method = "Morris(mu*)"
-        self.default_output = get_all_outputs(disciplines)
+        self.__outputs_bounds = discipline.output_range
+        self.default_output = output_names
 
     @property
     def outputs_bounds(self) -> dict[str, list[float]]:
         """The empirical bounds of the outputs."""
-        return self.__diff_discipline.output_range
+        return self.__outputs_bounds
 
     @property
     def n_replicates(self) -> int:
@@ -309,7 +316,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         self.min = {name: {} for name in output_names}
         self.max = {name: {} for name in output_names}
         for fd_name, value in fd_data.items():
-            output_name, input_name = self.__diff_discipline.get_io_names(fd_name)
+            output_name, input_name = _OATSensitivity.get_io_names(fd_name)
             if output_name in output_names:
                 lower = self.outputs_bounds[output_name][0]
                 upper = self.outputs_bounds[output_name][1]

@@ -31,6 +31,7 @@ inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 from __future__ import annotations
 
 import logging
+import pickle
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -103,7 +104,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None = None,
-        output_names: Iterable[str] = None,
+        output_names: Iterable[str] | None = None,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
         formulation: str = "MDF",
@@ -124,26 +125,44 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             **formulation_options: The options of the :class:`.MDOFormulation`.
         """
         disciplines = list(disciplines)
-
         self._algo_name = algo or self.DEFAULT_DRIVER
-        self.default_output = output_names or get_all_outputs(disciplines)
-        algo_options = algo_options or {}
-        formulation_options = formulation_options or {}
-
+        self._output_names = output_names or get_all_outputs(disciplines)
+        self.default_output = self._output_names
         self.dataset = self.__sample_disciplines(
             disciplines,
             parameter_space,
             n_samples,
-            algo_options,
+            algo_options or {},
             formulation,
-            **formulation_options,
+            **(formulation_options or {}),
         ).export_to_dataset(opt_naming=False)
-
         self._main_method = self.__class__.__name__
-        default_name = FilePathManager.to_snake_case(self.__class__.__name__)
         self._file_path_manager = FilePathManager(
-            FileType.FIGURE, default_name=default_name
+            FileType.FIGURE,
+            default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
+
+    def save(self, file_path: str | Path) -> None:
+        """Save the current sensitivity analysis on the disk.
+
+        Args:
+            file_path: The path to the file.
+        """
+        with Path(file_path).open("wb") as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(file_path: str | Path) -> SensitivityAnalysis:
+        """Load a sensitivity analysis from the disk.
+
+        Args:
+            file_path: The path to the file.
+
+        Returns:
+            The sensitivity analysis.
+        """
+        with Path(file_path).open("rb") as f:
+            return pickle.load(f)
 
     def __sample_disciplines(
         self,
@@ -170,12 +189,11 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         """
         scenario = self._create_scenario(
             disciplines,
-            self.default_output[0],
+            self._output_names,
             formulation,
             formulation_options,
             parameter_space,
         )
-
         scenario.execute(
             {
                 "algo": self._algo_name,
@@ -185,10 +203,10 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         )
         return scenario
 
+    @staticmethod
     def _create_scenario(
-        self,
         disciplines: Iterable[MDODiscipline],
-        objective_name: str,
+        observable_names: Sequence[str],
         formulation: str,
         formulation_options: Mapping[str, Any],
         parameter_space: ParameterSpace,
@@ -197,7 +215,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             disciplines: The disciplines to sample.
-            objective_name: The name of the objective for the DOE.
+            observable_names: The names of the observables.
             formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
             formulation_options: The options of the :class:`.MDOFormulation`.
             parameter_space: A parameter space.
@@ -208,13 +226,13 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         scenario = DOEScenario(
             disciplines,
             formulation,
-            objective_name,
+            observable_names[0],
             parameter_space,
             **formulation_options,
         )
         for discipline in disciplines:
             for output_name in discipline.get_output_data_names():
-                if output_name != objective_name:
+                if output_name in observable_names[1:]:
                     scenario.add_observable(output_name)
         return scenario
 
