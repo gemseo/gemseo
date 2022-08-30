@@ -1505,3 +1505,26 @@ def test_observable_cannot_be_added_twice(caplog):
     assert "WARNING" in caplog.text
     assert 'The optimization problem already observes "obs".' in caplog.text
     assert len(problem.observables) == 1
+
+
+def test_repr_constraint_linear_lower_ineq():
+    """Check the representation of a linear lower inequality-constraint."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOLinearFunction(array([1, 2]), "f")
+    problem.add_ineq_constraint(
+        MDOLinearFunction(
+            array([[0, 1], [2, 3], [4, 5]]), "g", value_at_zero=array([6, 7, 8])
+        ),
+        positive=True,
+    )
+    assert str(problem) == (
+        """Optimization problem:
+   minimize f(x!0, x!1) = x!0 + 2.00e+00*x!1
+   with respect to x
+   subject to constraints:
+      g(x!0, x!1): [ 0.00e+00  1.00e+00][x!0] + [ 6.00e+00] >= 0.0
+                   [ 2.00e+00  3.00e+00][x!1]   [ 7.00e+00]
+                   [ 4.00e+00  5.00e+00]        [ 8.00e+00]"""
+    )

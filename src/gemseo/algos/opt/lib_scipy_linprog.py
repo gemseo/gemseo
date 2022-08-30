@@ -217,7 +217,7 @@ class ScipyLinprog(OptimizationLibrary):
             normalize=False,
             no_db_no_norm=True,
         )
-        f_opt = val_opt[self.problem.objective.outvars[0]]
+        f_opt = val_opt[self.problem.objective.name]
         constraints_values = {
             key: val_opt[key] for key in self.problem.get_constraints_names()
         }
