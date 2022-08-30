@@ -1873,16 +1873,20 @@ class MDOLinearFunction(MDOFunction):
         f_type: str | None = None,
         args: Sequence[str] | None = None,
         value_at_zero: ndarray | Number = 0.0,
+        output_names: Sequence[str] | None = None,
     ):
         """
         Args:
             coefficients: The coefficients :math:`A` of the linear function.
             name: The name of the linear function.
-            f_type: The type of the linear function among :attr:`.MDOFunction.AVAILABLE_TYPES`.
-                If None, the linear function will have no type.
+            f_type: The type of the linear function among
+                :attr:`.MDOFunction.AVAILABLE_TYPES`.
+                If ``None``, the linear function will have no type.
             args: The names of the inputs of the linear function.
                 If None, the inputs of the linear function will have no names.
             value_at_zero: The value :math:`b` of the linear function output at zero.
+            output_names: The names of the outputs of the function.
+                If ``None``, the outputs of the function will have no names.
         """
         # Format the passed coefficients and value at zero
         self.coefficients = coefficients
@@ -1906,7 +1910,7 @@ class MDOLinearFunction(MDOFunction):
             expr=expr,
             args=new_args,
             dim=output_dim,
-            outvars=[name],
+            outvars=output_names,
         )
 
     def __fun(self, x_vect: ndarray) -> ndarray:
