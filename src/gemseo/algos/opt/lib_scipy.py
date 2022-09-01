@@ -133,8 +133,8 @@ class ScipyOpt(OptimizationLibrary):
         scale: float | None = None,
         rescale: float = -1,
         offset: float | None = None,
-        kkt_tol_abs: float = 0.0,
-        kkt_tol_rel: float = 0.0,
+        kkt_tol_abs: float | None = None,
+        kkt_tol_rel: float | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         r"""Set the options default values.
@@ -184,7 +184,9 @@ class ScipyOpt(OptimizationLibrary):
             offset: Value to subtract from each variable. If None, the offsets are
                 (up+low)/2 for interval bounded variables and x for the others.
             kkt_tol_abs: The absolute tolerance on the KKT residual norm.
+                If ``None`` this criterion is not activated.
             kkt_tol_rel: The relative tolerance on the KKT residual norm.
+                If ``None`` this criterion is not activated.
             **kwargs: The other algorithm options.
         """
         nds = normalize_design_space

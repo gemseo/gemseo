@@ -53,11 +53,11 @@
             "minimum": 0
         },
         "kkt_tol_abs": {
-            "type": "number",
+            "type": ["null","number"],
             "minimum": 0.0
         },
         "kkt_tol_rel": {
-            "type": "number",
+            "type": ["null","number"],
             "minimum": 0.0
         }
     },

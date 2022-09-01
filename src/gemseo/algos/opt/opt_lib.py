@@ -223,8 +223,8 @@ class OptimizationLibrary(DriverLib):
         self._xtol_abs = options.get(self.X_TOL_ABS, 0.0)
         self.__ineq_tolerance = options.get(self.INEQ_TOLERANCE, problem.ineq_tolerance)
         self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
-        self.__kkt_abs_tol = options.get(self.__KKT_TOL_ABS, 0.0)
-        self.__kkt_rel_tol = options.get(self.__KKT_TOL_REL, 0.0)
+        self.__kkt_abs_tol = options.get(self.__KKT_TOL_ABS, None)
+        self.__kkt_rel_tol = options.get(self.__KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
         problem.add_callback(self.new_iteration_callback)
         # First, evaluate all functions at x_0. Some algorithms don't do this
@@ -292,31 +292,33 @@ class OptimizationLibrary(DriverLib):
         ):
             raise XtolReached()
 
-        if self.descriptions[self.algo_name].require_gradient:
-            check_kkt = True
-            function_names = [self.problem.get_objective_name()]
-            function_names.extend(self.problem.get_constraints_names())
-            database = self.problem.database
-            for function_name in function_names:
-                if (
-                    database.get_f_of_x(
-                        database.get_gradient_name(function_name), x_vect
+        if self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None:
+            if self.descriptions[self.algo_name].require_gradient:
+                check_kkt = True
+                function_names = [
+                    self.problem.get_objective_name()
+                ] + self.problem.get_constraints_names()
+                database = self.problem.database
+                for function_name in function_names:
+                    if (
+                        database.get_f_of_x(
+                            database.get_gradient_name(function_name), x_vect
+                        )
+                        is None
+                    ):
+                        check_kkt = False
+                        break
+                if check_kkt and (self.__ref_kkt_norm is None):
+                    self.__ref_kkt_norm = kkt_residual_computation(
+                        self.problem, x_vect, self.__ineq_tolerance
                     )
-                    is None
-                ):
-                    check_kkt = False
-                    break
-            if check_kkt and (self.__ref_kkt_norm is None):
-                self.__ref_kkt_norm = kkt_residual_computation(
-                    self.problem, x_vect, self.__ineq_tolerance
-                )
 
-            if check_kkt and is_kkt_residual_norm_reached(
-                self.problem,
-                x_vect,
-                kkt_abs_tol=self.__kkt_abs_tol,
-                kkt_rel_tol=self.__kkt_rel_tol,
-                ineq_tolerance=self.__ineq_tolerance,
-                reference_residual=self.__ref_kkt_norm,
-            ):
-                raise KKTReached()
+                if check_kkt and is_kkt_residual_norm_reached(
+                    self.problem,
+                    x_vect,
+                    kkt_abs_tol=self.__kkt_abs_tol,
+                    kkt_rel_tol=self.__kkt_rel_tol,
+                    ineq_tolerance=self.__ineq_tolerance,
+                    reference_residual=self.__ref_kkt_norm,
+                ):
+                    raise KKTReached()
