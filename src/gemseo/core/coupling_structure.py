@@ -185,14 +185,11 @@ class MDOCouplingStructure:
             self._compute_strong_couplings()
         return self._strong_couplings
 
-    def _compute_strong_couplings(self) -> list[str]:
+    def _compute_strong_couplings(self) -> None:
         """Determine the strong couplings.
 
-        These are the outputs of the strongly coupled disciplines
-        that are also inputs of the strongly coupled disciplines.
-
-        Returns:
-            The names of the strongly coupling variables.
+        These are the outputs of the strongly coupled disciplines that are also inputs
+        of the strongly coupled disciplines.
         """
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline
@@ -346,18 +343,32 @@ class MDOCouplingStructure:
         axe.tick_params(axis="y", direction="in")
         fig.tight_layout()
 
+        self_coupling = {}
+        for discipline in self.disciplines:
+            coupling_names = set(discipline.input_grammar.names).intersection(
+                discipline.output_grammar.names
+            )
+            if coupling_names:
+                self_coupling[discipline] = sorted(coupling_names)
+
         for discipline_index, discipline in enumerate(self.disciplines):
             x_1 = discipline_index
             x_2 = discipline_index + 1
             y_1 = n_disciplines - discipline_index
             y_2 = n_disciplines - discipline_index - 1
-            plt.fill(
-                [x_1, x_1, x_2, x_2], [y_1, y_2, y_2, y_1], "limegreen", alpha=0.45
-            )
+            color = "limegreen"
+            self_coupling_variables = self_coupling.get(discipline, [])
+            if self_coupling_variables:
+                color = "royalblue"
+
+            if not show_data_names:
+                self_coupling_variables = []
+
+            plt.fill([x_1, x_1, x_2, x_2], [y_1, y_2, y_2, y_1], color, alpha=0.45)
             discipline_name = plt.text(
                 discipline_index + 0.5,
                 n_disciplines - discipline_index - 0.5,
-                discipline.name,
+                "\n\n".join([discipline.name] + self_coupling_variables),
                 verticalalignment="center",
                 horizontalalignment="center",
             )
@@ -395,9 +406,19 @@ class MDOCouplingStructure:
         and
         displaying information on disciplines or couplings.
 
+        The disciplines are located on the diagonal of the chart
+        while the coupling variables are situated on the other blocks
+        of the matrix view.
+        A coupling variable is outputted by a discipline horizontally
+        and enters another vertically.
+        On the static chart,
+        a blue diagonal block represent a self-coupled discipline,
+        i.e. a discipline having some of its outputs as inputs.
+
         Args:
             file_path: The file path to save the static N2 chart.
-            show_data_names: Whether to show the names of the coupling data ;
+            show_data_names: Whether to show the names of the coupling variables
+                between two disciplines;
                 otherwise,
                 circles are drawn,
                 whose size depends on the number of coupling names.
@@ -413,7 +434,14 @@ class MDOCouplingStructure:
             raise ValueError("N2 diagrams need at least two disciplines.")
 
         html_file_path = Path(file_path).parent / "n2.html"
-        N2HTML(html_file_path, open_browser).from_graph(self.graph)
+        self_coupled_discipline = [
+            discipline.name
+            for discipline in self.disciplines
+            if self.is_self_coupled(discipline)
+        ]
+        N2HTML(html_file_path, open_browser).from_graph(
+            self.graph, self_coupled_discipline
+        )
 
         if save or show:
             self.__draw_n2_chart(file_path, show_data_names, save, show, fig_size)
@@ -486,6 +514,6 @@ class MDOCouplingStructure:
                         n_disciplines - 0.5 - source_position,
                     ),
                     len(variables) / (3.0 * max_coupling_size),
-                    color="blue",
+                    color="royalblue",
                 )
                 axe.add_artist(circle)
