@@ -29,7 +29,7 @@ def graph() -> DependencyGraph:
     description_list = [
         ("D1", ["y21"], ["y12"]),
         ("D2", ["y12"], ["y21"]),
-        ("D3", ["y12", "y21"], ["obj"]),
+        ("D3", ["y12", "y21", "z"], ["obj", "z"]),
     ]
     disciplines = []
     data = ones(1)
@@ -52,7 +52,7 @@ def test_from_graph(graph, tmp_wd):
         tmp_wd (Path): A temporary working directory.
     """
     path = tmp_wd / "n2.html"
-    N2HTML(path).from_graph(graph)
+    N2HTML(path).from_graph(graph, self_coupled_disciplines=["D3"])
     assert cmp(str(path), str(Path(__file__).parent / "expected_from_graph.html"))
 
 

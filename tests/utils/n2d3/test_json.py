@@ -419,7 +419,14 @@ def test_loads(n2_json, expected_links, expected_nodes):
         expected_nodes: The expected nodes.
     """
     json = loads(str(n2_json))
-    assert set(json.keys()) == {"nodes", "children", "links", "disciplines", "groups"}
+    assert set(json.keys()) == {
+        "nodes",
+        "children",
+        "links",
+        "disciplines",
+        "groups",
+        "self_coupled_disciplines",
+    }
     assert json["groups"] == [
         n2_json._DEFAULT_WEAKLY_COUPLED_DISCIPLINES,
         n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
@@ -427,3 +434,4 @@ def test_loads(n2_json, expected_links, expected_nodes):
     assert json["children"] == [[2], [3, 4]]
     assert json["links"] == expected_links
     assert json["nodes"] == expected_nodes
+    assert json["self_coupled_disciplines"] == []

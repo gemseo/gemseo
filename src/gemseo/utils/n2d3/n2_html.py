@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import webbrowser
+from typing import Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -42,10 +43,7 @@ class N2HTML:
         self.__file_path = Path(file_path)
         self.__open_browser = open_browser
 
-    def __create_html_file(
-        self,
-        json_structure: str,
-    ) -> None:
+    def __create_html_file(self, json_structure: str) -> None:
         """Build the HTML file from the JSON structure of the N2 chart.
 
         Args:
@@ -60,13 +58,15 @@ class N2HTML:
     def from_graph(
         self,
         graph: DependencyGraph,
+        self_coupled_disciplines: Sequence[str] | None = None,
     ) -> None:
         """Create the HTML file from a dependency graph.
 
         Args:
             graph: The dependency graph.
+            self_coupled_disciplines: The names of the self-coupled disciplines, if any.
         """
-        self.__create_html_file(N2JSON(graph))
+        self.__create_html_file(str(N2JSON(graph, self_coupled_disciplines)))
 
     def from_json(
         self,
@@ -120,7 +120,7 @@ class N2HTML:
 
     @staticmethod
     def __get_file_contents(
-        file_name: Path,
+        file_name: Path | str,
     ) -> str:
         """Read the content of a file located in the directory `n2d3`.
 

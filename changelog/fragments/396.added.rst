@@ -1,0 +1,2 @@
+The static N2 chart represents the self-coupled disciplines with blue diagonal blocks.
+The dynamic N2 chart represents the self-coupled disciplines with colored diagonal blocks.

@@ -205,6 +205,16 @@ def test_strong_couplings_self_coupled():
             ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
             ["n_2_coupling_names"],
         ),
+        (
+            False,
+            ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
+            ["n_2_self_coupled_no_names"],
+        ),
+        (
+            True,
+            ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
+            ["n_2_self_coupled"],
+        ),
     ],
 )
 @image_comparison(None)

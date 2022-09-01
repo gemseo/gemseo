@@ -204,13 +204,25 @@ def generate_n2_plot(
 ) -> None:
     """Generate a N2 plot from disciplines.
 
+    It can be static (e.g. PDF, PNG, ...), dynamic (HTML) or both.
+
+    The disciplines are located on the diagonal of the N2 plot
+    while the coupling variables are situated on the other blocks
+    of the matrix view.
+    A coupling variable is outputted by a discipline horizontally
+    and enters another vertically.
+    On the static plot,
+    a blue diagonal block represent a self-coupled discipline,
+    i.e. a discipline having some of its outputs as inputs.
+
     Args:
         disciplines: The disciplines from which the N2 chart is generated.
         file_path: The file path to save the static N2 chart.
-        show_data_names: Whether to show the names of the coupling data ;
-            otherwise,
-            circles are drawn,
-            whose size depends on the number of coupling names.
+            show_data_names: Whether to show the names of the coupling variables
+                between two disciplines;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
         save: Whether to save the static N2 chart.
         show: Whether to show the static N2 chart.
         fig_size: The width and height of the static N2 chart.
