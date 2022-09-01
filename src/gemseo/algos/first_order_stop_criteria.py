@@ -34,8 +34,8 @@ class KKTReached(TerminationCriterion):
 def is_kkt_residual_norm_reached(
     opt_problem: OptimizationProblem,
     x_vect: ndarray,
-    kkt_abs_tol: float = 0.0,
-    kkt_rel_tol: float = 0.0,
+    kkt_abs_tol: float | None = 0.0,
+    kkt_rel_tol: float | None = 0.0,
     ineq_tolerance: float = 1e-4,
     reference_residual: float = 1.0,
 ) -> bool:
@@ -45,14 +45,19 @@ def is_kkt_residual_norm_reached(
         opt_problem: The optimization problem containing an optimization history.
         x_vect: The design point vector where the KKT conditions are tested.
         kkt_abs_tol: The absolute tolerance on the KKT condition residual.
+            If ``None``, the absolute criterion is not activated.
         kkt_rel_tol: The relative tolerance on the KKT condition residual.
+            If ``None``, the relative criterion is not activated.
         ineq_tolerance: The tolerance to consider a constraint as active.
         reference_residual: The reference KKT condition residual.
 
     Returns:
         Whether the absolute or the relative KKT residual norm criterion is reached.
     """
-
+    if kkt_abs_tol is None:
+        kkt_abs_tol = 0.0
+    if kkt_rel_tol is None:
+        kkt_rel_tol = 0.0
     return kkt_residual_computation(opt_problem, x_vect, ineq_tolerance) <= max(
         kkt_abs_tol, kkt_rel_tol * reference_residual
     )
