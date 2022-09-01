@@ -275,6 +275,8 @@ class ScipyOpt(OptimizationLibrary):
         options.pop(self.X_TOL_REL)
         options.pop(self.MAX_TIME)
         options.pop(self.MAX_ITER)
+        options.pop(self._KKT_TOL_REL)
+        options.pop(self._KKT_TOL_ABS)
         if self.algo_name != "TNC":
             options.pop("xtol")
 
