@@ -81,8 +81,8 @@ class OptimizationLibrary(DriverLib):
     F_TOL_ABS = "ftol_abs"
     X_TOL_REL = "xtol_rel"
     X_TOL_ABS = "xtol_abs"
-    __KKT_TOL_ABS = "kkt_tol_abs"
-    __KKT_TOL_REL = "kkt_tol_rel"
+    _KKT_TOL_ABS = "kkt_tol_abs"
+    _KKT_TOL_REL = "kkt_tol_rel"
     STOP_CRIT_NX = "stop_crit_n_x"
     # Maximum step for the line search
     LS_STEP_SIZE_MAX = "max_ls_step_size"
@@ -223,8 +223,8 @@ class OptimizationLibrary(DriverLib):
         self._xtol_abs = options.get(self.X_TOL_ABS, 0.0)
         self.__ineq_tolerance = options.get(self.INEQ_TOLERANCE, problem.ineq_tolerance)
         self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
-        self.__kkt_abs_tol = options.get(self.__KKT_TOL_ABS, None)
-        self.__kkt_rel_tol = options.get(self.__KKT_TOL_REL, None)
+        self.__kkt_abs_tol = options.get(self._KKT_TOL_ABS, None)
+        self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
         problem.add_callback(self.new_iteration_callback)
         # First, evaluate all functions at x_0. Some algorithms don't do this

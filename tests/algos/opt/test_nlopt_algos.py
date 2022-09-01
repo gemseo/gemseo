@@ -96,8 +96,8 @@ class TestNLOPT(TestCase):
             # Check that the criterion is activated asap
             assert len(pb.database) == 3
         for tol_name in (
-            OptLib._OptimizationLibrary__KKT_TOL_ABS,
-            OptLib._OptimizationLibrary__KKT_TOL_REL,
+            OptLib._KKT_TOL_ABS,
+            OptLib._KKT_TOL_REL,
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
