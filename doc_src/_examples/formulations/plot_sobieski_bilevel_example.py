@@ -26,6 +26,7 @@ from copy import deepcopy
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.api import execute_post
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from matplotlib import pyplot as plt
 
@@ -151,9 +152,21 @@ system_scenario.formulation.mda1.plot_residual_history(show=False, save=False)
 system_scenario.formulation.mda2.plot_residual_history(show=False, save=False)
 
 ##############################################################################
-# Plot the optimization history view
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Plot the system optimization history view
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process("OptHistoryView", show=False, save=False)
+
+##############################################################################
+# Plot the structure optimization histories of the 2 first iterations
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+struct_databases = system_scenario.formulation.scenario_adapters[2].databases
+for database in struct_databases[:2]:
+    opt_problem = deepcopy(sc_str.formulation.opt_problem)
+    opt_problem.database = database
+    execute_post(opt_problem, "OptHistoryView", show=False, save=False)
+
+
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 for disc in [propu, aero, mission, struct]:
