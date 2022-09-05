@@ -375,7 +375,7 @@ class BiLevel(MDOFormulation):
         """
         # Build the scenario adapters to be chained with MDAs
         self.scenario_adapters = self._build_scenario_adapters(
-            reset_x0_before_opt=self.reset_x0_before_opt
+            reset_x0_before_opt=self.reset_x0_before_opt, keep_opt_history=True
         )
         chain_dis, sub_opts = self._build_chain_dis_sub_opts()
 

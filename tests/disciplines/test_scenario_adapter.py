@@ -19,6 +19,7 @@
 from copy import deepcopy
 
 import pytest
+from gemseo.algos.database import Database
 from gemseo.core.chain import MDOChain
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
@@ -441,3 +442,17 @@ def test_lagrange_multipliers_outputs():
     x1_low_mult, x1_upp_mult, g1_mult = adapter.get_outputs_by_name(mult_names)
     lagr_grad = obj_grad + matmul(g1_mult.T, g1_jac) - x1_low_mult + x1_upp_mult
     assert allclose(lagr_grad, zeros_like(lagr_grad))
+
+
+def test_keep_opt_history(scenario):
+    """Tests the option that keeps the local history of sub optimizations."""
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"], keep_opt_history=True)
+    adapter.execute()
+
+    adapter.execute({"x_shared": adapter.default_inputs["x_shared"] + 1.0})
+
+    assert len(adapter.databases) == 2
+
+    for database in adapter.databases:
+        assert isinstance(database, Database)
+        assert len(database) > 2
