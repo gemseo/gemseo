@@ -26,6 +26,7 @@ import logging
 import sys
 from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
+from collections.abc import Sized
 from multiprocessing import Manager
 from multiprocessing import RLock
 from multiprocessing import Value
@@ -168,7 +169,7 @@ class AbstractCache(ABCMapping):
         """
         self.tolerance = tolerance
         self.name = name if name is not None else self.__class__.__name__
-        self._names_to_sizes = {}
+        self.__names_to_sizes = {}
         self.__input_names = []
         self._output_names = []
 
@@ -188,17 +189,25 @@ class AbstractCache(ABCMapping):
 
     @property
     def names_to_sizes(self) -> dict[str, int]:
-        """The sizes of the variables of the last entry."""
-        if not self._names_to_sizes:
-            last_entry = self.last_entry
-            self._names_to_sizes = {
-                name: data.size
-                for name, data in itertools.chain(
-                    last_entry.inputs.items(), last_entry.outputs.items()
-                )
-            }
+        """The sizes of the variables of the last entry.
 
-        return self._names_to_sizes
+        For a Numpy array, its size is used. For a container, its length is used.
+        Otherwise, a size of 1 is used.
+        """
+        if not self.__names_to_sizes:
+            last_entry = self.last_entry
+            for name, data in itertools.chain(
+                last_entry.inputs.items(), last_entry.outputs.items()
+            ):
+                if isinstance(data, ndarray):
+                    size = data.size
+                elif isinstance(data, Sized):
+                    size = len(data)
+                else:
+                    size = 1
+                self.__names_to_sizes[name] = size
+
+        return self.__names_to_sizes
 
     def __str__(self) -> str:
         msg = MultiLineString()
@@ -247,7 +256,6 @@ class AbstractCache(ABCMapping):
             input_data: The data containing the input data to cache.
             output_data: The data containing the output data to cache.
         """
-        ...
 
     @abc.abstractmethod
     def cache_jacobian(
@@ -261,19 +269,17 @@ class AbstractCache(ABCMapping):
             input_data: The data containing the input data to cache.
             jacobian_data: The Jacobian data to cache.
         """
-        ...
 
     def clear(self) -> None:
         """Clear the cache."""
+        self.__names_to_sizes = {}
         self.__input_names = []
         self._output_names = []
-        self._names_to_sizes = {}
 
     @property
     @abc.abstractmethod
     def last_entry(self) -> CacheEntry:
         """The last cache entry."""
-        ...
 
     def export_to_dataset(
         self,
