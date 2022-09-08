@@ -23,8 +23,6 @@ from __future__ import annotations
 import logging
 from typing import Generator
 
-from numpy import ndarray
-
 from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import Data
@@ -82,13 +80,6 @@ class SimpleCache(AbstractCache):
         Returns:
             A copy of the input data.
         """
-        if not self._names_to_sizes:
-            for name, value in input_data.items():
-                if isinstance(value, ndarray):
-                    self._names_to_sizes[name] = value.size
-                else:
-                    self._names_to_sizes[name] = 1
-
         cached_input_data = deepcopy_dict_of_arrays(input_data)
         if not self.__is_cached(self.__last_input_data, cached_input_data):
             self.__penultimate_input_data = self.__last_input_data
@@ -132,8 +123,6 @@ class SimpleCache(AbstractCache):
         self.__output_data = deepcopy_dict_of_arrays(output_data)
         if not self._output_names:
             self._output_names = sorted(output_data.keys())
-            for name, value in output_data.items():
-                self._names_to_sizes[name] = value.size
 
     def __getitem__(
         self,

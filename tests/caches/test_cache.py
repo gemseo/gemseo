@@ -652,3 +652,20 @@ def test_export_to_dataset_and_entries(
     else:
         assert len(entries) == 1
         assert entries[0] == last_entry
+
+
+@pytest.mark.parametrize(
+    "data",
+    (
+        arange(2),
+        [0, 0],
+        {
+            0: None,
+            1: None,
+        },
+    ),
+)
+def test_names_to_sizes(simple_cache, data):
+    """Verify the ``names_to_sizes`` attribute."""
+    simple_cache.cache_outputs({"index": 1}, {"o": data})
+    assert simple_cache.names_to_sizes == {"index": 1, "o": 2}
