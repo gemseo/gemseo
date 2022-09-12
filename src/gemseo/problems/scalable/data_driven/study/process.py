@@ -606,7 +606,7 @@ class ScalabilityStudy:
                     msg.add("Save dependency matrices in {}", path)
                     problem.plot_dependencies(True, False, str(path))
                     msg.add("Create MDO Scenario")
-                    with LoggingContext(LOGGER, logging.WARNING):
+                    with LoggingContext():
                         self.__create_scenario(problem, formulation, opt_index)
                         msg.add("Execute MDO Scenario")
                         formulation_options = self.formulations_options[opt_index]

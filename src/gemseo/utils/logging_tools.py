@@ -68,7 +68,7 @@ class LoggingContext:
     Examples:
         logger.setLevel(logging.INFO)
         logger.info("This should appear.")
-        with LoggingContext(logger, logging.WARNING):
+        with LoggingContext(logging.WARNING, logger=logger):
             logger.warning("This should appear.")
             logger.info("This should not appear.")
 
@@ -79,11 +79,17 @@ class LoggingContext:
     logging-cookbook.html#using-a-context-manager-for-selective-logging>`_
     """
 
-    def __init__(self, logger, level, handler=None, close=True):
+    def __init__(
+        self,
+        level: int = logging.WARNING,
+        logger: logging.Logger = logging.root,
+        handler: logging.StreamHandler | None = None,
+        close: bool = True,
+    ) -> None:
         """
         Args:
-            logger: The logger.
             level: The level of the logger to be used on block entry.
+            logger: The logger.
             handler: An additional handler to be used on block entry.
             close: Whether to close the handler on block exit.
         """
@@ -92,14 +98,14 @@ class LoggingContext:
         self.handler = handler
         self.close = close
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         if self.level is not None:
             self.old_level = self.logger.level
             self.logger.setLevel(self.level)
         if self.handler:
             self.logger.addHandler(self.handler)
 
-    def __exit__(self, et, ev, tb):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         if self.level is not None:
             self.logger.setLevel(self.old_level)
         if self.handler:
