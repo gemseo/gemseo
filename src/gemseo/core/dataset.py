@@ -1412,14 +1412,21 @@ class Dataset:
         self,
         excluded_variables: Sequence[str] | None = None,
         excluded_groups: Sequence[str] | None = None,
+        use_min_max: bool = True,
+        center: bool = False,
+        scale: bool = False,
     ) -> Dataset:
-        """Get a normalized copy of the dataset.
+        r"""Get a normalized copy of the dataset.
 
         Args:
             excluded_variables: The names of the variables not to be normalized.
-                If None, normalize all the variables.
+                If ``None``, normalize all the variables.
             excluded_groups: The names of the groups not to be normalized.
-                If None, normalize all the groups.
+                If ``None``, normalize all the groups.
+            use_min_max: Whether to use the geometric normalization
+                :math:`(x-\min(x))/(\max(x)-\min(x))`.
+            center: Whether to center the variables so that they have a zero mean.
+            scale: Whether to scale the variables so that they have a unit variance.
 
         Returns:
             A normalized dataset.
@@ -1435,9 +1442,14 @@ class Dataset:
                 normalize_name = name not in excluded_variables
                 data = self.get_data_by_names(name, False)
                 if normalize_group and normalize_name:
-                    data = (data - np.min(data, 0)) / (
-                        np.max(data, 0) - np.min(data, 0)
-                    )
+                    if use_min_max:
+                        data = (data - np.min(data, 0)) / (
+                            np.max(data, 0) - np.min(data, 0)
+                        )
+                    if center:
+                        data -= np.mean(data, 0)
+                    if scale:
+                        data /= np.std(data, 0)
 
                 dataset.add_variable(name, data, group, name in self._cached_inputs)
 
