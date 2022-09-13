@@ -1,0 +1,1 @@
+:func:`.pretty_str` converts an object into an readable string by using :func:`str`.

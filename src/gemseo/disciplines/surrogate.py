@@ -34,7 +34,7 @@ from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -125,8 +125,8 @@ class SurrogateDiscipline(MDODiscipline):
         msg.indent()
         super().__init__(disc_name)
         self._initialize_grammars(input_names, output_names)
-        msg.add("Inputs: {}", pretty_repr(self.get_input_data_names()))
-        msg.add("Outputs: {}", pretty_repr(self.get_output_data_names()))
+        msg.add("Inputs: {}", pretty_str(self.get_input_data_names()))
+        msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
         self._set_default_inputs(default_inputs)
         self.add_differentiated_inputs()
         self.add_differentiated_outputs()
@@ -150,8 +150,8 @@ class SurrogateDiscipline(MDODiscipline):
             f"algo={model}",
             f"data={data_name}",
             f"size={length}",
-            f"inputs=[{pretty_repr(inputs)}]",
-            f"outputs=[{pretty_repr(outputs)}]",
+            f"inputs=[{pretty_str(inputs)}]",
+            f"outputs=[{pretty_str(outputs)}]",
             f"jacobian={self.linearization_mode}",
         ]
         msg = "SurrogateDiscipline({})".format(", ".join(arguments))
@@ -168,8 +168,8 @@ class SurrogateDiscipline(MDODiscipline):
         msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
         inputs = sorted(self.regression_model.input_names)
         outputs = sorted(self.regression_model.output_names)
-        msg.add("Inputs: {}", pretty_repr(inputs))
-        msg.add("Outputs: {}", pretty_repr(outputs))
+        msg.add("Inputs: {}", pretty_str(inputs))
+        msg.add("Outputs: {}", pretty_str(outputs))
         return str(msg)
 
     def _initialize_grammars(

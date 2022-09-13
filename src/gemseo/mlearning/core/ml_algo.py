@@ -116,7 +116,7 @@ from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -290,7 +290,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     def __str__(self) -> str:
         msg = MultiLineString()
-        msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
+        msg.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
         msg.indent()
         if self.LIBRARY:
             msg.add("based on the {} library", self.LIBRARY)

@@ -93,7 +93,7 @@ from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -215,7 +215,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         LOGGER.debug("%s", msg)
 
     def __str__(self) -> str:
-        parameters = pretty_repr(self.standard_parameters)
+        parameters = pretty_str(self.standard_parameters)
         return f"{self.distribution_name}({parameters})"
 
     def compute_samples(

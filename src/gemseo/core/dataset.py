@@ -93,7 +93,7 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.python_compatibility import singledispatchmethod
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -420,7 +420,7 @@ class Dataset:
         for group, varnames in sorted(self._names.items()):
             varnames = [f"{name} ({self.sizes[name]})" for name in varnames]
             if varnames:
-                msg.add("{}: {}", group, pretty_repr(varnames))
+                msg.add("{}: {}", group, pretty_str(varnames))
         total = sum(self.dimension.values())
         msg.dedent()
         msg.add("Number of dimensions (total = {}) by group:", total)

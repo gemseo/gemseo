@@ -26,35 +26,87 @@ from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any
+from typing import Callable
 from typing import Iterable
 
 # to store the raw ingredients of a string to be formatted later
 MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
 
+DEFAULT_DELIMITER = ", "
+"""A string to separate string fields."""
 
-def pretty_repr(
+DEFAULT_KEY_VALUE_SEPARATOR = "="
+"""A string to separate key and value in a key-value pair of a mapping."""
+
+
+def __stringify(
     obj: Any,
-    **kwargs: Any,
+    delimiter: str,
+    key_value_separator: str,
+    function: Callable[[Any], str],
 ) -> str:
-    """String representation of an object.
+    """Represent an object with a string.
 
     Args:
-        obj: The object to represent.
+        delimiter: The string to separate string fields.
+        key_value_separator: The string to separate key and value
+            in a key-value pair of a mapping.
+        function: A function to represent an object with a string,
+            e.g. :func:`str` or :func:`repr`.
 
     Returns:
-         A pretty string representation.
+        A string representing the object.
     """
-    delimiter = kwargs.get("delimiter", ", ")
-
     if isinstance(obj, abc.Mapping):
         return delimiter.join(
-            [f"{key}={repr(val)}" for key, val in sorted(obj.items())]
+            [
+                f"{key}{key_value_separator}{function(val)}"
+                for key, val in sorted(obj.items())
+            ]
         )
 
     if isinstance(obj, abc.Iterable):
-        return delimiter.join([str(val) for val in obj])
+        return delimiter.join([function(val) for val in obj])
 
-    return repr(obj)
+    return function(obj)
+
+
+def pretty_repr(
+    obj: Any,
+    delimiter: str = DEFAULT_DELIMITER,
+    key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+) -> str:
+    """Return an unambiguous string representation of an object based on :func:`repr`.
+
+    Args:
+        obj: The object to represent.
+        delimiter: The string to separate string fields.
+        key_value_separator: The string to separate key and value
+            in a key-value pair of a mapping.
+
+    Returns:
+         An unambiguous string representation of the object.
+    """
+    return __stringify(obj, delimiter, key_value_separator, repr)
+
+
+def pretty_str(
+    obj: Any,
+    delimiter: str = DEFAULT_DELIMITER,
+    key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+) -> str:
+    """Return a readable string representation of an object based on :func:`str`.
+
+    Args:
+        obj: The object to represent.
+        delimiter: The string to separate string fields.
+        key_value_separator: The string to separate key and value
+            in a key-value pair of a mapping.
+
+    Returns:
+         A readable string representation of the object.
+    """
+    return __stringify(obj, delimiter, key_value_separator, str)
 
 
 class MultiLineString:
