@@ -58,7 +58,7 @@ def test_selective_logging(caplog):
         logger.info("3. This should not appear.")
 
     logger.info("4. This should appear.")
-    with LoggingContext(logging.ERROR):
+    with LoggingContext(level=logging.ERROR):
         logger.warning("5. This should not appear.")
         logger.error("6. This should appear.")
 

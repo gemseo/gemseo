@@ -66,13 +66,14 @@ class LoggingContext:
     Change the level of the logger in a ``with`` block.
 
     Examples:
-        logger.setLevel(logging.INFO)
-        logger.info("This should appear.")
-        with LoggingContext(logging.WARNING, logger=logger):
-            logger.warning("This should appear.")
-            logger.info("This should not appear.")
-
-        logger.info("This should appear.")
+        >>> logger = logger.getLogger()
+        >>> logger.setLevel(logging.INFO)
+        >>> logger.info("This should appear.")
+        >>> with LoggingContext():
+        >>>    logger.warning("This should appear.")
+        >>>    logger.info("This should not appear.")
+        >>>
+        >>> logger.info("This should appear.")
 
     Source: `Logging Cookbook
     <https://docs.python.org/3/howto/
@@ -81,15 +82,15 @@ class LoggingContext:
 
     def __init__(
         self,
-        level: int = logging.WARNING,
         logger: logging.Logger = logging.root,
+        level: int = logging.WARNING,
         handler: logging.StreamHandler | None = None,
         close: bool = True,
     ) -> None:
         """
         Args:
-            level: The level of the logger to be used on block entry.
             logger: The logger.
+            level: The level of the logger to be used on block entry.
             handler: An additional handler to be used on block entry.
             close: Whether to close the handler on block exit.
         """
