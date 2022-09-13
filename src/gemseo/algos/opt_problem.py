@@ -110,7 +110,7 @@ from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1691,7 +1691,7 @@ class OptimizationProblem:
 
         # variables representation
         msg.add(
-            "with respect to {}", pretty_repr(sorted(self.design_space.variables_names))
+            "with respect to {}", pretty_str(sorted(self.design_space.variables_names))
         )
         if self.has_constraints():
             msg.add("subject to constraints:")

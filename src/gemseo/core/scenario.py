@@ -46,7 +46,7 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -488,7 +488,7 @@ class Scenario(MDODiscipline):
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
-        msg.add("Disciplines: {}", pretty_repr(self.disciplines, delimiter=" "))
+        msg.add("Disciplines: {}", pretty_str(self.disciplines, delimiter=" "))
         msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return str(msg)
 

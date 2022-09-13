@@ -66,7 +66,7 @@ from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from pathlib import Path
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString, pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -349,8 +349,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         msg.indent()
         inputs = sorted(self.get_input_data_names())
         outputs = sorted(self.get_output_data_names())
-        msg.add("Inputs: {}", pretty_repr(inputs))
-        msg.add("Outputs: {}", pretty_repr(outputs))
+        msg.add("Inputs: {}", pretty_str(inputs))
+        msg.add("Outputs: {}", pretty_str(outputs))
         return str(msg)
 
     def _init_shared_attrs(self) -> None:
