@@ -1,0 +1,2 @@
+The :class:`.GradientSensitivity` post-processor now includes an option to compute the gradients at the
+selected iteration to avoid a crash if they are missing.

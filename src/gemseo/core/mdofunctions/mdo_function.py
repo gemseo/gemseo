@@ -342,7 +342,7 @@ class MDOFunction:
         if self.activate_counters:
             self._n_calls.value = 0
 
-        self._func = f_pointer
+        self._func = f_pointer or NotImplementedCallable()
 
     def serialize(self, file_path: str | Path) -> None:
         """Serialize the function and store it in a file.
@@ -484,7 +484,7 @@ class MDOFunction:
 
     @jac.setter
     def jac(self, jac: WrappedJacobianType | None) -> None:
-        self._jac = jac
+        self._jac = jac or NotImplementedCallable()
 
     @property
     def args(self) -> list[str]:

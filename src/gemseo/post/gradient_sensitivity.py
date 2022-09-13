@@ -44,6 +44,7 @@ class GradientSensitivity(OptPostProcessor):
         self,
         iteration: int | None = None,
         scale_gradients: bool = False,
+        compute_missing_gradients: bool = False,
     ) -> None:
         """
         Args:
@@ -54,6 +55,16 @@ class GradientSensitivity(OptPostProcessor):
                 If ``None``, use the iteration of the optimum.
             scale_gradients: If True, normalize each gradient
                 w.r.t. the design variables.
+            compute_missing_gradients: Whether to compute the gradients at the
+                selected iteration if they were not computed by the algorithm.
+
+                .. warning::
+                   Activating this option may add considerable computation time
+                   depending on the cost of the gradient evaluation.
+                   This option will not compute the gradients if the
+                   :class:`.OptimizationProblem` instance was imported from an HDF5
+                   file. This option requires an :class:`.OptimizationProblem` with a
+                   gradient-based algorithm.
         """
         if iteration is None:
             design_value = self.opt_problem.solution.x_opt
@@ -63,7 +74,11 @@ class GradientSensitivity(OptPostProcessor):
         fig = self.__generate_subplots(
             self._generate_x_names(),
             design_value,
-            self.__get_output_gradients(design_value, scale_gradients=scale_gradients),
+            self.__get_output_gradients(
+                design_value,
+                scale_gradients=scale_gradients,
+                compute_missing_gradients=compute_missing_gradients,
+            ),
             scale_gradients=scale_gradients,
         )
         self._add_figure(fig)
@@ -72,6 +87,7 @@ class GradientSensitivity(OptPostProcessor):
         self,
         design_value: ndarray,
         scale_gradients: bool = False,
+        compute_missing_gradients: bool = False,
     ) -> dict[str, ndarray]:
         """Return the gradients of all the output variable at a given design value.
 
@@ -79,6 +95,16 @@ class GradientSensitivity(OptPostProcessor):
             design_value: The value of the design vector.
             scale_gradients: Whether to normalize the gradients
                 w.r.t. the design variables.
+            compute_missing_gradients: Whether to compute the gradients at the
+                selected iteration if they were not computed by the algorithm.
+
+                .. warning::
+                   Activating this option may add considerable computation time
+                   depending on the cost of the gradient evaluation.
+                   This option will not compute the gradients if the
+                   :class:`.OptimizationProblem` instance was imported from an HDF5
+                   file. This option requires an :class:`.OptimizationProblem` with a
+                   gradient-based algorithm.
 
         Returns:
             The gradients of the outputs
@@ -86,11 +112,28 @@ class GradientSensitivity(OptPostProcessor):
             e.g. ``"output_name"`` for a mono-dimensional output,
             or ``"output_name_i"`` for the i-th component of a multi-dimensional output.
         """
+        gradient_values = {}
+        if compute_missing_gradients:
+            try:
+                _, gradient_values = self.opt_problem.evaluate_functions(
+                    design_value, no_db_no_norm=True, eval_jac=True, normalize=False
+                )
+            except NotImplementedError:
+                LOGGER.info(
+                    "The missing gradients for an OptimizationProblem without "
+                    "callable functions cannot be computed."
+                )
+
         function_names = self.opt_problem.get_all_functions_names()
         scale_gradient = self.opt_problem.design_space.unnormalize_vect
         function_names_to_gradients = {}
         for function_name in function_names:
-            gradient_value = self.database.get_f_of_x(f"@{function_name}", design_value)
+            if compute_missing_gradients and gradient_values:
+                gradient_value = gradient_values[function_name]
+            else:
+                gradient_value = self.database.get_f_of_x(
+                    f"@{function_name}", design_value
+                )
             if gradient_value is None:
                 continue
 
@@ -104,7 +147,6 @@ class GradientSensitivity(OptPostProcessor):
                 if scale_gradients:
                     _gradient_value = scale_gradient(_gradient_value, minus_lb=False)
                 function_names_to_gradients[f"{function_name}_{i}"] = _gradient_value
-
         return function_names_to_gradients
 
     def __generate_subplots(
@@ -131,7 +173,7 @@ class GradientSensitivity(OptPostProcessor):
         """
         n_gradients = len(gradients)
         if n_gradients == 0:
-            raise ValueError("No gradients to plot at current iteration!")
+            raise ValueError("No gradients to plot at current iteration.")
 
         n_cols = 2
         n_rows = sum(divmod(n_gradients, n_cols))
