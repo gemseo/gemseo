@@ -53,7 +53,7 @@ def test_import_gradient_sensitivity(
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(str(POWER2))
+    problem = OptimizationProblem.import_hdf(POWER2)
     post = factory.execute(
         problem,
         "GradientSensitivity",

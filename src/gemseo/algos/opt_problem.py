@@ -63,6 +63,7 @@ import logging
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
+from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -276,7 +277,7 @@ class OptimizationProblem:
         self,
         design_space: DesignSpace,
         pb_type: str = NON_LINEAR_PB,
-        input_database: str | Database | None = None,
+        input_database: str | Path | Database | None = None,
         differentiation_method: str = USER_GRAD,
         fd_step: float = 1e-7,
         parallel_differentiation: bool = False,
@@ -1767,13 +1768,13 @@ class OptimizationProblem:
 
     def export_hdf(
         self,
-        file_path: str,
+        file_path: str | Path,
         append: bool = False,
     ) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
-            file_path: The file to store the data.
+            file_path: The path of the file to store the data.
             append: If True, then the data are appended to the file if not empty.
         """
         LOGGER.info("Export optimization problem to file: %s", str(file_path))
@@ -1818,7 +1819,7 @@ class OptimizationProblem:
     @classmethod
     def import_hdf(
         cls,
-        file_path: str,
+        file_path: str | Path,
         x_tolerance: float = 0.0,
     ) -> OptimizationProblem:
         """Import an optimization history from an HDF file.
@@ -1830,7 +1831,7 @@ class OptimizationProblem:
         Returns:
             The read optimization problem.
         """
-        LOGGER.info("Import optimization problem from file: %s", str(file_path))
+        LOGGER.info("Import optimization problem from file: %s", file_path)
 
         design_space = DesignSpace(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
