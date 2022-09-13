@@ -25,6 +25,7 @@ import pytest
 from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import arange
 from numpy import array
@@ -58,10 +59,22 @@ def rel_err(to_test, ref):
         return err
 
 
-def test_correct_store_unstore():
+@pytest.fixture
+def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
+    """The Rosenbrock problem solved with L-BFGS-B and the optimization result."""
+    rosenbrock = Rosenbrock()
+    result = OptimizersFactory().execute(rosenbrock, "L-BFGS-B")
+    return rosenbrock, result
+
+
+@pytest.fixture
+def problem(problem_and_result) -> Rosenbrock:
+    """The Rosenbrock problem solved with L-BFGS-B."""
+    return problem_and_result[0]
+
+
+def test_correct_store_unstore(problem):
     """Test the storage of objective function values and gradient values."""
-    problem = Rosenbrock()
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     database = problem.database
     fname = problem.objective.name
     for x_var in database.keys():
@@ -76,14 +89,8 @@ def test_correct_store_unstore():
             assert_almost_equal(grad_rel_err, 0.0, decimal=14)
 
 
-def test_write_read(tmp_wd):
-    """Test the writing of objective function values and gradient values.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    problem = Rosenbrock()
-    OptimizersFactory().execute(problem, "L-BFGS-B")
+def test_write_read(tmp_wd, problem):
+    """Test the writing of objective function values and gradient values."""
     database = problem.database
     outf = "rosen.hdf"
     database.export_hdf(outf)
@@ -187,11 +194,9 @@ def test_get_f_hist():
     assert len(hist_f) == len(hist_x)
 
 
-def test_get_f_hist_rosen():
+def test_get_f_hist_rosen(problem):
     """Test the objective history extraction."""
-    problem = Rosenbrock()
     database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     hist_x = database.get_x_history()
     fname = problem.objective.name
     hist_f = database.get_func_history(fname)
@@ -203,12 +208,9 @@ def test_get_f_hist_rosen():
     assert len(hist_f) == len(hist_x)
 
 
-def test_clean_from_iterate():
+def test_clean_from_iterate(problem):
     """Tests access to design variables by iteration index."""
-    problem = Rosenbrock()
     database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
-
     # clean after iterate 12
     database.clean_from_iterate(12)
     assert len(database) == 13
@@ -235,11 +237,10 @@ def test_get_x_by_iter():
     assert_almost_equal(hist_g2[1], 0.85259476, decimal=6)
 
 
-def test_scipy_df0_rosenbrock():
+def test_scipy_df0_rosenbrock(problem_and_result):
     """Tests the storage of optimization solutions."""
-    problem = Rosenbrock()
+    problem, result = problem_and_result
     database = problem.database
-    result = OptimizersFactory().execute(problem, "L-BFGS-B")
     assert result.f_opt < 6.5e-11
     assert norm(database.get_x_history()[-1] - ones(2)) < 2e-5
     assert database.get_func_history(funcname="rosen", x_hist=False)[-1] < 6.2e-11
@@ -463,29 +464,22 @@ def test_get_missing_hdf_output_dataset(h5_file):
     assert idx_mapping == {"h": 2, "i": 3}
 
 
-def test_get_x_by_iter_except():
+def test_get_x_by_iter_except(problem):
     """Tests exception in get_x_by_iter."""
-    problem = Rosenbrock()
-    database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     with pytest.raises(ValueError):
-        database.get_x_by_iter(1000)
+        problem.database.get_x_by_iter(1000)
 
 
-def test_contains_dataname():
+def test_contains_dataname(problem):
     """Tests data name belonging check."""
-    problem = Rosenbrock()
     database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     assert not database.contains_dataname("toto")
     assert database.contains_dataname("Iter")
 
 
-def test_get_history_array():
+def test_get_history_array(problem):
     """Tests history extraction into an array."""
-    problem = Rosenbrock()
     database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     values_array, variables_names, functions = (
         values_array,
         variables_names,
@@ -501,23 +495,16 @@ def test_get_history_array():
     database.get_history_array()
 
 
-def test_ggobi_export(tmp_wd):
+def test_ggobi_export(tmp_wd, problem):
     """Tests export to GGobi."""
-    problem = Rosenbrock()
-    database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     file_path = tmp_wd / "opt_hist.xml"
-    database.export_to_ggobi(file_path=str(file_path))
-    database.export_to_ggobi(file_path=str(file_path))
-    path_exists = file_path.exists()
-    assert path_exists
+    problem.database.export_to_ggobi(file_path=file_path)
+    assert file_path.exists()
 
 
-def test_hdf_grad_export(tmp_wd):
+def test_hdf_grad_export(tmp_wd, problem):
     """Tests export into HDF."""
-    problem = Rosenbrock()
     database = problem.database
-    OptimizersFactory().execute(problem, "L-BFGS-B")
     f_database_ref, x_database_ref = database.get_complete_history()
     func_data = "rosen_grad_test.hdf5"
     database.export_hdf(func_data)
@@ -531,9 +518,7 @@ def test_hdf_grad_export(tmp_wd):
 
 def test_hdf_import():
     """Tests import from HDF."""
-    inf = DIRNAME / "rosen_grad.hdf5"
-    database = Database(input_hdf_file=str(inf))
-
+    database = Database(input_hdf_file=DIRNAME / "rosen_grad.hdf5")
     fname = "rosen"
     gname = Database.get_gradient_name(fname)
     hist_x = database.get_x_history()
@@ -563,7 +548,7 @@ def test_opendace_import(tmp_wd):
     """Tests import from Opendace."""
     database = Database()
     inf = DIRNAME / "rae2822_cl075_085_mach_068_074.xml"
-    database.import_from_opendace(str(inf))
+    database.import_from_opendace(inf)
     outfpath = tmp_wd / "rae2822_cl075_085_mach_068_074_cp.hdf5"
     database.export_hdf(outfpath)
     assert outfpath.exists()

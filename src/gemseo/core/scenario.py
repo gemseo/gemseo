@@ -354,14 +354,14 @@ class Scenario(MDODiscipline):
 
     def save_optimization_history(
         self,
-        file_path: str,
+        file_path: str | Path,
         file_format: str = OptimizationProblem.HDF5_FORMAT,
         append: bool = False,
     ) -> None:
         """Save the optimization history of the scenario to a file.
 
         Args:
-            file_path: The path to the file to save the history.
+            file_path: The path of the file to save the history.
             file_format: The format of the file, either "hdf5" or "ggobi".
             append: If ``True``, the history is appended to the file if not empty.
 
@@ -375,13 +375,12 @@ class Scenario(MDODiscipline):
             opt_pb.database.export_to_ggobi(file_path=file_path)
         else:
             raise ValueError(
-                "Cannot export optimization history "
-                "to file format: {}.".format(file_format)
+                f"Cannot export optimization history to file format: {file_format}."
             )
 
     def set_optimization_history_backup(
         self,
-        file_path: str,
+        file_path: str | Path,
         each_new_iter: bool = False,
         each_store: bool = True,
         erase: bool = False,
