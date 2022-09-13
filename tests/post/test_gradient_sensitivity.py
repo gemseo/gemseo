@@ -16,7 +16,9 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+import pickle
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -33,6 +35,9 @@ from numpy import array
 from numpy import empty
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+SOBIESKI_MISSING_GRADIENTS = Path(__file__).parent / "sobieski_missing_gradients.h5"
+SOBIESKI_ALL_GRADIENTS = Path(__file__).parent / "sobieski_all_gradients.h5"
+SOBIESKI_GRADIENT_VALUES = Path(__file__).parent / "sobieski_gradient.pkl"
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +120,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
         }
     )
 
-    with pytest.raises(ValueError, match="No gradients to plot at current iteration!"):
+    with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario2.post_process(
             "GradientSensitivity",
             file_path="grad_sens",
@@ -251,3 +256,92 @@ def test_common_scenario(
     opt = GradientSensitivity(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
     opt.execute(show=False, save=False)
+
+
+@pytest.mark.parametrize(
+    "compute_missing_gradients, opt_problem, baseline_images",
+    [
+        (True, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
+        (
+            True,
+            SOBIESKI_MISSING_GRADIENTS,
+            [],
+        ),
+        (False, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
+        (False, SOBIESKI_MISSING_GRADIENTS, []),
+    ],
+)
+@image_comparison(None)
+def test_compute_missing_gradients(
+    compute_missing_gradients,
+    opt_problem,
+    baseline_images,
+    factory,
+    pyplot_close_all,
+    caplog,
+):
+    """Test the option to compute missing gradients for a given iteration.
+
+    Args:
+        compute_missing_gradients: Whether to compute the gradients if they are missing.
+        opt_problem: The path to an HDF5 file of the Sobieski problem.
+        baseline_images: The references images for the image comparison test.
+        factory: Fixture that returns a post-processing factory.
+        pyplot_close_all : Fixture that prevents figures aggregation
+                with matplotlib pyplot.
+        caplog: Fixture to access and control log capturing.
+    """
+    problem = OptimizationProblem.import_hdf(str(opt_problem))
+
+    if opt_problem == SOBIESKI_MISSING_GRADIENTS:
+        with pytest.raises(
+            ValueError, match="No gradients to plot at current iteration."
+        ):
+            factory.execute(
+                problem,
+                "GradientSensitivity",
+                compute_missing_gradients=compute_missing_gradients,
+                save=False,
+                show=False,
+            )
+            if compute_missing_gradients:
+                assert (
+                    "The missing gradients for an OptimizationProblem without callable "
+                    "functions cannot be computed." in caplog.text
+                )
+    else:
+        post = factory.execute(
+            problem,
+            "GradientSensitivity",
+            compute_missing_gradients=compute_missing_gradients,
+            save=False,
+            show=False,
+        )
+        post.figures
+
+
+@image_comparison(["grad_sens_sobieski"])
+def test_compute_missing_gradients_with_eval(factory, pyplot_close_all):
+    """Test that the computation of the missing gradients works well with functions.
+
+    Args:
+        factory: Fixture that returns a post-processing factory.
+        pyplot_close_all : Fixture that prevents figures aggregation
+                with matplotlib pyplot.
+    """
+    problem = OptimizationProblem.import_hdf(str(SOBIESKI_MISSING_GRADIENTS))
+
+    with open(SOBIESKI_GRADIENT_VALUES, "rb") as handle:
+        gradients = pickle.load(handle)
+
+    with mock.patch.object(problem, "evaluate_functions") as mocked_evaluate_functions:
+        mocked_evaluate_functions.return_value = (None, gradients)
+        post = factory.execute(
+            problem,
+            "GradientSensitivity",
+            compute_missing_gradients=True,
+            save=False,
+            show=False,
+        )
+        mocked_evaluate_functions.assert_called()
+    post.figures

@@ -3,11 +3,24 @@
     "required": [],
     "properties": {
         "iteration":{
-            "type": "integer",
-            "minimum":0
+            "anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "integer",
+					"minimum": 0
+				}
+			],
+            "default": null
         },
         "scale_gradients": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
+        },
+        "compute_missing_gradients": {
+            "type": "boolean",
+            "default": false
         }
     },
     "additionalProperties": false,
