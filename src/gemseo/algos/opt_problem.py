@@ -1709,7 +1709,7 @@ class OptimizationProblem:
     @staticmethod
     def __store_h5data(
         group: Any,
-        data_array: ndarray,
+        data_array: ndarray[Number] | str | list[str | Number],
         dataset_name: str,
         dtype: str | None = None,
     ) -> None:
@@ -1721,7 +1721,7 @@ class OptimizationProblem:
             dataset_name: The name of the dataset to store the array.
             dtype: Numpy dtype or string. If None, dtype('f') will be used.
         """
-        if data_array is None:
+        if data_array is None or data_array == []:
             return
         if isinstance(data_array, ndarray):
             data_array = data_array.real

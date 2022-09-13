@@ -26,6 +26,7 @@ from unittest import mock
 import numpy as np
 import pytest
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import Concatenate
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
@@ -59,11 +60,6 @@ class TestMdofunction(unittest.TestCase):
         f = MDOFunction(math.sin, "sin")
         for x in range(100):
             assert f(x) == math.sin(x)
-
-        self.assertRaises(TypeError, MDOFunction, math.sin, 1)
-        self.assertRaises(TypeError, MDOFunction, math.sin, "sin", jac="cos")
-        self.assertRaises(TypeError, MDOFunction, math.sin, "sin", expr=math.sin)
-        self.assertRaises(TypeError, MDOFunction, math.sin, "sin", dim=1.3)
 
         self.assertRaises(TypeError, MDOFunction, math.sin, "sin", outvars=1.3)
         f2 = MDOFunction(
@@ -864,3 +860,51 @@ def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, t
         if k not in s_func_u_dict:
             ok = False
     assert ok
+
+
+@pytest.mark.parametrize(
+    "force_real,expected", [(False, array([1j])), (True, array([0.0]))]
+)
+def test_force_real(force_real, expected):
+    """Verify the use of force_real."""
+    f = MDOFunction(lambda x: x, "f", force_real=force_real)
+    assert f.evaluate(array([1j])) == expected
+
+
+@pytest.mark.parametrize(
+    "ft1,ft2,ft", [("", "", ""), ("obj", "", "obj"), ("", "obj", "obj")]
+)
+def test_f_type_sum_two_functions(ft1, ft2, ft):
+    """Verify the f_type of the sum of two functions."""
+    f = MDOFunction(lambda x: x, "f1", f_type=ft1) + MDOFunction(
+        lambda x: x, "f2", f_type=ft2
+    )
+    assert f.f_type == ft
+
+
+@pytest.mark.parametrize("f_type", ["", "obj"])
+def test_f_type_sum_function_and_number(f_type):
+    """Verify the f_type of the sum of a function and a number."""
+    f = MDOFunction(lambda x: x, "f", f_type=f_type) + 1.0
+    assert f.f_type == f_type
+
+
+@pytest.mark.parametrize(
+    "f_out,g_out,h_out",
+    [
+        (None, None, []),
+        (["a"], None, []),
+        (None, ["b"], []),
+        (["a"], ["b"], ["a", "b"]),
+    ],
+)
+def test_concatenate(f_out, g_out, h_out):
+    """Check ``Concatenate.outvars``."""
+    f = Concatenate(
+        [
+            MDOFunction(lambda x: x, "f", outvars=f_out),
+            MDOFunction(lambda x: x, "g", outvars=g_out),
+        ],
+        "h",
+    )
+    assert f.outvars == h_out
