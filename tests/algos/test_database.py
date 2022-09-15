@@ -18,6 +18,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - stacked data ; docstrings
+from __future__ import annotations
+
 from pathlib import Path
 
 import h5py
