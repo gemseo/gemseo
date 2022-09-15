@@ -23,7 +23,9 @@ from __future__ import annotations
 
 import logging
 import sys
+from typing import ClassVar
 from typing import Iterable
+from typing import MutableSequence
 from typing import Sequence
 
 import matplotlib.gridspec as gridspec
@@ -78,6 +80,9 @@ class OptHistoryView(OptPostProcessor):
     """
 
     DEFAULT_FIG_SIZE = (11.0, 6.0)
+
+    x_label: ClassVar[str] = "Iterations"
+    """The label for the x-axis."""
 
     def __init__(
         self,
@@ -143,7 +148,7 @@ class OptHistoryView(OptPostProcessor):
 
     def _plot_cstr_history(
         self,
-        cstr_names: Sequence[str],
+        cstr_names: MutableSequence[str],
         cstr_type: str,
     ) -> None:
         """Create the plot for (in)equality constraints.
@@ -196,8 +201,7 @@ class OptHistoryView(OptPostProcessor):
         return f_hist, x_hist, x_hist.shape[0]
 
     def _get_constraints(
-        self,
-        constraint_names: Iterable[str],
+        self, constraint_names: MutableSequence[str]
     ) -> tuple[ndarray, list[ndarray]]:
         """Extract a history of constraints.
 
@@ -293,6 +297,7 @@ class OptHistoryView(OptPostProcessor):
 
         ax1.set_yticks(arange(n_variables))
         ax1.set_yticklabels(y_labels)
+        ax1.set_xlabel(self.x_label)
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
@@ -356,7 +361,7 @@ class OptHistoryView(OptPostProcessor):
 
         fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
-        pylab.plt.xlabel("Iterations", fontsize=12)
+        pylab.plt.xlabel(self.x_label, fontsize=12)
         pylab.plt.ylabel("Objective value", fontsize=12)
 
         pylab.plt.plot(x_absc, obj_history)
@@ -395,7 +400,7 @@ class OptHistoryView(OptPostProcessor):
         """
         fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
-        pylab.plt.xlabel("Iterations", fontsize=12)
+        pylab.plt.xlabel(self.x_label, fontsize=12)
         pylab.plt.ylabel("||x-x*||", fontsize=12)
 
         n_i = x_history.shape[0]
@@ -430,22 +435,18 @@ class OptHistoryView(OptPostProcessor):
         self._add_figure(fig, "x_xstar")
 
     @staticmethod
-    def _cstr_number(
-        cstr_names: Sequence[str],
-        cstr_history: ndarray,
-    ) -> int:
+    def _cstr_number(constraint_history: Iterable[ndarray]) -> int:
         """Compute the total scalar constraints number.
 
         Args:
-            cstr_names: The names of the constraints.
-            cstr_history: The history of the constraints.
+            constraint_history: The history of the constraints.
 
         Returns:
             The number of constraints.
         """
         n_cstr = 0
-        for cstr_i in range(len(cstr_names)):
-            c_hist_loc = atleast_2d(cstr_history[cstr_i]).T
+        for constraint_history_i in constraint_history:
+            c_hist_loc = atleast_2d(constraint_history_i).T
             if c_hist_loc.shape[1] == 1:
                 c_hist_loc = c_hist_loc.T
             n_cstr += c_hist_loc.shape[0]
@@ -454,7 +455,7 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_cstr_plot(
         self,
-        cstr_history: ndarray,
+        cstr_history: Iterable[ndarray],
         cstr_type: str,
         cstr_names: Sequence[str],
     ) -> None:
@@ -465,7 +466,7 @@ class OptHistoryView(OptPostProcessor):
             cstr_type: The type of the constraints, either 'eq' or 'ineq'.
             cstr_names: The names of the constraints.
         """
-        n_cstr = self._cstr_number(cstr_names, cstr_history)
+        n_cstr = self._cstr_number(cstr_history)
         if n_cstr == 0:
             return
 
@@ -475,7 +476,7 @@ class OptHistoryView(OptPostProcessor):
         cstr_labels = []
 
         max_iter = 0
-        for (_, cstr_history_i) in enumerate(cstr_history):
+        for cstr_history_i in cstr_history:
             history_i = atleast_2d(cstr_history_i).T
             if history_i.shape[1] == 1:
                 history_i = history_i.T
@@ -571,8 +572,8 @@ class OptHistoryView(OptPostProcessor):
         ax1.set_yticks(list(range(n_cstr)))
         ax1.set_yticklabels(cstr_labels)
 
-        ax1.set_xlabel("evaluations")
-        ax1.set_title("Evolution of the " + fullname + " constraints")
+        ax1.set_xlabel(self.x_label)
+        ax1.set_title(f"Evolution of the {fullname} constraints")
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         ax1.hlines(
@@ -644,7 +645,7 @@ class OptHistoryView(OptPostProcessor):
         axe = fig.add_subplot(grid[0, 0])
 
         axe.set_title("Hessian diagonal approximation")
-        axe.set_xlabel("Iterations", fontsize=12)
+        axe.set_xlabel(self.x_label, fontsize=12)
         axe.set_ylabel("Variable id", fontsize=12)
         axe.xaxis.set_major_locator(MaxNLocator(integer=True))
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
