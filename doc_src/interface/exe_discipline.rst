@@ -24,6 +24,7 @@ The input and output template files can be edited using the dedicated GUI, see n
 .. currentmodule:: gemseo.wrappers.disc_from_exe
 .. autoclass:: DiscFromExe
    :noindex:
+   :no-inherited-members:
 
 Inputs and outputs files template edition GUI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,6 +34,7 @@ Inputs and outputs files template edition GUI
 .. currentmodule:: gemseo.wrappers.template_grammar_editor
 .. autoclass:: QtTemplateEditor
    :noindex:
+   :no-inherited-members:
 
 
 The following screenshots detail the steps to create the templates from the reference input file.
@@ -57,7 +59,7 @@ The following screenshots detail the steps to create the templates from the refe
 .. figure:: figs/gui_template_4.png
    :scale: 100 %
 
-   The GUI highlights the inputs that ae tagged in the template
+   The GUI highlights the inputs that are tagged in the template
 
 
 .. figure:: figs/gui_template_5.png

@@ -211,7 +211,7 @@ def test_disc_from_exe_invalid_folder_iter(xfail_if_windows_unc_issue, tmp_wd):
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     with pytest.raises(
-        ValueError, match="wrong_folder_iter is not a valid folder_iter value."
+        ValueError, match="wrong_folder_iter is not a valid FoldersIter value."
     ):
         create_discipline(
             "DiscFromExe",
