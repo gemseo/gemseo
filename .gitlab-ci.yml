@@ -9,27 +9,22 @@ variables:
   MATLAB_PYTHON_WRAPPER_WINDOWS:
     value: ""
     description: Enable with git+file:////C:\python-matlab@windows ; python_version<'3.9'
-  PYTEST_ADD_OPTS:
-    value: ""
-    description: "Additional CLI arguments passed to pytest."
+
+.tags:
+  - saas-linux-medium-amd64
+  - windows-server-2012
 
 # Base test job, common to all the tests jobs.
 test:
   extends:
     - .test-base
-  variables:
-    PYTEST_ADDOPTS: --junitxml=report.xml --cov-report=term:skip-covered $PYTEST_ADD_OPTS
   parallel:
     matrix:
-      - TAG:
-          - docker
-          - windows-server-2012
+      - TAG: !reference [.tags]
         TOX_ENV_NAME:
           - py39-coverage
   tags:
-    - irt
     - $TAG
-
 
 # Define jobs for minor python env with this extended parent.
 extended-test:
@@ -45,9 +40,7 @@ extended-test:
     - !reference [test, rules]
   parallel:
     matrix:
-      - TAG:
-          - docker
-          - windows-server-2012
+      - TAG: !reference [.tags]
         TOX_ENV_NAME:
           - py37-coverage
           - py38-coverage
