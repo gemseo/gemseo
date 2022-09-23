@@ -31,22 +31,23 @@ The required dependencies provide the core features of |g|,
 these are:
 
     - docstring-inheritance ==1.0.0
-    - fastjsonschema <=2.16.1
+    - fastjsonschema >=2.14.5,<=2.16.1
     - genson ==1.2.2
-    - h5py >=2.3,<=3.6.0
-    - jinja2 <=3.1.2
-    - matplotlib >=2,<=3.5.2
+    - h5py >=3.0.0,<=3.6.0
+    - jinja2 >=3.0.0,<=3.1.2
+    - matplotlib >=3.3.0,<=3.5.2
     - networkx >=2.2,<=2.8.5
-    - numpy >=1.10,<=1.23.1
+    - numpy >=1.21,<=1.23.1
     - packaging <=21.3
-    - pandas >=0.16,<=1.4.3
-    - pyxdsm <=2.2.1
+    - pandas >=1.1.0,<=1.4.3
+    - pyxdsm >=2.1.0,<=2.2.1
     - requests
-    - scipy >=1.1,<=1.7.3
+    - scipy >=1.4,<=1.7.3
     - tqdm >=4.41,<=4.64.0
     - typing-extensions >=4,<5
     - xdsmjs >=1.0.0,<=1.0.1
     - xxhash ==3.0.0
+
 
 The minimal dependencies will allow to execute
 :ref:`MDO processes <mdo_formulations>`
@@ -69,12 +70,12 @@ All these tools are open source with non-viral licenses
 (see :ref:`credits`):
 
    - graphviz >=0.16,<=0.20: coupling graph generation
-   - nlopt >=2.4.2,<=2.7.1: optimization library
+   - nlopt >=2.7.0,<=2.7.1: optimization library
    - openpyxl <=3.0.10: Excel reading with pandas
-   - openturns >=1.13,<=1.18: designs of experiments, machine learning, uncertainty quantification
+   - openturns >=1.16,<=1.18: designs of experiments, machine learning, uncertainty quantification
    - pdfo >=1.0,<=1.2: derivative-free optimization algorithms
-   - pydoe2 >=0.3.8,<=1.3.0: design of experiments
+   - pydoe2 >=1.0.2,<=1.3.0: design of experiments
    - pyside6 >=6.3.0,<=6.3.1: grammar editor GUI
    - scikit-learn >=0.18,<=1.1.1: machine learning
-   - sympy >=0.7,<=1.10.1: symbolic calculations for analytic disciplines
-   - xlwings ==0.27.0: Excel reading on Windows
+   - sympy >=1.5,<=1.10.1: symbolic calculations for analytic disciplines
+   - xlwings >=0.27.0,<=0.27.15: Excel reading on Windows
