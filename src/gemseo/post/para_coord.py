@@ -85,7 +85,7 @@ class ParallelCoordinates(OptPostProcessor):
         axes.set_xticks(x_values)
         axes.set_xticklabels(x_names, rotation=90)
         axes.grid()
-        fig.colorbar(s_m)
+        fig.colorbar(s_m, ax=axes)
         return fig
 
     def _plot(self, **options: OptPostProcessorOptionType) -> None:

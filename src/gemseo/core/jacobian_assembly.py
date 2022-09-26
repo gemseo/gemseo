@@ -33,8 +33,8 @@ from scipy.sparse import dia_matrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import vstack
 from scipy.sparse.csc import csc_matrix
-from scipy.sparse.linalg.dsolve.linsolve import factorized
-from scipy.sparse.linalg.interface import LinearOperator
+from scipy.sparse.linalg import factorized
+from scipy.sparse.linalg import LinearOperator
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
