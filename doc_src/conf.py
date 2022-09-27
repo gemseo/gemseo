@@ -70,19 +70,27 @@ examples_subdirs = [
     and (examples_dir / subdir / "README.rst").is_file()
 ]
 
-examples_dirs = [(examples_dir / subdir) for subdir in examples_subdirs]
-gallery_dirs = [(gallery_dir / subdir) for subdir in examples_subdirs]
+examples_dirs = [str(examples_dir / subdir) for subdir in examples_subdirs]
+gallery_dirs = [str(gallery_dir / subdir) for subdir in examples_subdirs]
 
 sphinx_gallery_conf = {
     # path to your example scripts
     "examples_dirs": examples_dirs,
     # path to where to save gallery generated output
     "gallery_dirs": gallery_dirs,
-    "default_thumb_file": current_dir / "_static/icon.png",
+    "default_thumb_file": str(current_dir / "_static/icon.png"),
     "within_subsection_order": ExampleTitleSortKey,
     "filename_pattern": r"\.py$",
     "ignore_pattern": r"run\.py",
     "only_warn_on_example_error": True,
+    # directory where function/class granular galleries are stored
+    "backreferences_dir": "gen_modules/backreferences",
+    # Modules for which function/class level galleries are created. In
+    # this case sphinx_gallery and numpy in a tuple of strings.
+    "doc_module": ("gemseo"),
+    # objects to exclude from implicit backreferences. The default option
+    # is an empty set, i.e. exclude nothing.
+    "exclude_implicit_doc": {r"gemseo\.api\.configure_logger"},
 }
 
 ################################################################################
