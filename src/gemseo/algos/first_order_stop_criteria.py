@@ -81,9 +81,16 @@ def kkt_residual_computation(
     Returns:
         The KKT residual norm.
     """
+    res = opt_problem.database.get_f_of_x(opt_problem.KKT_RESIDUAL_NORM, x_vect)
+    if res is not None:
+        return res
     lagrange = LagrangeMultipliers(opt_problem)
     if opt_problem.has_constraints():
         lagrange.compute(x_vect, ineq_tolerance=ineq_tolerance)
-        return lagrange.kkt_residual + lagrange.constraint_violation
+        res = lagrange.kkt_residual + lagrange.constraint_violation
+        opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
+        return res
     else:
-        return norm(lagrange.get_objective_jacobian(x_vect))
+        res = norm(lagrange.get_objective_jacobian(x_vect))
+        opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
+        return res

@@ -709,8 +709,8 @@ def test_name():
     assert Database(name="my_database").name == "my_database"
 
 
-def test_notify_newiter_listeners():
-    """Check that notify_newiter_listeners works properly."""
+def test_notify_newiter_store_listeners():
+    """Check that notify_newiter_listeners and notify_store_listeners works properly."""
     database = Database()
     database.x_sum = 0
 
@@ -720,10 +720,15 @@ def test_notify_newiter_listeners():
     database.store(array([1]), {"y": 0})
     assert database.notify_newiter_listeners() is None
     database.add_new_iter_listener(add)
+    database.add_store_listener(add)
     database.notify_newiter_listeners()
     assert database.x_sum == 1
     database.notify_newiter_listeners(HashableNdarray(array([2])))
     assert database.x_sum == 3
+    database.notify_store_listeners()
+    assert database.x_sum == 4
+    database.notify_store_listeners(HashableNdarray(array([2])))
+    assert database.x_sum == 6
 
 
 @pytest.fixture

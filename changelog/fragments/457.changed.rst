@@ -1,0 +1,3 @@
+:method:`Database.notify_store_listener` design vector is taken as input and when not provided last iteration design vector is employed.
+).
+The KKT criterion when kkt tolerances are provided is computed at each new storage.
