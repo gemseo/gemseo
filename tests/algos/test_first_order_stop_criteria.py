@@ -72,4 +72,6 @@ def test_kkt_norm_correctly_stored(algorithm, problem):
     )
     kkt_hist = problem.database.get_func_history(problem.KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_func_grad_history(problem.objective.name)
+    obj_hist = problem.database.get_func_history(problem.objective.name)
     assert len(kkt_hist) == obj_grad_hist.shape[0]
+    assert len(obj_hist) >= len(kkt_hist)
