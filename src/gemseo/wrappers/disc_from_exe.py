@@ -27,7 +27,7 @@ import sys
 from ast import literal_eval
 from copy import deepcopy
 from multiprocessing import Lock
-from multiprocessing import Manager
+from multiprocessing import Value
 from os import listdir
 from pathlib import Path
 from typing import Callable
@@ -237,7 +237,7 @@ class DiscFromExe(MDODiscipline):
         self._output_data = None
         self._in_lines = None
         self._out_lines = None
-        self._counter = Manager().Value("i", self._get_max_outdir())
+        self._counter = Value("i", self._get_max_outdir())
         self.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
 

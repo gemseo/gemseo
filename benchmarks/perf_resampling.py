@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Benchmark for resampling."""
 import argparse
 import cProfile  # noqa: F401
 import sys
@@ -42,6 +43,7 @@ class ResamplingBenchmarkee(BaseBenchmarkee):
     """To benchmark many disciplines classes."""
 
     def __init__(self, use_configure: bool):
+        """Constructor."""
         if use_configure:
             from gemseo.api import configure
 
@@ -51,12 +53,14 @@ class ResamplingBenchmarkee(BaseBenchmarkee):
         super().__init__()
 
     def setup(self):
+        """Set up the benchmark."""
         discipline = AnalyticDiscipline({"y": "u"}, "func")
         space = DesignSpace()
         space.add_variable("u", l_b=0.0, u_b=1.0, value=0.5)
         self.scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", space)
 
     def run(self):
+        """Run the benchmark."""
         _execute_doe_scenario(self.scenario)
 
 

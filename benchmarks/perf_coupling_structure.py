@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Benchmark for coupling structure."""
 import argparse
 import cProfile  # noqa: F401
 import pickle
@@ -84,14 +85,17 @@ class ComputeGraphBenchmarkee(BaseBenchmarkee):
     """To benchmark many disciplines classes."""
 
     def __init__(self, file_path):
+        """Constructor."""
         self.file_path = Path(file_path)
         self.nodes = None
         super().__init__()
 
     def setup(self):
+        """Set up the benchmark."""
         self.nodes = pickle.load(open(self.file_path, "rb"))
 
     def run(self):
+        """Run the benchmark."""
         _compute_graph(self.nodes)
 
     def __str__(self):
