@@ -314,7 +314,7 @@ class OptimizationLibrary(DriverLib):
                             database.get_gradient_name(function_name), x_vect
                         )
                         is None
-                    ):
+                    ) or (database.get_f_of_x(function_name, x_vect) is None):
                         check_kkt = False
                         break
                 if check_kkt and (self.__ref_kkt_norm is None):
