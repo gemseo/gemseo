@@ -14,6 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pytest as pytest
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
+from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import array
@@ -31,6 +32,9 @@ def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum):
             problem, design_point, kkt_abs_tol=1e-2, kkt_rel_tol=1e-2
         )
         == is_optimum
+    )
+    assert (
+        problem.database.get_f_of_x(problem.KKT_RESIDUAL_NORM, design_point) is not None
     )
 
 
@@ -50,3 +54,22 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum):
         )
         == is_optimum
     )
+    assert (
+        problem.database.get_f_of_x(problem.KKT_RESIDUAL_NORM, design_point) is not None
+    )
+
+
+@pytest.mark.parametrize("algorithm", ["NLOPT_SLSQP", "SLSQP"])
+@pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
+def test_kkt_norm_correctly_stored(algorithm, problem):
+    """Test that kkt norm is stored at each iteration requiring gradient."""
+    OptimizersFactory().execute(
+        problem,
+        algorithm,
+        normalize_design_space=True,
+        kkt_tol_abs=1e-3,
+        kkt_tol_rel=1e-3,
+    )
+    kkt_hist = problem.database.get_func_history(problem.KKT_RESIDUAL_NORM)
+    obj_grad_hist = problem.database.get_func_grad_history(problem.objective.name)
+    assert len(kkt_hist) == obj_grad_hist.shape[0]

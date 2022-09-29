@@ -630,7 +630,7 @@ class Database:
             curr_val.update(values_dict)
 
         if self.__store_listeners:
-            self.notify_store_listeners()
+            self.notify_store_listeners(x_vect)
         # Notify the new iteration after storing x_vect
         # because callbacks may need an updated x_vect
         if self.__newiter_listeners:
@@ -675,10 +675,22 @@ class Database:
         self.__store_listeners = []
         self.__newiter_listeners = []
 
-    def notify_store_listeners(self) -> None:
-        """Notify the listeners that a new entry was stored in the database."""
+    def notify_store_listeners(
+        self,
+        x_vect: ndarray | None = None,
+    ) -> None:
+        """Notify the listeners that a new entry was stored in the database.
+
+        Args:
+            x_vect: The values of the design variables. If None, use
+                the values of the last iteration.
+        """
+        if isinstance(x_vect, HashableNdarray):
+            x_vect = x_vect.wrapped
+        elif x_vect is None:
+            x_vect = self.get_x_by_iter(-1)
         for func in self.__store_listeners:
-            func()
+            func(x_vect)
 
     def notify_newiter_listeners(
         self,

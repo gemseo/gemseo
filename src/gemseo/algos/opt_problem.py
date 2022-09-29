@@ -272,6 +272,7 @@ class OptimizationProblem:
 
     HDF5_FORMAT: Final[str] = "hdf5"
     GGOBI_FORMAT: Final[str] = "ggobi"
+    KKT_RESIDUAL_NORM: Final[str] = "KKT residual norm"
 
     def __init__(
         self,

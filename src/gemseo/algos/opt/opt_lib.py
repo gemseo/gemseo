@@ -227,6 +227,9 @@ class OptimizationLibrary(DriverLib):
         self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
         problem.add_callback(self.new_iteration_callback)
+        problem.add_callback(
+            self.__check_kkt_from_database, each_new_iter=False, each_store=True
+        )
         # First, evaluate all functions at x_0. Some algorithms don't do this
         self.problem.design_space.initialize_missing_current_values()
         self.problem.evaluate_functions(
@@ -272,13 +275,13 @@ class OptimizationLibrary(DriverLib):
         return True
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
-        """
+        """Verify the design variable and objective value stopping criteria.
+
         Raises:
             FtolReached: If the defined relative or absolute function
                 tolerance is reached.
             XtolReached: If the defined relative or absolute x tolerance
                 is reached.
-            KKTReached: If the absolute tolerance on the KKT residual is reached.
         """
         # First check if the max_iter is reached and update the progress bar
         super().new_iteration_callback(x_vect)
@@ -292,6 +295,12 @@ class OptimizationLibrary(DriverLib):
         ):
             raise XtolReached()
 
+    def __check_kkt_from_database(self, x_vect: ndarray | None = None) -> None:
+        """Verify, if required, KKT norm stopping criterion at each database storage.
+
+        Raises:
+            KKTReached: If the absolute tolerance on the KKT residual is reached.
+        """
         if self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None:
             if self.descriptions[self.algo_name].require_gradient:
                 check_kkt = True
