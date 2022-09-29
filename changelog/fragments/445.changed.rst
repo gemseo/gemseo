@@ -1,0 +1,1 @@
+A global multi-processing manager is now used, this improves the performance of multiprocessing on Windows platforms.

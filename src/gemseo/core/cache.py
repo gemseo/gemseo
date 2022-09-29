@@ -27,7 +27,6 @@ import sys
 from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
-from multiprocessing import Manager
 from multiprocessing import RLock
 from multiprocessing import Value
 from typing import ClassVar
@@ -35,9 +34,6 @@ from typing import Generator
 from typing import Iterable
 from typing import Mapping
 from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
 
 from numpy import append
 from numpy import array
@@ -59,8 +55,12 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
+from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.testing import compare_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.core.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -382,9 +382,6 @@ class AbstractFullCache(AbstractCache):
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
     """
 
-    _manager: Manager
-    """The multiprocessing manager."""
-
     _hashes_to_indices: dict[int, ndarray]
     """The indices associated with the hashes."""
 
@@ -401,8 +398,7 @@ class AbstractFullCache(AbstractCache):
     ) -> None:
         super().__init__(tolerance, name)
         self.lock_hashes = RLock()
-        self._manager = Manager()
-        self._hashes_to_indices = self._manager.dict()
+        self._hashes_to_indices = get_multi_processing_manager().dict()
         self._max_index = Value("i", 0)
         self._last_accessed_index = Value("i", 0)
         self.lock = self._set_lock()
@@ -577,7 +573,7 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def clear(self) -> None:
         super().clear()
-        self._hashes_to_indices = self._manager.dict()
+        self._hashes_to_indices.clear()
         self._max_index.value = 0
         self._last_accessed_index.value = 0
 
