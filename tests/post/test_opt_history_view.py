@@ -100,7 +100,7 @@ def test_opt_hist_const(pyplot_close_all):
         ),
     ],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all):
     """Test the generation of the plots from databases.
 

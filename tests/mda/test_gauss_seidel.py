@@ -17,8 +17,6 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from pathlib import Path
-
 import pytest
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
@@ -32,22 +30,19 @@ from numpy import array
 from numpy import isclose
 
 
-@pytest.mark.usefixtures("tmp_wd")
-def test_sobieski():
+@image_comparison(["sobieski"])
+def test_sobieski(tmp_wd):
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
     mda.default_inputs["x_shared"] += 0.1
     mda.execute()
-    mda.plot_residual_history(False, True, filename="GaussSeidel.pdf")
     mda.default_inputs["x_shared"] += 0.1
     mda.warm_start = True
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
 
-    filename = "SobieskiMDAGS_residual_history.pdf"
-    mda.plot_residual_history(save=True, filename=filename)
-    assert Path(filename).exists
+    mda.plot_residual_history(save=False)
 
 
 def test_expected_workflow():
@@ -101,9 +96,6 @@ def test_over_relaxation(over_relax_factor):
     )
     mda.execute()
     assert mda.residual_history[-1] <= tolerance
-    # mda.plot_residual_history(
-    # save=True, filename="GaussSeidel_relax{}.pdf".format(over_relax_factor)
-    # )
 
 
 class SelfCoupledDisc(MDODiscipline):
@@ -174,11 +166,9 @@ def test_plot_residual_history(
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=10)
     mda.execute()
-    mda.plot_residual_history(
-        False, False, n_iterations=n_iterations, logscale=logscale
-    )
+    mda.plot_residual_history(save=False, n_iterations=n_iterations, logscale=logscale)
 
     if n_iterations == 50:
         assert (

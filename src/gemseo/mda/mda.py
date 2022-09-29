@@ -28,6 +28,7 @@ from typing import Mapping
 from typing import Sequence
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 from numpy import array
 from numpy import concatenate
@@ -58,6 +59,7 @@ class MDA(MDODiscipline):
         "reset_history_each_run",
         "norm0",
         "residual_history",
+        "_starting_indices",
         "tolerance",
         "max_mda_iter",
         "_log_convergence",
@@ -100,7 +102,7 @@ class MDA(MDODiscipline):
 
     assembly: JacobianAssembly
 
-    residual_history: list
+    residual_history: list[float]
     """The history of MDA residuals."""
 
     reset_history_each_run: bool
@@ -129,6 +131,9 @@ class MDA(MDODiscipline):
 
     lin_cache_tol_fact: float
     """The tolerance factor to cache the Jacobian."""
+
+    _starting_indices: list[int]
+    """The indices of the residual history where a new execution starts."""
 
     def __init__(
         self,
@@ -184,6 +189,7 @@ class MDA(MDODiscipline):
             self.coupling_structure = coupling_structure
         self.assembly = JacobianAssembly(self.coupling_structure)
         self.residual_history = []
+        self._starting_indices = []
         self.reset_history_each_run = False
         self.warm_start = warm_start
         self._scale_residuals_with_coupling_size = False
@@ -238,7 +244,7 @@ class MDA(MDODiscipline):
         as it is set using the linear_solver_tolerance keyword argument.
 
         Raises:
-            ValueError: If the 'tol' keyword is in linear_solver_options.
+            ValueError: If the ``tol`` keyword is in :attr:`.linear_solver_options`.
         """
         if "tol" in self.linear_solver_options:
             msg = (
@@ -334,14 +340,14 @@ class MDA(MDODiscipline):
             inputs = set(self.get_input_data_names())
             outputs = self.get_output_data_names()
             # Don't linearize wrt
-            inputs = inputs - (strong_cpl & inputs)
+            inputs -= strong_cpl & inputs
             # Don't do this with output couplings because
             # their derivatives wrt design variables may be needed
             # outputs = outputs - (strong_cpl & outputs)
 
             return inputs, outputs
 
-        return MDODiscipline._retrieve_diff_inouts(self, False)
+        return super()._retrieve_diff_inouts()
 
     def _couplings_warm_start(self) -> None:
         """Load the previous couplings values to local data."""
@@ -410,7 +416,7 @@ class MDA(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        # Do not re execute disciplines if inputs error is beyond self tol
+        # Do not re-execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
         # of first discipline
         # have changed at convergence, therefore the cache is not exactly
@@ -449,7 +455,7 @@ class MDA(MDODiscipline):
         new_couplings: ndarray,
         store_it: bool = True,
         log_normed_residual: bool = False,
-    ) -> ndarray:
+    ) -> float:
         """Compute the residual on the inputs of the MDA.
 
         Args:
@@ -463,6 +469,7 @@ class MDA(MDODiscipline):
         """
         if self._current_iter == 0 and self.reset_history_each_run:
             self.residual_history = []
+            self._starting_indices = []
 
         normed_residual = norm((current_couplings - new_couplings).real)
 
@@ -490,6 +497,8 @@ class MDA(MDODiscipline):
             )
 
         if store_it:
+            if self._current_iter == 0:
+                self._starting_indices.append(len(self.residual_history))
             self.residual_history.append(self.normed_residual)
             self._current_iter += 1
         return self.normed_residual
@@ -696,12 +705,10 @@ class MDA(MDODiscipline):
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
         fig_size: tuple[float, float] = (50.0, 10.0),
-    ) -> None:
+    ) -> Figure:
         """Generate a plot of the residual history.
 
-        All residuals are stored in the history;
-        only the final residual of the converged MDA is plotted
-        at each optimization iteration.
+        The first iteration of each new execution is marked with a red dot.
 
         Args:
             show: Whether to display the plot on screen.
@@ -733,7 +740,8 @@ class MDA(MDODiscipline):
 
         # red dot for first iteration
         colors = ["black"] * n_iterations
-        colors[0] = "red"
+        for index in self._starting_indices:
+            colors[index] = "red"
 
         fig_ax.scatter(
             list(range(n_iterations)),
@@ -756,9 +764,8 @@ class MDA(MDODiscipline):
         if logscale is not None:
             plt.ylim(logscale)
 
-        if save:
-            if filename is None:
-                filename = f"{self.name}_residual_history.pdf"
+        if save and filename is None:
+            filename = f"{self.name}_residual_history.pdf"
 
         save_show_figure(fig, show, filename, fig_size)
 
