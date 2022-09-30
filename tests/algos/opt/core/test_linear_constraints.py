@@ -21,7 +21,7 @@ import pytest
 from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from numpy import allclose
 from numpy import arange
 from numpy import array

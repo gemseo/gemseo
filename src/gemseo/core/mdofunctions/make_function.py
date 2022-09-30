@@ -31,6 +31,7 @@ from typing import Union
 from numpy import empty
 from numpy import ndarray
 
+from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -84,8 +85,8 @@ class MakeFunction(MDOFunction):
         self.__names_to_indices = {}
         self.__names_to_sizes = names_to_sizes or {}
         super().__init__(
-            self._func,
-            jac=self._func_jac,
+            self._func_to_wrap,
+            jac=self._jac_to_wrap,
             name="_".join(self.__output_names),
             args=self.__input_names,
             outvars=self.__output_names,
@@ -113,7 +114,7 @@ class MakeFunction(MDOFunction):
             self.__output_indices[name] = slice(start, self.__output_size)
             start = self.__output_size
 
-    def _func(self, x_vect: ndarray) -> OperandType:
+    def _func_to_wrap(self, x_vect: ArrayType) -> OperandType:
         """Compute an output vector from an input one.
 
         Args:
@@ -133,7 +134,7 @@ class MakeFunction(MDOFunction):
 
         return output_data
 
-    def _func_jac(self, x_vect: ndarray) -> ndarray:
+    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the Jacobian value from an input vector.
 
         Args:

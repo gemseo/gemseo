@@ -43,8 +43,8 @@ from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import XtolReached
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 
 
 @dataclass

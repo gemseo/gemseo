@@ -27,11 +27,11 @@ from typing import Sequence
 from typing import TYPE_CHECKING
 
 from numpy import eye
-from numpy import ndarray
 from numpy import ones_like
 from numpy import zeros
 
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -74,19 +74,16 @@ class ConsistencyCstr(MDOFunction):
             expr += f"{out_c}({', '.join(self.__dv_names_of_disc)}) - {out_c}\n"
 
         super().__init__(
-            self._coupl_min_x,
+            self._func_to_wrap,
             self.__coupl_func.name,
             args=self.__dv_names_of_disc,
             expr=expr,
-            jac=self._coupl_min_x_jac,
+            jac=self._jac_to_wrap,
             outvars=self.__coupl_func.outvars,
             f_type=MDOFunction.TYPE_EQ,
         )
 
-    def _coupl_min_x(
-        self,
-        x_vect: ndarray,
-    ) -> ndarray:
+    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the consistency constraints.
 
         Args:
@@ -102,10 +99,7 @@ class ConsistencyCstr(MDOFunction):
             return (coupl - x_sw) / self.__norm_fact
         return coupl - x_sw
 
-    def _coupl_min_x_jac(
-        self,
-        x_vect: ndarray,
-    ) -> ndarray:
+    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the gradient of the consistency constraints.
 
         Args:

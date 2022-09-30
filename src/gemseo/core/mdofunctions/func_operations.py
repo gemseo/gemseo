@@ -22,6 +22,7 @@ from numpy import delete
 from numpy import insert
 from numpy import ndarray
 
+from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
@@ -53,11 +54,10 @@ class RestrictedFunction(MDOFunction):
         self.restriction_values = restriction_values
         self._restriction_indices = restriction_indices
         self._orig_function = orig_function
-        name = str(orig_function.name) + "_restr"
         super().__init__(
-            self.__restricted_function,
-            name,
-            jac=self.__restricted_jac,
+            self._func_to_wrap,
+            f"{orig_function.name}_restr",
+            jac=self._jac_to_wrap,
             f_type=orig_function.f_type,
             expr=orig_function.expr,
             args=orig_function.args,
@@ -65,7 +65,7 @@ class RestrictedFunction(MDOFunction):
             outvars=orig_function.outvars,
         )
 
-    def __restricted_function(self, x_vect: ndarray) -> MDOFunction:
+    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Wrap the provided function in order to be given to the optimizer.
 
         Args:
@@ -77,7 +77,7 @@ class RestrictedFunction(MDOFunction):
         x_full = insert(x_vect, self._restriction_indices, self.restriction_values)
         return self._orig_function(x_full)
 
-    def __restricted_jac(self, x_vect: ndarray) -> MDOFunction.jac:
+    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Wrap the provided Jacobian in order to be given to the optimizer.
 
         Args:

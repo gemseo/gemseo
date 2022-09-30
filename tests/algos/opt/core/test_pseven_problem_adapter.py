@@ -29,7 +29,9 @@ from gemseo.algos.opt.core.pseven_problem_adapter import PSevenProblem  # noqa: 
 from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
 from gemseo.core.mdofunctions.mdo_function import (  # noqa: E402
     MDOFunction,
-    MDOLinearFunction,
+)
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction  # noqa: E402
+from gemseo.core.mdofunctions.mdo_quadratic_function import (  # noqa: E402
     MDOQuadraticFunction,
 )
 from gemseo.problems.analytical.power_2 import Power2  # noqa: E402
