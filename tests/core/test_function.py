@@ -399,7 +399,7 @@ class TestMdofunctiongenerator(unittest.TestCase):
 
     def test_wrong_default_inputs(self):
         sr = SobieskiMission()
-        sr.default_inputs = {"y_34": [1]}
+        sr.default_inputs = {"y_34": array([1])}
         gen = MDOFunctionGenerator(sr)
         range_f_z = gen.get_function(["x_shared"], ["y_4"])
         self.assertRaises(ValueError, range_f_z, array([1.0]))
