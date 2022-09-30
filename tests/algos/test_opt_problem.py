@@ -41,7 +41,7 @@ from gemseo.api import create_scenario
 from gemseo.api import execute_algo
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem

@@ -69,9 +69,9 @@ class NormFunction(MDOFunction):
         self.__evaluate_orig_func = self.__orig_func.evaluate
 
         super().__init__(
-            self._func,
+            self._func_to_wrap,
             name=orig_func.name,
-            jac=self._jac,
+            jac=self._jac_to_wrap,
             f_type=orig_func.f_type,
             expr=orig_func.expr,
             args=orig_func.args,
@@ -79,7 +79,7 @@ class NormFunction(MDOFunction):
             outvars=orig_func.outvars,
         )
 
-    def _func(
+    def _func_to_wrap(
         self,
         x_vect: ndarray,
     ) -> ndarray:
@@ -97,7 +97,7 @@ class NormFunction(MDOFunction):
             x_vect = self.__round_vect(x_vect)
         return self.__evaluate_orig_func(x_vect)
 
-    def _jac(
+    def _jac_to_wrap(
         self,
         x_vect: ndarray,
     ) -> ndarray:

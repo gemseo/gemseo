@@ -33,7 +33,7 @@ from numpy.testing import assert_allclose  # noqa: E402
 from gemseo.algos.design_space import DesignSpace  # noqa: E402
 from gemseo.algos.opt.opt_factory import OptimizersFactory  # noqa: E402
 from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction  # noqa: E402
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction  # noqa: E402
 from gemseo.problems.analytical.power_2 import Power2  # noqa: E402
 from gemseo.problems.analytical.rosenbrock import Rosenbrock  # noqa: E402
 

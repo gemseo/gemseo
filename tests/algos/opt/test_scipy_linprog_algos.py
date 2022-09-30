@@ -23,7 +23,7 @@ from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import allclose
 from numpy import array

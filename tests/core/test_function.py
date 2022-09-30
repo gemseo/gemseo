@@ -25,14 +25,14 @@ from unittest import mock
 
 import numpy as np
 import pytest
+from gemseo.core.mdofunctions.concatenate import Concatenate
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.mdofunctions.mdo_function import Concatenate
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
-from gemseo.core.mdofunctions.mdo_function import SetPtFromDatabase
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
+from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -783,9 +783,16 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     f_op_2 = op(f, 2)
     suffix = ""
     if expr:
-        suffix = f" = 2{op_name}{expr}"
+        if op_name == "*":
+            suffix = f" = 2*{expr}"
+        else:
+            suffix = f" = {expr}/2"
 
-    assert repr(f_op_2) == f"2{op_name}f(x)" + suffix
+    if op_name == "*":
+        assert repr(f_op_2) == "2*f(x)" + suffix
+    else:
+        assert repr(f_op_2) == "f/2(x)" + suffix
+
     assert f_op_2(2) == func
     assert f_op_2.jac(2) == jac
 
