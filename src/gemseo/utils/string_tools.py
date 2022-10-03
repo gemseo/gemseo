@@ -44,6 +44,7 @@ def __stringify(
     delimiter: str,
     key_value_separator: str,
     function: Callable[[Any], str],
+    sort: bool,
 ) -> str:
     """Represent an object with a string.
 
@@ -53,28 +54,33 @@ def __stringify(
             in a key-value pair of a mapping.
         function: A function to represent an object with a string,
             e.g. :func:`str` or :func:`repr`.
+        sort: Whether to sort the elements when the object if a collection.
 
     Returns:
         A string representing the object.
     """
+    if not isinstance(obj, abc.Iterable):
+        return function(obj)
+
     if isinstance(obj, abc.Mapping):
-        return delimiter.join(
-            [
-                f"{key}{key_value_separator}{function(val)}"
-                for key, val in sorted(obj.items())
-            ]
-        )
+        obj = [
+            f"{str(key)}{key_value_separator}{function(val)}"
+            for key, val in obj.items()
+        ]
+    else:
+        obj = [function(val) for val in obj]
 
-    if isinstance(obj, abc.Iterable):
-        return delimiter.join([function(val) for val in obj])
+    if sort:
+        obj = sorted(obj)
 
-    return function(obj)
+    return delimiter.join(obj)
 
 
 def pretty_repr(
     obj: Any,
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+    sort: bool = True,
 ) -> str:
     """Return an unambiguous string representation of an object based on :func:`repr`.
 
@@ -83,17 +89,19 @@ def pretty_repr(
         delimiter: The string to separate string fields.
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
+        sort: Whether to sort the elements when the object if a collection.
 
     Returns:
          An unambiguous string representation of the object.
     """
-    return __stringify(obj, delimiter, key_value_separator, repr)
+    return __stringify(obj, delimiter, key_value_separator, repr, sort)
 
 
 def pretty_str(
     obj: Any,
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+    sort: bool = True,
 ) -> str:
     """Return a readable string representation of an object based on :func:`str`.
 
@@ -102,11 +110,12 @@ def pretty_str(
         delimiter: The string to separate string fields.
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
+        sort: Whether to sort the elements when the object if a collection.
 
     Returns:
          A readable string representation of the object.
     """
-    return __stringify(obj, delimiter, key_value_separator, str)
+    return __stringify(obj, delimiter, key_value_separator, str, sort)
 
 
 class MultiLineString:

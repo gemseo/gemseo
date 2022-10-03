@@ -143,15 +143,13 @@ class SurrogateDiscipline(MDODiscipline):
         model = self.regression_model.__class__.__name__
         data_name = self.regression_model.learning_set.name
         length = len(self.regression_model.learning_set)
-        inputs = sorted(self.regression_model.input_names)
-        outputs = sorted(self.regression_model.output_names)
         arguments = [
             f"name={self.name}",
             f"algo={model}",
             f"data={data_name}",
             f"size={length}",
-            f"inputs=[{pretty_str(inputs)}]",
-            f"outputs=[{pretty_str(outputs)}]",
+            f"inputs=[{pretty_str(self.regression_model.input_names)}]",
+            f"outputs=[{pretty_str(self.regression_model.output_names)}]",
             f"jacobian={self.linearization_mode}",
         ]
         msg = "SurrogateDiscipline({})".format(", ".join(arguments))
@@ -166,10 +164,8 @@ class SurrogateDiscipline(MDODiscipline):
         msg.add("Dataset name: {}", data_name)
         msg.add("Dataset size: {}", length)
         msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
-        inputs = sorted(self.regression_model.input_names)
-        outputs = sorted(self.regression_model.output_names)
-        msg.add("Inputs: {}", pretty_str(inputs))
-        msg.add("Outputs: {}", pretty_str(outputs))
+        msg.add("Inputs: {}", pretty_str(self.regression_model.input_names))
+        msg.add("Outputs: {}", pretty_str(self.regression_model.output_names))
         return str(msg)
 
     def _initialize_grammars(

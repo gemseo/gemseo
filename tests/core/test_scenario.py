@@ -375,7 +375,7 @@ def test_repr_str(idf_scenario):
     expected = [
         "MDOScenario",
         "   Disciplines: "
-        "SobieskiPropulsion SobieskiAerodynamics SobieskiMission SobieskiStructure",
+        "SobieskiAerodynamics SobieskiMission SobieskiPropulsion SobieskiStructure",
         "   MDO formulation: IDF",
     ]
     assert repr(idf_scenario) == "\n".join(expected)
