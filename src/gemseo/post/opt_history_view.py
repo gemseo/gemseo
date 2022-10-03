@@ -603,7 +603,6 @@ class OptHistoryView(OptPostProcessor):
         levels = concatenate((levels_neg, levels_pos))
         col_bar = fig.colorbar(im1, cax=cax, ticks=levels)
         col_bar.ax.tick_params(labelsize=9)
-        cax.set_xlabel("symlog")
 
         mng = pylab.plt.get_current_fig_manager()
         # mng.full_screen_toggle()
