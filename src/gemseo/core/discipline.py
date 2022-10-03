@@ -346,10 +346,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
-        inputs = sorted(self.get_input_data_names())
-        outputs = sorted(self.get_output_data_names())
-        msg.add("Inputs: {}", pretty_str(inputs))
-        msg.add("Outputs: {}", pretty_str(outputs))
+        msg.add("Inputs: {}", pretty_str(self.get_input_data_names()))
+        msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
         return str(msg)
 
     def _init_shared_attrs(self) -> None:

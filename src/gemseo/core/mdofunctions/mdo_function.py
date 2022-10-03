@@ -550,7 +550,7 @@ class MDOFunction:
         """The default string representation of the function."""
         strings = [self.name]
         if self.has_args():
-            strings.append(f"({pretty_str(self.args)})")
+            strings.append(f"({pretty_str(self.args, sort=False)})")
 
         if not self.has_expr():
             return "".join(strings)

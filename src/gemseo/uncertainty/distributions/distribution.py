@@ -215,8 +215,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         LOGGER.debug("%s", msg)
 
     def __str__(self) -> str:
-        parameters = pretty_str(self.standard_parameters)
-        return f"{self.distribution_name}({parameters})"
+        return f"{self.distribution_name}({pretty_str(self.standard_parameters)})"
 
     def compute_samples(
         self,

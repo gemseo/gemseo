@@ -1692,9 +1692,7 @@ class OptimizationProblem:
             msg.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add(
-            "with respect to {}", pretty_str(sorted(self.design_space.variables_names))
-        )
+        msg.add("with respect to {}", pretty_str(self.design_space.variables_names))
         if self.has_constraints():
             msg.add("subject to constraints:")
             msg.indent()
