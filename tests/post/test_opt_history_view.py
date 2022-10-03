@@ -17,6 +17,7 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+import sys
 from pathlib import Path
 
 import pytest
@@ -43,6 +44,7 @@ def test_get_constraints():
     assert len(cstr) == 1
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @image_comparison(
     [
         "power2_2_variables",
@@ -74,6 +76,7 @@ def test_opt_hist_const(pyplot_close_all):
     post.figures
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "problem_path,baseline_images",
     [

@@ -152,7 +152,6 @@ class ObjConstrHist(OptPostProcessor):
             format="%.2e",
         )
         col_bar.ax.tick_params(labelsize=9)
-        cax.set_xlabel("symlog")
         self._add_figure(fig)
 
     def __get_constraints(
