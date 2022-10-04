@@ -231,7 +231,6 @@ intersphinx_mapping = {
     "sympy": ("https://docs.sympy.org/latest/", None),
 }
 
-
 ################################################################################
 # Setup the multiversion display
 
@@ -331,3 +330,13 @@ def record_typehints(
 
 
 sphinx.ext.autodoc.typehints.record_typehints = record_typehints
+
+###############################################################################
+# Settings for inheritance_diagram
+inheritance_edge_attrs = {
+    "arrowsize": 1.0,
+    "arrowtail": '"empty"',
+    "arrowhead": '"none"',
+    "dir": '"both"',
+    "style": '"setlinewidth(0.5)"',
+}
