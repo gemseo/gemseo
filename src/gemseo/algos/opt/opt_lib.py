@@ -227,9 +227,12 @@ class OptimizationLibrary(DriverLib):
         self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
         problem.add_callback(self.new_iteration_callback)
-        problem.add_callback(
-            self.__check_kkt_from_database, each_new_iter=False, each_store=True
-        )
+        if (
+            self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None
+        ) and self.descriptions[self.algo_name].require_gradient:
+            problem.add_callback(
+                self._check_kkt_from_database, each_new_iter=False, each_store=True
+            )
         # First, evaluate all functions at x_0. Some algorithms don't do this
         self.problem.design_space.initialize_missing_current_values()
         self.problem.evaluate_functions(
@@ -295,39 +298,35 @@ class OptimizationLibrary(DriverLib):
         ):
             raise XtolReached()
 
-    def __check_kkt_from_database(self, x_vect: ndarray | None = None) -> None:
+    def _check_kkt_from_database(self, x_vect: ndarray | None = None) -> None:
         """Verify, if required, KKT norm stopping criterion at each database storage.
 
         Raises:
             KKTReached: If the absolute tolerance on the KKT residual is reached.
         """
-        if self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None:
-            if self.descriptions[self.algo_name].require_gradient:
-                check_kkt = True
-                function_names = [
-                    self.problem.get_objective_name()
-                ] + self.problem.get_constraints_names()
-                database = self.problem.database
-                for function_name in function_names:
-                    if (
-                        database.get_f_of_x(
-                            database.get_gradient_name(function_name), x_vect
-                        )
-                        is None
-                    ) or (database.get_f_of_x(function_name, x_vect) is None):
-                        check_kkt = False
-                        break
-                if check_kkt and (self.__ref_kkt_norm is None):
-                    self.__ref_kkt_norm = kkt_residual_computation(
-                        self.problem, x_vect, self.__ineq_tolerance
-                    )
+        check_kkt = True
+        function_names = [
+            self.problem.get_objective_name()
+        ] + self.problem.get_constraints_names()
+        database = self.problem.database
+        for function_name in function_names:
+            if (
+                database.get_f_of_x(database.get_gradient_name(function_name), x_vect)
+                is None
+            ) or (database.get_f_of_x(function_name, x_vect) is None):
+                check_kkt = False
+                break
+        if check_kkt and (self.__ref_kkt_norm is None):
+            self.__ref_kkt_norm = kkt_residual_computation(
+                self.problem, x_vect, self.__ineq_tolerance
+            )
 
-                if check_kkt and is_kkt_residual_norm_reached(
-                    self.problem,
-                    x_vect,
-                    kkt_abs_tol=self.__kkt_abs_tol,
-                    kkt_rel_tol=self.__kkt_rel_tol,
-                    ineq_tolerance=self.__ineq_tolerance,
-                    reference_residual=self.__ref_kkt_norm,
-                ):
-                    raise KKTReached()
+        if check_kkt and is_kkt_residual_norm_reached(
+            self.problem,
+            x_vect,
+            kkt_abs_tol=self.__kkt_abs_tol,
+            kkt_rel_tol=self.__kkt_rel_tol,
+            ineq_tolerance=self.__ineq_tolerance,
+            reference_residual=self.__ref_kkt_norm,
+        ):
+            raise KKTReached()
