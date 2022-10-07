@@ -17,37 +17,26 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The silhouette coefficient to measure the quality of a clustering algorithm.
+r"""The silhouette coefficient to assess a clustering.
 
-The :mod:`~gemseo.mlearning.qual_measure.silhouette` module implements the
-concept of silhouette coefficient measure for machine learning algorithms.
-
-This concept is implemented through the
-:class:`.SilhouetteMeasure` class and
-overloads the :meth:`!MLClusteringMeasure._compute_measure` method.
-
-The silhouette coefficient is defined for each point as the difference
-between the average distance from the point to each of the other points in its cluster
-and the average distance from the point to each of the points
-in the nearest cluster different from its own.
-
-More formally,
-the silhouette coefficient :math:`s_i` of a point :math:`x_i` is given by
+The `silhouette coefficient <https://en.wikipedia.org/wiki/Silhouette_(clustering)>`__
+:math:`s_i` is a measure of
+how similar a point :math:`x_i` is to its own cluster :math:`C_{k_i}` (cohesion)
+compared to other clusters (separation):
 
 .. math::
 
-    a_i = \\frac{1}{|C_{k_i}| - 1} \\sum_{j\\in C_{k_i}\setminus\{i\} } \\|x_i-x_j\\|\\\\
-    b_i = \\underset{\\ell=1,\\cdots,K\\atop{\\ell\\neq k_i}}{\\min}\\
-        \\frac{1}{|C_\\ell|} \\sum_{j\\in C_\\ell} \\|x_i-x_j\\|\\\\
-    s_i = \\frac{b_i-a_i}{\\max(b_i,a_i)}
+   s_i = \frac{b_i-a_i}{\max(a_i,b_i)}
+
+with :math:`a_i=\frac{1}{|C_{k_i}|-1} \sum_{j\in C_{k_i}\setminus\{i\} } \|x_i-x_j\|`
+and :math:`b_i = \underset{\ell=1,\cdots,K\atop{\ell\neq k_i}}{\min}
+\frac{1}{|C_\ell|} \sum_{j\in C_\ell} \|x_i-x_j\|`
 
 where
-:math:`k_i` is the index of the cluster to which :math:`x_i` belongs,
-:math:`K` is the number of clusters,
-:math:`C_k` is the set of indices of points
-belonging to the cluster :math:`k` (:math:`k=1,\\cdots,K`),
-and :math:`|C_k| = \\sum_{j\\in C_k} 1` is the number of points
-in the cluster :math:`k`, :math:`k=1,\\cdots,K`.
+
+- :math:`K` is the number of clusters,
+- :math:`C_k` are the indices of the points belonging to the cluster :math:`k`,
+- :math:`|C_k|` is the size of :math:`C_k`.
 """
 from __future__ import annotations
 
@@ -62,7 +51,7 @@ from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClustering
 
 
 class SilhouetteMeasure(MLPredictiveClusteringMeasure):
-    """The silhouette coefficient measure for machine learning."""
+    """The silhouette coefficient to assess a clustering."""
 
     SMALLER_IS_BETTER = False
 
@@ -73,7 +62,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for clustering.
+            algo: A clustering algorithm.
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
@@ -112,6 +101,6 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> float | ndarray:
         if multioutput:
             raise NotImplementedError(
-                "The SilhouetteMeasure does not support the multioutput case."
+                f"The {self.__class__.__name__} does not support the multioutput case."
             )
         return silhouette_score(data, labels)
