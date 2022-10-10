@@ -1,0 +1,1 @@
+The self-organizing map post-processing (:class:`.SOM`) has been fixed, caused by a regression.
