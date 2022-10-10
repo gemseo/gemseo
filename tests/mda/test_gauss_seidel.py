@@ -31,7 +31,7 @@ from numpy import isclose
 
 
 @image_comparison(["sobieski"])
-def test_sobieski(tmp_wd):
+def test_sobieski(tmp_wd, pyplot_close_all):
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
     mda.default_inputs["x_shared"] += 0.1

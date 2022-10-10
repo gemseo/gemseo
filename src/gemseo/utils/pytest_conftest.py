@@ -85,7 +85,9 @@ def baseline_images(request):
 @pytest.fixture
 def pyplot_close_all():
     """Fixture that prevents figures aggregation with matplotlib pyplot."""
-    plt.close("all")
+    # TODO: remove this fixture when python 3.7 is no longer supported.
+    if sys.version_info < (3, 8, 0):
+        plt.close("all")
 
 
 @pytest.fixture
