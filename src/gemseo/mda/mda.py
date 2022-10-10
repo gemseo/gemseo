@@ -756,13 +756,13 @@ class MDA(MDODiscipline):
         fig_ax.axhline(y=self.tolerance, c="blue", linewidth=0.5, zorder=0)
         fig_ax.set_title(f"{self.name}: residual plot")
 
-        plt.yscale("log")
-        plt.xlabel(r"iterations", fontsize=14)
-        plt.xlim([-1, n_iterations])
+        fig_ax.set_yscale("log")
+        fig_ax.set_xlabel(r"iterations", fontsize=14)
+        fig_ax.set_xlim([-1, n_iterations])
         fig_ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-        plt.ylabel(r"$\log(||residuals||/||y_0||)$", fontsize=14)
+        fig_ax.set_ylabel(r"$\log(||residuals||/||y_0||)$", fontsize=14)
         if logscale is not None:
-            plt.ylim(logscale)
+            fig_ax.set_ylim(logscale)
 
         if save and filename is None:
             filename = f"{self.name}_residual_history.pdf"

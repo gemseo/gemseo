@@ -25,7 +25,6 @@ from typing import Sequence
 
 import matplotlib
 import matplotlib as mpl
-from matplotlib import pyplot
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from numpy import array
@@ -68,8 +67,8 @@ class ParallelCoordinates(OptPostProcessor):
             )
 
         x_values = list(range(n_cols))
-        fig = pyplot.figure(figsize=cls.DEFAULT_FIG_SIZE)
-        axes = pyplot.gca()
+        fig = plt.figure(figsize=cls.DEFAULT_FIG_SIZE)
+        axes = plt.gca()
         c_min, c_max = color_criteria.min(), color_criteria.max()
         s_m = matplotlib.cm.ScalarMappable(
             cmap=PARULA, norm=mpl.colors.Normalize(vmin=c_min, vmax=c_max)
