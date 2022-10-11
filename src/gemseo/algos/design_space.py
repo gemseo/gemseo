@@ -87,6 +87,7 @@ from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,12 +138,13 @@ class DesignSpace(collections.abc.MutableMapping):
     name: str | None
     """The name of the space."""
 
-    variables_names: list[str]
-    """The names of the variables."""
-
     dimension: int
     """The total dimension of the space,
     corresponding to the sum of the sizes of the variables."""
+
+    # TODO: API: rename all variables_x to variable_x
+    variables_names: list[str]
+    """The names of the variables."""
 
     variables_sizes: dict[str, int]
     """The sizes of the variables."""
@@ -185,6 +187,15 @@ class DesignSpace(collections.abc.MutableMapping):
     __DEFAULT_COMMON_DTYPE = __FLOAT_DTYPE
     """The default NumPy data type of the variables."""
 
+    __current_value_array: ndarray
+    """The current value stored as a concatenated array."""
+
+    __norm_current_value: dict[str, ndarray]
+    """The norm of the current value."""
+
+    __norm_current_value_array: ndarray
+    """The norm of the current value stored as a concatenated array."""
+
     def __init__(
         self,
         hdf_file: str | Path | None = None,
@@ -219,11 +230,9 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__to_zero = None
         self.__bound_tol = 100.0 * finfo(float64).eps
         self.__current_value = {}
-        self.__current_value_array = array([])
-        self.__norm_current_value = {}
-        self.__norm_current_value_array = array([])
         self.__has_current_value = False
         self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
+        self.__clear_dependent_data()
         if hdf_file is not None:
             self.import_hdf(hdf_file)
 
@@ -232,6 +241,7 @@ class DesignSpace(collections.abc.MutableMapping):
         """The current design value."""
         return self.__current_value
 
+    # TODO: API: this is never used in all our codes, remove.
     @_current_value.setter
     def _current_value(self, value: Mapping[str, ndarray]) -> None:
         self.__current_value = value
@@ -242,13 +252,13 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__update_current_status()
         self.__update_common_dtype()
         if self.__has_current_value:
-            self.__current_value_array = self.dict_to_array(self.__current_value)
-            self.__norm_current_value_array = self.normalize_vect(
-                self.__current_value_array
-            )
-            self.__norm_current_value = self.array_to_dict(
-                self.__norm_current_value_array
-            )
+            self.__clear_dependent_data()
+
+    def __clear_dependent_data(self):
+        """Reset the data that depends on the current value."""
+        self.__current_value_array = array([])
+        self.__norm_current_value = {}
+        self.__norm_current_value_array = array([])
 
     def __update_common_dtype(self) -> None:
         """Update the common data type of the variables."""
@@ -259,7 +269,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def __update_current_status(self) -> None:
         """Update the availability of current design values for all the variables."""
-        if not self.__current_value or set(self.__current_value.keys()) != set(
+        if not self.__current_value or self.__current_value.keys() != set(
             self.variables_names
         ):
             self.__has_current_value = False
@@ -293,8 +303,7 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable to be removed.
         """
         self.__norm_data_is_computed = False
-        size = self.variables_sizes[name]
-        self.dimension -= size
+        self.dimension -= self.variables_sizes[name]
         self.variables_names.remove(name)
         del self.variables_sizes[name]
         del self.variables_types[name]
@@ -1019,9 +1028,7 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: If the names of the variables of the current design value
                 and the names of the variables of the design space are different.
         """
-        if sorted(set(self.variables_names)) != sorted(
-            set(self.__current_value.keys())
-        ):
+        if sorted(set(self.variables_names)) != sorted(self.__current_value.keys()):
             raise ValueError(
                 "Expected current_x variables: {}; got {}.".format(
                     self.variables_names, list(self.__current_value.keys())
@@ -1038,6 +1045,8 @@ class DesignSpace(collections.abc.MutableMapping):
     ) -> ndarray | dict[str, ndarray]:
         """Return the current design value.
 
+        If the names of the variables are empty then an empty data is returned.
+
         Args:
             variable_names: The names of the design variables.
                 If ``None``, use all the design variables.
@@ -1051,9 +1060,29 @@ class DesignSpace(collections.abc.MutableMapping):
             The current design value.
 
         Raises:
-            KeyError: If a variable has no current value.
+            ValueError: If names in ``variable_names`` are not in the design space.
         """
+        if variable_names is not None:
+            if not variable_names:
+                return {} if as_dict else array([])
+
+            not_variable_names = set(variable_names) - set(self.variables_names)
+            if not_variable_names:
+                raise ValueError(
+                    f"There are no such variables named: {pretty_str(not_variable_names)}."
+                )
+
+        if self.__has_current_value and not len(self.__current_value_array):
+            self.__current_value_array = self.dict_to_array(self.__current_value)
+
         if normalize:
+            if self.__has_current_value and not len(self.__norm_current_value_array):
+                self.__norm_current_value_array = self.normalize_vect(
+                    self.__current_value_array
+                )
+                self.__norm_current_value = self.array_to_dict(
+                    self.__norm_current_value_array
+                )
             current_x_array = self.__norm_current_value_array
             current_x_dict = self.__norm_current_value
         else:
@@ -1068,11 +1097,10 @@ class DesignSpace(collections.abc.MutableMapping):
                     return current_x_dict
 
             if not self.__has_current_value:
-                variables = sorted(
-                    set(self.variables_names) - set(current_x_dict.keys())
-                )
+                variables = set(self.variables_names) - current_x_dict.keys()
                 raise KeyError(
-                    f"The design variables {variables} have no current value."
+                    "There is no current value for the design variables: "
+                    f"{pretty_str(variables)}."
                 )
 
             if complex_to_real:
@@ -1080,27 +1108,19 @@ class DesignSpace(collections.abc.MutableMapping):
             else:
                 return current_x_array
 
-        try:
-            if as_dict:
-                current_value = {
-                    k: v for k, v in current_x_dict.items() if k in variable_names
-                }
-                if complex_to_real:
-                    return {k: v.real for k, v in current_value.items()}
-                else:
-                    return current_value
+        if as_dict:
+            current_value = {name: current_x_dict[name] for name in variable_names}
+            if complex_to_real:
+                return {k: v.real for k, v in current_value.items()}
             else:
-                x_arr = self.dict_to_array(
-                    current_x_dict, variable_names=variable_names
-                )
-                if complex_to_real:
-                    return x_arr.real
-                return x_arr
-
-        except KeyError as err:
-            raise KeyError(
-                f"The design space has no current value for '{err.args[0]}'."
+                return current_value
+        else:
+            current_x_array = self.dict_to_array(
+                current_x_dict, variable_names=variable_names
             )
+            if complex_to_real:
+                return current_x_array.real
+            return current_x_array
 
     def get_indexed_var_name(
         self,

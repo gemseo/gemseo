@@ -202,7 +202,7 @@ def test_creation_4():
     design_space.add_variable("varname")
     with pytest.raises(
         KeyError,
-        match=re.escape("The design variables ['varname'] have no current value."),
+        match=re.escape("There is no current value for the design variables: varname"),
     ):
         design_space.get_current_value(normalize=True)
 
@@ -380,9 +380,7 @@ def test_active_bounds():
 
     with pytest.raises(
         KeyError,
-        match=re.escape(
-            "The design variables {} have no current value.".format(["x", "y", "z"])
-        ),
+        match=re.escape("There is no current value for the design variables: x, y, z."),
     ):
         design_space.get_active_bounds()
 
@@ -1169,7 +1167,6 @@ def test_current_x_setter(current_x, current_x_array, dtype, a_type, has_current
 
     design_space._current_value = current_x
     assert design_space._current_value == current_x
-    assert_equal(design_space._DesignSpace__current_value_array, current_x_array)
     assert design_space._DesignSpace__common_dtype == dtype
     assert design_space._DesignSpace__has_current_value is has_current_value
 
@@ -1359,6 +1356,19 @@ def test_get_current_value(fbb_design_space, names, cast, normalize, as_dict):
         expected = fbb_design_space.dict_to_array(expected, variable_names=names)
 
     assert_equal(result, expected)
+
+
+@pytest.mark.parametrize("as_dict", [True, False])
+def test_get_current_value_empty_names(as_dict):
+    design_space = DesignSpace()
+    assert not design_space.get_current_value(variable_names=[], as_dict=as_dict)
+
+
+def test_get_current_value_bad_names():
+    design_space = DesignSpace()
+    match = "There are no such variables named: bar, foo."
+    with pytest.raises(ValueError, match=match):
+        design_space.get_current_value(variable_names=["foo", "bar"])
 
 
 @pytest.mark.parametrize(
