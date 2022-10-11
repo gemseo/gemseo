@@ -30,7 +30,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import array_equal
 from numpy import float64
@@ -392,7 +391,7 @@ def test_active_bounds():
 def test_get_indexed_variables_names(index, expected):
     """Check the variables names obtained with get_indexed_variables_names()."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=1)
+    design_space.add_variable("x")
     design_space.add_variable("z", size=2)
     assert design_space.get_indexed_variables_names()[index] == expected
 
@@ -763,17 +762,46 @@ def test_fail_import():
         DesignSpace().import_hdf(FAIL_HDF)
 
 
-def test_get_pretty_table():
-    """Check that a design space is correctly rendered."""
+@pytest.fixture(scope="module")
+def table_template() -> str:
+    return """
++------+-------------+-------+-------------+-------+
+| name | lower_bound | value | upper_bound | type  |
++------+-------------+-------+-------------+-------+
+| x    |     -inf    |  None |     inf     | float |
+| y{index_0} |     -inf    |  None |     inf     | float |
+| y{index_1} |     -inf    |  None |     inf     | float |
++------+-------------+-------+-------------+-------+
+""".strip()
+
+
+@pytest.fixture(scope="module")
+def design_space_2() -> DesignSpace:
+    """Return a design space with scalar and vectorial variables."""
     design_space = DesignSpace()
     design_space.add_variable("x")
-    msg = MultiLineString()
-    msg.add("+------+-------------+-------+-------------+-------+")
-    msg.add("| name | lower_bound | value | upper_bound | type  |")
-    msg.add("+------+-------------+-------+-------------+-------+")
-    msg.add("| x    |     -inf    |  None |     inf     | float |")
-    msg.add("+------+-------------+-------+-------------+-------+")
-    assert str(msg) == design_space.get_pretty_table().get_string()
+    design_space.add_variable("y", size=2)
+    return design_space
+
+
+@pytest.mark.parametrize(
+    "with_index,indexes", ((True, ("[0]", "[1]")), (False, ("   ", "   ")))
+)
+def test_get_pretty_table(table_template, design_space_2, with_index, indexes):
+    """Check that a design space is correctly rendered."""
+    assert (
+        table_template.format(index_0=indexes[0], index_1=indexes[1])
+        == design_space_2.get_pretty_table(with_index=with_index).get_string()
+    )
+
+
+@pytest.mark.parametrize("name", ("", "foo"))
+def test_str(table_template, design_space_2, name):
+    """Check that a design space is correctly rendered."""
+    if name:
+        design_space_2.name = name
+    table_template = f"Design space: {name}\n" + table_template
+    assert table_template.format(index_0="[0]", index_1="[1]") == str(design_space_2)
 
 
 @pytest.mark.parametrize(
