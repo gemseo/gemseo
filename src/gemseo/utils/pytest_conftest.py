@@ -24,6 +24,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.testing.decorators
 import pytest
+from packaging import version
 
 from gemseo.core.factory import Factory
 
@@ -85,8 +86,7 @@ def baseline_images(request):
 @pytest.fixture
 def pyplot_close_all():
     """Fixture that prevents figures aggregation with matplotlib pyplot."""
-    # TODO: remove this fixture when python 3.7 is no longer supported.
-    if sys.version_info < (3, 8, 0):
+    if version.parse(matplotlib.__version__) < version.parse("3.6.0"):
         plt.close("all")
 
 
