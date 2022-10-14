@@ -236,6 +236,8 @@ def test_broyden_sellar2():
     mda.reset_history_each_run = True
     mda.execute()
 
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
+
 
 def test_self_coupled():
     sc_disc = SelfCoupledDisc()
@@ -285,6 +287,7 @@ def test_weak_and_strong_couplings():
         {"z": array([0.0]), "i": array([0.0]), "j": array([0.0]), "x": array([0.0])}
     )
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < TRESHOLD_MDA_TOL
     assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))
 
 
@@ -325,6 +328,8 @@ def test_weak_and_strong_couplings_two_cycles():
     out_ref = mda_ref.execute(mda_input)
 
     for output_name in mda.get_output_data_names():
+        if output_name == mda.RESIDUALS_NORM:
+            continue
         assert out[output_name] == pytest.approx(out_ref[output_name])
 
     assert mda.check_jacobian(

@@ -1,0 +1,1 @@
+MDAs now output the norm of residuals at the end of its execution.

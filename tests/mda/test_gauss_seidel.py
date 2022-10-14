@@ -97,6 +97,8 @@ def test_over_relaxation(over_relax_factor):
     mda.execute()
     assert mda.residual_history[-1] <= tolerance
 
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < tolerance
+
 
 class SelfCoupledDisc(MDODiscipline):
     def __init__(self, plus_y=False):

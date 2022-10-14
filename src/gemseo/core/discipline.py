@@ -1691,6 +1691,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
         self.linearize(input_data)
+
         return approx.check_jacobian(
             self.jac,
             outputs,

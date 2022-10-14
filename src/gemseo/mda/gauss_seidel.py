@@ -102,6 +102,7 @@ class MDAGaussSeidel(MDA):
     def _initialize_grammars(self):
         self.input_grammar.update(self.chain.input_grammar)
         self.output_grammar.update(self.chain.output_grammar)
+        self._add_residuals_norm_to_output_grammar()
 
     def _run(self):
         # Run the disciplines in a sequential way

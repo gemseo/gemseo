@@ -35,6 +35,8 @@ def test_jacobi_sobieski():
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
 
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
+
 
 def test_secant_acceleration(tmp_wd):
     tolerance = 1e-12
@@ -79,6 +81,7 @@ def test_jacobi_sellar(sellar_disciplines):
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
 
 
 def test_expected_workflow():

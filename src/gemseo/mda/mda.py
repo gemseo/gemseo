@@ -23,6 +23,7 @@ import logging
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -76,6 +77,8 @@ class MDA(MDODiscipline):
         "_scale_residuals_with_first_norm",
         "_current_iter",
     )
+
+    RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
 
     activate_cache = True
 
@@ -224,6 +227,12 @@ class MDA(MDODiscipline):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
+        self._add_residuals_norm_to_output_grammar()
+
+    def _add_residuals_norm_to_output_grammar(self) -> None:
+        """Add RESIDUALS_NORM to the output grammar."""
+        self.output_grammar.update([self.RESIDUALS_NORM])
+
     @property
     def log_convergence(self) -> bool:
         """Whether to log the MDA convergence."""
@@ -344,10 +353,13 @@ class MDA(MDODiscipline):
             # Don't do this with output couplings because
             # their derivatives wrt design variables may be needed
             # outputs = outputs - (strong_cpl & outputs)
+        else:
+            inputs, outputs = MDODiscipline._retrieve_diff_inouts(self)
 
-            return inputs, outputs
-
-        return super()._retrieve_diff_inouts()
+        if self.RESIDUALS_NORM in outputs:
+            outputs = list(outputs)
+            outputs.remove(self.RESIDUALS_NORM)
+        return inputs, outputs
 
     def _couplings_warm_start(self) -> None:
         """Load the previous couplings values to local data."""
@@ -501,6 +513,8 @@ class MDA(MDODiscipline):
                 self._starting_indices.append(len(self.residual_history))
             self.residual_history.append(self.normed_residual)
             self._current_iter += 1
+
+        self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
         return self.normed_residual
 
     def check_jacobian(
@@ -596,19 +610,20 @@ class MDA(MDODiscipline):
         # Strong couplings are not linearized
         if inputs is None:
             inputs = self.get_input_data_names()
-
-        inputs = list(iter(inputs))
-        for str_cpl in self.all_couplings:
-            if str_cpl in inputs:
-                inputs.remove(str_cpl)
-
         if outputs is None:
             outputs = self.get_output_data_names()
 
-        outputs = list(iter(outputs))
-        for str_cpl in self.all_couplings:
-            if str_cpl in outputs:
-                outputs.remove(str_cpl)
+        inputs = list(inputs)
+        outputs = list(outputs)
+
+        for coupling in self.all_couplings:
+            if coupling in outputs:
+                outputs.remove(coupling)
+            if coupling in inputs:
+                inputs.remove(coupling)
+
+        if self.RESIDUALS_NORM in outputs:
+            outputs.remove(self.RESIDUALS_NORM)
 
         return super().check_jacobian(
             input_data=input_data,

@@ -51,6 +51,8 @@ def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
     y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
     assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
+
 
 def test_log_convergence(sellar_disciplines):
     """Check that the boolean log_convergence is correctly set."""
