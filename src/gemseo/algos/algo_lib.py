@@ -278,7 +278,7 @@ class AlgoLib:
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-                If ``None`, use :attr:`algo_name` attribute
+                If ``None``, use :attr:`algo_name` attribute
                 which may have been set by the factory.
             **options: The algorithm options.
         """

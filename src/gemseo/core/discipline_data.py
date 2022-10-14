@@ -36,23 +36,23 @@ class DisciplineData(abc.MutableMapping):
 
     This class replaces a standard dictionary that was previously used for storing
     discipline data.
-    It allows handling values bound to :class:`pandas.DataFrame`s
-    as if they were multiple items bound to :class:`numpy.ndarray`s.
+    It allows handling values bound to :class:`pandas.DataFrame`
+    as if they were multiple items bound to :class:`numpy.ndarray`.
     Then, an object of this class may be used as if it was a standard dictionary
     containing :class:`numpy.ndarray`s,
-    which is the assumption made by the clients of the :class:`MDODiscipline`s subclasses.
+    which is the assumption made by the clients of the :class:`.MDODiscipline` subclasses.
 
     As compared to a standard dictionary,
-    the methods of this class may hide the values bound to :class:`pandas.DataFrame`s
+    the methods of this class may hide the values bound to :class:`pandas.DataFrame`
     and instead expose the items of those latter as if they belonged
     to the dictionary.
 
-    If a dict-like object is provided when creating a :class:`DiscplineData` object,
+    If a dict-like object is provided when creating a :class:`.DisciplineData` object,
     its contents is shared with this latter,
-    such that any changes performed via a :class:`DiscplineData` object
+    such that any changes performed via a :class:`.DisciplineData` object
     is reflected into the passed in dict-like object.
 
-    If a :class:`DiscplineData` is created from another one,
+    If a :class:`.DisciplineData` is created from another one,
     their contents are shared.
 
     A separator, by default ``~``, is used to identify the keys of the items that
@@ -62,7 +62,7 @@ class DisciplineData(abc.MutableMapping):
     When such a key is queried,
     a :class:`numpy.ndarray` view of the :class:`pandas.DataFrame` column is provided.
 
-    Printing a :class:`DiscplineData` object prints the shared dict-like object.
+    Printing a :class:`.DisciplineData` object prints the shared dict-like object.
 
     Nested dictionaries are also supported.
 
@@ -121,7 +121,7 @@ class DisciplineData(abc.MutableMapping):
     ) -> None:
         """
         Args:
-            data: A dict-like object or a :class:`DisciplineData` object.
+            data: A dict-like object or a :class:`.DisciplineData` object.
             input_to_namespaced: The mapping from input data names to their prefixed names.
             output_to_namespaced: The mapping from output data names to their prefixed names.
         """
