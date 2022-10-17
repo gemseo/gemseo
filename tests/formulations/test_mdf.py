@@ -24,6 +24,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import XDSMizer
+from numpy.testing import assert_allclose
 
 from .formulations_basetest import FormulationsBaseTest
 
@@ -69,19 +70,17 @@ class TestMDFFormulation(FormulationsBaseTest):
     def test_exec_mdf_cstr(self):
         """"""
         options = {
-            "tolerance": 1e-15,
-            "max_mda_iter": 10,
+            "tolerance": 1e-10,
+            "max_mda_iter": 50,
             "warm_start": True,
-            "use_lu_fact": False,
-            "linear_solver_tolerance": 1e-14,
+            "use_lu_fact": True,
         }
 
         obj = self.build_and_run_mdf_scenario_with_constraints(
             "MDF", "SLSQP", linearize=True, dtype="float64", **options
         )
 
-        # do not set a tolerance below 1e-4
-        assert 2000.0 < -obj < 5000.0
+        assert_allclose(-obj, 3964.0, atol=1.0, rtol=0)
 
     def test_expected_workflow(self):
         """"""
