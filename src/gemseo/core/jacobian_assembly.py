@@ -170,7 +170,7 @@ class JacobianAssembly:
         # search for the functions/variables/couplings in the
         # Jacobians of the disciplines
 
-        if residual_variables is not None:
+        if residual_variables:
             outputs = itertools.chain(
                 functions,
                 couplings,
@@ -569,7 +569,7 @@ class JacobianAssembly:
         n_variables = self.compute_dimension(variables)
         n_functions = self.compute_dimension(functions)
         n_residuals = self.compute_dimension(couplings)
-        if residual_variables is not None:
+        if residual_variables:
             n_residuals += self.compute_dimension(residual_variables.keys())
             n_variables += self.compute_dimension(residual_variables.values())
         # compute the partial derivatives of the residuals

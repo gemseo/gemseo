@@ -440,11 +440,12 @@ class MDA(MDODiscipline):
         for disc in self.disciplines:
             residual_variables.update(disc.residual_variables)
 
-        couplings_adjoint = list(
+        couplings_adjoint = sorted(
             set(self.all_couplings)
-            - set(residual_variables.keys())
+            - residual_variables.keys()
             - set(residual_variables.values())
         )
+
         self.jac = self.assembly.total_derivatives(
             self.local_data,
             outputs,
