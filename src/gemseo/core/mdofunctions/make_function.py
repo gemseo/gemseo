@@ -70,7 +70,7 @@ class MakeFunction(MDOFunction):
                 based on a :class:`.MDODiscipline`.
             names_to_sizes: The sizes of the input variables.
                 If ``None``, guess them from the default inputs and local data
-                    of the discipline :class:`.MDODiscipline`.
+                of the discipline :class:`.MDODiscipline`.
         """
         self.__input_names = input_names
         self.__output_names = output_names

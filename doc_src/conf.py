@@ -15,7 +15,6 @@
 # -- General configuration ------------------------------------------------
 from __future__ import annotations
 
-import collections
 import datetime
 import os
 import re
@@ -27,9 +26,6 @@ from typing import Iterable
 from typing import Mapping
 
 import requests
-import sphinx.ext.autodoc.typehints
-from sphinx.util import inspect
-from sphinx.util import typing
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 os.chdir((Path(__file__).resolve()).parent)
@@ -287,52 +283,8 @@ html_context["plugins"] = {
 }
 
 ###############################################################################
-# Sphinx workaround for duplicated args when using typehints
-# TODO: remove when it is fixed upstream, see
-# https://github.com/sphinx-doc/sphinx/pull/9648
-
-__ANNOTATION_KIND_TO_PARAM_PREFIX = {
-    inspect.Parameter.VAR_POSITIONAL: "*",
-    inspect.Parameter.VAR_KEYWORD: "**",
-}
-
-
-def record_typehints(
-    app,
-    objtype,
-    name,
-    obj,
-    options,
-    args,
-    retann,
-):
-    """Record type hints to env object."""
-    # Fix for type annotation in comments
-    if isinstance(obj, type):
-        if "__init__" in obj.__dict__:
-            obj = obj.__init__
-        elif "__new__" in obj.__dict__:
-            obj = obj.__new__
-    try:
-        if callable(obj):
-            annotations = app.env.temp_data.setdefault("annotations", {})
-            annotation = annotations.setdefault(name, collections.OrderedDict())
-            sig = inspect.signature(obj, type_aliases=app.config.autodoc_type_aliases)
-            for param in sig.parameters.values():
-                if param.annotation is not param.empty:
-                    prefix = __ANNOTATION_KIND_TO_PARAM_PREFIX.get(param.kind, "")
-                    name = f"{prefix}{param.name}"
-                    annotation[name] = typing.stringify(param.annotation)
-            if sig.return_annotation is not sig.empty:
-                annotation["return"] = typing.stringify(sig.return_annotation)
-    except (TypeError, ValueError):
-        pass
-
-
-sphinx.ext.autodoc.typehints.record_typehints = record_typehints
-
-###############################################################################
 # Settings for inheritance_diagram
+
 inheritance_edge_attrs = {
     "arrowsize": 1.0,
     "arrowtail": '"empty"',

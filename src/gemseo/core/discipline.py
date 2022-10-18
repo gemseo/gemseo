@@ -97,7 +97,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     both the passed input data before calling :meth:`.run`
     and the returned output data before they are stored in the :attr:`.cache`.
     A grammar can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar`,
-    or your own which derives from :class:`.AbstractGrammar`.
+    or your own which derives from :class:`.BaseGrammar`.
     """
 
     input_grammar: BaseGrammar
@@ -257,7 +257,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
                 :attr:`.MDODiscipline.HDF5_CACHE` to cache them in a HDF file,
                 or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
-                If ``None`` or if :class:`.MDODiscipline.activate_cache` is ``True``,
+                If ``None`` or if :attr:`.activate_cache` is ``True``,
                 do not cache the discipline evaluations.
             cache_file_path: The HDF file path
                 when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
@@ -1445,7 +1445,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """Add a namespace prefix to an existing input grammar element.
 
         The updated input grammar element name will be
-        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+        ``namespace`` + :data:`~gemseo.core.namespaces.namespaces_separator` + ``name``.
 
         Args:
             name: The element name to rename.
@@ -1461,7 +1461,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """Add a namespace prefix to an existing output grammar element.
 
         The updated output grammar element name will be
-        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+        ``namespace`` + :data:`~gemseo.core.namespaces.namespaces_separator` + ``name``.
 
         Args:
             name: The element name to rename.

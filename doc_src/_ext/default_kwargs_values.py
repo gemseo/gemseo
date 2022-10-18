@@ -1,5 +1,4 @@
 import re
-from collections import OrderedDict
 from typing import Any
 from typing import cast
 from typing import Dict
@@ -25,7 +24,7 @@ def record_defaults(
     try:
         if callable(obj):
             defaults = app.env.temp_data.setdefault("defaults", {})
-            obj_defaults = defaults.setdefault(name, OrderedDict())
+            obj_defaults = defaults.setdefault(name, {})
             sig = inspect.signature(obj, type_aliases=app.config.autodoc_type_aliases)
             for param in sig.parameters.values():
                 if param.default is not param.empty:
@@ -82,7 +81,7 @@ def insert_field_list(node: Element) -> nodes.field_list:
 
 
 def modify_field_list(
-    node: nodes.field_list, defaults: Dict[str, str], pattern: str
+    node: nodes.field_list, defaults: Dict[str, Any], pattern: str
 ) -> None:
     fields = cast(Iterable[nodes.field], node)
 
@@ -101,8 +100,14 @@ def modify_field_list(
         else:
             continue
 
-        if name in defaults:
-            field[1] += nodes.paragraph("", pattern.format(defaults[name]))
+        default = defaults.get(name)
+        if default is None:
+            continue
+
+        if isinstance(default, str):
+            default = f'"{default}"'
+
+        field[1] += nodes.paragraph("", pattern.format(default))
 
 
 _KWARGS_DEFAULTS_PATTERN = "By default it is set to {}."
@@ -114,6 +119,7 @@ def setup(app: Sphinx) -> Dict[str, Any]:
     app.add_config_value(
         "autodoc_kwargs_defaults_pattern", _KWARGS_DEFAULTS_PATTERN, True
     )
+    app.setup_extension("sphinx.ext.autodoc")
     app.connect("autodoc-process-signature", record_defaults)
     app.connect("object-description-transform", merge_defaults)
 
