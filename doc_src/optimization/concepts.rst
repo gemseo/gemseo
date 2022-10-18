@@ -13,19 +13,44 @@
 The |g| concepts
 ============================
 
-.. automodule:: gemseo.algos.design_space
+|g|-based optimization relies on three main concepts:
+the :ref:`design space`,
+the :ref:`optimization problem`
+and the :ref:`driver`.
+
+.. _design space:
+
+Design space
+------------
+
+.. autoclass:: gemseo.algos.design_space.DesignSpace
    :noindex:
+   :no-inherited-members:
 
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../design_space.html" role="button">See more</a></div>
 
-.. automodule:: gemseo.algos.opt_problem
+.. raw:: html
+
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../examples/design_space/index.html" role="button">Examples</a></div>
+
+.. _optimization problem:
+
+Optimization problem
+--------------------
+
+.. autoclass:: gemseo.algos.opt_problem.OptimizationProblem
    :noindex:
 
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../examples/optimization_problem/index.html" role="button">Examples</a></div>
 
-.. automodule:: gemseo.algos.driver_lib
+.. _driver:
+
+Driver
+------
+
+.. autoclass:: gemseo.algos.driver_lib.DriverLib
    :noindex:
