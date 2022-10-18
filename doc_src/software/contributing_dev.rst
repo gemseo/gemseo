@@ -730,16 +730,6 @@ for instance:
 
    tox -e doc -- -vv -j2
 
-Check the links in the generated documentation with:
-
-.. code-block:: console
-
-   tox -e doc-linkchecker
-
-.. note::
-
-   doc-linkchecker does not work on windows.
-
 Writing guidelines
 ++++++++++++++++++
 

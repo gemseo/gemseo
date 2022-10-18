@@ -212,6 +212,7 @@ Changed
   - The :class:`.MDF` formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of ``sub_mda_class``.
   - The :class:`.BiLevel` formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
   `#39 <https://gitlab.com/gemseo/dev/gemseo/-/issues/39>`_
+
 - The :class:`~.gemseo.post.radar_chart.RadarChart` post-processor uses all the constraints by default.
   `#159 <https://gitlab.com/gemseo/dev/gemseo/-/issues/159>`_
 - Updating a dictionary of NumPy arrays from a complex array no longer converts the complex numbers to the original data type except if required.
@@ -241,6 +242,7 @@ Changed
   - ``cache.samples_indices``: has been removed
 
   `#213 <https://gitlab.com/gemseo/dev/gemseo/-/issues/213>`_
+
 - The grammars API has been changed to be more pythonic and expose an interface similar to a dictionary.
   The behavior of the grammars has been made more consistent too.
 
@@ -270,6 +272,7 @@ Changed
   - ``JSONGrammar`` class attributes removed: ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``
   - ``AbstractGrammar``: ``BaseGrammar``
   `#215 <https://gitlab.com/gemseo/dev/gemseo/-/issues/215>`_
+
 - The default number of components used by a :class:`.DimensionReduction` transformer is based on data and depends on the related technique.
   `#244 <https://gitlab.com/gemseo/dev/gemseo/-/issues/244>`_
 - Classes deriving from :class:`.MDODiscipline` inherits the input and output grammar files of their first parent.
@@ -338,12 +341,15 @@ Changed
     - :meth:`.DataConversion.get_all_inputs` renamed to :func:`.get_all_inputs`
     - :meth:`.DataConversion.get_all_outputs` renamed to :func:`.get_all_outputs`
     - :meth:`.DesignSpace.get_current_value` can now return a dictionary of NumPy arrays or normalized design values.
+
   `#323 <https://gitlab.com/gemseo/dev/gemseo/-/issues/323>`_
+
 - API changes:
 
   - The short names of some machine learning algorithms have been replaced by conventional acronyms.
   - The class variable ``MLAlgo.ABBR`` was renamed as :attr:`.MLAlgo.SHORT_ALGO_NAME`.
   `#337 <https://gitlab.com/gemseo/dev/gemseo/-/issues/337>`_
+
 - The constructor of :class:`.AutoPyDiscipline` now allows the user to select a custom name
   instead of the name of the Python function.
   `#339 <https://gitlab.com/gemseo/dev/gemseo/-/issues/339>`_

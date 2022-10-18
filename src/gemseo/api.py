@@ -723,8 +723,6 @@ def get_formulations_options_defaults(
 
     Args:
         formulation_name: The name of the formulation.
-        **formulation_options: The options of the formulation
-            required for its instantiation.
 
     Returns:
         The default values of the options of the formulation.
@@ -1079,7 +1077,7 @@ def create_scenario(
             either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
             or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
         maximize_objective: Whether to maximize the objective.
-        **formulation_options: The options of the :class:`.MDOFormulation`.
+        **options: The options of the :class:`.MDOFormulation`.
 
     Examples
     --------
@@ -1798,6 +1796,7 @@ def load_dataset(
 
     Args:
         dataset: The name of the dataset (its class name).
+        **options: The options for creating the dataset.
 
     Returns:
         The dataset.
