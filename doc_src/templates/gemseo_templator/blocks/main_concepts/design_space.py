@@ -28,6 +28,6 @@ block = Block(
             url="_modules/gemseo.algos.parameter_space.html",
         ),
     ],
-    examples="examples/cache/index.html",
+    examples="examples/design_space/index.html",
     info="design_space/design_space.html",
 )
