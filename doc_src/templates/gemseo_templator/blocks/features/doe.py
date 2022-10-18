@@ -27,6 +27,6 @@ block = Block(
         WebLink("pyDOE", url="https://pythonhosted.org/pyDOE/"),
     ],
     examples="examples/doe/index.html",
-    info="mdo.html",
+    info="doe.html",
     options="algorithms/doe_algos.html",
 )
