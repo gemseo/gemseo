@@ -70,7 +70,7 @@ how the number :math:`n` of outputs compares to the size of vector :math:`N`: if
 :math:`N \ll n`, the adjoint method should be used, whereas the direct method
 should be preferred if :math:`n\ll N`.
 
-**Both the direct and adjoint methods are implemented since |g| v1.0.0.**
+Both the direct and adjoint methods are implemented since |g| v1.0.0.
 
 Derivatives computation in |g|: design and classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
