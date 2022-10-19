@@ -19,6 +19,7 @@ import sys
 
 if sys.version_info < (3, 8):  # pragma: >=3.8 no cover
     from typing_extensions import Final  # noqa: F401
+    from typing_extensions import Literal  # noqa: F401
 
     def accumulate(iterable, func=operator.add, initial=None):
         """Accumulate implementation in plain Python.
@@ -60,3 +61,4 @@ else:  # pragma: <3.8 no cover
     from importlib import metadata as importlib_metadata  # noqa: F401
     from itertools import accumulate  # noqa: F401
     from typing import Final  # noqa: F401
+    from typing import Literal  # noqa: F401
