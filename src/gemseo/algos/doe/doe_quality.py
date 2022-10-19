@@ -24,13 +24,13 @@ from operator import gt
 from operator import le
 from operator import lt
 from typing import Any
-from typing import Literal
 
 from numpy import ndarray
 from scipy.spatial import distance
 from scipy.stats import qmc
 
 from gemseo.utils.python_compatibility import Final
+from gemseo.utils.python_compatibility import Literal
 
 LOGGER = logging.getLogger(__name__)
 
