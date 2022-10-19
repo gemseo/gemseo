@@ -2042,6 +2042,8 @@ class DesignSpace(collections.abc.MutableMapping):
             u_b = float_data[k : k + size, col_map[upper_bounds_field]]
             if value_field in col_map:
                 value = float_data[k : k + size, col_map[value_field]]
+                if "None" in str_data[k : k + size, col_map[value_field]]:
+                    value = None
             else:
                 value = None
             if var_type_field in col_map:

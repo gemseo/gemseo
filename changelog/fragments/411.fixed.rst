@@ -1,0 +1,1 @@
+:meth:`.DesignSpace.read_from_txt` can read a CSV file with a current value set at ``None``.
