@@ -229,7 +229,7 @@ we take a dummy 16 disciplines problem.
    A set of coupling problems is generated,
    which are passed to algorithms.
 #. Finally,
-   many zero search solvers algorithms are available in |g| (14),
+   a Jacobi MDA is used to solve the coupling equations,
    via the :term:`SciPy` package,
    or directly coded in |g| (Gauss-Seidel and Jacobi for instance).
    They can be compared on the specific problem,
