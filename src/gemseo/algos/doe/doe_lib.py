@@ -104,7 +104,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     def compute_phip_criteria(samples: ndarray, power: float = 10.0) -> float:
         r"""Compute the :math:`\phi^p` space-filling criterion (the smaller the better).
 
-        See Morris & Mitchell, Exploratory designs for computational experiments, 1995.
+        See :cite:`morris1995`.
 
         Args:
             samples: The samples of the input variables.
