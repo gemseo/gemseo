@@ -12,8 +12,8 @@
 
 :parenttoc: True
 
-Optimization
-------------
+Optimization and DOE
+--------------------
 
 .. include:: includes/big_toc_css.rst
 .. include:: tune_toc.rst
