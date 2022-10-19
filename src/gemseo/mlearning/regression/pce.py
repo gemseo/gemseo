@@ -114,6 +114,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
@@ -145,8 +146,8 @@ class PCERegressor(MLRegressionAlgo):
     ) -> None:
         """
         Args:
-            probability_space: The probability space
-                defining the probability distributions of the model inputs.
+            probability_space: The set of random input variables
+                defined by :class:`.OTDistribution` instances.
             discipline: The discipline to evaluate with the quadrature strategy
                 if the learning set does not have output data.
                 If None, use the output data from the learning set.
@@ -178,8 +179,17 @@ class PCERegressor(MLRegressionAlgo):
             ValueError: Either if the variables of the probability space
                 and the input variables of the dataset are different,
                 if transformers are specified for the inputs,
-                or if the strategy to compute the parameters of the PCE is unknown.
+                if the strategy to compute the parameters of the PCE is unknown
+                or if a probability distribution is not an :class:`.OTDistribution`.
         """
+        if any(
+            not isinstance(distribution, OTDistribution)
+            for distribution in probability_space.distributions.values()
+        ):
+            raise ValueError(
+                "The probability distributions must be instances of OTDistribution."
+            )
+
         super().__init__(
             data,
             transformer=transformer,
