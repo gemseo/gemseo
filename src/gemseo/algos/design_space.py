@@ -1061,6 +1061,21 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Raises:
             ValueError: If names in ``variable_names`` are not in the design space.
+
+        Warnings:
+            For performance purposes,
+            :meth:`.get_current_value` does not return a copy of the current value.
+            This means that modifying the returned object
+            will make the :class:`.DesignSpace` inconsistent
+            (the current design value stored as a NumPy array
+            and the current design value stored as a dictionary of NumPy arrays
+            will be different).
+            To modify the returned object without impacting the :class:`.DesignSpace`,
+            you shall copy this object and modify the copy.
+
+        See Also:
+            To modify the current value,
+            please use :meth:`.set_current_value` or :meth:`.set_current_variable`.
         """
         if variable_names is not None:
             if not variable_names:
@@ -1103,10 +1118,11 @@ class DesignSpace(collections.abc.MutableMapping):
                     f"{pretty_str(variables)}."
                 )
 
-            if complex_to_real:
-                return current_x_array.real
-            else:
-                return current_x_array
+            if variable_names is None or list(variable_names) == self.variables_names:
+                if complex_to_real:
+                    return current_x_array.real
+                else:
+                    return current_x_array
 
         if as_dict:
             current_value = {name: current_x_dict[name] for name in variable_names}

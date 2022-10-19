@@ -1390,6 +1390,22 @@ def test_initialize_missing_current_values(l_b, u_b, value):
     assert_equal(design_space["x"].value, value)
 
 
+def test_get_current_value_order():
+    """Check that the order of variables is correctly handled in get_current_value."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", value=0.0)
+    design_space.add_variable("y", value=1.0)
+    assert_equal(design_space.get_current_value(as_dict=False), array([0.0, 1.0]))
+    assert_equal(
+        design_space.get_current_value(as_dict=False, variable_names=["x", "y"]),
+        array([0.0, 1.0]),
+    )
+    assert_equal(
+        design_space.get_current_value(as_dict=False, variable_names=["y", "x"]),
+        array([1.0, 0.0]),
+    )
+
+
 def test_export_import_with_none_value(tmp_wd):
     """Check that a design space exported without default value can be imported."""
     design_space = DesignSpace()
