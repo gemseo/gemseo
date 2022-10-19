@@ -116,12 +116,17 @@ the input samples can be accessed with :attr:`~.DOELibrary.samples`.
 
 If we do not want to evaluate the functions but only obtain the input samples,
 we can use the method :meth:`~.DOELibrary.compute_doe` which returns the samples as a two-dimensional NumPy array.
-The :math:`\varphi_p` criterion returned by the static method :meth:`~.DOELibrary.compute_phip_criteria`
-can assess the quality of these input samples: the smaller the better.
+
+The quality of the input samples can be assessed with a :class:`.DOEQuality`
+computing the :math:`\varphi_p`, minimum-distance and discrepancy criteria.
+The smaller these quality measures, the better,
+except for the minimum-distance criterion for which the larger it is the better.
+The qualities can be compared with logical operations,
+with ``DOEQuality(doe_1) > DOEQuality(doe_2)`` meaning that ``doe_1`` is better than ``doe_2``.
 
 .. note::
-   The use of a single metric is not always sufficient to compare two input samples set.
-   Other metrics (e.g. L2-discrepancy) or graphical indicators (e.g. :class:`.ScatterMatrix`) should be considered.
+   When numerical metrics are not sufficient to compare two input samples sets,
+   graphical indicators (e.g. :class:`.ScatterMatrix`) could be considered.
 
 Lastly,
 a :class:`.DOELibrary` has a :attr:`~.DOELibrary.seed`

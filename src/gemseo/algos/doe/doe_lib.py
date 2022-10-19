@@ -17,10 +17,7 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-DOE library base class wrapper
-******************************
-"""
+"""Base DOE library."""
 from __future__ import annotations
 
 import logging
@@ -39,9 +36,9 @@ from typing import Union
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 from numpy import savetxt
-from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.doe_quality import compute_phip_criterion
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -102,9 +99,10 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         self.samples = None
         self.seed = 0
 
+    # TODO: API: remove this method
     @staticmethod
     def compute_phip_criteria(samples: ndarray, power: float = 10.0) -> float:
-        r"""Compute the :math:`\phi^p` space-filling criterion.
+        r"""Compute the :math:`\phi^p` space-filling criterion (the smaller the better).
 
         See Morris & Mitchell, Exploratory designs for computational experiments, 1995.
 
@@ -115,26 +113,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The :math:`\phi^p` space-filling criterion.
         """
-
-        def compute_distance(sample: ndarray, other_sample: ndarray) -> float:
-            r"""Compute the distance used by the :math:`\phi^p` criterion.
-
-            Args:
-                sample: A sample.
-                other_sample: Another sample.
-
-            Returns:
-                The distance between those samples.
-            """
-            return sum(abs(sample - other_sample)) ** (-power)
-
-        criterion = sum(distance.pdist(samples, compute_distance)) ** (1.0 / power)
-        LOGGER.info(
-            "Value of Phi^p criterion with p=%s (Morris & Mitchell, 1995): %s",
-            power,
-            criterion,
-        )
-        return criterion
+        return compute_phip_criterion(samples, power)
 
     def _pre_run(
         self,

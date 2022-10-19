@@ -1,0 +1,6 @@
+The module :mod:`gemseo.algos.doe.quality` offers features to assess the quality of a DOE:
+
+    - :class:`.DOEQuality` assesses the quality of a DOE from :class:`.DOEMeasures`; the qualities can be compared with logical operators.
+    - :func:`.compute_phip_criterion` computes the :math:`\varphi_p` space-filling criterion.
+    - :func:`.compute_mindist_criterion` computes the minimum-distance space-filling criterion.
+    - :func:`.compute_discrepancy` computes different discrepancy criteria.
