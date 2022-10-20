@@ -11,22 +11,19 @@
 Clustering
 ==========
 
+
+API
+---
+
 .. automodule:: gemseo.mlearning.cluster.cluster
    :noindex:
 
-Available clustering models are:
+Algorithms
+----------
 
-.. toctree::
-   :maxdepth: 1
+:ref:`See the clustering algorithms. <gen_clustering_algos>`
 
-   kmeans
-   gaussian_mixture
+Examples
+--------
 
-.. raw:: html
-
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#clustering" role="button">Examples</a></div>
-
-Development
------------
-
-.. include:: clustering_algo.txt
+`See the examples about clustering. <../../examples/mlearning/index.html#clustering>`__
