@@ -64,6 +64,23 @@ DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail2.hdf5"
 
 
+@pytest.fixture(scope="module")
+def problem_executed_twice() -> OptimizationProblem:
+    """A problem executed twice."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x, "obj")
+    problem.add_observable(MDOFunction(lambda x: x, "obs"))
+    problem.add_constraint(MDOFunction(lambda x: x, "cstr", f_type="ineq"))
+
+    execute_algo(problem, "CustomDOE", algo_type="doe", samples=array([[0.0]]))
+    problem.current_iter = 0
+    execute_algo(problem, "CustomDOE", algo_type="doe", samples=array([[0.5]]))
+    return problem
+
+
 @pytest.fixture
 def pow2_problem() -> OptimizationProblem:
     design_space = DesignSpace()
@@ -1664,3 +1681,9 @@ def test_get_missing_observable(constrained_problem):
         match="missing_observable_name is not among the names of the observables: a, b.",
     ):
         constrained_problem.get_observable("missing_observable_name")
+
+
+@pytest.mark.parametrize("name", ["obj", "cstr", "obj"])
+def test_execute_twice(problem_executed_twice, name):
+    """Check that the second evaluations of an OptimizationProblem works."""
+    assert len(problem_executed_twice.database.get_func_history(name)) == 2

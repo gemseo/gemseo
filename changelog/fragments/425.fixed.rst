@@ -1,0 +1,1 @@
+When using a unique process, the observables can now be evaluated as many times as the number of calls to :class:`.DOELibrary.execute`.
