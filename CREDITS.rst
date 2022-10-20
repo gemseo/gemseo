@@ -109,11 +109,11 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/scikit-learn-logo.svg
         :target: https://scikit-learn.org/
 
-`scipy <https://www.scipy.org/scipylib/>`_
+`scipy <https://www.scipy.org/>`_
     BSD 3-Clause
 
     .. image:: /_static/dependencies/scipy-logo.png
-        :target: https://www.scipy.org/scipylib/
+        :target: https://www.scipy.org/
 
 `snopt-python <https://github.com/snopt/snopt-python>`_
     MIT

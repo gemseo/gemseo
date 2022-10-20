@@ -27,7 +27,7 @@
 .. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
 .. _semantic line feeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
 .. _mypy: http://mypy-lang.org
-.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
+.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html?highlight=Sequence#standard-duck-types
 .. _pytest-cov: https://pytest-cov.readthedocs.io
 .. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _pyperf: https://pyperf.readthedocs.io
