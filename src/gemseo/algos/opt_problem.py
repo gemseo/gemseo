@@ -1005,6 +1005,7 @@ class OptimizationProblem:
         """Clear all the listeners."""
         self.database.clear_listeners()
 
+    # TODO: API: set the default value of eval_observables to True.
     def evaluate_functions(
         self,
         x_vect: ndarray = None,
