@@ -11,18 +11,20 @@
 Transform data to improve the ML algorithm quality
 ==================================================
 
+Introduction
+------------
+
 .. automodule:: gemseo.mlearning.transform.transformer
    :noindex:
 
 .. automodule:: gemseo.mlearning.transform.pipeline
    :noindex:
 
+Scaling
+-------
+
 .. automodule:: gemseo.mlearning.transform.scaler.scaler
    :noindex:
-
-.. raw:: html
-
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#data-transformation" role="button">Examples</a></div>
 
 .. automodule:: gemseo.mlearning.transform.scaler.min_max_scaler
    :noindex:
@@ -30,17 +32,19 @@ Transform data to improve the ML algorithm quality
 .. automodule:: gemseo.mlearning.transform.scaler.standard_scaler
    :noindex:
 
+Dimension reduction
+-------------------
+
 .. automodule:: gemseo.mlearning.transform.dimension_reduction.dimension_reduction
    :noindex:
-
-.. raw:: html
-
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#dimension-reduction" role="button">Examples</a></div>
 
 .. automodule:: gemseo.mlearning.transform.dimension_reduction.pca
    :noindex:
 
-Development
------------
+Examples
+--------
 
-.. include:: transformer.txt
+See the examples about:
+
+- `data scaling <../../examples/mlearning/index.html#data-transformation>`__,
+- `dimension reduction <../../examples/mlearning/index.html#dimension-reduction>`__.

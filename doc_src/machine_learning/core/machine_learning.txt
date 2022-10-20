@@ -12,7 +12,7 @@
 	}
 
 	abstract class MLAlgo {
-	 +ABBR
+	 +SHORT_ALGO_NAME
 	 +LIBRARY
 	 +algo
 	 +is_trained

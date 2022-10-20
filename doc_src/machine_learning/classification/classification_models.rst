@@ -11,23 +11,18 @@
 Classification
 ==============
 
-.. automodule:: gemseo.mlearning.classification.classification
+API
+---
+
+.. automodule:: gemseo.mlearning.regression.regression
    :noindex:
 
-Available classification models are:
+Algorithms
+----------
 
-.. toctree::
-   :maxdepth: 1
+:ref:`See the classification algorithms. <gen_classification_algos>`
 
-   knn
-   random_forest
-   svm
+Examples
+--------
 
-.. raw:: html
-
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#classification" role="button">Examples</a></div>
-
-Development
------------
-
-.. include:: classification_algo.txt
+`See the examples about classification. <../../examples/mlearning/index.html#classification>`__

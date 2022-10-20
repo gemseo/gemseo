@@ -11,16 +11,19 @@
 Calibrate or select a machine learning algorithm
 ================================================
 
+Calibration
+-----------
+
 .. automodule:: gemseo.mlearning.core.calibration
    :noindex:
 
-.. raw:: html
-
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/calibration/plot_calibration.html" role="button">Examples</a></div>
+Selection
+---------
 
 .. automodule:: gemseo.mlearning.core.selection
    :noindex:
 
-.. raw:: html
+Examples
+--------
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/calibration/plot_selection.html" role="button">Examples</a></div>
+`See the examples about classification and selection. <../../examples/mlearning/index.html#calibration-and-selection>`__
