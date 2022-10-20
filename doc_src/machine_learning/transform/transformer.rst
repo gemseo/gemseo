@@ -22,7 +22,7 @@ Transform data to improve the ML algorithm quality
 
 .. raw:: html
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#transformer-transform-data" role="button">Examples</a></div>
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#data-transformation" role="button">Examples</a></div>
 
 .. automodule:: gemseo.mlearning.transform.scaler.min_max_scaler
    :noindex:
@@ -35,7 +35,7 @@ Transform data to improve the ML algorithm quality
 
 .. raw:: html
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#dimension-reduction-model" role="button">Examples</a></div>
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#dimension-reduction" role="button">Examples</a></div>
 
 .. automodule:: gemseo.mlearning.transform.dimension_reduction.pca
    :noindex:

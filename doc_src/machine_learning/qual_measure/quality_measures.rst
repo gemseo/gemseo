@@ -34,7 +34,7 @@ Measure the quality of a machine learning algorithm
 
 .. raw:: html
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#quality-measure" role="button">Examples</a></div>
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#quality" role="button">Examples</a></div>
 
 Development
 -----------

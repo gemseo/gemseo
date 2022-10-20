@@ -6,7 +6,7 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-Clustering model
-~~~~~~~~~~~~~~~~
+Clustering
+~~~~~~~~~~
 
-Below is a gallery of examples of clustering models.
+How to create a clustering model.
