@@ -25,7 +25,7 @@ Available classification models are:
 
 .. raw:: html
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#classification-model" role="button">Examples</a></div>
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#classification" role="button">Examples</a></div>
 
 Development
 -----------

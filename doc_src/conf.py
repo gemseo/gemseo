@@ -79,6 +79,7 @@ sphinx_gallery_conf = {
     "filename_pattern": r"\.py$",
     "ignore_pattern": r"run\.py",
     "only_warn_on_example_error": True,
+    "nested_sections": False,
     # directory where function/class granular galleries are stored
     "backreferences_dir": "gen_modules/backreferences",
     # Modules for which function/class level galleries are created. In

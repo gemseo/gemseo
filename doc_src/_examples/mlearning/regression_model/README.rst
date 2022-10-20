@@ -6,7 +6,7 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-Regression model
-~~~~~~~~~~~~~~~~
+Regression
+~~~~~~~~~~
 
-Below is a gallery of examples about regression models.
+How to create a regression model.

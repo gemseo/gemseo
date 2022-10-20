@@ -6,7 +6,7 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-Calibration of an ML algorithm
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Calibration and selection
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below is a gallery of examples of calibrations of ML algorithms.
+How to tune a machine learning model and select the best one.
