@@ -35,6 +35,7 @@ from numpy import ndarray
 
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -230,6 +231,7 @@ class Nlopt(OptimizationLibrary):
         init_step: float = 0.25,
         kkt_tol_abs: float | None = None,
         kkt_tol_rel: float | None = None,
+        stop_crit_n_x: int | None = None,
         **kwargs: Any,
     ) -> dict[str, NLoptOptionsType]:
         r"""Retrieve the options of the Nlopt library.
@@ -258,6 +260,8 @@ class Nlopt(OptimizationLibrary):
                 take wider steps in the design variables. By default, each variable
                 is set to x0 plus a perturbation given by
                 0.25*(ub_i-x0_i) for i=0, …, len(x0)-1.
+            stop_crit_n_x: The minimum number of design vectors to take into account in
+                the stopping criteria.
             **kwargs: The additional algorithm-specific options.
 
         Returns:
@@ -269,6 +273,7 @@ class Nlopt(OptimizationLibrary):
             ftol_abs=ftol_abs,
             xtol_rel=xtol_rel,
             xtol_abs=xtol_abs,
+            stop_crit_n_x=stop_crit_n_x,
             max_time=max_time,
             max_iter=max_iter,
             ctol_abs=ctol_abs,
@@ -401,6 +406,42 @@ class Nlopt(OptimizationLibrary):
             nlopt_problem.set_param(self.INNER_MAXEVAL, opt_options[self.INNER_MAXEVAL])
 
         return nlopt_problem
+
+    def _pre_run(
+        self,
+        problem: OptimizationProblem,
+        algo_name: str,
+        **options: NLoptOptionsType,
+    ):
+        """Set :attr:`.STOP_CRIT_NX` depending on the algorithm.
+
+        The COBYLA and BOBYQA algorithms create sets of interpolation points
+        of sizes ``N+1`` and ``2*N+1`` respectively at initialization,
+        where ``N`` is the dimension of the design space.
+        In some cases, a termination criterion can be matched during this phase,
+        leading to a premature termination.
+
+        In order to circumvent this, :attr:`.STOP_CRIT_NX` is set accordingly,
+        depending on the algorithm used.
+        It ensures that the termination criterion will not be triggered during this
+        preliminary Design of Experiment phase of the algorithm.
+
+        Args:
+            problem: The optimization problem.
+            algo_name: The name of the algorithm.
+            **options: The options of the algorithm,
+                see the associated JSON file.
+        """
+        n_stop_crit_x = options[self.STOP_CRIT_NX]
+        if algo_name == "NLOPT_COBYLA" and not n_stop_crit_x:
+            design_space_dimension = self.problem.design_space.dimension
+            options[self.STOP_CRIT_NX] = design_space_dimension + 1
+        elif algo_name == "NLOPT_BOBYQA" and not n_stop_crit_x:
+            design_space_dimension = self.problem.design_space.dimension
+            options[self.STOP_CRIT_NX] = 2 * design_space_dimension + 1
+        else:
+            options[self.STOP_CRIT_NX] = n_stop_crit_x or 3
+        super()._pre_run(problem, algo_name, **options)
 
     def _run(self, **options: NLoptOptionsType) -> OptimizationResult:
         """Run the algorithm.

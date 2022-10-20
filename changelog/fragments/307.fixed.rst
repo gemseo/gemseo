@@ -1,0 +1,2 @@
+NLOPT_COBYLA and NLOPT_BOBYQA algorithms may end prematurely in the simplex construction phase,
+caused by an non-exposed and too small default value of the ``stop_crit_n_x`` algorithm option.
