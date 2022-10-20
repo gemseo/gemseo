@@ -264,3 +264,15 @@ def test_check_is_trained(untrained_model, name):
         match=re.escape(f"The PCERegressor must be trained to access {name}."),
     ):
         getattr(untrained_model, name)
+
+
+def test_ot_distribution(dataset):
+    """Check that PCERegressor handles only the OTDistribution instances."""
+    probability_space = ParameterSpace()
+    probability_space.add_random_variable("x_1", "SPUniformDistribution")
+    probability_space.add_random_variable("x_2", "SPUniformDistribution")
+    with pytest.raises(
+        ValueError,
+        match="The probability distributions must be instances of OTDistribution.",
+    ):
+        PCERegressor(dataset, probability_space)
