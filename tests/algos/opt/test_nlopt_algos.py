@@ -19,11 +19,13 @@
 """Tests for the NLopt library wrapper."""
 from unittest import TestCase
 
+import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_nlopt import Nlopt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import array
@@ -32,6 +34,7 @@ from scipy.optimize.optimize import rosen
 from scipy.optimize.optimize import rosen_der
 
 from .opt_lib_test_base import OptLibraryTestBase
+from .problems.x2 import X2
 
 
 class TestNLOPT(TestCase):
@@ -158,3 +161,63 @@ for test_method in suite_tests.generate_test("Nlopt", get_options):
 def test_library_name():
     """Check the library name."""
     assert Nlopt.LIBRARY_NAME == "NLopt"
+
+
+@pytest.fixture
+def x2_problem() -> X2:
+    """Instantiate a :class:`.X2` test problem.
+
+    Returns:
+         A X_2 problem.
+    """
+    x2_problem = X2()
+    x2_problem.preprocess_functions()
+    return x2_problem
+
+
+@pytest.mark.parametrize("algo_name", ["NLOPT_COBYLA", "NLOPT_BOBYQA"])
+def test_no_stop_during_doe_phase(x2_problem: X2, algo_name: str):
+    """Test that COBYLA and BOBYQA does not trigger a stop criterion during the DoE
+    phase.
+
+    In this test, stop_crit_n_x is automatically set by :method:`.Nlopt._pre_run`.
+    Also, n_stop_crit_x is automatically set,
+    with a large enough value which lead to a algorithm stop
+    due to the max iteration stop criterion.
+
+    Args:
+        x2_problem: An instanciated :class:`.X_2` optimization problem.
+        algo_name: The optimization algorithm used.
+    """
+    res = execute_algo(x2_problem, algo_name=algo_name, max_iter=10)
+    assert res.n_obj_call == 12
+
+
+def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2):
+    """Test that COBYLA does not trigger a stop criterion during the doe phase.
+
+    In this test, stop_crit_n_x is set by the user. An insufficient value is given,
+    which lead to a premature stop of the algorithm.
+
+    Args:
+        x2_problem: An instanciated :class:`.X_2` optimization problem.
+    """
+    res = execute_algo(
+        x2_problem, algo_name="NLOPT_COBYLA", max_iter=100, stop_crit_n_x=3
+    )
+    assert res.n_obj_call == 5
+
+
+def test_bobyqa_stopped_due_to_small_crit_n_x(x2_problem: X2):
+    """Test that BOBYQA does not trigger a stop criterion during its DoE phase.
+
+    In this test, stop_crit_n_x is set by the user. An insufficient value is given,
+    which lead to a premature stop of the algorithm.
+
+    Args:
+        x2_problem: An instanciated :class:`.X_2` optimization problem.
+    """
+    res = execute_algo(
+        x2_problem, algo_name="NLOPT_BOBYQA", max_iter=100, stop_crit_n_x=3
+    )
+    assert res.n_obj_call == 6

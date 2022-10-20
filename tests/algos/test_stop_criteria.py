@@ -17,10 +17,14 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+import pytest
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
+from gemseo.api import execute_algo
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import ones
+
+from .opt.problems.constant import Constant
 
 
 def test_is_x_tol_reached():
@@ -56,3 +60,18 @@ def test_is_f_tol_reached():
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.001, n_x=2)
 
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2, n_x=3)
+
+
+@pytest.mark.parametrize("n_stop_crit_x", [2, 4, 6, 10, 20])
+def test_n_stop_crit_x(n_stop_crit_x):
+    """Test that the parameter n_stop_crit_x behave as expected.
+
+    As the :class:`.Constant` problem always returns a constant objective value, The
+    number of iterations should be n_stop_crit_x + 1.
+    """
+    pb = Constant()
+    pb.preprocess_functions()
+    res = execute_algo(
+        pb, algo_name="NLOPT_COBYLA", max_iter=100, stop_crit_n_x=n_stop_crit_x
+    )
+    assert res.n_obj_call == n_stop_crit_x + 1

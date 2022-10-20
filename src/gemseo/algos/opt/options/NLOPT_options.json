@@ -21,6 +21,18 @@
             "type": "number",
             "minimum": 0.0
         },
+        "stop_crit_n_x": {
+            "anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "integer",
+					"minimum": 2
+				}
+			],
+            "default": null
+        },
         "max_iter": {
             "type": "integer",
             "minimum": 1
