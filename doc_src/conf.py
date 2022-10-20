@@ -199,12 +199,11 @@ htmlhelp_basename = "GEMSEOdoc"
 
 autosummary_generate = True
 
-if "PLANTUML_DIR" in os.environ:
-    plantuml_dir = os.environ["PLANTUML_DIR"]
-else:
-    plantuml_dir = "/opt/plantuml/"
+if "READTHEDOCS" in os.environ:
+    plantuml = "java -Djava.awt.headless=true -jar /usr/share/plantuml/plantuml.jar"
+elif "PLANTUML_DIR" in os.environ:
+    plantuml = f"java -jar {os.environ['PLANTUML_DIR']}/plantuml.jar"
 
-plantuml = f"java -jar {plantuml_dir}/plantuml.jar"
 plantuml_output_format = "png"
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
