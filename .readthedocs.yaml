@@ -19,6 +19,7 @@ build:
     python: "3.9"
   apt_packages:
     - graphviz
+    - plantuml
   jobs:
     post_install:
       - pip install --no-deps -r requirements/doc-plugins.txt
