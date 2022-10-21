@@ -84,38 +84,6 @@ such as behind a corporate firewall,
 you can use a
 `self-contained installer <https://mdo-ext.pf.irt-saintexupery.com/gemseo-installers>`_.
 
-Install from an archive
-***********************
-
-Install the core features from an archive with
-
-.. code-block:: console
-
-    pip install gemseo-x.y.z.zip
-
-or the full features with:
-
-.. code-block:: console
-
-    pip install gemseo-x.y.z.zip[all]
-
-Install the development version
-*******************************
-
-Install the core features of the development version with
-
-.. code-block:: console
-
-    pip install gemseo@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
-
-or the full features with:
-
-.. code-block:: console
-
-    pip install gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
-
-To develop in |g|, see :ref:`dev`.
-
 Test the installation
 *********************
 
@@ -165,6 +133,27 @@ For each example,
 you can download a Python script or a Jupyter Notebook,
 execute it and experiment to test the installation.
 
+
+Advanced
+********
+
+Install the development version
+-------------------------------
+
+Install the core features of the development version with
+
+.. code-block:: console
+
+    pip install gemseo@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
+
+or the full features with:
+
+.. code-block:: console
+
+    pip install gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
+
+To develop in |g|, see instead :ref:`dev`.
+
 .. _test_gemseo:
 
 Test with unit tests
@@ -175,8 +164,15 @@ Run the tests with:
 .. code-block:: console
 
    pip install gemseo[all,test]
+
+Look at the output of the above command to determine the installed version of |g|.
+Get the tests corresponding to the same version of |g| from
+`gitlab <https://gitlab.com/gemseo/dev/gemseo>`_.
+Then from the directory of this archive that contains the ``tests`` directory,
+run
+
+.. code-block:: console
+
    pytest
 
-Please have a look at the
-:ref:`contributing <dev>`
-section for more information on testing.
+Look at the :ref:`contributing <dev>` section for more information on testing.
