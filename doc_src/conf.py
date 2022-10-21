@@ -232,6 +232,8 @@ intersphinx_mapping = {
 
 html_context = dict()
 
+__version_regex = re.compile(r"\d+\.\d+\.\d+")
+
 
 def __filter_versions(
     rtd_versions: Iterable[Mapping[str, str | Mapping[str, str]]],
@@ -247,11 +249,16 @@ def __filter_versions(
         The active versions with a version number,
         of the form ``(version_name, version_url)``.
     """
-    return [
-        (rtd_version["slug"], rtd_version["urls"]["documentation"])
-        for rtd_version in rtd_versions
-        if rtd_version["active"] and re.match(r"\d+\.\d+\.\d+", rtd_version["slug"])
-    ]
+    _versions = []
+    for rtd_version in rtd_versions:
+        if rtd_version["active"] and __version_regex.match(rtd_version["slug"]):
+            slug = rtd_version["slug"]
+            if "dev" in slug:
+                slug = "develop"
+
+            _versions.append((slug, rtd_version["urls"]["documentation"]))
+
+    return _versions
 
 
 if os.environ.get("READTHEDOCS") == "True":
