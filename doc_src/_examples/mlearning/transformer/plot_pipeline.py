@@ -24,6 +24,8 @@ Transformer pipeline example
 
 In this example, we will create a pipeline of transformers.
 """
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.pipeline import Pipeline

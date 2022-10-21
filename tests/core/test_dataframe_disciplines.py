@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
 # Antoine DECHAUME
+from __future__ import annotations
+
 import numpy as np
 import numpy.testing
 import pytest

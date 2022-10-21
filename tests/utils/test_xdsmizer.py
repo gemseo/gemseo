@@ -16,13 +16,14 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import json
 import unittest
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 from typing import Mapping
-from typing import Union
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -356,8 +357,8 @@ def assert_xdsm_equal(expected: XdsmType, generated: XdsmType) -> None:
 
 
 def assert_level_xdsm_equal(
-    expected: Mapping[str, Union[NodeType, EdgeType]],
-    generated: Mapping[str, Union[NodeType, EdgeType]],
+    expected: Mapping[str, NodeType | EdgeType],
+    generated: Mapping[str, NodeType | EdgeType],
 ) -> None:
     """Check the equality of ``nodes`` and ``edges`` in two different XDSM structures.
 

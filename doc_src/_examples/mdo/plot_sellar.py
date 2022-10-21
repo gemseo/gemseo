@@ -41,6 +41,8 @@ A from scratch example on the Sellar problem
 # Imports
 # -------
 # All the imports needed for the tutorials are performed here.
+from __future__ import annotations
+
 from math import exp
 
 from gemseo.algos.design_space import DesignSpace

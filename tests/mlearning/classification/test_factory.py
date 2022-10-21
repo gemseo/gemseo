@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClassificationModelFactory class in
 gemseo.mlearning.classification.factory."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.problems.dataset.iris import IrisDataset

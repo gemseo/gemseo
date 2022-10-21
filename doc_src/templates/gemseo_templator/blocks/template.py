@@ -12,10 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Iterable
-from typing import List
-from typing import Optional
 
 
 @dataclass
@@ -23,8 +23,8 @@ class WebLink:
     """A weblink defined by a text, an URL and an anchor."""
 
     text: str
-    url: Optional[str] = None
-    anchor: Optional[str] = None
+    url: str | None = None
+    anchor: str | None = None
 
 
 @dataclass
@@ -41,13 +41,13 @@ class Block:
 
     title: str
     description: str
-    features: Optional[List[WebLink]] = None
-    algorithms: Optional[List[WebLink]] = None
-    dependencies: Optional[List[WebLink]] = None
-    url: Optional[str] = None
-    info: Optional[str] = None
-    examples: Optional[str] = None
-    options: Optional[str] = None
+    features: list[WebLink] | None = None
+    algorithms: list[WebLink] | None = None
+    dependencies: list[WebLink] | None = None
+    url: str | None = None
+    info: str | None = None
+    examples: str | None = None
+    options: str | None = None
 
     def __post_init__(self):
         """Update the unset URLs of algorithms, dependencies and features."""

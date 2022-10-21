@@ -22,6 +22,8 @@
 Sobol' analysis
 ===============
 """
+from __future__ import annotations
+
 import pprint
 
 from gemseo.algos.parameter_space import ParameterSpace

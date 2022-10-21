@@ -21,6 +21,8 @@
 Generate an N2 and XDSM from an Excel description of the MDO problem
 ====================================================================
 """
+from __future__ import annotations
+
 from os import mkdir
 from os.path import exists
 from os.path import join

@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import unittest
 
 from gemseo.core.discipline import MDODiscipline

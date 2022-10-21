@@ -21,11 +21,11 @@ algorithms."""
 from __future__ import annotations
 
 import logging
-from typing import Final
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.utils.python_compatibility import Final
 from numpy import array
 from numpy import ndarray
 from numpy import zeros

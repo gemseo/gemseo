@@ -17,7 +17,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer pipeline module."""
-from typing import List
+from __future__ import annotations
 
 import pytest
 from gemseo.mlearning.transform.pipeline import Pipeline
@@ -38,7 +38,7 @@ def data() -> ndarray:
 
 
 @pytest.fixture
-def transformers() -> List[Transformer]:
+def transformers() -> list[Transformer]:
     """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
 

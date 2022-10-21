@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class Surfaces plotting samples of a 2D variable with surfaces."""
+from __future__ import annotations
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces

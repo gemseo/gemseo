@@ -298,7 +298,6 @@ class MDAChain(MDA):
 
         Here for compatibility with mother class.
         """
-        pass
 
     def get_expected_dataflow(
         self,

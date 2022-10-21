@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 """Test the dataset module."""
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import re
 from pathlib import Path
 

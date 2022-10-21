@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
+from __future__ import annotations
+
 from unittest.case import TestCase
 
 from gemseo.algos.design_space import DesignSpace

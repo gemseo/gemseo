@@ -30,6 +30,8 @@ on the Sobieski's SSBJ problem.
 # ------
 # The first step is to import some functions from the API
 # and a method to get the design space.
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

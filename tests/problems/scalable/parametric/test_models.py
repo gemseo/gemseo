@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.problems.scalable.parametric.core.models import TMMainModel
 from gemseo.problems.scalable.parametric.core.models import TMSubModel

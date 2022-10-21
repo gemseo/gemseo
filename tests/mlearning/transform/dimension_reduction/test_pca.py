@@ -19,6 +19,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test principal component analysis dimension reduction."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from numpy import allclose

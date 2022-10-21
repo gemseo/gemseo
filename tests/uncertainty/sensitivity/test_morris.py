@@ -17,6 +17,8 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline

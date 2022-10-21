@@ -16,10 +16,10 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 20 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import re
 from typing import Any
-from typing import Dict
-from typing import Optional
 from unittest import mock
 
 import pytest
@@ -195,7 +195,7 @@ def test_algos(algo_name, dim, n_samples, options):
 def get_expected_nsamples(
     algo: str,
     dim: int,
-    n_samples: Optional[int] = None,
+    n_samples: int | None = None,
 ) -> int:
     """Returns the expected number of samples.
 
@@ -240,7 +240,7 @@ def get_expected_nsamples(
 def get_options(
     algo_name: str,
     dim: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Returns the options of the algorithms.
 
     Args:

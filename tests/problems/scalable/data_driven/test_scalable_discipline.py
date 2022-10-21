@@ -17,6 +17,8 @@
 #                   initial documentation
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import os
 import unittest
 from os.path import dirname

@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the tolerance interval for weibull distributions."""
+from __future__ import annotations
+
 from math import log
 
 import pytest

@@ -17,9 +17,9 @@
 #      :author: Damien Guenot - 20 avr. 2016
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from typing import Any
-from typing import Dict
-from typing import Optional
 
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -185,7 +185,7 @@ def test_integer_lhs():
 def get_expected_nsamples(
     algo: str,
     dim: int,
-    n_samples: Optional[int] = None,
+    n_samples: int | None = None,
 ) -> int:
     """Returns the expected number of samples.
 
@@ -221,7 +221,7 @@ def get_expected_nsamples(
 def get_options(
     algo_name: str,
     dim: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Returns the options of the algorithms.
 
     Args:

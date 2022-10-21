@@ -25,6 +25,8 @@ Mixture of experts
 In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
 """
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset

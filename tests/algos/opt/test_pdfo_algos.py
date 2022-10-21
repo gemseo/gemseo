@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from copy import copy
 from math import sqrt
 from unittest import TestCase

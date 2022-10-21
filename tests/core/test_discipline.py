@@ -18,11 +18,11 @@
 #        :author: Damien Guenot
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
-from typing import Dict
-from typing import Tuple
 
 import pytest
 from gemseo.caches.hdf5_cache import HDF5Cache
@@ -47,8 +47,8 @@ from numpy import ndarray
 
 
 def check_jac_equals(
-    jac_1: Dict[str, ndarray],
-    jac_2: Dict[str, ndarray],
+    jac_1: dict[str, ndarray],
+    jac_2: dict[str, ndarray],
 ) -> bool:
     """Check that two Jacobian matrices are equals.
 
@@ -72,7 +72,7 @@ def check_jac_equals(
 
 
 @pytest.fixture
-def sobieski_chain() -> Tuple[MDOChain, Dict[str, ndarray]]:
+def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
     """Build a Sobieski chain.
 
     Returns:

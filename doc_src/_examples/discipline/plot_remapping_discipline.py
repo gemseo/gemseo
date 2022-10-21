@@ -26,6 +26,8 @@ The :class:`.RemappingDiscipline` can be used
 to rename the input and output variables of an original discipline
 including defining a variable as a part of an original one.
 """
+from __future__ import annotations
+
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.remapping import RemappingDiscipline
 from numpy import array

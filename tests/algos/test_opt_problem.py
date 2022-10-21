@@ -17,11 +17,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from functools import partial
 from math import sqrt
 from pathlib import Path
-from typing import Dict
-from typing import Tuple
 from unittest import mock
 
 import numpy as np
@@ -1196,7 +1196,7 @@ def test_approximated_jacobian_wrt_uncertain_variables():
 
 
 @pytest.fixture
-def rosenbrock_lhs() -> Tuple[Rosenbrock, Dict[str, ndarray]]:
+def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
     problem.add_observable(MDOFunction(lambda x: sum(x), "obs"))

@@ -21,6 +21,8 @@
 Calibration of a polynomial regression
 ======================================
 """
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger

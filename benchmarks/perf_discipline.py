@@ -18,6 +18,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """TODO."""
+from __future__ import annotations
+
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.discipline import MDODiscipline
 

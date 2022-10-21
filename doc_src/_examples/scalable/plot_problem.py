@@ -27,6 +27,8 @@ by means of the :class:`.MDF` formulation
 with a higher dimension for the sweep parameter.
 For that, we use the :class:`.ScalableProblem` class.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

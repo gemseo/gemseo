@@ -17,6 +17,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test dimension reduction transformer module."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,

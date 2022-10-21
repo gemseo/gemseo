@@ -21,6 +21,8 @@
 MDO formulations for a toy example in aerostructure
 ===================================================
 """
+from __future__ import annotations
+
 from copy import deepcopy
 
 from gemseo.api import configure_logger

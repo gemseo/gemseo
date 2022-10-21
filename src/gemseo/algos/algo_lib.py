@@ -173,7 +173,6 @@ class AlgoLib:
             algo_name: The name of the algorithm.
             **options: The options for the algorithm, see associated JSON file.
         """
-        pass
 
     def _post_run(
         self,
@@ -193,7 +192,6 @@ class AlgoLib:
             result: The result of the run, i.e. the solution.
             **options: The options for the algorithm, see associated JSON file.
         """
-        pass
 
     def driver_has_option(self, option_name: str) -> bool:
         """Check the existence of an option.
@@ -217,7 +215,6 @@ class AlgoLib:
             options: The options to be preprocessed.
             option_key: The current option key to process.
         """
-        pass
 
     def _process_options(self, **options: Any) -> dict[str, Any]:
         """Convert the options to algorithm specific options and check them.

@@ -18,6 +18,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test F1 measure."""
+from __future__ import annotations
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.knn import KNNClassifier

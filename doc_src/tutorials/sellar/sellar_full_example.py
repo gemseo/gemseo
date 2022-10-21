@@ -18,6 +18,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A from scratch example on the Sellar problem."""
+from __future__ import annotations
+
 from math import exp
 
 from gemseo.algos.design_space import DesignSpace

@@ -18,6 +18,8 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the OptimizationProblem-to-ProblemGeneric adapter."""
+from __future__ import annotations
+
 import pytest
 
 p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")

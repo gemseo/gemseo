@@ -17,12 +17,13 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import logging
 import re
 import shutil
 from pathlib import Path
 from typing import Iterator
-from typing import Union
 
 import h5py
 import pytest
@@ -238,7 +239,7 @@ def test_hash_discontiguous_array(input_c, input_f):
     assert hash_data_dict({"i": input_c}) == hash_data_dict({"i": input_f})
 
 
-def func(x: Union[int, float]) -> Union[int, float]:
+def func(x: int | float) -> int | float:
     """Dummy function to test the cache."""
     y = x
     return y

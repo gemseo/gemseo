@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 18 mars 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics

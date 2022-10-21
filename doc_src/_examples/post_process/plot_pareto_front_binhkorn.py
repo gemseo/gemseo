@@ -25,6 +25,8 @@ Pareto front on Binh and Korn problem
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
 on the Binh and Korn multi-objective problem.
 """
+from __future__ import annotations
+
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory

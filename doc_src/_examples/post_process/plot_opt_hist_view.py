@@ -25,6 +25,8 @@ Optimization History View
 In this example, we illustrate the use of the :class:`.OptHistoryView` plot
 on the Sobieski's SSBJ problem.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
