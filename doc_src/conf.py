@@ -52,6 +52,7 @@ extensions = [
     "add_toctree_functions",
     "gemseo_pre_processor",
     "default_kwargs_values",
+    "sphinx_search.extension",
 ]
 
 ################################################################################

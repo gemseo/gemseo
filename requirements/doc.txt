@@ -30,7 +30,7 @@ et-xmlfile==1.1.0
     # via openpyxl
 fastjsonschema==2.16.2
     # via gemseo (setup.py)
-fonttools==4.37.3
+fonttools==4.37.4
     # via matplotlib
 genson==1.2.2
     # via gemseo (setup.py)
@@ -42,7 +42,7 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==4.12.0
+importlib-metadata==5.0.0
     # via sphinx
 jinja2==3.1.2
     # via
@@ -90,7 +90,7 @@ packaging==21.3
     #   sphinx
 pandas==1.5.0
     # via gemseo (setup.py)
-pbr==5.10.0
+pbr==5.11.0
     # via sphinxcontrib-apidoc
 pdfo==1.2
     # via gemseo (setup.py)
@@ -98,7 +98,7 @@ pillow==9.2.0
     # via
     #   gemseo (setup.py)
     #   matplotlib
-psutil==5.9.2
+psutil==5.9.3
     # via openturns
 pybtex==0.24.0
     # via
@@ -130,7 +130,7 @@ python-dateutil==2.8.2
     # via
     #   matplotlib
     #   pandas
-pytz==2022.2.1
+pytz==2022.5
     # via
     #   babel
     #   pandas
@@ -138,6 +138,8 @@ pyxdsm==2.2.2
     # via gemseo (setup.py)
 pyyaml==6.0
     # via pybtex
+readthedocs-sphinx-search==0.1.2
+    # via gemseo (setup.py)
 requests==2.28.1
     # via
     #   gemseo (setup.py)
@@ -161,7 +163,7 @@ six==1.16.0
     #   python-dateutil
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==5.2.1
+sphinx==5.3.0
     # via
     #   autodocsumm
     #   gemseo (setup.py)
@@ -190,7 +192,7 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-sphinxcontrib-spelling==7.6.0
+sphinxcontrib-spelling==7.6.2
     # via gemseo (setup.py)
 sympy==1.11.1
     # via gemseo (setup.py)
@@ -198,7 +200,7 @@ threadpoolctl==3.1.0
     # via scikit-learn
 tqdm==4.64.1
     # via gemseo (setup.py)
-typing-extensions==4.3.0
+typing-extensions==4.4.0
     # via gemseo (setup.py)
 urllib3==1.26.12
     # via requests
@@ -206,7 +208,7 @@ xdsmjs==1.0.1
     # via gemseo (setup.py)
 xxhash==3.0.0
     # via gemseo (setup.py)
-zipp==3.8.1
+zipp==3.9.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
