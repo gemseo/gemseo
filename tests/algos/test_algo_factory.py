@@ -17,6 +17,8 @@
 #                       initial documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 

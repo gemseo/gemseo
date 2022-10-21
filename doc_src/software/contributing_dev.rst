@@ -68,6 +68,12 @@ Quick start
 
 First time setup:
 
+* Clone the repository:
+
+.. code-block:: console
+
+  git clone https://gitlab.com/gemseo/dev/gemseo.git
+
 * Install the :ref:`requirements`.
 
 * Run the tests for Python 3.9

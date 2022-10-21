@@ -13,8 +13,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test helpers."""
+from __future__ import annotations
+
 from functools import partial
-from typing import List
 
 import pytest
 from gemseo.api import create_discipline
@@ -79,7 +80,7 @@ def generate_parallel_doe_data():
 
 
 @pytest.fixture
-def sellar_disciplines() -> List[MDODiscipline]:
+def sellar_disciplines() -> list[MDODiscipline]:
     """The disciplines of the Sellar problem.
 
     Returns:

@@ -17,12 +17,11 @@
 #                      initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from copy import deepcopy
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.doe_lib import DOELibrary
@@ -77,9 +76,9 @@ def check_problem_execution(
     dim: int,
     doe_library: DOELibrary,
     algo_name: str,
-    get_expected_nsamples: Callable[[str, int, Optional[int]], int],
-    options: Dict[str, Any],
-) -> Optional[str]:
+    get_expected_nsamples: Callable[[str, int, int | None], int],
+    options: dict[str, Any],
+) -> str | None:
     """Create a problem, execute it and return an error message if any.
 
     Args:
@@ -118,9 +117,9 @@ def create_test_function(
     dim: int,
     doe_library: DOELibrary,
     algo_name: str,
-    get_expected_nsamples: Callable[[str, int, Optional[int]], int],
-    options: Dict[str, Any],
-) -> Callable[[Optional[Any]], None]:
+    get_expected_nsamples: Callable[[str, int, int | None], int],
+    options: dict[str, Any],
+) -> Callable[[Any | None], None]:
     """Create a test function for a DOE algorithm and a variables space dimension.
 
     Args:
@@ -152,9 +151,9 @@ def create_test_function(
 
 def generate_test_functions(
     opt_lib_name: str,
-    get_expected_nsamples: Callable[[str, int, Optional[int]], int],
-    get_options: Callable[[str, int], Dict[str, Any]],
-) -> List[Callable[[], None]]:
+    get_expected_nsamples: Callable[[str, int, int | None], int],
+    get_options: Callable[[str, int], dict[str, Any]],
+) -> list[Callable[[], None]]:
     """Generate test functions for a DOE library.
 
     This methods filters the algorithms adapted to the benchmark problem.

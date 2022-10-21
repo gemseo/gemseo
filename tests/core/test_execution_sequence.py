@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Francois Gallard, Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import unittest
 from copy import deepcopy
 

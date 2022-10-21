@@ -25,6 +25,8 @@ Analytical test case # 2
 #
 # Imports
 # -------
+from __future__ import annotations
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory

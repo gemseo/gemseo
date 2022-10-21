@@ -18,6 +18,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test unsupervised machine learning algorithm module."""
+from __future__ import annotations
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo

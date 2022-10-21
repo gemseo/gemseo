@@ -24,6 +24,8 @@ KL-SVD on Burgers equation
 
 Example using KL-SVD on solutions of the Burgers equation.
 """
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD

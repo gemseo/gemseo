@@ -18,6 +18,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Driver library tests."""
+from __future__ import annotations
+
 from unittest import mock
 
 import pytest

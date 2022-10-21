@@ -21,6 +21,8 @@
 Use a design of experiments from an array
 =========================================
 """
+from __future__ import annotations
+
 import numpy as np
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline

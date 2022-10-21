@@ -36,6 +36,8 @@
 # -------
 #
 # First, we will import all the classes and functions needed for the tutorials.
+from __future__ import annotations
+
 from math import exp
 
 from gemseo.api import configure_logger

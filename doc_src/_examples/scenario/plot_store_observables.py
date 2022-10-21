@@ -40,6 +40,8 @@ Store observables
 # Imports
 # -------
 # All the imports needed for the tutorials are performed here.
+from __future__ import annotations
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline

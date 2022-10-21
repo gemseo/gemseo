@@ -25,6 +25,8 @@ Probability distributions based on SciPy
 In this example,
 we seek to create a probability distribution based on the SciPy library.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.uncertainty.api import create_distribution
 from gemseo.uncertainty.api import get_available_distributions

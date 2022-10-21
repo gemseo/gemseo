@@ -28,6 +28,8 @@ and used by the :class:`.ScalableDiagonalModel`.
 The idea is to sample the discipline by varying its inputs proportionally
 on one of the diagonals of its input space.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline

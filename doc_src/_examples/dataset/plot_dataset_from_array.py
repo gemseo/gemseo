@@ -25,6 +25,8 @@ Dataset from a numpy array
 In this example, we will see how to build a :class:`.Dataset` from an numpy
 array. For that, we need to import this :class:`.Dataset` class:
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from numpy import concatenate

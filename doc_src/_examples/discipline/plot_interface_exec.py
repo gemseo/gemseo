@@ -22,6 +22,8 @@
 Create a discipline from an external executable
 ===============================================
 """
+from __future__ import annotations
+
 import os
 import subprocess
 

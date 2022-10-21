@@ -24,6 +24,8 @@ Scaler example
 
 In this example, we will create a scaler to transform data.
 """
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler

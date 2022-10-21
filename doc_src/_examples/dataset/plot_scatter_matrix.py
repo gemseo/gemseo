@@ -23,6 +23,8 @@ Plot - Scatter matrix
 =====================
 
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix

@@ -32,6 +32,8 @@ and a weakly one, with the following properties:
 
 We would like to solve this MDO problem by means of an MDF formulation.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot

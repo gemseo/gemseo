@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class Radar plotting samples using the radviz module from pandas."""
+from __future__ import annotations
+
 import pytest
 from gemseo.post.dataset.radviz import Radar
 from gemseo.problems.dataset.iris import IrisDataset

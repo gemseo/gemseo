@@ -23,6 +23,8 @@ Memory full cache
 =================
 This example shows how to manipulate a :class:`.MemoryFullCache` object.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.caches.memory_full_cache import MemoryFullCache
 from numpy import array

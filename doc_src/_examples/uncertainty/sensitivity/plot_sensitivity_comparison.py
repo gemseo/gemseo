@@ -22,6 +22,8 @@
 Comparing sensitivity indices
 =============================
 """
+from __future__ import annotations
+
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis

@@ -17,6 +17,8 @@
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the NLopt library wrapper."""
+from __future__ import annotations
+
 from unittest import TestCase
 
 import pytest

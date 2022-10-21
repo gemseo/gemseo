@@ -17,11 +17,12 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import sys
 from copy import deepcopy
 from os.path import dirname
 from os.path import join
-from typing import List
 from unittest import mock
 
 import pytest
@@ -53,7 +54,7 @@ def xfail_if_windows_unc_issue(tmpdir, use_shell=True):
 def test_disc_from_exe_network_path_windows():
     """Test that a network location cannot be userd as a workdir under Windows."""
 
-    def _mock_list_out_dir(self) -> List[str]:
+    def _mock_list_out_dir(self) -> list[str]:
         """Mock of _list_out_dir.
 
         This mock method is needed as an existing workdir is needed by _list_out_dir.

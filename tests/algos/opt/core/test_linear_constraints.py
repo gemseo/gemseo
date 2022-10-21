@@ -17,6 +17,8 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
+from __future__ import annotations
+
 import pytest
 from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices

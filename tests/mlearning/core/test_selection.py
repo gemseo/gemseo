@@ -18,6 +18,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm selection module."""
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace

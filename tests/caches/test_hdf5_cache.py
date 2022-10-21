@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import h5py
 import pytest
 from gemseo.caches.cache_factory import CacheFactory

@@ -30,6 +30,8 @@ outputs.
 # Imports
 # -------
 # Import from standard libraries and |g|.
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset

@@ -18,8 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for K-means clustering model."""
-from typing import List
-from typing import Tuple
+from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
@@ -59,7 +58,7 @@ VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
 @pytest.fixture
-def samples() -> Tuple[ndarray, ndarray, List[int]]:
+def samples() -> tuple[ndarray, ndarray, list[int]]:
     """The description of the samples used to generate the learning dataset.
 
     It consists of three clusters from normal distributions.

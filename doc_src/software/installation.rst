@@ -114,6 +114,8 @@ or the full features with:
 
     pip install gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
 
+To develop in |g|, see :ref:`dev`.
+
 Test the installation
 *********************
 

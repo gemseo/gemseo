@@ -22,6 +22,8 @@
 Advanced mixture of experts
 ===========================
 """
+from __future__ import annotations
+
 from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
 from gemseo.mlearning.qual_measure.f1_measure import F1Measure

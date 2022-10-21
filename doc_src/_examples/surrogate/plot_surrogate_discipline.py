@@ -32,6 +32,8 @@ with two inputs and two outputs:
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegressionAlgo`
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline

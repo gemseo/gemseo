@@ -25,6 +25,8 @@ Self-Organizing Map
 In this example, we illustrate the use of the :class:`~gemseo.post.som.SOM` plot
 on the Sobieski's SSBJ problem.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import re
 from typing import Any
 from typing import cast
-from typing import Dict
 from typing import Iterable
 
 from docutils import nodes
@@ -16,7 +17,7 @@ def record_defaults(
     objtype: str,
     name: str,
     obj: Any,
-    options: Dict,
+    options: dict,
     args: str,
     retann: str,
 ) -> None:
@@ -81,7 +82,7 @@ def insert_field_list(node: Element) -> nodes.field_list:
 
 
 def modify_field_list(
-    node: nodes.field_list, defaults: Dict[str, Any], pattern: str
+    node: nodes.field_list, defaults: dict[str, Any], pattern: str
 ) -> None:
     fields = cast(Iterable[nodes.field], node)
 
@@ -113,7 +114,7 @@ def modify_field_list(
 _KWARGS_DEFAULTS_PATTERN = "By default it is set to {}."
 
 
-def setup(app: Sphinx) -> Dict[str, Any]:
+def setup(app: Sphinx) -> dict[str, Any]:
 
     app.add_config_value("autodoc_kwargs_defaults", False, True)
     app.add_config_value(

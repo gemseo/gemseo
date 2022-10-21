@@ -19,6 +19,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClusteringModelFactory class in gemseo.mlearning.cluster.factory."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 from gemseo.problems.dataset.iris import IrisDataset

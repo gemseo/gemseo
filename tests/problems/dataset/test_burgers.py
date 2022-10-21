@@ -17,6 +17,8 @@
 #                           documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.problems.dataset.burgers import BurgersDataset
 from numpy import allclose
 

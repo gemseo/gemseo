@@ -13,6 +13,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A sphinx extension to pre-process the docs."""
+from __future__ import annotations
+
 from pathlib import Path
 
 from sphinx.ext.autodoc.mock import mock

@@ -17,6 +17,8 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.post.dataset.factory import DatasetPlotFactory
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 

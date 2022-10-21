@@ -17,6 +17,8 @@
 #                      initial documentation
 #        :author:  Reda El Amri
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.uncertainty.distributions.openturns.dirac import OTDiracDistribution
 from numpy import array
 from numpy.testing import assert_equal

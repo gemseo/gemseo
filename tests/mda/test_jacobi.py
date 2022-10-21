@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi

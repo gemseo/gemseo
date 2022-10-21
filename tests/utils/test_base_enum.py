@@ -18,6 +18,8 @@
 #        :author:  Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for BaseEnum."""
+from __future__ import annotations
+
 import pytest
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.base_enum import CamelCaseEnum
