@@ -76,7 +76,8 @@ First time setup:
 
 * Install the :ref:`requirements`.
 
-* Run the tests for Python 3.9
+* From the root of the git clone,
+  run the tests for Python 3.9
   and create a development environment under :file:`.tox/py39`:
 
 .. code-block:: console
