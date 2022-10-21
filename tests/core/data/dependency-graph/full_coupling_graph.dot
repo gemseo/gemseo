@@ -1,0 +1,9 @@
+digraph "Dependency graph" {
+	D1 -> D0 [label=y10]
+	D1 -> D2 [label=y10]
+	D2 -> D0 [label=y2]
+	D2 -> D1 [label=y2]
+	D1 -> D1 [label=y11]
+	_D0 [shape=point style=invis]
+	D0 -> _D0 [label=y0]
+}
