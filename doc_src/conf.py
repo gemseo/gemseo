@@ -20,7 +20,7 @@ import os
 import re
 import sys
 from dataclasses import asdict
-from importlib.metadata import version
+from importlib.metadata import version as _version
 from pathlib import Path
 from typing import Iterable
 from typing import Mapping
@@ -151,8 +151,9 @@ project = "GEMSEO"
 
 copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"
 
-release = version("gemseo")
-version = release
+pretty_version = release = version = _version("gemseo")
+if "dev" in pretty_version:
+    pretty_version = "develop"
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
