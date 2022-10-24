@@ -17,3 +17,4 @@ Machine learning models options
    classification_algos.rst
    clustering_algos.rst
    regression_algos.rst
+   ml_quality_algos.rst
