@@ -233,6 +233,7 @@ intersphinx_mapping = {
 # Setup the multiversion display
 
 html_context = dict()
+html_context["pretty_version"] = pretty_version
 
 __version_regex = re.compile(r"\d+\.\d+\.\d+")
 
