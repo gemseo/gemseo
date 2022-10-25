@@ -1,0 +1,1 @@
+A multidisciplinary system with a self-coupled discipline can be represented correctly by a coupling graph.

@@ -21,7 +21,10 @@ from __future__ import annotations
 
 import logging
 from shutil import move
+from typing import Iterable
 from typing import Iterator
+
+from gemseo.utils.string_tools import pretty_str
 
 # graphviz is an optional dependency
 
@@ -129,7 +132,9 @@ class DependencyGraph:
         return couplings
 
     @staticmethod
-    def __create_graph(disciplines):
+    def __create_graph(
+        disciplines: Iterable[MDODiscipline],
+    ) -> tuple[nx.DiGraph, dict[str, tuple[str]]]:
         """Create the full graph.
 
         The coupled inputs and outputs names are stored as an edge attributes named io.
@@ -138,9 +143,8 @@ class DependencyGraph:
             disciplines (list): The disciplines to build the graph with.
 
         Returns:
-            networkx.DiGraph: The graph of disciplines.
+            The graph of disciplines.
         """
-        # python 2: for consistency with the python 3 version
         nodes_to_ios = {}
 
         for disc in disciplines:
@@ -213,12 +217,13 @@ class DependencyGraph:
             input_names.update(disc.get_input_data_names())
         return output_names & input_names
 
-    def __write_graph(self, graph, file_path):
+    def __write_graph(self, graph: nx.DiGraph, file_path: str, is_full: bool):
         """Write the representation of a graph.
 
         Args:
-            graph (networkx.DiGraph): A graph.
-            file_path (str): A path to the file.
+            graph: A graph.
+            file_path: A path to the file.
+            is_full: Whether the graph is full.
         """
         if graphviz is None:
             LOGGER.warning("Cannot write graph: graphviz cannot be imported.")
@@ -241,6 +246,15 @@ class DependencyGraph:
                 label = None
 
             viz_graph.edge(name_from, name_to, label=label)
+
+        if is_full:
+            # add edges for the self-couplings
+            for disc in self.__graph.nodes:
+                coupled_io = set(disc.get_input_data_names()).intersection(
+                    disc.get_output_data_names()
+                )
+                if coupled_io:
+                    viz_graph.edge(disc.name, disc.name, label=pretty_str(coupled_io))
 
         # add leaves with an invisible node so an edge with the edge names are visible
         for node_from in self.__get_leaves(graph):
@@ -279,7 +293,7 @@ class DependencyGraph:
         Args:
             file_path (str): A path to the file.
         """
-        self.__write_graph(self.__graph, file_path)
+        self.__write_graph(self.__graph, file_path, True)
 
     export_initial_graph = write_full_graph
 
@@ -289,7 +303,7 @@ class DependencyGraph:
         Args:
             file_path (str): A path to the file.
         """
-        self.__write_graph(self.__create_condensed_graph(), file_path)
+        self.__write_graph(self.__create_condensed_graph(), file_path, False)
 
     export_reduced_graph = write_condensed_graph
 

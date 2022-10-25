@@ -1,0 +1,5 @@
+digraph "Dependency graph" {
+	"MDA of D1, D2" -> D0 [label="y10,y2"]
+	_0 [shape=point style=invis]
+	D0 -> _0 [label=y0]
+}
