@@ -138,8 +138,6 @@ pyxdsm==2.2.2
     # via gemseo (setup.py)
 pyyaml==6.0
     # via pybtex
-readthedocs-sphinx-search==0.1.2
-    # via gemseo (setup.py)
 requests==2.28.1
     # via
     #   gemseo (setup.py)
