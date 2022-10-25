@@ -57,16 +57,11 @@ class SPComposedDistribution(ComposedDistribution):
     _COPULA = {ComposedDistribution._INDEPENDENT_COPULA: None}
     AVAILABLE_COPULA_MODELS = sorted(_COPULA.keys())
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         distributions: Sequence[SPDistribution],
         copula: str = ComposedDistribution._INDEPENDENT_COPULA,
     ) -> None:
-        """.. # noqa: D205,D212,D415
-        Args:
-            distributions (list(SPDistribution)): The distributions.
-            copula (str, optional): A name of copula.
-        """
         super().__init__(distributions, copula)
         self.distribution = distributions
         self._mapping = {}

@@ -38,8 +38,11 @@ from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.post.post_factory import PostFactory
+from gemseo.uncertainty.distributions.factory import DistributionFactory
+from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
 
 GEN_OPTS_PATH = None
@@ -457,12 +460,19 @@ def main(gen_opts_path: str | Path) -> None:
         InitOptionsDoc(
             "classification", "Classification", ClassificationModelFactory()
         ),
+        InitOptionsDoc("ml_quality", "Quality measure", MLQualityMeasureFactory()),
         InitOptionsDoc("mda", "MDA", MDAFactory()),
         InitOptionsDoc("formulation", "MDO Formulation", MDOFormulationsFactory()),
         OptPostProcessorAlgoOptionsDoc("post", "Post-processing", PostFactory()),
         DriverOptionsDoc("doe", "DOE", DOEFactory()),
         DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
         DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
+        InitOptionsDoc(
+            "distribution", "Probability distribution", DistributionFactory()
+        ),
+        InitOptionsDoc(
+            "sensitivity", "Sensitivity analysis", SensitivityAnalysisFactory()
+        ),
     ]
     for algos_options_doc in algos_options_docs:
         algos_options_doc.to_rst()
