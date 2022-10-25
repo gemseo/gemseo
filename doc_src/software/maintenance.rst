@@ -159,7 +159,7 @@ Making a new release for plugins
 #. Create a release branch.
 #. Update the required gemseo version in :file:`setup.cfg`.
 #. Update the environments dependencies (:ref:`update-deps`)
-    while setting the environment variable :command:`GEMSEO_PIP_REQ_SPEC="gemseo"`.
+   while setting the environment variable :command:`GEMSEO_PIP_REQ_SPEC="gemseo"`.
 #. Update the changelog.
 #. Push the branch.
 #. Make sure the full test suite passes.
@@ -172,7 +172,7 @@ Making a new release for plugins
 #. Test the conda-forge packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
 #. Update the environments dependencies (:ref:`update-deps`)
-    **without** setting the environment variable ``GEMSEO_PIP_REQ_SPEC``.
+   **without** setting the environment variable ``GEMSEO_PIP_REQ_SPEC``.
 #. Push develop.
 
 Mirroring to github
