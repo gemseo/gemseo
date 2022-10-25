@@ -5,16 +5,5 @@
   <script src="{{ pathto('_static/doctools.js', 1) }}"></script>
   <script src="{{ pathto('_static/language_data.js', 1) }}"></script>
   <script src="{{ pathto('_static/sphinx_highlight.js', 1) }}"></script>
-  <script src="{{ pathto('_static/searchtools.js', 1) }}"></script>
-{% endblock %}
-{# Add the search role to enable the sphinx search extension #}
-{# See https://readthedocs-sphinx-search.readthedocs.io/en/latest/customization.html#custom-search-input #}
-{% block searchbox %}
-  <div role="search">
-    <form action="" method="get">
-      <input type="text" name="q" aria-labelledby="search-documentation" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="{{ _('search') }}" />
-      <span id="search-progress" style="padding-left: 10px"></span>
-    </form>
-  </div>
+  <script src="{{ pathto('_static/js/searchtools.js', 1) }}"></script>
 {% endblock %}
