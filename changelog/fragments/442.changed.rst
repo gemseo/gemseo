@@ -1,1 +1,0 @@
-:func:`.pretty_repr` converts an object into an unambiguous string by using :func:`repr`; use :func:`.pretty_str` for a readable string.

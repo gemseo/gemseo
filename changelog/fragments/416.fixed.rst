@@ -1,1 +1,0 @@
-The argument ``message`` passed to :meth:`.DriverLib.init_iter_observer` and defining the iteration prefix of the :class:`.ProgressBar` works again; its default value is ``"..."``.

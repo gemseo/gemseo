@@ -1,1 +1,0 @@
-:class:`.SimpleCache` can be exported to a :class:`.Dataset`.

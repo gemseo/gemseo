@@ -1,1 +1,0 @@
-The graphs produced by :class:`.OptHistoryView` use the same :attr:`~.OptHistoryView.xlabel`.

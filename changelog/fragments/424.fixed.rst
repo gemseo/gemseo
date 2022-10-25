@@ -1,1 +1,0 @@
-The signatures of :class:`.MorrisAnalysis`, :class:`.CorrelationAnalysis` and :class:`.SobolAnalysis` are now consistent with :class:`.SensitivityAnalysis`.

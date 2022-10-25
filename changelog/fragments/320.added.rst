@@ -1,1 +1,0 @@
-:class:`.Boxplot` is a new :class:`.DatasetPlot` to create boxplots from a :class:`.Dataset`.

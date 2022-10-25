@@ -1,1 +1,0 @@
-The KKT norm is added to database when computed.

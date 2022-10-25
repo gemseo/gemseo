@@ -1,1 +1,0 @@
-The :class:`LoggingContext` uses the root logger as default value of ``logger``.

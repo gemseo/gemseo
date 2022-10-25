@@ -1,1 +1,0 @@
-A stopping criterion based on KKT condition residual can now be used for all gradient-based solvers.
