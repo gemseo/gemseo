@@ -29,6 +29,8 @@ from typing import Iterable
 from typing import Mapping
 from typing import Sequence
 
+from numpy import array
+
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -58,6 +60,7 @@ class MDAChain(MDA):
         "matrix_type",
         "use_lu_fact",
         "all_couplings",
+        "inner_mdas",
     )
 
     inner_mdas: list[MDA]
@@ -223,6 +226,7 @@ class MDAChain(MDA):
             return
         self.input_grammar.update(self.mdo_chain.input_grammar)
         self.output_grammar.update(self.mdo_chain.output_grammar)
+        self._add_residuals_norm_to_output_grammar()
 
     def _check_consistency(self):
         """Check if there is no more than 1 equation per variable.
@@ -237,6 +241,13 @@ class MDAChain(MDA):
         if self.warm_start:
             self._couplings_warm_start()
         self.local_data = self.mdo_chain.execute(self.local_data)
+
+        res_sum = 0.0
+        for mda in self.inner_mdas:
+            res_local = mda.local_data.get(self.RESIDUALS_NORM)
+            if res_local is not None:
+                res_sum += res_local[-1] ** 2
+        self.local_data[self.RESIDUALS_NORM] = array([res_sum**0.5])
         return self.local_data
 
     def _compute_jacobian(
@@ -287,7 +298,6 @@ class MDAChain(MDA):
 
         Here for compatibility with mother class.
         """
-        pass
 
     def get_expected_dataflow(
         self,

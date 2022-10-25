@@ -17,12 +17,15 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import json
 from pathlib import Path
 
 import pytest
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
@@ -123,10 +126,13 @@ def assert_dot_file(file_name):
     assert_file(Path(file_name).with_suffix(".dot"))
 
 
-def assert_file(file_path):
+def assert_file(file_path: Path):
     """Assert the contents of the file against its reference."""
     # strip because some reference files are stripped by our pre-commit hooks
-    assert file_path.read_text().strip() == (DATA_PATH / file_path).read_text().strip()
+    assert (
+        file_path.read_text().strip()
+        == (DATA_PATH / file_path.name).read_text().strip()
+    )
 
 
 def test_write_full_graph(tmp_wd, name_and_graph):
@@ -184,3 +190,28 @@ class DisciplineEncoder(json.JSONEncoder):
         if isinstance(o, MDODiscipline):
             return str(o)
         return super().default(o)
+
+
+@pytest.fixture(scope="module")
+def graph_with_self_coupling() -> DependencyGraph:
+    """Dependency graph with a self-coupled discipline."""
+    return DependencyGraph(
+        [
+            AnalyticDiscipline({"y0": "x0+y10+y2"}, name="D0"),
+            AnalyticDiscipline({"y10": "x0+x1+y2", "y11": "x0-x1+2*y11"}, name="D1"),
+            AnalyticDiscipline({"y2": "x0+x2+y10"}, name="D2"),
+        ]
+    )
+
+
+@pytest.mark.parametrize(
+    "file_path,method",
+    [
+        ("full_coupling_graph.dot", "write_full_graph"),
+        ("condensed_coupling_graph.dot", "write_condensed_graph"),
+    ],
+)
+def test_coupling_structure_plot(tmp_wd, graph_with_self_coupling, file_path, method):
+    """Check the rendering of the coupling graph with a self-coupled discipline."""
+    getattr(graph_with_self_coupling, method)(file_path)
+    assert_file(Path(file_path))

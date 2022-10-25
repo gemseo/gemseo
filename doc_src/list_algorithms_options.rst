@@ -28,3 +28,4 @@ Algorithm options
    algorithms/opt_algos.rst
    algorithms/post_algos.rst
    algorithms/surrogate_algos.rst
+   algorithms/uncertainty_algos.rst

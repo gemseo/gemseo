@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial chaos expansion regression module."""
+from __future__ import annotations
+
 import re
 from copy import deepcopy
 
@@ -32,6 +34,7 @@ from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy.testing import assert_equal
+from openturns import FunctionalChaosRandomVector
 
 LEARNING_SIZE = 9
 
@@ -56,10 +59,16 @@ def dataset(discipline) -> Dataset:
 
 @pytest.fixture
 def model(dataset, prob_space) -> PCERegressor:
-    """A trained LinearRegressor."""
+    """A trained PCERegressor."""
     pce = PCERegressor(dataset, prob_space)
     pce.learn()
     return pce
+
+
+@pytest.fixture
+def untrained_model(dataset, prob_space) -> PCERegressor:
+    """An untrained PCERegressor."""
+    return PCERegressor(dataset, prob_space)
 
 
 @pytest.fixture
@@ -217,3 +226,55 @@ def test_sobol(dataset, prob_space):
     assert isinstance(model_.total_sobol_indices, dict)
     assert len(model_.first_sobol_indices) == 2
     assert len(model_.total_sobol_indices) == 2
+
+
+def test_mean_cov_var_std(model):
+    """Check the mean, covariance, variance and standard deviation."""
+    vector = FunctionalChaosRandomVector(model.algo)
+    mean = model.mean
+    assert mean.shape == (2,)
+    assert_equal(mean, array(vector.getMean()))
+
+    covariance = model.covariance
+    assert covariance.shape == (2, 2)
+    assert_equal(covariance, array(vector.getCovariance()))
+
+    variance = model.variance
+    assert variance.shape == (2,)
+    assert_equal(variance, covariance.diagonal())
+
+    standard_deviation = model.standard_deviation
+    assert standard_deviation.shape == (2,)
+    assert_equal(standard_deviation, variance**0.5)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "mean",
+        "covariance",
+        "variance",
+        "standard_deviation",
+        "first_sobol_indices",
+        "total_sobol_indices",
+    ],
+)
+def test_check_is_trained(untrained_model, name):
+    """Check that a RuntimeError is raised when accessing properties before training."""
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape(f"The PCERegressor must be trained to access {name}."),
+    ):
+        getattr(untrained_model, name)
+
+
+def test_ot_distribution(dataset):
+    """Check that PCERegressor handles only the OTDistribution instances."""
+    probability_space = ParameterSpace()
+    probability_space.add_random_variable("x_1", "SPUniformDistribution")
+    probability_space.add_random_variable("x_2", "SPUniformDistribution")
+    with pytest.raises(
+        ValueError,
+        match="The probability distributions must be instances of OTDistribution.",
+    ):
+        PCERegressor(dataset, probability_space)

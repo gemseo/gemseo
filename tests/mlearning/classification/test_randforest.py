@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test random forest classification module."""
+from __future__ import annotations
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model

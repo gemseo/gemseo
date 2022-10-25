@@ -33,6 +33,7 @@ from numpy import zeros
 from numpy.core.multiarray import ndarray
 from numpy.linalg import norm
 
+from gemseo.algos.database import Database
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.discipline import MDODiscipline
@@ -57,6 +58,12 @@ class MDOScenarioAdapter(MDODiscipline):
 
     post_optimal_analysis: PostOptimalAnalysis
     """The post-optimal analysis."""
+
+    keep_opt_history: bool
+    """Whether to keep databases copies after each execution."""
+
+    databases: list[Database]
+    """The copies of the scenario databases after execution."""
 
     LOWER_BND_SUFFIX = "_lower_bnd"
     UPPER_BND_SUFFIX = "_upper_bnd"
@@ -85,8 +92,9 @@ class MDOScenarioAdapter(MDODiscipline):
         output_multipliers: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
         name: str | None = None,
+        keep_opt_history: bool = False,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """.. # noqa: D205,D212,D415.
         Args:
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.
@@ -103,6 +111,7 @@ class MDOScenarioAdapter(MDODiscipline):
                 and added to the outputs.
             name: The name of the scenario adapter.
                 If None, use ``"{}_adapter"``.
+            keep_opt_history: Whether to keep databases copies after each execution.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -116,6 +125,9 @@ class MDOScenarioAdapter(MDODiscipline):
         self._output_names = output_names
         self._reset_x0_before_opt = reset_x0_before_opt
         self._output_multipliers = output_multipliers
+        self.keep_opt_history = keep_opt_history
+        self.databases = []
+
         name = name or f"{scenario.name}_adapter"
         super().__init__(name, cache_type=cache_type, grammar_type=grammar_type)
 
@@ -344,6 +356,9 @@ class MDOScenarioAdapter(MDODiscipline):
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         design_space = opt_problem.design_space
+
+        if self.keep_opt_history and opt_problem.solution is not None:
+            self.databases.append(deepcopy(opt_problem.database))
 
         # Test if the last evaluation is the optimum
         x_opt = design_space.get_current_value()

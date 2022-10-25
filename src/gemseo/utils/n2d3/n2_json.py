@@ -39,10 +39,12 @@ class N2JSON:
     def __init__(
         self,
         graph: DependencyGraph,
+        self_coupled_disciplines: Sequence[str] | None = None,
     ) -> None:
         """
         Args:
             graph: The dependency graph.
+            self_coupled_disciplines: The names of the self-coupled disciplines, if any.
         """
         self._graph = graph
         self.__disciplines = list(graph.disciplines)
@@ -79,6 +81,7 @@ class N2JSON:
             self.__disciplines_names, data["children"], data["groups"]
         )
 
+        data["self_coupled_disciplines"] = self_coupled_disciplines or []
         self.__json = json.dumps(data, sort_keys=True)
 
     def __str__(self):

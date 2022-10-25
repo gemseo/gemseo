@@ -38,6 +38,8 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.yvsx import YvsX

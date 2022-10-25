@@ -17,6 +17,8 @@
 #                   initial documentation
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from os.path import dirname
 from os.path import join
 

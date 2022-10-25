@@ -22,6 +22,8 @@
 Multidisciplinary coupling graph
 ================================
 """
+from __future__ import annotations
+
 from gemseo.api import generate_n2_plot
 from gemseo.core.discipline import MDODiscipline
 from numpy import ones
@@ -45,7 +47,7 @@ descriptions = {
     "M": (["p", "s"], ["r"]),
     "N": (["r"], ["t", "u"]),
     "O": (["q", "t"], ["s", "v"]),
-    "P": (["u", "v", "z"], []),
+    "P": (["u", "v", "z"], ["z"]),
 }
 disciplines = []
 data = ones(1)

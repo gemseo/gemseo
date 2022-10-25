@@ -85,7 +85,7 @@ def remove_prefix_from_list(names: Iterable[str]) -> list[str]:
     """Remove namespaces prefixes from names, if any.
 
     Args:
-        data: The names that may contain namespaces.
+        names: The names that may contain namespaces.
 
     Returns:
         The names without prefixes in its keys.

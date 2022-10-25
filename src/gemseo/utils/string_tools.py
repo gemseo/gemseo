@@ -26,35 +26,96 @@ from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any
+from typing import Callable
 from typing import Iterable
 
 # to store the raw ingredients of a string to be formatted later
 MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
 
+DEFAULT_DELIMITER = ", "
+"""A string to separate string fields."""
+
+DEFAULT_KEY_VALUE_SEPARATOR = "="
+"""A string to separate key and value in a key-value pair of a mapping."""
+
+
+def __stringify(
+    obj: Any,
+    delimiter: str,
+    key_value_separator: str,
+    function: Callable[[Any], str],
+    sort: bool,
+) -> str:
+    """Represent an object with a string.
+
+    Args:
+        delimiter: The string to separate string fields.
+        key_value_separator: The string to separate key and value
+            in a key-value pair of a mapping.
+        function: A function to represent an object with a string,
+            e.g. :func:`str` or :func:`repr`.
+        sort: Whether to sort the elements when the object if a collection.
+
+    Returns:
+        A string representing the object.
+    """
+    if not isinstance(obj, abc.Iterable):
+        return function(obj)
+
+    if isinstance(obj, abc.Mapping):
+        obj = [
+            f"{str(key)}{key_value_separator}{function(val)}"
+            for key, val in obj.items()
+        ]
+    else:
+        obj = [function(val) for val in obj]
+
+    if sort:
+        obj = sorted(obj)
+
+    return delimiter.join(obj)
+
 
 def pretty_repr(
     obj: Any,
-    **kwargs: Any,
+    delimiter: str = DEFAULT_DELIMITER,
+    key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+    sort: bool = True,
 ) -> str:
-    """String representation of an object.
+    """Return an unambiguous string representation of an object based on :func:`repr`.
 
     Args:
         obj: The object to represent.
+        delimiter: The string to separate string fields.
+        key_value_separator: The string to separate key and value
+            in a key-value pair of a mapping.
+        sort: Whether to sort the elements when the object if a collection.
 
     Returns:
-         A pretty string representation.
+         An unambiguous string representation of the object.
     """
-    delimiter = kwargs.get("delimiter", ", ")
+    return __stringify(obj, delimiter, key_value_separator, repr, sort)
 
-    if isinstance(obj, abc.Mapping):
-        return delimiter.join(
-            [f"{key}={repr(val)}" for key, val in sorted(obj.items())]
-        )
 
-    if isinstance(obj, abc.Iterable):
-        return delimiter.join([str(val) for val in obj])
+def pretty_str(
+    obj: Any,
+    delimiter: str = DEFAULT_DELIMITER,
+    key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+    sort: bool = True,
+) -> str:
+    """Return a readable string representation of an object based on :func:`str`.
 
-    return repr(obj)
+    Args:
+        obj: The object to represent.
+        delimiter: The string to separate string fields.
+        key_value_separator: The string to separate key and value
+            in a key-value pair of a mapping.
+        sort: Whether to sort the elements when the object if a collection.
+
+    Returns:
+         A readable string representation of the object.
+    """
+    return __stringify(obj, delimiter, key_value_separator, str, sort)
 
 
 class MultiLineString:

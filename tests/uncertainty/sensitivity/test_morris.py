@@ -17,6 +17,8 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -28,6 +30,7 @@ from numpy import allclose
 from numpy import array
 from numpy import pi
 from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
 
 FUNCTION = {
     "name": "my_function",
@@ -211,7 +214,7 @@ def oat():
 
 def test_oat_get_io_names(oat):
     """Check the input and output names obtained from a finite difference name."""
-    assert oat.get_io_names("FD!output!input") == ("output", "input")
+    assert oat.get_io_names("FD!output!input") == ["output", "input"]
 
 
 def test_oat_get_fd_name(oat):
@@ -340,3 +343,13 @@ def test_morris_multiple_disciplines():
         "fd!y2!x3",
     ]
     assert morris.dataset.n_samples == 5
+
+
+def test_save_load(morris, tmp_wd):
+    """Check saving and loading a MorrisAnalysis."""
+    morris.save("foo.pkl")
+    new_morris = MorrisAnalysis.load("foo.pkl")
+    assert_equal(new_morris.dataset.data, morris.dataset.data)
+    assert new_morris.default_output == morris.default_output
+    assert new_morris.n_replicates == morris.n_replicates
+    assert new_morris.outputs_bounds == morris.outputs_bounds

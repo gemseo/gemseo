@@ -39,11 +39,11 @@ LOGGER = logging.getLogger(__name__)
 class Power2(OptimizationProblem):
     """**Power2** is a very basic quadratic analytical :class:`.OptimizationProblem`:
 
-    - Objective to minimize: :math:`x_{dv,0}^2+x_1^2+x_2^2`
-    - Inequality constraint 1: :math:`x_{dv,0}^3 - 0.5 > 0`
-    - Inequality constraint 2: :math:`x_{dv,1}^3 - 0.5 > 0`
-    - Equality constraint: :math:`x_{dv,2}^3 - 0.9 = 0`
-    - Analytical optimum: :math:`(0.5^{1/3}, 0.5^{1/3}, 0.9^{1/3})`
+    - Objective to minimize: :math:`x_0^2 + x_1^2 + x_2^2`
+    - Inequality constraint 1: :math:`x_0^3 - 0.5 > 0`
+    - Inequality constraint 2: :math:`x_1^3 - 0.5 > 0`
+    - Equality constraint: :math:`x_2^3 - 0.9 = 0`
+    - Analytical optimum: :math:`x^*=(0.5^{1/3}, 0.5^{1/3}, 0.9^{1/3})`
     """
 
     def __init__(
@@ -64,7 +64,7 @@ class Power2(OptimizationProblem):
             name="pow2",
             f_type="obj",
             jac=self.pow2_jac,
-            expr="x[0]**2+x[1]**2+x[2]**2",
+            expr="x[0]**2 + x[1]**2 + x[2]**2",
             args=["x"],
         )
         self.add_ineq_constraint(
@@ -73,7 +73,7 @@ class Power2(OptimizationProblem):
                 name="ineq1",
                 f_type="ineq",
                 jac=self.ineq_constraint1_jac,
-                expr="0.5 -x[0] ** 3",
+                expr="0.5 - x[0]**3",
                 args=["x"],
             )
         )
@@ -84,7 +84,7 @@ class Power2(OptimizationProblem):
                 name="ineq2",
                 f_type="ineq",
                 jac=self.ineq_constraint2_jac,
-                expr="0.5 -x[1] ** 3",
+                expr="0.5 - x[1]**3",
                 args=["x"],
             )
         )
@@ -95,7 +95,7 @@ class Power2(OptimizationProblem):
                 name="eq",
                 f_type="eq",
                 jac=self.eq_constraint_jac,
-                expr="x[2] ** 3 - 0.9",
+                expr="0.9 - x[2]**3",
                 args=["x"],
             )
         )
@@ -103,7 +103,7 @@ class Power2(OptimizationProblem):
         self.exception_error = exception_error
 
     def pow2(self, x_dv: ndarray) -> ndarray:
-        """Compute the objective :math:`x_{dv,0}^2+x_1^2+x_2^2`.
+        """Compute the objective :math:`x_0^2 + x_1^2 + x_2^2`.
 
         Args:
             x_dv: The design variable vector.
@@ -137,7 +137,7 @@ class Power2(OptimizationProblem):
 
     @staticmethod
     def ineq_constraint1(x_dv: ndarray) -> ndarray:
-        """Compute the first inequality constraint :math:`x_{dv,0}^3 - 0.5 > 0`.
+        """Compute the first inequality constraint :math:`x_0^3 - 0.5 > 0`.
 
         Args:
             x_dv: The design variable vector.
@@ -149,7 +149,7 @@ class Power2(OptimizationProblem):
 
     @staticmethod
     def ineq_constraint2(x_dv: ndarray) -> ndarray:
-        """Compute the second inequality constraint :math:`x_{dv,1}^3 - 0.5 > 0`.
+        """Compute the second inequality constraint :math:`x_1^3 - 0.5 > 0`.
 
         Args:
             x_dv: The design variable vector.
@@ -161,7 +161,7 @@ class Power2(OptimizationProblem):
 
     @staticmethod
     def eq_constraint(x_dv: ndarray) -> ndarray:
-        """Compute the equality constraint :math:`x_{dv,2}^3 - 0.9 = 0`.
+        """Compute the equality constraint :math:`x_2^3 - 0.9 = 0`.
 
         Args:
             x_dv: The design variable vector.

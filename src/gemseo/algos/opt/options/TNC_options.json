@@ -69,6 +69,14 @@
         },
         "rescale":{
             "type": "number"
+        },
+        "kkt_tol_abs": {
+            "type": ["null","number"],
+            "minimum": 0.0
+        },
+        "kkt_tol_rel": {
+            "type": ["null","number"],
+            "minimum": 0.0
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

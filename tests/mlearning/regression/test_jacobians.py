@@ -24,6 +24,8 @@ thus converted to surrogate disciplines. The Jacobians are checked over differen
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
 """
+from __future__ import annotations
+
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace

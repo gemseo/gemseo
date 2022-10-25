@@ -17,6 +17,8 @@
 #        :author: Gilberto Ruiz Jimenez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the Power Transformer."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.power.power import Power
 from numpy import allclose

@@ -90,7 +90,15 @@ class PostOptimalAnalysis:
             opt_problem: The solved optimization problem to be analyzed.
             ineq_tol: The tolerance to determine active inequality constraints.
                 If ``None``, its value is fetched in the optimization problem.
+
+        Raises:
+            ValueError: If the optimization problem is not solved.
         """
+        if opt_problem.solution is None:
+            raise ValueError(
+                "The post-optimal analysis can only be conducted after the "
+                "optimization problem is solved."
+            )
         self.lagrange_computer = LagrangeMultipliers(opt_problem)
         # N.B. at creation LagrangeMultipliers checks the optimization problem
         self.opt_problem = opt_problem

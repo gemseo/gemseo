@@ -27,7 +27,7 @@
 .. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
 .. _semantic line feeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
 .. _mypy: http://mypy-lang.org
-.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
+.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html?highlight=Sequence#standard-duck-types
 .. _pytest-cov: https://pytest-cov.readthedocs.io
 .. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _pyperf: https://pyperf.readthedocs.io
@@ -68,9 +68,16 @@ Quick start
 
 First time setup:
 
+* Clone the repository:
+
+.. code-block:: console
+
+  git clone https://gitlab.com/gemseo/dev/gemseo.git
+
 * Install the :ref:`requirements`.
 
-* Run the tests for Python 3.9
+* From the root of the git clone,
+  run the tests for Python 3.9
   and create a development environment under :file:`.tox/py39`:
 
 .. code-block:: console
@@ -350,8 +357,7 @@ Initial setup
 * Go to the directory of your fork.
 * Add the reference upstream repository to you fork with:
 
-  * :command:`git remote add upstream`
-  * :command:`git@gitlab.com:gemseo/dev/gemseo.git`
+  * :command:`git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git`
 
 * Get access to the IRT CI:
 
@@ -730,16 +736,6 @@ for instance:
 .. code-block:: console
 
    tox -e doc -- -vv -j2
-
-Check the links in the generated documentation with:
-
-.. code-block:: console
-
-   tox -e doc-linkchecker
-
-.. note::
-
-   doc-linkchecker does not work on windows.
 
 Writing guidelines
 ++++++++++++++++++

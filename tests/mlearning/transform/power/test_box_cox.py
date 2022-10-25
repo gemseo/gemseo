@@ -17,6 +17,8 @@
 #        :author: Gilberto Ruiz Jimenez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the Box-Cox transformer."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.power.boxcox import BoxCox
 from numpy import allclose

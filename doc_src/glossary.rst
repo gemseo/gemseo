@@ -382,7 +382,7 @@ Glossary
     anaconda
         A python tool to create virtual environment and easily install precompiled packages, https://www.anaconda.com/distribution
 
-    fixed point
+    fixed-point
         A family of numerical resolution methods based on an iterative sequence of execution of the type : A() -> B() -> C() -> ... -> A() -> B() -> C() until convergence
 
     root finding

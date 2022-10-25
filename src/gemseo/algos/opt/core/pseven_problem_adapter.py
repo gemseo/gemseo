@@ -33,8 +33,8 @@ from numpy import ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 
 
 class PSevenProblem(p7core.gtopt.ProblemGeneric):

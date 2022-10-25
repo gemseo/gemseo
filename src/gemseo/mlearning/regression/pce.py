@@ -95,6 +95,7 @@ from openturns import CorrectedLeaveOneOut
 from openturns import FixedStrategy
 from openturns import Function
 from openturns import FunctionalChaosAlgorithm
+from openturns import FunctionalChaosRandomVector
 from openturns import FunctionalChaosSobolIndices
 from openturns import GaussProductExperiment
 from openturns import HyperbolicAnisotropicEnumerateFunction
@@ -113,6 +114,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
@@ -144,8 +146,8 @@ class PCERegressor(MLRegressionAlgo):
     ) -> None:
         """
         Args:
-            probability_space: The probability space
-                defining the probability distributions of the model inputs.
+            probability_space: The set of random input variables
+                defined by :class:`.OTDistribution` instances.
             discipline: The discipline to evaluate with the quadrature strategy
                 if the learning set does not have output data.
                 If None, use the output data from the learning set.
@@ -177,8 +179,17 @@ class PCERegressor(MLRegressionAlgo):
             ValueError: Either if the variables of the probability space
                 and the input variables of the dataset are different,
                 if transformers are specified for the inputs,
-                or if the strategy to compute the parameters of the PCE is unknown.
+                if the strategy to compute the parameters of the PCE is unknown
+                or if a probability distribution is not an :class:`.OTDistribution`.
         """
+        if any(
+            not isinstance(distribution, OTDistribution)
+            for distribution in probability_space.distributions.values()
+        ):
+            raise ValueError(
+                "The probability distributions must be instances of OTDistribution."
+            )
+
         super().__init__(
             data,
             transformer=transformer,
@@ -243,6 +254,11 @@ class PCERegressor(MLRegressionAlgo):
             self._sample = None
             self._weights = None
 
+        self.__mean = array([])
+        self.__covariance = array([])
+        self.__variance = array([])
+        self.__standard_deviation = array([])
+
     def _fit(
         self,
         input_data: ndarray,
@@ -261,6 +277,11 @@ class PCERegressor(MLRegressionAlgo):
         algo.setProjectionStrategy(proj_strategy)
         algo.run()
         self.algo = algo.getResult()
+        random_vector = FunctionalChaosRandomVector(self.algo)
+        self.__mean = array(random_vector.getMean())
+        self.__covariance = array(random_vector.getCovariance())
+        self.__variance = self.__covariance.diagonal()
+        self.__standard_deviation = self.__variance**0.5
 
     def _predict(
         self,
@@ -270,7 +291,8 @@ class PCERegressor(MLRegressionAlgo):
 
     @property
     def first_sobol_indices(self) -> dict[str, ndarray]:
-        """The first Sobol' indices."""
+        """The first-order Sobol' indices."""
+        self._check_is_trained()
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
         LOGGER.info(str(sensitivity_analysis))
         first_order = {
@@ -282,6 +304,7 @@ class PCERegressor(MLRegressionAlgo):
     @property
     def total_sobol_indices(self) -> dict[str, ndarray]:
         """The total Sobol' indices."""
+        self._check_is_trained()
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
         LOGGER.info(str(sensitivity_analysis))
         return {
@@ -459,3 +482,27 @@ class PCERegressor(MLRegressionAlgo):
             jac[index] = array(gradient(Point(data))).T
 
         return jac
+
+    @property
+    def mean(self) -> ndarray:
+        """The mean vector of the PCE model output."""
+        self._check_is_trained()
+        return self.__mean
+
+    @property
+    def covariance(self) -> ndarray:
+        """The covariance matrix of the PCE model output."""
+        self._check_is_trained()
+        return self.__covariance
+
+    @property
+    def variance(self) -> ndarray:
+        """The variance vector of the PCE model output."""
+        self._check_is_trained()
+        return self.__variance
+
+    @property
+    def standard_deviation(self) -> ndarray:
+        """The standard deviation vector of the PCE model output."""
+        self._check_is_trained()
+        return self.__standard_deviation

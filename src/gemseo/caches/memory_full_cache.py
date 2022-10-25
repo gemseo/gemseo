@@ -29,6 +29,7 @@ from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
+from gemseo.utils.multiprocessing import get_multi_processing_manager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -60,12 +61,8 @@ class MemoryFullCache(AbstractFullCache):
         """
         super().__init__(tolerance, name)
         self.__is_memory_shared = is_memory_shared
-        self.__initialize_data()
-
-    def __initialize_data(self) -> None:
-        """Initialize the dictionary storing the data."""
         if self.__is_memory_shared:
-            self.__data = self._manager.dict()
+            self.__data = get_multi_processing_manager().dict()
         else:
             self.__data = {}
 
@@ -91,7 +88,7 @@ class MemoryFullCache(AbstractFullCache):
     @synchronized
     def clear(self) -> None:
         super().clear()
-        self.__initialize_data()
+        self.__data.clear()
 
     def _read_data(
         self,

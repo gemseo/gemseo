@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List
+from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -24,7 +24,7 @@ from gemseo.disciplines.utils import get_all_outputs
 
 
 @pytest.fixture(scope="module")
-def disciplines_and_scenario() -> List[MDODiscipline]:
+def disciplines_and_scenario() -> list[MDODiscipline]:
     """Disciplines with a scenario."""
     disciplines = [
         AnalyticDiscipline({"y1": "x1"}, name="f1"),

@@ -19,7 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test partial least square regression."""
-from typing import Tuple
+from __future__ import annotations
 
 import pytest
 from gemseo.mlearning.transform.dimension_reduction.pls import PLS
@@ -32,7 +32,7 @@ N_FEATURES = 8
 
 
 @pytest.fixture
-def data() -> Tuple[ndarray, ndarray]:
+def data() -> tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     input_data = rand(N_SAMPLES, N_FEATURES)
     output_data = npsum(input_data, 1)[:, None]

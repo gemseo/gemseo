@@ -17,6 +17,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer module."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.transformer import Transformer
 from numpy import arange

@@ -21,6 +21,8 @@
 Optimal LHS vs LHS
 ==================
 """
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from gemseo.algos.doe.doe_factory import DOEFactory
 

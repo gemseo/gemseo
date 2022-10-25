@@ -14,12 +14,3 @@ An API for machine learning
 .. automodule:: gemseo.mlearning.api
    :members:
    :noindex:
-
-Development
------------
-
-This API relies on a mechanism of factories dedicated to the different
-families of machine learning algorithms and inheriting from a common
-machine learning factory.
-
-.. include:: factories.txt

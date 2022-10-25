@@ -23,7 +23,7 @@
 =============================
 .. _gemseo_10min:
 """
-###############################################################################
+# %%
 #
 # Introduction
 # ------------
@@ -36,33 +36,33 @@
 # -------
 #
 # First, we will import all the classes and functions needed for the tutorials.
-# The first imports (__future__ and future) enable to run the tutorial
-# using either a Python 2 or a Python 3 interpreter.
+from __future__ import annotations
+
 from math import exp
 
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.api import generate_n2_plot
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy import ones
 
-###############################################################################
-# Finally, the following functions from the |g| API are imported. They will be
-# used latter in order to instantiate |g| objects.
-
-configure_logger()
-
-###############################################################################
-# These imports enables to compute mathematical expressions, as well to
-# instantiate numpy arrays. Numpy arrays are used to store numerical data in
-# |g| at low level. If you are not confortable with using Numpy, please have a
+# %%
+# These imports are needed to compute mathematical expressions and to
+# instantiate NumPy arrays. NumPy arrays are used to store numerical data in
+# |g| at a low level. If you are not comfortable using NumPy, please have a
 # look at the `Numpy Quickstart tutorial
 # <https://numpy.org/doc/stable/user/quickstart.html>`_.
 
+# %%
+# Here, we configure the |g| logger in order to get information of the process as
+# it is executed.
 
-###############################################################################
+configure_logger()
+
+# %%
 #
 # A simple MDO test case: the Sellar Problem
 # ------------------------------------------
@@ -101,7 +101,7 @@ def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
     return y_2
 
 
-###############################################################################
+# %%
 # These Python functions can be easily converted into |g|
 # :class:`.MDODiscipline` objects by using the :class:`.AutoPyDiscipline`
 # discipline. It enables the automatic wrapping of a Python function into a
@@ -117,18 +117,33 @@ disc_sellar_1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
 
 disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 
-###############################################################################
+# %%
 # Note that it is possible to define the Sellar disciplines by subclassing the
 # :class:`.MDODiscipline` class and implementing the constuctor and the _run
 # method by hand. Although it would take more time, it may also provide more
-# flexibily and more options. This method is illustrated in the :ref:`Sellar
+# flexibility and more options. This method is illustrated in the :ref:`Sellar
 # from scratch tutorial <sellar_from_scratch>`.
 
+# %%
 # We then create a list of disciplines, which will be used later to create an
 # :class:`.MDOScenario`:
 disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 
-###############################################################################
+# %%
+# We can quickly access the most relevant information of any discipline (name, inputs,
+# and outputs) with Python's ``print()`` function. Moreover, we can get the default
+# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+print(disc_sellar_1)
+print(f"Default inputs: {disc_sellar_1.default_inputs}")
+
+# %%
+# You may also be interested in plotting the couplings of your disciplines.
+# A quick way of getting this information is the API function
+# :func:`.generate_n2_plot`. A much more detailed explanation of coupling
+# visualization is available :ref:`here <coupling_visualization>`.
+generate_n2_plot(disciplines, save=False, show=True)
+
+# %%
 # .. note::
 #
 #    For the sake of clarity, these disciplines are overly simple.
@@ -137,7 +152,7 @@ disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 #    Check out the other :ref:`tutorials <tutorials_sg>` and
 #    our :ref:`publications list <references>` for more information.
 
-###############################################################################
+# %%
 # Definition of the design space
 # ------------------------------
 # In order to define :class:`.MDOScenario`,
@@ -150,8 +165,9 @@ design_space.add_variable("x_shared_1", 1, l_b=-10, u_b=10.0, value=array([4.0])
 design_space.add_variable("x_shared_2", 1, l_b=0.0, u_b=10.0, value=array([3.0]))
 design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
 design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+print(design_space)
 
-###############################################################################
+# %%
 # Definition of the MDO scenario
 # ------------------------------
 # Once the disciplines and the design space have been defined,
@@ -169,10 +185,10 @@ scenario = create_scenario(
     design_space=design_space,
 )
 
-###############################################################################
+# %%
 # It can be noted that neither a :term:`workflow <work flow>`
 # nor a :term:`dataflow <data flow>` has been defined.
-# By design, there is no need to explicitely define the workflow
+# By design, there is no need to explicitly define the workflow
 # and the dataflow in |g|:
 #
 # - the workflow is determined from the MDO formulation used.
@@ -182,7 +198,7 @@ scenario = create_scenario(
 #
 # .. warning::
 #
-#    As the workflow and the dataflow are implicitely determined by |g|,
+#    As the workflow and the dataflow are implicitly determined by |g|,
 #    set-up errors may easily occur. Although it is not performed
 #    in this example, it is strongly advised to
 #
@@ -198,7 +214,7 @@ scenario = create_scenario(
 scenario.add_constraint("c_1", "ineq")
 scenario.add_constraint("c_2", "ineq")
 
-###############################################################################
+# %%
 # Execution of the scenario
 # -------------------------
 # The scenario is now complete and ready to be executed.
@@ -209,51 +225,9 @@ scenario.add_constraint("c_2", "ineq")
 
 scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 
-###############################################################################
-# The scenario is converged after 7 iterations.
-# Useful information can be found in the standard output, as shown below:
-#
-# .. code:: bash
-#
-#       *** Start MDO Scenario execution ***
-#       MDOScenario
-#          Disciplines: f_sellar_system f_sellar_1 f_sellar_2
-#          MDOFormulation: MDF
-#          Algorithm: SLSQP
-#       Optimization problem:
-#          Minimize: obj(x_local, x_shared_1, x_shared_2)
-#          With respect to: x_local, x_shared_1, x_shared_2
-#          Subject to constraints:
-#             c_1(x_local, x_shared_1, x_shared_2) <= 0.0
-#             c_2(x_local, x_shared_1, x_shared_2) <= 0.0
-#       Design Space:
-#       +------------+-------------+-------+-------------+-------+
-#       | name       | lower_bound | value | upper_bound | type  |
-#       +------------+-------------+-------+-------------+-------+
-#       | x_local    |      0      |   1   |      10     | float |
-#       | x_shared_1 |     -10     |   4   |      10     | float |
-#       | x_shared_2 |      0      |   3   |      10     | float |
-#       +------------+-------------+-------+-------------+-------+
-#       Optimization:   0%|          | 0/10 [00:00<?, ?it]
-#       Optimization:  70%|███████   | 7/10 [00:00<00:00, 109.54 it/sec, obj=3.18]
-#       Optimization result:
-#       Objective value = 3.1833939865673546
-#       The result is feasible.
-#       Status: 8
-#       Optimizer message: Positive directional derivative for linesearch
-#       Number of calls to the objective function by the optimizer: 8
-#       Constraints values w.r.t. 0:
-#          c_1 = 5.140776693224325e-12
-#          c_2 = -20.24472372627405
-#       Design Space:
-#       +------------+-------------+-------------------+-------------+-------+
-#       | name       | lower_bound |       value       | upper_bound | type  |
-#       +------------+-------------+-------------------+-------------+-------+
-#       | x_local    |      0      |         0         |      10     | float |
-#       | x_shared_1 |     -10     | 1.977637390264277 |      10     | float |
-#       | x_shared_2 |      0      |         0         |      10     | float |
-#       +------------+-------------+-------------------+-------------+-------+
-#       *** MDO Scenario run terminated in 0:00:00.099332 ***
+# %%
+# The scenario converged after 7 iterations.
+# Useful information can be found in the standard output, as seen above.
 #
 # .. note::
 #
@@ -261,7 +235,7 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 #    options. An exhaustive list of the algorithms available in |g| can be
 #    found in the :ref:`gen_opt_algos` section.
 
-###############################################################################
+# %%
 # Post-processing the results
 # ---------------------------
 # Post-processings such as plots exhibiting the evolutions of the
@@ -275,14 +249,25 @@ scenario.post_process("OptHistoryView", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
-###############################################################################
+# %%
 # .. note::
 #
 #    Such post-processings can be exported in PDF format,
 #    by setting :code:`save` to :code:`True` and potentially additional
 #    settings (see the :meth:`.Scenario.post_process` options).
 
-###############################################################################
+# %%
+# Exporting the problem data.
+# ---------------------------
+# After the execution of the scenario, you may want to export your data to use it
+# elsewhere. The :meth:`.Scenario.export_to_dataset` will allow you to export your
+# results to a :class:`.Dataset`, the basic |g| class to store data.
+# From a dataset, you can even obtain a Pandas dataframe with its method
+# :meth:`~.Dataset.export_to_dataframe`:
+dataset = scenario.export_to_dataset("a_name_for_my_dataset")
+dataframe = dataset.export_to_dataframe()
+
+# %%
 # What's next?
 # ------------
 # You have completed a short introduction to |g|.  You can now look at the

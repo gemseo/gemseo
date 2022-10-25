@@ -24,6 +24,8 @@ K nearest neighbors classification
 
 We want to classify the Iris dataset using a KNN classifier.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_classification_model

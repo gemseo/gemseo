@@ -25,6 +25,8 @@ Gaussian Mixtures
 
 Load Iris dataset and create clusters.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.core.dataset import Dataset

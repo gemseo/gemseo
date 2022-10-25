@@ -1,0 +1,2 @@
+The :class:`.LagrangeMultipliers` of a non-solved :class:`.OptimizationProblem` can be approximated.
+The errors raised by :class:`.LagrangeMultipliers` are now raised by :class:`.PostOptimalAnalysis`.

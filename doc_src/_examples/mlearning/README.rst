@@ -8,5 +8,3 @@
 
 Machine learning
 ================
-
-Create models for clustering, classification, regression, ...

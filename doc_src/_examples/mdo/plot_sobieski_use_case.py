@@ -56,6 +56,8 @@ Application: Sobieski's Super-Sonic Business Jet (MDO)
 # -------
 # All the imports needed for the tutorials are performed here.
 # Note that some of the imports are related to the Python 2/3 compatibility.
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

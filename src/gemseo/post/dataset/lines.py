@@ -42,6 +42,7 @@ class Lines(DatasetPlot):
         """
         Args:
             variables: The names of the variables to plot.
+                If ``None``, use all the variables.
             abscissa_variable: The name of the variable used in abscissa.
                 The observations of the ``variables`` are plotted
                 in function of the observations of this ``abscissa_variable``.

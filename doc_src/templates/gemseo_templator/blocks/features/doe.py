@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 from gemseo_templator.blocks.template import Block
 from gemseo_templator.blocks.template import WebLink
 
@@ -27,6 +29,6 @@ block = Block(
         WebLink("pyDOE", url="https://pythonhosted.org/pyDOE/"),
     ],
     examples="examples/doe/index.html",
-    info="mdo.html",
+    info="doe.html",
     options="algorithms/doe_algos.html",
 )

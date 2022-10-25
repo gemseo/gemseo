@@ -19,7 +19,7 @@
         	"minimum":0
         },
         "seed": {
-                "type" : "integer",
+                "type" : ["null", "integer"],
                 "minimum":1
         },
 		"max_time": {

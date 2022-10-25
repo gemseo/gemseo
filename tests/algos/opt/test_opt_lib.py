@@ -17,10 +17,15 @@
 #                           documentation
 #        :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 
 
@@ -107,3 +112,15 @@ def test_optimization_algorithm():
     assert algo.description == ""
     assert algo.website == ""
     assert algo.library_name == ""
+
+
+def test_execute_without_current_value():
+    """Check that the driver can be executed when a current design value is missing."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: (x - 1) ** 2, "obj")
+    driver = OptimizersFactory().create("NLOPT_COBYLA")
+    driver.execute(problem, "NLOPT_COBYLA", max_iter=1)
+    assert design_space["x"].value == 0.0

@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 from sys import platform
 
 import pytest
@@ -26,6 +27,7 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
@@ -201,3 +203,87 @@ def test_transformation(doe_database, var):
     based on inverse transformation sampling.
     """
     assert doe_database[array([var])]["func"] == array([var])
+
+
+def test_pre_run_debug(doe, caplog):
+    """Check a DEBUG message logged just after sampling the input unit hypercube."""
+    caplog.set_level("DEBUG")
+    problem = Power2()
+    doe.execute(problem, "lhs", n_samples=2)
+    message = (
+        "The DOE algorithm lhs of PyDOE has generated 2 samples "
+        "in the input unit hypercube of dimension 3."
+    )
+    message_is_logged = False
+    for (_, log_level, log_message) in caplog.record_tuples:
+        if message in log_message:
+            message_is_logged = True
+            assert log_level == logging.DEBUG
+            break
+
+    assert message_is_logged
+
+
+@pytest.mark.parametrize("algo_name", ["OT_MONTE_CARLO", "lhs"])
+def test_seed(algo_name):
+    """Check the use of the seed at the DOELibrary level."""
+    problem = Power2()
+    library = PyDOE() if algo_name == "lhs" else OpenTURNS()
+    library.algo_name = algo_name
+
+    # The DOELibrary has a seed and increments it at the beginning of each execution.
+    assert library.seed == 0
+    library.execute(
+        problem,
+        n_samples=2,
+    )
+    assert library.seed == 1
+    assert len(problem.database) == 2
+
+    # We execute a second time, still with the seed of the DOELibrary.
+    # For that,
+    # we need to reset the current iteration because max_iter is reached
+    # (for DOELibrary, max_iter == n_samples).
+    problem.reset(
+        database=False,
+        current_iter=True,
+        design_space=False,
+        function_calls=False,
+        preprocessing=False,
+    )
+    library.execute(
+        problem,
+        n_samples=2,
+    )
+    assert library.seed == 2
+    assert len(problem.database) == 4
+
+    # We execute a third time,
+    # with a seed passed as an option of the DOELibrary
+    # and equal to the previous one.
+    # By doing so,
+    # the input samples will be the same and the functions won't be evaluated.
+    problem.reset(
+        database=False,
+        current_iter=True,
+        design_space=False,
+        function_calls=False,
+        preprocessing=False,
+    )
+    library.execute(problem, n_samples=2, seed=2)
+    assert library.seed == 3
+    # There is no new evaluation in the database:
+    assert len(problem.database) == 4
+
+    # Lastly, we check that the DOELibrary uses its own seed again.
+    problem.reset(
+        database=False,
+        current_iter=True,
+        design_space=False,
+        function_calls=False,
+        preprocessing=False,
+    )
+    library.execute(problem, n_samples=2)
+    assert library.seed == 4
+    # There are new evaluations in the database:
+    assert len(problem.database) == 6

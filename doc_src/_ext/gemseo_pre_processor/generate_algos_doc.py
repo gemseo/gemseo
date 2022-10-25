@@ -17,15 +17,13 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import inspect
 import re
 from pathlib import Path
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
 
 import jinja2
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -40,8 +38,11 @@ from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.post.post_factory import PostFactory
+from gemseo.uncertainty.distributions.factory import DistributionFactory
+from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
 
 GEN_OPTS_PATH = None
@@ -49,8 +50,8 @@ GEN_OPTS_PATH = None
 
 def get_options_schemas(
     feature_name: str,
-    feature_api_opts_pt: Callable[[str, bool, bool], Union[str, Dict[str, Any]]],
-) -> Dict[str, Union[Dict[str, str], List[Dict[str, str]]]]:
+    feature_api_opts_pt: Callable[[str, bool, bool], str | dict[str, Any]],
+) -> dict[str, dict[str, str] | list[dict[str, str]]]:
     """Get the options schema for an algorithm, e.g. DOE, MDA, ...
 
     Args:
@@ -103,7 +104,7 @@ def get_options_schemas(
 
 
 def update_options_from_rest_docstring(
-    algo: str, options: Dict[str, Dict[str, Dict[str, str]]]
+    algo: str, options: dict[str, dict[str, dict[str, str]]]
 ) -> None:
     """Update options from reST docstring.
 
@@ -151,8 +152,8 @@ class AlgoOptionsDoc:
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Union[Any, Factory],
-        template: Optional[str] = None,
+        algo_factory: Any | Factory,
+        template: str | None = None,
     ) -> None:
         """
         Args:
@@ -184,7 +185,7 @@ class AlgoOptionsDoc:
 
         def _get_options_schema(
             algo: str,
-        ) -> Dict[str, Union[Dict[str, str], List[Dict[str, str]]]]:
+        ) -> dict[str, dict[str, str] | list[dict[str, str]]]:
             schema = get_options_schemas(algo, self.__get_options_schema)
             update_options_from_rest_docstring(algo, schema)
             return schema
@@ -206,7 +207,7 @@ class AlgoOptionsDoc:
         return self.get_class(algo_name).__module__
 
     @property
-    def libraries(self) -> Dict[str, str]:
+    def libraries(self) -> dict[str, str]:
         """The names of the libraries related to the algorithms."""
         return {
             algo: self.get_library_name(self.get_class(algo).__name__)
@@ -214,18 +215,18 @@ class AlgoOptionsDoc:
         }
 
     @property
-    def options(self) -> Dict[str, str]:
+    def options(self) -> dict[str, str]:
         """The options of the different algorithms."""
         return {algo: self.get_options_schema(algo) for algo in self.algos_names}
 
     @property
-    def features(self) -> Optional[Dict[str, str]]:
+    def features(self) -> dict[str, str] | None:
         """The features, if any."""
         if self.get_features is not None:
             return {algo: self.get_features(algo) for algo in self.algos_names}
 
     @property
-    def websites(self) -> Optional[Dict[str, str]]:
+    def websites(self) -> dict[str, str] | None:
         """The websites to get more details about the different algorithms, if any."""
         if self.get_website is None:
             return None
@@ -233,7 +234,7 @@ class AlgoOptionsDoc:
             return {algo: self.get_website(algo) for algo in self.algos_names}
 
     @property
-    def descriptions(self) -> Optional[Dict[str, str]]:
+    def descriptions(self) -> dict[str, str] | None:
         """The descriptions of the different algorithms, if any."""
         if self.get_description is None:
             return None
@@ -241,21 +242,21 @@ class AlgoOptionsDoc:
             return {algo: self.get_description(algo) for algo in self.algos_names}
 
     @property
-    def modules(self) -> Dict[str, str]:
+    def modules(self) -> dict[str, str]:
         """The modules paths for the different algorithms."""
         return {algo: self.get_module(algo) for algo in self.algos_names}
 
     def __default_options_schema_getter(
         self, algo_type: str, output_json: bool = False, pretty_print: bool = False
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get the options schema from the algorithm factory."""
         grammar = self.algo_factory.factory.get_options_grammar(algo_type)
         return _get_schema(grammar, output_json, pretty_print)
 
     def to_rst(
         self,
-        template_file_name: Optional[str] = None,
-        output_file_name: Optional[str] = None,
+        template_file_name: str | None = None,
+        output_file_name: str | None = None,
     ) -> None:
         """Convert options documentation into an rST file.
 
@@ -292,7 +293,7 @@ class AlgoOptionsDoc:
     @staticmethod
     def get_options_schema_from_method(
         method: Callable[[Any], Any],
-    ) -> Dict[str, Dict[str, str]]:
+    ) -> dict[str, dict[str, str]]:
         parameters = inspect.signature(method).parameters
         defaults = {
             p.name: p.default for p in parameters.values() if p.default is not p.empty
@@ -321,8 +322,8 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Union[Any, Factory],
-        template: Optional[str] = None,
+        algo_factory: Any | Factory,
+        template: str | None = None,
     ) -> None:
 
         super().__init__(
@@ -409,8 +410,8 @@ class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Union[Any, Factory],
-        template: Optional[str] = None,
+        algo_factory: Any | Factory,
+        template: str | None = None,
     ) -> None:
         super().__init__(
             algo_type,
@@ -436,8 +437,8 @@ class InitOptionsDoc(AlgoOptionsDoc):
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Union[Any, Factory],
-        template: Optional[str] = None,
+        algo_factory: Any | Factory,
+        template: str | None = None,
     ) -> None:
         super().__init__(
             algo_type,
@@ -450,7 +451,7 @@ class InitOptionsDoc(AlgoOptionsDoc):
         )
 
 
-def main(gen_opts_path: Union[str, Path]) -> None:
+def main(gen_opts_path: str | Path) -> None:
     global GEN_OPTS_PATH
     GEN_OPTS_PATH = gen_opts_path
 
@@ -459,12 +460,19 @@ def main(gen_opts_path: Union[str, Path]) -> None:
         InitOptionsDoc(
             "classification", "Classification", ClassificationModelFactory()
         ),
+        InitOptionsDoc("ml_quality", "Quality measure", MLQualityMeasureFactory()),
         InitOptionsDoc("mda", "MDA", MDAFactory()),
         InitOptionsDoc("formulation", "MDO Formulation", MDOFormulationsFactory()),
         OptPostProcessorAlgoOptionsDoc("post", "Post-processing", PostFactory()),
         DriverOptionsDoc("doe", "DOE", DOEFactory()),
         DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
         DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
+        InitOptionsDoc(
+            "distribution", "Probability distribution", DistributionFactory()
+        ),
+        InitOptionsDoc(
+            "sensitivity", "Sensitivity analysis", SensitivityAnalysisFactory()
+        ),
     ]
     for algos_options_doc in algos_options_docs:
         algos_options_doc.to_rst()

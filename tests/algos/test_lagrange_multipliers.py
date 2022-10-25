@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from copy import deepcopy
 from pathlib import Path
 
@@ -49,19 +51,6 @@ NLOPT_OPTIONS = {
 def problem() -> Power2:
     """The Power2 optimization problem."""
     return Power2()
-
-
-def test_lagrange_notanoptproblem():
-    with pytest.raises(
-        ValueError,
-        match=("LagrangeMultipliers must be initialized with an OptimizationProblem."),
-    ):
-        LagrangeMultipliers("not_a_problem")
-
-
-def test_lagrange_solutionisnone(problem):
-    with pytest.raises(ValueError, match="The optimization problem was not solved."):
-        LagrangeMultipliers(problem)
 
 
 @pytest.mark.parametrize("upper_bound", [False, True])

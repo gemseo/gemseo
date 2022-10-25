@@ -17,10 +17,7 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-DOE library base class wrapper
-******************************
-"""
+"""Base DOE library."""
 from __future__ import annotations
 
 import logging
@@ -39,9 +36,9 @@ from typing import Union
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 from numpy import savetxt
-from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.doe_quality import compute_phip_criterion
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -102,11 +99,12 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         self.samples = None
         self.seed = 0
 
+    # TODO: API: remove this method
     @staticmethod
     def compute_phip_criteria(samples: ndarray, power: float = 10.0) -> float:
-        r"""Compute the :math:`\phi^p` space-filling criterion.
+        r"""Compute the :math:`\phi^p` space-filling criterion (the smaller the better).
 
-        See Morris & Mitchell, Exploratory designs for computational experiments, 1995.
+        See :cite:`morris1995`.
 
         Args:
             samples: The samples of the input variables.
@@ -115,26 +113,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The :math:`\phi^p` space-filling criterion.
         """
-
-        def compute_distance(sample: ndarray, other_sample: ndarray) -> float:
-            r"""Compute the distance used by the :math:`\phi^p` criterion.
-
-            Args:
-                sample: A sample.
-                other_sample: Another sample.
-
-            Returns:
-                The distance between those samples.
-            """
-            return sum(abs(sample - other_sample)) ** (-power)
-
-        criterion = sum(distance.pdist(samples, compute_distance)) ** (1.0 / power)
-        LOGGER.info(
-            "Value of Phi^p criterion with p=%s (Morris & Mitchell, 1995): %s",
-            power,
-            criterion,
-        )
-        return criterion
+        return compute_phip_criterion(samples, power)
 
     def _pre_run(
         self,
@@ -148,6 +127,16 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
         self.unit_samples = self._generate_samples(**options)
+        LOGGER.debug(
+            (
+                "The DOE algorithm %s of %s has generated %s samples "
+                "in the input unit hypercube of dimension %s."
+            ),
+            self.algo_name,
+            self.__class__.__name__,
+            len(self.unit_samples),
+            self.unit_samples.shape[1],
+        )
         self.samples = self.problem.design_space.untransform_vect(
             self.unit_samples, no_check=True
         )
@@ -158,7 +147,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             for sample in self.samples:
                 self.problem.database.store(sample, {}, add_iter=True)
 
-        self.init_iter_observer(len(self.unit_samples), " ")
+        self.init_iter_observer(len(self.unit_samples))
         self.problem.add_callback(self.new_iteration_callback)
 
     def _generate_samples(self, **options: Any) -> ndarray:
@@ -257,7 +246,8 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def _compute_fullfact_levels(self, n_samples: int, dimension: int) -> list[int]:
+    @staticmethod
+    def _compute_fullfact_levels(n_samples: int, dimension: int) -> list[int]:
         """Compute the number of levels per input dimension for a full factorial design.
 
         Args:
@@ -268,18 +258,20 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             The number of levels per input dimension.
         """
         n_samples_dir = int(n_samples ** (1.0 / dimension))
-        LOGGER.info(
-            "Full factorial design required. Number of samples along each"
-            " direction for a design vector of size %s with %s samples: %s",
-            str(dimension),
-            str(n_samples),
-            str(n_samples_dir),
-        )
-        LOGGER.info(
-            "Final number of samples for DOE = %s vs %s requested",
-            str(n_samples_dir**dimension),
-            str(n_samples),
-        )
+        final_n_samples = n_samples_dir**dimension
+        if final_n_samples != n_samples:
+            LOGGER.warning(
+                (
+                    "A full-factorial DOE of %s samples in dimension %s does not exist;"
+                    " use %s samples instead, "
+                    "i.e. the largest %s-th integer power less than %s."
+                ),
+                n_samples,
+                dimension,
+                final_n_samples,
+                dimension,
+                n_samples,
+            )
         return [n_samples_dir] * dimension
 
     def export_samples(self, doe_output_file: Path | str) -> None:
@@ -382,6 +374,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                         x_vect=sample,
                         eval_jac=self.eval_jac,
                         normalize=False,
+                        eval_observables=True,
                     )
                 except ValueError:
                     LOGGER.error(

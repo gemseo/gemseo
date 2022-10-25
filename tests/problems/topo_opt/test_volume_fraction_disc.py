@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.problems.topo_opt.volume_fraction_disc import VolumeFraction
 from numpy import array

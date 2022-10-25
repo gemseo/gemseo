@@ -27,12 +27,12 @@ from typing import TYPE_CHECKING
 
 from numpy import any as np_any
 from numpy import isnan as np_isnan
-from numpy import ndarray
 
 from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
+from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -75,9 +75,9 @@ class NormDBFunction(MDOFunction):
         self.__is_max_iter_reached = self.__optimization_problem.is_max_iter_reached
 
         super().__init__(
-            self._func,
+            self._func_to_wrap,
             orig_func.name,
-            jac=self._jac,
+            jac=self._jac_to_wrap,
             f_type=orig_func.f_type,
             expr=orig_func.expr,
             args=orig_func.args,
@@ -85,10 +85,7 @@ class NormDBFunction(MDOFunction):
             outvars=orig_func.outvars,
         )
 
-    def _func(
-        self,
-        x_vect: ndarray,
-    ) -> ndarray:
+    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the function to be passed to the optimizer.
 
         Args:
@@ -135,7 +132,7 @@ class NormDBFunction(MDOFunction):
 
         return value
 
-    def _jac(self, x_vect: ndarray) -> ndarray:
+    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the gradient of the function to be passed to the optimizer.
 
         Args:

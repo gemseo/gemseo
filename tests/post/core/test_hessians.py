@@ -16,11 +16,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 from typing import Mapping
-from typing import Tuple
-from typing import Union
 
 import numpy as np
 import pytest
@@ -46,8 +46,8 @@ ROSENBROCK_2_LB_UB_PATH = Path(__file__).parent / "rosenbrock_2_lb_ub_opt_pb.h5"
 
 
 def build_history(
-    problem_path: Union[Path, str],
-) -> Tuple[ndarray, OptimizationResult, OptimizationProblem]:
+    problem_path: Path | str,
+) -> tuple[ndarray, OptimizationResult, OptimizationProblem]:
     """Get the history of a Rosenbrock problem from an hdf file path.
 
     Args:

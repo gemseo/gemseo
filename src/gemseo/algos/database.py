@@ -27,6 +27,7 @@ import sys
 from ast import literal_eval
 from itertools import chain
 from itertools import islice
+from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import ItemsView
@@ -104,15 +105,16 @@ class Database:
 
     def __init__(
         self,
-        input_hdf_file: str | None = None,
+        input_hdf_file: str | Path | None = None,
         name: str | None = None,
     ) -> None:
         """
         Args:
-            input_hdf_file: The path to a HDF5 file from which the database is created.
-                If None, do not import a database.
+            input_hdf_file: The path of an HDF file containing an initial database
+                if any.
+                It should have been generated with :meth:`.Database.export_hdf`.
             name: The name to be given to the database.
-                If None, use the class name.
+                If ``None``, use the class name.
         """
         if name is None:
             self.name = self.__class__.__name__
@@ -628,7 +630,7 @@ class Database:
             curr_val.update(values_dict)
 
         if self.__store_listeners:
-            self.notify_store_listeners()
+            self.notify_store_listeners(x_vect)
         # Notify the new iteration after storing x_vect
         # because callbacks may need an updated x_vect
         if self.__newiter_listeners:
@@ -673,10 +675,22 @@ class Database:
         self.__store_listeners = []
         self.__newiter_listeners = []
 
-    def notify_store_listeners(self) -> None:
-        """Notify the listeners that a new entry was stored in the database."""
+    def notify_store_listeners(
+        self,
+        x_vect: ndarray | None = None,
+    ) -> None:
+        """Notify the listeners that a new entry was stored in the database.
+
+        Args:
+            x_vect: The values of the design variables. If None, use
+                the values of the last iteration.
+        """
+        if isinstance(x_vect, HashableNdarray):
+            x_vect = x_vect.wrapped
+        elif x_vect is None:
+            x_vect = self.get_x_by_iter(-1)
         for func in self.__store_listeners:
-            func()
+            func(x_vect)
 
     def notify_newiter_listeners(
         self,
@@ -1108,18 +1122,16 @@ class Database:
 
     def export_hdf(
         self,
-        file_path: str = "optimization_history.h5",
+        file_path: str | Path = "optimization_history.h5",
         append: bool = False,
     ) -> None:
-        """Export the optimization database to a hdf file.
+        """Export the optimization database to an HDF file.
 
         Args:
-            file_path: The name of the hdf file.
-            append: If True, append the data to the file; False otherwise.
+            file_path: The path of the HDF file.
+            append: Whether to append the data to the file.
         """
-        mode = "a" if append else "w"
-
-        with h5py.File(file_path, mode) as h5file:
+        with h5py.File(file_path, "a" if append else "w") as h5file:
             design_vars_grp = h5file.require_group("x")
             keys_group = h5file.require_group("k")
             values_group = h5file.require_group("v")
@@ -1167,11 +1179,11 @@ class Database:
 
         self.__hdf_export_buffer = []
 
-    def import_hdf(self, filename: str = "optimization_history.h5") -> None:
-        """Import a database from a hdf file.
+    def import_hdf(self, filename: str | Path = "optimization_history.h5") -> None:
+        """Import a database from an HDF file.
 
         Args:
-            filename: The path to the HDF5 file.
+            filename: The path of the HDF file.
         """
         with h5py.File(filename, "r") as h5file:
             design_vars_grp = h5file["x"]
@@ -1345,7 +1357,7 @@ class Database:
     def export_to_ggobi(
         self,
         functions: Iterable[str] | None = None,
-        file_path: str = "opt_hist.xml",
+        file_path: str | Path = "opt_hist.xml",
         design_variables_names: str | Iterable[str] | None = None,
     ) -> None:
         """Export the database to a xml file for ggobi tool.
@@ -1359,14 +1371,14 @@ class Database:
             functions, design_variables_names, add_missing_tag=True, missing_tag="NA"
         )
         LOGGER.info("Export to ggobi for functions: %s", str(functions))
-        LOGGER.info("Export to ggobi file: %s", str(file_path))
+        LOGGER.info("Export to ggobi file: %s", file_path)
         save_data_arrays_to_xml(
             variables_names=variables_names,
             values_array=values_array,
             file_path=file_path,
         )
 
-    def import_from_opendace(self, database_file: str) -> None:
+    def import_from_opendace(self, database_file: str | Path) -> None:
         """Load the current database from an opendace xml database.
 
         Args:

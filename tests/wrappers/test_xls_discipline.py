@@ -17,10 +17,11 @@
 #                   initial documentation
 #        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import faulthandler
 from pathlib import Path
 from typing import Generator
-from typing import Tuple
 
 import pytest
 from gemseo.api import create_design_space
@@ -189,7 +190,7 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
 
 def f_sellar_system(
     x_local: float = 1.0, x_shared_2: float = 3.0, y_1: float = 1.0, y_2: float = 1.0
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     """Objective function for the sellar problem."""
     obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
     c_1 = 3.16 - y_1**2

@@ -19,6 +19,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test supervised machine learning algorithm module."""
+from __future__ import annotations
+
 import re
 
 import pytest

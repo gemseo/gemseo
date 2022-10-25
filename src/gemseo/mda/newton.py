@@ -34,6 +34,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from numpy import array
 from numpy import ndarray
 from numpy.linalg import norm
 from scipy.optimize import root
@@ -99,6 +100,7 @@ class MDARoot(MDA):
         for disciplines in self.disciplines:
             self.input_grammar.update(disciplines.input_grammar)
             self.output_grammar.update(disciplines.output_grammar)
+        self._add_residuals_norm_to_output_grammar()
 
     def execute_all_disciplines(
         self, input_local_data: Mapping[str, ndarray], update_local_data=True
@@ -330,6 +332,7 @@ class MDAQuasiNewton(MDARoot):
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
         """
+        self.method = method
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -346,7 +349,6 @@ class MDAQuasiNewton(MDARoot):
         if method not in self.QUASI_NEWTON_METHODS:
             msg = f"Method '{method}' is not a valid quasi-Newton method."
             raise ValueError(msg)
-        self.method = method
         self.use_gradient = use_gradient
         self.local_residual_history = []
         self.last_outputs = None  # used for computing the residual history
@@ -394,6 +396,7 @@ class MDAQuasiNewton(MDARoot):
                 "disciplines once."
             )
             LOGGER.warning(msg)
+            self.local_data[self.RESIDUALS_NORM] = array([0.0])
             return self.local_data
 
         options = self._solver_options()
@@ -484,10 +487,10 @@ class MDAQuasiNewton(MDARoot):
                     y_k: The coupling variables.
                     _: ignored
                 """
-                self.residual_history.append(
-                    norm((y_k - self.last_outputs).real) / norm_0
-                )
+
                 self.last_outputs = y_k
+                self.normed_residual = norm((y_k - self.last_outputs).real) / norm_0
+                self.residual_history.append(self.normed_residual)
 
         else:
             callback = None
@@ -502,4 +505,14 @@ class MDAQuasiNewton(MDARoot):
         self.local_data = update_dict_of_arrays_from_array(
             self.local_data, couplings, y_opt.x
         )
+        if self.method in self._methods_with_callback():
+            self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
         return self.local_data
+
+    def _initialize_grammars(self) -> None:
+        for disciplines in self.disciplines:
+            self.input_grammar.update(disciplines.input_grammar)
+            self.output_grammar.update(disciplines.output_grammar)
+
+        if self.method in self._methods_with_callback():
+            self._add_residuals_norm_to_output_grammar()

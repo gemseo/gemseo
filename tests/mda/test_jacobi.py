@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
@@ -34,6 +36,8 @@ def test_jacobi_sobieski():
     mda.warm_start = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
+
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
 
 
 def test_secant_acceleration(tmp_wd):
@@ -79,6 +83,7 @@ def test_jacobi_sellar(sellar_disciplines):
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
+    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
 
 
 def test_expected_workflow():

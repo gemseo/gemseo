@@ -18,6 +18,8 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Reproducer for issue #142."""
+from __future__ import annotations
+
 from pathlib import Path
 
 from gemseo.core.chain import MDOChain

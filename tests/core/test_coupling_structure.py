@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import unittest
 from os.path import exists
 from random import shuffle
@@ -204,6 +206,16 @@ def test_strong_couplings_self_coupled():
             True,
             ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
             ["n_2_coupling_names"],
+        ),
+        (
+            False,
+            ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
+            ["n_2_self_coupled_no_names"],
+        ),
+        (
+            True,
+            ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
+            ["n_2_self_coupled"],
         ),
     ],
 )

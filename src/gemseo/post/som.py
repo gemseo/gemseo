@@ -141,7 +141,8 @@ class SOM(OptPostProcessor):
         if (subplot_number % grid_size_x) > 0:
             grid_size_y += 1
 
-        for index, criterion in enumerate(criteria):
+        index = 0
+        for criterion in criteria:
             f_hist, _ = self.database.get_complete_history(
                 ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
@@ -155,6 +156,7 @@ class SOM(OptPostProcessor):
                         grid_size_y=grid_size_y,
                         annotate=annotate,
                     )
+                    index += 1
 
             else:
                 self.__plot_som_from_scalar_data(
@@ -165,6 +167,7 @@ class SOM(OptPostProcessor):
                     grid_size_y=grid_size_y,
                     annotate=annotate,
                 )
+                index += 1
 
         self._add_figure(figure)
 

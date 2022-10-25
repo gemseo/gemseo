@@ -21,6 +21,18 @@
             "type": "number",
             "minimum": 0.0
         },
+        "stop_crit_n_x": {
+            "anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "integer",
+					"minimum": 2
+				}
+			],
+            "default": null
+        },
         "max_iter": {
             "type": "integer",
             "minimum": 1
@@ -51,6 +63,14 @@
         "inner_maxeval": {
             "type": "integer",
             "minimum": 0
+        },
+        "kkt_tol_abs": {
+            "type": ["null","number"],
+            "minimum": 0.0
+        },
+        "kkt_tol_rel": {
+            "type": ["null","number"],
+            "minimum": 0.0
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

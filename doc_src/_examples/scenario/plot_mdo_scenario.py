@@ -23,6 +23,8 @@ Create an MDO Scenario
 ======================
 
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
@@ -34,7 +36,7 @@ from numpy import ones
 configure_logger()
 
 
-#############################################################################
+# %%
 # Let :math:`(P)` be a simple optimization problem:
 #
 # .. math::
@@ -53,30 +55,37 @@ configure_logger()
 #
 # Define the discipline
 # ---------------------
-# Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
+# Firstly, by means of the :func:`.create_discipline` API function,
 # we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
 expressions = {"y": "sin(x)-exp(x)"}
 discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 
-#############################################################################
+# %%
+# We can quickly access the most relevant information of any discipline (name, inputs,
+# and outputs) with Python's ``print()`` function. Moreover, we can get the default
+# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+print(discipline)
+print(f"Default inputs: {discipline.default_inputs}")
+
+# %%
 # Now, we can to minimize this :class:`.MDODiscipline` over a design space,
 # by means of a quasi-Newton method from the initial point :math:`0.5`.
 #
 # Define the design space
 # -----------------------
-# For that, by means of the :meth:`~gemseo.api.create_design_space` API function,
+# For that, by means of the :func:`.create_design_space` API function,
 # we define the :class:`.DesignSpace` :math:`[-2, 2]` with initial value :math:`0.5`
 # by using its :meth:`.DesignSpace.add_variable` method.
 
 design_space = create_design_space()
 design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 
-#############################################################################
+# %%
 # Define the MDO scenario
 # -----------------------
-# Then, by means of the :meth:`~gemseo.api.create_scenario` API function,
+# Then, by means of the :func:`.create_scenario` API function,
 # we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
 # and the :class:`.DesignSpace` defined above:
 
@@ -84,7 +93,7 @@ scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="MDO"
 )
 
-#############################################################################
+# %%
 # What about the differentiation method?
 # --------------------------------------
 # The :class:`.AnalyticDiscipline` automatically differentiates the
@@ -96,9 +105,9 @@ scenario = create_scenario(
 #
 # .. code::
 #
-#    scenario.set_differentiation_method('user')
+#    scenario.set_differentiation_method("finite_differences")
 
-#############################################################################
+# %%
 # Execute the MDO scenario
 # ------------------------
 # Lastly, we solve the :class:`.OptimizationProblem` included in the
@@ -109,7 +118,7 @@ scenario = create_scenario(
 
 scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 
-#############################################################################
+# %%
 # The optimum results can be found in the execution log. It is also possible to
 # extract them by invoking the :meth:`.Scenario.get_optimum` method. It
 # returns a dictionary containing the optimum results for the
@@ -122,10 +131,10 @@ print(
     ),
 )
 
-#############################################################################
+# %%
 # .. seealso::
 #
-#    You can found the `scipy <https://www.scipy.org/>`_ implementation of the
+#    You can found the `SciPy <https://www.scipy.org/>`_ implementation of the
 #    `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 #    algorithm `by clicking here
 #    <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.  # noqa
@@ -136,13 +145,25 @@ print(
 algo_list = get_available_opt_algorithms()
 print(f"Available algorithms: {algo_list}")
 
-#############################################################################
+# %%
 # Available post-processing
 # -------------------------
 # In order to get the list of available post-processing algorithms, use:
 post_list = get_available_post_processings()
 print(f"Available algorithms: {post_list}")
-#############################################################################
+
+# %%
+# Exporting the problem data.
+# ---------------------------
+# After the execution of the scenario, you may want to export your data to use it
+# elsewhere. The :meth:`.Scenario.export_to_dataset` will allow you to export your
+# results to a :class:`.Dataset`, the basic |g| class to store data.
+# From a dataset, you can even obtain a Pandas dataframe with its method
+# :meth:`~.Dataset.export_to_dataframe`:
+dataset = scenario.export_to_dataset("a_name_for_my_dataset")
+dataframe = dataset.export_to_dataframe()
+
+# %%
 # You can also look at the examples:
 #
 # .. raw:: html

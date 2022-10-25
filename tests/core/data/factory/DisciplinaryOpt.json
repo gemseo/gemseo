@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "maximize_objective": {
-      "description": "If True, the objective function is maximized.",
+      "description": "Whether to maximize the objective.",
       "type": "boolean"
     },
     "grammar_type": {

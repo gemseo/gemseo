@@ -16,6 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Pierre-Jean Barjhoux
 #       :author: Francois Gallard, integration and cleanup
+#       :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Implementation of the Lagrange multipliers."""
 from __future__ import annotations
@@ -23,6 +24,7 @@ from __future__ import annotations
 import logging
 
 import numpy as np
+from numpy import abs as np_abs
 from numpy import arange
 from numpy import array
 from numpy import atleast_2d
@@ -79,6 +81,13 @@ class LagrangeMultipliers:
             \text{ otherwise }\lambda_{u,j}=0.
         \end{aligned}\right.
     """
+    kkt_residual: float | None
+    """The residual of the KKT conditions, ``None`` if not computed."""
+
+    constraint_violation: float | None
+    """The maximum constraint violation (taking tolerances into account),
+    ``None`` if not computed."""
+
     LOWER_BOUNDS = "lower_bounds"
     UPPER_BOUNDS = "upper_bounds"
     INEQUALITY = "inequality"
@@ -91,7 +100,6 @@ class LagrangeMultipliers:
             opt_problem: The optimization problem
                 on which Lagrange multipliers shall be computed.
         """
-        self._check_inputs(opt_problem)
         self.opt_problem = opt_problem
         self.active_lb_names = []
         self.active_ub_names = []
@@ -101,25 +109,8 @@ class LagrangeMultipliers:
         self.__normalized = opt_problem.preprocess_options.get(
             "is_function_input_normalized", False
         )
-
-    @staticmethod
-    def _check_inputs(opt_problem: OptimizationProblem) -> None:
-        """Verify that an problem is an instance of :class:`.OptimizationProblem`.
-
-        Args:
-            opt_problem: The optimization problem
-                on which Lagrange multipliers shall be computed.
-
-        Raises:
-            ValueError: When the problem is not an :class:`.OptimizationProblem`
-                or when the problem was not solved.
-        """
-        if not isinstance(opt_problem, OptimizationProblem):
-            raise ValueError(
-                "LagrangeMultipliers must be initialized with an OptimizationProblem."
-            )
-        if opt_problem.solution is None:
-            raise ValueError("The optimization problem was not solved.")
+        self.kkt_residual = None
+        self.constraint_violation = None
 
     def compute(
         self, x_vect: ndarray, ineq_tolerance: float = 1e-6, rcond: float = -1
@@ -148,6 +139,7 @@ class LagrangeMultipliers:
 
         # get jacobian of all active constraints, and an
         # ordered list of their name
+        self.__compute_constraint_violation(x_vect)
         jac_act, _ = self._get_jac_act(x_vect, ineq_tolerance)
         if jac_act is None:
             # There is no active constraint
@@ -163,8 +155,7 @@ class LagrangeMultipliers:
             LOGGER.warning("Number of active constraints > rank !")
 
         # get jacobian of objective
-        obj_jac = self._get_obj_jac(x_vect)
-        rhs = -obj_jac.T
+        rhs = -self.get_objective_jacobian(x_vect).T
 
         # Compute the Lagrange multipliers as a feasible solution of a
         # linear optimization problem
@@ -177,12 +168,14 @@ class LagrangeMultipliers:
             LOGGER.warning("The optimum does not satisfy exactly KKT conditions.")
         if optim_result.success and act_constr_nb <= rank:
             mul = optim_result.x
+            self.kkt_residual = 0.0
         else:
             # If the linear optimization failed then obtain the Lagrange
             # multipliers as a solution of a least-square problem
             if act_eq_constr_nb == 0:
                 mul, residuals = nnls(lhs, rhs)
-                LOGGER.info("Residuals norm = %s", str(norm(residuals)))
+                self.kkt_residual = norm(residuals)
+                LOGGER.info("Residuals norm = %s", self.kkt_residual)
             else:
                 lower_bound = array(
                     [0.0] * (act_constr_nb - act_eq_constr_nb)
@@ -191,7 +184,8 @@ class LagrangeMultipliers:
                 upper_bound = array([np.inf] * (act_constr_nb))
                 optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
                 mul = optim_result.x
-                LOGGER.info("Residuals norm = %s", str(optim_result.cost))
+                self.kkt_residual = optim_result.cost
+                LOGGER.info("Residuals norm = %s", self.kkt_residual)
 
         # stores multipliers in a dictionary
         self._store_multipliers(mul)
@@ -205,17 +199,14 @@ class LagrangeMultipliers:
         Args:
             x_vect: The point at which the Lagrange multipliers are to be computed.
         """
-        problem = self.opt_problem
-
         # Check that the point is within bounds
-        problem.design_space.check_membership(x_vect)
+        self.opt_problem.design_space.check_membership(x_vect)
 
         # Check that the point satisfies other constraints
-        values, _ = problem.evaluate_functions(
-            x_vect, eval_obj=False, normalize=False, no_db_no_norm=True
+        values, _ = self.opt_problem.evaluate_functions(
+            x_vect, eval_obj=False, normalize=False
         )
-        feasible = problem.is_point_feasible(values)
-        if not feasible:
+        if not self.opt_problem.is_point_feasible(values):
             LOGGER.warning("Infeasible point, Lagrange multipliers may not exist.")
 
     def _get_act_bound_jac(self, act_bounds: dict[str, ndarray]):
@@ -266,7 +257,9 @@ class LagrangeMultipliers:
         # a function is active if at least
         # one of its component (in case of multidimensional constraints) is
         # active
-        act_func = self.opt_problem.get_active_ineq_constraints(x_vect, ineq_tolerance)
+        act_constraints = self.opt_problem.get_active_ineq_constraints(
+            x_vect, ineq_tolerance
+        )
 
         dspace = self.opt_problem.design_space
 
@@ -275,8 +268,8 @@ class LagrangeMultipliers:
         jac = []
         names = []
 
-        for func, act_set in act_func.items():
-            if True in act_set:
+        for func, act_set in act_constraints.items():
+            if act_set.any():
                 ineq_jac = func.jac(x_vect)
                 if len(ineq_jac.shape) == 1:
                     # Make sure the Jacobian is a 2-dimensional array
@@ -297,6 +290,27 @@ class LagrangeMultipliers:
         else:
             jac = None
         return jac, names
+
+    def __compute_constraint_violation(self, x_vect: ndarray) -> None:
+        """Compute the maximum constraint violation.
+
+        Args:
+            x_vect: The point where the maximum constraint violation is to be computed.
+        """
+        self.constraint_violation = 0.0
+        if self.__normalized:
+            x_vect = self.opt_problem.design_space.normalize_vect(x_vect)
+        for constraint in self.opt_problem.constraints:
+            value = constraint(x_vect)
+            if constraint.f_type == constraint.TYPE_EQ:
+                value = np_abs(value) - self.opt_problem.eq_tolerance
+            else:
+                value = value - self.opt_problem.ineq_tolerance
+            if isinstance(value, ndarray):
+                value = value.max()
+            self.constraint_violation = max(self.constraint_violation, value)
+
+        self.constraint_violation = max(self.constraint_violation, 0.0)
 
     def _get_act_eq_jac(self, x_vect: ndarray) -> tuple[ndarray, list[str]]:
         """Return The Jacobian of the active equality constraints.
@@ -335,7 +349,7 @@ class LagrangeMultipliers:
             jac = None
         return jac, names
 
-    def _get_obj_jac(self, x_vect: ndarray) -> ndarray:
+    def get_objective_jacobian(self, x_vect: ndarray) -> ndarray:
         """Return the Jacobian of the objective.
 
         Args:

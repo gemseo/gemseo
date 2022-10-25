@@ -22,7 +22,7 @@ A from scratch example on the Sellar problem
 ============================================
 .. _sellar_from_scratch:
 """
-##############################################################################
+# %%
 # Introduction
 # ------------
 # In this example,
@@ -31,17 +31,18 @@ A from scratch example on the Sellar problem
 # all the disciplines will be implemented from scratch
 # by sub-classing the :class:`.MDODiscipline` class
 # for each discipline of the Sellar problem.
-##############################################################################
+#
 # The Sellar problem
 # ------------------
 # We will consider in this example the Sellar problem:
 #
 # .. include:: /tutorials/_description/sellar_problem_definition.inc
-##############################################################################
+#
 # Imports
 # -------
 # All the imports needed for the tutorials are performed here.
-# Note that some of the imports are related to the Python 2/3 compatibility.
+from __future__ import annotations
+
 from math import exp
 
 from gemseo.algos.design_space import DesignSpace
@@ -55,7 +56,7 @@ from numpy import ones
 configure_logger()
 
 
-##############################################################################
+# %%
 # Create the disciplinary classes
 # -------------------------------
 # In this section,
@@ -109,7 +110,7 @@ class SellarSystem(MDODiscipline):
         self.local_data["c_2"] = array([y_2[0] - 24.0])
 
 
-##############################################################################
+# %%
 # Create the Sellar1 class
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -133,7 +134,7 @@ class Sellar1(MDODiscipline):
         )
 
 
-##############################################################################
+# %%
 # Create the Sellar2 class
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -155,7 +156,7 @@ class Sellar2(MDODiscipline):
         self.local_data["y_2"] = array([abs(y_1[0]) + z[0] + z[1]])
 
 
-##############################################################################
+# %%
 # Create and execute the scenario
 # -------------------------------
 #
@@ -166,7 +167,7 @@ class Sellar2(MDODiscipline):
 
 disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
-##############################################################################
+# %%
 # Create the design space
 # ^^^^^^^^^^^^^^^^^^^^^^^
 # In this section,
@@ -188,7 +189,7 @@ design_space.add_variable(
 design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
 design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=ones(1))
 
-##############################################################################
+# %%
 # Create the scenario
 # ^^^^^^^^^^^^^^^^^^^
 # In this section,
@@ -198,7 +199,7 @@ scenario = create_scenario(
     disciplines, formulation="IDF", objective_name="obj", design_space=design_space
 )
 
-##############################################################################
+# %%
 # Add the constraints
 # ^^^^^^^^^^^^^^^^^^^
 # Then,
@@ -206,13 +207,13 @@ scenario = create_scenario(
 scenario.add_constraint("c_1", "ineq")
 scenario.add_constraint("c_2", "ineq")
 
-##############################################################################
+# %%
 # As previously mentioned,
 # we are going to use finite differences to approximate the derivatives
 # since the disciplines do not provide them.
 scenario.set_differentiation_method("finite_differences", 1e-6)
 
-##############################################################################
+# %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 # Then,
@@ -221,7 +222,7 @@ scenario.set_differentiation_method("finite_differences", 1e-6)
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
 scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 
-##############################################################################
+# %%
 # Post-process the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 # Finally,

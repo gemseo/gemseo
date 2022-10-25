@@ -23,6 +23,8 @@ Scalable problem of Tedford and Martins, 2010
 =============================================
 
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import generate_n2_plot
 from gemseo.problems.scalable.parametric.core.design_space import TMDesignSpace

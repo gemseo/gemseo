@@ -27,9 +27,9 @@ model calibrated by machine learning techniques. This is the reason why
 In addition, this machine learning package has a much broader set of features
 than regression: clustering, classification, dimension reduction, data scaling, ...
 
-.. raw:: html
+.. seealso::
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="machine_learning.html" role="button">Machine learning</a></div>
+   :ref:`mlearning`
 
 .. include:: includes/big_toc_css.rst
 .. include:: tune_toc.rst

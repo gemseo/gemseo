@@ -47,6 +47,8 @@ a text file using the :meth:`.Dataset.set_from_array` and
 Then, the surrogate discipline can be used as any other discipline in a
 :class:`.MDOScenario`, a :class:`.DOEScenario`, or a :class:`.MDA`.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

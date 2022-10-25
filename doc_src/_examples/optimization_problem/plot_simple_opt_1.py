@@ -27,6 +27,8 @@ Analytical test case # 1
 #
 # Imports
 # -----------------------------
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import cos

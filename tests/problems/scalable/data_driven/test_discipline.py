@@ -17,6 +17,8 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline

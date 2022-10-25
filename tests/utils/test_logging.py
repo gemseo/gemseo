@@ -17,27 +17,54 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import logging
 
 from gemseo.utils.logging_tools import LoggingContext
 
 
-def log_with_selective_logging() -> None:
-    """Log with selective logging context manager."""
+def test_default():
+    """Check the default configuration of the LoggingContext."""
+    context = LoggingContext()
+    assert context.logger == logging.root
+    assert context.level == logging.WARNING
+    assert context.handler is None
+    assert context.close
+
+
+def test_custom():
+    """Check the default configuration of the LoggingContext."""
+    context = LoggingContext(
+        level=logging.ERROR, logger=logging.getLogger("foo"), close=False, handler="bar"
+    )
+    assert context.level == logging.ERROR
+    assert context.logger.name == "foo"
+    assert context.handler == "bar"
+    assert not context.close
+
+
+def test_selective_logging(caplog):
+    """Check logging with LoggingContext.
+
+    The LoggingContext changes the level of the logger that is passed to it to WARNING:
+    all the messages logged by this logger with INFO level will be silent.
+    """
+    caplog.set_level(logging.INFO)
     logger = logging.getLogger()
     logger.info("1. This should appear.")
-    with LoggingContext(logger, logging.WARNING):
+    with LoggingContext():
         logger.warning("2. This should appear.")
         logger.info("3. This should not appear.")
 
     logger.info("4. This should appear.")
+    with LoggingContext(level=logging.ERROR):
+        logger.warning("5. This should not appear.")
+        logger.error("6. This should appear.")
 
-
-def test_selective_logging(caplog):
-    """Check the selective logging context manager."""
-    caplog.set_level(logging.INFO)
-    log_with_selective_logging()
-    for i in [1, 2, 4]:
-        assert f"{i}. This should appear." in caplog.text
-
+    assert "1. This should appear." in caplog.text
+    assert "2. This should appear." in caplog.text
     assert "3. This should not appear." not in caplog.text
+    assert "4. This should appear." in caplog.text
+    assert "5. This should not appear." not in caplog.text
+    assert "6. This should appear." in caplog.text

@@ -24,6 +24,8 @@ Burgers dataset
 
 Dataset consisting of solutions to Burgers' equation.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.curves import Curves

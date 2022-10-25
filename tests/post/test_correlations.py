@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import random
 import re
 from functools import partial
@@ -74,7 +76,7 @@ def test_correlations_import(tmp_wd, factory, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
+    problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
         "Correlations",
@@ -129,7 +131,7 @@ def test_correlations_func_names(
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
+    problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
         "Correlations",
@@ -159,7 +161,7 @@ def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(str(MOD_SELLAR_HDF5_PATH))
+    problem = OptimizationProblem.import_hdf(MOD_SELLAR_HDF5_PATH)
     post = factory.execute(
         problem,
         "Correlations",

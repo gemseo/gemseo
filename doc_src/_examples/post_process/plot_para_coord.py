@@ -26,6 +26,8 @@ In this example, we illustrate the use of the
 :class:`~gemseo.post.para_coord.ParallelCoordinates` plot on the Sobieski's SSBJ
 problem.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

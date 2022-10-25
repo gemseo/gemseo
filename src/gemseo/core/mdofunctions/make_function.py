@@ -17,7 +17,7 @@
 #                        documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A function computing some outputs of a discipline from some inputs."""
+"""A function computing some outputs of a discipline from some of its inputs."""
 from __future__ import annotations
 
 import logging
@@ -31,9 +31,9 @@ from typing import Union
 from numpy import empty
 from numpy import ndarray
 
+from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 
 if TYPE_CHECKING:
     from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
@@ -46,7 +46,7 @@ OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
 class MakeFunction(MDOFunction):
-    """A function computing some outputs of a discipline from some inputs."""
+    """A function executing and linearizing a discipline for some inputs and outputs."""
 
     def __init__(
         self,
@@ -54,17 +54,23 @@ class MakeFunction(MDOFunction):
         output_names: Iterable[str],
         default_inputs: Mapping[str, ndarray] | None,
         mdo_function: MDOFunctionGenerator,
+        names_to_sizes: dict[str, int] | None = None,
     ) -> None:
         """
         Args:
             input_names: The names of the inputs.
             output_names: The names of the outputs.
-            default_inputs: The default values of the inputs
-                to overload the default values of the inputs of the discipline.
-                If None, do no overload them.
+            default_inputs: The default input values
+                to overload the ones of the underlying discipline
+                attached to the ``mdo_function``
+                at each evaluation of the outputs with :meth:`._fun`
+                or their derivatives with :meth:`._jac`.
+                If ``None``, do no overload them.
             mdo_function: The generator of the :class:`.MDOFunction`
-                computing ``output_names`` from ``input_names``
                 based on a :class:`.MDODiscipline`.
+            names_to_sizes: The sizes of the input variables.
+                If ``None``, guess them from the default inputs and local data
+                of the discipline :class:`.MDODiscipline`.
         """
         self.__input_names = input_names
         self.__output_names = output_names
@@ -76,15 +82,17 @@ class MakeFunction(MDOFunction):
         self.__input_size = 0
         self.__jacobian = None
         self.__discipline = self.__mdo_function.discipline
+        self.__names_to_indices = {}
+        self.__names_to_sizes = names_to_sizes or {}
         super().__init__(
-            self._func,
-            jac=self._func_jac,
+            self._func_to_wrap,
+            jac=self._jac_to_wrap,
             name="_".join(self.__output_names),
             args=self.__input_names,
             outvars=self.__output_names,
         )
 
-    def __compute_input_indices(self):
+    def __compute_input_indices(self) -> None:
         """Compute the indices of the input variables in the Jacobian array."""
         start = 0
         self.__input_size = 0
@@ -95,7 +103,7 @@ class MakeFunction(MDOFunction):
             self.__input_indices[name] = slice(start, self.__input_size)
             start = self.__input_size
 
-    def __compute_output_indices(self):
+    def __compute_output_indices(self) -> None:
         """Compute the indices of the input variables in the Jacobian array."""
         start = 0
         self.__output_size = 0
@@ -106,39 +114,17 @@ class MakeFunction(MDOFunction):
             self.__output_indices[name] = slice(start, self.__output_size)
             start = self.__output_size
 
-    @property
-    def _default_inputs(self) -> dict[str, ndarray]:
-        """The default values of the inputs of the function at execution time.
-
-        They correspond to the default values of the discipline when calling this
-        property, and updated with :attr:`.__default_inputs` if not None.
-        """
-        default_inputs = self.__discipline.default_inputs
-        if self.__default_inputs is not None:
-            default_inputs.update(self.__default_inputs)
-
-        return default_inputs
-
-    def _func(self, x_vect: ndarray) -> OperandType:
-        """A function which executes a discipline for specific inputs and outputs.
+    def _func_to_wrap(self, x_vect: ArrayType) -> OperandType:
+        """Compute an output vector from an input one.
 
         Args:
-            x_vect: The input data of the function.
+            x_vect: The input vector.
 
         Returns:
-            The output data of the function.
+            The output vector.
         """
-        for input_name in self.__input_names:
-            if input_name not in self.__discipline.default_inputs:
-                raise ValueError(
-                    "Discipline {} has no default input named {},"
-                    "while input is required by MDOFunction.".format(
-                        self.__discipline.name, input_name
-                    )
-                )
-
         self.__discipline.reset_statuses_for_run()
-        input_data = self.__compute_input_data(x_vect)
+        input_data = self.__compute_discipline_input_data(x_vect)
         output_data = self.__discipline.execute(input_data)
         output_data = concatenate_dict_of_arrays_to_array(
             output_data, self.__output_names
@@ -148,16 +134,16 @@ class MakeFunction(MDOFunction):
 
         return output_data
 
-    def _func_jac(self, x_vect: ndarray) -> ndarray:
-        """A function which linearizes a discipline for specific inputs and outputs.
+    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+        """Compute the Jacobian value from an input vector.
 
         Args:
-            x_vect: The input data of the function.
+            x_vect: The input vector.
 
         Returns:
-            The Jacobian of the discipline for specific inputs and outputs.
+            The Jacobian value.
         """
-        self.__discipline.linearize(self.__compute_input_data(x_vect))
+        self.__discipline.linearize(self.__compute_discipline_input_data(x_vect))
         if self.__jacobian is None:
             self.__compute_input_indices()
             self.__compute_output_indices()
@@ -182,7 +168,43 @@ class MakeFunction(MDOFunction):
 
         return self.__jacobian
 
-    def __compute_input_data(
+    def __create_names_to_indices(self) -> None:
+        """Create the map from discipline input names to input vector indices.
+
+        Raises:
+            ValueError: When a discipline input has no default value.
+        """
+        if set(self.__names_to_sizes) != set(self.__input_names):
+            self.__names_to_sizes.update(
+                {
+                    name: value.size
+                    for name, value in self.__discipline.get_input_data().items()
+                    if name in self.__input_names
+                }
+            )
+            self.__names_to_sizes.update(
+                {
+                    name: value.size
+                    for name, value in self.__discipline.default_inputs.items()
+                    if name in self.__input_names
+                }
+            )
+
+        for input_name in self.__input_names:
+            if input_name not in self.__names_to_sizes:
+                raise ValueError(
+                    f"The size of the input {input_name} cannot be guessed "
+                    f"from the discipline {self.__discipline.name}, "
+                    f"nor from its default inputs or from its local data."
+                )
+
+        index = 0
+        for name in self.__input_names:
+            size = self.__names_to_sizes[name]
+            self.__names_to_indices[name] = slice(index, index + size)
+            index += size
+
+    def __compute_discipline_input_data(
         self,
         x_vect: ndarray,
     ) -> dict[str, ndarray]:
@@ -193,7 +215,16 @@ class MakeFunction(MDOFunction):
 
         Returns:
             The input data of the underlying discipline.
+
+        Raises:
+            ValueError: When a discipline input has no default value.
         """
-        return update_dict_of_arrays_from_array(
-            self._default_inputs, self.__input_names, x_vect, copy=False
-        )
+        if self.__default_inputs is not None:
+            self.__discipline.default_inputs.update(self.__default_inputs)
+
+        if not self.__names_to_indices:
+            self.__create_names_to_indices()
+
+        return {
+            name: x_vect[self.__names_to_indices[name]] for name in self.__input_names
+        }

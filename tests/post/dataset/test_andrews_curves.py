@@ -18,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class AndrewsCurves plotting samples as curves."""
+from __future__ import annotations
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves

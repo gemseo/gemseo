@@ -26,7 +26,7 @@ import logging
 import sys
 from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
-from multiprocessing import Manager
+from collections.abc import Sized
 from multiprocessing import RLock
 from multiprocessing import Value
 from typing import ClassVar
@@ -34,9 +34,6 @@ from typing import Generator
 from typing import Iterable
 from typing import Mapping
 from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
 
 from numpy import append
 from numpy import array
@@ -58,8 +55,12 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
+from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.testing import compare_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.core.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -168,7 +169,7 @@ class AbstractCache(ABCMapping):
         """
         self.tolerance = tolerance
         self.name = name if name is not None else self.__class__.__name__
-        self._names_to_sizes = {}
+        self.__names_to_sizes = {}
         self.__input_names = []
         self._output_names = []
 
@@ -188,17 +189,25 @@ class AbstractCache(ABCMapping):
 
     @property
     def names_to_sizes(self) -> dict[str, int]:
-        """The sizes of the variables of the last entry."""
-        if not self._names_to_sizes:
-            last_entry = self.last_entry
-            self._names_to_sizes = {
-                name: data.size
-                for name, data in itertools.chain(
-                    last_entry.inputs.items(), last_entry.outputs.items()
-                )
-            }
+        """The sizes of the variables of the last entry.
 
-        return self._names_to_sizes
+        For a Numpy array, its size is used. For a container, its length is used.
+        Otherwise, a size of 1 is used.
+        """
+        if not self.__names_to_sizes:
+            last_entry = self.last_entry
+            for name, data in itertools.chain(
+                last_entry.inputs.items(), last_entry.outputs.items()
+            ):
+                if isinstance(data, ndarray):
+                    size = data.size
+                elif isinstance(data, Sized):
+                    size = len(data)
+                else:
+                    size = 1
+                self.__names_to_sizes[name] = size
+
+        return self.__names_to_sizes
 
     def __str__(self) -> str:
         msg = MultiLineString()
@@ -247,7 +256,6 @@ class AbstractCache(ABCMapping):
             input_data: The data containing the input data to cache.
             output_data: The data containing the output data to cache.
         """
-        ...
 
     @abc.abstractmethod
     def cache_jacobian(
@@ -261,19 +269,17 @@ class AbstractCache(ABCMapping):
             input_data: The data containing the input data to cache.
             jacobian_data: The Jacobian data to cache.
         """
-        ...
 
     def clear(self) -> None:
         """Clear the cache."""
+        self.__names_to_sizes = {}
         self.__input_names = []
         self._output_names = []
-        self._names_to_sizes = {}
 
     @property
     @abc.abstractmethod
     def last_entry(self) -> CacheEntry:
         """The last cache entry."""
-        ...
 
     def export_to_dataset(
         self,
@@ -376,9 +382,6 @@ class AbstractFullCache(AbstractCache):
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
     """
 
-    _manager: Manager
-    """The multiprocessing manager."""
-
     _hashes_to_indices: dict[int, ndarray]
     """The indices associated with the hashes."""
 
@@ -395,8 +398,7 @@ class AbstractFullCache(AbstractCache):
     ) -> None:
         super().__init__(tolerance, name)
         self.lock_hashes = RLock()
-        self._manager = Manager()
-        self._hashes_to_indices = self._manager.dict()
+        self._hashes_to_indices = get_multi_processing_manager().dict()
         self._max_index = Value("i", 0)
         self._last_accessed_index = Value("i", 0)
         self.lock = self._set_lock()
@@ -571,7 +573,7 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def clear(self) -> None:
         super().clear()
-        self._hashes_to_indices = self._manager.dict()
+        self._hashes_to_indices.clear()
         self._max_index.value = 0
         self._last_accessed_index.value = 0
 

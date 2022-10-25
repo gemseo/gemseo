@@ -14,6 +14,7 @@ function matrix(json, collapsed_groups=null, initial_order="group") {
 
     // The nodes: [{name: name_i, group: group_i, description: desc_i}, ...]
     matrix.nodes = json.nodes;
+    matrix.self_coupled_disciplines = json.self_coupled_disciplines;
 
     // Looking for the new positions of the original nodes.
     // Remind: the first original nodes are the groups.
@@ -234,7 +235,7 @@ function matrix(json, collapsed_groups=null, initial_order="group") {
         .attr("x", function(d) { return x(d.x); })
         .attr("width", x.rangeBand())
         .attr("height", x.rangeBand())
-        .style("fill-opacity", function(d) { return d.x == d.y ? 0 : z(d.z);})
+        .style("fill-opacity", function(d) { return (d.x == d.y) && !matrix.self_coupled_disciplines.includes(matrix.nodes[d.x].name) ? 0 : z(d.z);})
         .style("fill", function(d) { return matrix.nodes[d.x].group == matrix.nodes[d.y].group ? c(matrix.nodes[d.x].group+1) : null; })
         .on("mouseover", mouseover)
         .on("mouseout", mouseout)

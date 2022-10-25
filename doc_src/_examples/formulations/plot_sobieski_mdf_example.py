@@ -21,22 +21,25 @@
 MDF-based MDO on the Sobieski SSBJ test case
 ============================================
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.api import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from matplotlib import pyplot as plt
 
 configure_logger()
 
-##############################################################################
-# Instantiate the  disciplines
-# ----------------------------
+# %%
+# Instantiate the disciplines
+# ---------------------------
 # First, we instantiate the four disciplines of the use case:
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`
-# and :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`.
+# :class:`.SobieskiPropulsion`,
+# :class:`.SobieskiAerodynamics`,
+# :class:`.SobieskiMission`
+# and :class:`.SobieskiStructure`.
 disciplines = create_discipline(
     [
         "SobieskiPropulsion",
@@ -46,7 +49,22 @@ disciplines = create_discipline(
     ]
 )
 
-##############################################################################
+# %%
+# We can quickly access the most relevant information of any discipline (name, inputs,
+# and outputs) with Python's ``print()`` function. Moreover, we can get the default
+# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+for discipline in disciplines:
+    print(discipline)
+    print(f"Default inputs: {discipline.default_inputs}")
+
+# %%
+# You may also be interested in plotting the couplings of your disciplines.
+# A quick way of getting this information is the API function
+# :func:`.generate_n2_plot`. A much more detailed explanation of coupling
+# visualization is available :ref:`here <coupling_visualization>`.
+generate_n2_plot(disciplines, save=False, show=True)
+
+# %%
 # Build, execute and post-process the scenario
 # --------------------------------------------
 # Then, we build the scenario which links the disciplines
@@ -65,7 +83,8 @@ formulation_options = {
     "use_lu_fact": True,
     "linear_solver_tolerance": 1e-15,
 }
-##############################################################################
+
+# %%
 #
 # - :code:`'warm_start`: warm starts MDA,
 # - :code:`'warm_start`: optimize the adjoints resolution by storing
@@ -77,6 +96,7 @@ formulation_options = {
 #   idem we need full convergence
 #
 design_space = SobieskiProblem().design_space
+print(design_space)
 scenario = create_scenario(
     disciplines,
     "MDF",
@@ -86,22 +106,22 @@ scenario = create_scenario(
     **formulation_options,
 )
 
-##############################################################################
+# %%
 # Set the design constraints
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 for c_name in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(c_name, "ineq")
 
-##############################################################################
+# %%
 # XDSMIZE the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-# Generate the XDSM file on the fly, setting print_statuses=true
+# Generate the XDSM file on the fly, setting ``print_statuses=True``
 # will print the status in the console
-# html_output (default True), will generate a self contained
-# html file, that can be automatically open using open_browser=True
+# ``html_output`` (default ``True``), will generate a self-contained
+# HTML file, that can be automatically open using ``open_browser=True``
 scenario.xdsmize(html_output=True, print_statuses=False, open_browser=False)
 
-##############################################################################
+# %%
 # Define the algorithm inputs
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer
@@ -120,12 +140,12 @@ algo_options = {
 }
 scn_inputs = {"max_iter": 10, "algo": "SLSQP", "algo_options": algo_options}
 
-##############################################################################
+# %%
 # .. seealso::
 #
-#    We can also generates a backup file for the optimization,
+#    We can also generate a backup file for the optimization,
 #    as well as plots on the fly of the optimization history if option
-#    :code:`generate_opt_plot` is :code:`True`.
+#    ``generate_opt_plot`` is ``True``.
 #    This slows down a lot the process, here since SSBJ is very light
 #
 #    .. code::
@@ -136,27 +156,28 @@ scn_inputs = {"max_iter": 10, "algo": "SLSQP", "algo_options": algo_options}
 #                                              pre_load=False,
 #                                              generate_opt_plot=True)
 
-##############################################################################
+# %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 scenario.execute(scn_inputs)
 
-##############################################################################
+# %%
 # Save the optimization history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We can save the whole optimization problem and its history for further post
 # processing:
 scenario.save_optimization_history("mdf_history.h5", file_format="hdf5")
-##############################################################################
+
+# %%
 # We can also save only calls to functions and design variables history:
 scenario.save_optimization_history("mdf_history.xml", file_format="ggobi")
 
-##############################################################################
+# %%
 # Print optimization metrics
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.print_execution_metrics()
 
-##############################################################################
+# %%
 # Post-process the results
 # ------------------------
 #
@@ -164,43 +185,43 @@ scenario.print_execution_metrics()
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("OptHistoryView", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
     "BasicHistory", variable_names=["x_shared"], save=False, show=False
 )
 
-##############################################################################
+# %%
 # Plot the constraints and objective history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("ObjConstrHist", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the constraints history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
     "ConstraintsHistory", save=False, show=False, constraint_names=["g_1", "g_2", "g_3"]
 )
 
-##############################################################################
+# %%
 # Plot the constraints history using a radar chart
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
     "RadarChart", save=False, show=False, constraint_names=["g_1", "g_2", "g_3"]
 )
 
-##############################################################################
+# %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the functions using a SOM
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("SOM", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the scatter matrix of variables of interest
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
@@ -211,19 +232,20 @@ scenario.post_process(
     fig_size=(14, 14),
 )
 
-##############################################################################
+# %%
 # Plot the variables using the parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("ParallelCoordinates", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the robustness of the solution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("Robustness", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the influence of the design variables
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("VariableInfluence", save=False, show=False, fig_size=(14, 14))
+
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

@@ -18,6 +18,8 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for analytic MDODiscipline based on symbolic expressions."""
+from __future__ import annotations
+
 import pytest
 import sympy
 from gemseo.core.mdo_scenario import MDOScenario

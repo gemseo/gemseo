@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import logging
 import os
 
@@ -89,8 +91,8 @@ def test_jacobian(sellar_mda, sellar_inputs):
     sellar_mda.linearize(sellar_inputs)
     assert sellar_mda.jac == {}
 
-    sellar_mda._differentiated_inputs = None
-    sellar_mda._differentiated_outputs = None
+    sellar_mda._differentiated_inputs = []
+    sellar_mda._differentiated_outputs = []
 
     sellar_mda.linearize(sellar_inputs)
 

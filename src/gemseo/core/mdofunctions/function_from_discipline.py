@@ -28,9 +28,9 @@ from typing import Sequence
 from typing import TYPE_CHECKING
 
 from numpy import empty
-from numpy import ndarray
 
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -95,8 +95,8 @@ class FunctionFromDiscipline(MDOFunction):
         )
 
         super().__init__(
-            self._func,
-            jac=self._func_jac,
+            self._func_to_wrap,
+            jac=self._jac_to_wrap,
             name=self.__out_x_func.name,
             f_type=MDOFunction.TYPE_OBJ,
             args=self.__x_names,
@@ -105,10 +105,7 @@ class FunctionFromDiscipline(MDOFunction):
             outvars=self.__out_x_func.outvars,
         )
 
-    def _func(
-        self,
-        x_vect: ndarray,
-    ) -> ndarray:
+    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the outputs.
 
         Args:
@@ -123,7 +120,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
         return self.__out_x_func(x_vect[self.__x_mask])
 
-    def _func_jac(self, x_vect: ndarray) -> ndarray:
+    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the gradient of the outputs.
 
         Args:

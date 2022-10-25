@@ -24,11 +24,21 @@ repos:
     - id: rst-directive-colons
     - id: rst-inline-touching-normal
 
+- repo: https://github.com/PyCQA/autoflake
+  rev: v1.7.6
+  hooks:
+    - id: autoflake
+      args: [
+        --in-place,
+        --remove-all-unused-imports,
+      ]
+
 - repo: https://github.com/asottile/reorder_python_imports
   rev: v3.8.2
   hooks:
     - id: reorder-python-imports
-      name: reorder python imports inside src
+      name: reorder python imports in src
+      files: ^src
       args: [
         --application-directories,
         src,
@@ -38,10 +48,16 @@ repos:
         --replace-import,
         "typing=gemseo.utils.python_compatibility:Final"
       ]
-      files: ^src
     - id: reorder-python-imports
-      name: reorder python imports outside src
+      name: reorder python imports out of src
       exclude: ^src
+      args: [
+        --py37-plus,
+        --add-import,
+        "from __future__ import annotations",
+        --replace-import,
+        "typing=gemseo.utils.python_compatibility:Final"
+      ]
 
 - repo: https://github.com/myint/docformatter
   rev: v1.4

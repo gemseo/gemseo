@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import collections
 import logging
-import os
 import pickle
 import sys
 from collections import defaultdict
@@ -31,6 +30,7 @@ from multiprocessing import cpu_count
 from multiprocessing import Manager
 from multiprocessing import Value
 from multiprocessing.sharedctypes import Synchronized
+from pathlib import Path
 from timeit import default_timer as timer
 from typing import Any
 from typing import ClassVar
@@ -47,26 +47,25 @@ from numpy import empty
 from numpy import ndarray
 from numpy import zeros
 
+from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.discipline_data import MutableData
-from gemseo.core.namespaces import remove_prefix_from_dict
-from gemseo.core.namespaces import remove_prefix_from_list
-
-if TYPE_CHECKING:
-    from gemseo.core.execution_sequence import SerialExecSequence
-
-
-from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.core.namespaces import remove_prefix_from_dict
+from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
-from pathlib import Path
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.core.execution_sequence import SerialExecSequence
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +97,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     both the passed input data before calling :meth:`.run`
     and the returned output data before they are stored in the :attr:`.cache`.
     A grammar can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar`,
-    or your own which derives from :class:`.AbstractGrammar`.
+    or your own which derives from :class:`.BaseGrammar`.
     """
 
     input_grammar: BaseGrammar
@@ -215,7 +214,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         "run_solves_residuals",
     )
 
-    __time_stamps_mp_manager = None
+    __mp_manager: Manager = None
     time_stamps = None
 
     def __init__(
@@ -258,7 +257,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
                 :attr:`.MDODiscipline.HDF5_CACHE` to cache them in a HDF file,
                 or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
-                If ``None`` or if :class:`.MDODiscipline.activate_cache` is ``True``,
+                If ``None`` or if :attr:`.activate_cache` is ``True``,
                 do not cache the discipline evaluations.
             cache_file_path: The HDF file path
                 when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
@@ -347,10 +346,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
-        inputs = sorted(self.get_input_data_names())
-        outputs = sorted(self.get_output_data_names())
-        msg.add("Inputs: {}", pretty_repr(inputs))
-        msg.add("Outputs: {}", pretty_repr(outputs))
+        msg.add("Inputs: {}", pretty_str(self.get_input_data_names()))
+        msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
         return str(msg)
 
     def _init_shared_attrs(self) -> None:
@@ -1052,12 +1049,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
             time_stamps = MDODiscipline.time_stamps
             if time_stamps is not None:
-                disc_stamps = time_stamps.get(self.name)
-                if disc_stamps is None:
-                    if os.name == "nt":
-                        disc_stamps = []
-                    else:
-                        disc_stamps = MDODiscipline.__time_stamps_mp_manager.list()
+                disc_stamps = time_stamps.get(self.name, self.__mp_manager.list())
                 stamp = (t_0, curr_t, linearize)
                 disc_stamps.append(stamp)
                 time_stamps[self.name] = disc_stamps
@@ -1089,12 +1081,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         For storing start and end times of execution and linearizations.
         """
-        if os.name == "nt":  # No multiprocessing under windows
-            MDODiscipline.time_stamps = {}
-        else:
-            manager = Manager()
-            MDODiscipline.__time_stamps_mp_manager = manager
-            MDODiscipline.time_stamps = manager.dict()
+        MDODiscipline.__mp_manager = manager = get_multi_processing_manager()
+        MDODiscipline.time_stamps = manager.dict()
 
     @classmethod
     def deactivate_time_stamps(cls) -> None:
@@ -1103,7 +1091,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         For storing start and end times of execution and linearizations.
         """
         MDODiscipline.time_stamps = None
-        MDODiscipline.__time_stamps_mp_manager = None
 
     def linearize(
         self,
@@ -1458,7 +1445,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """Add a namespace prefix to an existing input grammar element.
 
         The updated input grammar element name will be
-        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+        ``namespace`` + :data:`~gemseo.core.namespaces.namespaces_separator` + ``name``.
 
         Args:
             name: The element name to rename.
@@ -1474,7 +1461,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """Add a namespace prefix to an existing output grammar element.
 
         The updated output grammar element name will be
-        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+        ``namespace`` + :data:`~gemseo.core.namespaces.namespaces_separator` + ``name``.
 
         Args:
             name: The element name to rename.
@@ -1704,6 +1691,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
         self.linearize(input_data)
+
         return approx.check_jacobian(
             self.jac,
             outputs,

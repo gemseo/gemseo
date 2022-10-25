@@ -17,9 +17,12 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from gemseo.core.discipline import MDODiscipline
+from __future__ import annotations
+
+import pytest
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 
 def test_message():
@@ -52,14 +55,62 @@ def test_message_with_offset():
     assert str(msg) == "bar"
 
 
-def test_pretty_repr():
-    assert pretty_repr({"a": 1, "b": 2}) == "a=1, b=2"
-    assert pretty_repr({"a": 1, "b": "a"}) == "a=1, b='a'"
-    assert pretty_repr([1, "a", 2]) == "1, a, 2"
-    assert pretty_repr([1, "a", 2], delimiter=", ") == "1, a, 2"
-    assert (
-        pretty_repr(MDODiscipline) == "<class 'gemseo.core.discipline.MDODiscipline'>"
-    )
+class A:
+    def __repr__(self):
+        return "foo"
+
+    def __str__(self):
+        return "bar"
+
+
+@pytest.mark.parametrize(
+    "obj,delimiter,key_value_separator,sort,expected",
+    [
+        (A(), None, None, None, "foo"),
+        ({"b": 1, "a": "a"}, None, None, None, "a='a', b=1"),
+        ({"b": 1, "a": "a"}, None, None, False, "b=1, a='a'"),
+        ({"b": 1, "a": "a"}, "!", None, None, "a='a'!b=1"),
+        ({"b": 1, "a": "a"}, None, ":", None, "a:'a', b:1"),
+        ([1, "a", 2], None, None, None, "'a', 1, 2"),
+        ([1, "a", 2], None, None, False, "1, 'a', 2"),
+        ([1, "a", 2], "!", None, None, "'a'!1!2"),
+    ],
+)
+def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator):
+    """Check the function pretty_repr."""
+    kwargs = {}
+    if delimiter is not None:
+        kwargs["delimiter"] = delimiter
+    if key_value_separator is not None:
+        kwargs["key_value_separator"] = key_value_separator
+    if sort is not None:
+        kwargs["sort"] = sort
+    assert pretty_repr(obj, **kwargs) == expected
+
+
+@pytest.mark.parametrize(
+    "obj,delimiter,key_value_separator,sort,expected",
+    [
+        (A(), None, None, None, "bar"),
+        ({"b": 1, "a": "a"}, None, None, None, "a=a, b=1"),
+        ({"b": 1, "a": "a"}, None, None, False, "b=1, a=a"),
+        ({"b": 1, "a": "a"}, "!", None, None, "a=a!b=1"),
+        ({"b": 1, "a": "a"}, None, ":", None, "a:a, b:1"),
+        ([1, "a", 2], None, None, None, "1, 2, a"),
+        ([1, "a", 2], None, None, False, "1, a, 2"),
+        ([1, "a", 2], "!", None, None, "1!2!a"),
+    ],
+)
+def test_pretty_str(obj, delimiter, key_value_separator, sort, expected):
+    """Check the function pretty_str."""
+    kwargs = {}
+    if delimiter is not None:
+        kwargs["delimiter"] = delimiter
+    if key_value_separator is not None:
+        kwargs["key_value_separator"] = key_value_separator
+    if sort is not None:
+        kwargs["sort"] = sort
+    assert pretty_str(obj, **kwargs) == expected
 
 
 def test_replace():

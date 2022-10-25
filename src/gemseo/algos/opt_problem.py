@@ -63,6 +63,7 @@ import logging
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
+from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -100,8 +101,8 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -110,7 +111,7 @@ from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -271,12 +272,13 @@ class OptimizationProblem:
 
     HDF5_FORMAT: Final[str] = "hdf5"
     GGOBI_FORMAT: Final[str] = "ggobi"
+    KKT_RESIDUAL_NORM: Final[str] = "KKT residual norm"
 
     def __init__(
         self,
         design_space: DesignSpace,
         pb_type: str = NON_LINEAR_PB,
-        input_database: str | Database | None = None,
+        input_database: str | Path | Database | None = None,
         differentiation_method: str = USER_GRAD,
         fd_step: float = 1e-7,
         parallel_differentiation: bool = False,
@@ -688,27 +690,40 @@ class OptimizationProblem:
 
         return list(filter(is_inequality_constraint, self.constraints))
 
-    def get_observable(
-        self,
-        name: str,
-    ) -> MDOFunction:
-        """Retrieve an observable from its name.
+    def get_observable(self, name: str) -> MDOFunction:
+        """Return an observable of the problem.
 
         Args:
             name: The name of the observable.
 
         Returns:
-            The observable.
-
-        Raises:
-            ValueError: If the observable cannot be found.
+            The pre-processed observable if the functions of the problem have already
+            been pre-processed, otherwise the original one.
         """
-        try:
-            observable = next(obs for obs in self.observables if obs.name == name)
-        except StopIteration:
-            raise ValueError(f"Observable {name} cannot be found.")
+        return self.__get_observable(name, not self.__functions_are_preprocessed)
 
-        return observable
+    def __get_observable(
+        self, name: str, from_original_observables: bool
+    ) -> MDOFunction:
+        """Return an observable of the problem.
+
+        Args:
+            name: The name of the observable.
+            from_original_observables: Whether to get the observable from the original
+                observables; otherwise return the observable from the pre-processed
+                observables.
+
+        Returns:
+            The observable.
+        """
+        return self.__get_function(
+            name,
+            from_original_observables,
+            self.__observable_names,
+            self.nonproc_observables,
+            self.observables,
+            self.OBSERVABLES_GROUP,
+        )
 
     def get_ineq_constraints_number(self) -> int:
         """Retrieve the number of inequality constraints.
@@ -990,6 +1005,7 @@ class OptimizationProblem:
         """Clear all the listeners."""
         self.database.clear_listeners()
 
+    # TODO: API: set the default value of eval_observables to True.
     def evaluate_functions(
         self,
         x_vect: ndarray = None,
@@ -998,6 +1014,9 @@ class OptimizationProblem:
         eval_observables: bool = False,
         normalize: bool = True,
         no_db_no_norm: bool = False,
+        constraints_names: Iterable[str] | None = None,
+        observables_names: Iterable[str] | None = None,
+        jacobians_names: Iterable[str] | None = None,
     ) -> tuple[dict[str, float | ndarray], dict[str, ndarray]]:
         """Compute the functions of interest, and possibly their derivatives.
 
@@ -1013,82 +1032,207 @@ class OptimizationProblem:
                 if None, the initial point x_0 is used.
             eval_jac: Whether to compute the Jacobian matrices
                 of the functions of interest.
+                If ``True`` and ``jacobians_names`` is ``None`` then
+                compute the Jacobian matrices (or gradients) of the functions that are
+                selected for evaluation (with ``eval_obj``, ``constraints_names``,
+                ``eval_observables`` and``observables_names``).
+                If ``False`` and ``jacobians_names`` is ``None`` then no Jacobian
+                matrix is evaluated.
+                If ``jacobians_names`` is not ``None`` then the value of
+                ``eval_jac`` is ignored.
             eval_obj: Whether to consider the objective function
                 as a function of interest.
+            eval_observables: Whether to evaluate the observables.
+                If ``True`` and ``observables_names`` is ``None`` then all the
+                observables are evaluated.
+                If ``False`` and ``observables_names`` is ``None`` then no observable
+                is evaluated.
+                If ``observables_names`` is not ``None`` then the value of
+                ``eval_observables`` is ignored.
             normalize: Whether to consider the input vector ``x_vect`` normalized.
             no_db_no_norm: If True, then do not use the pre-processed functions,
                 so we have no database, nor normalization.
+            constraints_names: The names of the constraints to evaluate.
+                If ``None`` then all the constraints are evaluated.
+            observables_names: The names of the observables to evaluate.
+                If ``None`` and ``eval_observables`` is ``True`` then all the
+                observables are evaluated.
+                If ``None`` and ``eval_observables`` is ``False`` then no observable is
+                evaluated.
+            jacobians_names: The names of the functions whose Jacobian matrices
+                (or gradients) to compute.
+                If ``None`` and ``eval_jac`` is ``True`` then
+                compute the Jacobian matrices (or gradients) of the functions that are
+                selected for evaluation (with ``eval_obj``, ``constraints_names``,
+                ``eval_observables`` and``observables_names``).
+                If ``None`` and ``eval_jac`` is ``False`` then no Jacobian matrix is
+                computed.
 
         Returns:
             The output values of the functions of interest,
             as well as their Jacobian matrices if ``eval_jac`` is ``True``.
+
+        Raises:
+            ValueError: If a name in ``jacobians_names`` is not the name of
+                a function of the problem.
         """
-        # Check the inputs
-        if normalize:
-            if x_vect is None:
-                x_vect = self.get_x0_normalized()
-            else:
-                # Checks proposed x wrt bounds
-                x_u_r = self.design_space.unnormalize_vect(x_vect, no_check=True)
-                if self.activate_bound_check:
-                    self.design_space.check_membership(x_u_r)
-        else:
-            if x_vect is None:
-                x_vect = self.design_space.get_current_value()
-            elif self.activate_bound_check:
-                # Checks proposed x wrt bounds
-                self.design_space.check_membership(x_vect)
-
         # Get the functions to be evaluated
-        if self.__functions_are_preprocessed and no_db_no_norm:
-            functions = list(self.nonproc_constraints)
-            if eval_obj:
-                functions += [self.nonproc_objective]
-            if eval_observables:
-                functions += self.nonproc_observables
-        else:
-            functions = list(self.constraints)
-            if eval_obj:
-                functions += [self.objective]
-            if eval_observables:
-                functions += self.observables
-
-        if not functions:
-            return dict(), dict()
-
-        # Check whether the functions expect normalized inputs
-        # N.B. either all functions expect normalized inputs or none of them do.
-        normalization_expected = functions[0].expects_normalized_inputs
-
-        # Prepare the inputs
-        if normalization_expected and not normalize:
-            func_inputs = self.design_space.normalize_vect(x_vect)
-        elif not normalization_expected and normalize:
-            func_inputs = self.design_space.unnormalize_vect(x_vect, no_check=True)
-        else:
-            func_inputs = x_vect
+        from_original_functions = not self.__functions_are_preprocessed or no_db_no_norm
+        functions = self.__get_functions(
+            eval_obj,
+            constraints_names,
+            observables_names,
+            eval_observables,
+            from_original_functions,
+        )
 
         # Evaluate the functions
         outputs = {}
-        for func in functions:
-            try:  # Calling func.evaluate is faster than func()
-                outputs[func.name] = func.evaluate(func_inputs)
-            except ValueError:
-                LOGGER.error("Failed to evaluate function %s", func.name)
-                raise
+        if functions:
+            # N.B. either all functions expect normalized inputs or none of them do.
+            preprocessed_x_vect = self.__preprocess_inputs(
+                x_vect, normalize, functions[0].expects_normalized_inputs
+            )
 
-        # Evaluate the Jacobians
-        jacobians = {}
-        if eval_jac:
-            for func in functions:
-                try:
-                    jacobians[func.name] = func.jac(func_inputs)
+            for function in functions:
+                try:  # Calling function.evaluate is faster than function()
+                    outputs[function.name] = function.evaluate(preprocessed_x_vect)
                 except ValueError:
-                    msg = f"Failed to evaluate Jacobian of {func.name}."
-                    LOGGER.error(msg)
+                    LOGGER.error("Failed to evaluate function %s", function.name)
                     raise
 
+        if not eval_jac and jacobians_names is None:
+            return outputs, {}
+
+        # Evaluate the Jacobians
+        if jacobians_names is not None:
+            unknown_names = set(jacobians_names) - set(self.get_all_functions_names())
+            if unknown_names:
+                if len(unknown_names) > 1:
+                    message = "These names are"
+                else:
+                    message = "This name is"
+
+                raise ValueError(
+                    f"{message} not among the names of the functions: "
+                    f"{pretty_str(unknown_names)}."
+                )
+
+            functions = self.__get_functions(
+                self.objective.name in jacobians_names,
+                [name for name in jacobians_names if name in self.constraint_names],
+                [name for name in jacobians_names if name in self.__observable_names],
+                True,
+                from_original_functions,
+            )
+
+            if functions:
+                # N.B. either all functions expect normalized inputs or none of them do.
+                preprocessed_x_vect = self.__preprocess_inputs(
+                    x_vect, normalize, functions[0].expects_normalized_inputs
+                )
+
+        jacobians = {}
+        for function in functions:
+            try:
+                jacobians[function.name] = function.jac(preprocessed_x_vect)
+            except ValueError:
+                LOGGER.error("Failed to evaluate Jacobian of %s.", function.name)
+                raise
+
         return outputs, jacobians
+
+    def __preprocess_inputs(
+        self,
+        input_value: ndarray | None,
+        normalized: bool,
+        normalization_expected: bool,
+    ) -> ndarray:
+        """Prepare the design variables for the evaluation of functions.
+
+        Args:
+            input_value: The design variables.
+            normalized: Whether the design variables are normalized.
+            normalization_expected: Whether the functions expect normalized variables.
+
+        Returns:
+            The prepared variables.
+        """
+        if input_value is None:
+            input_value = self.design_space.get_current_value(normalize=normalized)
+        elif self.activate_bound_check:
+            if normalized:
+                non_normalized_variables = self.design_space.unnormalize_vect(
+                    input_value, no_check=True
+                )
+            else:
+                non_normalized_variables = input_value
+
+            self.design_space.check_membership(non_normalized_variables)
+
+        if normalized and not normalization_expected:
+            return self.design_space.unnormalize_vect(input_value, no_check=True)
+
+        if not normalized and normalization_expected:
+            return self.design_space.normalize_vect(input_value)
+
+        return input_value
+
+    def __get_functions(
+        self,
+        eval_obj: bool,
+        constraints_names: Iterable[str] | None,
+        observables_names: Iterable[str] | None,
+        eval_observables: bool,
+        from_original_functions: bool,
+    ) -> list[MDOFunction]:
+        """Return functions.
+
+        Args:
+            eval_obj: Whether to return the objective function.
+            constraints_names: The names of the constraints to return.
+                If ``None`` then all the constraints are evaluated.
+            observables_names: The names of the observables to return.
+                If ``None`` and ``eval_observables`` is True then all the observables
+                are returned.
+                If ``None`` and ``eval_observables`` is False then no observable is
+                returned.
+            eval_observables: Whether to return the observables.
+            from_original_functions: Whether to get the functions from the original
+                ones; otherwise get the functions from the pre-processed ones.
+
+        Returns:
+            The functions to be evaluated or differentiated.
+        """
+        use_nonproc_functions = (
+            self.__functions_are_preprocessed and from_original_functions
+        )
+        if not eval_obj:
+            functions = []
+        elif use_nonproc_functions:
+            functions = [self.nonproc_objective]
+        else:
+            functions = [self.objective]
+
+        if constraints_names is not None:
+            for name in constraints_names:
+                functions.append(self.__get_constraint(name, from_original_functions))
+
+        elif use_nonproc_functions:
+            functions += self.nonproc_constraints
+        else:
+            functions += self.constraints
+
+        if observables_names is not None:
+            for name in observables_names:
+                functions.append(self.__get_observable(name, from_original_functions))
+
+        elif eval_observables and use_nonproc_functions:
+            functions += self.nonproc_observables
+        elif eval_observables:
+            functions += self.observables
+
+        return functions
 
     def preprocess_functions(
         self,
@@ -1215,7 +1359,7 @@ class OptimizationProblem:
                 when function is called (avoid recursive call)
 
         Returns:
-            The preprocessed function.
+            The pre-processed function.
         """
         self.check_format(func)
         # First differentiate it so that the finite differences evaluations
@@ -1690,9 +1834,7 @@ class OptimizationProblem:
             msg.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add(
-            "with respect to {}", pretty_repr(sorted(self.design_space.variables_names))
-        )
+        msg.add("with respect to {}", pretty_str(self.design_space.variables_names))
         if self.has_constraints():
             msg.add("subject to constraints:")
             msg.indent()
@@ -1709,7 +1851,7 @@ class OptimizationProblem:
     @staticmethod
     def __store_h5data(
         group: Any,
-        data_array: ndarray,
+        data_array: ndarray[Number] | str | list[str | Number],
         dataset_name: str,
         dtype: str | None = None,
     ) -> None:
@@ -1721,7 +1863,7 @@ class OptimizationProblem:
             dataset_name: The name of the dataset to store the array.
             dtype: Numpy dtype or string. If None, dtype('f') will be used.
         """
-        if data_array is None:
+        if data_array is None or data_array == []:
             return
         if isinstance(data_array, ndarray):
             data_array = data_array.real
@@ -1767,13 +1909,13 @@ class OptimizationProblem:
 
     def export_hdf(
         self,
-        file_path: str,
+        file_path: str | Path,
         append: bool = False,
     ) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
-            file_path: The file to store the data.
+            file_path: The path of the file to store the data.
             append: If True, then the data are appended to the file if not empty.
         """
         LOGGER.info("Export optimization problem to file: %s", str(file_path))
@@ -1818,7 +1960,7 @@ class OptimizationProblem:
     @classmethod
     def import_hdf(
         cls,
-        file_path: str,
+        file_path: str | Path,
         x_tolerance: float = 0.0,
     ) -> OptimizationProblem:
         """Import an optimization history from an HDF file.
@@ -1830,7 +1972,7 @@ class OptimizationProblem:
         Returns:
             The read optimization problem.
         """
-        LOGGER.info("Import optimization problem from file: %s", str(file_path))
+        LOGGER.info("Import optimization problem from file: %s", file_path)
 
         design_space = DesignSpace(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
@@ -2323,3 +2465,65 @@ class OptimizationProblem:
             self.new_iter_observables = self.nonproc_new_iter_observables
             self.nonproc_new_iter_observables = []
             self.__functions_are_preprocessed = False
+
+    def __get_constraint(
+        self, name: str, from_original_constraints: bool = False
+    ) -> MDOFunction:
+        """Return a constraint of the problem.
+
+        Args:
+            name: The name of the constraint.
+            from_original_constraints: Whether to get the constraint from the original
+                constraints; otherwise get the constraint from the the pre-processed
+                constraints.
+
+        Returns:
+            The constraint.
+        """
+        return self.__get_function(
+            name,
+            from_original_constraints,
+            self.get_constraints_names(),
+            self.nonproc_constraints,
+            self.constraints,
+            self.CONSTRAINTS_GROUP,
+        )
+
+    def __get_function(
+        self,
+        name: str,
+        from_original_functions: bool,
+        names: Iterable[str],
+        original_functions: Iterable[MDOFunction],
+        preprocessed_functions: Iterable[MDOFunction],
+        group_name: str,
+    ) -> MDOFunction:
+        """Return a function of the problem.
+
+        Args:
+            name: The name of the function.
+            from_original_functions: Whether to get the function from the original
+                functions; otherwise get the function for the pre-processed functions.
+            names: The names of the available functions.
+            original_functions: The original functions.
+            preprocessed_functions: The pre-processed functions.
+            group_name: The name of the group of functions.
+
+        Returns:
+            The function.
+
+        Raises:
+            ValueError: If the name is not among the names of the available functions.
+        """
+        if name not in names:
+            raise ValueError(
+                f"{name} is not among the names of the {group_name}: "
+                f"{pretty_str(names)}."
+            )
+
+        if from_original_functions and self.__functions_are_preprocessed:
+            functions = original_functions
+        else:
+            functions = preprocessed_functions
+
+        return next(function for function in functions if function.name == name)

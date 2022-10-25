@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -41,7 +43,7 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
+    problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem, "VariableInfluence", file_path="var_infl", save=True
     )
@@ -101,7 +103,7 @@ def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(str(SSBJ_HDF5_PATH))
+    problem = OptimizationProblem.import_hdf(SSBJ_HDF5_PATH)
     post = factory.execute(
         problem,
         "VariableInfluence",

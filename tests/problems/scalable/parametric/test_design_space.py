@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.problems.scalable.parametric.core.design_space import TMDesignSpace
 from gemseo.problems.scalable.parametric.core.variables import get_coupling_name

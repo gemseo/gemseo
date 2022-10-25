@@ -32,7 +32,7 @@ from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 @dataclass
@@ -217,7 +217,7 @@ class ScipyLinprog(OptimizationLibrary):
             normalize=False,
             no_db_no_norm=True,
         )
-        f_opt = val_opt[self.problem.objective.outvars[0]]
+        f_opt = val_opt[self.problem.objective.name]
         constraints_values = {
             key: val_opt[key] for key in self.problem.get_constraints_names()
         }

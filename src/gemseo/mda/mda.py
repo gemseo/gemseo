@@ -23,11 +23,13 @@ import logging
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 from numpy import array
 from numpy import concatenate
@@ -58,6 +60,7 @@ class MDA(MDODiscipline):
         "reset_history_each_run",
         "norm0",
         "residual_history",
+        "_starting_indices",
         "tolerance",
         "max_mda_iter",
         "_log_convergence",
@@ -74,6 +77,8 @@ class MDA(MDODiscipline):
         "_scale_residuals_with_first_norm",
         "_current_iter",
     )
+
+    RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
 
     activate_cache = True
 
@@ -100,7 +105,7 @@ class MDA(MDODiscipline):
 
     assembly: JacobianAssembly
 
-    residual_history: list
+    residual_history: list[float]
     """The history of MDA residuals."""
 
     reset_history_each_run: bool
@@ -129,6 +134,9 @@ class MDA(MDODiscipline):
 
     lin_cache_tol_fact: float
     """The tolerance factor to cache the Jacobian."""
+
+    _starting_indices: list[int]
+    """The indices of the residual history where a new execution starts."""
 
     def __init__(
         self,
@@ -184,6 +192,7 @@ class MDA(MDODiscipline):
             self.coupling_structure = coupling_structure
         self.assembly = JacobianAssembly(self.coupling_structure)
         self.residual_history = []
+        self._starting_indices = []
         self.reset_history_each_run = False
         self.warm_start = warm_start
         self._scale_residuals_with_coupling_size = False
@@ -218,6 +227,12 @@ class MDA(MDODiscipline):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
+        self._add_residuals_norm_to_output_grammar()
+
+    def _add_residuals_norm_to_output_grammar(self) -> None:
+        """Add RESIDUALS_NORM to the output grammar."""
+        self.output_grammar.update([self.RESIDUALS_NORM])
+
     @property
     def log_convergence(self) -> bool:
         """Whether to log the MDA convergence."""
@@ -238,7 +253,7 @@ class MDA(MDODiscipline):
         as it is set using the linear_solver_tolerance keyword argument.
 
         Raises:
-            ValueError: If the 'tol' keyword is in linear_solver_options.
+            ValueError: If the ``tol`` keyword is in :attr:`.linear_solver_options`.
         """
         if "tol" in self.linear_solver_options:
             msg = (
@@ -334,14 +349,17 @@ class MDA(MDODiscipline):
             inputs = set(self.get_input_data_names())
             outputs = self.get_output_data_names()
             # Don't linearize wrt
-            inputs = inputs - (strong_cpl & inputs)
+            inputs -= strong_cpl & inputs
             # Don't do this with output couplings because
             # their derivatives wrt design variables may be needed
             # outputs = outputs - (strong_cpl & outputs)
+        else:
+            inputs, outputs = MDODiscipline._retrieve_diff_inouts(self)
 
-            return inputs, outputs
-
-        return MDODiscipline._retrieve_diff_inouts(self, False)
+        if self.RESIDUALS_NORM in outputs:
+            outputs = list(outputs)
+            outputs.remove(self.RESIDUALS_NORM)
+        return inputs, outputs
 
     def _couplings_warm_start(self) -> None:
         """Load the previous couplings values to local data."""
@@ -410,7 +428,7 @@ class MDA(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        # Do not re execute disciplines if inputs error is beyond self tol
+        # Do not re-execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
         # of first discipline
         # have changed at convergence, therefore the cache is not exactly
@@ -422,11 +440,12 @@ class MDA(MDODiscipline):
         for disc in self.disciplines:
             residual_variables.update(disc.residual_variables)
 
-        couplings_adjoint = list(
+        couplings_adjoint = sorted(
             set(self.all_couplings)
-            - set(residual_variables.keys())
+            - residual_variables.keys()
             - set(residual_variables.values())
         )
+
         self.jac = self.assembly.total_derivatives(
             self.local_data,
             outputs,
@@ -449,7 +468,7 @@ class MDA(MDODiscipline):
         new_couplings: ndarray,
         store_it: bool = True,
         log_normed_residual: bool = False,
-    ) -> ndarray:
+    ) -> float:
         """Compute the residual on the inputs of the MDA.
 
         Args:
@@ -463,6 +482,7 @@ class MDA(MDODiscipline):
         """
         if self._current_iter == 0 and self.reset_history_each_run:
             self.residual_history = []
+            self._starting_indices = []
 
         normed_residual = norm((current_couplings - new_couplings).real)
 
@@ -490,8 +510,12 @@ class MDA(MDODiscipline):
             )
 
         if store_it:
+            if self._current_iter == 0:
+                self._starting_indices.append(len(self.residual_history))
             self.residual_history.append(self.normed_residual)
             self._current_iter += 1
+
+        self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
         return self.normed_residual
 
     def check_jacobian(
@@ -587,19 +611,20 @@ class MDA(MDODiscipline):
         # Strong couplings are not linearized
         if inputs is None:
             inputs = self.get_input_data_names()
-
-        inputs = list(iter(inputs))
-        for str_cpl in self.all_couplings:
-            if str_cpl in inputs:
-                inputs.remove(str_cpl)
-
         if outputs is None:
             outputs = self.get_output_data_names()
 
-        outputs = list(iter(outputs))
-        for str_cpl in self.all_couplings:
-            if str_cpl in outputs:
-                outputs.remove(str_cpl)
+        inputs = list(inputs)
+        outputs = list(outputs)
+
+        for coupling in self.all_couplings:
+            if coupling in outputs:
+                outputs.remove(coupling)
+            if coupling in inputs:
+                inputs.remove(coupling)
+
+        if self.RESIDUALS_NORM in outputs:
+            outputs.remove(self.RESIDUALS_NORM)
 
         return super().check_jacobian(
             input_data=input_data,
@@ -696,12 +721,10 @@ class MDA(MDODiscipline):
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
         fig_size: tuple[float, float] = (50.0, 10.0),
-    ) -> None:
+    ) -> Figure:
         """Generate a plot of the residual history.
 
-        All residuals are stored in the history;
-        only the final residual of the converged MDA is plotted
-        at each optimization iteration.
+        The first iteration of each new execution is marked with a red dot.
 
         Args:
             show: Whether to display the plot on screen.
@@ -733,7 +756,8 @@ class MDA(MDODiscipline):
 
         # red dot for first iteration
         colors = ["black"] * n_iterations
-        colors[0] = "red"
+        for index in self._starting_indices:
+            colors[index] = "red"
 
         fig_ax.scatter(
             list(range(n_iterations)),
@@ -748,17 +772,16 @@ class MDA(MDODiscipline):
         fig_ax.axhline(y=self.tolerance, c="blue", linewidth=0.5, zorder=0)
         fig_ax.set_title(f"{self.name}: residual plot")
 
-        plt.yscale("log")
-        plt.xlabel(r"iterations", fontsize=14)
-        plt.xlim([-1, n_iterations])
+        fig_ax.set_yscale("log")
+        fig_ax.set_xlabel(r"iterations", fontsize=14)
+        fig_ax.set_xlim([-1, n_iterations])
         fig_ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-        plt.ylabel(r"$\log(||residuals||/||y_0||)$", fontsize=14)
+        fig_ax.set_ylabel(r"$\log(||residuals||/||y_0||)$", fontsize=14)
         if logscale is not None:
-            plt.ylim(logscale)
+            fig_ax.set_ylim(logscale)
 
-        if save:
-            if filename is None:
-                filename = f"{self.name}_residual_history.pdf"
+        if save and filename is None:
+            filename = f"{self.name}_residual_history.pdf"
 
         save_show_figure(fig, show, filename, fig_size)
 

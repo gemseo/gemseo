@@ -23,6 +23,7 @@ User guide
    gemseo_easier.rst
    main_concepts.rst
    optimization.rst
+   doe.rst
    mdo.rst
    machine_learning.rst
    surrogate.rst

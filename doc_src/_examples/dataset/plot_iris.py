@@ -49,6 +49,8 @@ This dataset can be used for either clustering purposes
 or classification ones.
 
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves

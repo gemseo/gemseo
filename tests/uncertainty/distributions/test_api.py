@@ -17,6 +17,8 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 
 

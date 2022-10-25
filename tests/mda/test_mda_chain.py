@@ -17,6 +17,8 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -27,10 +29,6 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
 from numpy import isclose
 from numpy import ones
@@ -190,15 +188,7 @@ def test_sellar_chain_linearize(sellar_disciplines):
     )
     assert ok
 
-
-def test_sobieski():
-    disciplines = [
-        SobieskiAerodynamics(),
-        SobieskiStructure(),
-        SobieskiPropulsion(),
-        SobieskiMission(),
-    ]
-    MDAChain(disciplines)
+    assert mda_chain.local_data[mda_chain.RESIDUALS_NORM][0] < 1e-13
 
 
 def generate_disciplines_from_desc(

@@ -12,6 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+import inspect
+import sys
 from pathlib import Path
 
 MOD_MSG = (
@@ -124,6 +128,23 @@ def create_tree_file(modules_path, dct, parents, root):
                     lines = fr.readlines()[2:]
                     for line in lines:
                         f.write(line)
+
+                if path != "gemseo.utils.pytest_conftest":
+                    obj_names = [
+                        obj_name
+                        for (obj_name, _) in inspect.getmembers(
+                            sys.modules[path],
+                            lambda member: (
+                                inspect.isclass(member) or inspect.isfunction(member)
+                            )
+                            and member.__module__ == path,
+                        )
+                    ]
+                    for obj_name in obj_names:
+                        f.write("\n")
+                        f.write(f".. minigallery:: {path}.{obj_name}\n")
+                        f.write(f"   :add-heading: Examples using {obj_name}\n")
+
             (modules_path / path_rst).unlink()
             old_path = modules_path / f"tmp_{path}.rst"
             new_path = modules_path / path_rst

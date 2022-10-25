@@ -10,6 +10,8 @@
    Contributors:
           :author:  Matthias De Lozzo
 
+.. _coupling_visualization:
+
 Coupling visualization
 ======================
 
@@ -41,13 +43,16 @@ The following example is used to illustrate these features:
 
     from gemseo.api import create_discipline
 
-    disc0 = create_discipline('AnalyticDiscipline', name='D0', expressions={'y0':'x0+y1+y2'})
-    disc1 = create_discipline('AnalyticDiscipline', name='D1', expressions={'y1':'x0+x1+y2'})
-    disc2 = create_discipline('AnalyticDiscipline', name='D2', expressions={'y2':'x0+x2+y1'})
+    disc0 = create_discipline('AnalyticDiscipline', name='D0', expressions={'y0':'x0+y10+y2'})
+    disc1 = create_discipline('AnalyticDiscipline', name='D1', expressions={'y10':'x0+x1+y2+y10', 'y11':'x0-x1+2*y11'})
+    disc2 = create_discipline('AnalyticDiscipline', name='D2', expressions={'y2':'x0+x2+y10'})
     disciplines = [disc0, disc1, disc2]
 
 where the disciplines D1 and D2 are strongly coupled
 while D0 is weakly coupled to D1 and D2.
+Moreover,
+D1 is self-coupled,
+i.e. one of its outputs is also one of its inputs.
 
 Coupling graph visualization
 ----------------------------
@@ -109,6 +114,13 @@ computed by the *i*-th discipline and passed to the *j*-th discipline.
 |g| offers the possibility to display the N2 chart
 either as a static visualization of the full graph,
 or as an interactive visualization of both full and condensed graphs:
+
+.. note::
+
+    The self-coupled disciplines are represented by diagonal blocks
+    with a specific background color:
+    blue for the static N2 chart and
+    the color of the group to which the discipline belongs for the dynamic N2 chart.
 
 API
 ~~~

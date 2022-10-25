@@ -21,6 +21,8 @@
 BiLevel-based DOE on the Sobieski SSBJ test case
 ================================================
 """
+from __future__ import annotations
+
 from copy import deepcopy
 from os import name as os_name
 
@@ -32,14 +34,14 @@ from matplotlib import pyplot as plt
 
 configure_logger()
 
-##############################################################################
+# %%
 # Instantiate the  disciplines
 # ----------------------------
 # First, we instantiate the four disciplines of the use case:
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`
-# and :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`.
+# :class:`.SobieskiPropulsion`,
+# :class:`.SobieskiAerodynamics`,
+# :class:`.SobieskiMission`
+# and :class:`.SobieskiStructure`.
 propu, aero, mission, struct = create_discipline(
     [
         "SobieskiPropulsion",
@@ -49,7 +51,7 @@ propu, aero, mission, struct = create_discipline(
     ]
 )
 
-##############################################################################
+# %%
 # Build, execute and post-process the scenario
 # --------------------------------------------
 # Then, we build the scenario which links the disciplines
@@ -60,7 +62,7 @@ propu, aero, mission, struct = create_discipline(
 # We need to define the design space.
 design_space = SobieskiProblem().design_space
 
-##############################################################################
+# %%
 # Then, we build a sub-scenario for each strongly coupled disciplines,
 # using the following algorithm, maximum number of iterations and
 # algorithm options:
@@ -72,7 +74,8 @@ algo_options = {
     "ineq_tolerance": 1e-4,
 }
 sub_sc_opts = {"max_iter": 30, "algo": "SLSQP", "algo_options": algo_options}
-##############################################################################
+
+# %%
 # Build a sub-scenario for Propulsion
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This sub-scenario will minimize SFC.
@@ -84,7 +87,7 @@ sc_prop = create_scenario(
     name="PropulsionScenario",
 )
 
-##############################################################################
+# %%
 # Build a sub-scenario for Aerodynamics
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This sub-scenario will minimize L/D.
@@ -97,7 +100,7 @@ sc_aero = create_scenario(
     maximize_objective=True,
 )
 
-##############################################################################
+# %%
 # Build a sub-scenario for Structure
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This sub-scenario will maximize
@@ -111,7 +114,7 @@ sc_str = create_scenario(
     maximize_objective=True,
 )
 
-##############################################################################
+# %%
 # Build a scenario for Mission
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This scenario is based on the three previous sub-scenarios and on the
@@ -128,7 +131,7 @@ system_scenario = create_scenario(
     scenario_type="DOE",
 )
 
-##############################################################################
+# %%
 # .. note::
 #
 #    Setting :code:`reset_x0_before_opt=True` is mandatory when doing a DOE
@@ -137,7 +140,7 @@ system_scenario = create_scenario(
 system_scenario.formulation.mda1.warm_start = False
 system_scenario.formulation.mda2.warm_start = False
 
-##############################################################################
+# %%
 # .. note::
 #
 #    This is mandatory when doing a DOE in parallel if we want always exactly
@@ -147,14 +150,14 @@ system_scenario.formulation.mda2.warm_start = False
 for sub_sc in sub_disciplines[0:3]:
     sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
 
-##############################################################################
+# %%
 # Multiprocessing
 # ^^^^^^^^^^^^^^^
 # It is possible to run a DOE in parallel using multiprocessing, in order to do
 # this, we specify the number of processes to be used for the computation of
 # the samples.
 
-##############################################################################
+# %%
 # .. warning::
 #    The multiprocessing option has some limitations on Windows.
 #    Due to problems with sphinx, we disable it in this example.
@@ -175,7 +178,7 @@ system_scenario.execute(
 
 system_scenario.print_execution_metrics()
 
-##############################################################################
+# %%
 # .. warning::
 #    On Windows, the progress bar may show duplicated instances during the
 #    initialization of each subprocess. In some cases it may also print the
@@ -183,24 +186,35 @@ system_scenario.print_execution_metrics()
 #    This is a consequence of the pickling process and does not affect the
 #    computations of the scenario.
 
-##############################################################################
+# %%
+# Exporting the problem data.
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# After the execution of the scenario, you may want to export your data to use it
+# elsewhere. The method :meth:`.Scenario.export_to_dataset` will allow you to export
+# your results to a :class:`.Dataset`, the basic |g| class to store data.
+# From a dataset, you can even obtain a Pandas dataframe with the method
+# :meth:`~.Dataset.export_to_dataframe`:
+dataset = system_scenario.export_to_dataset("a_name_for_my_dataset")
+dataframe = dataset.export_to_dataframe()
+
+# %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process("OptHistoryView", show=False, save=False)
 
-##############################################################################
+# %%
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process(
     "ScatterPlotMatrix", show=False, save=False, variable_names=["y_4", "x_shared"]
 )
 
-##############################################################################
+# %%
 # Plot parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process("ParallelCoordinates", show=False, save=False)
 
-##############################################################################
+# %%
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
 system_scenario.post_process("Correlations", show=False, save=False)

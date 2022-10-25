@@ -18,11 +18,10 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning API."""
+from __future__ import annotations
+
 import pickle
 from pathlib import Path
-from typing import Dict
-from typing import List
-from typing import Tuple
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -83,7 +82,7 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture
-def classification_data() -> Tuple[ndarray, List[str], Dict[str, str]]:
+def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
     """The dataset used to train the classification algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
@@ -95,7 +94,7 @@ def classification_data() -> Tuple[ndarray, List[str], Dict[str, str]]:
 
 
 @pytest.fixture
-def cluster_data() -> Tuple[ndarray, List[str]]:
+def cluster_data() -> tuple[ndarray, list[str]]:
     """The dataset used to train the clustering algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]

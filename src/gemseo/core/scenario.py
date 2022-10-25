@@ -46,7 +46,7 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -73,7 +73,8 @@ class Scenario(MDODiscipline):
 
     To view the results,
     use the :meth:`.Scenario.post_process` method after execution
-    with one of the available post-processors that can be listed by :attr:`.Scenario.posts`.
+    with one of the available post-processors
+    that can be listed by :attr:`.Scenario.posts`.
     """
 
     disciplines: list[MDODiscipline]
@@ -116,6 +117,7 @@ class Scenario(MDODiscipline):
         design_space: DesignSpace,
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
         """
@@ -123,17 +125,20 @@ class Scenario(MDODiscipline):
             disciplines: The disciplines
                 used to compute the objective, constraints and observables
                 from the design variables.
-            formulation: The name of the MDO formulation,
-                also the name of a class inheriting from :class:`.MDOFormulation`.
-            objective_name: The name of the objective.
-                If a sequence is passed, a vector objective function is created.
-            design_space: The design space.
+            formulation: The class name of the :class:`.MDOFormulation`,
+                e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
+            objective_name: The name(s) of the discipline output(s) used as objective.
+                If multiple names are passed, the objective will be a vector.
+            design_space: The search space including at least the design variables
+                (some formulations requires additional variables,
+                e.g. :class:`.IDF` with the coupling variables).
             name: The name to be given to this scenario.
-                If None, use the name of the class.
-            grammar_type: The type of grammar to use for IO declaration
-                either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE.
-            **formulation_options: The options
-                to be passed to the :class:`.MDOFormulation`.
+                If ``None``, use the name of the class.
+            grammar_type: The type of grammar to declare the input and output variables
+                either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+            maximize_objective: Whether to maximize the objective.
+            **formulation_options: The options of the :class:`.MDOFormulation`.
         """
         self.formulation = None
         self.formulation_name = None
@@ -155,6 +160,7 @@ class Scenario(MDODiscipline):
             formulation,
             objective_name,
             design_space,
+            maximize_objective,
             grammar_type=grammar_type,
             **formulation_options,
         )
@@ -217,7 +223,7 @@ class Scenario(MDODiscipline):
         Args:
             method: The method to use to differentiate the process,
                 either "user", "finite_differences", "complex_step" or "no_derivatives",
-                which is equivalent to None.
+                which is equivalent to ``None``.
             step: The finite difference step.
         """
         if method is None:
@@ -251,10 +257,10 @@ class Scenario(MDODiscipline):
                 `"eq"` for equality constraint and
                 `"ineq"` for inequality constraint.
             constraint_name: The name of the constraint to be stored.
-                If None, the name of the constraint is generated from the output name.
+                If ``None``, the name of the constraint is generated from the output name.
             value: The value for which the constraint is active.
-                If None, this value is 0.
-            positive: If True, the inequality constraint is positive.
+                If ``None``, this value is 0.
+            positive: If ``True``, the inequality constraint is positive.
 
         Raises:
             ValueError: If the constraint type is neither 'eq' or 'ineq'.
@@ -289,9 +295,9 @@ class Scenario(MDODiscipline):
         Args:
             output_names: The names of the outputs to observe.
             observable_name: The name to be given to the observable.
-                If None, the output name is used by default.
+                If ``None``, the output name is used by default.
             discipline: The discipline used to build the observable function.
-                If None, detect the discipline from the inner disciplines.
+                If ``None``, detect the discipline from the inner disciplines.
         """
         self.formulation.add_observable(output_names, observable_name, discipline)
 
@@ -300,6 +306,7 @@ class Scenario(MDODiscipline):
         formulation: str,
         objective_name: str,
         design_space: DesignSpace,
+        maximize_objective: bool,
         **formulation_options: Any,
     ) -> None:
         """Initialize the MDO formulation.
@@ -309,6 +316,7 @@ class Scenario(MDODiscipline):
                 also the name of a class inheriting from :class:`.MDOFormulation`.
             objective_name: The name of the objective.
             design_space: The design space.
+            maximize_objective: Whether to maximize the objective.
             **formulation_options: The options
                 to be passed to the :class:`.MDOFormulation`.
         """
@@ -317,15 +325,15 @@ class Scenario(MDODiscipline):
                 "Formulation must be specified by its name; "
                 "please use GEMSEO_PATH to specify custom formulations."
             )
-        form_inst = self._form_factory.create(
+        self.formulation = self._form_factory.create(
             formulation,
             disciplines=self.disciplines,
             objective_name=objective_name,
             design_space=design_space,
+            maximize_objective=maximize_objective,
             **formulation_options,
         )
         self.formulation_name = formulation
-        self.formulation = form_inst
 
     def get_optim_variables_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
@@ -340,22 +348,22 @@ class Scenario(MDODiscipline):
 
         Returns:
             The optimal solution found by the scenario if executed,
-            None otherwise.
+            ``None`` otherwise.
         """
         return self.optimization_result
 
     def save_optimization_history(
         self,
-        file_path: str,
+        file_path: str | Path,
         file_format: str = OptimizationProblem.HDF5_FORMAT,
         append: bool = False,
     ) -> None:
         """Save the optimization history of the scenario to a file.
 
         Args:
-            file_path: The path to the file to save the history.
+            file_path: The path of the file to save the history.
             file_format: The format of the file, either "hdf5" or "ggobi".
-            append: If True, the history is appended to the file if not empty.
+            append: If ``True``, the history is appended to the file if not empty.
 
         Raises:
             ValueError: If the file format is not correct.
@@ -367,13 +375,12 @@ class Scenario(MDODiscipline):
             opt_pb.database.export_to_ggobi(file_path=file_path)
         else:
             raise ValueError(
-                "Cannot export optimization history "
-                "to file format: {}.".format(file_format)
+                f"Cannot export optimization history to file format: {file_format}."
             )
 
     def set_optimization_history_backup(
         self,
-        file_path: str,
+        file_path: str | Path,
         each_new_iter: bool = False,
         each_store: bool = True,
         erase: bool = False,
@@ -384,16 +391,16 @@ class Scenario(MDODiscipline):
 
         Args:
             file_path: The path to the file to save the history.
-            each_new_iter: If True, callback at every iteration.
-            each_store: If True, callback at every call to store() in the database.
-            erase: If True, the backup file is erased before the run.
-            pre_load: If True, the backup file is loaded before run,
+            each_new_iter: If ``True``, callback at every iteration.
+            each_store: If ``True``, callback at every call to store() in the database.
+            erase: If ``True``, the backup file is erased before the run.
+            pre_load: If ``True``, the backup file is loaded before run,
                 useful after a crash.
-            generate_opt_plot: If True, generate the optimization history view
+            generate_opt_plot: If ``True``, generate the optimization history view
                 at backup.
 
         Raises:
-            ValueError: If both erase and pre_load are True.
+            ValueError: If both erase and pre_load are ``True``.
         """
         opt_pb = self.formulation.opt_problem
         self._opt_hist_backup_path = file_path
@@ -480,7 +487,7 @@ class Scenario(MDODiscipline):
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
-        msg.add("Disciplines: {}", pretty_repr(self.disciplines, delimiter=" "))
+        msg.add("Disciplines: {}", pretty_str(self.disciplines, delimiter=" "))
         msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return str(msg)
 
@@ -538,18 +545,18 @@ class Scenario(MDODiscipline):
         """Create a JSON file defining the XDSM related to the current scenario.
 
         Args:
-            monitor: If True, update the generated file
+            monitor: If ``True``, update the generated file
                 at each discipline status change.
             outdir: The directory where the JSON file is generated.
-                If None, the current working directory is used.
-            print_statuses: If True, print the statuses in the console at each update.
+                If ``None``, the current working directory is used.
+            print_statuses: If ``True``, print the statuses in the console at each update.
             outfilename: The name of the file of the output.
                 The basename is used and the extension is adapted
                 for the HTML / JSON / PDF outputs.
-            latex_output: If True, build TEX, TIKZ and PDF files.
-            open_browser: If True, open the web browser and display the the XDSM.
-            html_output: If True, output a self contained HTML file.
-            json_output: If True, output a JSON file for XDSMjs.
+            latex_output: If ``True``, build TEX, TIKZ and PDF files.
+            open_browser: If ``True``, open the web browser and display the the XDSM.
+            html_output: If ``True``, output a self contained HTML file.
+            json_output: If ``True``, output a JSON file for XDSMjs.
         """
         from gemseo.utils.xdsmizer import XDSMizer
 
@@ -603,7 +610,7 @@ class Scenario(MDODiscipline):
         """Indicate if the current object is a :class:`.Scenario`.
 
         Returns:
-            True if the current object is a :class:`.Scenario`.
+            ``True`` if the current object is a :class:`.Scenario`.
         """
         return True
 

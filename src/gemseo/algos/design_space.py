@@ -45,6 +45,7 @@ from copy import deepcopy
 from numbers import Number
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -86,6 +87,7 @@ from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,12 +138,13 @@ class DesignSpace(collections.abc.MutableMapping):
     name: str | None
     """The name of the space."""
 
-    variables_names: list[str]
-    """The names of the variables."""
-
     dimension: int
     """The total dimension of the space,
     corresponding to the sum of the sizes of the variables."""
+
+    # TODO: API: rename all variables_x to variable_x
+    variables_names: list[str]
+    """The names of the variables."""
 
     variables_sizes: dict[str, int]
     """The sizes of the variables."""
@@ -155,14 +158,15 @@ class DesignSpace(collections.abc.MutableMapping):
     of the variables components indexed by the variables names;
     if `True`, the component can be normalized."""
 
+    __VARIABLE_TYPES_TO_DTYPES: ClassVar[dict[str, str]] = {
+        DesignVariableType.FLOAT.value: "float64",
+        DesignVariableType.INTEGER.value: "int32",
+    }
+
     FLOAT = DesignVariableType.FLOAT
     INTEGER = DesignVariableType.INTEGER
     AVAILABLE_TYPES = [FLOAT, INTEGER]
     __TYPE_NAMES = tuple(x.value for x in DesignVariableType)
-    __TYPES_TO_DTYPES = {
-        DesignVariableType.FLOAT.value: "float64",
-        DesignVariableType.INTEGER.value: "int32",
-    }
     MINIMAL_FIELDS = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES = ["name", "lower_bound", "value", "upper_bound", "type"]
 
@@ -182,6 +186,15 @@ class DesignSpace(collections.abc.MutableMapping):
 
     __DEFAULT_COMMON_DTYPE = __FLOAT_DTYPE
     """The default NumPy data type of the variables."""
+
+    __current_value_array: ndarray
+    """The current value stored as a concatenated array."""
+
+    __norm_current_value: dict[str, ndarray]
+    """The norm of the current value."""
+
+    __norm_current_value_array: ndarray
+    """The norm of the current value stored as a concatenated array."""
 
     def __init__(
         self,
@@ -217,11 +230,9 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__to_zero = None
         self.__bound_tol = 100.0 * finfo(float64).eps
         self.__current_value = {}
-        self.__current_value_array = array([])
-        self.__norm_current_value = {}
-        self.__norm_current_value_array = array([])
         self.__has_current_value = False
         self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
+        self.__clear_dependent_data()
         if hdf_file is not None:
             self.import_hdf(hdf_file)
 
@@ -230,6 +241,7 @@ class DesignSpace(collections.abc.MutableMapping):
         """The current design value."""
         return self.__current_value
 
+    # TODO: API: this is never used in all our codes, remove.
     @_current_value.setter
     def _current_value(self, value: Mapping[str, ndarray]) -> None:
         self.__current_value = value
@@ -240,13 +252,13 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__update_current_status()
         self.__update_common_dtype()
         if self.__has_current_value:
-            self.__current_value_array = self.dict_to_array(self.__current_value)
-            self.__norm_current_value_array = self.normalize_vect(
-                self.__current_value_array
-            )
-            self.__norm_current_value = self.array_to_dict(
-                self.__norm_current_value_array
-            )
+            self.__clear_dependent_data()
+
+    def __clear_dependent_data(self):
+        """Reset the data that depends on the current value."""
+        self.__current_value_array = array([])
+        self.__norm_current_value = {}
+        self.__norm_current_value_array = array([])
 
     def __update_common_dtype(self) -> None:
         """Update the common data type of the variables."""
@@ -257,7 +269,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def __update_current_status(self) -> None:
         """Update the availability of current design values for all the variables."""
-        if not self.__current_value or set(self.__current_value.keys()) != set(
+        if not self.__current_value or self.__current_value.keys() != set(
             self.variables_names
         ):
             self.__has_current_value = False
@@ -291,8 +303,7 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable to be removed.
         """
         self.__norm_data_is_computed = False
-        size = self.variables_sizes[name]
-        self.dimension -= size
+        self.dimension -= self.variables_sizes[name]
         self.variables_names.remove(name)
         del self.variables_sizes[name]
         del self.variables_types[name]
@@ -433,7 +444,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self._add_type(name, size, var_type)
 
         # bounds
-        self._add_bound(name, size, l_b, is_lower=True)
+        self._add_bound(name, size, l_b)
         self._add_bound(name, size, u_b, is_lower=False)
         self._check_variable_bounds(name)
 
@@ -446,7 +457,8 @@ class DesignSpace(collections.abc.MutableMapping):
             if len(array_value) == 1 and size > 1:
                 array_value = full(size, value)
             self.__current_value[name] = array_value.astype(
-                self.__TYPES_TO_DTYPES[self.variables_types[name][0]], copy=False
+                self.__VARIABLE_TYPES_TO_DTYPES[self.variables_types[name][0]],
+                copy=False,
             )
             self._check_current_value(name)
 
@@ -463,7 +475,8 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             name: The name of the variable.
             size: The size of the variable.
-            var_type: Either the type of the variable (see :attr:`.DesignSpace.AVAILABLE_TYPES`)
+            var_type: Either the type of the variable (see
+            :attr:`.DesignSpace.AVAILABLE_TYPES`)
                 or the types of its components.
 
         Raises:
@@ -533,7 +546,7 @@ class DesignSpace(collections.abc.MutableMapping):
         normalize = empty(size)
         for i in range(size):
             var_type = variables_types[i]
-            if var_type in self.__TYPES_TO_DTYPES:
+            if var_type in self.__VARIABLE_TYPES_TO_DTYPES:
                 if (
                     self._lower_bounds[name][i] == -inf
                     or self._upper_bounds[name][i] == inf
@@ -879,7 +892,7 @@ class DesignSpace(collections.abc.MutableMapping):
             raise ValueError(
                 f"The components {indices} of the given array ({value}) "
                 f"are greater than the upper bound ({upper_bound}) "
-                f"by {value-upper_bound}."
+                f"by {value - upper_bound}."
             )
 
     def __check_membership(
@@ -928,7 +941,7 @@ class DesignSpace(collections.abc.MutableMapping):
                     raise ValueError(
                         f"The component {name}[{i}] of the given array ({x_real}) "
                         f"is greater than the upper bound ({l_b[i]}) "
-                        f"by {x_real-u_b[i]:.1e}."
+                        f"by {x_real - u_b[i]:.1e}."
                     )
 
                 if (
@@ -1015,9 +1028,7 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: If the names of the variables of the current design value
                 and the names of the variables of the design space are different.
         """
-        if sorted(set(self.variables_names)) != sorted(
-            set(self.__current_value.keys())
-        ):
+        if sorted(set(self.variables_names)) != sorted(self.__current_value.keys()):
             raise ValueError(
                 "Expected current_x variables: {}; got {}.".format(
                     self.variables_names, list(self.__current_value.keys())
@@ -1034,6 +1045,8 @@ class DesignSpace(collections.abc.MutableMapping):
     ) -> ndarray | dict[str, ndarray]:
         """Return the current design value.
 
+        If the names of the variables are empty then an empty data is returned.
+
         Args:
             variable_names: The names of the design variables.
                 If ``None``, use all the design variables.
@@ -1047,9 +1060,44 @@ class DesignSpace(collections.abc.MutableMapping):
             The current design value.
 
         Raises:
-            KeyError: If a variable has no current value.
+            ValueError: If names in ``variable_names`` are not in the design space.
+
+        Warnings:
+            For performance purposes,
+            :meth:`.get_current_value` does not return a copy of the current value.
+            This means that modifying the returned object
+            will make the :class:`.DesignSpace` inconsistent
+            (the current design value stored as a NumPy array
+            and the current design value stored as a dictionary of NumPy arrays
+            will be different).
+            To modify the returned object without impacting the :class:`.DesignSpace`,
+            you shall copy this object and modify the copy.
+
+        See Also:
+            To modify the current value,
+            please use :meth:`.set_current_value` or :meth:`.set_current_variable`.
         """
+        if variable_names is not None:
+            if not variable_names:
+                return {} if as_dict else array([])
+
+            not_variable_names = set(variable_names) - set(self.variables_names)
+            if not_variable_names:
+                raise ValueError(
+                    f"There are no such variables named: {pretty_str(not_variable_names)}."
+                )
+
+        if self.__has_current_value and not len(self.__current_value_array):
+            self.__current_value_array = self.dict_to_array(self.__current_value)
+
         if normalize:
+            if self.__has_current_value and not len(self.__norm_current_value_array):
+                self.__norm_current_value_array = self.normalize_vect(
+                    self.__current_value_array
+                )
+                self.__norm_current_value = self.array_to_dict(
+                    self.__norm_current_value_array
+                )
             current_x_array = self.__norm_current_value_array
             current_x_dict = self.__norm_current_value
         else:
@@ -1064,39 +1112,31 @@ class DesignSpace(collections.abc.MutableMapping):
                     return current_x_dict
 
             if not self.__has_current_value:
-                variables = sorted(
-                    set(self.variables_names) - set(current_x_dict.keys())
-                )
+                variables = set(self.variables_names) - current_x_dict.keys()
                 raise KeyError(
-                    f"The design variables {variables} have no current value."
+                    "There is no current value for the design variables: "
+                    f"{pretty_str(variables)}."
                 )
 
+            if variable_names is None or list(variable_names) == self.variables_names:
+                if complex_to_real:
+                    return current_x_array.real
+                else:
+                    return current_x_array
+
+        if as_dict:
+            current_value = {name: current_x_dict[name] for name in variable_names}
+            if complex_to_real:
+                return {k: v.real for k, v in current_value.items()}
+            else:
+                return current_value
+        else:
+            current_x_array = self.dict_to_array(
+                current_x_dict, variable_names=variable_names
+            )
             if complex_to_real:
                 return current_x_array.real
-            else:
-                return current_x_array
-
-        try:
-            if as_dict:
-                current_value = {
-                    k: v for k, v in current_x_dict.items() if k in variable_names
-                }
-                if complex_to_real:
-                    return {k: v.real for k, v in current_value.items()}
-                else:
-                    return current_value
-            else:
-                x_arr = self.dict_to_array(
-                    current_x_dict, variable_names=variable_names
-                )
-                if complex_to_real:
-                    return x_arr.real
-                return x_arr
-
-        except KeyError as err:
-            raise KeyError(
-                f"The design space has no current value for '{err.args[0]}'."
-            )
+            return current_x_array
 
     def get_indexed_var_name(
         self,
@@ -1527,7 +1567,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 if isinstance(variable_type, ndarray):
                     variable_type = variable_type[0]
                 if variable_type == DesignVariableType.INTEGER.value:
-                    value = value.astype(self.__TYPES_TO_DTYPES[variable_type])
+                    value = value.astype(self.__VARIABLE_TYPES_TO_DTYPES[variable_type])
                 self.__current_value[name] = value
 
         self.__update_current_metadata()
@@ -1646,7 +1686,7 @@ class DesignSpace(collections.abc.MutableMapping):
     def set_lower_bound(
         self,
         name: str,
-        lower_bound: ndarray,
+        lower_bound: ndarray | None,
     ) -> None:
         """Set the lower bound of a variable.
 
@@ -1660,13 +1700,13 @@ class DesignSpace(collections.abc.MutableMapping):
         if name not in self.variables_names:
             raise ValueError(f"Variable '{name}' is not known.")
 
-        self._add_bound(name, self.variables_sizes[name], lower_bound, is_lower=True)
+        self._add_bound(name, self.variables_sizes[name], lower_bound)
         self._add_norm_policy(name)
 
     def set_upper_bound(
         self,
         name: str,
-        upper_bound: ndarray,
+        upper_bound: ndarray | None,
     ) -> None:
         """Set the upper bound of a variable.
 
@@ -1767,12 +1807,15 @@ class DesignSpace(collections.abc.MutableMapping):
     def get_pretty_table(
         self,
         fields: Sequence[str] | None = None,
+        with_index: bool = False,
     ) -> PrettyTable:
         """Build a tabular view of the design space.
 
         Args:
             fields: The name of the fields to be exported.
-                If None, export all the fields.
+                If ``None``, export all the fields.
+            with_index: Whether to show index of names for arrays.
+                This is ignored for scalars.
 
         Returns:
             A tabular view of the design space.
@@ -1787,9 +1830,14 @@ class DesignSpace(collections.abc.MutableMapping):
             u_b = self._upper_bounds.get(name)
             var_type = self.variables_types[name]
             curr = self.__current_value.get(name)
+
+            name_template = "{name}"
+            if with_index and size > 1:
+                name_template += "[{index}]"
+
             for i in range(size):
                 data = {
-                    "name": name,
+                    "name": name_template.format(name=name, index=i),
                     "value": None,
                     "lower_bound": float("-inf"),
                     "upper_bound": float("inf"),
@@ -1866,7 +1914,7 @@ class DesignSpace(collections.abc.MutableMapping):
             file_path: The path to the file
                 containing the description of a design space.
         """
-        with h5py.File(file_path, "r") as h5file:
+        with h5py.File(file_path) as h5file:
             design_vars_grp = get_hdf5_group(h5file, self.DESIGN_SPACE_GROUP)
             variable_names = get_hdf5_group(design_vars_grp, self.NAMES_GROUP)
 
@@ -1942,7 +1990,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 generated by :meth:`.DesignSpace.get_pretty_table`.
         """
         output_file = Path(output_file)
-        table = self.get_pretty_table(fields)
+        table = self.get_pretty_table(fields=fields)
         table.border = False
         for option, val in table_options.items():
             table.__setattr__(option, val)
@@ -2010,6 +2058,8 @@ class DesignSpace(collections.abc.MutableMapping):
             u_b = float_data[k : k + size, col_map[upper_bounds_field]]
             if value_field in col_map:
                 value = float_data[k : k + size, col_map[value_field]]
+                if "None" in str_data[k : k + size, col_map[value_field]]:
+                    value = None
             else:
                 value = None
             if var_type_field in col_map:
@@ -2022,13 +2072,10 @@ class DesignSpace(collections.abc.MutableMapping):
         return design_space
 
     def __str__(self) -> str:
-        if self.name is None:
-            header_suffix = ""
-        else:
-            header_suffix = f" {self.name}"
-        header = f"Design space:{header_suffix}\n"
-
-        return header + self.get_pretty_table().get_string()
+        return (
+            f"Design space: {self.name or ''}\n"
+            + self.get_pretty_table(with_index=True).get_string()
+        )
 
     def project_into_bounds(
         self,
@@ -2216,3 +2263,45 @@ class DesignSpace(collections.abc.MutableMapping):
             self._current_value,
         ]:
             dictionary[new_name] = dictionary.pop(current_name)
+
+    def initialize_missing_current_values(self) -> None:
+        """Initialize the current values of the design variables when missing.
+
+        Use:
+
+        - the center of the design space when the lower and upper bounds are finite,
+        - the lower bounds when the upper bounds are infinite,
+        - the upper bounds when the lower bounds are infinite,
+        - zero when the lower and upper bounds are infinite.
+        """
+        for name, value in self.items():
+            if value.value is not None:
+                continue
+
+            current_value = []
+            for l_b_i, u_b_i in zip(value.l_b, value.u_b):
+                if l_b_i == -inf:
+                    if u_b_i == inf:
+                        current_value_i = 0
+                    else:
+                        current_value_i = u_b_i
+                else:
+                    if u_b_i == inf:
+                        current_value_i = l_b_i
+                    else:
+                        current_value_i = (l_b_i + u_b_i) / 2
+
+                current_value.append(current_value_i)
+
+            if self.FLOAT.value in value.var_type:
+                var_type = self.FLOAT.value
+            else:
+                var_type = self.INTEGER.value
+
+            self.set_current_variable(
+                name,
+                array(
+                    current_value,
+                    dtype=self.__VARIABLE_TYPES_TO_DTYPES[var_type],
+                ),
+            )

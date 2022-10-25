@@ -17,6 +17,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test min-max scaler module."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose

@@ -27,7 +27,7 @@ from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 def build_constraints_matrices(

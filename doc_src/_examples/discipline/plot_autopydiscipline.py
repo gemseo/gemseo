@@ -25,6 +25,8 @@ Create a discipline from a Python function
 ###############################################################################
 # Import
 # ------
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from numpy import array

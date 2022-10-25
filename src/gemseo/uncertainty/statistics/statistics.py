@@ -104,7 +104,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -156,7 +156,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         msg.indent()
         msg.add("n_samples: {}", self.n_samples)
         msg.add("n_variables: {}", self.n_variables)
-        msg.add("variables: {}", pretty_repr(self.names))
+        msg.add("variables: {}", pretty_str(self.names))
         return str(msg)
 
     def compute_tolerance_interval(

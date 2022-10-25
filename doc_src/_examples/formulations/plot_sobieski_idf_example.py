@@ -21,22 +21,25 @@
 IDF-based MDO on the Sobieski SSBJ test case
 ============================================
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.api import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from matplotlib import pyplot as plt
 
 configure_logger()
 
-##############################################################################
+# %%
 # Instantiate the  disciplines
 # ----------------------------
 # First, we instantiate the four disciplines of the use case:
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`
-# and :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`.
+# :class:`.SobieskiPropulsion`,
+# :class:`.SobieskiAerodynamics`,
+# :class:`.SobieskiMission`
+# and :class:`.SobieskiStructure`.
 disciplines = create_discipline(
     [
         "SobieskiPropulsion",
@@ -46,7 +49,22 @@ disciplines = create_discipline(
     ]
 )
 
-##############################################################################
+# %%
+# We can quickly access the most relevant information of any discipline (name, inputs,
+# and outputs) with Python's ``print()`` function. Moreover, we can get the default
+# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+for discipline in disciplines:
+    print(discipline)
+    print(f"Default inputs: {discipline.default_inputs}")
+
+# %%
+# You may also be interested in plotting the couplings of your disciplines.
+# A quick way of getting this information is the API function
+# :func:`.generate_n2_plot`. A much more detailed explanation of coupling
+# visualization is available :ref:`here <coupling_visualization>`.
+generate_n2_plot(disciplines, save=False, show=True)
+
+# %%
 # Build, execute and post-process the scenario
 # --------------------------------------------
 # Then, we build the scenario which links the disciplines
@@ -57,6 +75,7 @@ disciplines = create_discipline(
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 design_space = SobieskiProblem().design_space
+print(design_space)
 scenario = create_scenario(
     disciplines,
     "IDF",
@@ -65,13 +84,13 @@ scenario = create_scenario(
     maximize_objective=True,
 )
 
-##############################################################################
+# %%
 # Set the design constraints
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 for c_name in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(c_name, "ineq")
 
-##############################################################################
+# %%
 # Define the algorithm inputs
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer
@@ -84,34 +103,36 @@ algo_options = {
 }
 scn_inputs = {"max_iter": 20, "algo": "SLSQP", "algo_options": algo_options}
 
-##############################################################################
+# %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 scenario.execute(scn_inputs)
 
-##############################################################################
+# %%
 # Save the optimization history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We can save the whole optimization problem and its history for further post
 # processing:
 scenario.save_optimization_history("idf_history.h5", file_format="hdf5")
-##############################################################################
+
+# %%
 # We can also save only calls to functions and design variables history:
 scenario.save_optimization_history("idf_history.xml", file_format="ggobi")
 
-##############################################################################
+# %%
 # Print optimization metrics
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.print_execution_metrics()
 
-##############################################################################
+# %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("OptHistoryView", save=False, show=False)
 
-##############################################################################
+# %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
+
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

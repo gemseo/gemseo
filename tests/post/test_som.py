@@ -16,11 +16,14 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
+from gemseo.utils.testing import image_comparison
 
 pytestmark = pytest.mark.skipif(
     not PostFactory().is_available("SOM"),
@@ -28,35 +31,26 @@ pytestmark = pytest.mark.skipif(
 )
 
 POWER2_PATH = Path(__file__).parent / "power2_opt_pb.h5"
+SELLAR_PATH = Path(__file__).parent / "modified_sellar_opt_pb.h5"
+
+TEST_PARAMETERS = {
+    "SOM_Power2_annotated": (True, POWER2_PATH, ["SOM_Power2_annotated"]),
+    "SOM_Power2_not_annotated": (False, POWER2_PATH, ["SOM_Power2_not_annotated"]),
+    "SOM_Sellar_annotated": (False, SELLAR_PATH, ["SOM_Sellar_not_annotated"]),
+    "SOM_Sellar_not_annotated": (False, SELLAR_PATH, ["SOM_Sellar_annotated"]),
+}
 
 
-def test_som(tmp_wd):
-    """Test the SOM post processing with the Power2 problem.
-
-    Args:
-        tmp_wd : Fixture to move into a temporary directory.
-    """
-    problem = OptimizationProblem.import_hdf(POWER2_PATH)
-    factory = PostFactory()
-    for val in problem.database.values():
-        val.pop("pow2")
-    post = factory.execute(problem, "SOM", n_x=4, n_y=3, show=False, save=True)
-    assert len(post.output_files) == 1
-    assert Path(post.output_files[0]).exists()
-
-
-def test_som_annotate(tmp_wd):
-    """Test the annotate option of the post processor.
-
-    Args:
-        tmp_wd : Fixture to move into a temporary directory.
-    """
-    problem = OptimizationProblem.import_hdf(POWER2_PATH)
-    factory = PostFactory()
-    for val in problem.database.values():
-        val.pop("pow2")
-    post = factory.execute(
-        problem, "SOM", n_x=4, n_y=3, show=False, save=True, annotate=True
+@pytest.mark.parametrize(
+    "is_annotated, h5_path, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_som(is_annotated, h5_path, baseline_images, pyplot_close_all):
+    """Test the SOM post-processing."""
+    problem = OptimizationProblem.import_hdf(h5_path)
+    PostFactory().execute(
+        problem, "SOM", n_x=4, n_y=3, show=False, save=False, annotate=is_annotated
     )
-    assert len(post.output_files) == 1
-    assert Path(post.output_files[0]).exists()

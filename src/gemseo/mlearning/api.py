@@ -18,13 +18,10 @@
 #        :author: Matthias De Lozzo
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Machine learning API
---------------------
+"""Machine learning API.
 
-The machine learning API provides methods for creating new and loading
-existing machine learning models. It also provides methods for listing
-available models and options.
+The machine learning API provides methods for creating new and loading existing machine
+learning models. It also provides methods for listing available models and options.
 """
 from __future__ import annotations
 

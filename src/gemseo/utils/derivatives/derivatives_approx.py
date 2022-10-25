@@ -30,11 +30,12 @@ from typing import Sized
 from typing import TYPE_CHECKING
 
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
 
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 from matplotlib.pyplot import Figure
 from numpy import (
     absolute,
@@ -580,7 +581,7 @@ class DisciplineJacApprox:
         if 2 * nrows < n_funcs:
             nrows += 1
         ncols = 2
-        fig, axes = pyplot.subplots(
+        fig, axes = plt.subplots(
             nrows=nrows,
             ncols=2,
             sharex=True,
@@ -611,8 +612,8 @@ class DisciplineJacApprox:
             vis_labels = [
                 label for label in axe.get_yticklabels() if label.get_visible() is True
             ]
-            pyplot.setp(vis_labels[::2], visible=False)
-        #             pyplot.xticks(rotation=90)
+            plt.setp(vis_labels[::2], visible=False)
+        #             plt.xticks(rotation=90)
 
         if len(comp_grad.items()) < n_subplots:
             # xlabel must be written with the same fontsize on the 2 columns
@@ -628,10 +629,7 @@ class DisciplineJacApprox:
             + " blue = computed, red = approximated derivatives",
             fontsize=14,
         )
-        if file_path is not None:
-            pyplot.savefig(file_path)
-        if show:
-            pyplot.show()
+        save_show_figure(fig, show, file_path)
         return fig
 
 

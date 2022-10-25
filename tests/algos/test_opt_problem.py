@@ -17,11 +17,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from functools import partial
 from math import sqrt
 from pathlib import Path
-from typing import Dict
-from typing import Tuple
 from unittest import mock
 
 import numpy as np
@@ -41,7 +41,7 @@ from gemseo.api import create_scenario
 from gemseo.api import execute_algo
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
@@ -62,6 +62,23 @@ from scipy.optimize import rosen_der
 
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail2.hdf5"
+
+
+@pytest.fixture(scope="module")
+def problem_executed_twice() -> OptimizationProblem:
+    """A problem executed twice."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x, "obj")
+    problem.add_observable(MDOFunction(lambda x: x, "obs"))
+    problem.add_constraint(MDOFunction(lambda x: x, "cstr", f_type="ineq"))
+
+    execute_algo(problem, "CustomDOE", algo_type="doe", samples=array([[0.0]]))
+    problem.current_iter = 0
+    execute_algo(problem, "CustomDOE", algo_type="doe", samples=array([[0.5]]))
+    return problem
 
 
 @pytest.fixture
@@ -575,6 +592,22 @@ def test_evaluate_functions_no_gradient():
     assert func["eq"] == pytest.approx(array([-0.1]))
 
 
+def test_evaluate_functions_only_gradients():
+    """Evaluate the gradients of the Power2 problem without evaluating the functions."""
+    func, grad = Power2().evaluate_functions(
+        normalize=False,
+        no_db_no_norm=True,
+        eval_obj=False,
+        constraints_names=[],
+        jacobians_names=["ineq1", "ineq2", "eq"],
+    )
+    assert not func
+    assert grad.keys() == {"ineq1", "ineq2", "eq"}
+    assert grad["ineq1"] == pytest.approx(array([-3, 0, 0]))
+    assert grad["ineq2"] == pytest.approx(array([0, -3, 0]))
+    assert grad["eq"] == pytest.approx(array([0, 0, -3]))
+
+
 @pytest.mark.parametrize("no_db_no_norm", [True, False])
 def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm):
     """Test the evaluation of the fuctions of a problem with observables."""
@@ -626,6 +659,99 @@ def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect):
     assert values["ineq1"] == pytest.approx(array([0.499]))
     assert values["ineq2"] == pytest.approx(array([0.492]))
     assert values["eq"] == pytest.approx(array([0.873]))
+
+
+@pytest.mark.parametrize("preprocess_functions", [False, True])
+@pytest.mark.parametrize("no_db_no_norm", [False, True])
+@pytest.mark.parametrize(
+    ["constraints_names", "keys"], [[None, {"g", "h"}], [["h"], {"h"}]]
+)
+def test_evaluate_constraints_subset(
+    constrained_problem, preprocess_functions, no_db_no_norm, constraints_names, keys
+):
+    """Check the evaluation of a subset of constraints."""
+    if preprocess_functions:
+        constrained_problem.preprocess_functions()
+
+    values, _ = constrained_problem.evaluate_functions(
+        array([0, 0]),
+        eval_obj=False,
+        no_db_no_norm=no_db_no_norm,
+        constraints_names=constraints_names,
+    )
+    assert values.keys() == keys
+
+
+@pytest.mark.parametrize(
+    ["observables_names", "eval_observables", "keys"],
+    [
+        [None, False, {"f", "g", "h"}],
+        [None, True, {"f", "g", "h", "a", "b"}],
+        [["a"], False, {"f", "g", "h", "a"}],
+        [["a"], True, {"f", "g", "h", "a"}],
+    ],
+)
+def test_evaluate_observables_subset(
+    constrained_problem, observables_names, eval_observables, keys
+):
+    """Check the evaluation of a subset of observables."""
+    values, _ = constrained_problem.evaluate_functions(
+        array([0, 0]),
+        eval_observables=eval_observables,
+        observables_names=observables_names,
+    )
+    assert values.keys() == keys
+
+
+@pytest.mark.parametrize(
+    ["jacobians_names", "eval_jac", "keys"],
+    [
+        [None, False, set()],
+        [None, True, {"f", "g", "h"}],
+        [["h", "b"], False, {"h", "b"}],
+        [["h", "b"], True, {"h", "b"}],
+    ],
+)
+def test_evaluate_jacobians_subset(
+    constrained_problem, jacobians_names, eval_jac, keys
+):
+    """Check the evaluation of the Jacobian matrices for a subset of the functions."""
+    _, jacobians = constrained_problem.evaluate_functions(
+        array([0, 0]), eval_jac, jacobians_names=jacobians_names
+    )
+    assert jacobians.keys() == keys
+
+
+@pytest.mark.parametrize(
+    ["jacobian_names", "message"],
+    [[["unknown"], "This name is"], [["other unknown", "unknown"], "These names are"]],
+)
+def test_evaluate_unknown_jacobians(constrained_problem, jacobian_names, message):
+    """Check the evaluation of the Jacobian matrices of unknown functions."""
+    with pytest.raises(
+        ValueError,
+        match=f"{message} not among the names of the functions: {', '.join(jacobian_names)}.",
+    ):
+        constrained_problem.evaluate_functions(
+            array([0, 0]), jacobians_names=jacobian_names
+        )
+
+
+@pytest.mark.parametrize("eval_jac", [False, True])
+@pytest.mark.parametrize(
+    ["jacobians_names", "keys"], [[["h"], {"h"}], [list(), set()], [None, set()]]
+)
+def test_evaluate_jacobians_alone(constrained_problem, eval_jac, jacobians_names, keys):
+    """Check the evaluation of Jacobian matrices alone."""
+    values, jacobians = constrained_problem.evaluate_functions(
+        array([0, 0]),
+        eval_jac,
+        False,
+        constraints_names=[],
+        jacobians_names=jacobians_names,
+    )
+    assert not values
+    assert jacobians.keys() == keys
 
 
 def test_no_normalization():
@@ -983,18 +1109,21 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
             )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def constrained_problem() -> OptimizationProblem:
     """A constrained optimisation problem with multidimensional constraints."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, value=1.0)
-    objective = MDOFunction(lambda x: x.sum(), "f")
-    constraint_1d = MDOFunction(lambda x: x[0], "g")
-    constraint_2d = MDOFunction(lambda x: x, "h")
     problem = OptimizationProblem(design_space)
-    problem.objective = objective
-    problem.add_constraint(constraint_1d, cstr_type="ineq")
-    problem.add_constraint(constraint_2d, cstr_type="eq")
+    problem.objective = MDOFunction(lambda x: x.sum(), "f", jac=lambda x: [1, 1])
+    problem.add_constraint(
+        MDOFunction(lambda x: x[0], "g", jac=lambda _: [1, 0]), cstr_type="ineq"
+    )
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)), cstr_type="eq"
+    )
+    problem.add_observable(MDOFunction(lambda x: x[1], "a", jac=lambda x: [0, 1]))
+    problem.add_observable(MDOFunction(lambda x: -x, "b", jac=lambda x: -np.eye(2)))
     return problem
 
 
@@ -1067,7 +1196,7 @@ def test_approximated_jacobian_wrt_uncertain_variables():
 
 
 @pytest.fixture
-def rosenbrock_lhs() -> Tuple[Rosenbrock, Dict[str, ndarray]]:
+def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
     problem.add_observable(MDOFunction(lambda x: sum(x), "obs"))
@@ -1505,3 +1634,56 @@ def test_observable_cannot_be_added_twice(caplog):
     assert "WARNING" in caplog.text
     assert 'The optimization problem already observes "obs".' in caplog.text
     assert len(problem.observables) == 1
+
+
+def test_repr_constraint_linear_lower_ineq():
+    """Check the representation of a linear lower inequality-constraint."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOLinearFunction(array([1, 2]), "f")
+    problem.add_ineq_constraint(
+        MDOLinearFunction(
+            array([[0, 1], [2, 3], [4, 5]]), "g", value_at_zero=array([6, 7, 8])
+        ),
+        positive=True,
+    )
+    assert str(problem) == (
+        """Optimization problem:
+   minimize f(x!0, x!1) = x!0 + 2.00e+00*x!1
+   with respect to x
+   subject to constraints:
+      g(x!0, x!1): [ 0.00e+00  1.00e+00][x!0] + [ 6.00e+00] >= 0.0
+                   [ 2.00e+00  3.00e+00][x!1]   [ 7.00e+00]
+                   [ 4.00e+00  5.00e+00]        [ 8.00e+00]"""
+    )
+
+
+def test_get_original_observable(pow2_problem):
+    """Check the accessor to an original observable."""
+    function = MDOFunction(None, "f")
+    pow2_problem.add_observable(function)
+    assert pow2_problem.get_observable(function.name) is function
+
+
+def test_get_preprocessed_observable(pow2_problem):
+    """Check the accessor to a pre-processed observable."""
+    function = MDOFunction(None, "f")
+    pow2_problem.add_observable(function)
+    pow2_problem.preprocess_functions()
+    assert pow2_problem.get_observable(function.name) is pow2_problem.observables[-1]
+
+
+def test_get_missing_observable(constrained_problem):
+    """Check the accessor to a missing observable."""
+    with pytest.raises(
+        ValueError,
+        match="missing_observable_name is not among the names of the observables: a, b.",
+    ):
+        constrained_problem.get_observable("missing_observable_name")
+
+
+@pytest.mark.parametrize("name", ["obj", "cstr", "obj"])
+def test_execute_twice(problem_executed_twice, name):
+    """Check that the second evaluations of an OptimizationProblem works."""
+    assert len(problem_executed_twice.database.get_func_history(name)) == 2

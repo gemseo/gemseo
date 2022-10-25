@@ -16,6 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.problems.scalable.parametric.core.variables import check_consistency
 from gemseo.problems.scalable.parametric.core.variables import get_constraint_name

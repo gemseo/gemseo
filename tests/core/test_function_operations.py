@@ -17,6 +17,8 @@
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.func_operations import RestrictedFunction

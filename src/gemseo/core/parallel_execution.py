@@ -36,6 +36,8 @@ from typing import Union
 
 from numpy import ndarray
 
+from gemseo.utils.multiprocessing import get_multi_processing_manager
+
 IS_WIN = os.name == "nt"
 ParallelExecutionWorkerType = Union[Sequence[Union[object, Callable]], object, Callable]
 
@@ -218,10 +220,10 @@ class ParallelExecution:
             queue_in = queue.Queue()
             queue_out = queue.Queue()
         else:
-            mananger = mp.Manager()
-            queue_in = mananger.Queue()
-            queue_out = mananger.Queue()
-            tasks = mananger.list(tasks)
+            manager = get_multi_processing_manager()
+            queue_in = manager.Queue()
+            queue_out = manager.Queue()
+            tasks = manager.list(tasks)
         processes = []
 
         if self.use_threading:

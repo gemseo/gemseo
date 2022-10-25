@@ -17,6 +17,8 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import pytest
 from gemseo.utils.source_parsing import get_default_options_values
 from gemseo.utils.source_parsing import get_options_doc

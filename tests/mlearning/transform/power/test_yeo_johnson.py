@@ -17,6 +17,8 @@
 #        :author: Gilberto Ruiz Jimenez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the Yeo-Johnson transformer."""
+from __future__ import annotations
+
 import pytest
 from gemseo.mlearning.transform.power.yeo_johnson import YeoJohnson
 from numpy import allclose

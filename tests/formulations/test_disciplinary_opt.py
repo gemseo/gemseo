@@ -17,6 +17,8 @@
 #                       initial documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 import unittest
 
 from gemseo.algos.design_space import DesignSpace

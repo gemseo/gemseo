@@ -27,6 +27,8 @@ with respect to the problem dimension for the aerostructure problem.
 For that,
 we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes.
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

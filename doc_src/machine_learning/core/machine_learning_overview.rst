@@ -11,6 +11,9 @@
 Introduction to machine learning
 ================================
 
+Introduction
+------------
+
 When an :class:`.MDODiscipline` is costly to evaluate, it can be replaced by
 a :class:`.SurrogateDiscipline` cheap to evaluate, e.g. linear model, Kriging,
 RBF regressor, ...
@@ -23,9 +26,9 @@ In addition, this machine learning package has a much broader set of features
 than regression: clustering, classification, dimension reduction, data scaling,
 ...
 
-.. raw:: html
+.. seealso::
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../surrogate.html" role="button">Surrogate discipline</a></div>
+   :ref:`surrogates`
 
 .. automodule:: gemseo.mlearning.core.ml_algo
    :noindex:

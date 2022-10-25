@@ -18,6 +18,8 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the class SensitivityAnalysis."""
+from __future__ import annotations
+
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -171,7 +173,7 @@ RADAR_TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=RADAR_TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot_radar(
     kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all
 ):
@@ -270,7 +272,7 @@ ONE_D_FIELD_TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot_1d_field(kwargs, baseline_images, output, ishigami, pyplot_close_all):
     """Check if a 1D field is well plotted."""
     ishigami.plot_field(output, save=False, show=False, **kwargs)
@@ -304,7 +306,7 @@ TWO_D_FIELD_TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot_2d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)

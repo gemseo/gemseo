@@ -23,6 +23,8 @@ Create a DOE Scenario
 =====================
 
 """
+from __future__ import annotations
+
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline

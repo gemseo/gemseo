@@ -17,7 +17,7 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test for the :class:`.Concatenater`"""
-from typing import Dict
+from __future__ import annotations
 
 import pytest
 from gemseo.api import create_discipline
@@ -56,8 +56,8 @@ def input_data():
 
 def test_concatenation_discipline_execution(
     concatenation_disc: Concatenater,
-    input_data: Dict[str, ndarray],
-    coefficients: Dict[str, float],
+    input_data: dict[str, ndarray],
+    coefficients: dict[str, float],
 ):
     """Check the output data returned by Concatenater."""
     if coefficients is None:
@@ -75,8 +75,8 @@ def test_concatenation_discipline_execution(
 
 def test_concatenation_discipline_linearization(
     concatenation_disc: Concatenater,
-    input_data: Dict[str, ndarray],
-    coefficients: Dict[str, float],
+    input_data: dict[str, ndarray],
+    coefficients: dict[str, float],
 ):
     """Check the Jacobian data returned by Concatenater."""
     if coefficients is None:
@@ -106,7 +106,7 @@ def test_concatenation_discipline_linearization(
 
 
 def test_check_gradient(
-    concatenation_disc: Concatenater, input_data: Dict[str, ndarray]
+    concatenation_disc: Concatenater, input_data: dict[str, ndarray]
 ):
     """Test the Jacobian computation by finite differences."""
     concatenation_disc.default_inputs = input_data

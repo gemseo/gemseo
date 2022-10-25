@@ -15,21 +15,17 @@
 # -- General configuration ------------------------------------------------
 from __future__ import annotations
 
-import collections
 import datetime
 import os
 import re
 import sys
 from dataclasses import asdict
-from importlib.metadata import version
+from importlib.metadata import version as _version
 from pathlib import Path
 from typing import Iterable
 from typing import Mapping
 
 import requests
-import sphinx.ext.autodoc.typehints
-from sphinx.util import inspect
-from sphinx.util import typing
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 os.chdir((Path(__file__).resolve()).parent)
@@ -70,19 +66,28 @@ examples_subdirs = [
     and (examples_dir / subdir / "README.rst").is_file()
 ]
 
-examples_dirs = [(examples_dir / subdir) for subdir in examples_subdirs]
-gallery_dirs = [(gallery_dir / subdir) for subdir in examples_subdirs]
+examples_dirs = [str(examples_dir / subdir) for subdir in examples_subdirs]
+gallery_dirs = [str(gallery_dir / subdir) for subdir in examples_subdirs]
 
 sphinx_gallery_conf = {
     # path to your example scripts
     "examples_dirs": examples_dirs,
     # path to where to save gallery generated output
     "gallery_dirs": gallery_dirs,
-    "default_thumb_file": current_dir / "_static/icon.png",
+    "default_thumb_file": str(current_dir / "_static/icon.png"),
     "within_subsection_order": ExampleTitleSortKey,
     "filename_pattern": r"\.py$",
     "ignore_pattern": r"run\.py",
     "only_warn_on_example_error": True,
+    "nested_sections": False,
+    # directory where function/class granular galleries are stored
+    "backreferences_dir": "gen_modules/backreferences",
+    # Modules for which function/class level galleries are created. In
+    # this case sphinx_gallery and numpy in a tuple of strings.
+    "doc_module": ("gemseo"),
+    # objects to exclude from implicit backreferences. The default option
+    # is an empty set, i.e. exclude nothing.
+    "exclude_implicit_doc": {r"gemseo\.api\.configure_logger"},
 }
 
 ################################################################################
@@ -146,8 +151,9 @@ project = "GEMSEO"
 
 copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"
 
-release = version("gemseo")
-version = release
+pretty_version = release = version = _version("gemseo")
+if "dev" in pretty_version:
+    pretty_version = "develop"
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -194,12 +200,11 @@ htmlhelp_basename = "GEMSEOdoc"
 
 autosummary_generate = True
 
-if "PLANTUML_DIR" in os.environ:
-    plantuml_dir = os.environ["PLANTUML_DIR"]
-else:
-    plantuml_dir = "/opt/plantuml/"
+if "READTHEDOCS" in os.environ:
+    plantuml = "java -Djava.awt.headless=true -jar /usr/share/plantuml/plantuml.jar"
+elif "PLANTUML_DIR" in os.environ:
+    plantuml = f"java -jar {os.environ['PLANTUML_DIR']}/plantuml.jar"
 
-plantuml = f"java -jar {plantuml_dir}/plantuml.jar"
 plantuml_output_format = "png"
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
@@ -223,11 +228,13 @@ intersphinx_mapping = {
     "sympy": ("https://docs.sympy.org/latest/", None),
 }
 
-
 ################################################################################
 # Setup the multiversion display
 
 html_context = dict()
+html_context["pretty_version"] = pretty_version
+
+__version_regex = re.compile(r"\d+\.\d+\.\d+")
 
 
 def __filter_versions(
@@ -244,11 +251,16 @@ def __filter_versions(
         The active versions with a version number,
         of the form ``(version_name, version_url)``.
     """
-    return [
-        (rtd_version["slug"], rtd_version["urls"]["documentation"])
-        for rtd_version in rtd_versions
-        if rtd_version["active"] and re.match(r"\d+\.\d+\.\d+", rtd_version["slug"])
-    ]
+    _versions = []
+    for rtd_version in rtd_versions:
+        if rtd_version["active"] and __version_regex.match(rtd_version["slug"]):
+            slug = rtd_version["slug"]
+            if "dev" in slug:
+                slug = "develop"
+
+            _versions.append((slug, rtd_version["urls"]["documentation"]))
+
+    return _versions
 
 
 if os.environ.get("READTHEDOCS") == "True":
@@ -280,46 +292,12 @@ html_context["plugins"] = {
 }
 
 ###############################################################################
-# Sphinx workaround for duplicated args when using typehints
-# TODO: remove when it is fixed upstream, see
-# https://github.com/sphinx-doc/sphinx/pull/9648
+# Settings for inheritance_diagram
 
-__ANNOTATION_KIND_TO_PARAM_PREFIX = {
-    inspect.Parameter.VAR_POSITIONAL: "*",
-    inspect.Parameter.VAR_KEYWORD: "**",
+inheritance_edge_attrs = {
+    "arrowsize": 1.0,
+    "arrowtail": '"empty"',
+    "arrowhead": '"none"',
+    "dir": '"both"',
+    "style": '"setlinewidth(0.5)"',
 }
-
-
-def record_typehints(
-    app,
-    objtype,
-    name,
-    obj,
-    options,
-    args,
-    retann,
-):
-    """Record type hints to env object."""
-    # Fix for type annotation in comments
-    if isinstance(obj, type):
-        if "__init__" in obj.__dict__:
-            obj = obj.__init__
-        elif "__new__" in obj.__dict__:
-            obj = obj.__new__
-    try:
-        if callable(obj):
-            annotations = app.env.temp_data.setdefault("annotations", {})
-            annotation = annotations.setdefault(name, collections.OrderedDict())
-            sig = inspect.signature(obj, type_aliases=app.config.autodoc_type_aliases)
-            for param in sig.parameters.values():
-                if param.annotation is not param.empty:
-                    prefix = __ANNOTATION_KIND_TO_PARAM_PREFIX.get(param.kind, "")
-                    name = f"{prefix}{param.name}"
-                    annotation[name] = typing.stringify(param.annotation)
-            if sig.return_annotation is not sig.empty:
-                annotation["return"] = typing.stringify(sig.return_annotation)
-    except (TypeError, ValueError):
-        pass
-
-
-sphinx.ext.autodoc.typehints.record_typehints = record_typehints

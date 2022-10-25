@@ -89,6 +89,7 @@ class MDASequential(MDA):
         for discipline in self.disciplines:
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
+        self._add_residuals_norm_to_output_grammar()
 
     def _run(self) -> None:
         """Run the MDAs in a sequential way."""

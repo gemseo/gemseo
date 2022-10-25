@@ -11,27 +11,18 @@
 Regression
 ==========
 
+API
+---
+
 .. automodule:: gemseo.mlearning.regression.regression
    :noindex:
 
-Available regression models are:
+Algorithms
+----------
 
-.. toctree::
-   :maxdepth: 1
+:ref:`See the regression algorithms. <gen_regression_algos>`
 
-   gpr
-   linreg
-   moe
-   pce
-   polyreg
-   random_forest
-   rbf
+Examples
+--------
 
-.. raw:: html
-
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/index.html#regression-model" role="button">Examples</a></div>
-
-Development
------------
-
-.. include:: regression_algo.txt
+`See the examples about regression. <../../examples/mlearning/index.html#regression>`__

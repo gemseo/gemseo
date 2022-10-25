@@ -149,6 +149,8 @@ class SnOpt(OptimizationLibrary):
         ftol_abs: float = 1e-9,
         xtol_rel: float = 1e-9,
         xtol_abs: float = 1e-9,
+        kkt_tol_abs: float | None = None,
+        kkt_tol_rel: float | None = None,
         max_time: float = 0,
         max_iter: int = 999,  # pylint: disable=W0221
         normalize_design_space: bool = True,
@@ -171,6 +173,10 @@ class SnOpt(OptimizationLibrary):
             max_iter: The maximum number of iterations,
                 i.e. unique calls to f(x).
             normalize_design_space: If True, scales variables to [0, 1].
+            kkt_tol_abs: The absolute tolerance on the KKT residual norm.
+                If ``None`` this criterion is not activated.
+            kkt_tol_rel: The relative tolerance on the KKT residual norm.
+                If ``None`` this criterion is not activated.
             **kwargs: The additional options.
         """
         nds = normalize_design_space

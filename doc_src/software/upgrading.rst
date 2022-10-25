@@ -198,5 +198,3 @@ of all your modules defining literal strings:
 .. code-block:: python
 
    from __future__ import unicode_literals
-
-Please also read carefully :ref:`python2and3` for more information.

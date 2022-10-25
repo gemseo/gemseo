@@ -204,13 +204,25 @@ def generate_n2_plot(
 ) -> None:
     """Generate a N2 plot from disciplines.
 
+    It can be static (e.g. PDF, PNG, ...), dynamic (HTML) or both.
+
+    The disciplines are located on the diagonal of the N2 plot
+    while the coupling variables are situated on the other blocks
+    of the matrix view.
+    A coupling variable is outputted by a discipline horizontally
+    and enters another vertically.
+    On the static plot,
+    a blue diagonal block represent a self-coupled discipline,
+    i.e. a discipline having some of its outputs as inputs.
+
     Args:
         disciplines: The disciplines from which the N2 chart is generated.
         file_path: The file path to save the static N2 chart.
-        show_data_names: Whether to show the names of the coupling data ;
-            otherwise,
-            circles are drawn,
-            whose size depends on the number of coupling names.
+            show_data_names: Whether to show the names of the coupling variables
+                between two disciplines;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
         save: Whether to save the static N2 chart.
         show: Whether to show the static N2 chart.
         fig_size: The width and height of the static N2 chart.
@@ -711,8 +723,6 @@ def get_formulations_options_defaults(
 
     Args:
         formulation_name: The name of the formulation.
-        **formulation_options: The options of the formulation
-            required for its instantiation.
 
     Returns:
         The default values of the options of the formulation.
@@ -1053,18 +1063,21 @@ def create_scenario(
         disciplines: The disciplines
             used to compute the objective, constraints and observables
             from the design variables.
-        formulation: The name of the MDO formulation,
-            also the name of a class inheriting from :class:`.MDOFormulation`.
-        objective_name: The name of the objective.
-        design_space: The design space.
+        formulation: The class name of the :class:`.MDOFormulation`,
+            e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
+        objective_name: The name(s) of the discipline output(s) used as objective.
+            If multiple names are passed, the objective will be a vector.
+        design_space: The search space including at least the design variables
+            (some formulations requires additional variables,
+            e.g. :class:`.IDF` with the coupling variables).
         name: The name to be given to this scenario.
-            If None, use the name of the class.
-        scenario_type: The type of the scenario, e.g. "MDO" or "DOE".
-        grammar_type: The type of grammar to use for IO declaration,
-            e.g. "JSONGrammar" or "SimpleGrammar".
+            If ``None``, use the name of the class.
+        scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
+        grammar_type: The type of grammar to declare the input and output variables
+            either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
+            or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
         maximize_objective: Whether to maximize the objective.
-        **options: The options
-            to be passed to the :class:`.MDOFormulation`.
+        **options: The options of the :class:`.MDOFormulation`.
 
     Examples
     --------
@@ -1098,7 +1111,7 @@ def create_scenario(
             formulation,
             objective_name,
             design_space,
-            name,
+            name=name,
             grammar_type=grammar_type,
             maximize_objective=maximize_objective,
             **options,
@@ -1783,6 +1796,7 @@ def load_dataset(
 
     Args:
         dataset: The name of the dataset (its class name).
+        **options: The options for creating the dataset.
 
     Returns:
         The dataset.
