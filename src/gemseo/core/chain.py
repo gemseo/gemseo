@@ -50,9 +50,10 @@ class MDOChain(MDODiscipline):
     """The chained disciplines."""
 
     AVAILABLE_MODES = [
-        JacobianAssembly.DIRECT_MODE,
         JacobianAssembly.REVERSE_MODE,
         JacobianAssembly.AUTO_MODE,
+        MDODiscipline.FINITE_DIFFERENCES,
+        MDODiscipline.COMPLEX_STEP,
     ]
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("disciplines",)
