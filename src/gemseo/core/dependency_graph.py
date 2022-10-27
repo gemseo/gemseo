@@ -63,6 +63,11 @@ class DependencyGraph:
         """The disciplines used to build the graph."""
         return iter(self.__graph.nodes)
 
+    @property
+    def graph(self) -> nx.Graph:
+        """The disciplines data graph."""
+        return self.__graph
+
     def get_execution_sequence(self):
         """Compute the execution sequence of the disciplines.
 

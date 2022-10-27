@@ -53,7 +53,14 @@ class LinearDiscipline(MDODiscipline):
             outputs_size: The size of output data vectors,
                 each output data is of shape (outputs_size,).
             grammar_type: The type of grammars.
+
+        Raises:
+            ValueError: if ``input_names`` or ``output_names`` are empty.
         """
+        if not input_names:
+            raise ValueError("input_names must not be empty.")
+        if not output_names:
+            raise ValueError("output_names must not be empty.")
         super().__init__(name, grammar_type=grammar_type)
         self.input_names = input_names
         self.output_names = output_names

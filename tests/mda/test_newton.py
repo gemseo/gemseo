@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton import MDANewtonRaphson

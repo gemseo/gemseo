@@ -37,6 +37,9 @@ from itertools import permutations
 
 from numpy import arange
 from numpy import array
+from numpy import concatenate
+from numpy import setdiff1d
+from numpy import unique
 from numpy.random import shuffle
 
 from gemseo.core.discipline import MDODiscipline
@@ -120,6 +123,9 @@ def create_disciplines_from_sizes(
     inputs_size: int = 1,
     outputs_size: int = 1,
     grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    unique_disc_per_output=False,
+    no_self_coupled=False,
+    no_strong_couplings=False,
 ) -> list[LinearDiscipline]:
     """Generate a :class:`.LinearDiscipline` according to a specification.
 
@@ -140,6 +146,12 @@ def create_disciplines_from_sizes(
         outputs_size: The size of the output vectors,
             each output data is of shape (outputs_size,).
         grammar_type: The type of grammars used by the discipline.
+        unique_disc_per_output: Whether to ensure that the outputs are computed by
+            at most one discipline.
+        no_self_coupled: Whether to ensure that no discipline has an output that is
+            also an input.
+        no_strong_couplings: Whether to ensure that there is no strong couplings in
+            the problem.
 
     Returns:
         The :class:`.LinearDiscipline`.
@@ -164,17 +176,53 @@ def create_disciplines_from_sizes(
 
     disc_descriptions = []
 
+    output_names = arange(nb_of_total_disc_io)
+    input_names = arange(nb_of_total_disc_io)
+    used_outputs = []
+    used_inputs = []
+
     for disc_name in disc_names:
+        if no_strong_couplings:
+            input_names = setdiff1d(input_names, used_outputs, True)
         # Choose inputs among all io
-        shuff_names = arange(nb_of_total_disc_io)
-        shuffle(shuff_names)
-        in_names = array(shuff_names[:nb_of_disc_inputs], dtype="str").tolist()
+        shuffle(input_names)
 
-        shuff_names = arange(nb_of_total_disc_io)
-        shuffle(shuff_names)
-        out_names = array(shuff_names[:nb_of_disc_outputs], dtype="str").tolist()
+        # There are always enough inputs because we remove outputs only when
+        # using no_strong_couplings, and then outputs are empty before inputs
+        disc_in_names = input_names[:nb_of_disc_inputs]
 
-        disc_descriptions.append((disc_name, in_names, out_names))
+        if no_strong_couplings:
+            used_inputs = unique(concatenate([used_inputs, disc_in_names]))
+            output_names = setdiff1d(output_names, used_inputs, True)
+
+        # Choose outputs
+        shuffle(output_names)
+
+        if no_self_coupled:
+            output_names = setdiff1d(output_names, disc_in_names, True)
+
+        if output_names.size < nb_of_disc_outputs:
+            if output_names.size == 0:
+                break
+            disc_out_names = output_names
+        else:
+            disc_out_names = output_names[:nb_of_disc_outputs]
+
+        if unique_disc_per_output:
+            output_names = setdiff1d(output_names, disc_out_names, True)
+
+        if no_strong_couplings:
+            used_outputs = unique(concatenate([used_outputs, disc_out_names]))
+
+        # Only create the discipline if it has at least 1 input and 1 output
+        if disc_in_names.size and disc_out_names.size:
+            disc_descriptions.append(
+                (
+                    disc_name,
+                    array(disc_in_names, dtype="str").tolist(),
+                    array(disc_out_names, dtype="str").tolist(),
+                )
+            )
 
     return create_disciplines_from_desc(
         disc_descriptions,

@@ -62,7 +62,7 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import get_available_formulations
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.problems.sobieski.core.problem import SobieskiProblem

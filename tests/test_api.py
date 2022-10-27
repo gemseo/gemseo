@@ -550,7 +550,7 @@ def test_get_discipline_outputs_schema(tmp_wd):
     get_discipline_outputs_schema(mission, False, pretty_print=True)
 
 
-def test_get_scenario_differenciation_modes(tmp_wd):
+def test_get_scenario_differentiation_modes(tmp_wd):
     """Test that the scenario differentiation modes are retrieved correctly.
 
     Args:

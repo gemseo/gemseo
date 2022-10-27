@@ -24,10 +24,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.mda_chain import MDAChain
 from numpy import array
 from numpy import isclose

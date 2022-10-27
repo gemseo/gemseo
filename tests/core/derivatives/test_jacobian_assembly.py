@@ -25,7 +25,7 @@ import unittest
 import numpy as np
 import pytest
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
