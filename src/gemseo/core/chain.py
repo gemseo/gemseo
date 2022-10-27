@@ -32,9 +32,11 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.core.coupling_structure import DependencyGraph
+from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution import DiscParallelLinearization
 
@@ -75,6 +77,8 @@ class MDOChain(MDODiscipline):
         self.initialize_grammars()
         self.default_inputs = {}
         self._update_default_inputs()
+        self._coupling_structure = None
+        self._last_diff_inouts = None
 
     def set_disciplines_statuses(
         self,
@@ -142,7 +146,8 @@ class MDOChain(MDODiscipline):
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = discipline.get_input_data()
-        discipline.linearize(last_cached, force_no_exec=True, force_all=True)
+        # The graph traversal algorithm avoid to force_all linearizations
+        discipline.linearize(last_cached, force_no_exec=True, force_all=False)
 
         for output_name in chain_outputs:
             if output_name in self.jac:
@@ -184,17 +189,30 @@ class MDOChain(MDODiscipline):
                 # Initialize. Make a copy !
                 self.jac[output_name] = MDOChain.copy_jacs(discipline.jac[output_name])
 
+    def _compute_diff_in_outs(self, inputs, outputs):
+        if self._coupling_structure is None:
+            self._coupling_structure = MDOCouplingStructure(self.disciplines)
+
+        diff_ios = (set(inputs), set(outputs))
+        if self._last_diff_inouts != diff_ios:
+            traverse_add_diff_io(self._coupling_structure.graph.graph, inputs, outputs)
+            self._last_diff_inouts = diff_ios
+
     def _compute_jacobian(
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
+        self._compute_diff_in_outs(inputs, outputs)
+
         # Initializes self jac with copy of last discipline (reverse mode)
         last_discipline = self.disciplines[-1]
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = last_discipline.get_input_data()
-        last_discipline.linearize(last_cached, force_no_exec=True, force_all=True)
+
+        # The graph traversal algorithm avoid to force_all linearizations
+        last_discipline.linearize(last_cached, force_no_exec=True, force_all=False)
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines
@@ -214,8 +232,9 @@ class MDOChain(MDODiscipline):
         # Add differentiations that should be there,
         # because inputs inputs of the chain but not
         # of all disciplines
-        for output_name, output_jacobian in self.jac.items():
+        for output_name in outputs:
             output_size = len(self.get_outputs_by_name(output_name))
+            output_jacobian = self.jac.setdefault(output_name, {})
             for input_name in inputs:
                 if input_name not in output_jacobian:
                     input_size = len(self.get_inputs_by_name(input_name))

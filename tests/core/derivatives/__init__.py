@@ -12,15 +12,5 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Francois Gallard, Charlie Vanaret
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Legacy module with the JacobianAssembly classes."""
+# Copyright 2022 IRT Saint Exupéry, https://www.irt-saintexupery.com
 from __future__ import annotations
-
-from gemseo.core.derivatives.jacobian_assembly import CoupledSystem  # noqa: F401
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly  # noqa: F401
-
-# TODO: to be deprecated.

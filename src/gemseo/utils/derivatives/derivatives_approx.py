@@ -42,7 +42,6 @@ from numpy import (
     allclose,
     amax,
     arange,
-    array,
     atleast_2d,
     concatenate,
     divide,
@@ -244,10 +243,7 @@ class DisciplineJacApprox:
         self.discipline.cache_tol = 0.0
         local_data = self.discipline.local_data
         x_vect = self._prepare_xvect(inputs)
-        if (
-            self.auto_steps is not None
-            and array([key in self.auto_steps for key in inputs]).all()
-        ):
+        if self.auto_steps and all(key in self.auto_steps for key in inputs):
             step = concatenate([self.auto_steps[key] for key in inputs])
         else:
             step = self.step

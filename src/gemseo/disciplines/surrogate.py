@@ -27,8 +27,8 @@ from typing import Mapping
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.factory import RegressionModelFactory
