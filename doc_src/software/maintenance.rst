@@ -148,10 +148,11 @@ Making a new release
 #. Run :command:`tox -e dist` to create the distribution archives.
 #. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
 #. Test the pypi packages.
-#. Update the recipe for conda-forge once the update bot sends the PR.
-#. Test the conda-forge packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
 #. Push develop.
+#. Update the recipe for conda-forge once the update bot sends the PR.
+#. Test the conda-forge packages.
+#. Create the anaconda stand alone distribution.
 
 Making a new release for plugins
 --------------------------------
@@ -168,8 +169,6 @@ Making a new release for plugins
 #. Run :command:`tox -e dist` to create the distribution archives.
 #. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
 #. Test the pypi packages.
-#. Update the recipe for conda-forge once the update bot sends the PR.
-#. Test the conda-forge packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
 #. Update the environments dependencies (:ref:`update-deps`)
    **without** setting the environment variable ``GEMSEO_PIP_REQ_SPEC``.
