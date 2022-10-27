@@ -1,1 +1,0 @@
-The first iteration of a :class:`.MDA` was not shown in red with :meth:`~.MDA.plot_residual_history``.

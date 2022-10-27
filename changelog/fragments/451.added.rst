@@ -1,1 +1,0 @@
-The functions :func:`create_linear_approximation` and :func:`create_quadratic_approximation` computes the first- and second-order Taylor polynomials of an :class:`.MDOFunction`.

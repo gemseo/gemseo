@@ -1,1 +1,0 @@
-The :attr:`~.DOELibrary.seed` of the :class:`~.DOELibrary` is used by default and increments at each execution; pass the integer option ``seed`` to :meth:`.DOELibrary.execute` to use another one, the time of this execution.

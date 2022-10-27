@@ -1,1 +1,0 @@
-Computation of KKT criteria is made optional.

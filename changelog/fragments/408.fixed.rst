@@ -1,1 +1,0 @@
-The Lagrange Multipliers computation is fixed for design points close to local optima.

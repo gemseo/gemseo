@@ -1,1 +1,0 @@
-The :attr:`.AnalyticDiscipline.default_inputs` do not share anymore the same Numpy array.

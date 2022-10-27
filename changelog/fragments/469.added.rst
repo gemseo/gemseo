@@ -1,1 +1,0 @@
-:func:`.pretty_str` and :func:`.pretty_repr` sort the elements of collections by default.

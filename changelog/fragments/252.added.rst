@@ -1,1 +1,0 @@
-:class:`.MakeFunction` has a new optional argument ``names_to_sizes`` defining the sizes of the input variables.

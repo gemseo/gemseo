@@ -1,1 +1,0 @@
-:meth:`.DesignSpace.get_current_value` correctly handles the order of the ``variable_names`` in the case of NumPy array outputs.

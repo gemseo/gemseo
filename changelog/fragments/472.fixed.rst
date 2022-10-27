@@ -1,1 +1,0 @@
-The couplings variable order, used in the :class:`.MDA` class for the adjoint matrix assembly, was not deterministic.

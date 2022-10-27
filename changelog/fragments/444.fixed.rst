@@ -1,1 +1,0 @@
-The :class:`.SimpleCache` no longer fails when caching an output that is not a Numpy array.

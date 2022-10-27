@@ -27,6 +27,118 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 4.1.0 (2022-10-25)
+**************************
+
+
+
+Added
+-----
+
+- :class:`.MakeFunction` has a new optional argument ``names_to_sizes`` defining the sizes of the input variables.
+  `#252 <https://gitlab.com/gemseo/dev/gemseo/-/issues/252>`_
+- :meth:`.DesignSpace.initialize_missing_current_values` sets the missing current design values to default ones.
+  :class:`.OptimizationLibrary` initializes the missing design values to default ones before execution.
+  `#299 <https://gitlab.com/gemseo/dev/gemseo/-/issues/299>`_
+- :class:`.Boxplot` is a new :class:`.DatasetPlot` to create boxplots from a :class:`.Dataset`.
+  `#320 <https://gitlab.com/gemseo/dev/gemseo/-/issues/320>`_
+- :class:`.Scenario` offers an keyword argument ``maximize_objective``, previously passed implicitly with ``**formulation_options``.
+  `#350 <https://gitlab.com/gemseo/dev/gemseo/-/issues/350>`_
+- A stopping criterion based on KKT condition residual can now be used for all gradient-based solvers.
+  `#372 <https://gitlab.com/gemseo/dev/gemseo/-/issues/372>`_
+- The static N2 chart represents the self-coupled disciplines with blue diagonal blocks.
+  The dynamic N2 chart represents the self-coupled disciplines with colored diagonal blocks.
+  `#396 <https://gitlab.com/gemseo/dev/gemseo/-/issues/396>`_
+- :class:`.SimpleCache` can be exported to a :class:`.Dataset`.
+  `#404 <https://gitlab.com/gemseo/dev/gemseo/-/issues/404>`_
+- A warning message is logged when an attempt is made to add an observable twice to an :class:`.OptimizationProblem` and the addition is cancelled.
+  `#409 <https://gitlab.com/gemseo/dev/gemseo/-/issues/409>`_
+- A :class:`.SensitivityAnalysis` can be saved on the disk (use :meth:`~.SensitivityAnalysis.save` and :meth:`~.SensitivityAnalysis.load`).
+  A :class:`.SensitivityAnalysis` can be loaded from the disk with the function :func:`.load_sensitivity_analysis`.
+  `#417 <https://gitlab.com/gemseo/dev/gemseo/-/issues/417>`_
+- The :class:`.PCERegressor` has new properties related to the PCE output, namely its :attr:`~.PCERegressor.mean`, :attr:`~.PCERegressor.covariance`, :attr:`~.PCERegressor.variance` and :attr:`~.PCERegressor.standard_deviation`.
+  `#428 <https://gitlab.com/gemseo/dev/gemseo/-/issues/428>`_
+- :class:`.Timer` can be used as a context manager to measure the time spent within a ``with`` statement.
+  `#431 <https://gitlab.com/gemseo/dev/gemseo/-/issues/431>`_
+- Computation of KKT criteria is made optional.
+  `#440 <https://gitlab.com/gemseo/dev/gemseo/-/issues/440>`_
+- Bievel processes now store the local optimization history of sub-scenarios in ScenarioAdapters.
+  `#441 <https://gitlab.com/gemseo/dev/gemseo/-/issues/441>`_
+- :func:`.pretty_str` converts an object into an readable string by using :func:`str`.
+  `#442 <https://gitlab.com/gemseo/dev/gemseo/-/issues/442>`_
+- The functions :func:`create_linear_approximation` and :func:`create_quadratic_approximation` computes the first- and second-order Taylor polynomials of an :class:`.MDOFunction`.
+  `#451 <https://gitlab.com/gemseo/dev/gemseo/-/issues/451>`_
+- The KKT norm is added to database when computed.
+  `#457 <https://gitlab.com/gemseo/dev/gemseo/-/issues/457>`_
+- MDAs now output the norm of residuals at the end of its execution.
+  `#460 <https://gitlab.com/gemseo/dev/gemseo/-/issues/460>`_
+- :func:`.pretty_str` and :func:`.pretty_repr` sort the elements of collections by default.
+  `#469 <https://gitlab.com/gemseo/dev/gemseo/-/issues/469>`_
+- The module :mod:`gemseo.algos.doe.quality` offers features to assess the quality of a DOE:
+
+      - :class:`.DOEQuality` assesses the quality of a DOE from :class:`.DOEMeasures`; the qualities can be compared with logical operators.
+      - :func:`.compute_phip_criterion` computes the :math:`\varphi_p` space-filling criterion.
+      - :func:`.compute_mindist_criterion` computes the minimum-distance space-filling criterion.
+      - :func:`.compute_discrepancy` computes different discrepancy criteria.
+  `#477 <https://gitlab.com/gemseo/dev/gemseo/-/issues/477>`_
+
+Fixed
+-----
+
+- NLOPT_COBYLA and NLOPT_BOBYQA algorithms may end prematurely in the simplex construction phase,
+  caused by an non-exposed and too small default value of the ``stop_crit_n_x`` algorithm option.
+  `#307 <https://gitlab.com/gemseo/dev/gemseo/-/issues/307>`_
+- The MDANewton MDA does not have anymore a Jacobi step interleaved in-between each Newton step.
+  `#400 <https://gitlab.com/gemseo/dev/gemseo/-/issues/400>`_
+- The :attr:`.AnalyticDiscipline.default_inputs` do not share anymore the same Numpy array.
+  `#406 <https://gitlab.com/gemseo/dev/gemseo/-/issues/406>`_
+- The Lagrange Multipliers computation is fixed for design points close to local optima.
+  `#408 <https://gitlab.com/gemseo/dev/gemseo/-/issues/408>`_
+- ``gemseo-template-grammar-editor`` now works with both pyside6 and pyside2.
+  `#410 <https://gitlab.com/gemseo/dev/gemseo/-/issues/410>`_
+- :meth:`.DesignSpace.read_from_txt` can read a CSV file with a current value set at ``None``.
+  `#411 <https://gitlab.com/gemseo/dev/gemseo/-/issues/411>`_
+- The argument ``message`` passed to :meth:`.DriverLib.init_iter_observer` and defining the iteration prefix of the :class:`.ProgressBar` works again; its default value is ``"..."``.
+  `#416 <https://gitlab.com/gemseo/dev/gemseo/-/issues/416>`_
+- The signatures of :class:`.MorrisAnalysis`, :class:`.CorrelationAnalysis` and :class:`.SobolAnalysis` are now consistent with :class:`.SensitivityAnalysis`.
+  `#424 <https://gitlab.com/gemseo/dev/gemseo/-/issues/424>`_
+- When using a unique process, the observables can now be evaluated as many times as the number of calls to :class:`.DOELibrary.execute`.
+  `#425 <https://gitlab.com/gemseo/dev/gemseo/-/issues/425>`_
+- The :attr:`~.DOELibrary.seed` of the :class:`~.DOELibrary` is used by default and increments at each execution; pass the integer option ``seed`` to :meth:`.DOELibrary.execute` to use another one, the time of this execution.
+  `#426 <https://gitlab.com/gemseo/dev/gemseo/-/issues/426>`_
+- :meth:`.DesignSpace.get_current_value` correctly handles the order of the ``variable_names`` in the case of NumPy array outputs.
+  `#433 <https://gitlab.com/gemseo/dev/gemseo/-/issues/433>`_
+- The :class:`.SimpleCache` no longer fails when caching an output that is not a Numpy array.
+  `#444 <https://gitlab.com/gemseo/dev/gemseo/-/issues/444>`_
+- The first iteration of a :class:`.MDA` was not shown in red with :meth:`~.MDA.plot_residual_history``.
+  `#455 <https://gitlab.com/gemseo/dev/gemseo/-/issues/455>`_
+- The self-organizing map post-processing (:class:`.SOM`) has been fixed, caused by a regression.
+  `#465 <https://gitlab.com/gemseo/dev/gemseo/-/issues/465>`_
+- The couplings variable order, used in the :class:`.MDA` class for the adjoint matrix assembly, was not deterministic.
+  `#472 <https://gitlab.com/gemseo/dev/gemseo/-/issues/472>`_
+- A multidisciplinary system with a self-coupled discipline can be represented correctly by a coupling graph.
+  `#506 <https://gitlab.com/gemseo/dev/gemseo/-/issues/506>`_
+
+Changed
+-------
+
+- The :class:`LoggingContext` uses the root logger as default value of ``logger``.
+  `#421 <https://gitlab.com/gemseo/dev/gemseo/-/issues/421>`_
+- The :class:`.GradientSensitivity` post-processor now includes an option to compute the gradients at the
+  selected iteration to avoid a crash if they are missing.
+  `#434 <https://gitlab.com/gemseo/dev/gemseo/-/issues/434>`_
+- :func:`.pretty_repr` converts an object into an unambiguous string by using :func:`repr`; use :func:`.pretty_str` for a readable string.
+  `#442 <https://gitlab.com/gemseo/dev/gemseo/-/issues/442>`_
+- A global multi-processing manager is now used, this improves the performance of multiprocessing on Windows platforms.
+  `#445 <https://gitlab.com/gemseo/dev/gemseo/-/issues/445>`_
+- The graphs produced by :class:`.OptHistoryView` use the same :attr:`~.OptHistoryView.xlabel`.
+  `#449 <https://gitlab.com/gemseo/dev/gemseo/-/issues/449>`_
+- :method:`Database.notify_store_listener` design vector is taken as input and when not provided last iteration design vector is employed.
+  ).
+  The KKT criterion when kkt tolerances are provided is computed at each new storage.
+  `#457 <https://gitlab.com/gemseo/dev/gemseo/-/issues/457>`_
+
+
 Version 4.0.1 (2022-08-04)
 **************************
 

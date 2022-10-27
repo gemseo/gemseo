@@ -1,1 +1,0 @@
-Bievel processes now store the local optimization history of sub-scenarios in ScenarioAdapters.
