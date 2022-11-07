@@ -223,9 +223,9 @@ def test_predict_proba_transform(model_with_transform):
         assert allclose(probas["y_2"].sum(axis=1), 1)
 
 
-def test_save_and_load(model, tmp_path):
+def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     imported_model = import_classification_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

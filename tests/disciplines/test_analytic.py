@@ -108,7 +108,7 @@ def test_absolute_value(fast_evaluation):
 def test_serialize(tmp_wd, fast_evaluation):
     """Check the serialization of an AnalyticDiscipline."""
     input_data = {"x": array([2.0])}
-    file_path = tmp_wd / "discipline.h5"
+    file_path = "discipline.h5"
 
     discipline = AnalyticDiscipline({"y": "2*x"}, fast_evaluation=fast_evaluation)
     discipline.serialize(file_path)

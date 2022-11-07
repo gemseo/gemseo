@@ -52,12 +52,12 @@ def test_create(dataset):
     assert hasattr(kmeans, "parameters")
 
 
-def test_load(dataset, tmp_path):
+def test_load(dataset, tmp_wd):
     """Test the loading of a model from data."""
     factory = ClusteringModelFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     kmeans.learn()
-    dirname = kmeans.save(path=str(tmp_path))
+    dirname = kmeans.save()
     loaded_kmeans = factory.load(dirname)
     assert hasattr(loaded_kmeans, "parameters")
 

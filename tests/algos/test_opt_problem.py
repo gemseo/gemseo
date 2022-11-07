@@ -529,7 +529,7 @@ def test_normalize_linear_function():
 
 
 def test_export_hdf(tmp_wd):
-    file_path = tmp_wd / "power2.h5"
+    file_path = Path("power2.h5")
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP")
     problem.export_hdf(file_path, append=True)  # Shall still work now
@@ -1504,7 +1504,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
     OptimizersFactory().execute(pow2_problem, "SLSQP")
 
     # Export and import the optimization problem.
-    file_path = tmp_wd / "power2.h5"
+    file_path = "power2.h5"
     pow2_problem.export_hdf(file_path)
     imp_pb = OptimizationProblem.import_hdf(file_path)
 

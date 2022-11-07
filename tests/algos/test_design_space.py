@@ -663,7 +663,7 @@ def get_sobieski_design_space():
 def test_read_write(tmp_wd):
     """Check that read_from_txt and export_to_txt works correctly."""
     ref_ds = get_sobieski_design_space()
-    f_path = tmp_wd / "sobieski_design_space.txt"
+    f_path = Path("sobieski_design_space.txt")
     ref_ds.export_to_txt(f_path)
     read_ds = DesignSpace.read_from_txt(f_path)
     read_ds.get_lower_bounds()
@@ -687,7 +687,7 @@ def test_read_write(tmp_wd):
     ds.set_lower_bound("x_shared", None)
     ds.set_upper_bound("x_shared", None)
 
-    out_f = tmp_wd / "table.txt"
+    out_f = Path("table.txt")
     ds.export_to_txt(out_f, sortby="upper_bound")
     assert out_f.exists()
 
@@ -744,7 +744,7 @@ def check_ds(ref_ds, read_ds, f_path):
 def test_hdf5_export(tmp_wd):
     """Tests the export of a Design space in the HDF5 format."""
     ref_ds = get_sobieski_design_space()
-    f_path = tmp_wd / "_sobieski_design_space.h5"
+    f_path = Path("_sobieski_design_space.h5")
     ref_ds.export_hdf(f_path)
     read_ds = DesignSpace(f_path)
     check_ds(ref_ds, read_ds, f_path)

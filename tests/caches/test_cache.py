@@ -155,7 +155,7 @@ def test_hdf_cache_read(tmp_wd):
     cache.cache_outputs(input_data, output_data)
 
     assert len(cache) == n + 1
-    exp_ggobi = tmp_wd / "out2.ggobi"
+    exp_ggobi = Path("out2.ggobi")
     cache.export_to_ggobi(
         str(exp_ggobi), input_names=["i", "k"], output_names=["o", "t"]
     )
@@ -263,7 +263,7 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected):
     # Use a temporary copy of the file in case the test fails.
     shutil.copy(str(DIR_PATH / hdf_name), tmp_wd)
     disc = create_discipline("AutoPyDiscipline", py_func=func)
-    disc.set_cache_policy("HDF5Cache", cache_hdf_file=str(tmp_wd / hdf_name))
+    disc.set_cache_policy("HDF5Cache", cache_hdf_file=hdf_name)
     out = disc.execute({"x": inputs})
 
     assert disc.n_calls == 0
@@ -540,8 +540,8 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     shutil.copy(str(DIR_PATH / deprecated_cache_path), deprecated_cache_path)
     HDF5Cache.update_file_format(deprecated_cache_path)
 
-    cache_path = tmp_wd / "cache.h5"
-    cache = HDF5Cache(str(cache_path), "node")
+    cache_path = Path("cache.h5")
+    cache = HDF5Cache(cache_path, "node")
     cache.cache_outputs({"x": array([1.0])}, {"y": array([2.0])})
 
     file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION

@@ -292,11 +292,11 @@ def test_check_cleaning_interval():
         MatlabDiscipline(MATLAB_SIMPLE_FUNC, clean_cache_each_n=2.3)
 
 
-def test_save_data(tmp_path):
+def test_save_data(tmp_wd):
     """Test that discipline data are correctly exported into a matlab file."""
     mat = MatlabDiscipline(MATLAB_SIMPLE_FUNC)
     mat.execute({"x": array([2])})
-    output_file = tmp_path / "output_file.mat"
+    output_file = "output_file.mat"
     mat.save_data_to_matlab(output_file)
     written_data = load_matlab_file(output_file)
     assert array(written_data["x"]) == pytest.approx(2)

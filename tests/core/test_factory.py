@@ -34,7 +34,7 @@ from gemseo.utils.python_compatibility import importlib_metadata
 DATA = Path(__file__).parent / "data/factory"
 
 
-def test_print_configuration(tmp_path, reset_factory):
+def test_print_configuration(reset_factory):
     """Verify the string representation of a factory."""
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
 
@@ -109,15 +109,16 @@ def test_parse_docstrings(reset_factory, tmp_wd):
             assert item in opt_doc
 
 
-def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
+def test_ext_plugin_syspath_is_first(reset_factory, tmp_wd):
     """Verify that plugins are not discovered from the first path in sys.path."""
     # This test requires to use subprocess such that python can
     # be called from a temporary directory that will be automatically
     # inserted first in sys.path.
+    tmp_path = Path.cwd()
     if sys.version_info < (3, 8):
         # dirs_exist_ok appeared in python 3.8
         tmp_path.rmdir()
-        shutil.copytree(str(DATA), str(tmp_path))
+        shutil.copytree(str(DATA), tmp_path)
     else:
         shutil.copytree(DATA, tmp_path, dirs_exist_ok=True)
 
@@ -127,7 +128,7 @@ from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
 assert 'DummyBiLevel' in Factory(MDOFormulation).classes
 """
-    module_path = tmp_path / "module.py"
+    module_path = Path("module.py")
     module_path.write_text(code)
 
     with pytest.raises(subprocess.CalledProcessError) as exc_info:

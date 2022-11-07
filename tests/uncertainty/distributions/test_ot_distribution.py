@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
@@ -203,9 +205,9 @@ def test_triangular():
 
 def test_plot(tmp_wd):
     distribution = OTTriangularDistribution("x", dimension=2)
-    figures = distribution.plot_all(False, True, directory_path=tmp_wd)
-    assert (tmp_wd / "distribution_x_0.png").exists()
-    assert (tmp_wd / "distribution_x_1.png").exists()
+    figures = distribution.plot_all(False, True)
+    assert Path("distribution_x_0.png").exists()
+    assert Path("distribution_x_1.png").exists()
     assert len(figures) == 2
 
 

@@ -117,9 +117,9 @@ def test_predict_std_shape(model, x_1, x_2):
     assert prediction_std.shape[1] == 2
 
 
-def test_save_and_load(model, tmp_path):
+def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     imported_model = import_regression_model(dirname)
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     out1 = model.predict(input_value)

@@ -19,8 +19,6 @@
 from __future__ import annotations
 
 from os.path import exists
-from os.path import join
-from pathlib import Path
 
 import pytest
 from gemseo.algos.pareto_front import compute_pareto_optimal_points
@@ -54,13 +52,12 @@ def non_feasible_points() -> ndarray:
 
 
 def test_select_pareto_optimal(
-    tmp_path: Path,
+    tmp_wd,
     objective_points: objective_points,
 ):
     """Test the selection of Pareto optimal points.
 
     Args:
-        tmp_path: Temporary path fixture.
         objective_points: Points fixture on which the test shall be applied.
     """
     inds = compute_pareto_optimal_points(objective_points)
@@ -68,14 +65,12 @@ def test_select_pareto_optimal(
 
 
 def test_select_pareto_optimal_w_non_feasible_points(
-    tmp_path: Path,
     objective_points: objective_points,
     non_feasible_points: non_feasible_points,
 ):
     """Test the selection of Pareto optimal points, with non-feasible points.
 
     Args:
-        tmp_path: Temporary path fixture.
         objective_points: Points fixture on which the test shall be applied.
         non_feasible_points: Mask fixture of non-feasible points.
     """
@@ -85,27 +80,25 @@ def test_select_pareto_optimal_w_non_feasible_points(
     assert_array_equal(inds, array([True, False, True, False, False, False, True]))
 
 
-def test_pareto_front(tmp_path, objective_points):
+def test_pareto_front(tmp_wd, objective_points):
     """Test the generation of Pareto fronts.
 
     Args:
-    tmp_path: Temporary path fixture
-    objective_points: points on which the test shall be applied
+        objective_points: points on which the test shall be applied
     """
     generate_pareto_plots(objective_points, ["0", "1"])
-    outfile = join(str(tmp_path), "Pareto_2d.png")
+    outfile = "Pareto_2d.png"
     plt.savefig(outfile)
     plt.close()
     assert exists(outfile)
 
 
-def test_raise_error_if_dimension_mismatch(tmp_path, objective_points):
+def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points):
     """Check that a value error is raised if there is a mismatch between the objective
     values and the objective names.
 
     Args:
-    tmp_path: Temporary path fixture
-    objective_points: points on which the test shall be applied
+        objective_points: points on which the test shall be applied
     """
     expect_msg = (
         "^Inconsistent objective values size and objective names: \\d+ != \\d+$"
@@ -116,15 +109,14 @@ def test_raise_error_if_dimension_mismatch(tmp_path, objective_points):
 
 @pytest.mark.parametrize("show_non_feasible", (True, False))
 def test_pareto_front_w_non_feasible(
-    tmp_path, objective_points, non_feasible_points, show_non_feasible
+    tmp_wd, objective_points, non_feasible_points, show_non_feasible
 ):
     """Generate Pareto fronts with non-feasible points.
 
     Args:
-    tmp_path: Temporary path fixture
-    objective_points: points on which the test shall be applied
-    non_feasible_points: mask of non-feasible points
-    show_non_feasible: if True, show the non-feasible points in the plot
+        objective_points: points on which the test shall be applied
+        non_feasible_points: mask of non-feasible points
+        show_non_feasible: if True, show the non-feasible points in the plot
     """
     generate_pareto_plots(
         objective_points,
@@ -132,18 +124,14 @@ def test_pareto_front_w_non_feasible(
         non_feasible_samples=non_feasible_points,
         show_non_feasible=show_non_feasible,
     )
-    outfile = join(str(tmp_path), "Pareto_2d_non_feasible_not_shown.png")
+    outfile = "Pareto_2d_non_feasible_not_shown.png"
     plt.savefig(outfile)
     plt.close()
     assert exists(outfile)
 
 
-def test_5d(tmp_path):
-    """Generate a Pareto Front using random points.
-
-    Args:
-        tmp_path: Temporary path fixture
-    """
+def test_5d(tmp_wd):
+    """Generate a Pareto Front using random points."""
     seed(1)
     n_obj = 5
     objs = rand(100, n_obj)
@@ -151,7 +139,7 @@ def test_5d(tmp_path):
     assert sum(inds) > 0
     names = [str(i) for i in range(n_obj)]
     generate_pareto_plots(objs, names)
-    outfile = join(str(tmp_path), "Pareto_5d.png")
+    outfile = "Pareto_5d.png"
     plt.savefig(outfile)
     plt.close()
     assert exists(outfile)

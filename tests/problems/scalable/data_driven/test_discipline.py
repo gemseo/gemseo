@@ -35,5 +35,5 @@ def dataset():
     return data
 
 
-def test_constructor(dataset, tmp_path):
+def test_constructor(dataset):
     ScalableDiscipline("ScalableDiagonalModel", dataset)

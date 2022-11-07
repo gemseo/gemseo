@@ -132,7 +132,7 @@ def test_not_converged():
 
 
 @pytest.mark.parametrize("seed", range(3))
-def test_hard_conv(tmp_path, seed):
+def test_hard_conv(tmp_wd, seed):
     random.seed(seed)
     n = 300
     problem = LinearProblem(random.rand(n, n), random.rand(n))

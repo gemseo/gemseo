@@ -278,9 +278,9 @@ def test_disable_derivatives(use_gradient):
     )
 
 
-def test_log_file(tmpdir):
+def test_log_file(tmp_wd):
     """Check the log file."""
-    path = Path(tmpdir / "log.txt")
+    path = Path("log.txt")
     assert not path.is_file()
     OptimizersFactory().execute(
         Rosenbrock(), "PSEVEN", log_level="Info", log_path=str(path)

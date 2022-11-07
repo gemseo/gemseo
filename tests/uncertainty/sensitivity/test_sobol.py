@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 from os import remove
+from pathlib import Path
 
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
@@ -50,7 +51,7 @@ def test_sobol_algos():
     assert SobolAnalysis.AVAILABLE_ALGOS == expected
 
 
-def test_sobol(sobol, tmp_path):
+def test_sobol(sobol, tmp_wd):
     varnames = ["x1", "x2", "x3"]
     assert sobol.main_method == sobol._FIRST_METHOD
     sobol.compute_indices()
@@ -86,25 +87,25 @@ def test_sobol(sobol, tmp_path):
     for name in varnames:
         assert intervals["y"][0][name].shape == (2,)
 
-    sobol.plot("y", save=True, show=False, directory_path=tmp_path)
-    assert (tmp_path / "sobol_analysis.png").exists()
-    remove(str(tmp_path / "sobol_analysis.png"))
-    sobol.plot("y", save=True, show=False, sort=False, directory_path=tmp_path)
-    assert (tmp_path / "sobol_analysis.png").exists()
-    remove(str(tmp_path / "sobol_analysis.png"))
+    sobol.plot("y", save=True, show=False, directory_path=tmp_wd)
+    assert Path("sobol_analysis.png").exists()
+    remove("sobol_analysis.png")
+    sobol.plot("y", save=True, show=False, sort=False, directory_path=tmp_wd)
+    assert Path("sobol_analysis.png").exists()
+    remove("sobol_analysis.png")
     sobol.plot(
         "y",
         save=True,
         show=False,
         sort=False,
         sort_by_total=False,
-        directory_path=tmp_path,
+        directory_path=tmp_wd,
     )
-    assert (tmp_path / "sobol_analysis.png").exists()
-    remove(str(tmp_path / "sobol_analysis.png"))
+    assert Path("sobol_analysis.png").exists()
+    remove("sobol_analysis.png")
 
 
-def test_sobol_outputs(tmp_path):
+def test_sobol_outputs():
     expressions = {
         "y1": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)",
         "y2": "sin(x2)+7*sin(x1)**2+0.1*x3**4*sin(x2)",
