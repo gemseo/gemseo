@@ -481,7 +481,8 @@ def test_check_jacobian():
         del sm.jac["y_4"]
 
     sm._compute_jacobian = _compute_jacobian
-    with pytest.raises(KeyError):
+    msg = f"The discipline {sm.name} was not linearized."
+    with pytest.raises(ValueError, match=msg):
         sm.linearize(force_all=True)
 
     sm2 = SobieskiMission()

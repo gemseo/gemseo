@@ -20,7 +20,6 @@
 """Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 from typing import Collection
 from typing import Iterable
@@ -31,8 +30,6 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.factory import Factory
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SensitivityAnalysisFactory:

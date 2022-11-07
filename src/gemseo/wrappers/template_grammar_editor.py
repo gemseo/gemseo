@@ -24,7 +24,6 @@ Run this file with no argument to open the GUI
 """
 from __future__ import annotations
 
-import logging
 import sys
 from os.path import dirname
 from os.path import exists
@@ -56,8 +55,6 @@ except ImportError:
     )
 
     WITH_PYSIDE6 = False
-
-LOGGER = logging.getLogger(__name__)
 
 
 class QtTemplateEditor(QMainWindow):

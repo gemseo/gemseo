@@ -19,7 +19,6 @@
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 from typing import Sequence
 
@@ -29,8 +28,6 @@ from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.mda.mda_factory import MDAFactory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MDF(MDOFormulation):

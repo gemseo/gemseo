@@ -130,7 +130,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     name: str
     """The name of the discipline."""
 
-    cache: AbstractCache
+    cache: AbstractCache | None
     """The cache containing one or several executions of the discipline
     according to the cache policy."""
 
@@ -285,10 +285,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # : number of calls to linearize()
         self._n_calls_linearize = None
         self._in_data_hash_dict = {}
-        self.jac = None  # : Jacobians of outputs wrt inputs dictionary
+        self.jac = {}  # : Jacobians of outputs wrt inputs dictionary
         # : True if linearize() has already been called
         self._is_linearized = False
-        self._jac_approx = None  # Jacobian approximation object
+        self._jac_approx = None  # Jacobian's approximation object
         self._linearize_on_last_state = False  # If true, the linearization
         # is performed on the state computed by the disciplines
         # (MDAs for instance) otherwise, the inputs that are also outputs
@@ -517,9 +517,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self,
         inputs: Iterable[str] | None = None,
     ) -> None:
-        """Add inputs against which to differentiate the outputs.
-
-        This method updates :attr:`.MDODiscipline._differentiated_inputs` with ``inputs``.
+        """Add the inputs against which to differentiate the outputs.
 
         Args:
             inputs: The input variables against which to differentiate the outputs.
@@ -546,9 +544,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        """Add outputs to be differentiated.
-
-        This method updates :attr:`.MDODiscipline._differentiated_outputs` with ``outputs``.
+        """Add the outputs to be differentiated.
 
         Args:
             outputs: The output variables to be differentiated.
@@ -656,8 +652,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
         else:
             LOGGER.warning(
-                "Cache policy is set to %s: call clear() to clear a "
-                "discipline cache",
+                "Cache policy is set to %s: call clear() to clear a discipline cache",
                 cache_type,
             )
 
@@ -1014,7 +1009,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             self.jac = out_jac
             self._is_linearized = True
         else:  # Erase jacobian which is unknown
-            self.jac = None
+            self.jac.clear()
             self._is_linearized = False
 
         self.check_output_data()
@@ -1119,7 +1114,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # is set to True
         inputs, outputs = self._retrieve_diff_inouts(force_all)
         if not outputs:
-            self.jac = {}
+            self.jac.clear()
             return self.jac
         # Save inputs dict for caching
         input_data = self._filter_inputs(input_data)
@@ -1158,9 +1153,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                     pass
 
         t_0 = timer()
-        approximate_jac = self.linearization_mode in self.APPROX_MODES
-
-        if approximate_jac:  # Time already counted in execute()
+        if self._linearization_mode in self.APPROX_MODES:
+            # Time already counted in execute()
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
             self._compute_jacobian(inputs, outputs)
@@ -1313,7 +1307,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 When outputs are missing in the Jacobian of the discipline.
                 When inputs are missing for an output in the Jacobian of the discipline.
         """
-        if self.jac is None:
+        if not self.jac:
             raise ValueError(f"The discipline {self.name} was not linearized.")
         out_set = set(outputs)
         in_set = set(inputs)
@@ -2006,7 +2000,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             The names of the input variables.
         """
         if with_namespaces:
-            return self.input_grammar.keys()
+            return list(self.input_grammar.keys())
         else:
             return remove_prefix_from_list(self.input_grammar.keys())
 
@@ -2021,7 +2015,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             The names of the output variables.
         """
         if with_namespaces:
-            return self.output_grammar.keys()
+            return list(self.output_grammar.keys())
         else:
             return remove_prefix_from_list(self.output_grammar.keys())
 
@@ -2179,7 +2173,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def __setstate__(
         self,
-        state: dict[str, Any],
+        state: Mapping[str, Any],
     ) -> None:
         self._init_shared_attrs()
         self._status_observers = []

@@ -30,7 +30,6 @@ inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from copy import deepcopy
 from pathlib import Path
@@ -66,8 +65,6 @@ from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-
-LOGGER = logging.getLogger(__name__)
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
 IndicesType = Dict[str, List[Dict[str, ndarray]]]

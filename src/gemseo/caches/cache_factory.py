@@ -20,12 +20,8 @@
 """A factory for caches."""
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.cache import AbstractCache
 from gemseo.core.factory import Factory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class CacheFactory:

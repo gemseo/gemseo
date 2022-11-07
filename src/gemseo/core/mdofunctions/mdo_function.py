@@ -274,6 +274,7 @@ class MDOFunction:
         self._args = []
         self._expr = ""
         self._dim = 0
+        # TODO: API: rename to _output_variables
         self._outvars = []
         self._init_shared_attrs()
         # Use setters to check values
@@ -284,6 +285,7 @@ class MDOFunction:
         self.expr = expr
         self.args = args
         self.dim = dim
+        # TODO: API: rename to output_variables
         self.outvars = outvars
         self.last_eval = None
         self.force_real = force_real

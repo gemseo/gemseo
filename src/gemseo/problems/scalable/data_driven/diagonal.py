@@ -41,7 +41,6 @@ With regard to the diagonal DOE, |g| proposes the
 """
 from __future__ import annotations
 
-import logging
 from numbers import Number
 from pathlib import Path
 
@@ -70,8 +69,6 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ScalableDiagonalModel(ScalableModel):

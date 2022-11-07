@@ -25,13 +25,9 @@ a clustering model type is available.
 """
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.factory import Factory
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 from gemseo.mlearning.core.factory import MLAlgoFactory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ClusteringModelFactory(MLAlgoFactory):

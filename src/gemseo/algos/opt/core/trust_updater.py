@@ -21,16 +21,12 @@
 """Updates a trust parameter according to a decreases' ratio."""
 from __future__ import annotations
 
-import logging
-
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import divide
 from numpy import maximum
 from numpy import minimum
 from numpy import multiply
 from numpy import ndarray
-
-LOGGER = logging.getLogger(__name__)
 
 
 class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):

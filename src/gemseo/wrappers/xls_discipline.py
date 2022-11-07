@@ -47,13 +47,13 @@ except ImportError:
 
 
 class XLSDiscipline(MDODiscipline):
-    """Wraps an excel workbook into a discipline.
+    """Wraps an Excel workbook into a discipline.
 
     .. warning::
 
-        As this wrapper relies on the `xlswings library <https://www.xlwings.org>`__
+        As this wrapper relies on the `xlwings library <https://www.xlwings.org>`__
         to handle macros and interprocess communication, it
-        is only working under Windows and MacOS.
+        is only working under Windows and macOS.
     """
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
@@ -91,7 +91,7 @@ class XLSDiscipline(MDODiscipline):
         There must be no empty lines between the inputs.
 
 
-           The number of rows is arbitrary but they must be contiguous and
+           The number of rows is arbitrary, but they must be contiguous and
            start at line 1.
 
            The same applies for the "Outputs" sheet
@@ -106,28 +106,28 @@ class XLSDiscipline(MDODiscipline):
 
         Where c is the only output. They may be multiple.
 
-           If the file is a .xlsm, a macro named "execute" *must* exist
+           If the file is a XLSM, a macro named "execute" *must* exist
            and will be called by the _run method before retrieving
            the outputs. The macro has no arguments, it takes its inputs in the
            Inputs sheet, and write the outputs to the "Outputs" sheet.
 
            Alternatively, the user may provide a macro name to the constructor,
-           or None if no macro shall be executed.
+           or ``None`` if no macro shall be executed.
 
         Args:
-            xls_file_path: The path to the excel file. If the file is a `.xlsm`,
-                a macro named "execute" must exist and will be called by the _run
-                method before retrieving the outputs.
-            macro_name: The name of the macro to be executed for a `.xlsm` file.
-                If None is provided, do not run a macro.
-            copy_xls_at_setstate: If True, create a copy of the original Excel file
+            xls_file_path: The path to the Excel file. If the file is a XLSM,
+                a macro named "execute" must exist and will be called by the
+                :meth:`~.XLSDiscipline._run` method before retrieving the outputs.
+            macro_name: The name of the macro to be executed for a XLSM file.
+                If ``None`` is provided, do not run a macro.
+            copy_xls_at_setstate: If ``True``, create a copy of the original Excel file
                 for each of the pickled parallel processes. This option is required
-                to be set to True for parallelization in Windows platforms.
-            recreate_book_at_run: Whether to rebuild the xls objects at each `_run`
+                to be set to ``True`` for parallelization in Windows platforms.
+            recreate_book_at_run: Whether to rebuild the xls objects at each ``_run``
                 call.
 
         Raises:
-            ImportError: If `xlwings` cannot be imported.
+            ImportError: If ``xlwings`` cannot be imported.
         """
         if xlwings is None:
             raise ImportError("cannot import xlwings")

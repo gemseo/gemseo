@@ -21,7 +21,6 @@
 """Optimization library wrappers base class."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 
 from numpy import ndarray
@@ -36,8 +35,6 @@ from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
 from gemseo.algos.stop_criteria import XtolReached
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -181,14 +178,6 @@ class OptimizationLibrary(DriverLib):
         ):
             return [-cstr for cstr in self.problem.constraints]
         return self.problem.constraints
-
-    def _run(self, **options):
-        """Run the algorithm, to be overloaded by subclasses.
-
-        Args:
-            **options: The options of the algorithm.
-        """
-        raise NotImplementedError()
 
     def _pre_run(self, problem, algo_name, **options):
         """To be overridden by subclasses.

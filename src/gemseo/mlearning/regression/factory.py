@@ -25,13 +25,9 @@ regression model type is available.
 """
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-
-LOGGER = logging.getLogger(__name__)
 
 
 class RegressionModelFactory(MLAlgoFactory):

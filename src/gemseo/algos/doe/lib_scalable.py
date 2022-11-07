@@ -19,7 +19,6 @@
 """Build a diagonal DOE for scalable model construction."""
 from __future__ import annotations
 
-import logging
 from typing import Container
 from typing import Optional
 from typing import Union
@@ -32,8 +31,6 @@ from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
-
-LOGGER = logging.getLogger(__name__)
 
 
 class DiagonalDOE(DOELibrary):

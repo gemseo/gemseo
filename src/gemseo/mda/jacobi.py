@@ -19,7 +19,6 @@
 """A Jacobi algorithm for solving MDAs."""
 from __future__ import annotations
 
-import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import Any
@@ -40,7 +39,6 @@ from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
-LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 

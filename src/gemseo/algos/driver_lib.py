@@ -565,23 +565,7 @@ class DriverLib(AlgoLib):
             optimum_index=optimum_index,
         )
 
-    def _get_options(self, **options):
-        """Retrieve the options of the library. To be overloaded by subclasses. Used to
-        define default values for options using keyword arguments.
-
-        Args:
-            **options: The options of the driver.
-        """
-        raise NotImplementedError()
-
-    def _run(self, **options):
-        """Run the algorithm, to be overloaded by subclasses.
-
-        Args:
-            **options: The options of the driver.
-        """
-        raise NotImplementedError()
-
+    # TODO: API: rename to requires_gradient?
     def is_algo_requires_grad(self, algo_name):
         """Returns True if the algorithm requires a gradient evaluation.
 

@@ -69,7 +69,6 @@ generated/sklearn.mixture.GaussianMixture.html>`_.
 """
 from __future__ import annotations
 
-import logging
 from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
@@ -82,8 +81,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.utils.python_compatibility import Final
-
-LOGGER = logging.getLogger(__name__)
 
 
 class GaussianMixture(MLPredictiveClusteringAlgo):
