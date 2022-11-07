@@ -30,7 +30,7 @@ from enum import EnumMeta
 
 
 class MetaEnum(EnumMeta):
-    """An Enum meta-class to subclass the `in` behavior."""
+    """An enum metaclass to subclass the membership operator."""
 
     def __contains__(cls, item) -> bool:  # noqa: N805
         if isinstance(item, cls):

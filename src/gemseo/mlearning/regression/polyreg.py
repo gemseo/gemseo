@@ -76,7 +76,6 @@ linear_model.html>`_.
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from pathlib import Path
 from typing import ClassVar
@@ -93,8 +92,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegressor
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PolynomialRegressor(LinearRegressor):

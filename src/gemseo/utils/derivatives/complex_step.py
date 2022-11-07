@@ -19,7 +19,6 @@
 """Gradient approximation by complex step."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 from typing import Callable
 from typing import Sequence
@@ -36,7 +35,6 @@ from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 EPSILON = finfo(float).eps
-LOGGER = logging.getLogger(__name__)
 
 
 class ComplexStep(GradientApproximator):

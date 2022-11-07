@@ -19,7 +19,6 @@
 """A constraints plot."""
 from __future__ import annotations
 
-import logging
 from typing import Sequence
 
 import numpy as np
@@ -30,8 +29,6 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ConstraintsHistory(OptPostProcessor):

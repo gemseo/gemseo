@@ -20,13 +20,9 @@
 """Factory for the trust updater."""
 from __future__ import annotations
 
-import logging
-
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
 from gemseo.algos.opt.core.trust_updater import TrustUpdater
-
-LOGGER = logging.getLogger(__name__)
 
 
 class UpdaterFactory:

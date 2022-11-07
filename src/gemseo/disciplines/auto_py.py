@@ -20,7 +20,6 @@
 """A discipline interfacing a Python function."""
 from __future__ import annotations
 
-import logging
 import re
 from inspect import getfullargspec
 from inspect import getsource
@@ -37,8 +36,6 @@ from numpy import ndarray
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-
-LOGGER = logging.getLogger(__name__)
 
 DataType = Union[float, ndarray]
 

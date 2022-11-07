@@ -15,7 +15,6 @@
 """Gradient approximation."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 from typing import Callable
 from typing import Sequence
@@ -30,7 +29,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.factory import Factory
 
 EPSILON = finfo(float).eps
-LOGGER = logging.getLogger(__name__)
 
 
 class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):

@@ -21,11 +21,7 @@
 """Abstract factory to create drivers."""
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.factory import Factory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class DriverFactory:
@@ -42,10 +38,6 @@ class DriverFactory:
         """
         self.factory = Factory(driver_lib_class, (driver_package,))
         self.__algo_name_to_lib_name = {}
-        self.__update_libdict()
-
-    def __update_libdict(self):
-        """Updates the self.__algo_name_to_lib_name dict with available libraries."""
         for lib_name in self.libraries:
             lib = self.create(lib_name)
             for algo_name in lib.algorithms:

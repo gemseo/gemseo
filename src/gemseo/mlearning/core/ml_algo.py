@@ -96,7 +96,6 @@ to be carefully tuned in order to maximize the generalization power of the model
 from __future__ import annotations
 
 import inspect
-import logging
 import pickle
 from copy import deepcopy
 from pathlib import Path
@@ -117,8 +116,6 @@ from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
-
-LOGGER = logging.getLogger(__name__)
 
 TransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
 SavedObjectType = Union[Dataset, TransformerType, str, bool]

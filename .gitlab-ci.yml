@@ -1,6 +1,5 @@
 include:
-  - project: "gemseo/dev/ci-includes"
-    file: "base.yml"
+  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/main/base.yml"
 
 variables:
   TEST_ALL_ENVS:

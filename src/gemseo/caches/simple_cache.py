@@ -20,7 +20,6 @@
 """Caching module to store only one entry."""
 from __future__ import annotations
 
-import logging
 from typing import Generator
 
 from gemseo.core.cache import AbstractCache
@@ -29,8 +28,6 @@ from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 from gemseo.utils.testing import compare_dict_of_arrays
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SimpleCache(AbstractCache):

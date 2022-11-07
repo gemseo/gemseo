@@ -21,7 +21,6 @@
 """scipy.optimize optimization library wrapper."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import Any
 
@@ -33,8 +32,6 @@ from scipy import optimize
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass

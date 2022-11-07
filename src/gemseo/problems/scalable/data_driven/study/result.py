@@ -23,11 +23,8 @@ Scalability study - Result
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from pathlib import Path
-
-LOGGER = logging.getLogger(__name__)
 
 RESULTS_DIRECTORY = Path("results")
 

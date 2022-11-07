@@ -69,7 +69,6 @@ This methodology relies on the :class:`.MorrisAnalysis` class.
 """
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Any
 from typing import Collection
@@ -90,8 +89,6 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MorrisAnalysis(SensitivityAnalysis):

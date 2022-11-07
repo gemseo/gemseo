@@ -44,7 +44,6 @@ and the name of the :class:`.Dataset`.
 """
 from __future__ import annotations
 
-import logging
 from typing import Iterable
 
 from numpy import all as np_all
@@ -59,8 +58,6 @@ from scipy.stats import moment
 
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.statistics import Statistics
-
-LOGGER = logging.getLogger(__name__)
 
 
 class EmpiricalStatistics(Statistics):

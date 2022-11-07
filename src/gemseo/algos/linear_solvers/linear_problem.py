@@ -19,7 +19,6 @@
 """Linear equations problem."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -28,8 +27,6 @@ from numpy import ndarray
 from numpy.linalg import norm
 from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
-
-LOGGER = logging.getLogger(__name__)
 
 
 class LinearProblem:

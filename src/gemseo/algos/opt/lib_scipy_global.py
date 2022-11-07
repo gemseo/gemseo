@@ -20,7 +20,6 @@
 """scipy.optimize global optimization library wrapper."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import Any
 from typing import Mapping
@@ -37,8 +36,6 @@ from scipy.optimize import NonlinearConstraint
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass

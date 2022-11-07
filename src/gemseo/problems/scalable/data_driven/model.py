@@ -45,15 +45,11 @@ Otherwise the model uses default values.
 """
 from __future__ import annotations
 
-import logging
-
 from numpy import full
 from numpy import where
 from numpy import zeros
 
 from gemseo.core.dataset import Dataset
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ScalableModel:

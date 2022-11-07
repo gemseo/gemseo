@@ -20,7 +20,6 @@
 """A parallel coordinates plot of functions and x."""
 from __future__ import annotations
 
-import logging
 from typing import Sequence
 
 import matplotlib
@@ -33,8 +32,6 @@ from numpy import ndarray
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ParallelCoordinates(OptPostProcessor):

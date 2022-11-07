@@ -38,7 +38,6 @@ The RBF model relies on the Rbf class of the
 """
 from __future__ import annotations
 
-import logging
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
@@ -59,8 +58,6 @@ from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.python_compatibility import Final
-
-LOGGER = logging.getLogger(__name__)
 
 SavedObjectType = Union[SavedObjectType, float, Callable]
 

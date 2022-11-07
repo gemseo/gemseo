@@ -676,9 +676,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
 class BaseFormulationsFactory:
     """A factory of :class:`~gemseo.core.base_formulation.BaseFormulation`."""
 
-    def __init__(
-        self, cls: type[Any], module_names: Iterable[str] | None = None
-    ) -> None:
+    def __init__(self, cls: type, module_names: Iterable[str] | None = None) -> None:
         self.factory = Factory(cls, module_names)
 
     def create(

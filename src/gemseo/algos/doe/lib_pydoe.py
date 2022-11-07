@@ -20,7 +20,6 @@
 """PyDOE algorithms wrapper."""
 from __future__ import annotations
 
-import logging
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -38,8 +37,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 OptionType = Optional[
     Union[str, int, float, bool, Sequence[int], Tuple[int, int], ndarray]
 ]
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PyDOE(DOELibrary):
