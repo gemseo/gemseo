@@ -42,8 +42,8 @@ DIRNAME = dirname(__file__)
 
 
 @pytest.fixture()
-def xfail_if_windows_unc_issue(tmpdir, use_shell=True):
-    if str(tmpdir).startswith("\\\\") and use_shell and sys.platform.startswith("win"):
+def xfail_if_windows_unc_issue(tmp_wd, use_shell=True):
+    if str(tmp_wd).startswith("\\\\") and use_shell and sys.platform.startswith("win"):
         pytest.xfail("cmd.exe cannot perform the cd command on a UNC network path.")
 
 

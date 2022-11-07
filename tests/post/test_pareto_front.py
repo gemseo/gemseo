@@ -179,14 +179,10 @@ def test_pareto_binhkorn(
 
 
 @image_comparison(["binh_korn_design_variable"])
-def test_pareto_binhkorn_design_variable(
-    tmp_wd,
-    pyplot_close_all,
-):
+def test_pareto_binhkorn_design_variable(pyplot_close_all):
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
-        tmp_wd: Fixture to move into a temporary directory.
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
@@ -204,14 +200,10 @@ def test_pareto_binhkorn_design_variable(
 
 
 @image_comparison(["binh_korn_no_obj"])
-def test_pareto_binhkorn_no_obj(
-    tmp_wd,
-    pyplot_close_all,
-):
+def test_pareto_binhkorn_no_obj(pyplot_close_all):
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
-        tmp_wd: Fixture to move into a temporary directory.
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """

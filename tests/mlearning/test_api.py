@@ -189,34 +189,34 @@ def test_create_clustering_model(cluster_data):
     assert model.algo is not None
 
 
-def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_path):
+def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_wd):
     """Test import of model."""
     model = create_mlearning_model("LinearRegressor", dataset)
     model.learn()
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
     model = create_mlearning_model("KMeans", dataset)
     model.learn()
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
     model = create_mlearning_model("RandomForestClassifier", dataset)
     model.learn()
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
 
 
-def test_import_regression_model(dataset, tmp_path):
+def test_import_regression_model(dataset, tmp_wd):
     """Test import of regression model."""
     model = create_regression_model("LinearRegressor", dataset)
     model.learn()
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     loaded_model = import_regression_model(dirname)
     assert hasattr(loaded_model, "parameters")
 
@@ -238,24 +238,24 @@ def test_import_regression_model_with_old_class_name():
     assert objects.pop("algo_name") == "LinearRegression"
 
 
-def test_import_classification_model(classification_data, tmp_path):
+def test_import_classification_model(classification_data, tmp_wd):
     """Test import of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
     model = create_classification_model("KNNClassifier", dataset)
     model.learn()
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     loaded_model = import_classification_model(dirname)
     assert hasattr(loaded_model, "parameters")
 
 
-def test_import_clustering_model(cluster_data, tmp_path):
+def test_import_clustering_model(cluster_data, tmp_wd):
     """Test import of clustering model."""
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
     model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
     model.learn()
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     loaded_model = import_clustering_model(dirname)
     assert hasattr(loaded_model, "parameters")
 

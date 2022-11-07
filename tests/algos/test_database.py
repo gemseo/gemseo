@@ -42,9 +42,9 @@ DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail.hdf5"
 
 
-@pytest.fixture()
-def h5_file(tmp_path):
-    return h5py.File(tmp_path / "test.h5", "w")
+@pytest.fixture
+def h5_file(tmp_wd):
+    return h5py.File("test.h5", "w")
 
 
 def rel_err(to_test, ref):
@@ -278,12 +278,11 @@ def test_add_listeners():
         database.add_new_iter_listener("toto")
 
 
-def test_append_export_after_store(tmp_path):
+def test_append_export_after_store(tmp_wd):
     """Test that a database is correctly exported when it is appended after each storage
     call."""
-
     database = Database()
-    file_path_db = tmp_path / "test_db_append.hdf5"
+    file_path_db = "test_db_append.hdf5"
     val1 = {"f": arange(2)}
     val2 = {"g": 10}
     val3 = {"@f": array([[100], [200]])}
@@ -499,9 +498,9 @@ def test_get_history_array(problem):
 
 def test_ggobi_export(tmp_wd, problem):
     """Tests export to GGobi."""
-    file_path = tmp_wd / "opt_hist.xml"
+    file_path = "opt_hist.xml"
     problem.database.export_to_ggobi(file_path=file_path)
-    assert file_path.exists()
+    assert Path(file_path).exists()
 
 
 def test_hdf_grad_export(tmp_wd, problem):
@@ -551,7 +550,7 @@ def test_opendace_import(tmp_wd):
     database = Database()
     inf = DIRNAME / "rae2822_cl075_085_mach_068_074.xml"
     database.import_from_opendace(inf)
-    outfpath = tmp_wd / "rae2822_cl075_085_mach_068_074_cp.hdf5"
+    outfpath = Path("rae2822_cl075_085_mach_068_074_cp.hdf5")
     database.export_hdf(outfpath)
     assert outfpath.exists()
 

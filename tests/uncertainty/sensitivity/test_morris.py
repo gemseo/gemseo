@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -143,10 +145,10 @@ def test_morris_relative_sigma(morris, output, variable):
 
 
 @pytest.mark.parametrize("output", ["y1", "y2"])
-def test_morris_plot(morris, tmp_path, output):
+def test_morris_plot(morris, tmp_wd, output):
     """Verify that the plot is correctly created."""
-    morris.plot(output, save=True, show=False, directory_path=tmp_path)
-    assert (tmp_path / "morris_analysis.png").exists()
+    morris.plot(output, save=True, show=False, directory_path=tmp_wd)
+    assert Path("morris_analysis.png").exists()
 
 
 @pytest.mark.parametrize(

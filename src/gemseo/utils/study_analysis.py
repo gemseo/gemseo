@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from ast import literal_eval
+from pathlib import Path
 from typing import Iterable
 from typing import Mapping
 
@@ -462,7 +463,7 @@ class StudyAnalysis:
 
     AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
 
-    def __init__(self, xls_study_path: str) -> None:
+    def __init__(self, xls_study_path: str | Path) -> None:
         """Initialize the study from the Excel specification.
 
         Args:

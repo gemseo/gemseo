@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import re
 import unittest
+from pathlib import Path
 from typing import Sequence
 
 import pytest
@@ -156,7 +157,7 @@ def test_save_optimization_history_exception(mdf_scenario):
     "file_format", [OptimizationProblem.GGOBI_FORMAT, OptimizationProblem.HDF5_FORMAT]
 )
 def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd):
-    file_path = tmp_wd / "file_name"
+    file_path = Path("file_name")
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
     assert file_path.exists()
@@ -172,19 +173,14 @@ def test_init_mdf(mdf_scenario):
 def test_basic_idf(tmp_wd, idf_scenario):
     """"""
     posts = idf_scenario.posts
-
     assert len(posts) > 0
-
     for post in ["OptHistoryView", "Correlations", "QuadApprox"]:
         assert post in posts
 
     # Monitor in the console
-    idf_scenario.xdsmize(
-        outdir=str(tmp_wd), json_output=True, html_output=True, open_browser=False
-    )
-
-    assert (tmp_wd / "xdsm.json").exists()
-    assert (tmp_wd / "xdsm.html").exists()
+    idf_scenario.xdsmize(json_output=True, html_output=True, open_browser=False)
+    assert Path("xdsm.json").exists()
+    assert Path("xdsm.html").exists()
 
 
 def test_backup_error(tmp_wd, mdf_scenario):
@@ -210,9 +206,9 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
     Test that, when used, the backup does not call the original objective.
     """
-    filename = "opt_history.h5"
+    file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(
-        filename,
+        file_path,
         erase=True,
         pre_load=False,
         generate_opt_plot=True,
@@ -221,14 +217,14 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     assert len(mdf_scenario.formulation.opt_problem.database) == 2
 
-    assert (tmp_wd / filename).exists()
+    assert file_path.exists()
 
-    opt_read = OptimizationProblem.import_hdf(filename)
+    opt_read = OptimizationProblem.import_hdf(file_path)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
-    mdf_scenario.set_optimization_history_backup(filename, erase=True, pre_load=False)
-    assert not (tmp_wd / filename).exists()
+    mdf_scenario.set_optimization_history_backup(file_path, erase=True, pre_load=False)
+    assert not file_path.exists()
 
 
 @pytest.mark.parametrize(
@@ -381,13 +377,11 @@ def test_repr_str(idf_scenario):
     assert repr(idf_scenario) == "\n".join(expected)
 
 
-def test_xdsm_filename(tmp_path, idf_scenario):
+def test_xdsm_filename(tmp_wd, idf_scenario):
     """Tests the export path dir for xdsm."""
     outfilename = "my_xdsm.html"
-    idf_scenario.xdsmize(
-        outdir=tmp_path, outfilename=outfilename, latex_output=False, html_output=True
-    )
-    assert (tmp_path / outfilename).is_file()
+    idf_scenario.xdsmize(outfilename=outfilename, latex_output=False, html_output=True)
+    assert Path(outfilename).is_file()
 
 
 @pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])

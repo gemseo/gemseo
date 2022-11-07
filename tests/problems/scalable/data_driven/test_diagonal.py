@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 from os.path import exists
-from os.path import join
 
 import numpy as np
 import pytest
@@ -78,13 +77,13 @@ def test_scalable_derivative(dataset):
     assert output["y2"].shape[1] == 3
 
 
-def test_plot(dataset, tmp_path):
+def test_plot(dataset, tmp_wd):
     model = ScalableDiagonalModel(dataset)
-    model.plot_1d_interpolations(save=True, show=False, directory=str(tmp_path))
-    assert exists(join(str(tmp_path), "sdm_sinus_y1_1D_interpolation_0.pdf"))
-    assert exists(join(str(tmp_path), "sdm_sinus_y2_1D_interpolation_0.pdf"))
-    model.plot_dependency(save=True, show=False, directory=str(tmp_path))
-    assert exists(join(str(tmp_path), "sdm_sinus_dependency.pdf"))
+    model.plot_1d_interpolations(save=True, show=False)
+    assert exists("sdm_sinus_y1_1D_interpolation_0.pdf")
+    assert exists("sdm_sinus_y2_1D_interpolation_0.pdf")
+    model.plot_dependency(save=True, show=False)
+    assert exists("sdm_sinus_dependency.pdf")
 
 
 def test_force_io_dependency(dataset):

@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -38,7 +40,7 @@ def correlation() -> CorrelationAnalysis:
     return CorrelationAnalysis([discipline], space, 100)
 
 
-def test_correlation(correlation, tmp_path):
+def test_correlation(correlation, tmp_wd):
     varnames = ["x1", "x2"]
     correlation.compute_indices()
     indices = correlation.indices
@@ -57,11 +59,11 @@ def test_correlation(correlation, tmp_path):
     with pytest.raises(NotImplementedError):
         correlation.main_method = "foo"
 
-    correlation.plot("y1", save=True, show=False, directory_path=tmp_path)
-    assert (tmp_path / "correlation_analysis.png").exists()
+    correlation.plot("y1", save=True, show=False, directory_path=tmp_wd)
+    assert Path("correlation_analysis.png").exists()
 
 
-def test_correlation_outputs(tmp_path):
+def test_correlation_outputs():
     expressions = {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     varnames = ["x1", "x2"]
     discipline = create_discipline("AnalyticDiscipline", expressions=expressions)

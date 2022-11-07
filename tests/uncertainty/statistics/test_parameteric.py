@@ -126,21 +126,18 @@ def test_distfitstats_statistics(random_sample):
     assert stats.compute_margin(3.0) == stats.compute_mean_std(3.0)
 
 
-def test_distfitstats_plot(random_sample, tmpdir):
+def test_distfitstats_plot(random_sample, tmp_wd):
     """Test plot methods."""
     array, tested_distributions, _ = random_sample
-    directory = str(tmpdir.mkdir("plot"))
     stats = ParametricStatistics(array, tested_distributions)
-    stats.plot_criteria("X_1", save=True, show=False, directory=directory)
-    stats.plot_criteria(
-        "X_1", title="title", save=True, show=False, directory=directory
-    )
+    stats.plot_criteria("X_1", save=True, show=False)
+    stats.plot_criteria("X_1", title="title", save=True, show=False)
     with pytest.raises(ValueError):
-        stats.plot_criteria("dummy", save=True, show=False, directory=directory)
+        stats.plot_criteria("dummy", save=True, show=False)
     stats = ParametricStatistics(
         array, tested_distributions, fitting_criterion="Kolmogorov"
     )
-    stats.plot_criteria("X_1", save=True, show=False, directory=directory)
+    stats.plot_criteria("X_1", save=True, show=False)
 
 
 def test_distfitstats_tolint(random_sample):

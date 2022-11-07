@@ -63,12 +63,12 @@ def test_create(dataset):
     assert hasattr(linreg, "parameters")
 
 
-def test_load(dataset, tmp_path):
+def test_load(dataset, tmp_wd):
     """Test the loading of a model from data."""
     factory = RegressionModelFactory()
     linreg = factory.create("LinearRegressor", data=dataset)
     linreg.learn()
-    dirname = linreg.save(path=str(tmp_path))
+    dirname = linreg.save()
     loaded_linreg = factory.load(dirname)
     assert hasattr(loaded_linreg, "parameters")
 

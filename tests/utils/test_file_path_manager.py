@@ -54,7 +54,6 @@ def file_path_manager() -> FilePathManager:
     ],
 )
 def test_create_file_path(
-    tmp_path,
     file_path_manager,
     file_path,
     directory_path,

@@ -140,7 +140,7 @@ def test_parallel_execute(dataset):
 
 def test_serialize(dataset, tmp_wd):
     """Check the serialization of a surroate discipline."""
-    file_path = tmp_wd / "discipline.pkl"
+    file_path = "discipline.pkl"
     discipline = SurrogateDiscipline("LinearRegressor", dataset)
     discipline.serialize(file_path)
 

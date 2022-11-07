@@ -207,7 +207,7 @@ def test_load_and_dump(tmp_wd):
         ["z"],
         ["x"],
         discipline,
-        reference_jacobian_path=tmp_wd / file_name,
+        reference_jacobian_path=file_name,
         save_reference_jacobian=True,
     )
 
@@ -216,7 +216,7 @@ def test_load_and_dump(tmp_wd):
         ["z"],
         ["x"],
         discipline,
-        reference_jacobian_path=tmp_wd / file_name,
+        reference_jacobian_path=file_name,
     )
 
 

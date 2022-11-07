@@ -826,7 +826,7 @@ def test_compute_doe_nontransformed(variables_space):
 
 def test_import_analytic_discipline(tmp_wd):
     """Check that an analytic discipline performs correctly after import."""
-    file_path = tmp_wd / "saved_discipline.pkl"
+    file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
     discipline.serialize(file_path)
@@ -841,7 +841,7 @@ def test_import_analytic_discipline(tmp_wd):
 
 def test_import_discipline(tmp_wd):
     """Check that a discipline performs correctly after import."""
-    file_path = tmp_wd / "saved_discipline.pkl"
+    file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("Sellar1")
     discipline.serialize(file_path)

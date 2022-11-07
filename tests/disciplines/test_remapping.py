@@ -53,7 +53,7 @@ class NewDiscipline(MDODiscipline):
 
 
 @pytest.fixture(scope="module", params=[False, True])
-def discipline(request) -> MDODiscipline:
+def discipline(module_tmp_wd, request) -> MDODiscipline:
     """A remapping discipline."""
     discipline = RemappingDiscipline(
         NewDiscipline(),

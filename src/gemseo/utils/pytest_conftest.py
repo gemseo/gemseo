@@ -42,6 +42,21 @@ def __tmp_wd(tmp_path):
         os.chdir(str(prev_cwd))
 
 
+@pytest.fixture(scope="module")
+def module_tmp_wd(tmp_path_factory):
+    """Generator to move into a temporary sub-directory forth and back.
+
+    Return the path to the temporary directory.
+    """
+    prev_cwd = Path.cwd()
+    tmp_path = tmp_path_factory.getbasetemp()
+    os.chdir(str(tmp_path))
+    try:
+        yield tmp_path
+    finally:
+        os.chdir(str(prev_cwd))
+
+
 # Fixture to move into a temporary directory.
 tmp_wd = pytest.fixture()(__tmp_wd)
 
