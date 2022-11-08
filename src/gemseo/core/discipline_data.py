@@ -39,7 +39,7 @@ class DisciplineData(abc.MutableMapping):
     It allows handling values bound to :class:`pandas.DataFrame`
     as if they were multiple items bound to :class:`numpy.ndarray`.
     Then, an object of this class may be used as if it was a standard dictionary
-    containing :class:`numpy.ndarray`s,
+    containing :class:`numpy.ndarray`,
     which is the assumption made by the clients of the :class:`.MDODiscipline` subclasses.
 
     As compared to a standard dictionary,
@@ -190,11 +190,10 @@ class DisciplineData(abc.MutableMapping):
         df = self.__data[df_key]
 
         if not isinstance(df, pd.DataFrame):
-            msg = (
-                "Cannot set {} because {} "
-                "is not bound to a pandas DataFrame.".format(key, df_key)
+            raise KeyError(
+                f"Cannot set {key} because {df_key} is not bound to a "
+                "pandas DataFrame."
             )
-            raise KeyError(msg)
 
         self.__data[df_key][column] = value
 
