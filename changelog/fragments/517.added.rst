@@ -1,0 +1,1 @@
+The Ishigami use case to illustrate and benchmark UQ techniques (:class:`.IshigamiFunction`, :class:`.IshigamiSpace`, :class:`.IshigamiProblem` and :class:`.IshigamiDiscipline`).
