@@ -20,13 +20,13 @@
 """Measuring the quality of a machine learning algorithm."""
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import ClassVar
 from typing import NoReturn
 from typing import Optional
 from typing import Sequence
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import array_split
 from numpy import ndarray
@@ -36,11 +36,12 @@ from numpy.random import Generator
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 
 
-class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
+class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     """An abstract quality measure to assess a machine learning algorithm.
 
@@ -133,6 +134,7 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         except AttributeError:
             raise ValueError(f"The method '{method}' is not available.")
 
+    @abstractmethod
     def evaluate_learn(
         self,
         samples: Sequence[int] | None = None,
@@ -149,8 +151,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def evaluate_test(
         self,
         test_data: Dataset,
@@ -169,7 +171,6 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
     def evaluate_loo(
         self,
@@ -193,6 +194,7 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
             multioutput=multioutput,
         )
 
+    @abstractmethod
     def evaluate_kfolds(
         self,
         n_folds: int = 5,
@@ -217,8 +219,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def evaluate_bootstrap(
         self,
         n_replicates: int = 100,
@@ -241,7 +243,6 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
     @classmethod
     def is_better(

@@ -24,9 +24,7 @@ from __future__ import annotations
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from numpy import arange
-from numpy import zeros
 
 
 @pytest.fixture
@@ -45,26 +43,6 @@ class NewAlgo(MLClusteringAlgo):
 
     def _fit(self, data):
         pass
-
-
-def test_notimplementederror(dataset):
-    """Test not implemented methods."""
-    ml_algo = MLClusteringAlgo(dataset)
-    with pytest.raises(NotImplementedError):
-        ml_algo.learn()
-
-
-def test_predictive_notimplementederror(dataset):
-    """Test not implemented methods."""
-    ml_algo = MLPredictiveClusteringAlgo(dataset)
-    with pytest.raises(NotImplementedError):
-        ml_algo.learn()
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict_proba({"x_1": zeros(1), "x_2": zeros(2)})
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict_proba({"x_1": zeros(1), "x_2": zeros(2)}, hard=False)
 
 
 def test_labels(dataset):

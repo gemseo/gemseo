@@ -1,0 +1,1 @@
+:class:`.Factory` no longer considers abstract classes.

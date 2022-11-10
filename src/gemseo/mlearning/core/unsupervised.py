@@ -28,6 +28,7 @@ which inherits from the :class:`.MLAlgo` class.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
@@ -99,6 +100,7 @@ class MLUnsupervisedAlgo(MLAlgo):
 
         self._fit(data)
 
+    @abstractmethod
     def _fit(
         self,
         data: ndarray,
@@ -108,4 +110,3 @@ class MLUnsupervisedAlgo(MLAlgo):
         Args:
             data: The data with shape (n_samples, n_variables).
         """
-        raise NotImplementedError

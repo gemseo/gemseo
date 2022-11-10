@@ -67,6 +67,7 @@ through the :class:`.MLSupervisedAlgo` class based on a :class:`.Dataset`.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
@@ -641,6 +642,7 @@ class MLSupervisedAlgo(MLAlgo):
             data, self.learning_set.get_data_by_names(self.output_names, False)[indices]
         )
 
+    @abstractmethod
     def _fit(
         self,
         input_data: ndarray,
@@ -652,7 +654,6 @@ class MLSupervisedAlgo(MLAlgo):
             input_data: The input data with the shape (n_samples, n_inputs).
             output_data: The output data with shape (n_samples, n_outputs).
         """
-        raise NotImplementedError
 
     @DataFormatters.format_input_output
     def predict(
@@ -683,6 +684,7 @@ class MLSupervisedAlgo(MLAlgo):
         """
         return self._predict(input_data)
 
+    @abstractmethod
     def _predict(
         self,
         input_data: ndarray,
@@ -695,7 +697,6 @@ class MLSupervisedAlgo(MLAlgo):
         Returns:
             output_data: The output data with shape (n_samples, n_outputs).
         """
-        raise NotImplementedError
 
     def __compute_reduced_dimensions(self) -> tuple[int, int]:
         """Return the reduced input and output dimensions after transformations.

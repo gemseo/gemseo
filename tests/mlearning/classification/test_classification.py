@@ -23,9 +23,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from numpy import arange
-from numpy import zeros
 
 
 @pytest.fixture
@@ -38,25 +36,3 @@ def dataset() -> Dataset:
     io_dataset = Dataset("dataset_name")
     io_dataset.set_from_array(data, variables, sizes, groups)
     return io_dataset
-
-
-def test_notimplementederror(dataset):
-    """Test not implemented methods."""
-    ml_algo = MLClassificationAlgo(dataset)
-    ml_algo_limited = MLClassificationAlgo(dataset, output_names=["y_1"])
-    with pytest.raises(NotImplementedError):
-        ml_algo.learn()
-    with pytest.raises(NotImplementedError):
-        ml_algo_limited.learn()
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict(zeros(3))
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict_proba({"x_1": zeros(1), "x_2": zeros(2)})
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict_proba(zeros(3))
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict_proba(zeros(3), hard=False)

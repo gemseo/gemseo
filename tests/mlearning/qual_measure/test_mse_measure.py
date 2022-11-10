@@ -30,6 +30,7 @@ from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.qual_measure.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import allclose
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
@@ -64,7 +65,9 @@ def dataset_test() -> Dataset:
 
 def test_constructor(dataset):
     """Test construction."""
-    algo = MLAlgo(dataset)
+    with concretize_classes(MLAlgo):
+        algo = MLAlgo(dataset)
+
     measure = MSEMeasure(algo)
     assert measure.algo is not None
     assert measure.algo.learning_set is dataset

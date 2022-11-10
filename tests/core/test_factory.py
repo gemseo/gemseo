@@ -28,6 +28,7 @@ from pathlib import Path
 import pytest
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
+from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.python_compatibility import importlib_metadata
 
 # test data
@@ -183,3 +184,10 @@ def test_get_library_name(reset_factory):
     """Verify that the library names found are the expected ones."""
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
     assert factory.get_library_name("MDF") == "gemseo"
+
+
+def test_concrete_classes():
+    """Check that the factory considers only the concrete classes."""
+    factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
+    assert "OTComposedDistribution" in factory.classes
+    assert "ComposedDistribution" not in factory.classes
