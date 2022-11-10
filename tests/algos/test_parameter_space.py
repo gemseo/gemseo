@@ -62,13 +62,6 @@ def test_add_random_variable():
     assert space.deterministic_variables == ["x"]
     assert "y" in space.distributions
 
-    space.add_random_variable(
-        "z", "OTDistribution", interfaced_distribution="Dirac", parameters=([10.0])
-    )
-    res = space.get_range("z")
-    assert 10.0 == res[0][0]
-    assert 10.0 == res[0][1]
-
 
 @pytest.fixture
 def mixed_space():
@@ -509,3 +502,15 @@ def test_rename_variable():
     other_parameter_space["v"] = random_variable
 
     assert parameter_space == other_parameter_space
+
+
+@pytest.mark.parametrize("first,second", [("SP", "OT"), ("OT", "SP")])
+def test_mix_different_distribution_families(first, second):
+    """Check that a ParameterSpace cannot mix distributions from different families."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", f"{first}UniformDistribution")
+    with pytest.raises(
+        ValueError,
+        match=f"A parameter space cannot mix {first} and {second} distributions.",
+    ):
+        parameter_space.add_random_variable("y", f"{second}UniformDistribution")
