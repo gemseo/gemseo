@@ -24,63 +24,53 @@ Comparing sensitivity indices
 """
 from __future__ import annotations
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
+from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 from matplotlib import pyplot as plt
-from numpy import pi
 
-#######################################################################################
+# %%
 # In this example,
-# we consider the Ishigami function:
+# we consider the Ishigami function :cite:`ishigami1990`
 #
 # .. math::
 #
-#    Y=\sin(X_1)+7\sin(X_2)^2+0.1*X_3^4\sin(X_1)
+#    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1*x_3^4\sin(x_1)
 #
-# which is well-known in the uncertainty domain:
-expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-discipline = create_discipline(
-    "AnalyticDiscipline", expressions=expressions, name="Ishigami"
-)
-#######################################################################################
-# The different uncertain variables :math:`X_1` , :math:`X_2` and :math:`X_3`
-# are independent and identically distributed
-# according to an uniform distribution between :math:`-\pi` and :math:`\pi`:
-space = ParameterSpace()
-for variable in ["x1", "x2", "x3"]:
-    space.add_random_variable(
-        variable, "OTUniformDistribution", minimum=-pi, maximum=pi
-    )
+# implemented as an :class:`.MDODiscipline` by the :class:`.IshigamiDiscipline`.
+# It is commonly used
+# with the independent random variables :math:`X_1`, :math:`X_2` and :math:`X_3`
+# uniformly distributed between :math:`-\pi` and :math:`\pi`
+# and defined in the :class:`.IshigamiSpace`.
+discipline = IshigamiDiscipline()
+uncertain_space = IshigamiSpace()
 
-#######################################################################################
+# %%
 # We would like to carry out two sensitivity analyses,
 # e.g. a first one based on correlation coefficients
 # and a second one based on the Morris methodology,
 # and compare the results,
 #
 # Firstly,
-# we create a :class:`.CorrelationAnalysis`
-# and compute the sensitivity indices:
-correlation = CorrelationAnalysis([discipline], space, 10)
+# we create a :class:`.CorrelationAnalysis` and compute the sensitivity indices:
+correlation = CorrelationAnalysis([discipline], uncertain_space, 10)
 correlation.compute_indices()
 
-#######################################################################################
+# %%
 # Then,
-# we create a :class:`.MorrisAnalysis`
-# and compute the sensitivity indices:
-morris = MorrisAnalysis([discipline], space, 10)
+# we create a :class:`.MorrisAnalysis` and compute the sensitivity indices:
+morris = MorrisAnalysis([discipline], uncertain_space, 10)
 morris.compute_indices()
 
-#######################################################################################
+# %%
 # Lastly,
 # we compare these analyses
 # with the graphical method :meth:`.SensitivityAnalysis.plot_comparison`,
 # either using a bar chart:
 morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=False)
 
-#######################################################################################
+# %%
 # or a radar plot:
 morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
