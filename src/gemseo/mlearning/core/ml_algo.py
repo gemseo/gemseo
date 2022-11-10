@@ -97,6 +97,7 @@ from __future__ import annotations
 
 import inspect
 import pickle
+from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -107,13 +108,13 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -123,7 +124,7 @@ DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
 
 
-class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
+class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract machine learning algorithm.
 
     Such a model is built from a training dataset,
@@ -271,6 +272,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         self._learn(samples, fit_transformers)
         self._trained = True
 
+    @abstractmethod
     def _learn(
         self,
         indices: Sequence[int] | None,
@@ -283,7 +285,6 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
                 If None, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
         """
-        raise NotImplementedError
 
     def __str__(self) -> str:
         msg = MultiLineString()

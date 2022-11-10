@@ -27,6 +27,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import array
 from numpy import array_equal
 
@@ -42,33 +43,22 @@ def dataset() -> Dataset:
 @pytest.fixture(scope="module")
 def measure(dataset) -> MLQualityMeasure:
     """The quality measure related to a trained machine learning algorithm."""
-    return MLQualityMeasure(MLAlgo(dataset))
+    with concretize_classes(MLQualityMeasure, MLAlgo):
+        return MLQualityMeasure(MLAlgo(dataset))
 
 
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_constructor(fit_transformers, dataset):
     """Test construction."""
-    measure = MLQualityMeasure(MLAlgo(dataset), fit_transformers=fit_transformers)
+    with concretize_classes(MLQualityMeasure, MLAlgo):
+        measure = MLQualityMeasure(MLAlgo(dataset), fit_transformers=fit_transformers)
+
     assert measure.algo.learning_set.name == "the_dataset"
     assert measure._fit_transformers is fit_transformers
 
 
-def test_evaluate(measure):
-    """Test evaluation of quality measure."""
-    test_dataset = Dataset()
-    with pytest.raises(NotImplementedError):
-        measure.evaluate()
-    with pytest.raises(NotImplementedError):
-        measure.evaluate(MLQualityMeasure.LEARN)
-    with pytest.raises(NotImplementedError):
-        measure.evaluate(MLQualityMeasure.TEST, test_data=test_dataset)
-    with pytest.raises(NotImplementedError):
-        measure.evaluate(MLQualityMeasure.LOO)
-    with pytest.raises(NotImplementedError):
-        measure.evaluate(MLQualityMeasure.KFOLDS, n_folds=5)
-    with pytest.raises(NotImplementedError):
-        measure.evaluate(MLQualityMeasure.BOOTSTRAP, n_replicates=100)
-
+def test_evaluate_unknown_method(measure):
+    """Check that an error is raised when evaluating an unknown method."""
     with pytest.raises(ValueError, match="The method 'foo' is not available"):
         measure.evaluate("foo")
 
@@ -109,7 +99,9 @@ def algo_with_three_samples():
 @pytest.mark.parametrize("randomize", [False, True])
 def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
     """Check that randomized cross-validation works correctly."""
-    measure = MLQualityMeasure(algo_with_three_samples)
+    with concretize_classes(MLQualityMeasure):
+        measure = MLQualityMeasure(algo_with_three_samples)
+
     folds, final_samples = measure._compute_folds(samples, n_folds, randomize, None)
     assert len(folds) == n_folds
     assert set.union(*(set(fold) for fold in folds)) == set(final_samples)

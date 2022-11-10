@@ -25,6 +25,7 @@ import logging
 import os
 import pkgutil
 import sys
+from inspect import isabstract
 from typing import Any
 from typing import Iterable
 
@@ -102,7 +103,6 @@ class Factory(Multiton):
         self.__names_to_classes = {}
         self.__names_to_library_names = {}
         self.failed_imports = {}
-
         self.update()
 
     def update(self) -> None:
@@ -151,7 +151,7 @@ class Factory(Multiton):
 
         names_to_classes = self.__get_sub_classes(self.__base_class)
         for name, cls in names_to_classes.items():
-            if self.__is_class_in_modules(module_names, cls):
+            if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
                 self.__names_to_classes[name] = cls
                 self.__names_to_library_names[name] = cls.__module__.split(".")[0]
 
@@ -256,13 +256,10 @@ class Factory(Multiton):
                 return True
         return False
 
+    # TODO: API: rename classes to class_names
     @property
     def classes(self) -> list[str]:
-        """Return the available classes.
-
-        Returns:
-            The sorted names of the available classes.
-        """
+        """The sorted names of the available classes."""
         return sorted(self.__names_to_classes.keys())
 
     def is_available(self, name: str) -> bool:

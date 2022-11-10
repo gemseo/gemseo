@@ -29,12 +29,11 @@ from typing import KeysView
 from typing import Sequence
 from typing import TYPE_CHECKING
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
-
 from gemseo.core.discipline_data import Data
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import update_namespaces
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -42,11 +41,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class __MetaClass(abc.ABCMeta, GoogleDocstringInheritanceMeta):
-    pass
-
-
-class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
+class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract base class for grammars with a dictionary-like interface.
 
     A grammar considers a certain type of data defined by mandatory and optional names

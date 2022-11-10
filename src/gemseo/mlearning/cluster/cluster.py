@@ -35,6 +35,7 @@ which inherits from :class:`.MLClusteringAlgo`.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
@@ -148,6 +149,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             clusters = clusters[0]
         return clusters
 
+    @abstractmethod
     def _predict(
         self,
         data: ndarray,
@@ -160,7 +162,6 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         Returns:
             The predicted clusters with shape (n_samples,).
         """
-        raise NotImplementedError
 
     def predict_proba(
         self,
@@ -240,6 +241,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             probas[i, pred] = 1
         return probas
 
+    @abstractmethod
     def _predict_proba_soft(
         self,
         data: ndarray,
@@ -253,4 +255,3 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             The probability of belonging to each cluster
                 with shape (n_samples, n_clusters).
         """
-        raise NotImplementedError

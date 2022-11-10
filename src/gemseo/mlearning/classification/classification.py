@@ -32,6 +32,7 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Dict
 from typing import Iterable
 from typing import Mapping
@@ -166,6 +167,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
                 probas[n_sample, prediction[n_sample, n_output], n_output] = 1
         return probas
 
+    @abstractmethod
     def _predict_proba_soft(
         self,
         input_data: ndarray,
@@ -179,7 +181,6 @@ class MLClassificationAlgo(MLSupervisedAlgo):
             The probability of belonging to each class
                 with shape (n_samples, n_classes).
         """
-        raise NotImplementedError
 
     def _get_objects_to_save(self) -> SavedObjectType:
         objects = super()._get_objects_to_save()

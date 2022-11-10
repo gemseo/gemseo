@@ -31,11 +31,11 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray
-from numpy import zeros
 from numpy.ma.testutils import assert_close
 from numpy.testing import assert_equal
 
@@ -54,7 +54,9 @@ def io_dataset() -> Dataset:
 
 def test_constructor(io_dataset):
     """Test construction."""
-    ml_algo = MLSupervisedAlgo(io_dataset)
+    with concretize_classes(MLSupervisedAlgo):
+        ml_algo = MLSupervisedAlgo(io_dataset)
+
     assert ml_algo.algo is None
     assert ml_algo.input_names == io_dataset.get_names("inputs")
     assert ml_algo.output_names == io_dataset.get_names("outputs")
@@ -71,17 +73,10 @@ def test_get_raw_shapes(io_dataset, in_transformer, n_in, out_transformer, n_out
     transformer = {}
     transformer.update(in_transformer)
     transformer.update(out_transformer)
-    algo = MLSupervisedAlgo(io_dataset, transformer=transformer)
+    with concretize_classes(MLSupervisedAlgo):
+        algo = MLSupervisedAlgo(io_dataset, transformer=transformer)
+
     assert algo._reduced_dimensions == (n_in, n_out)
-
-
-def test_notimplementederror(io_dataset):
-    """Test that learn() and predict() raise NotImplementedErrors."""
-    ml_algo = MLSupervisedAlgo(io_dataset)
-    with pytest.raises(NotImplementedError):
-        ml_algo.learn()
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
 
 
 def test_learn(io_dataset):
@@ -131,7 +126,9 @@ INPUT_VALUES = array([[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
 
 def test_format_dict(io_dataset):
     """Test format dict decorator."""
-    ml_algo = MLSupervisedAlgo(io_dataset)
+    with concretize_classes(MLSupervisedAlgo):
+        ml_algo = MLSupervisedAlgo(io_dataset)
+
     partially_transformed = [None]
 
     @MLSupervisedAlgo.DataFormatters.format_dict
@@ -173,7 +170,8 @@ def test_format_dict(io_dataset):
 def test_format_sample(io_dataset):
     """Test format sample decorator."""
     partially_transformed = [None]
-    ml_algo = MLSupervisedAlgo(io_dataset)
+    with concretize_classes(MLSupervisedAlgo):
+        ml_algo = MLSupervisedAlgo(io_dataset)
 
     @MLSupervisedAlgo.DataFormatters.format_samples
     def predict_sample(self, input_data):
@@ -212,6 +210,9 @@ class NewSupervisedAlgo(MLSupervisedAlgo):
 
     def _fit(self, input_data, output_data):
         return
+
+    def _predict(self, input_data):
+        return input_data
 
 
 @pytest.mark.parametrize(
@@ -295,7 +296,9 @@ def dataset() -> Dataset:
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_fit_transformers_option(dataset, name, fit_transformers):
     """Check that the fit_transformers option is correctly used."""
-    algo = MLSupervisedAlgo(dataset, transformer={name: "MinMaxScaler"})
+    with concretize_classes(MLSupervisedAlgo):
+        algo = MLSupervisedAlgo(dataset, transformer={name: "MinMaxScaler"})
+
     algo._fit = lambda x, y: None
     algo.learn(fit_transformers=fit_transformers)
     assert (float(algo.transformer[name].offset) == -1) is fit_transformers
@@ -306,9 +309,11 @@ def test_fit_transformers_option(dataset, name, fit_transformers):
 )
 def test_compute_transformed_variable_sizes(dataset, name, expected):
     """Check that the compute_transformed_variable_sizes method works."""
-    algo = MLSupervisedAlgo(
-        dataset, transformer={name: DimensionReduction(n_components=3)}
-    )
+    with concretize_classes(MLSupervisedAlgo):
+        algo = MLSupervisedAlgo(
+            dataset, transformer={name: DimensionReduction(n_components=3)}
+        )
+
     algo._MLSupervisedAlgo__compute_transformed_variable_sizes()
     sizes = algo._transformed_variable_sizes
     assert sizes == expected
@@ -318,7 +323,9 @@ def test_compute_transformed_variable_sizes(dataset, name, expected):
 
 def test_crossed_transformer_failure(dataset):
     """Check that a crossed transformer cannot be applied to outputs."""
-    algo = MLSupervisedAlgo(dataset, transformer={"y": "PLS"})
+    with concretize_classes(MLSupervisedAlgo):
+        algo = MLSupervisedAlgo(dataset, transformer={"y": "PLS"})
+
     expected = re.escape(
         "The transformer PLS cannot be applied to the outputs "
         "to build a supervised machine learning algorithm."
@@ -329,7 +336,9 @@ def test_crossed_transformer_failure(dataset):
 
 def test_crossed_transformer(dataset):
     """Check that a crossed transformer can be applied to inputs."""
-    algo = MLSupervisedAlgo(dataset, transformer={"x": "PLS"})
+    with concretize_classes(MLSupervisedAlgo):
+        algo = MLSupervisedAlgo(dataset, transformer={"x": "PLS"})
+
     algo._fit = lambda x, y: None
     algo.learn()
     assert_close(algo.transformer["x"].algo.x_weights_, array([[1.0]]))

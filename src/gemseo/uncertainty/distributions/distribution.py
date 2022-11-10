@@ -74,6 +74,7 @@ by means of the :meth:`.Distribution.compute_samples` method.
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -83,7 +84,6 @@ from typing import Tuple
 from typing import Union
 
 import matplotlib.pyplot as plt
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import arange
 from numpy import array
@@ -92,6 +92,7 @@ from numpy import ndarray
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -101,7 +102,7 @@ StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 
 
-class Distribution(metaclass=GoogleDocstringInheritanceMeta):
+class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Probability distribution related to a random variable.
 
     The dimension of the random variable can be greater than 1. In this case,
@@ -217,6 +218,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
     def __str__(self) -> str:
         return f"{self.distribution_name}({pretty_str(self.standard_parameters)})"
 
+    @abstractmethod
     def compute_samples(
         self,
         n_samples: int = 1,
@@ -232,8 +234,8 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
             The number of columns is equal to the dimension of the variable
             and the number of lines is equal to the number of samples.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def compute_cdf(
         self,
         vector: Iterable[float],
@@ -249,8 +251,8 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The CDF values of the components of the random variable.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def compute_inverse_cdf(
         self,
         vector: Iterable[float],
@@ -264,17 +266,16 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The ICDF values of the components of the random variable.
         """
-        raise NotImplementedError
 
     @property
+    @abstractmethod
     def mean(self) -> ndarray:
         """The analytical mean of the random variable."""
-        raise NotImplementedError
 
     @property
+    @abstractmethod
     def standard_deviation(self) -> ndarray:
         """The analytical standard deviation of the random variable."""
-        raise NotImplementedError
 
     @property
     def range(self) -> list[ndarray]:

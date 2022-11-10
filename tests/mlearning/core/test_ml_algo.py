@@ -29,6 +29,7 @@ from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import array_equal
@@ -49,7 +50,9 @@ def dataset() -> Dataset:
 
 def test_constructor(dataset):
     """Test construction."""
-    ml_algo = MLAlgo(dataset)
+    with concretize_classes(MLAlgo):
+        ml_algo = MLAlgo(dataset)
+
     assert ml_algo.algo is None
     assert not ml_algo.is_trained
     kmeans = KMeans(dataset)
@@ -84,7 +87,9 @@ def test_str(dataset, samples, trained):
 )
 def test_transformer(dataset, transformer):
     """Check if transformers are correctly passed."""
-    ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
+    with concretize_classes(MLAlgo):
+        ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
+
     assert isinstance(ml_algo.transformer["parameters"], Scaler)
     if isinstance(transformer, tuple):
         assert ml_algo.transformer["parameters"].offset == 2.0
@@ -99,7 +104,8 @@ def test_transformer_wrong_type(dataset):
             "either Transformer, Tuple[str, Mapping[str, Any]] or str."
         ),
     ):
-        MLAlgo(dataset, transformer={"parameters": 1})
+        with concretize_classes(MLAlgo):
+            MLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
@@ -139,4 +145,5 @@ def test_transformers_error(dataset):
             "for one variable of this group."
         ),
     ):
-        MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
+        with concretize_classes(MLAlgo):
+            MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
