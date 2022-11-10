@@ -29,8 +29,8 @@ from gemseo.utils.data_conversion import flatten_nested_dict
 
 
 def compare_dict_of_arrays(
-    dict_of_arrays: Mapping[str, ndarray],
-    other_dict_of_arrays: Mapping[str, ndarray],
+    dict_of_arrays: Mapping[str, ndarray] | Mapping[str, Mapping[str, ndarray]],
+    other_dict_of_arrays: Mapping[str, ndarray] | Mapping[str, Mapping[str, ndarray]],
     tolerance: float = 0.0,
 ) -> bool:
     """Check if two dictionaries of NumPy arrays are equal.
