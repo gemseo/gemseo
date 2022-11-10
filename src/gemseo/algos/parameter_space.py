@@ -146,6 +146,7 @@ class ParameterSpace(DesignSpace):
         # self.__distributions_definitions["u"] = ("SPNormalDistribution", {"mu": 1.})
         # where the first component of the tuple is a distribution name
         # and the second one a mapping of the distribution parameter.
+        self.__distribution_family_id = ""
 
     def is_uncertain(
         self,
@@ -208,19 +209,41 @@ class ParameterSpace(DesignSpace):
     ) -> None:
         """Add a random variable from a probability distribution.
 
+        Warnings:
+            The probability distributions must have
+            the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
+            For instance,
+            one cannot mix a random variable
+            distributed as a :class:`.OTUniformDistribution` with identifier ``"OT"``
+            and a random variable
+            distributed as a :class:`.SPNormalDistribution` with identifier ``"SP"``.
+
         Args:
             name: The name of the random variable.
             distribution: The name of a class
                 implementing a probability distribution,
-                e.g. 'OTUniformDistribution' or 'SPDistribution'.
+                e.g. ``"OTUniformDistribution"`` or ``"SPDistribution"``.
             size: The dimension of the random variable.
             **parameters: The parameters of the distribution.
+
+        Raises:
+            ValueError: When mixing probability distributions from different families,
+                e.g. an :class:`.OTDistribution` and a :class:`.SPDistribution`.
         """
         self.__distributions_definitions[name] = (distribution, parameters)
-        factory = DistributionFactory()
-        distribution = factory.create(
+        distribution = DistributionFactory().create(
             distribution, variable=name, dimension=size, **parameters
         )
+        distribution_family_id = distribution.__class__.__name__[0:2]
+        if self.__distribution_family_id:
+            if distribution_family_id != self.__distribution_family_id:
+                raise ValueError(
+                    f"A parameter space cannot mix {self.__distribution_family_id} "
+                    f"and {distribution_family_id} distributions."
+                )
+        else:
+            self.__distribution_family_id = distribution_family_id
+
         LOGGER.debug("Add the random variable: %s.", name)
         self.distributions[name] = distribution
         self.uncertain_variables.append(name)

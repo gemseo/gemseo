@@ -45,6 +45,7 @@ from typing import TYPE_CHECKING
 
 import openturns as ots
 
+
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
