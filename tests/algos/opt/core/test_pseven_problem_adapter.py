@@ -239,71 +239,79 @@ def test_elements_hints(p7_problem, index, key, value):
     assert p7_problem.elements_hint(index, key) == value
 
 
-def test_unconstrained_evaluate(rosenbrock, p7_rosenbrock):
+@pytest.mark.parametrize(["size", "use_threading"], [[1, False], [2, False], [2, True]])
+def test_unconstrained_evaluate(rosenbrock, size, use_threading):
     """Check the evaluation of an unconstrained problem functions."""
     queryx = array([[0.0, 0.0], [1.0, 1.0]])
     querymask = array([[1, 0, 0], [0, 1, 0]])
-    functions_batch, output_masks_batch = p7_rosenbrock.evaluate(queryx, querymask)
-    ref_functions = [
-        [rosenbrock.objective(x)] + rosenbrock.objective.jac(x).tolist() for x in queryx
-    ]
-    ref_functions[0][1] = None
-    ref_functions[0][2] = None
-    ref_functions[1][0] = None
-    ref_masks = [array([True, False, False]), array([False, True, True])]
-    assert array(functions_batch == ref_functions).all()
-    assert len(output_masks_batch) == 2
-    assert (output_masks_batch[0] == ref_masks[0]).all()
-    assert (output_masks_batch[1] == ref_masks[1]).all()
+    ref_functions = [[1.0, None, None], [None, 0.0, 0.0]]
+    ref_masks = [[True, False, False], [False, True, True]]
+    assert PSevenProblem(rosenbrock, use_threading=use_threading).evaluate(
+        queryx[:size], querymask[:size]
+    ) == (ref_functions[:size], ref_masks[:size])
 
 
-def test_constrained_evaluate(power2, p7_power2):
+@pytest.mark.parametrize(["size", "use_threading"], [[1, False], [2, False], [2, True]])
+def test_constrained_evaluate(power2, size, use_threading):
     """Check the evaluation of a constrained problem functions."""
-    queryx = array([[1.0, 1.0, 1.0], power2.get_solution()[0]])
+    queryx = array([[1.0, 1.0, 1.0], [0.5 ** (1.0 / 3.0)] * 2 + [0.9 ** (1.0 / 3.0)]])
     querymask = array(
         [
-            [0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1],
-            [1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0],
+            [1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1],
+            [0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0],
         ]
     )
-
-    functions_batch, output_masks_batch = p7_power2.evaluate(queryx, querymask)
-    ref_functions = list()
-
-    for x in queryx:
-        values = [power2.objective(x)]
-        values.extend(constraint(x)[0] for constraint in power2.constraints)
-        jacobians = power2.objective.jac(x).tolist()
-        for constraint in power2.constraints:
-            jacobians.extend(constraint.jac(x).flatten())
-        ref_functions.append(values + jacobians)
-
-    for j in [0, 2, 10, 11, 12]:
-        ref_functions[0][j] = None
-    for j in [1, 3, 4, 5, 6, 13, 14, 15]:
-        ref_functions[1][j] = None
-
-    ref_masks = [
-        array(
-            [False, True, False, True]
-            + [True] * 3
-            + [True] * 3
-            + [False] * 3
-            + [True] * 3
-        ),
-        array(
-            [True, False, True, False]
-            + [False] * 3
-            + [True] * 3
-            + [True] * 3
-            + [False] * 3
-        ),
+    ref_functions = [
+        [
+            3.0,
+            -0.5,
+            None,
+            -0.1,
+            2.0,
+            2.0,
+            2.0,
+            -3.0,
+            0.0,
+            0.0,
+            None,
+            None,
+            None,
+            0.0,
+            0.0,
+            -3.0,
+        ],
+        [
+            None,
+            None,
+            0.0,
+            None,
+            None,
+            None,
+            None,
+            -3.0 / 4.0 ** (1.0 / 3.0),
+            0.0,
+            0.0,
+            0.0,
+            -3.0 / 4.0 ** (1.0 / 3.0),
+            0.0,
+            None,
+            None,
+            None,
+        ],
     ]
+    ref_masks = [
+        [True, True, False, True] + [True] * 6 + [False] * 3 + [True] * 3,
+        [False, False, True, False] + [False] * 3 + [True] * 6 + [False] * 3,
+    ]
+    functions_batch, output_masks_batch = PSevenProblem(
+        power2, use_threading=use_threading
+    ).evaluate(queryx[:size], querymask[:size])
+    assert len(functions_batch) == size
+    assert functions_batch[0] == pytest.approx(ref_functions[0])
+    if size == 2:
+        assert functions_batch[1] == pytest.approx(ref_functions[1])
 
-    assert array(functions_batch == ref_functions).all()
-    assert len(output_masks_batch) == 2
-    assert (output_masks_batch[0] == ref_masks[0]).all()
-    assert (output_masks_batch[1] == ref_masks[1]).all()
+    assert output_masks_batch == ref_masks[:size]
 
 
 def test_multi_objectives():
