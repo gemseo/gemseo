@@ -33,7 +33,6 @@ from typing import MutableMapping
 from typing import Tuple
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 from numpy import savetxt
 
@@ -62,7 +61,7 @@ class DOEAlgorithmDescription(DriverDescription):
     """The minimum dimension of the parameter space."""
 
 
-class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
+class DOELibrary(DriverLib):
     """Abstract class to use for DOE library link See DriverLib."""
 
     unit_samples: ndarray | None
@@ -384,21 +383,6 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                         str(sample),
                     )
                     LOGGER.error(traceback.format_exc())
-
-    @staticmethod
-    def is_algorithm_suited(
-        algorithm_description: DOEAlgorithmDescription, problem: OptimizationProblem
-    ) -> bool:
-        """Check if the algorithm is suited to the problem according to its description.
-
-        Args:
-            algorithm_description: The description of the algorithm.
-            problem: The problem to be solved.
-
-        Returns:
-            Whether the algorithm is suited to the problem.
-        """
-        return True
 
     @staticmethod
     def _rescale_samples(samples):

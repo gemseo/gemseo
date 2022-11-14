@@ -32,11 +32,13 @@ from typing import MutableMapping
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.source_parsing import get_options_doc
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     """The website of the wrapped library or algorithm."""
 
 
-class AlgoLib:
+class AlgoLib(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class for algorithms libraries interfaces.
 
     An algorithm library solves a numerical problem
@@ -361,23 +363,41 @@ class AlgoLib:
             algo_name: The name of the algorithm.
             problem: The problem to be solved.
         """
-        # Check that the algorithm is available
         if algo_name not in self.descriptions:
             raise KeyError(
-                "Requested algorithm {} is not in list of available algorithms: "
-                "{}.".format(algo_name, ", ".join(self.descriptions.keys()))
+                f"The algorithm {algo_name} is unknown; "
+                f"available ones are: {pretty_str(self.descriptions.keys())}."
             )
 
-        # Check that the algorithm is suited to the problem
-        if not self.is_algorithm_suited(self.descriptions[self.algo_name], problem):
-            raise ValueError(f"Algorithm {algo_name} is not adapted to the problem.")
+        unsuitability_reason = self._get_unsuitability_reason(
+            self.descriptions[self.algo_name], problem
+        )
+        if unsuitability_reason:
+            raise ValueError(
+                f"The algorithm {algo_name} is not adapted to the problem "
+                f"because {unsuitability_reason}."
+            )
 
-    @staticmethod
+    @classmethod
+    def _get_unsuitability_reason(
+        cls, algorithm_description: AlgorithmDescription, problem: Any
+    ) -> _UnsuitabilityReason:
+        """Get the reason why an algorithm is not adapted to a problem.
+
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            The reason why the algorithm is not adapted to the problem.
+        """
+        return _UnsuitabilityReason.NO_REASON
+
+    @classmethod
     def is_algorithm_suited(
-        algorithm_description: AlgorithmDescription,
-        problem: Any,
+        cls, algorithm_description: AlgorithmDescription, problem: Any
     ) -> bool:
-        """Check if the algorithm is suited to the problem according to its description.
+        """Check if an algorithm is suited to a problem according to its description.
 
         Args:
             algorithm_description: The description of the algorithm.
@@ -386,7 +406,7 @@ class AlgoLib:
         Returns:
             Whether the algorithm is suited to the problem.
         """
-        raise NotImplementedError()
+        return not cls._get_unsuitability_reason(algorithm_description, problem)
 
     def filter_adapted_algorithms(self, problem: Any) -> list[str]:
         """Filter the algorithms capable of solving the problem.

@@ -23,15 +23,19 @@ from __future__ import annotations
 from unittest import mock
 
 import pytest
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import array
 
 
 class MyDriver(DriverLib):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.descriptions = {"algo_name": None}
 
 
 @pytest.fixture(scope="module")
@@ -45,6 +49,20 @@ def optimization_problem():
     return problem
 
 
+def test_empty_design_space():
+    """Check that a driver cannot be executed with an empty design space."""
+    driver = MyDriver()
+    driver.algo_name = "algo_name"
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The algorithm algo_name is not adapted to the problem "
+            "because the design space is empty."
+        ),
+    ):
+        driver._check_algorithm("algo_name", OptimizationProblem(DesignSpace()))
+
+
 def test_max_iter_fail(optimization_problem):
     """Check that a ValueError is raised for an invalid `max_iter` input."""
     MyDriver()._pre_run(optimization_problem, None)
@@ -52,15 +70,14 @@ def test_max_iter_fail(optimization_problem):
         MyDriver().init_iter_observer(max_iter=-1)
 
 
-def test_no_algo_fail():
+def test_no_algo_fail(optimization_problem):
     """Check that a ValueError is raised when no algorithm name is set."""
-
     with pytest.raises(
         ValueError,
         match="Algorithm name must be either passed as "
         "argument or set by the attribute 'algo_name'.",
     ):
-        MyDriver().execute(None)
+        MyDriver().execute(optimization_problem)
 
 
 def test_grammar_fail():

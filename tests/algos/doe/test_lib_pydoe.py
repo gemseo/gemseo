@@ -61,10 +61,7 @@ def test_invalid_algo():
     """Check that an invalid algorithm name."""
     with pytest.raises(
         KeyError,
-        match=(
-            "Requested algorithm unknown_algo "
-            "is not in list of available algorithms: *."
-        ),
+        match=("The algorithm unknown_algo is unknown; available ones are: *."),
     ):
         execute_problem(
             DOE_LIB_NAME,
