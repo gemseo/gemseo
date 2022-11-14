@@ -203,6 +203,9 @@
 		},
 		"log_path": {
 			"type": ["null", "string"]
+		},
+		"use_threading": {
+			"type": "boolean"
 		}
 	},
 	"$schema": "http://json-schema.org/draft-04/schema",
