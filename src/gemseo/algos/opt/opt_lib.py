@@ -25,6 +25,7 @@ from dataclasses import dataclass
 
 from numpy import ndarray
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
@@ -232,39 +233,35 @@ class OptimizationLibrary(DriverLib):
             ),
         )
 
-    @staticmethod
-    def is_algorithm_suited(
+    @classmethod
+    def _get_unsuitability_reason(
+        cls,
         algorithm_description: OptimizationAlgorithmDescription,
         problem: OptimizationProblem,
-    ) -> bool:
-        """Check if the algorithm is suited to the problem according to its description.
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason:
+            return reason
 
-        Args:
-            algorithm_description: The description of the algorithm.
-            problem: The problem to be solved.
-
-        Returns:
-            Whether the algorithm is suited to the problem.
-        """
         if (
             problem.has_eq_constraints()
             and not algorithm_description.handle_equality_constraints
         ):
-            return False
+            return _UnsuitabilityReason.EQUALITY_CONSTRAINTS
 
         if (
             problem.has_ineq_constraints()
             and not algorithm_description.handle_inequality_constraints
         ):
-            return False
+            return _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
 
         if (
             problem.pb_type == problem.NON_LINEAR_PB
             and algorithm_description.problem_type == problem.LINEAR_PB
         ):
-            return False
+            return _UnsuitabilityReason.NON_LINEAR_PROBLEM
 
-        return True
+        return reason
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Verify the design variable and objective value stopping criteria.

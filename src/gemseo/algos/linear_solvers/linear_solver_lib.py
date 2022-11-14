@@ -30,6 +30,7 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
@@ -104,36 +105,32 @@ class LinearSolverLib(AlgoLib):
         """The solution of the problem."""
         return self.problem.solution
 
-    @staticmethod
-    def is_algorithm_suited(
+    @classmethod
+    def _get_unsuitability_reason(
+        cls,
         algorithm_description: LinearSolverDescription,
         problem: LinearProblem,
-    ) -> bool:
-        """Check if the algorithm is suited to the problem according to algo_dict.
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason:
+            return reason
 
-        Args:
-            algorithm_description: The description of the algorithm.
-            problem: The problem to be solved.
-
-        Returns:
-            Whether the algorithm suits.
-        """
         if not problem.is_symmetric and algorithm_description.lhs_must_be_symmetric:
-            return False
+            return _UnsuitabilityReason.NOT_SYMMETRIC
 
         if (
             not problem.is_positive_def
             and algorithm_description.lhs_must_be_positive_definite
         ):
-            return False
+            return _UnsuitabilityReason.NOT_POSITIVE_DEFINITE
 
         if (
             problem.is_lhs_linear_operator
             and not algorithm_description.lhs_must_be_linear_operator
         ):
-            return False
+            return _UnsuitabilityReason.NOT_LINEAR_OPERATOR
 
-        return True
+        return reason
 
     def _pre_run(
         self,

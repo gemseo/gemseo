@@ -53,6 +53,7 @@ from numpy import zeros
 from tqdm.utils import _unicode
 from tqdm.utils import disp_len
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.design_space import DesignSpace
@@ -213,6 +214,16 @@ class DriverLib(AlgoLib):
         self._start_time = None
         self._max_time = None
         self.__message = None
+
+    @classmethod
+    def _get_unsuitability_reason(
+        cls, algorithm_description: DriverDescription, problem: OptimizationProblem
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason or problem.design_space:
+            return reason
+
+        return _UnsuitabilityReason.EMPTY_DESIGN_SPACE
 
     def deactivate_progress_bar(self) -> None:
         """Deactivate the progress bar."""
