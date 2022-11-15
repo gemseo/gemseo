@@ -467,5 +467,5 @@ About post processing
   For that, it consider the object to post process :code:`to_post_proc`, the post processing :code:`post_name` with its :code:`**options`;
   e.g.:
 
-.. automethod:: gemseo.api.execute_post
+.. autofunction:: gemseo.api.execute_post
    :noindex:

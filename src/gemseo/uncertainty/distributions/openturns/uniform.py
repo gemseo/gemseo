@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create an uniform distribution from the OpenTURNS library.
+"""Class to create a uniform distribution from the OpenTURNS library.
 
 This class inherits from :class:`.OTDistribution`.
 """
@@ -27,7 +27,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTUniformDistribution(OTDistribution):
-    """Create an uniform distribution.
+    """Create a uniform distribution.
 
     Example:
         >>> from gemseo.uncertainty.distributions.openturns.uniform import (
