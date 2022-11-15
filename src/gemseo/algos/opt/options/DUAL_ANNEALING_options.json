@@ -44,10 +44,7 @@
         },
         "seed":{
             "type":["null", "integer"]
-        },
-        "normalize_design_space": {
-			"type": "boolean"
-		}
+        }
 
     },
     "$schema": "http://json-schema.org/draft-04/schema",

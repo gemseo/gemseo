@@ -105,6 +105,9 @@ class AlgoLib(metaclass=GoogleDocstringInheritanceMeta):
     LIBRARY_NAME: ClassVar[str | None] = None
     """The name of the interfaced library."""
 
+    _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar("AlgoLibOptions")
+    """The grammar defining the options common to all the algorithms of the library."""
+
     def __init__(self) -> None:
         # Library settings and check
         self.descriptions = {}
@@ -152,6 +155,7 @@ class AlgoLib(metaclass=GoogleDocstringInheritanceMeta):
             raise ValueError(msg)
 
         self.opt_grammar = JSONGrammar(algo_name)
+        self.opt_grammar.update(self._COMMON_OPTIONS_GRAMMAR)
         self.opt_grammar.update_from_file(schema_file)
         self.opt_grammar.set_descriptions(get_options_doc(self.__class__._get_options))
 

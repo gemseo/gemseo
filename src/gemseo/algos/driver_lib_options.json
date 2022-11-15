@@ -1,0 +1,17 @@
+{
+    "name": "DriverLib_options",
+    "properties": {
+        "normalize_design_space": {
+			"type": "boolean"
+		},
+        "round_ints": {
+			"type": "boolean"
+		},
+        "use_database": {
+			"type": "boolean"
+		}
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

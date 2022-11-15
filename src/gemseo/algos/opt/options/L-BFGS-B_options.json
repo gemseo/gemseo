@@ -6,9 +6,6 @@
             "type": "integer",
              "minimum": 0
         },
-		"normalize_design_space": {
-			"type": "boolean"
-		},
         "maxcor":{
             "type": "integer"
         },
