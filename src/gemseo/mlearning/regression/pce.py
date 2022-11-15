@@ -116,6 +116,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.utils.python_compatibility import Final
@@ -312,13 +313,13 @@ class PCERegressor(MLRegressionAlgo):
         else:
             self.__quadrature_points_with_weights = None
 
-        self.__mean = array([])
-        self.__covariance = array([])
-        self.__variance = array([])
-        self.__standard_deviation = array([])
-        self.__first_order_sobol_indices = {}
-        self.__total_order_sobol_indices = {}
-        self.__prediction_function = None
+        self._mean = array([])
+        self._covariance = array([])
+        self._variance = array([])
+        self._standard_deviation = array([])
+        self._first_order_sobol_indices = {}
+        self._total_order_sobol_indices = {}
+        self._prediction_function = None
 
     def __instantiate_functional_chaos_algorithm(
         self, input_data: ndarray, output_data: ndarray
@@ -413,28 +414,28 @@ class PCERegressor(MLRegressionAlgo):
         algo = self.__instantiate_functional_chaos_algorithm(input_data, output_data)
         algo.run()
         self.algo = algo.getResult()
-        self.__prediction_function = self.algo.getMetaModel()
+        self._prediction_function = self.algo.getMetaModel()
 
         # Compute some statistics.
         random_vector = FunctionalChaosRandomVector(self.algo)
-        self.__mean = array(random_vector.getMean())
-        self.__covariance = array(random_vector.getCovariance())
-        self.__variance = self.__covariance.diagonal()
-        self.__standard_deviation = self.__variance**0.5
+        self._mean = array(random_vector.getMean())
+        self._covariance = array(random_vector.getCovariance())
+        self._variance = self._covariance.diagonal()
+        self._standard_deviation = self._variance**0.5
 
         # Compute some sensitivity indices.
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
-        self.__first_order_sobol_indices = {
+        self._first_order_sobol_indices = {
             name: sensitivity_analysis.getSobolIndex(index)
             for index, name in enumerate(self.input_names)
         }
-        self.__total_order_sobol_indices = {
+        self._total_order_sobol_indices = {
             name: sensitivity_analysis.getSobolTotalIndex(index)
             for index, name in enumerate(self.input_names)
         }
 
     def _predict(self, input_data: ndarray) -> ndarray:
-        return array(self.__prediction_function(input_data))
+        return array(self._prediction_function(input_data))
 
     def _get_quadrature_points(
         self, n_quadrature_points: int, discipline: MDODiscipline
@@ -490,7 +491,7 @@ class PCERegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        gradient = self.algo.getMetaModel().gradient
+        gradient = self._prediction_function.gradient
         input_size, output_size = self._reduced_dimensions
         jac = zeros((input_data.shape[0], output_size, input_size))
         for index, data in enumerate(input_data):
@@ -502,34 +503,45 @@ class PCERegressor(MLRegressionAlgo):
     def mean(self) -> ndarray:
         """The mean vector of the PCE model output."""
         self._check_is_trained()
-        return self.__mean
+        return self._mean
 
     @property
     def covariance(self) -> ndarray:
         """The covariance matrix of the PCE model output."""
         self._check_is_trained()
-        return self.__covariance
+        return self._covariance
 
     @property
     def variance(self) -> ndarray:
         """The variance vector of the PCE model output."""
         self._check_is_trained()
-        return self.__variance
+        return self._variance
 
     @property
     def standard_deviation(self) -> ndarray:
         """The standard deviation vector of the PCE model output."""
         self._check_is_trained()
-        return self.__standard_deviation
+        return self._standard_deviation
 
     @property
     def first_sobol_indices(self) -> dict[str, ndarray]:
         """The first-order Sobol' indices."""
         self._check_is_trained()
-        return self.__first_order_sobol_indices
+        return self._first_order_sobol_indices
 
     @property
     def total_sobol_indices(self) -> dict[str, ndarray]:
         """The total Sobol' indices."""
         self._check_is_trained()
-        return self.__total_order_sobol_indices
+        return self._total_order_sobol_indices
+
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
+        objects = super()._get_objects_to_save()
+        objects["_prediction_function"] = self._prediction_function
+        objects["_mean"] = self._mean
+        objects["_covariance"] = self._covariance
+        objects["_variance"] = self._variance
+        objects["_standard_deviation"] = self._standard_deviation
+        objects["_first_order_sobol_indices"] = self._first_order_sobol_indices
+        objects["_total_order_sobol_indices"] = self._total_order_sobol_indices
+        return objects
