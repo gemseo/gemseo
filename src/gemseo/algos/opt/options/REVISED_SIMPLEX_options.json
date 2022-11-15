@@ -5,9 +5,6 @@
         "disp": {
             "type": "boolean"
         },
-		"normalize_design_space": {
-			"type": "boolean"
-		},
         "max_iter":{
             "type": "integer",
             "minimum": 1

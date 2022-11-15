@@ -33,9 +33,6 @@
         "ensure_bounds":{
             "type": "boolean"
         },
-        "normalize_design_space": {
-			"type": "boolean"
-		},
 		"xtol_rel": {
             "type": "number",
             "minimum": 0.0

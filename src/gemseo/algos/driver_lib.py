@@ -39,6 +39,7 @@ import io
 import logging
 import string
 from dataclasses import dataclass
+from pathlib import Path
 from time import time
 from typing import Callable
 from typing import ClassVar
@@ -67,6 +68,7 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
@@ -203,6 +205,11 @@ class DriverLib(AlgoLib):
 
     activate_progress_bar: ClassVar[bool] = True
     """Whether to activate the progress bar in the optimization log."""
+
+    _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar(
+        "DriverLibOptions",
+        schema_path=Path(__file__).parent / "driver_lib_options.json",
+    )
 
     def __init__(self):
         # Library settings and check

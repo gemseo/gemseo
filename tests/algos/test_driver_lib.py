@@ -150,3 +150,15 @@ def test_progress_bar(activate_progress_bar):
     driver = OptimizersFactory().create("SLSQP")
     driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
     assert (driver._DriverLib__progress_bar is None) is not activate_progress_bar
+
+
+def test_common_options():
+    """Check that the options common to all the drivers are in the option grammar."""
+    driver = MyDriver()
+    driver.init_options_grammar("AlgoName")
+    assert driver.opt_grammar.names == {
+        DriverLib.ROUND_INTS_OPTION,
+        DriverLib.NORMALIZE_DESIGN_SPACE_OPTION,
+        DriverLib.USE_DATABASE_OPTION,
+    }
+    assert not driver.opt_grammar.required_names
