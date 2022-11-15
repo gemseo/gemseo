@@ -80,7 +80,7 @@ From this :code:`scenario`, we can apply any kind of post-processing dedicated t
 
 - or by means of the :meth:`~gemseo.api.execute_post` API method:
 
-    .. automethod:: gemseo.api.execute_post
+    .. autofunction:: gemseo.api.execute_post
        :noindex:
 
 .. note::

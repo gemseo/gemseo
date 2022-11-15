@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create an uniform distribution from the SciPy library.
+"""Class to create a uniform distribution from the SciPy library.
 
 This class inherits from :class:`.SPDistribution`.
 """
@@ -27,7 +27,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPUniformDistribution(SPDistribution):
-    """Create an uniform distribution.
+    """Create a uniform distribution.
 
     Example:
         >>> from gemseo.uncertainty.distributions.scipy.uniform import (

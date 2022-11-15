@@ -52,7 +52,7 @@ and are often used to deal with uncertainty quantification problems.
 
 If :math:`X_j` is a Gaussian random variable,
 :math:`(\psi_{ij})_{i\geq 0}` is the Legendre basis.
-If :math:`X_j` is an uniform random variable,
+If :math:`X_j` is a uniform random variable,
 :math:`(\psi_{ij})_{i\geq 0}` is the Hermite basis.
 
 When the problem is deterministic,

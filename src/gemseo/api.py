@@ -1136,7 +1136,7 @@ def create_scenario(
 
 def configure_logger(
     logger_name: str | None = None,
-    level: int = logging.INFO,
+    level: str | int = logging.INFO,
     date_format: str = "%H:%M:%S",
     message_format: str = "%(levelname)8s - %(asctime)s: %(message)s",
     filename: str | Path | None = None,
@@ -1147,7 +1147,15 @@ def configure_logger(
     Args:
         logger_name: The name of the logger to configure.
             If ``None``, return the root logger.
-        level: The logging level, either 'DEBUG', 'INFO', 'WARNING' and 'CRITICAL'.
+        level: The numerical value or name of the logging level,
+            as defined in :py:mod:`logging`.
+            Values can either be
+            ``logging.NOTSET`` (``"NOTSET"``),
+            ``logging.DEBUG`` (``"DEBUG"``),
+            ``logging.INFO`` (``"INFO"``),
+            ``logging.WARNING`` (``"WARNING"`` or ``"WARN"``),
+            ``logging.ERROR`` (``"ERROR"``), or
+            ``logging.CRITICAL`` (``"FATAL"`` or ``"CRITICAL"``).
         date_format: The logging date format.
         message_format: The logging message format.
         filename: The path to the log file, if outputs must be written in a file.

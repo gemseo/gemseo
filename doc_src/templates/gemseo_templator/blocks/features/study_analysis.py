@@ -17,7 +17,7 @@ from __future__ import annotations
 from gemseo_templator.blocks.template import Block
 
 block = Block(
-    title="Study Prototyping",
+    title="Study analysis",
     description=(
         "An intuitive tool to discover MDO without writing any code, "
         "and define the right MDO problem and process. "
@@ -29,5 +29,6 @@ block = Block(
         '(<a href="mdo/mdo_formulations.html#xdsm-visualization">XDSM</a>), '
         "even before wrapping any software."
     ),
-    info="interface/gemseo_study.html",
+    info="interface/study_analysis.html",
+    examples="examples/study_analysis/index.html",
 )
