@@ -23,12 +23,15 @@ from __future__ import annotations
 import logging
 import re
 from copy import deepcopy
+from pickle import dump
+from pickle import load
 
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.pce import CleaningOptions
 from gemseo.mlearning.regression.pce import PCERegressor
 from gemseo.utils.testing import compare_dict_of_arrays
@@ -530,3 +533,33 @@ def test_check_is_trained(untrained_pce, name):
         match=re.escape(f"The PCERegressor must be trained to access {name}."),
     ):
         getattr(untrained_pce, name)
+
+
+def test_save_load_with_pickle(pce, tmp_wd):
+    """Check some attributes are correctly with pickle."""
+    with open("model.pkl", "wb") as f:
+        dump(pce, f)
+
+    with open("model.pkl", "rb") as f:
+        model = load(f)
+
+    assert model._prediction_function
+    assert model._mean.size
+    assert model._covariance.size
+    assert model._variance.size
+    assert model._standard_deviation.size
+    assert model._first_order_sobol_indices
+    assert model._total_order_sobol_indices
+
+
+def test_save_load(pce, tmp_wd):
+    """Check some attributes are correctly loaded."""
+    directory_path = pce.save("my_model")
+    model = import_regression_model(directory_path)
+    assert model._prediction_function
+    assert model._mean.size
+    assert model._covariance.size
+    assert model._variance.size
+    assert model._standard_deviation.size
+    assert model._first_order_sobol_indices
+    assert model._total_order_sobol_indices
