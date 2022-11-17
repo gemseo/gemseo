@@ -36,8 +36,8 @@ class ScalabilityResult:
         """Constructor.
 
         :param str name: name of the scalability result.
-        :param int id_scaling: scaling identifiant
-        :param int id_sample: sample identifiant
+        :param int id_scaling: scaling identifier
+        :param int id_sample: sample identifier
         """
         self.name = name
         self.id_scaling = id_scaling

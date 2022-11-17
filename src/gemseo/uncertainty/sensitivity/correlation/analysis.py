@@ -147,7 +147,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         if not isinstance(output_names, list):
             output_names = [output_names]
         inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
-        outputs = self.dataset.get_data_by_names(output_names, True)
+        outputs = self.dataset.get_data_by_names(output_names)
         self.__correlation = {}
         for algo_name, algo_value in self._ALGORITHMS.items():
             inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)

@@ -175,7 +175,7 @@ class DisciplineJacApprox:
                 and truncation error estimates.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
-                By default Machine epsilon (appx 1e-16),
+                By default, Machine epsilon (appx 1e-16),
                 but can be higher.
                 when the calculation of :math:`f` requires a numerical resolution.
 
@@ -578,11 +578,7 @@ class DisciplineJacApprox:
             nrows += 1
         ncols = 2
         fig, axes = plt.subplots(
-            nrows=nrows,
-            ncols=2,
-            sharex=True,
-            sharey=False,
-            figsize=(fig_size_x, fig_size_y),
+            nrows=nrows, ncols=2, sharex=True, figsize=(fig_size_x, fig_size_y)
         )
         i = 0
         j = -1

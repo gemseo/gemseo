@@ -90,12 +90,12 @@ def run_process():
 
     # Creates the design space
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "z", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )
-    design_space.add_variable("y_0", 1, l_b=-100.0, u_b=100.0, value=ones(1))
-    design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
 
     # Build scenario which links the disciplines with the formulation and
     # The optimization algorithm
@@ -111,7 +111,7 @@ def run_process():
     scenario.add_constraint("c_2", "ineq")
 
     # USe finite differences since the disciplines do not provide derivatives
-    scenario.set_differentiation_method("finite_differences", 1e-6)
+    scenario.set_differentiation_method("finite_differences")
 
     # Execute scenario with the inputs of the MDO scenario as a dict
     scenario.execute(input_data={"max_iter": 15, "algo": "SLSQP"})

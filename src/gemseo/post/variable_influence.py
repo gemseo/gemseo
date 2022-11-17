@@ -203,11 +203,7 @@ class VariableInfluence(OptPostProcessor):
             n_cols = 1
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows,
-            ncols=n_cols,
-            sharex=True,
-            sharey=False,
-            figsize=self.DEFAULT_FIG_SIZE,
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=self.DEFAULT_FIG_SIZE
         )
 
         axes = atleast_2d(axes)

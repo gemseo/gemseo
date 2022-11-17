@@ -59,7 +59,7 @@ def test_correlation(correlation, tmp_wd):
     with pytest.raises(NotImplementedError):
         correlation.main_method = "foo"
 
-    correlation.plot("y1", save=True, show=False, directory_path=tmp_wd)
+    correlation.plot("y1", directory_path=tmp_wd)
     assert Path("correlation_analysis.png").exists()
 
 

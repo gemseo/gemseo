@@ -73,7 +73,7 @@ disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 # In this section,
 # we define the design space which will be used for the creation of the MDOScenario.
 design_space = DesignSpace()
-design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
 design_space.add_variable(
     "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
 )

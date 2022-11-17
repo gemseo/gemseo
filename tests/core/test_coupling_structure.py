@@ -71,9 +71,7 @@ class TestCouplingStructure(unittest.TestCase):
     def test_strong_weak_coupling(self):
         disciplines = [SobieskiStructure(), SobieskiMission()]
         coupling_structure = MDOCouplingStructure(disciplines)
-        s1_o_strong = coupling_structure.get_output_couplings(
-            disciplines[0], strong=True
-        )
+        s1_o_strong = coupling_structure.get_output_couplings(disciplines[0])
         assert len(s1_o_strong) == 0
         s1_o_weak = coupling_structure.get_output_couplings(
             disciplines[0], strong=False
@@ -90,9 +88,9 @@ class TestCouplingStructure(unittest.TestCase):
         ]
         coupling_structure = MDOCouplingStructure(disciplines)
 
-        coupling_structure.plot_n2_chart("n2_1.png", False, show=False, save=True)
+        coupling_structure.plot_n2_chart("n2_1.png", False)
         assert exists("n2_1.png")
-        coupling_structure.plot_n2_chart("n2_2.png", True, show=False, save=True)
+        coupling_structure.plot_n2_chart("n2_2.png")
         assert exists("n2_2.png")
 
         disc_shuff = list(DISC_DESCRIPTIONS["16"].items())
@@ -102,14 +100,14 @@ class TestCouplingStructure(unittest.TestCase):
         coupling_structure = MDOCouplingStructure(disciplines)
 
         fname = "n2_16d.png"
-        coupling_structure.plot_n2_chart(fname, False, show=False, save=True)
+        coupling_structure.plot_n2_chart(fname, False)
         assert exists(fname)
 
         coupling_structure = MDOCouplingStructure([disciplines[0]])
         with pytest.raises(
             ValueError, match="N2 diagrams need at least two disciplines."
         ):
-            coupling_structure.plot_n2_chart("n2_3.png", False, show=False, save=True)
+            coupling_structure.plot_n2_chart("n2_3.png", False)
 
     def test_n2_many_io(self):
         a = MDODiscipline("a")
@@ -120,7 +118,7 @@ class TestCouplingStructure(unittest.TestCase):
         b.input_grammar.update(["o" + str(i) for i in range(30)])
 
         cpl = MDOCouplingStructure([a, b])
-        cpl.plot_n2_chart(save=True, show=False)
+        cpl.plot_n2_chart()
 
     def test_self_coupled(self):
         sc_disc = SelfCoupledDisc()
@@ -242,7 +240,7 @@ def test_n2_no_coupling(
     ]
 
     MDOCouplingStructure(disciplines).plot_n2_chart(
-        f"{baseline_images[0]}.png", show_data_names, save=True, show=False
+        f"{baseline_images[0]}.png", show_data_names
     )
 
 
@@ -260,7 +258,7 @@ def test_coupl_properties():
 
     assert coupl.get_input_couplings(disciplines[1]) == ["y_1"]
 
-    assert coupl.get_input_couplings(disciplines[2], strong=True) == ["y_1", "y_2"]
+    assert coupl.get_input_couplings(disciplines[2]) == ["y_1", "y_2"]
 
     assert sorted(coupl.get_input_couplings(disciplines[2], strong=False)) == [
         "y_1",
@@ -270,4 +268,4 @@ def test_coupl_properties():
     disciplines = create_discipline(["Sellar1", "SellarSystem"])
     coupl = MDOCouplingStructure(disciplines)
     assert coupl.get_input_couplings(disciplines[1], strong=False) == ["y_1"]
-    assert coupl.get_input_couplings(disciplines[1], strong=True) == []
+    assert coupl.get_input_couplings(disciplines[1]) == []

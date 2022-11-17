@@ -59,6 +59,6 @@ print(dataset)
 ##############################################################################
 # Plot the data
 # -------------
-Curves(dataset, "x", "u_t").execute(save=False, show=False)
+Curves(dataset, "x", "u_t").execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

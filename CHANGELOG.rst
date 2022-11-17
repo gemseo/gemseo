@@ -960,12 +960,12 @@ Added
 - Famous N2 plot in the CouplingStructure
 - Sphinx generated documentation in HTML (open doc/index.html), with:
 
-	- GEMS in a nutshell tutorial
-	- Discipline integration tutorial
-	- Post processing description
-	- GEMS architecture description
-	- MDO formulations description
-	- MDAs
+    - GEMS in a nutshell tutorial
+    - Discipline integration tutorial
+    - Post processing description
+    - GEMS architecture description
+    - MDO formulations description
+    - MDAs
 
 Changed
 -------
@@ -991,9 +991,9 @@ Added
 - Design of Experiment (DOE) capabilities from pyDOE, OpenTURNS or a custom samples set
 - Full differentiation of the process is available:
 
-	* analytical gradient based optimization
-	* analytical Newton type coupling solver for MDA (Multi Disciplinary Analyses)
-	* analytical derivation of the chains of disciplines (MDOChain) via the chain rule
+    * analytical gradient based optimization
+    * analytical Newton type coupling solver for MDA (Multi Disciplinary Analyses)
+    * analytical derivation of the chains of disciplines (MDOChain) via the chain rule
 
 - Post processing of optimization history: many plots to view the constraints, objective, design variables
 - More than 10 MDA (coupled problems) solver available, some gradient based (quasi newton) and hybrid multi-step methods (SequantialMDA) !
@@ -1036,6 +1036,6 @@ Added
 - Complex step and finite differences optimization
 - Benchmark cases:
 
-	* Sobieski's Supersonic Business Jet MDO case
-	* Sellar
-	* Propane
+    * Sobieski's Supersonic Business Jet MDO case
+    * Sellar
+    * Propane

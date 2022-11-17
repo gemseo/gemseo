@@ -133,7 +133,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
     ) -> dict[str, Any]:  # pylint: disable=W0221
         r"""Set the options default values.
 
-        To get the best and up to date information about algorithms options,
+        To get the best and up-to-date information about algorithms options,
         go to scipy.optimize documentation:
         https://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
@@ -286,13 +286,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 local_search_options={},
                 initial_temp=5230.0,
                 restart_temp_ratio=2e-05,
-                visit=2.62,
-                accept=-5.0,
                 maxfun=self.max_func_calls,
                 seed=options["seed"],
-                no_local_search=False,
-                callback=None,
-                x0=None,
             )
         elif self.internal_algo_name == "shgo":
             constraints = self.__get_constraints_as_scipy_dictionary()
@@ -302,8 +297,6 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 args=(),
                 n=options["n"],
                 iters=options["iters"],
-                callback=None,
-                minimizer_kwargs=None,
                 sampling_method=options["sampling_method"],
                 constraints=constraints,
                 options=local_options,

@@ -97,7 +97,7 @@ class TestXDSMizer(unittest.TestCase):
     def test_xdsmize_mdf(self):
         """Test xdsmization of Sobieski problem solved with MDF with and without
         constraint."""
-        scenario = self.build_mdo_scenario("MDF", inner_mda_name="MDAGaussSeidel")
+        scenario = self.build_mdo_scenario(inner_mda_name="MDAGaussSeidel")
         options = {
             "output_directory_path": ".",
             "html_output": False,
@@ -113,21 +113,11 @@ class TestXDSMizer(unittest.TestCase):
 
         # without outdir
         xdsmizer = XDSMizer(scenario)
-        xdsmizer.run(
-            html_output=True,
-            json_output=True,
-            open_browser=False,
-            outfilename="xdsmized_sobieski_mdf.json",
-        )
+        xdsmizer.run(json_output=True, outfilename="xdsmized_sobieski_mdf.json")
 
         self.assertRaises(ValueError, xdsmizer._find_atom, Sellar1())
 
-        xdsmizer.run(
-            html_output=True,
-            json_output=False,
-            outfilename="xdsmized_sobieski_mdf.html",
-            open_browser=False,
-        )
+        xdsmizer.run(outfilename="xdsmized_sobieski_mdf.html")
 
     def test_xdsmize_idf(self):
         """Test xdsmization of Sobieski problem solved with IDF with and without
@@ -220,7 +210,7 @@ class TestXDSMizer(unittest.TestCase):
             n_processes=5,
         )
         system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
-        system_scenario.xdsmize(html_output=True, json_output=True, open_browser=False)
+        system_scenario.xdsmize(json_output=True)
         options = {
             "output_directory_path": ".",
             "latex_output": False,

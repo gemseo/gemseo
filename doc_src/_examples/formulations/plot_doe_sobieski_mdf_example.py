@@ -100,7 +100,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 # Use provided analytic derivatives
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 
 # %%
 # Multiprocessing

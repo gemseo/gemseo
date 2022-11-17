@@ -90,7 +90,7 @@ class XDSMToPDFConverter:
                 if isinstance(system[0], str):
                     # system[0] is a node
                     if last_node is not None:
-                        self.__xdsm.add_process([last_node, system[0]], arrow=True)
+                        self.__xdsm.add_process([last_node, system[0]])
                     self.__add_processes(system, workflow[idx - 1])
                 elif isinstance(system[0], dict):
                     # system[0] is a parallel sequence
@@ -100,7 +100,7 @@ class XDSMToPDFConverter:
                         self.__add_processes(sub_workflow, last_node)
         if prev is not None:
             systems.append(prev)
-        self.__xdsm.add_process(systems, arrow=True)
+        self.__xdsm.add_process(systems)
 
     def __get_numbers(self, numbers, nodes, current=0, end=0, following=1):
         """Give number to the different nodes in a recursive way.
@@ -224,7 +224,7 @@ class XDSMToPDFConverter:
             names = ", ".join(names)
 
             if edge["to"] == "_U_":
-                self.__xdsm.add_output(edge["from"], r"" + names + "", side="left")
+                self.__xdsm.add_output(edge["from"], r"" + names + "")
             elif edge["from"] != "_U_":
                 self.__xdsm.connect(edge["from"], edge["to"], r"" + names + "")
             elif edge["from"] == "_U_":

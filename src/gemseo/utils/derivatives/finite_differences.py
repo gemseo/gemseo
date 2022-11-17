@@ -170,7 +170,7 @@ class FirstOrderFD(GradientApproximator):
                  at the previous step :math:`x-\\delta_x`.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
-                By default Machine epsilon (appx 1e-16),
+                By default, Machine epsilon (appx 1e-16),
                 but can be higher.
                 when the calculation of :math:`f` requires a numerical resolution.
 
@@ -216,7 +216,7 @@ class FirstOrderFD(GradientApproximator):
             x_vect: The input vector.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
-                By default machine epsilon (appx 1e-16),
+                By default, machine epsilon (appx 1e-16),
                 but can be higher.
                 when the calculation of :math:`f` requires a numerical resolution.
             **kwargs: The additional arguments passed to the function.

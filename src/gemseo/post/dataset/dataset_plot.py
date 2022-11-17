@@ -222,7 +222,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         axes: None | Axes = None,
         **plot_options,
     ) -> list[Figure]:
-        """Execute the post processing.
+        """Execute the post-processing.
 
         Args:
             save: If True, save the plot.
@@ -279,7 +279,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         axes: None | Axes,
         **plot_options,
     ) -> list[Figure]:
-        """Create the post processing and save or display it.
+        """Create the post-processing and save or display it.
 
         Args:
             save: If True, save the plot on the disk.

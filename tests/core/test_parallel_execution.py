@@ -186,9 +186,7 @@ class TestParallelExecution(unittest.TestCase):
         outs1 = parallel_execution.execute([None] * 3)
 
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        parallel_execution = DiscParallelExecution(
-            disciplines, n_processes=2, use_threading=False
-        )
+        parallel_execution = DiscParallelExecution(disciplines, n_processes=2)
         outs2 = parallel_execution.execute([None] * 3)
 
         for out_d1, out_d2 in zip(outs1, outs2):
@@ -214,7 +212,7 @@ class TestParallelExecution(unittest.TestCase):
         def do_work():
             return list(map(func, x_list))
 
-        par = ParallelExecution([func] * 2, n_processes=2, use_threading=False)
+        par = ParallelExecution([func] * 2, n_processes=2)
         par.execute(
             [i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work
         )

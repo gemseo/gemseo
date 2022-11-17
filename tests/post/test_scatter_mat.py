@@ -56,7 +56,6 @@ def test_scatter(tmp_wd, pyplot_close_all):
     post = factory.execute(
         problem,
         "ScatterPlotMatrix",
-        save=True,
         file_path="scatter1",
         variable_names=problem.get_all_functions_names(),
     )
@@ -78,7 +77,6 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
     post = factory.execute(
         problem,
         "ScatterPlotMatrix",
-        save=True,
         file_path="scatter2",
         variable_names=problem.get_all_functions_names(),
     )
@@ -86,7 +84,7 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
     for outf in post.output_files:
         assert Path(outf).exists()
 
-    post = factory.execute(problem, "ScatterPlotMatrix", save=True, variable_names=[])
+    post = factory.execute(problem, "ScatterPlotMatrix", variable_names=[])
     for outf in post.output_files:
         assert Path(outf).exists()
 
@@ -105,12 +103,7 @@ def test_non_existent_var(tmp_wd):
         r"among optimization problem functions: .* "
         r"nor design variables: .*",
     ):
-        factory.execute(
-            problem,
-            "ScatterPlotMatrix",
-            save=True,
-            variable_names=["foo"],
-        )
+        factory.execute(problem, "ScatterPlotMatrix", variable_names=["foo"])
 
 
 @pytest.mark.parametrize(
@@ -135,18 +128,18 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
     """
     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     design_space = create_design_space()
-    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )
-    design_space.add_variable("y_0", 1, l_b=-100.0, u_b=100.0, value=ones(1))
-    design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
     scenario = create_scenario(
         disciplines, "MDF", objective_name="obj", design_space=design_space
     )
     scenario.add_constraint("c_1", "ineq")
     scenario.add_constraint("c_2", "ineq")
-    scenario.set_differentiation_method("finite_differences", 1e-6)
+    scenario.set_differentiation_method("finite_differences")
     scenario.default_inputs = {"max_iter": 10, "algo": "SLSQP"}
     scenario.execute()
     post = scenario.post_process(
@@ -169,12 +162,12 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
     """
     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     design_space = create_design_space()
-    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )
-    design_space.add_variable("y_0", 1, l_b=-100.0, u_b=100.0, value=ones(1))
-    design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
     scenario = create_scenario(
         disciplines,
         "MDF",
@@ -184,7 +177,7 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
     )
     scenario.add_constraint("c_1", "ineq")
     scenario.add_constraint("c_2", "ineq")
-    scenario.set_differentiation_method("finite_differences", 1e-6)
+    scenario.set_differentiation_method("finite_differences")
     scenario.default_inputs = {"max_iter": 10, "algo": "SLSQP"}
     scenario.execute()
     post = scenario.post_process(
@@ -283,4 +276,4 @@ def test_common_scenario(
     """Check ScatterPlotMatrix with objective, standardized or not."""
     opt = ScatterPlotMatrix(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], show=False, save=False)
+    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)

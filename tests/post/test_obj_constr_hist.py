@@ -41,4 +41,4 @@ def test_common_scenario(
     """Check ObjConstrHist."""
     opt = ObjConstrHist(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(constraint_names=["eq", "neg", "pos"], show=False, save=False)
+    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)

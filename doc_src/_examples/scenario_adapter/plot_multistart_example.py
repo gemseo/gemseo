@@ -50,7 +50,7 @@ constraint = create_discipline(
 # Create the design space
 # -----------------------
 design_space = create_design_space()
-design_space.add_variable("x", 1, l_b=-1.5, u_b=1.5, value=1.5)
+design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=1.5)
 
 ##############################################################################
 # Create the MDO scenario

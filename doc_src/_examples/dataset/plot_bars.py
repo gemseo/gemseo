@@ -49,6 +49,6 @@ dataset.row_names = ["series_1", "series_2"]
 # We can use the :class:`.BarPlot` plot
 plot = BarPlot(dataset)
 plot.colormap = "PiYG"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

@@ -45,6 +45,6 @@ iris = load_dataset("IrisDataset")
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
-AndrewsCurves(iris, "specy").execute(save=False, show=False)
+AndrewsCurves(iris, "specy").execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

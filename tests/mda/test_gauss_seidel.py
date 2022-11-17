@@ -121,9 +121,10 @@ class SelfCoupledDisc(MDODiscipline):
         self.local_data["o"] = self.local_data["y"] + self.local_data["x"]
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        self.jac = {}
-        self.jac["y"] = {"y": self.coeff * array([[0.5]]), "x": array([[1.0]])}
-        self.jac["o"] = {"y": array([[1.0]]), "x": array([[1.0]])}
+        self.jac = {
+            "y": {"y": self.coeff * array([[0.5]]), "x": array([[1.0]])},
+            "o": {"y": array([[1.0]]), "x": array([[1.0]])},
+        }
 
 
 def test_log_convergence():

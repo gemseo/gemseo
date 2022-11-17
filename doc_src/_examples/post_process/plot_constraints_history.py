@@ -87,7 +87,7 @@ scenario = create_scenario(
     maximize_objective=True,
     design_space=design_space,
 )
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 all_constraints = ["g_1", "g_2", "g_3"]
 for constraint in all_constraints:
     scenario.add_constraint(constraint, "ineq")

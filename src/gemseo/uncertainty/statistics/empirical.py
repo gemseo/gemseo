@@ -157,7 +157,7 @@ class EmpiricalStatistics(Statistics):
         self,
         order: int,
     ) -> dict[str, ndarray]:
-        result = {name: moment(self.dataset[name], order, 0) for name in self.names}
+        result = {name: moment(self.dataset[name], order) for name in self.names}
         return result
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102

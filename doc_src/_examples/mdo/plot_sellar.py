@@ -182,12 +182,12 @@ disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 # if we aimed to select an MDF formulation.
 
 design_space = DesignSpace()
-design_space.add_variable("x", 1, l_b=0.0, u_b=10.0, value=ones(1))
+design_space.add_variable("x", l_b=0.0, u_b=10.0, value=ones(1))
 design_space.add_variable(
     "z", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
 )
-design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
-design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
 
 # %%
 # Create the scenario
@@ -211,7 +211,7 @@ scenario.add_constraint("c_2", "ineq")
 # As previously mentioned,
 # we are going to use finite differences to approximate the derivatives
 # since the disciplines do not provide them.
-scenario.set_differentiation_method("finite_differences", 1e-6)
+scenario.set_differentiation_method("finite_differences")
 
 # %%
 # Execute the scenario

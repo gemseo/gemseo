@@ -87,7 +87,7 @@ class ParallelCoordinates(OptPostProcessor):
     def _plot(self, **options: OptPostProcessorOptionType) -> None:
         problem = self.opt_problem
         variable_history, variable_names, _ = self.database.get_history_array(
-            problem.get_all_functions_names(), add_dv=True
+            problem.get_all_functions_names()
         )
         n_x = len(self.database.get_x_by_iter(0))
         design_names = variable_names[len(variable_names) - n_x :]

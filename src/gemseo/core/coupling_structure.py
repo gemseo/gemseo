@@ -102,7 +102,7 @@ class MDOCouplingStructure:
 
         if discipline.residual_variables:
             states = discipline.residual_variables.values()
-            self_c_vars = self_c_vars - set(states)
+            self_c_vars -= set(states)
         return len(self_c_vars) > 0
 
     @property
@@ -110,9 +110,7 @@ class MDOCouplingStructure:
         """The disciplines that are strongly coupled, ie that lie in cycles in the
         coupling graphs."""
         if self._strongly_coupled_disc is None:
-            self._strongly_coupled_disc = self.get_strongly_coupled_disciplines(
-                True, False
-            )
+            self._strongly_coupled_disc = self.get_strongly_coupled_disciplines()
         return self._strongly_coupled_disc
 
     # methods that determine strong/weak/all couplings
@@ -127,8 +125,8 @@ class MDOCouplingStructure:
         Args:
             add_self_coupled: if True, adds the disciplines that are self-coupled
                 to the list of strongly coupled disciplines
-            by_group: if True, returns a list of list of strongly coupled diciplines
-                where the sublists contains the groups of disciplines that
+            by_group: if True, returns a list of list of strongly coupled disciplines
+                where the sublist contains the groups of disciplines that
                 are strongly coupled together.
                 if False, returns a single list
 
@@ -400,7 +398,7 @@ class MDOCouplingStructure:
         that can be saved to ``file_path``, displayed on screen or both;
         the extension of ``file_path`` must be recognized by matplotlib.
 
-        A dynamic N2 chart is a HTML file with interactive features such as
+        A dynamic N2 chart is an HTML file with interactive features such as
         reordering the disciplines,
         expanding or collapsing the groups of strongly coupled disciplines
         and

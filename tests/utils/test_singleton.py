@@ -87,7 +87,6 @@ def test_sing_id():
 
 
 def test_sing_file():
-
     file_loc = __file__
 
     class SingleFile(metaclass=SingleInstancePerFileAttribute):

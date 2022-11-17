@@ -56,7 +56,7 @@ mathematical :attr:`.Distribution.support`.
 
     We call mathematical *support* the set of values that the random variable
     can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
-    and numerical *range* the set of values that it can can take in practice,
+    and numerical *range* the set of values that it can take in practice,
     taking into account the values rounded to zero double precision.
     Both support and range are described in terms of lower and upper bounds
 
@@ -178,7 +178,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
@@ -189,7 +189,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
             dimension: The dimension of the random variable.
             standard_parameters: The standard representation
                 of the parameters of the probability distribution.
-        """
+        """  # noqa: D205,D212,D415
         self.math_lower_bound = None
         self.math_upper_bound = None
         self.num_lower_bound = None

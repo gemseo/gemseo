@@ -277,5 +277,5 @@ def test_common_scenario(
     maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT
     opt.MAXIMUM_CORRELATION_COEFFICIENT = 1.0
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(func_names=["obj", "eq", "neg", "pos"], show=False, save=False)
+    opt.execute(func_names=["obj", "eq", "neg", "pos"], save=False)
     opt.MAXIMUM_CORRELATION_COEFFICIENT = maximum_correlation_coefficient

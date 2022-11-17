@@ -127,9 +127,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = MorrisAnalysis(
-        ...     [discipline], parameter_space, n_samples=None, n_replicates=5
-        ... )
+        >>> analysis = MorrisAnalysis([discipline], parameter_space, n_samples=None)
         >>> indices = analysis.compute_indices()
     """
     mu_: dict[str, dict[str, ndarray]]
@@ -297,11 +295,11 @@ class MorrisAnalysis(SensitivityAnalysis):
         outputs: Sequence[str] | None = None,
         normalize: bool = False,
     ) -> dict[str, IndicesType]:
-        """.. # noqa: D205 D212 D415
+        """
         Args:
             normalize: Whether to normalize the indices
                 with the empirical bounds of the outputs.
-        """
+        """  # noqa: D205 D212 D415
         fd_data = self.dataset.get_data_by_group(self.dataset.OUTPUT_GROUP, True)
         output_names = outputs or self.default_output
         if not isinstance(output_names, list):
@@ -386,9 +384,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         lower_mu: float | None = None,
         lower_sigma: float | None = None,
     ) -> None:
-        r""".. # noqa: D415,D417
-
-        Plot the Morris indices for each input variable.
+        r"""Plot the Morris indices for each input variable.
 
         For :math:`i\in\{1,\ldots,d\}`,
         plot :math:`\mu_i^*` in function of :math:`\sigma_i`.
@@ -400,7 +396,7 @@ class MorrisAnalysis(SensitivityAnalysis):
                 If None, use a default value.
             lower_sigma: The lower bound for :math:`\sigma`.
                 If None, use a default value.
-        """
+        """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
         names = self.dataset.get_names(self.dataset.INPUT_GROUP)

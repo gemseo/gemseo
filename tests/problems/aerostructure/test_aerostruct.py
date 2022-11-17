@@ -250,7 +250,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         """Scenario with MDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
-            "MDF", "SLSQP", lin_method="complex_step"
+            "MDF", "SLSQP"
         )
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, f_ref, 1)
@@ -260,7 +260,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         """Scenario with IDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
-            "IDF", "SLSQP", lin_method="complex_step"
+            "IDF", "SLSQP"
         )
         # vector of design variables contains y targets at the end
         x_opt = x_opt[:3]

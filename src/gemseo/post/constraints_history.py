@@ -95,11 +95,7 @@ class ConstraintsHistory(OptPostProcessor):
             n_rows += 1
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows,
-            ncols=2,
-            sharex=True,
-            sharey=False,
-            figsize=self.DEFAULT_FIG_SIZE,
+            nrows=n_rows, ncols=2, sharex=True, figsize=self.DEFAULT_FIG_SIZE
         )
 
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)

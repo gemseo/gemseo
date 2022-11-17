@@ -42,7 +42,7 @@ LOGGER = logging.getLogger(__name__)
 class LicenseManager:
     """Manage Matlab License.
 
-    The licenseManager was created to enables de-synchronised
+    The licenseManager was created to enable de-synchronised
     launch of optimization using matlab_discipline. The goal
     is to wait until all licenses that are needed are available
     in Matlab workspace.

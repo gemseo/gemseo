@@ -71,7 +71,6 @@ def dummy_bilevel_scenario() -> MDOScenario:
         formulation="MDF",
         objective_name="obj",
         design_space=sub_design_space_1,
-        maximize_objective=False,
     )
 
     sub_design_space_2 = create_design_space()
@@ -81,7 +80,6 @@ def dummy_bilevel_scenario() -> MDOScenario:
         formulation="MDF",
         objective_name="obj",
         design_space=sub_design_space_2,
-        maximize_objective=False,
     )
 
     scenario = create_scenario(
@@ -89,7 +87,6 @@ def dummy_bilevel_scenario() -> MDOScenario:
         formulation="BiLevel",
         objective_name="obj",
         design_space=system_design_space,
-        maximize_objective=False,
     )
     return scenario
 

@@ -255,7 +255,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             cache_type: The type of policy to cache the discipline evaluations,
                 e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
-                :attr:`.MDODiscipline.HDF5_CACHE` to cache them in a HDF file,
+                :attr:`.MDODiscipline.HDF5_CACHE` to cache them in an HDF file,
                 or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
                 If ``None`` or if :attr:`.activate_cache` is ``True``,
                 do not cache the discipline evaluations.
@@ -320,7 +320,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         if auto_detect_grammar_files:
             if input_grammar_file is None:
-                input_grammar_file = self.auto_get_grammar_file(is_input=True)
+                input_grammar_file = self.auto_get_grammar_file()
 
             if output_grammar_file is None:
                 output_grammar_file = self.auto_get_grammar_file(is_input=False)
@@ -1676,7 +1676,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             outputs = self.get_output_data_names()
 
         if auto_set_step:
-            approx.auto_set_step(outputs, inputs, print_errors=True)
+            approx.auto_set_step(outputs, inputs)
 
         # Differentiate analytically
         self.add_differentiated_inputs(inputs)
@@ -2069,7 +2069,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             output_names = self.output_grammar.keys()
             return {k: v for k, v in self._local_data.items() if k in output_names}
         else:
-            return remove_prefix_from_dict(self.get_output_data(True))
+            return remove_prefix_from_dict(self.get_output_data())
 
     def get_input_data(self, with_namespaces=True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
@@ -2085,7 +2085,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             input_names = self.input_grammar.keys()
             return {k: v for k, v in self._local_data.items() if k in input_names}
         else:
-            return remove_prefix_from_dict(self.get_input_data(True))
+            return remove_prefix_from_dict(self.get_input_data())
 
     def serialize(
         self,

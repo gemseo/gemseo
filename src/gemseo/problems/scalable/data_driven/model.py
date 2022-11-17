@@ -23,7 +23,7 @@ Scalable model
 
 This module implements the abstract concept of scalable model
 which is used by scalable disciplines. A scalable model is built
-from a input-output learning dataset associated with a function
+from an input-output learning dataset associated with a function
 and generalizing its behavior to a new user-defined problem dimension,
 that is to say new user-defined input and output dimensions.
 
@@ -37,7 +37,7 @@ through :class:`.ScalableModel`, an abstract class which is instantiated from:
   If a variable is missing, its original size is considered.
 
 Scalable model parameters can also be filled in.
-Otherwise the model uses default values.
+Otherwise, the model uses default values.
 
 .. seealso::
 
@@ -127,7 +127,7 @@ class ScalableModel:
         for name in self.data.get_names(self.data.INPUT_GROUP):
             data = inputs[name] - self.lower_bounds[name]
             data /= self.upper_bounds[name] - self.lower_bounds[name]
-            normalized_data.add_variable(name, data, self.data.INPUT_GROUP, True)
+            normalized_data.add_variable(name, data, self.data.INPUT_GROUP)
         outputs = self.data.get_data_by_group(self.data.OUTPUT_GROUP, True)
         for name in self.data.get_names(self.data.OUTPUT_GROUP):
             indices = where(self.lower_bounds[name] == self.upper_bounds[name])[0]
@@ -141,7 +141,7 @@ class ScalableModel:
             lower_bound = self.lower_bounds[name][indices]
             upper_bound = self.upper_bounds[name][indices]
             data[:, indices] = (value - lower_bound) / (upper_bound - lower_bound)
-            normalized_data.add_variable(name, data, self.data.OUTPUT_GROUP, True)
+            normalized_data.add_variable(name, data, self.data.OUTPUT_GROUP)
         self.data = normalized_data
 
     def build_model(self):

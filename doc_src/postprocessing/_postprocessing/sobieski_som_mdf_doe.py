@@ -40,7 +40,7 @@ scenario = create_scenario(
     design_space="design_space.txt",
 )
 
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 
 algo_options = {"n_samples": num, "algo": "lhs"}
 

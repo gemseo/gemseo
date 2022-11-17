@@ -177,7 +177,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             positive: Whether to consider an inequality constraint as positive.
         """
         output_names = self._check_add_cstr_input(output_name, constraint_type)
-        constraint = FunctionFromDiscipline(output_names, self, top_level_disc=True)
+        constraint = FunctionFromDiscipline(output_names, self)
         constraint.f_type = constraint_type
         if constraint_name is None:
             constraint.has_default_name = True
@@ -204,9 +204,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         """
         if isinstance(output_names, str):
             output_names = [output_names]
-        obs_fun = FunctionFromDiscipline(
-            output_names, self, top_level_disc=True, discipline=discipline
-        )
+        obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if observable_name is not None:
             obs_fun.name = observable_name
         obs_fun.f_type = MDOFunction.TYPE_OBS
@@ -333,7 +331,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             names: The names of the variables.
 
         Returns:
-            For a each variable,
+            For each variable,
             a 3-length tuple
             whose first dimensions are its first and last indices in the design space
             and last dimension is its size.
@@ -395,7 +393,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         except IndexError:
             raise ValueError(
                 "Inconsistent input array size of values array "
-                "with reference data shape %s" % (x_unmask.shape)
+                "with reference data shape %s" % x_unmask.shape
             )
         return x_unmask
 

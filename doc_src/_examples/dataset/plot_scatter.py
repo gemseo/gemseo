@@ -53,6 +53,6 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # We can use the :class:`.Scatter` plot
 plot = Scatter(dataset, "x", "y")
 plot.color = color
-plot.execute(show=False, save=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

@@ -82,7 +82,7 @@ def _bfs_one_way_diff_io(
 ) -> DisciplineIOMapping:
     """Traverse the graph using a BFS algorithm to set the differentiated IOs.
 
-    Detects the disciplines that depend from outputs of the source disciplines,
+    Detects the disciplines that depend on outputs of the source disciplines,
     eventually indirectly through outputs of other disciplines.
 
     Args:
@@ -135,7 +135,7 @@ def traverse_add_diff_io(
 ) -> None:
     """Set the required differentiated IOs for the disciplines in a chain.
 
-    Add the differentiated inputs and outputs to the disciplines in a chain of of
+    Add the differentiated inputs and outputs to the disciplines in a chain of
     executions, given the list of inputs with respect to which the derivation is made
     and the list of outputs to be derived. The inputs and outputs are a subset of all
     the inputs and outputs of the chain. This allows to minimize the number of
@@ -149,7 +149,7 @@ def traverse_add_diff_io(
     Args:
         graph: The data graph of the process, built from
             :class:`.DependencyGraph`.
-        inputs: The inputs with respect to which the chain chain is differentiated.
+        inputs: The inputs with respect to which the chain is differentiated.
         outputs: The chain outputs to be differentiated.
     """
     source_input_disc, source_output_disc, init_diff_ios = _initialize_add_diff_io(
@@ -157,7 +157,7 @@ def traverse_add_diff_io(
     )
 
     # Traverse the graph from the inputs to the bottom.
-    diff_io_direct = _bfs_one_way_diff_io(graph, source_input_disc, reverse=False)
+    diff_io_direct = _bfs_one_way_diff_io(graph, source_input_disc)
 
     # Now the graph is traversed from the outputs to the inputs.
     # The graph edges are reversed.

@@ -39,7 +39,7 @@ def test_dweightratio_dwt(problem):
     )
     y_14 = indata["y_14"]
     lin_weightratio = sr._SobieskiMission__compute_dweightratio_dwt(y_14[0], y_14[1])
-    y_14[0] = y_14[0] + 1j * h
+    y_14[0] += 1j * h
     assert lin_weightratio == pytest.approx(
         sr._SobieskiMission__compute_weight_ratio(y_14[0], y_14[1]).imag / h,
         abs=1e-8,
@@ -54,7 +54,7 @@ def test_dlnweightratio_dwt(problem):
     )
     y_14 = indata["y_14"]
     lin_weightratio = sr._SobieskiMission__compute_dlnweightratio_dwt(y_14[0], y_14[1])
-    y_14[0] = y_14[0] + 1j * h
+    y_14[0] += 1j * h
     import cmath
 
     assert lin_weightratio == pytest.approx(
@@ -77,7 +77,7 @@ def test_d_range_d_wt(problem):
     lin_range = sr._SobieskiMission__compute_drange_dtotalweight(
         x_shared[2], y_14[0], y_14[1], y_24[0], y_34[0], sqrt_theta
     )
-    y_14[0] = y_14[0] + 1j * h
+    y_14[0] += 1j * h
     assert lin_range == pytest.approx(
         sr._SobieskiMission__compute_range(
             x_shared[1], x_shared[2], y_14[0], y_14[1], y_24[0], y_34[0]
@@ -101,7 +101,7 @@ def test_d_range_d_wf(problem):
     lin_range = sr._SobieskiMission__compute_drange_dfuelweight(
         x_shared[2], y_14[0], y_14[1], y_24[0], y_34[0], sqrt_theta
     )
-    y_14[1] = y_14[1] + 1j * h
+    y_14[1] += 1j * h
     assert lin_range == pytest.approx(
         sr._SobieskiMission__compute_range(
             x_shared[1], x_shared[2], y_14[0], y_14[1], y_24[0], y_34[0]
@@ -132,6 +132,4 @@ def test_jac_mission(problem):
         "y_14": array([50808.33445658, 7306.20262124]),
     }
 
-    assert sr.check_jacobian(
-        inpt_data, derr_approx="complex_step", step=1e-30, threshold=1e-8
-    )
+    assert sr.check_jacobian(inpt_data, derr_approx="complex_step", step=1e-30)

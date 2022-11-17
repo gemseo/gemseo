@@ -116,9 +116,7 @@ def test_parallel_execute(dataset):
     surr_1 = SurrogateDiscipline("LinearRegressor", dataset)
     surr_2 = SurrogateDiscipline("LinearRegressor", dataset)
 
-    parallel_execution = DiscParallelExecution(
-        [surr_1, surr_2], use_threading=False, n_processes=2
-    )
+    parallel_execution = DiscParallelExecution([surr_1, surr_2], n_processes=2)
     parallel_execution.execute(
         [
             {"x_1": array([0.5]), "x_2": array([0.5])},

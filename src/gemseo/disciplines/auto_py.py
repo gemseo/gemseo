@@ -25,7 +25,6 @@ from inspect import getfullargspec
 from inspect import getsource
 from typing import Callable
 from typing import Iterable
-from typing import Mapping
 from typing import Sequence
 from typing import Union
 
@@ -119,11 +118,7 @@ class AutoPyDiscipline(MDODiscipline):
         if not callable(py_func):
             raise TypeError("py_func must be callable.")
 
-        super().__init__(
-            name=name or py_func.__name__,
-            auto_detect_grammar_files=False,
-            grammar_type=grammar_type,
-        )
+        super().__init__(name=name or py_func.__name__, grammar_type=grammar_type)
 
         self.py_func = py_func
         self.use_arrays = use_arrays
@@ -178,11 +173,11 @@ class AutoPyDiscipline(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """
         Raises:
             RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
             ValueError: When the Jacobian shape is inconsistent.
-        """
+        """  # noqa: D205 D212 D415
         if self.py_jac is None:
             raise RuntimeError("The analytic Jacobian is missing.")
 
@@ -227,7 +222,7 @@ class AutoPyDiscipline(MDODiscipline):
     @staticmethod
     def get_return_spec_fromstr(
         return_line: str,
-    ) -> str | None:
+    ) -> list[str]:
         """Return the output specifications of a Python function.
 
         Args:
@@ -239,14 +234,14 @@ class AutoPyDiscipline(MDODiscipline):
             otherwise, ``None``.
         """
         stripped_line = return_line.strip()
-        if stripped_line.startswith("return "):
-            output_specifications = stripped_line.replace("return ", "")
-            return re.sub(r"\s+", "", output_specifications).split(",")
+        if not stripped_line.startswith("return "):
+            return []
+        return re.sub(r"\s+", "", stripped_line.replace("return ", "")).split(",")
 
     @staticmethod
     def _get_return_spec(
         func: Callable,
-    ) -> str | None:
+    ) -> list[str]:
         """Return the output specifications of a Python function.
 
         Args:
@@ -258,18 +253,16 @@ class AutoPyDiscipline(MDODiscipline):
         Raises:
             ValueError: When the return statements have different definitions.
         """
-        docstring = getsource(func)
-        output_names = None
-        for line in docstring.split("\n"):
+        output_names = []
+        for line in getsource(func).split("\n"):
             outs_loc = AutoPyDiscipline.get_return_spec_fromstr(line)
-            if outs_loc is not None and output_names is not None:
-                if tuple(outs_loc) != tuple(output_names):
-                    raise ValueError(
-                        "Inconsistent definition of return statements in function: "
-                        "{} != {}.".format(tuple(outs_loc), tuple(output_names))
-                    )
+            if outs_loc and output_names and tuple(outs_loc) != tuple(output_names):
+                raise ValueError(
+                    "Inconsistent definition of return statements in function: "
+                    "{} != {}.".format(tuple(outs_loc), tuple(output_names))
+                )
 
-            if outs_loc is not None:
+            if outs_loc:
                 output_names = outs_loc
 
         return output_names
@@ -292,10 +285,10 @@ class AutoDiscDataProcessor(DataProcessor):
         self,
         out_names: Sequence[str],
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """
         Args:
             out_names: The names of the outputs.
-        """
+        """  # noqa: D205 D212 D415
         super().__init__()
         self.out_names = out_names
         self.one_output = len(out_names) == 1
@@ -331,7 +324,7 @@ class AutoDiscDataProcessor(DataProcessor):
         """Post-process the output data.
 
         Execute a post-processing of the output data
-        after the :meth:`~MDODiscipline._run` method of the discipline is called
+        after the :meth:`~MDODiscipline._run` method of the discipline is called,
         and before they are checked by :meth:`~MDODiscipline.check_output_data`.
 
         Args:
@@ -349,8 +342,8 @@ class AutoDiscDataProcessor(DataProcessor):
 
 
 def to_arrays_dict(
-    data: Mapping[str, DataType],
-) -> Mapping[str, ndarray]:
+    data: dict[str, DataType],
+) -> dict[str, ndarray]:
     """Ensure that the values of a dictionary are NumPy arrays.
 
     Args:
@@ -362,5 +355,4 @@ def to_arrays_dict(
     for key, value in data.items():
         if not isinstance(value, ndarray):
             data[key] = array([value])
-
     return data

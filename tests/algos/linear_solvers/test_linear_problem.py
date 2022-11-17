@@ -92,12 +92,12 @@ def test_plot_residuals_checks():
 def test_residuals():
     problem = LinearProblem(eye(3), ones(3))
     assert problem.compute_residuals(False, current_x=zeros(3)) == (3**0.5)
-    assert problem.compute_residuals(True, current_x=zeros(3)) == 1.0
+    assert problem.compute_residuals(current_x=zeros(3)) == 1.0
     assert problem.compute_residuals(current_x=ones(3)) == 0.0
 
 
 def test_linear_operator():
     """Tests the sizes consistency checks in RHL and LHS."""
     problem = LinearProblem(aslinearoperator(eye(3)), ones(3))
-    assert problem.compute_residuals(current_x=zeros(3), relative_residuals=True) == 1.0
+    assert problem.compute_residuals(current_x=zeros(3)) == 1.0
     assert problem.is_lhs_linear_operator

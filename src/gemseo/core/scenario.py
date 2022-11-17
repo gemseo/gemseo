@@ -206,7 +206,7 @@ class Scenario(MDODiscipline):
             if len(common) > 0:
                 msg = "Two disciplines, among which {}, compute the same output: {}"
                 raise ValueError(msg.format(disc.name, common))
-            all_outs = all_outs | outs
+            all_outs |= outs
 
     @property
     def design_space(self) -> DesignSpace:
@@ -428,7 +428,7 @@ class Scenario(MDODiscipline):
         )
 
     def _execute_backup_callback(self, option: Any = None) -> None:
-        """A callback function to backup optimization history.
+        """A callback function to back up optimization history.
 
         Args:
             option: Any input value which is not used within the current function,
@@ -554,8 +554,8 @@ class Scenario(MDODiscipline):
                 The basename is used and the extension is adapted
                 for the HTML / JSON / PDF outputs.
             latex_output: If ``True``, build TEX, TIKZ and PDF files.
-            open_browser: If ``True``, open the web browser and display the the XDSM.
-            html_output: If ``True``, output a self contained HTML file.
+            open_browser: If ``True``, open the web browser and display the XDSM.
+            html_output: If ``True``, output a self-contained HTML file.
             json_output: If ``True``, output a JSON file for XDSMjs.
         """
         from gemseo.utils.xdsmizer import XDSMizer

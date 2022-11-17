@@ -80,7 +80,7 @@ print(f"Default inputs: {discipline.default_inputs}")
 # by using its :meth:`.DesignSpace.add_variable` method.
 
 design_space = create_design_space()
-design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
+design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 
 # %%
 # Define the MDO scenario
@@ -89,9 +89,7 @@ design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 # we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
 # and the :class:`.DesignSpace` defined above:
 
-scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="MDO"
-)
+scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 
 # %%
 # What about the differentiation method?

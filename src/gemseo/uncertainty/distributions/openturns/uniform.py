@@ -49,7 +49,7 @@ class OTUniformDistribution(OTDistribution):
         upper_bound: float | None = None,
         threshold: float = 0.5,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the uniform random variable.
             minimum: The minimum of the uniform random variable.
@@ -63,7 +63,7 @@ class OTUniformDistribution(OTDistribution):
             upper_bound: An upper bound to truncate the distribution.
                 If None, no upper truncation.
             threshold: A threshold in [0,1].
-        """
+        """  # noqa: D205,D212,D415
         standard_parameters = {self._LOWER: minimum, self._UPPER: maximum}
         super().__init__(
             variable,

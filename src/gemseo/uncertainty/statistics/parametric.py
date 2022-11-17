@@ -189,7 +189,7 @@ class ParametricStatistics(Statistics):
         selection_criterion: str = "best",
         name: str | None = None,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             distributions: The names of the distributions.
             fitting_criterion: The name of
@@ -204,7 +204,7 @@ class ParametricStatistics(Statistics):
             selection_criterion: The name of the selection criterion
                 to select a distribution from a list of candidates.
                 Either 'first' or 'best'.
-        """
+        """  # noqa: D205,D212,D415
         super().__init__(dataset, variables_names, name)
         significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
         self.fitting_criterion = fitting_criterion
@@ -246,7 +246,7 @@ class ParametricStatistics(Statistics):
         for variable in variables:
             row, _ = self.get_criteria(variable)
             row = [variable] + [row[distribution] for distribution in distributions]
-            row = row + [self.distributions[variable]["name"]]
+            row += [self.distributions[variable]["name"]]
             table.add_row(row)
         return str(table)
 
@@ -316,7 +316,7 @@ class ParametricStatistics(Statistics):
             y_values.append(criterion)
             labels.append(distribution)
         plt.subplot(121)
-        plt.bar(x_values, y_values, tick_label=labels, align="center")
+        plt.bar(x_values, y_values, tick_label=labels)
         if is_p_value:
             plt.ylabel(f"p-value from {self.fitting_criterion} test")
             plt.axhline(self.level, color="r", linewidth=2.0)

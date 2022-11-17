@@ -30,7 +30,6 @@ from numpy import array
 
 
 def test_empty_dataset():
-
     dataset = Dataset()
     with pytest.raises(ValueError):
         YvsX(dataset, x="x", y="y")
@@ -104,13 +103,13 @@ def test_setters(plot, attribute, value):
 def test_execute_properties(plot):
     """Check that properties are correctly used."""
     plot._plot = lambda fig, axes: []
-    plot.execute(save=False, show=False, properties={"xlabel": "foo"})
+    plot.execute(save=False, properties={"xlabel": "foo"})
     assert plot.xlabel == "foo"
 
     with pytest.raises(
         AttributeError, match=r"bar is not an attribute of DatasetPlot\."
     ):
-        plot.execute(save=False, show=False, properties={"bar": "foo"})
+        plot.execute(save=False, properties={"bar": "foo"})
 
 
 def test_get_figure_and_axes_from_existing_fig_and_axes(plot):

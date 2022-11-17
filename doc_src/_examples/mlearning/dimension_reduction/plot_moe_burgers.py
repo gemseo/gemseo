@@ -96,7 +96,7 @@ plt.show()
 
 
 def lines(i):
-    return (0, (i + 3, 1, 1, 1))
+    return 0, (i + 3, 1, 1, 1)
 
 
 for i, pred in enumerate(predictions):

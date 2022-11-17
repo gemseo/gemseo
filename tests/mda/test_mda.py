@@ -198,9 +198,7 @@ def test_convergence_warning(caplog):
     assert not max_iter_is_reached
 
     mda.norm0 = 1.0
-    mda._compute_residual(
-        np.array([1, 2]), np.array([10, 10]), log_normed_residual=False
-    )
+    mda._compute_residual(np.array([1, 2]), np.array([10, 10]))
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
     assert (
@@ -257,7 +255,7 @@ def test_scale_res_size(mda_class, norm0, scale_coupl_active):
 
     mda_scale = mda_class(disciplines, max_mda_iter=1)
     mda.norm0 = norm0
-    mda_scale.set_residuals_scaling_options(scale_coupl_active, True)
+    mda_scale.set_residuals_scaling_options(scale_coupl_active)
     mda_scale.execute()
 
     scaled_res = mda.residual_history[-1] / ((2 * coupl_size) ** 0.5)

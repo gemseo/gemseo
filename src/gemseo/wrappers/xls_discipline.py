@@ -142,7 +142,7 @@ class XLSDiscipline(MDODiscipline):
         self._recreate_book_at_run = recreate_book_at_run
 
         # A workbook init creates an instance of `_xls_app`.
-        # It opens an excel process and calls CoInitialize().
+        # It opens an Excel process and calls CoInitialize().
         # This must be done prior to initializing grammars and defaults.
         # In serial mode, the initial book is always called with quit_xls_at_exit=True.
         # In multiprocessing or multithreading,
@@ -244,8 +244,8 @@ class XLSDiscipline(MDODiscipline):
 
     def _init_grammars(self) -> None:
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
-        self.input_names = self.__read_sheet_col("Inputs", 0)
-        self.output_names = self.__read_sheet_col("Outputs", 0)
+        self.input_names = self.__read_sheet_col("Inputs")
+        self.output_names = self.__read_sheet_col("Outputs")
         self.input_grammar.update(self.input_names)
         self.output_grammar.update(self.output_names)
 
@@ -288,7 +288,7 @@ class XLSDiscipline(MDODiscipline):
         # inside each thread, a call is made here.
         # We then initialize the workbook again to run the computation inside each
         # thread.
-        # In this case, the excel process is closed at the end of this _run method.
+        # In this case, the Excel process is closed at the end of this _run method.
         if self._recreate_book_at_run:
             pythoncom.CoInitialize()
             self.__create_book(quit_xls_at_exit=False)

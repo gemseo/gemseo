@@ -114,7 +114,7 @@ def update_options_from_rest_docstring(
     """
     for option_name, option in options.items():
         try:
-            tmp = re.split(r":type ([\*\w]+): (.*?)", option["description"])
+            tmp = re.split(r":type ([*\w]+): (.*?)", option["description"])
         except KeyError:
             print(
                 "ERROR: failed to detect description for {} of algorithm {}".format(

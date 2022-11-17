@@ -52,6 +52,6 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # We can use the :class:`.YvsX` plot
 plot = YvsX(dataset, "x", "y")
 plot.linestyle = "--o"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

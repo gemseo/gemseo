@@ -64,7 +64,7 @@ def test_print(scalable_problem):
 
 def test_plot_n2_chart(scalable_problem, tmp_wd):
     """"""
-    scalable_problem.plot_n2_chart(show=False, save=True)
+    scalable_problem.plot_n2_chart()
     assert os.path.exists("n2.pdf")
 
 
@@ -76,9 +76,7 @@ def test_plot_coupling_graph(scalable_problem, tmp_wd):
 
 def test_plot_1d_interpolations(scalable_problem, tmp_wd):
     """"""
-    files = scalable_problem.plot_1d_interpolations(
-        show=False, save=True, directory=str(tmp_wd)
-    )
+    files = scalable_problem.plot_1d_interpolations(directory=str(tmp_wd))
     assert len(files) > 0
     for fname in files:
         assert os.path.exists(fname)
@@ -86,9 +84,7 @@ def test_plot_1d_interpolations(scalable_problem, tmp_wd):
 
 def test_plot_dependencies(scalable_problem, tmp_wd):
     """"""
-    files = scalable_problem.plot_dependencies(
-        show=False, save=True, directory=str(tmp_wd)
-    )
+    files = scalable_problem.plot_dependencies(directory=str(tmp_wd))
     assert len(files) > 0
     for fname in files:
         assert os.path.exists(fname)

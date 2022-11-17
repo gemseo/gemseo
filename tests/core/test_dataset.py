@@ -612,7 +612,7 @@ def test_malformed_groups():
     dataset = Dataset()
     with pytest.raises(
         TypeError,
-        match=("groups must be a dictionary of the form {variable_name: group_name}."),
+        match="groups must be a dictionary of the form {variable_name: group_name}.",
     ):
         dataset.set_from_array(array([[1]]), variables=["x"], groups={"x": 1})
 
@@ -622,7 +622,7 @@ def test_malformed_variables():
     dataset = Dataset()
     with pytest.raises(
         TypeError,
-        match=("variables must be a list of string variable names."),
+        match="variables must be a list of string variable names.",
     ):
         dataset.set_from_array(array([[1]]), variables=1)
 

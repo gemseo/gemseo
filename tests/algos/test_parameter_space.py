@@ -25,7 +25,6 @@ from gemseo.algos.design_space import DesignVariable
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.parameter_space import RandomVariable
 from gemseo.core.dataset import Dataset
-from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -152,7 +151,7 @@ def test_remove_variable():
 
 def test_copula():
     """Check the copula feature works correctly."""
-    space = ParameterSpace(copula=ComposedDistribution._INDEPENDENT_COPULA)
+    space = ParameterSpace()
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
@@ -167,7 +166,7 @@ def test_compute_samples():
     space.add_variable("x2")
     space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0, size=3)
-    sample = space.compute_samples(2, False)
+    sample = space.compute_samples(2)
     assert len(sample) == 2
     assert isinstance(sample, ndarray)
     assert sample.shape == (2, 4)
@@ -268,16 +267,14 @@ def test_update_parameter_space():
     space.add_variable("x1", l_b=0.0, u_b=1.0)
     assert space.get_lower_bound("x1")[0] == 0.0
     assert space.get_upper_bound("x1")[0] == 1.0
-    space.add_random_variable(
-        "x1", "OTUniformDistribution", 1, minimum=0.0, maximum=2.0
-    )
+    space.add_random_variable("x1", "OTUniformDistribution", minimum=0.0, maximum=2.0)
     assert space.get_lower_bound("x1")[0] == 0.0
     assert space.get_upper_bound("x1")[0] == 2.0
 
 
 def test_str_and_tabularview():
     """Check that str and unnormalize_vect work correctly."""
-    space = ParameterSpace(copula=ComposedDistribution._INDEPENDENT_COPULA)
+    space = ParameterSpace()
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
@@ -417,9 +414,7 @@ def test_gradient_normalization():
     )
     x_vect = array([0.5, 1.5])
     assert array_equal(
-        parameter_space.unnormalize_vect(
-            x_vect, minus_lb=False, no_check=False, use_dist=False
-        ),
+        parameter_space.unnormalize_vect(x_vect, minus_lb=False),
         parameter_space.normalize_grad(x_vect),
     )
 

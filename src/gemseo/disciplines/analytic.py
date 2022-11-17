@@ -76,7 +76,7 @@ class AnalyticDiscipline(MDODiscipline):
         fast_evaluation: bool = True,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """
         Args:
             expressions: The outputs expressed as functions of the inputs.
             name: The name of the discipline.
@@ -84,7 +84,7 @@ class AnalyticDiscipline(MDODiscipline):
             fast_evaluation: Whether to apply ``sympy.lambdify`` to the expressions
                 in order to accelerate their numerical evaluation;
                 otherwise the expressions are evaluated with ``sympy.Expr.evalf``.
-        """
+        """  # noqa: D205 D212 D415
         super().__init__(name, grammar_type=grammar_type)
         self.expressions = expressions
         self.output_names_to_symbols = {}
@@ -100,7 +100,7 @@ class AnalyticDiscipline(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _init_grammars(self) -> None:
-        """Initialize the input an output grammars from the expressions dictionary."""
+        """Initialize the input an output grammars from the expressions' dictionary."""
         self.input_grammar.update(self.input_names)
         self.output_grammar.update(self.expressions.keys())
 
@@ -146,7 +146,8 @@ class AnalyticDiscipline(MDODiscipline):
         if self._fast_evaluation:
             self._lambdify_expressions()
 
-    def __create_real_input_symbols(self, expression: Expr) -> dict[str, Symbol]:
+    @staticmethod
+    def __create_real_input_symbols(expression: Expr) -> dict[str, Symbol]:
         """Return the symbols used by a SymPy expression with real type.
 
         Args:
@@ -190,7 +191,7 @@ class AnalyticDiscipline(MDODiscipline):
     def _run(self) -> None:
         output_data = {}
         # Do not pass useless tokens to the expr, this may
-        # fail when tokens contains dots, or slow down the process
+        # fail when tokens contain dots, or slow down the process
         input_data = self.__convert_input_values_to_float()
         if self._fast_evaluation:
             for output_name, output_function in self._sympy_funcs.items():

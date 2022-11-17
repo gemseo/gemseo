@@ -102,7 +102,7 @@ scenario = create_scenario(
     design_space=design_space,
     scenario_type="DOE",
 )
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})

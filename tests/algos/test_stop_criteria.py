@@ -35,13 +35,13 @@ def test_is_x_tol_reached():
     pb.objective(0 * ones(2))
     pb.objective(ones(2))
 
-    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1, n_x=2)
+    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1)
     pb.objective(1.01 * ones(2))
-    assert is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1 + 1e-13, n_x=2)
-    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.001, n_x=2)
+    assert is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1 + 1e-13)
+    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.001)
 
     assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.2, n_x=3)
-    assert is_x_tol_reached(pb, x_tol_rel=0.1, x_tol_abs=0.0, n_x=2)
+    assert is_x_tol_reached(pb, x_tol_rel=0.1, x_tol_abs=0.0)
 
 
 def test_is_f_tol_reached():
@@ -55,11 +55,11 @@ def test_is_f_tol_reached():
     # rosen(1,1)=0
     #     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.4, n_x=2)
     # abs(1-0.5)<=1.*0.5
-    assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5, n_x=2)
+    assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5)
     pb.objective(1.05 * ones(2))  # 0.278
 
-    assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2, n_x=2)
-    assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.001, n_x=2)
+    assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2)
+    assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.001)
 
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2, n_x=3)
 

@@ -94,13 +94,13 @@ def parse_rest(
     return parsed_doc
 
 
-# regex pattern for finding the arguments section of a google docstring
+# regex pattern for finding the arguments section of a Google docstring
 # docstring-inheritance replaces the section title "Args" with "Parameters"
 RE_PATTERN_ARGS_SECTION = re.compile(
-    r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:\n\n[^\s]|$)", flags=re.DOTALL
+    r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:\n\n\S|$)", flags=re.DOTALL
 )
 
-# regex pattern for finding the arguments names and description of a google docstring
+# regex pattern for finding the arguments names and description of a Google docstring
 RE_PATTERN_ARGS = re.compile(
     r"\**(\w+)\s*:\s*(.*?)(?:$|(?=\n\**\w+\s*:))", flags=re.DOTALL
 )
@@ -120,7 +120,7 @@ def parse_google(
     args_sections = RE_PATTERN_ARGS_SECTION.findall(docstring)
 
     if len(args_sections) != 1:
-        # This is not a google docstring
+        # This is not a Google docstring
         return {}
 
     # remove leading common blank spaces

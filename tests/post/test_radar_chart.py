@@ -70,7 +70,7 @@ def test_function_error(problem):
             r"stored in the database\."
         ),
     ):
-        post.execute(save=False, show=False, constraint_names=["foo"])
+        post.execute(save=False, constraint_names=["foo"])
 
 
 def test_iteration_error(problem):
@@ -87,10 +87,7 @@ def test_iteration_error(problem):
         ),
     ):
         post.execute(
-            save=False,
-            show=False,
-            constraint_names=problem.get_constraints_names(),
-            iteration=1000,
+            save=False, constraint_names=problem.get_constraints_names(), iteration=1000
         )
 
 
@@ -107,4 +104,4 @@ TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
 def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
     """Check RadarChart."""
     opt = RadarChart(common_problem)
-    opt.execute(constraint_names=["eq", "neg", "pos"], show=False, save=False)
+    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)

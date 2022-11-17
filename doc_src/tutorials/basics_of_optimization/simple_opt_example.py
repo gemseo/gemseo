@@ -34,8 +34,8 @@ def f(x1=0.0, x2=0.0):
 discipline = create_discipline("AutoPyDiscipline", py_func=f)
 
 design_space = create_design_space()
-design_space.add_variable("x1", 1, l_b=-5, u_b=5, var_type="integer")
-design_space.add_variable("x2", 1, l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x1", l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x2", l_b=-5, u_b=5, var_type="integer")
 
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
@@ -70,11 +70,9 @@ print(f"The solution of P is (x*, f(x*)) = ({x_opt[0]}, {f_opt[0]})")
 discipline = create_discipline("AutoPyDiscipline", py_func=g, py_jac=dgdx)
 
 design_space = create_design_space()
-design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * np.ones(1))
+design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * np.ones(1))
 
-scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="MDO"
-)
+scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 
 opt_results = scenario.get_optimum()

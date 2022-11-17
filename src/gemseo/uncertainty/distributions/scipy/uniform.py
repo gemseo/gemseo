@@ -45,13 +45,13 @@ class SPUniformDistribution(SPDistribution):
         maximum: float = 1.0,
         dimension: int = 1,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the uniform random variable.
             minimum: The minimum of the uniform random variable.
             maximum: The maximum of the uniform random variable.
             dimension: The dimension of the uniform random variable.
-        """
+        """  # noqa: D205,D212,D415
         parameters = {"loc": minimum, "scale": maximum - minimum}
         standard_parameters = {self._LOWER: minimum, self._UPPER: maximum}
         super().__init__(

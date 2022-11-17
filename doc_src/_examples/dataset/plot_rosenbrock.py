@@ -73,10 +73,8 @@ print(dataset)
 ##############################################################################
 # Plot the data
 # -------------
-ZvsXY(dataset, x="x", x_comp=0, y="x", y_comp=1, z="rosen").execute(
-    save=False, show=False
-)
+ZvsXY(dataset, x="x", y="x", y_comp=1, z="rosen").execute(save=False)
 
-YvsX(dataset, x="x", x_comp=0, y="rosen").execute(save=False, show=False)
+YvsX(dataset, x="x", y="rosen").execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

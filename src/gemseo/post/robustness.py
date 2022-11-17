@@ -85,7 +85,7 @@ class Robustness(OptPostProcessor):
         cov = zeros((n_x, n_x))
         cov[range(n_x), range(n_x)] = (standard_deviation * bounds_range) ** 2
 
-        robustness = RobustnessQuantifier(self.database, "SR1")
+        robustness = RobustnessQuantifier(self.database)
         function_samples = []
         function_names = []
         for func in self.opt_problem.get_all_functions():
@@ -108,7 +108,7 @@ class Robustness(OptPostProcessor):
                     mean = -mean
 
                 variance = robustness.compute_variance(x_ref, cov)
-                if variance > 0:  # Otherwise normal doesnt work
+                if variance > 0:  # Otherwise normal doesn't work
                     function_samples.append(
                         normal(loc=mean, scale=sqrt(variance), size=500)
                     )

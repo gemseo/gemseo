@@ -176,9 +176,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             )
 
         self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
-            normalize_y=False,
             kernel=kernel,
-            copy_X_train=True,
             alpha=alpha,
             optimizer=optimizer,
             n_restarts_optimizer=n_restarts_optimizer,

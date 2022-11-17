@@ -115,7 +115,6 @@ _KWARGS_DEFAULTS_PATTERN = "By default it is set to {}."
 
 
 def setup(app: Sphinx) -> dict[str, Any]:
-
     app.add_config_value("autodoc_kwargs_defaults", False, True)
     app.add_config_value(
         "autodoc_kwargs_defaults_pattern", _KWARGS_DEFAULTS_PATTERN, True

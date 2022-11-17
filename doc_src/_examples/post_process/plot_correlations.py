@@ -97,7 +97,7 @@ scenario = create_scenario(
     maximize_objective=True,
     design_space=design_space,
 )
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})

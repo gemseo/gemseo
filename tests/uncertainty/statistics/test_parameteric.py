@@ -117,7 +117,7 @@ def test_distfitstats_statistics(random_sample):
     stats.compute_minimum()
     stats.compute_range()
     thresh = {name: array([0.0]) for name in ["X_0", "X_1", "X_2", "X_3"]}
-    stats.compute_probability(thresh, greater=True)
+    stats.compute_probability(thresh)
     stats.compute_probability(thresh, greater=False)
     stats.compute_moment(1)
     stats.compute_variance()

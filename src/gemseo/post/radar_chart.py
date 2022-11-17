@@ -117,7 +117,7 @@ class RadarChart(OptPostProcessor):
         radar.title = f"Constraints at iteration {iteration}{title_suffix}"
 
         figures = radar.execute(
-            save=False, show=False, display_zero=False, radial_ticks=show_names_radially
+            save=False, display_zero=False, radial_ticks=show_names_radially
         )
         for figure in figures:
             self._add_figure(figure)

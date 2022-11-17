@@ -593,7 +593,7 @@ class ParameterSpace(DesignSpace):
         data_sizes = self.variables_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
-        x_n = self.evaluate_cdf(dict_sample, inverse=False)
+        x_n = self.evaluate_cdf(dict_sample)
         x_n_geom = split_array_to_dict_of_arrays(x_n_geom, data_sizes, data_names)
         missing_names = [name for name in data_names if name not in x_n]
         for name in missing_names:
@@ -691,7 +691,6 @@ class ParameterSpace(DesignSpace):
                         parameter_space.add_random_variable(
                             f"{name}_{idx}",
                             "OTUniformDistribution",
-                            1,
                             minimum=float(l_b[idx]),
                             maximum=float(u_b[idx]),
                         )

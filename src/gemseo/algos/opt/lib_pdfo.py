@@ -133,7 +133,7 @@ class PDFOOpt(OptimizationLibrary):
     ) -> dict[str, Any]:
         r"""Set the options default values.
 
-        To get the best and up to date information about algorithms options,
+        To get the best and up-to-date information about algorithms options,
         go to pdfo documentation on the `PDFO website <https://www.pdfo.net/>`_.
 
         Args:

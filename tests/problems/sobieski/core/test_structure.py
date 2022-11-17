@@ -139,7 +139,6 @@ def test_jac_structure(problem):
 
 
 def test_jac2_sobieski_struct(problem):
-
     inpt_data = {
         "y_31": array([6555.68459235 + 0j]),
         "y_21": array([50606.9742 + 0j]),
@@ -157,6 +156,4 @@ def test_jac2_sobieski_struct(problem):
     }
 
     st = SobieskiStructure("complex128")
-    assert st.check_jacobian(
-        inpt_data, threshold=1e-8, derr_approx="complex_step", step=1e-30
-    )
+    assert st.check_jacobian(inpt_data, derr_approx="complex_step", step=1e-30)

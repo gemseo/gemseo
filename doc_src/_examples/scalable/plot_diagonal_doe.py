@@ -74,7 +74,7 @@ scenario = create_scenario(
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
 
 dataset = scenario.export_to_dataset(opt_naming=False)
-dataset.plot("ScatterMatrix", save=False, show=False)
+dataset.plot("ScatterMatrix", show=False)
 
 ###############################################################################
 # Sample with reverse mode for :math:`y`
@@ -94,6 +94,6 @@ scenario.execute(
 )
 
 dataset = scenario.export_to_dataset(opt_naming=False)
-dataset.plot("ScatterMatrix", save=False, show=False)
+dataset.plot("ScatterMatrix", show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

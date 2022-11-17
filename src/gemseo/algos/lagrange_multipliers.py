@@ -181,7 +181,7 @@ class LagrangeMultipliers:
                     [0.0] * (act_constr_nb - act_eq_constr_nb)
                     + [-np.inf] * act_eq_constr_nb
                 )
-                upper_bound = array([np.inf] * (act_constr_nb))
+                upper_bound = array([np.inf] * act_constr_nb)
                 optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
                 mul = optim_result.x
                 self.kkt_residual = optim_result.cost

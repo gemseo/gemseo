@@ -46,14 +46,14 @@ class SPTriangularDistribution(SPDistribution):
         maximum: float = 1.0,
         dimension: int = 1,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the triangular random variable.
             minimum: The minimum of the triangular random variable.
             mode: The mode of the triangular random variable.
             maximum: The maximum of the triangular random variable.
             dimension: The dimension of the triangular random variable.
-        """
+        """  # noqa: D205,D212,D415
         parameters = {
             "loc": minimum,
             "scale": maximum - minimum,

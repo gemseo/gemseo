@@ -62,7 +62,7 @@ class BasicHistory(OptPostProcessor):
         plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
         figures = plot.execute(
-            save=False, show=False, variables=problem.get_function_names(variable_names)
+            save=False, variables=problem.get_function_names(variable_names)
         )
         for figure in figures:
             self._add_figure(figure)

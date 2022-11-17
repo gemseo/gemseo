@@ -167,7 +167,7 @@ def test_add_constraints(pow2_problem):
 
     ineq2 = MDOFunction(Power2.ineq_constraint1, name="ineq2")
     with pytest.raises(ValueError):
-        problem.add_constraint(ineq2, value=None, cstr_type=None)
+        problem.add_constraint(ineq2)
 
     problem.add_constraint(ineq1, positive=True)
 
@@ -520,9 +520,7 @@ def test_normalize_linear_function():
     initial_value = objective(x_0)
     problem = OptimizationProblem(design_space)
     problem.objective = objective
-    problem.preprocess_functions(
-        is_function_input_normalized=True, use_database=False, round_ints=False
-    )
+    problem.preprocess_functions(use_database=False, round_ints=False)
     assert allclose(problem.objective(zeros(2)), low_bnd_value)
     assert allclose(problem.objective(ones(2)), upp_bnd_value)
     assert allclose(problem.objective(0.8 * ones(2)), initial_value)
@@ -543,7 +541,7 @@ def test_export_hdf(tmp_wd):
         assert problem.get_eq_cstr_total_dim() == 1
         assert problem.get_ineq_cstr_total_dim() == 2
 
-    problem.export_hdf(file_path, append=False)
+    problem.export_hdf(file_path)
 
     imp_pb = OptimizationProblem.import_hdf(file_path)
     check_pb(imp_pb)
@@ -790,7 +788,7 @@ def test_append_export(tmp_wd):
     func = problem.objective
     file_path_db = "test_pb_append.hdf5"
     # Export empty file
-    problem.export_hdf(file_path_db, append=False)
+    problem.export_hdf(file_path_db)
 
     n_calls = 200
     for i in range(n_calls):
@@ -815,7 +813,7 @@ def test_grad_normalization(pow2_problem):
     problem = pow2_problem
     x_vec = ones(3)
     grad = problem.objective.jac(x_vec)
-    problem.preprocess_functions(is_function_input_normalized=True)
+    problem.preprocess_functions()
     norm_grad = problem.objective.jac(x_vec)
 
     assert 0.0 == pytest.approx(norm(norm_grad - 2 * grad))
@@ -1084,9 +1082,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
     """
     f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", 1, l_b=1, u_b=3, value=array([1]), var_type="integer"
-    )
+    design_space.add_variable("x", l_b=1, u_b=3, value=array([1]), var_type="integer")
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
 
@@ -1609,7 +1605,7 @@ def test_observables_normalization():
     """Test that the observables are called at each iteration."""
     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     design_space = DesignSpace()
-    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )

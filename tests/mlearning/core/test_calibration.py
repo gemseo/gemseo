@@ -41,7 +41,7 @@ def test_discipline_multioutput_fail(dataset):
     """Verify that MLAlgoAssessor raises an error if multioutput option is True."""
     with pytest.raises(
         ValueError,
-        match=("MLAlgoAssessor does not support multioutput."),
+        match="MLAlgoAssessor does not support multioutput.",
     ):
         MLAlgoAssessor(
             "PolynomialRegressor",

@@ -200,7 +200,7 @@ class TestMDOFormulation(unittest.TestCase):
 
         design_space = DesignSpace()
         for name in dvs:
-            design_space.add_variable(name, 1)
+            design_space.add_variable(name)
 
         f = MDOFormulation([sm], "Y5", design_space)
         self.assertRaises(Exception, lambda: f.get_objective())

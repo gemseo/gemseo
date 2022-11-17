@@ -91,7 +91,7 @@ def create_sobieski_bilevel_scenario() -> Callable[[dict[str, float]], MDOScenar
             maximize_objective=True,
             **options,
         )
-        sc_system.set_differentiation_method("finite_differences", step=1e-6)
+        sc_system.set_differentiation_method("finite_differences")
         return sc_system
 
     return func

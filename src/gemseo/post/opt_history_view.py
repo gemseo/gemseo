@@ -595,7 +595,7 @@ class OptHistoryView(OptPostProcessor):
         else:
             thick_max = 0
         thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num, base=10.0)
+        levels_pos = logspace(thick_min, thick_max, num=thick_num)
         if vmax != 0.0:
             levels_pos = np_sort(append(levels_pos, vmax))
         levels_neg = np_sort(-levels_pos)
@@ -663,13 +663,13 @@ class OptHistoryView(OptPostProcessor):
         thick_min = int(np_log10(linthresh))
         thick_max = int(np_log10(vmax))
         thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num, base=10.0)
+        levels_pos = logspace(thick_min, thick_max, num=thick_num)
         levels_pos = append(levels_pos, vmax)
         levels_neg = np_sort(-levels_pos)
         levels_neg = append(levels_neg, 0)
         levels = concatenate((levels_neg, levels_pos))
 
-        l_f = LogFormatter(base=10, labelOnlyBase=False)
+        l_f = LogFormatter(base=10)
         cax = fig.add_subplot(grid[0, 1])
         cax.invert_yaxis()
         fig.colorbar(img, cax=cax, ticks=levels, format=l_f)

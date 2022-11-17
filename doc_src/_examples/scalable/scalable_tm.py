@@ -267,8 +267,8 @@ print(study)
 
 ##########################################################################
 # Then, we run MDF and IDF formulations:
-study.run_formulation("MDF", xdsm_pdf=False)
-study.run_formulation("IDF", xdsm_pdf=False)
+study.run_formulation("MDF")
+study.run_formulation("IDF")
 
 ##########################################################################
 # We can look at the result in the console:

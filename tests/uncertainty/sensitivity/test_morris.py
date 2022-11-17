@@ -64,7 +64,7 @@ def morris():
     for variable in FUNCTION["variables"]:
         space.add_random_variable(**FUNCTION["distributions"][variable])
 
-    analysis = MorrisAnalysis([discipline], space, n_samples=None, n_replicates=5)
+    analysis = MorrisAnalysis([discipline], space, n_samples=None)
     analysis.compute_indices()
 
     return analysis
@@ -147,7 +147,7 @@ def test_morris_relative_sigma(morris, output, variable):
 @pytest.mark.parametrize("output", ["y1", "y2"])
 def test_morris_plot(morris, tmp_wd, output):
     """Verify that the plot is correctly created."""
-    morris.plot(output, save=True, show=False, directory_path=tmp_wd)
+    morris.plot(output, directory_path=tmp_wd)
     assert Path("morris_analysis.png").exists()
 
 
@@ -286,7 +286,7 @@ def test_normalize(morris):
     for variable in FUNCTION["variables"]:
         space.add_random_variable(**FUNCTION["distributions"][variable])
 
-    analysis = MorrisAnalysis([discipline], space, n_samples=None, n_replicates=5)
+    analysis = MorrisAnalysis([discipline], space, n_samples=None)
     analysis.compute_indices(normalize=True)
     for output_name, output_value in morris.mu_.items():
         lower = analysis.outputs_bounds[output_name][0]

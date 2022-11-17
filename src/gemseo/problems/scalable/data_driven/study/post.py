@@ -339,7 +339,7 @@ class PostScalabilityStudy:
         :param list(str) xticks_labels: list of xticks labels (default: None)
         :param float xmargin: margin on left and right sides of the x-axis
         :param int minbox: minimal number of values for boxplot (default: 2).
-        :param bool notch: if True, will produced a notched boxplot.
+        :param bool notch: if True, will produce a notched boxplot.
         :param float whis:  the reach of the whiskers to the beyond
             the first and third quartiles (default: 1.5).
         """
@@ -407,7 +407,7 @@ class PostScalabilityStudy:
         :param list(str) labels: list of xticks labels (default: None)
         :param list(str) scales: scales
         :param str color: line color.
-        :param bool notch: if True, will produced a notched boxplot.
+        :param bool notch: if True, will produce a notched boxplot.
         :param float whis:  the reach of the whiskers to the beyond
             the first and third quartiles (default: 1.5).
         :param float xmargin: margin on left and right sides of the x-axis
@@ -445,7 +445,7 @@ class PostScalabilityStudy:
         :param list(float) xticks: values of xticks
         :param str edge_color: edge color
         :param str fill_color: fill color
-        :param bool notch: if True, will produced a notched boxplot.
+        :param bool notch: if True, will produce a notched boxplot.
         :param list(float) widths: widths of boxplots
         :param float whis:  the reach of the whiskers to the beyond
             the first and third quartiles

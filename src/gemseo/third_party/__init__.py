@@ -15,7 +15,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Contains all source files developed by third parties.
 
-Eases licenses analysis
+Ease licenses analysis
 All licenses of these softs are permissive (MIT/BSD type) or LGPL / APACHE,
 which makes them non "viral" (not copyleft)
 """

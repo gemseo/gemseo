@@ -39,7 +39,7 @@ def test_d_esf_ddrag(problem):
     drag = indata["y_23"][0]
     throttle = indata["x_3"][0]
     lin_esf = sr._SobieskiPropulsion__compute_desf_ddrag(throttle)
-    drag = drag + 1j * h
+    drag += 1j * h
     assert lin_esf == pytest.approx(
         sr._SobieskiPropulsion__compute_esf(drag, throttle).imag / h, abs=1e-12
     )
@@ -54,7 +54,7 @@ def test_d_esf_dthrottle(problem):
     drag = indata["y_23"][0]
     throttle = indata["x_3"][0]
     lin_esf = sr._SobieskiPropulsion__compute_desf_dthrottle(drag, throttle)
-    throttle = throttle + 1j * h
+    throttle += 1j * h
     assert lin_esf == pytest.approx(
         sr._SobieskiPropulsion__compute_esf(drag, throttle).imag / h, abs=1e-4
     )
@@ -92,7 +92,7 @@ def test_d_we_dthrottle(problem):
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
     lin_we = sr._SobieskiPropulsion__compute_dengineweight_dvar(esf, d_esf_dthrottle)
 
-    throttle = throttle + 1j * h
+    throttle += 1j * h
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
     assert lin_we == pytest.approx(
         sr._SobieskiPropulsion__compute_engine_weight(esf).imag / h, abs=1e-8
@@ -111,7 +111,7 @@ def test_d_we_ddrag(problem):
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
     lin_we = sr._SobieskiPropulsion__compute_dengineweight_dvar(esf, d_esf_ddrag)
 
-    drag = drag + 1j * h
+    drag += 1j * h
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
     assert lin_we == pytest.approx(
         sr._SobieskiPropulsion__compute_engine_weight(esf).imag / h, abs=1e-8
@@ -130,7 +130,7 @@ def test_d_sfc_dthrottle(problem):
     lin_sfc = sr._SobieskiPropulsion__compute_dsfc_dthrottle(
         x_shared[1], x_shared[2], throttle
     )
-    throttle = throttle + 1j * h
+    throttle += 1j * h
 
     assert lin_sfc == pytest.approx(
         sr._SobieskiPropulsion__compute_sfc(x_shared[1], x_shared[2], throttle).imag
@@ -152,7 +152,7 @@ def test_d_sfc_dh(problem):
         x_shared[1], x_shared[2], throttle
     )
 
-    x_shared[1] = x_shared[1] + 1j * h
+    x_shared[1] += 1j * h
     assert lin_sfc == pytest.approx(
         sr._SobieskiPropulsion__compute_sfc(x_shared[1], x_shared[2], throttle).imag
         / h,
@@ -173,7 +173,7 @@ def test_d_sfc_d_m(problem):
         x_shared[1], x_shared[2], throttle
     )
 
-    x_shared[2] = x_shared[2] + 1j * h
+    x_shared[2] += 1j * h
     assert lin_sfc == pytest.approx(
         sr._SobieskiPropulsion__compute_sfc(x_shared[1], x_shared[2], throttle).imag
         / h,
@@ -192,7 +192,7 @@ def test_dthrottle_constraint_dthrottle(problem):
     lin_throttle = sr._SobieskiPropulsion__compute_dthrconst_dthrottle(
         x_shared[1], x_shared[2]
     )
-    x_3[0] = x_3[0] + 1j * h
+    x_3[0] += 1j * h
     assert lin_throttle == pytest.approx(
         sr._SobieskiPropulsion__compute_throttle_constraint(
             x_shared[1], x_shared[2], x_3[0]
@@ -213,7 +213,7 @@ def test_dthrottle_constraint_dh(problem):
     lin_throttle = sr._SobieskiPropulsion__compute_dthrcons_dh(
         x_shared[1], x_shared[2], x_3[0]
     )
-    x_shared[1] = x_shared[1] + 1j * h
+    x_shared[1] += 1j * h
     assert lin_throttle == pytest.approx(
         sr._SobieskiPropulsion__compute_throttle_constraint(
             x_shared[1], x_shared[2], x_3[0]
@@ -234,7 +234,7 @@ def test_dthrottle_constraint_dmach(problem):
     lin_throttle = sr._SobieskiPropulsion__compute_dthrconst_dmach(
         x_shared[1], x_shared[2], x_3[0]
     )
-    x_shared[2] = x_shared[2] + 1j * h
+    x_shared[2] += 1j * h
     assert lin_throttle == pytest.approx(
         sr._SobieskiPropulsion__compute_throttle_constraint(
             x_shared[1], x_shared[2], x_3[0]

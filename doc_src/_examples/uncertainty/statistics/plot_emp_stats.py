@@ -149,7 +149,7 @@ print(analysis.compute_quantile(0.8))
 # Here are the probability
 # to respectively be greater and lower than the default output value:
 default_output = discipline.execute()
-print(analysis.compute_probability(default_output, greater=True))
+print(analysis.compute_probability(default_output))
 print(analysis.compute_probability(default_output, greater=False))
 
 ###############################################################################

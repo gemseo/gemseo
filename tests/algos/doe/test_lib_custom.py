@@ -146,9 +146,11 @@ def get_options(
     Returns:
         The options of the DOE algorithm.
     """
-    options = {"n_samples": 13}
-    options["doe_file"] = str(Path(__file__).parent / f"dim_{dim}.csv")
-    options["dim"] = dim
+    options = {
+        "n_samples": 13,
+        "doe_file": str(Path(__file__).parent / f"dim_{dim}.csv"),
+        "dim": dim,
+    }
     return options
 
 

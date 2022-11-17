@@ -178,7 +178,7 @@ def test_basic_idf(tmp_wd, idf_scenario):
         assert post in posts
 
     # Monitor in the console
-    idf_scenario.xdsmize(json_output=True, html_output=True, open_browser=False)
+    idf_scenario.xdsmize(json_output=True)
     assert Path("xdsm.json").exists()
     assert Path("xdsm.html").exists()
 
@@ -195,9 +195,7 @@ def test_backup_error(tmp_wd, mdf_scenario):
         )
 
     with pytest.raises(IOError):
-        mdf_scenario.set_optimization_history_backup(
-            __file__, erase=False, pre_load=True
-        )
+        mdf_scenario.set_optimization_history_backup(__file__, pre_load=True)
 
 
 @pytest.mark.parametrize("each_iter", [False, True])
@@ -208,11 +206,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
     """
     file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(
-        file_path,
-        erase=True,
-        pre_load=False,
-        generate_opt_plot=True,
-        each_new_iter=each_iter,
+        file_path, erase=True, generate_opt_plot=True, each_new_iter=each_iter
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     assert len(mdf_scenario.formulation.opt_problem.database) == 2
@@ -223,7 +217,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
-    mdf_scenario.set_optimization_history_backup(file_path, erase=True, pre_load=False)
+    mdf_scenario.set_optimization_history_backup(file_path, erase=True)
     assert not file_path.exists()
 
 
@@ -239,7 +233,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     """
     filename = "opt_history.h5"
     mdf_variable_grammar_scenario.set_optimization_history_backup(
-        filename, erase=False, pre_load=True, generate_opt_plot=False
+        filename, pre_load=True
     )
     mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     opt_read = OptimizationProblem.import_hdf(filename)
@@ -320,11 +314,7 @@ def test_adapter(tmp_wd, idf_scenario):
     """Test the adapter."""
     # Monitor in the console
     idf_scenario.xdsmize(
-        True,
-        print_statuses=True,
-        outdir=str(tmp_wd),
-        json_output=True,
-        html_output=True,
+        True, print_statuses=True, outdir=str(tmp_wd), json_output=True
     )
 
     idf_scenario.default_inputs = {
@@ -380,7 +370,7 @@ def test_repr_str(idf_scenario):
 def test_xdsm_filename(tmp_wd, idf_scenario):
     """Tests the export path dir for xdsm."""
     outfilename = "my_xdsm.html"
-    idf_scenario.xdsmize(outfilename=outfilename, latex_output=False, html_output=True)
+    idf_scenario.xdsmize(outfilename=outfilename)
     assert Path(outfilename).is_file()
 
 

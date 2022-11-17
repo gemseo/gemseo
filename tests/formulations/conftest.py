@@ -85,7 +85,7 @@ def build_and_run_idf_scenario_with_constraints(
         start_at_equilibrium=True,
     )
     if linearize:
-        scenario.set_differentiation_method("user")
+        scenario.set_differentiation_method()
     else:
         scenario.set_differentiation_method("complex_step", 1e-30)
     # Set the design constraints

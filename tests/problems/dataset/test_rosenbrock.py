@@ -23,7 +23,6 @@ from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 
 
 def test_constructor():
-
     dataset = RosenbrockDataset()
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
@@ -32,7 +31,6 @@ def test_constructor():
 
 
 def test_constructor_categorize():
-
     dataset = RosenbrockDataset(categorize=False)
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
@@ -41,7 +39,6 @@ def test_constructor_categorize():
 
 
 def test_constructor_optnaming():
-
     dataset = RosenbrockDataset(opt_naming=False)
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100

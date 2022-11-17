@@ -245,11 +245,7 @@ def test_seed(algo_name):
     # we need to reset the current iteration because max_iter is reached
     # (for DOELibrary, max_iter == n_samples).
     problem.reset(
-        database=False,
-        current_iter=True,
-        design_space=False,
-        function_calls=False,
-        preprocessing=False,
+        database=False, design_space=False, function_calls=False, preprocessing=False
     )
     library.execute(
         problem,
@@ -264,11 +260,7 @@ def test_seed(algo_name):
     # By doing so,
     # the input samples will be the same and the functions won't be evaluated.
     problem.reset(
-        database=False,
-        current_iter=True,
-        design_space=False,
-        function_calls=False,
-        preprocessing=False,
+        database=False, design_space=False, function_calls=False, preprocessing=False
     )
     library.execute(problem, n_samples=2, seed=2)
     assert library.seed == 3
@@ -277,11 +269,7 @@ def test_seed(algo_name):
 
     # Lastly, we check that the DOELibrary uses its own seed again.
     problem.reset(
-        database=False,
-        current_iter=True,
-        design_space=False,
-        function_calls=False,
-        preprocessing=False,
+        database=False, design_space=False, function_calls=False, preprocessing=False
     )
     library.execute(problem, n_samples=2)
     assert library.seed == 4

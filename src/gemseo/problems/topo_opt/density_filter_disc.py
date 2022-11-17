@@ -35,7 +35,7 @@ from gemseo.core.discipline import MDODiscipline
 class DensityFilter(MDODiscipline):
     """Apply density filter to the design variables of a topology optimization problem.
 
-    This helps avoiding checkerboard patterns in density based topology optimization.
+    This helps to avoid checkerboard patterns in density based topology optimization.
     A filter matrix :math:`H` is assembled at instantiation.
     The discipline computes the physical density :math:`xPhys` from the design variables
     :math:`x` with the formula :math:`xPhys=Hx`.
@@ -98,7 +98,7 @@ class DensityFilter(MDODiscipline):
                         ih[cc] = row
                         jh[cc] = col
                         sh[cc] = maximum(0.0, fac)
-                        cc = cc + 1
+                        cc += 1
         # Finalize assembly and convert to csc format
         h_mat = coo_matrix(
             (sh, (ih, jh)), shape=(self.n_x * self.n_y, self.n_x * self.n_y)

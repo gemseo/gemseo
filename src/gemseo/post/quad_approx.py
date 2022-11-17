@@ -147,11 +147,11 @@ class QuadApprox(OptPostProcessor):
         pylab.grid(True)
         thick_min, thick_max = int(np.log10(linear_threshold)), int(np.log10(vmax))
         positive_levels = np.logspace(
-            thick_min, thick_max, num=thick_max - thick_min + 1, base=10.0
+            thick_min, thick_max, num=thick_max - thick_min + 1
         )
         pylab.plt.colorbar(
             ticks=np.concatenate((np.sort(-positive_levels), positive_levels)),
-            format=LogFormatter(base=10, labelOnlyBase=False),
+            format=LogFormatter(base=10),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")
         return fig

@@ -42,8 +42,8 @@ dataset = load_dataset("RosenbrockDataset")
 # Plot z vs x and y
 # -----------------
 # We can use the :class:`.ZvsXY` plot
-plot = ZvsXY(dataset, x="x", x_comp=0, y="x", y_comp=1, z="rosen")
+plot = ZvsXY(dataset, x="x", y="x", y_comp=1, z="rosen")
 plot.colormap = "viridis"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

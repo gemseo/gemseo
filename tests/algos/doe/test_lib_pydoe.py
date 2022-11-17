@@ -170,9 +170,7 @@ def test_algos(algo_name, dim, n_samples, options):
 def test_integer_lhs():
     """Check that a DOE with integer variables stores integer values in the Database."""
     problem = Rosenbrock()
-    problem.design_space.add_variable(
-        "y", size=1, var_type="integer", l_b=10.0, u_b=15.0
-    )
+    problem.design_space.add_variable("y", var_type="integer", l_b=10.0, u_b=15.0)
     DOEFactory().execute(problem, "lhs", n_samples=10)
 
     for sample in problem.database.get_x_history():

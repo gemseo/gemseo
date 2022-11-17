@@ -611,9 +611,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         count = 0
         k = 0
         for s_k, y_k in self.iterate_s_k_y_k(x_hist, grad_hist):
-            k = k + 1
+            k += 1
             if dot(s_k.T, y_k) > angle_tol and norm(y_k, inf) < step_tol:
-                count = count + 1
+                count += 1
                 self.iterate_inverse_approximation(
                     h_mat,
                     s_k,
@@ -844,7 +844,7 @@ class SR1Approx(HessianApproximation):
 
 
 class LSTSQApprox(HessianApproximation):
-    """Least squares approximation of an Hessian matrix from an optimization history."""
+    """Least squares approximation of a Hessian matrix from an optimization history."""
 
     def build_approximation(
         self,

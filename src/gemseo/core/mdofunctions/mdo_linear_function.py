@@ -29,7 +29,7 @@ from gemseo.core.mdofunctions.mdo_function import OutputType
 
 
 class MDOLinearFunction(MDOFunction):
-    r"""Linear multivariate function defined by
+    r"""Linear multivariate function defined by.
 
     * a matrix :math:`A` of first-order coefficients
       :math:`(a_{ij})_{\substack{i = 1, \dots m \\ j = 1, \dots n}}`
@@ -48,7 +48,6 @@ class MDOLinearFunction(MDOFunction):
         \begin{bmatrix} x_1 \\ \vdots \\ x_n \end{bmatrix}
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
-
     """
 
     def __init__(
@@ -157,7 +156,7 @@ class MDOLinearFunction(MDOFunction):
         This is the vector :math:`b` in the expression :math:`y=Ax+b`.
 
         Raises:
-            ValueError: If the value at zero is neither an ndarray nor a number.
+            ValueError: If the value at zero is neither a ndarray nor a number.
         """
         return self._value_at_zero
 

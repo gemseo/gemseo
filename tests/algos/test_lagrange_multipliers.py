@@ -66,7 +66,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     lagrange = LagrangeMultipliers(problem)
     x_opt = problem.solution.x_opt
     x_n = problem.design_space.normalize_vect(x_opt)
-    problem.evaluate_functions(x_n, eval_jac=True, normalize=True)
+    problem.evaluate_functions(x_n, eval_jac=True)
     lagrangian = lagrange.compute(x_opt)
     assert ("upper_bounds" in lagrangian) is upper_bound
     assert "lower_bounds" in lagrangian

@@ -49,7 +49,7 @@ def test_invalid_algo():
             f"The algorithm {algo_name} is unknown; available ones are: {DOE_LIB_NAME}."
         ),
     ):
-        execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=100)
+        execute_problem(DOE_LIB_NAME, algo_name=algo_name, n_samples=100)
 
 
 def test_diagonal_doe():

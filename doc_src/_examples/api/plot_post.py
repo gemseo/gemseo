@@ -64,9 +64,7 @@ print(get_post_processing_options_schema("RadarChart"))
 # with its :code:`**options`. E.g.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 design_space = SellarDesignSpace()
-scenario = create_scenario(
-    disciplines, "MDF", "obj", design_space, "SellarMDFScenario", "MDO"
-)
+scenario = create_scenario(disciplines, "MDF", "obj", design_space, "SellarMDFScenario")
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 execute_post(scenario, "OptHistoryView", show=False, save=False)
 # Workaround for HTML rendering, instead of ``show=True``

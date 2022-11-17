@@ -177,7 +177,7 @@ print(analysis.compute_median())
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Here is the two-sided tolerance interval with a coverage level equal to 50%
 # with a confidence level of 95% for the different variables:
-print(analysis.compute_tolerance_interval(0.5, 0.95))
+print(analysis.compute_tolerance_interval(0.5))
 
 ###############################################################################
 # Get B-value

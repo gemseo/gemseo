@@ -384,7 +384,7 @@ def test_diff_inputs_outputs():
         d.add_differentiated_inputs(["toto"])
     with pytest.raises(ValueError):
         d.add_differentiated_outputs(["toto"])
-    d.add_differentiated_inputs(None)
+    d.add_differentiated_inputs()
 
 
 def test_run():
@@ -447,7 +447,7 @@ def test_linearize_errors():
 
     def _compute_jacobian(inputs=None, outputs=None):
         SobieskiMission._compute_jacobian(sm, inputs=inputs, outputs=outputs)
-        sm.jac["y_4"]["x_shared"] = sm.jac["y_4"]["x_shared"] + 3.0
+        sm.jac["y_4"]["x_shared"] += 3.0
 
     sm._compute_jacobian = _compute_jacobian
 
@@ -539,14 +539,7 @@ def test_check_jacobian_2():
 def test_check_jacobian_parallel_fd():
     """Test check_jacobian in parallel."""
     sm = SobieskiMission()
-    sm.check_jacobian(
-        derr_approx=sm.FINITE_DIFFERENCES,
-        step=1e-6,
-        threshold=1e-6,
-        parallel=True,
-        use_threading=False,
-        n_processes=6,
-    )
+    sm.check_jacobian(step=1e-6, threshold=1e-6, parallel=True, n_processes=6)
 
 
 @pytest.mark.skip_under_windows
@@ -558,7 +551,6 @@ def test_check_jacobian_parallel_cplx():
         step=1e-30,
         threshold=1e-6,
         parallel=True,
-        use_threading=False,
         n_processes=6,
     )
 
@@ -667,9 +659,9 @@ def test_cache_h5_jac(tmp_wd):
     sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
     xs = sm.default_inputs["x_shared"]
     input_data = {"x_shared": xs}
-    jac_1 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_1 = sm.linearize(input_data, force_all=True)
     sm.execute(input_data)
-    jac_2 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_2 = sm.linearize(input_data, force_all=True)
     assert check_jac_equals(jac_1, jac_2)
 
     input_data = {"x_shared": xs + 2.0}
@@ -677,11 +669,11 @@ def test_cache_h5_jac(tmp_wd):
     jac_1 = sm.linearize(input_data, force_all=True, force_no_exec=True)
 
     input_data = {"x_shared": xs + 3.0}
-    jac_2 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_2 = sm.linearize(input_data, force_all=True)
     assert not check_jac_equals(jac_1, jac_2)
 
     sm.execute(input_data)
-    jac_3 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_3 = sm.linearize(input_data, force_all=True)
     assert check_jac_equals(jac_3, jac_2)
 
     jac_4 = sm.linearize(input_data, force_all=True, force_no_exec=True)
@@ -733,17 +725,17 @@ def test_jac_approx_mix_fd():
 def test_jac_set_optimal_fd_step_force_all():
     """Test the computation of the optimal time step with force_all=True."""
     sm = SobieskiMission()
-    sm.set_jacobian_approximation(sm.FINITE_DIFFERENCES, jac_approx_n_processes=1)
+    sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(force_all=True)
-    assert sm.check_jacobian(parallel=False, n_processes=1, threshold=1e-4)
+    assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
 def test_jac_set_optimal_fd_step_input_output():
     """Test the computation of the optimal time step with force_all=True."""
     sm = SobieskiMission()
-    sm.set_jacobian_approximation(sm.FINITE_DIFFERENCES, jac_approx_n_processes=1)
+    sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(inputs=["y_14"], outputs=["y_4"])
-    assert sm.check_jacobian(parallel=False, n_processes=1, threshold=1e-4)
+    assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
 def test_jac_set_optimal_fd_step_no_jac_approx():
@@ -774,7 +766,7 @@ def test_jac_cache_trigger_shapecheck():
     aero._cache_was_loaded = True
     aero.add_differentiated_inputs(in_names)
     aero.add_differentiated_outputs(out_names)
-    aero.linearize(inpts, force_all=False, force_no_exec=True)
+    aero.linearize(inpts, force_no_exec=True)
 
 
 def test_is_linearized():

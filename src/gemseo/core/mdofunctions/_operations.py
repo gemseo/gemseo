@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
-    """An helper to create a function applying an operation to another function."""
+    """A helper to create a function applying an operation to another function."""
 
     def __init__(
         self,
@@ -165,7 +165,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
 
 
 class _AdditionFunctionMaker(_OperationFunctionMaker):
-    """An helper to create a function summing a function with a constant or a function.
+    """A helper to create a function summing a function with a constant or a function.
 
     If the function operands have a Jacobian, the function will support automatic
     differentiation.
@@ -201,7 +201,7 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
 
 
 class _MultiplicationFunctionMaker(_OperationFunctionMaker):
-    """An helper to create a function multiplying a function by a number or a function.
+    """A helper to create a function multiplying a function by a number or a function.
 
     If the function operands have a Jacobian, the function will support automatic
     differentiation.

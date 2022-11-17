@@ -169,18 +169,12 @@ class TestJacobianAssembly(unittest.TestCase):
                             + str(use_lu_fact)
                         )
         filepath = mda.assembly.plot_dependency_jacobian(
-            functions, variables, save=True, show=False, filepath="depmat"
+            functions, variables, filepath="depmat"
         )
         assert os.path.exists(filepath)
 
         jac = mda.assembly.total_derivatives(
-            indata,
-            None,
-            variables,
-            couplings,
-            mode=JacobianAssembly.ADJOINT_MODE,
-            matrix_type=JacobianAssembly.SPARSE,
-            use_lu_fact=False,
+            indata, None, variables, couplings, mode=JacobianAssembly.ADJOINT_MODE
         )
         assert jac["y_4"]["x_shared"] is None
         assert jac["y_1"]["TOTO"] is None

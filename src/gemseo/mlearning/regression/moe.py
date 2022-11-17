@@ -527,7 +527,7 @@ class MOERegressor(MLRegressionAlgo):
     ) -> None:
         """Train the clustering algorithm.
 
-        The methods adds resulting labels as a new output in the dataset.
+        The method adds resulting labels as a new output in the dataset.
 
         Args:
             dataset: The dataset containing input and output data.

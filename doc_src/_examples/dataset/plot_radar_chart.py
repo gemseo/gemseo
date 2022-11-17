@@ -50,6 +50,6 @@ dataset.row_names = ["series_1", "series_2"]
 plot = RadarChart(dataset, connect=True, radial_ticks=True)
 plot.rmin = -0.5
 plot.rmax = 1.0
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

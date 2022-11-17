@@ -78,7 +78,7 @@ def initialize_design_space_and_discipline_to(
             xx[x] = i
             x += 1
     yy = n_y + 1 - yy
-    xx = xx - 1
+    xx -= 1
     # Compute the centroid coordinates
     xc = zeros(n_x * n_y)
     yc = zeros(n_x * n_y)

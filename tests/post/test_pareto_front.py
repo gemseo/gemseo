@@ -98,12 +98,7 @@ def test_pareto_minimize(
     problem.change_objective_sign()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
     PostFactory().execute(
-        problem,
-        "ParetoFront",
-        save=True,
-        show=False,
-        file_path="power",
-        objectives=["pow2", "ineq1"],
+        problem, "ParetoFront", file_path="power", objectives=["pow2", "ineq1"]
     )
 
 
@@ -116,7 +111,6 @@ def test_pareto_incorrect_objective_list():
         PostFactory().execute(
             problem,
             "ParetoFront",
-            show=False,
             save=False,
             objectives=problem.get_all_functions_names(),
             objectives_labels=["fake_label"],
@@ -136,7 +130,6 @@ def test_pareto_incorrect_objective_names():
         PostFactory().execute(
             problem,
             "ParetoFront",
-            show=False,
             save=False,
             objectives=["fake_obj"],
             file_path="power",

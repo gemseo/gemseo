@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a bar plot from a :class:`.Dataset`. """
+r"""Draw a bar plot from a :class:`.Dataset`."""
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
@@ -50,7 +50,7 @@ class BarPlot(DatasetPlot):
         axes: None | Axes = None,
     ) -> list[Figure]:
         # radar solid grid lines
-        all_data, _, sizes = self.dataset.get_all_data(False, False)
+        all_data, _, sizes = self.dataset.get_all_data(False)
         variables_names = self.dataset.columns_names
         dimension = sum(sizes.values())
         series_names = self.dataset.row_names
