@@ -20,7 +20,9 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from gemseo.core.dependency_graph import DependencyGraph
@@ -207,11 +209,20 @@ def graph_with_self_coupling() -> DependencyGraph:
 @pytest.mark.parametrize(
     "file_path,method",
     [
-        ("full_coupling_graph.dot", "write_full_graph"),
-        ("condensed_coupling_graph.dot", "write_condensed_graph"),
+        ("full_coupling_graph.pdf", "write_full_graph"),
+        ("condensed_coupling_graph.pdf", "write_condensed_graph"),
     ],
 )
 def test_coupling_structure_plot(tmp_wd, graph_with_self_coupling, file_path, method):
     """Check the rendering of the coupling graph with a self-coupled discipline."""
     getattr(graph_with_self_coupling, method)(file_path)
-    assert_file(Path(file_path))
+    assert_dot_file(Path(file_path))
+
+
+def test_no_graphviz(caplog, graph_with_self_coupling):
+    """Check the message logged when graphviz is missing."""
+    with patch("gemseo.core.dependency_graph.graphviz", None):
+        assert graph_with_self_coupling.write_full_graph("graph.pdf") is None
+        _, log_level, log_message = caplog.record_tuples[0]
+        assert log_level == logging.WARNING
+        assert log_message == "Cannot write graph: graphviz cannot be imported."
