@@ -24,6 +24,7 @@ from pathlib import Path
 import pytest
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.utils.study_analysis import StudyAnalysis
+from gemseo.utils.study_analysis import XLSStudyParser
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
 
@@ -145,3 +146,30 @@ def test_options():
     assert mda.tolerance == pytest.approx(1e-5)
     assert mda.over_relax_factor == pytest.approx(1.2)
     assert mda.max_mda_iter == pytest.approx(20)
+
+
+def test_xls_study_parser(tmp_wd, caplog):
+    """Check the log of the XLSStudyParser."""
+    XLSStudyParser(INPUT_DIR / "disciplines_spec.xlsx")
+    expected_lines = [
+        "2 disciplines detected",
+        "   Discipline1",
+        "      Inputs: a, b, c",
+        "      Outputs: d, e, g",
+        "   Discipline2",
+        "      Inputs: d, e, x, z",
+        "      Outputs: a, b, f",
+        "1 scenario detected",
+        "   Scenario",
+        "      Objectives: f",
+        "      Disciplines: Discipline1, Discipline2",
+        "      Constraints: g",
+        "      Design variables: b, x",
+        "      Formulation: MDF",
+    ]
+    lines = [
+        line for (_, _, lines) in caplog.record_tuples for line in lines.split("\n")
+    ]
+    assert len(expected_lines) == len(lines)
+    for expected_line, line in zip(expected_lines, lines):
+        assert line == expected_line
