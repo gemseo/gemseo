@@ -1,0 +1,9 @@
+digraph {
+	A -> B [label=foo color=black dir=forward fontcolor=black penwidth=1.0]
+	A -> C [label=bar color=red dir=none fontcolor=blue fontsize=7 penwidth=2.0]
+	A -> A [label=baz color=black dir=forward fontcolor=black penwidth=1.0]
+	B -> B [color=black dir=forward fontcolor=black penwidth=1.0]
+	B [color=red fillcolor=black fontcolor=white penwidth=4.0 shape=box style=filled]
+	C [style=invis]
+	D [color=black fillcolor=yellow fontcolor=black penwidth=1.0 style=filled]
+}
