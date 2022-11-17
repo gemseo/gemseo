@@ -180,6 +180,8 @@ def test_centered_lhs():
         ("OT_OPT_LHS", 2, 3, {"n_samples": 3, "temperature": "Linear"}),
         ("OT_OPT_LHS", 2, 3, {"n_samples": 3, "annealing": False}),
         ("OT_OPT_LHS", 2, 3, {"n_samples": 3, "criterion": "PhiP"}),
+        ("OT_SOBOL_INDICES", 3, 20, {"n_samples": 20, "eval_second_order": False}),
+        ("OT_SOBOL_INDICES", 3, 16, {"n_samples": 20, "eval_second_order": True}),
     ],
 )
 def test_algos(algo_name, dim, n_samples, options):
@@ -228,9 +230,9 @@ def get_expected_nsamples(
             return 1
     if algo == "OT_SOBOL_INDICES":
         if dim == 1:
-            return 12
+            return 16
         if dim == 5:
-            return 7
+            return 12
 
     return n_samples
 

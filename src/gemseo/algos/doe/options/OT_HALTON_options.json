@@ -19,8 +19,15 @@
         	"minimum":0
         },
         "seed": {
-                "type" : ["null", "integer"],
-                "minimum":1
+            "anyOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            ]
         },
 		"max_time": {
             "type": "number",
