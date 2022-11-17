@@ -52,6 +52,4 @@ def test_create():
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
     factory = SensitivityAnalysisFactory()
-    assert factory.create(
-        "MorrisAnalysis", (discipline,), space, n_samples=None, n_replicates=5
-    )
+    assert factory.create("MorrisAnalysis", (discipline,), space, n_replicates=5)

@@ -120,7 +120,7 @@ class MatlabDiscipline(MDODiscipline):
             matlab_fct: The path of the Matlab file or Name of the function.
             input_names: The list of input variables.
             output_names: The list of output variables.
-            add_subfold_path: If True, add all sub-folder to matlab engine path..
+            add_subfold_path: If True, add all sub-folder to matlab engine path.
             search_file: The root directory to launch the research of matlab file.
             matlab_engine_name: The name of the singleton used for this discipline.
             matlab_data_file: The .mat file or path containing default values of data.
@@ -245,7 +245,7 @@ class MatlabDiscipline(MDODiscipline):
         re_matfile = re.compile(r"\S+\.\S*")
         grps = re_matfile.search(file_name)
         if grps is None:
-            file_name = file_name + extension
+            file_name += extension
 
         file_path = ""
         for subdir, _, files in os.walk(str(root_dir)):
@@ -341,7 +341,7 @@ class MatlabDiscipline(MDODiscipline):
         self.output_grammar.update_from_data(output_data)
 
         # If none input matlab data is prescribed, we cannot know
-        # the size of inputs and outputs. Thus we must evaluate
+        # the size of inputs and outputs. Thus, we must evaluate
         # the function in order to know the sizes
         if matlab_data_file is not None:
             self.__is_size_known = True

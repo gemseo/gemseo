@@ -41,7 +41,7 @@ class MDF(MDOFormulation):
     - the optimization problem
       with respect to the local and global design variables is made at the top level.
 
-    Note that the multidisciplinary analysis is made at a each optimization iteration.
+    Note that the multidisciplinary analysis is made at each optimization iteration.
     """
 
     def __init__(

@@ -253,7 +253,6 @@ class SnOpt(OptimizationLibrary):
         Returns:
             The solution status, the evaluation of the objective function and its
             gradient.
-
         """
         obj_func = self.problem.objective
         status = -1

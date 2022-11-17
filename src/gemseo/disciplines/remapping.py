@@ -98,7 +98,7 @@ class RemappingDiscipline(MDODiscipline):
         """Cast a value of a mapping.
 
         Args:
-            value: The value to be casted.
+            value: The value to be cast.
 
         Returns:
             The casted value.

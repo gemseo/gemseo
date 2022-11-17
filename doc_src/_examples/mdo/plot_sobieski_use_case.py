@@ -182,7 +182,7 @@ scenario = create_scenario(
 # vailable for Sobieski test-case, they can be used instead of computing
 # the derivatives with finite-differences or with the complex-step method.
 # The easiest way to set a method is to let the optimizer determine it:
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 ##############################################################################
 #
 # The default behavior of the optimizer triggers :term:`finite differences`.

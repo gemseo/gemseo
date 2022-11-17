@@ -251,7 +251,7 @@ class QtTemplateEditor(QMainWindow):
             while index != -1:
                 # Select the matched text and apply the desired format
                 cursor.setPosition(index)
-                cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor, n=1)
+                cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
                 char_fmt = cursor.charFormat()
                 char_fmt.setBackground(color)
                 cursor.setCharFormat(char_fmt)
@@ -261,10 +261,10 @@ class QtTemplateEditor(QMainWindow):
                 match = regex.match(self.q_text_e.toPlainText(), pos)
                 index = match.capturedStart()
         else:
-            # Setup the desired format for matches
+            # Set up the desired format for matches
             color = QColor(color)
             color.setAlpha(100)
-            # Setup the regex engine
+            # Set up the regex engine
             regex = QRegExp(sep)
             # Process the displayed document
             index = regex.indexIn(self.q_text_e.toPlainText(), 0)
@@ -273,7 +273,7 @@ class QtTemplateEditor(QMainWindow):
             while index != -1:
                 # Select the matched text and apply the desired format
                 cursor.setPosition(index)
-                cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor, n=1)
+                cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
                 charfmt = cursor.charFormat()
                 charfmt.setBackground(color)
                 cursor.setCharFormat(charfmt)

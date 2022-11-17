@@ -84,7 +84,7 @@ sphinx_gallery_conf = {
     "backreferences_dir": "gen_modules/backreferences",
     # Modules for which function/class level galleries are created. In
     # this case sphinx_gallery and numpy in a tuple of strings.
-    "doc_module": ("gemseo"),
+    "doc_module": "gemseo",
     # objects to exclude from implicit backreferences. The default option
     # is an empty set, i.e. exclude nothing.
     "exclude_implicit_doc": {r"gemseo\.api\.configure_logger"},

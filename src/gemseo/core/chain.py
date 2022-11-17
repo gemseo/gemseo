@@ -148,7 +148,7 @@ class MDOChain(MDODiscipline):
         # use coupling_structure graph path for that
         last_cached = discipline.get_input_data()
         # The graph traversal algorithm avoid to force_all linearizations
-        discipline.linearize(last_cached, force_no_exec=True, force_all=False)
+        discipline.linearize(last_cached, force_no_exec=True)
 
         for output_name in chain_outputs:
             if output_name in self.jac:
@@ -213,7 +213,7 @@ class MDOChain(MDODiscipline):
         last_cached = last_discipline.get_input_data()
 
         # The graph traversal algorithm avoid to force_all linearizations
-        last_discipline.linearize(last_cached, force_no_exec=True, force_all=False)
+        last_discipline.linearize(last_cached, force_no_exec=True)
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines

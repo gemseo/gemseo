@@ -30,7 +30,7 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 class MDOQuadraticFunction(MDOFunction):
-    r"""Scalar-valued quadratic multivariate function defined by
+    r"""Scalar-valued quadratic multivariate function defined by.
 
     * a *square* matrix :math:`A` of second-order coefficients
       :math:`(a_{ij})_{\substack{i = 1, \dots n \\ j = 1, \dots n}}`

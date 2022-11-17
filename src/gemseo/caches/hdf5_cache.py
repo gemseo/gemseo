@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Caching module to store all the entries in a HDF file."""
+"""Caching module to store all the entries in an HDF file."""
 from __future__ import annotations
 
 import logging
@@ -54,7 +54,7 @@ class HDF5Cache(AbstractFullCache):
         Args:
             hdf_file_path: The path of the HDF file.
                 Initialize a singleton to access the HDF file.
-                This singleton is used for multithreaded/multiprocessing access
+                This singleton is used for multithreading/multiprocessing access
                 with a lock.
             hdf_node_path: The node of the HDF file.
             name: A name for the cache.

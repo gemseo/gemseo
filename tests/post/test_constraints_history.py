@@ -47,4 +47,4 @@ TEST_PARAMETERS = {"default": ["ConstraintsHistory_default"]}
 def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
     """Check ConstraintsHistory."""
     opt = ConstraintsHistory(common_problem)
-    opt.execute(constraint_names=["eq", "neg", "pos"], show=False, save=False)
+    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)

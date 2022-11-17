@@ -93,11 +93,10 @@ class SOM(OptPostProcessor):
             "som",
             x_vars,
             mapsize=[som_grid_ny + 1, som_grid_nx + 1],
-            norm_method="var",
             initmethod=initmethod,
         )
         var_som.init_map()
-        var_som.train(n_job=1, shared_memory="no", verbose=verbose)
+        var_som.train(verbose=verbose)
         return var_som
 
     def _plot(

@@ -141,7 +141,7 @@ class ObjConstrHist(OptPostProcessor):
         # 2.d. Add color map.
         thick_max = int(np.log10(np.abs(c_max)))
         levels_pos = np.append(
-            np.logspace(0, thick_max, num=thick_max + 1, base=10.0),
+            np.logspace(0, thick_max, num=thick_max + 1),
             c_max,
         )
         cax = fig.add_subplot(grid[0, 1])

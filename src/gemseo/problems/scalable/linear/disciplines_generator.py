@@ -257,7 +257,7 @@ def create_disciplines_from_desc(
     Args:
         disc_descriptions: The specification of the disciplines,
             each item is (name, inputs_names, outputs_names),
-            disciplines names may be non unique.
+            disciplines names may be non-unique.
         inputs_size: The size of the input vectors,
             each input data is of shape (inputs_size,).
         outputs_size: The size of the output vectors,

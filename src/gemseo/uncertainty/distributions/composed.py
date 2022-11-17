@@ -63,7 +63,7 @@ mathematical :attr:`.ComposedDistribution.support`.
 
     We call mathematical *support* the set of values that the random variable
     can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
-    and numerical *range* the set of values that it can can take in practice,
+    and numerical *range* the set of values that it can take in practice,
     taking into account the values rounded to zero double precision.
     Both support and range are described in terms of lower and upper bounds
 
@@ -108,11 +108,11 @@ class ComposedDistribution(Distribution):
         distributions: Sequence[Distribution],
         copula: str = _INDEPENDENT_COPULA,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             distributions: The distributions.
             copula: A name of copula.
-        """
+        """  # noqa: D205,D212,D415
         dimension = sum(distribution.dimension for distribution in distributions)
         self._marginal_variables = [
             distribution.variable_name for distribution in distributions

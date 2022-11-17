@@ -96,19 +96,13 @@ def test_scaling():
     approx = HessianApproximation(database)
     design_space = problem.design_space
     _, _, _, _ = approx.build_approximation(
-        funcname=problem.objective.name,
-        scaling=True,
-        design_space=design_space,
-        normalize_design_space=False,
+        funcname=problem.objective.name, scaling=True, design_space=design_space
     )
 
     approx = SR1Approx(database)
     design_space = problem.design_space
     h_approx_unscaled, _, _, _ = approx.build_approximation(
-        funcname=problem.objective.name,
-        scaling=True,
-        design_space=design_space,
-        normalize_design_space=False,
+        funcname=problem.objective.name, scaling=True, design_space=design_space
     )
 
     h_approx_scaled, _, _, _ = approx.build_approximation(
@@ -159,9 +153,7 @@ def test_baseclass_methods():
     assert x_hist.shape[0] == at_most_niter
     assert x_grad_hist.shape[0] == at_most_niter
 
-    _, _, n_iter_ref, nparam = apprx.get_x_grad_history(
-        problem.objective.name, at_most_niter=-1
-    )
+    _, _, n_iter_ref, nparam = apprx.get_x_grad_history(problem.objective.name)
 
     _, _, n_iter_2, _ = apprx.get_x_grad_history(
         problem.objective.name, last_iter=n_iter_ref

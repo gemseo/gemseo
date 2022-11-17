@@ -52,7 +52,7 @@ class MatlabParser:
 
     RE_FILE_FMT = re.compile(r".*(\\.*)*\.m\b")
     RE_ENCRYPTED_FCT = re.compile(r".*(\\.*)*\.p\b")
-    RE_OUTPUTS = re.compile(r"(\[(.*?)\])|(function( *?)(.*?)=)")
+    RE_OUTPUTS = re.compile(r"(\[(.*?)])|(function( *?)(.*?)=)")
     RE_FUNCTION = re.compile(r"=(.*?)\(")
     RE_ARGS = re.compile(r"\((.*?)\)")
 
@@ -203,7 +203,7 @@ class MatlabParser:
 
         is_parsed = False
 
-        with path.open("r", errors="ignore") as file_handle:
+        with path.open(errors="ignore") as file_handle:
             for line in file_handle.readlines():
                 if line.strip().startswith("function"):
                     self.__parse_function_inputs_outputs(line, fct_name)

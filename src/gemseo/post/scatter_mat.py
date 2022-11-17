@@ -116,9 +116,7 @@ class ScatterPlotMatrix(OptPostProcessor):
                 design_labels = self._generate_x_names(variables=design_names)
                 if function_names:
                     _, function_labels, _ = self.database.get_history_array(
-                        functions=function_names,
-                        design_variables_names=None,
-                        add_dv=False,
+                        functions=function_names, add_dv=False
                     )
                 else:
                     function_labels = []
@@ -128,9 +126,7 @@ class ScatterPlotMatrix(OptPostProcessor):
             else:
                 variable_names = function_names
                 _, variable_labels, _ = self.database.get_history_array(
-                    functions=variable_names,
-                    design_variables_names=None,
-                    add_dv=False,
+                    functions=variable_names, add_dv=False
                 )
                 variable_labels.sort()
 

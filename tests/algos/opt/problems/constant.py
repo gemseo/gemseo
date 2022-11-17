@@ -46,7 +46,7 @@ class Constant(OptimizationProblem):
             initial_value: The initial design value of the problem.
         """
         design_space = DesignSpace()
-        design_space.add_variable("x", 1, l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable("x", l_b=-1.0, u_b=1.0, value=initial_value)
 
         super().__init__(design_space)
         self.objective = MDOFunction(

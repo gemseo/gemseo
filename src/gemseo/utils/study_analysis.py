@@ -171,6 +171,7 @@ class XLSStudyParser:
         self.inputs = set(all_inputs)
         self.outputs = set(all_outputs)
 
+    # TODO: API: change return_none to raise_error and return empty list instead of None
     @staticmethod
     def _get_frame_series_values(
         frame: DataFrame,
@@ -184,11 +185,11 @@ class XLSStudyParser:
         Args:
             frame: The pandas frame of the sheet.
             series_name: The name of the series.
-            return_none: If the series does not exists, returns None
+            return_none: If the series does not exist, returns None
                 instead of raising a ValueError.
 
         Returns:
-            The list of a named column, if the series exist.
+            The names of the columns, if the series exist.
 
         Raises:
             ValueError: If the sheet has no name.
@@ -559,7 +560,7 @@ class StudyAnalysis:
         coupling_variables = set(MDOCouplingStructure(disciplines).all_couplings)
         design_variables = set(scenario_description[XLSStudyParser.DESIGN_VARIABLES])
         for name in sorted(coupling_variables | design_variables):
-            design_space.add_variable(name, size=1)
+            design_space.add_variable(name)
 
         option_names = scenario_description[XLSStudyParser.OPTIONS]
         options = {}
@@ -655,7 +656,7 @@ class StudyAnalysis:
         latex_output: bool = False,
         open_browser: bool = False,
     ) -> MDOScenario:
-        """Create an xdsm.json file from the current scenario.
+        """Create a xdsm.json file from the current scenario.
 
         Args:
             output_dir: The directory where the XDSM html files are generated.

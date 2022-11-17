@@ -234,18 +234,14 @@ class TestSellarScenarios(unittest.TestCase):
 
     def test_exec_mdf_slsqp_cplx_grad(self):
         """Scenario with MDF formulation, solver SLSQP and complex step."""
-        obj_opt, x_opt = TestSellarScenarios.build_and_run_scenario(
-            "MDF", "SLSQP", lin_method="complex_step"
-        )
+        obj_opt, x_opt = TestSellarScenarios.build_and_run_scenario("MDF", "SLSQP")
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, self.f_ref, 3)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
     def test_exec_idf_slsqp_cplxstep(self):
         """Scenario with IDF formulation, solver SLSQP and complex step."""
-        obj_opt, x_opt = TestSellarScenarios.build_and_run_scenario(
-            "IDF", "SLSQP", lin_method="complex_step"
-        )
+        obj_opt, x_opt = TestSellarScenarios.build_and_run_scenario("IDF", "SLSQP")
         # vector of design variables contains y targets at the end
         x_opt = x_opt[:3]
 

@@ -51,7 +51,7 @@ class CacheFactory:
         """Check the availability of a cache.
 
         Args:
-            cache_name: The name of the cache cache.
+            cache_name: The name of the cache.
 
         Returns:
             Whether the cache is available.

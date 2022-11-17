@@ -119,7 +119,7 @@ for c_name in ["g_1", "g_2", "g_3"]:
 # will print the status in the console
 # ``html_output`` (default ``True``), will generate a self-contained
 # HTML file, that can be automatically open using ``open_browser=True``
-scenario.xdsmize(html_output=True, print_statuses=False, open_browser=False)
+scenario.xdsmize()
 
 # %%
 # Define the algorithm inputs

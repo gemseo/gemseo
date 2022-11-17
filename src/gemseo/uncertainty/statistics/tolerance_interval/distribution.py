@@ -51,7 +51,7 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
     - a type of interval,
       either 'lower' for lower-sided TI,
       'upper' for upper-sided TI
-      or 'both for both-sided TI.
+      or 'both' for both-sided TI.
 
     .. note::
 
@@ -68,10 +68,10 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
         self,
         size: int,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """
         Args:
             size: The number of samples.
-        """
+        """  # noqa: D205 D212 D415
         self.__size = size
 
     def _compute_lower_bound(
@@ -143,7 +143,7 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
             upper = self._compute_upper_bound(coverage, alpha, size)
         elif side == ToleranceIntervalSide.BOTH:
             coverage = (coverage + 1.0) / 2.0
-            alpha = alpha / 2.0
+            alpha /= 2.0
             lower = self._compute_lower_bound(coverage, alpha, size)
             upper = self._compute_upper_bound(coverage, alpha, size)
         else:

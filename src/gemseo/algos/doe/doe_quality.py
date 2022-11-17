@@ -135,7 +135,7 @@ class DOEQuality:
 
 
 def compute_mindist_criterion(samples: ndarray) -> float:
-    """Compute the minimum-distance criterion of a sample set (the higher the better).
+    """Compute the minimum-distance criterion of a sample set (the higher, the better).
 
     This criterion is also called *mindist*.
 
@@ -153,7 +153,7 @@ def compute_discrepancy(
     type_name: DiscrepancyTypeNameType = _DEFAULT_DISCREPANCY_TYPE_NAME,
     **options: Any,
 ) -> float:
-    """Compute the discrepancy of a sample set (the smaller the better).
+    """Compute the discrepancy of a sample set (the smaller, the better).
 
     Args:
         samples: The data samples.
@@ -167,7 +167,7 @@ def compute_discrepancy(
 
 
 def compute_phip_criterion(samples: ndarray, power: float = _DEFAULT_POWER) -> float:
-    r"""Compute the math:`\phi^p` criterion of a sample set (the smaller the better).
+    r"""Compute the math:`\phi^p` criterion of a sample set (the smaller, the better).
 
     See :cite:`morris1995`.
 

@@ -57,7 +57,7 @@ Measure the goodness-of-fit
 
 The :meth:`.OTDistributionFitter.measure` method has two mandatory arguments:
 
-- a distribution which is a either a :class:`.OTDistribution`
+- a distribution which is either a :class:`.OTDistribution`
   or a distribution name from which :meth:`!fit` method
   builds a :class:`.OTDistribution`,
 - a fitting criterion name.
@@ -151,11 +151,11 @@ class OTDistributionFitter:
         variable: str,
         data: ndarray,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the variable.
             data: A data array.
-        """
+        """  # noqa: D205,D212,D415
         self.variable = variable
         try:
             isinstance(data, ndarray)

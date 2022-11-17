@@ -59,7 +59,7 @@ plot = Boxplot(dataset)
 plot.xlabel = "Variables"
 plot.ylabel = "Values"
 plot.title = "Standard boxplots"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
@@ -69,7 +69,7 @@ plt.show()
 # We can center the data:
 plot = Boxplot(dataset, center=True)
 plot.title = "With centering"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
@@ -79,7 +79,7 @@ plt.show()
 # We can scale the data (normalization with the standard deviation):
 plot = Boxplot(dataset, scale=True)
 plot.title = "With scaling"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
@@ -89,7 +89,7 @@ plt.show()
 # We can remove the outliers:
 plot = Boxplot(dataset, add_outliers=False)
 plot.title = "Without outliers"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
@@ -99,7 +99,7 @@ plt.show()
 # We can add confidence intervals for the median:
 plot = Boxplot(dataset, add_confidence_interval=True)
 plot.title = "Confidence intervals"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
@@ -109,7 +109,7 @@ plt.show()
 # We can use horizontal bars:
 plot = Boxplot(dataset, use_vertical_bars=False)
 plot.title = "Horizontal bars"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 
@@ -119,6 +119,6 @@ plt.show()
 # We can add a dataset:
 plot = Boxplot(dataset, other_dataset)
 plot.title = "Additional dataset"
-plot.execute(save=False, show=False)
+plot.execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

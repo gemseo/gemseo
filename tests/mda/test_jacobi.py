@@ -50,14 +50,14 @@ def test_secant_acceleration(tmp_wd):
         tolerance=tolerance, max_mda_iter=30, acceleration=mda.SECANT_ACCELERATION
     )
     mda.execute()
-    mda.plot_residual_history(False, True, filename="Jacobi_secant.pdf")
+    mda.plot_residual_history(filename="Jacobi_secant.pdf")
     nit2 = len(mda.residual_history)
 
     mda = SobieskiMDAJacobi(
         tolerance=tolerance, max_mda_iter=30, acceleration=mda.M2D_ACCELERATION
     )
     mda.execute()
-    mda.plot_residual_history(False, True, filename="Jacobi_m2d.pdf")
+    mda.plot_residual_history(filename="Jacobi_m2d.pdf")
     nit3 = len(mda.residual_history)
     assert nit2 < nit1
     assert nit3 < nit1

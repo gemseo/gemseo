@@ -120,7 +120,7 @@ class AlgoLib(metaclass=GoogleDocstringInheritanceMeta):
         self,
         algo_name: str,
     ) -> JSONGrammar:
-        """Initialize the options grammar.
+        """Initialize the options' grammar.
 
         Args:
             algo_name: The name of the algorithm.

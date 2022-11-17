@@ -90,7 +90,7 @@ scenario = create_scenario(
 # with the techniques ``"finite_differences"`` or ``"complex_step"`` with the method
 # :meth:`~.Scenario.set_differentiation_method`. The following line is shown as an
 # example, it has no effect because it does not change the default method.
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})

@@ -61,7 +61,7 @@ _Disciplines = namedtuple(
 class SobieskiProblem:
     r"""The Sobieski's SSBJ problem.
 
-    This problem seeks to maximize the range of a super-sonic business jet (SSBJ)
+    This problem seeks to maximize the range of a supersonic business jet (SSBJ)
     over a bounded design space whilst satisfying inequality constraints.
 
     The objective and constraint functions come from a system of four disciplines:

@@ -68,10 +68,10 @@ morris.compute_indices()
 # we compare these analyses
 # with the graphical method :meth:`.SensitivityAnalysis.plot_comparison`,
 # either using a bar chart:
-morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=False)
+morris.plot_comparison(correlation, "y", save=False)
 
 # %%
 # or a radar plot:
-morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=False)
+morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

@@ -128,7 +128,7 @@ def test_coefficients_with_transform(dataset, model_with_transform):
             "dimensions of the variables."
         ),
     ):
-        model_with_pca.get_coefficients(as_dict=True)
+        model_with_pca.get_coefficients()
 
 
 def test_intercept(model):
@@ -150,7 +150,7 @@ def test_intercept_with_output_dimension_change(dataset):
             "dimensions of the output variables."
         ),
     ):
-        model.get_intercept(as_dict=True)
+        model.get_intercept()
 
 
 def test_prediction(model):

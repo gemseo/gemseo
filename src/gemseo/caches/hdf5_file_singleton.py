@@ -40,9 +40,9 @@ from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
-    """Singleton to access a HDF file.
+    """Singleton to access an HDF file.
 
-    Used for multithreaded/multiprocessing access with a lock.
+    Used for multithreading/multiprocessing access with a lock.
     """
 
     # We create a single instance of cache per HDF5 file
@@ -163,7 +163,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             The group data and the input data hash.
         """
         if h5_open_file is None:
-            h5_file = h5py.File(self.hdf_file_path, "r")
+            h5_file = h5py.File(self.hdf_file_path)
         else:
             h5_file = h5_open_file
 
@@ -228,7 +228,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         Returns:
             Whether the entry has data for this group.
         """
-        with h5py.File(self.hdf_file_path, "r") as h5file:
+        with h5py.File(self.hdf_file_path) as h5file:
             return self._has_group(index, group, hdf_node_path, h5file)
 
     def read_hashes(
@@ -249,7 +249,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             return 0
 
         # We must lock so that no data is added to the cache meanwhile
-        with h5py.File(self.hdf_file_path, "r") as h5file:
+        with h5py.File(self.hdf_file_path) as h5file:
             root = h5file.get(hdf_node_path)
 
             if root is None:
@@ -292,7 +292,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         if not Path(self.hdf_file_path).exists():
             return
 
-        h5_file = h5py.File(self.hdf_file_path, "r")
+        h5_file = h5py.File(self.hdf_file_path)
 
         if not len(h5_file):
             h5_file.close()

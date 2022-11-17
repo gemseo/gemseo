@@ -57,7 +57,7 @@ class TMScalableProblem(TMProblem):
     coupled scalable disciplines completed by a system discipline computing the
     objective function and the constraints.
 
-    These disciplines are defined on an unit design space (parameters comprised in [0,
+    These disciplines are defined on a unit design space (parameters comprised in [0,
     1]).
     """
 

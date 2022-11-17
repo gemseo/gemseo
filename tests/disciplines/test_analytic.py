@@ -58,17 +58,13 @@ def test_independent_default_inputs():
 def test_fast_expression_evaluation(expressions):
     disc = AnalyticDiscipline(expressions)
     input_data = {"x": array([1.0]), "z": array([1.0])}
-    disc.check_jacobian(
-        input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
-    )
+    disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
 def test_standard_expression_evaluation(expressions):
     disc = AnalyticDiscipline(expressions, fast_evaluation=False)
     input_data = {"x": array([1.0]), "z": array([1.0])}
-    disc.check_jacobian(
-        input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
-    )
+    disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
 def test_failure_with_malformed_expressions():

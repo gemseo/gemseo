@@ -44,9 +44,7 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
     """
     factory = PostFactory()
     problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
-    post = factory.execute(
-        problem, "VariableInfluence", file_path="var_infl", save=True
-    )
+    post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
     assert len(post.output_files) == 1
     for outf in post.output_files:
         assert Path(outf).exists()
@@ -58,9 +56,7 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
         v["@pow2"] = repeat(v["@pow2"], 60)
         database[repeat(k.wrapped, 60)] = v
 
-    post = factory.execute(
-        problem, "VariableInfluence", file_path="var_infl2", save=True
-    )
+    post = factory.execute(problem, "VariableInfluence", file_path="var_infl2")
     assert len(post.output_files) == 1
     for outf in post.output_files:
         assert Path(outf).exists()
@@ -111,7 +107,6 @@ def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
         log_scale=True,
         absolute_value=False,
         level=0.98,
-        save=True,
         save_var_files=True,
     )
     assert len(post.output_files) == 14
@@ -138,4 +133,4 @@ def test_common_scenario(
     """Check VariableInfluence with objective, standardized or not."""
     opt = VariableInfluence(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(show=False, save=False)
+    opt.execute(save=False)

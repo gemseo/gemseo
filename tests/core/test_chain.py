@@ -80,7 +80,7 @@ class Testmdochain(unittest.TestCase):
     def test_parallel_chain_combinatorial_thread(self):
         for perm in permutations(range(4)):
             disciplines = self.get_disciplines_list(perm)
-            chain = MDOParallelChain(disciplines, use_threading=True)
+            chain = MDOParallelChain(disciplines)
             chain.linearize(force_all=True)
             ok = chain.check_jacobian(
                 chain.default_inputs,

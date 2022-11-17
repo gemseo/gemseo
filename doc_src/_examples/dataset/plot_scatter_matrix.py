@@ -45,6 +45,6 @@ iris = load_dataset("IrisDataset")
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-ScatterMatrix(iris, classifier="specy").execute(save=False, show=False)
+ScatterMatrix(iris, classifier="specy").execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

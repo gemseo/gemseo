@@ -160,16 +160,10 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
-    design_sp.add_variable("x1", 1, l_b=-2.0, u_b=2.0, value=array(2.0))
-    design_sp.add_variable("x2", 1, l_b=-2.0, u_b=2.0, value=array(2.0))
+    design_sp.add_variable("x1", l_b=-2.0, u_b=2.0, value=array(2.0))
+    design_sp.add_variable("x2", l_b=-2.0, u_b=2.0, value=array(2.0))
 
-    scenario = create_scenario(
-        disc,
-        "DisciplinaryOpt",
-        "y",
-        design_sp,
-        scenario_type="MDO",
-    )
+    scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
     scenario.execute(input_data={"max_iter": 10, "algo": "L-BFGS-B"})
 
     post = scenario.post_process(
@@ -211,16 +205,10 @@ def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
-    design_sp.add_variable("x1", 1, l_b=-2.0, u_b=2.0, value=array(2.0))
-    design_sp.add_variable("x2", 1, l_b=-2.0, u_b=2.0, value=array(2.0))
+    design_sp.add_variable("x1", l_b=-2.0, u_b=2.0, value=array(2.0))
+    design_sp.add_variable("x2", l_b=-2.0, u_b=2.0, value=array(2.0))
 
-    scenario = create_scenario(
-        disc,
-        "DisciplinaryOpt",
-        "y",
-        design_sp,
-        scenario_type="MDO",
-    )
+    scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
 
     scenario.execute(input_data={"max_iter": 10, "algo": "L-BFGS-B"})
 
@@ -257,7 +245,7 @@ def test_common_scenario(
     """Check GradientSensitivity with objective, standardized or not."""
     opt = GradientSensitivity(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(show=False, save=False)
+    opt.execute(save=False)
 
 
 @pytest.mark.parametrize(

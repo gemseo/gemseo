@@ -101,7 +101,7 @@ class SPDistribution(Distribution):
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
@@ -111,7 +111,7 @@ class SPDistribution(Distribution):
             dimension: The dimension of the random variable.
             standard_parameters (dict, optional): The standard representation
                 of the parameters of the probability distribution.
-        """
+        """  # noqa: D205,D212,D415
         super().__init__(
             variable,
             interfaced_distribution,

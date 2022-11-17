@@ -47,7 +47,7 @@ class MDAFactory:
         disciplines: Sequence[MDODiscipline],
         **options: MDAOptionType,
     ) -> MDA:
-        """Create a MDA.
+        """Create an MDA.
 
         Args:
             mda_name: The name of the MDA (its class name).

@@ -52,7 +52,6 @@ class ComplexStep(GradientApproximator):
     Martins, Joaquim RRA, Peter Sturdza, and Juan J. Alonso.
     "The complex-step derivative approximation."
     ACM Transactions on Mathematical Software (TOMS) 29.3 (2003): 245-262.
-
     """
 
     ALIAS = "complex_step"

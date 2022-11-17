@@ -95,7 +95,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Post-process scenario
 # ---------------------
 # Lastly, we plot the Gantt chart.
-create_gantt_chart(show=False, save=False)
+create_gantt_chart(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 

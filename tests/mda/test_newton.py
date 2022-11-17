@@ -193,7 +193,7 @@ def test_broyden_sellar():
 def test_hybrid_sellar():
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), Sellar2()]
-    mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.HYBRID, use_gradient=True)
+    mda = MDAQuasiNewton(disciplines, use_gradient=True)
 
     mda.execute()
 

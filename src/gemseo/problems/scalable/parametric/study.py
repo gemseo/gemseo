@@ -100,7 +100,7 @@ class TMParamSS:
         - the number of disciplines,
         - the number of shared design parameters,
         - the number of local design parameters for each discipline,
-        - the number of coupling variables for each each discipline.
+        - the number of coupling variables for each discipline.
 
         One of the three latter should be a list of integers
         whose components define scaling strategies.
@@ -388,7 +388,7 @@ class TMScalableStudy:
         - the number of disciplines,
         - the number of shared design parameters,
         - the number of local design parameters for each discipline,
-        - the number of coupling variables for each each discipline.
+        - the number of coupling variables for each discipline.
 
         :param int n_disciplines: number of disciplines.
         :param int n_shared: number of shared design parameters.
@@ -672,7 +672,7 @@ def mkdir(dirname, subdirname=None):
     """Create a directory if not exists.
 
     :param str dirname: name of the directory.
-    :param str subdirname: name of the sub-directory. If None, only considers
+    :param str subdirname: name of the subdirectory. If None, only considers
         the directory. Default: None.
     """
     if subdirname is not None:

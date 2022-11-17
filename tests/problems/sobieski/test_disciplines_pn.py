@@ -168,7 +168,7 @@ def test_coupling(factor, mda):
     y_2 = mda.local_data["y_2"]
     y_3 = mda.local_data["y_3"]
     y_4 = mda.local_data["range"]
-    design_space = create_design_space(physical_naming=False)
+    design_space = create_design_space()
     input_data = compute_input_data(
         design_space.get_current_value(as_dict=True), factor
     )
@@ -223,7 +223,7 @@ def scenario() -> DOEScenario:
         ],
         "MDF",
         "y_4",
-        create_design_space(physical_naming=False),
+        create_design_space(),
     )
     for constraint_name in ["g_1", "g_2", "g_3"]:
         scn.add_constraint(constraint_name, constraint_type="ineq")

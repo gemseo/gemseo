@@ -91,7 +91,7 @@ class BiLevel(MDOFormulation):
             parallel_scenarios: Whether to run the sub-scenarios in parallel.
             multithread_scenarios: If True and parallel_scenarios=True,
                 the sub-scenarios are run in parallel using multi-threading;
-                if False and parallel_scenarios=True, multi-processing is used.
+                if False and parallel_scenarios=True, multiprocessing is used.
             apply_cstr_tosub_scenarios: Whether the :meth:`.add_constraint` method
                 adds the constraint to the optimization problem of the sub-scenario
                 capable of computing the constraint.
@@ -465,7 +465,7 @@ class BiLevel(MDOFormulation):
         Args:
             levels: The levels at which the constraint is to be added
                 (sublist of Bilevel.LEVELS).
-                By default the policy set at the initialization
+                By default, the policy set at the initialization
                 of the formulation is enforced.
 
         Raises:

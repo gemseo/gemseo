@@ -43,7 +43,7 @@ N_CPUS = cpu_count()
 
 
 class MDAJacobi(MDA):
-    """Perform a MDA analysis using a Jacobi algorithm.
+    """Perform an MDA analysis using a Jacobi algorithm.
 
     This algorithm is an iterative technique to solve the linear system:
 
@@ -281,7 +281,7 @@ class MDAJacobi(MDA):
         """Compute the next iterate according to the m2d method.
 
         Minimize the sub-problem in the d-2 method.
-        Use a least squares solver to find he minimizer of:
+        Use the least squares solver to find he minimizer of:
 
         .. math::
 

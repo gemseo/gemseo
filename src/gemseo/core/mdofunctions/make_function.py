@@ -65,7 +65,7 @@ class MakeFunction(MDOFunction):
                 attached to the ``mdo_function``
                 at each evaluation of the outputs with :meth:`._fun`
                 or their derivatives with :meth:`._jac`.
-                If ``None``, do no overload them.
+                If ``None``, do not overload them.
             mdo_function: The generator of the :class:`.MDOFunction`
                 based on a :class:`.MDODiscipline`.
             names_to_sizes: The sizes of the input variables.

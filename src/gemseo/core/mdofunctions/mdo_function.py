@@ -261,7 +261,7 @@ class MDOFunction:
             outvars: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
             force_real: Whether to cast the output values to real.
-            special_repr: The string representation of the function..
+            special_repr: The string representation of the function.
                 If empty, use :meth:`.default_repr`.
         """
         super().__init__()
@@ -780,7 +780,7 @@ class MDOFunction:
         expr: str | None = None,
         args: Sequence[str] | None = None,
     ) -> FunctionRestriction:
-        r"""Return a restriction of the function
+        r"""Return a restriction of the function.
 
         :math:`\newcommand{\frozeninds}{I}\newcommand{\xfrozen}{\hat{x}}\newcommand{
         \frestr}{\hat{f}}`

@@ -87,20 +87,13 @@ def test_sobol(sobol, tmp_wd):
     for name in varnames:
         assert intervals["y"][0][name].shape == (2,)
 
-    sobol.plot("y", save=True, show=False, directory_path=tmp_wd)
+    sobol.plot("y", directory_path=tmp_wd)
     assert Path("sobol_analysis.png").exists()
     remove("sobol_analysis.png")
-    sobol.plot("y", save=True, show=False, sort=False, directory_path=tmp_wd)
+    sobol.plot("y", sort=False, directory_path=tmp_wd)
     assert Path("sobol_analysis.png").exists()
     remove("sobol_analysis.png")
-    sobol.plot(
-        "y",
-        save=True,
-        show=False,
-        sort=False,
-        sort_by_total=False,
-        directory_path=tmp_wd,
-    )
+    sobol.plot("y", sort=False, sort_by_total=False, directory_path=tmp_wd)
     assert Path("sobol_analysis.png").exists()
     remove("sobol_analysis.png")
 

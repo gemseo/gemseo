@@ -137,7 +137,7 @@ def create_tree_file(modules_path, dct, parents, root):
                             lambda member: (
                                 inspect.isclass(member) or inspect.isfunction(member)
                             )
-                            and member.__module__ == path,
+                            and member.__module__ == path,  # noqa: B023
                         )
                     ]
                     for obj_name in obj_names:

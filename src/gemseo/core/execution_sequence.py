@@ -292,7 +292,7 @@ class CompositeExecSequence(ExecutionSequence):
         """Accept a visitor object (see Visitor pattern).
 
         To be specifically implemented
-        by subclasses to call relevant visitor method depending the subclass type.
+        by subclasses to call relevant visitor method depending on the subclass type.
 
         Args:
             visitor: An object implementing the :meth:`visit_serial` method.
@@ -674,8 +674,8 @@ class ExecutionSequenceFactory:
 
     @staticmethod
     def loop(control, composite_sequence):
-        """Returns a structure representing a loop execution of a This function is
-        intended to be called by MDOFormulation.get_expected_workflow methods.
+        """Returns a structure representing a loop execution of a function is intended
+        to be called by MDOFormulation.get_expected_workflow methods.
 
         Args:
             control: The discipline object, controller of the loop.

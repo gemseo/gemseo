@@ -100,8 +100,8 @@ class JacobianAssembly:
         for discipline in self.coupling_structure.disciplines:
             inputs = set(discipline.get_input_data_names())
             outputs = set(discipline.get_output_data_names())
-            unknown_outs = unknown_outs - outputs
-            unknown_dvars = unknown_dvars - inputs
+            unknown_outs -= outputs
+            unknown_dvars -= inputs
 
         if unknown_dvars:
             raise ValueError(

@@ -111,7 +111,7 @@ class NormDBFunction(MDOFunction):
             xn_vect = None
         # For performance, hash once, and reuse in get/store methods
         database = self.__optimization_problem.database
-        hashed_xu = database.get_hashed_key(xu_vect, False)
+        hashed_xu = database.get_hashed_key(xu_vect)
         # try to retrieve the evaluation
         value = database.get_f_of_x(self.name, hashed_xu)
 

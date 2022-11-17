@@ -31,7 +31,6 @@ from gemseo.problems.sellar.sellar import Y_2
 
 
 def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
-
     mda1 = MDAJacobi(sellar_disciplines, max_mda_iter=1)
     mda2 = MDANewtonRaphson(sellar_disciplines)
     mda_sequence = [mda1, mda2]
@@ -47,7 +46,7 @@ def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
     mda3 = GSNewtonMDA(sellar_disciplines, max_mda_iter=4)
     mda3.execute()
     filename = "GS_sellar.pdf"
-    mda3.plot_residual_history(show=False, save=True, filename=filename)
+    mda3.plot_residual_history(filename=filename)
 
     assert Path(filename).exists
     y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])

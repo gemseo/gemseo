@@ -52,7 +52,7 @@ def save_data_arrays_to_xml(
     values_array: ndarray,
     file_path: str | Path = "opt_hist.xml",
 ) -> None:
-    """Save an optimization history in NumPy format to an xml file to be read by ggobi.
+    """Save an optimization history in NumPy format to a xml file to be read by ggobi.
 
     Args:
         variables_names: The names of the variables.

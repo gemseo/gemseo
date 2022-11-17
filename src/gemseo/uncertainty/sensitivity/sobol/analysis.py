@@ -213,10 +213,10 @@ class SobolAnalysis(SensitivityAnalysis):
         outputs: Sequence[str] | None = None,
         algo: str = "Saltelli",
     ) -> dict[str, IndicesType]:
-        """.. # noqa:D205,D212,D415
+        """
         Args:
             algo: The name of the algorithm to estimate the Sobol' indices
-        """
+        """  # noqa:D205,D212,D415
         try:
             algo = self._ALGOS[algo]
         except Exception:
@@ -228,7 +228,7 @@ class SobolAnalysis(SensitivityAnalysis):
         if not isinstance(output_names, list):
             output_names = [output_names]
         inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
-        outputs = self.dataset.get_data_by_names(output_names, True)
+        outputs = self.dataset.get_data_by_names(output_names)
         dim = self.dataset.dimension[self.dataset.INPUT_GROUP]
         n_samples = int(len(self.dataset) / (dim + 2))
         self.__sobol = {}
@@ -384,9 +384,7 @@ class SobolAnalysis(SensitivityAnalysis):
         sort: bool = True,
         sort_by_total: bool = True,
     ):
-        r""".. # noqa: D415,D417
-
-        Plot the first- and total-order Sobol' indices.
+        r"""Plot the first- and total-order Sobol' indices.
 
         For :math:`i\in\{1,\ldots,d\}`, plot :math:`S_i^{1}` and :math:`S_T^{1}`
         with their confidence intervals.
@@ -397,7 +395,7 @@ class SobolAnalysis(SensitivityAnalysis):
             sort_by_total: The type of sorting.
                 If True, sort variables according to total-order Sobol' indices.
                 Otherwise, use first-order Sobol' indices.
-        """
+        """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
         fig, ax = plt.subplots()

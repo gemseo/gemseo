@@ -49,9 +49,9 @@ def test_evaluate(measure):
     with pytest.raises(NotImplementedError):
         measure.evaluate_loo()
     with pytest.raises(NotImplementedError):
-        measure.evaluate_kfolds(n_folds=5)
+        measure.evaluate_kfolds()
     with pytest.raises(NotImplementedError):
-        measure.evaluate_bootstrap(n_replicates=100)
+        measure.evaluate_bootstrap()
 
 
 @pytest.mark.parametrize(

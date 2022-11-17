@@ -86,5 +86,5 @@ def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", None)
     Surfaces(dataset, mesh="mesh", variable="output", **kwargs).execute(
-        save=False, show=False, properties=properties
+        save=False, properties=properties
     )

@@ -167,8 +167,8 @@ def test_get_all_datanames():
     assert database.get_all_data_names(True, True) == [fname]
     assert database.get_all_data_names(False, True) == [gname, fname]
 
-    assert database.get_all_data_names(True, False) == [database.ITER_TAG, fname]
-    assert database.get_all_data_names(False, False) == [
+    assert database.get_all_data_names() == [database.ITER_TAG, fname]
+    assert database.get_all_data_names(False) == [
         gname,
         database.ITER_TAG,
         fname,
@@ -218,7 +218,7 @@ def test_clean_from_iterate(problem):
     assert len(database) == 13
     # Add another point that cannot already exists
     x_test = array([10.0, -100.0])
-    database.store(x_test, {}, add_iter=True)
+    database.store(x_test, {})
     # Make sure that the iter tag is correct
     iter_id = int(database.get_f_of_x(Database.ITER_TAG, x_test)[0])
     assert iter_id, len(database)
@@ -245,14 +245,14 @@ def test_scipy_df0_rosenbrock(problem_and_result):
     database = problem.database
     assert result.f_opt < 6.5e-11
     assert norm(database.get_x_history()[-1] - ones(2)) < 2e-5
-    assert database.get_func_history(funcname="rosen", x_hist=False)[-1] < 6.2e-11
+    assert database.get_func_history(funcname="rosen")[-1] < 6.2e-11
 
 
 def test_append_export(tmp_wd):
     database = Database()
     file_path_db = "test_db_append.hdf5"
     # Export empty file
-    database.export_hdf(file_path_db, append=False)
+    database.export_hdf(file_path_db)
     val = {"f": arange(2)}
     n_calls = 200
     for i in range(n_calls):
@@ -289,11 +289,11 @@ def test_append_export_after_store(tmp_wd):
     n_calls = 50
     for i in range(n_calls):
         idx = array([i, i + 1])
-        database.store(idx, values_dict=val1, add_iter=True)
+        database.store(idx, values_dict=val1)
         database.export_hdf(file_path_db, append=True)
-        database.store(idx, values_dict=val2, add_iter=True)
+        database.store(idx, values_dict=val2)
         database.export_hdf(file_path_db, append=True)
-        database.store(idx, values_dict=val3, add_iter=True)
+        database.store(idx, values_dict=val3)
         database.export_hdf(file_path_db, append=True)
 
     new_database = Database(file_path_db)
@@ -398,11 +398,7 @@ def test_add_hdf_output_dataset(h5_file):
     values_group = h5_file.require_group("v")
     keys_group = h5_file.require_group("k")
 
-    values = {}
-    values["f"] = 10
-    values["g"] = array([1, 2])
-    values["Iter"] = [3]
-    values["@f"] = array([[1, 2, 3]])
+    values = {"f": 10, "g": array([1, 2]), "Iter": [3], "@f": array([[1, 2, 3]])}
     database._add_hdf_output_dataset(10, keys_group, values_group, values)
     assert list(keys_group["10"]) == list(array(list(values.keys()), dtype=string_))
     assert array(values_group["10"]) == pytest.approx(array([10]))
@@ -410,12 +406,13 @@ def test_add_hdf_output_dataset(h5_file):
     assert array(values_group["arr_10"]["2"]) == pytest.approx(array([3]))
     assert array(values_group["arr_10"]["3"]) == pytest.approx(array([[1, 2, 3]]))
 
-    values = {}
-    values["i"] = array([1, 2])
-    values["Iter"] = 1
-    values["@j"] = array([[1, 2, 3]])
-    values["k"] = 99
-    values["l"] = 100
+    values = {
+        "i": array([1, 2]),
+        "Iter": 1,
+        "@j": array([[1, 2, 3]]),
+        "k": 99,
+        "l": 100,
+    }
     database._add_hdf_output_dataset(100, keys_group, values_group, values)
     assert list(keys_group["100"]) == list(array(list(values.keys()), dtype=string_))
     assert array(values_group["100"]) == pytest.approx(array([1, 99, 100]))
@@ -430,34 +427,27 @@ def test_get_missing_hdf_output_dataset(h5_file):
     values_group = h5_file.require_group("v")
     keys_group = h5_file.require_group("k")
 
-    values = {"f": 0.1}
-    values["g"] = array([1, 2])
+    values = {"f": 0.1, "g": array([1, 2])}
     database._add_hdf_output_dataset(10, keys_group, values_group, values)
 
     with pytest.raises(ValueError):
         database._get_missing_hdf_output_dataset(0, keys_group, values)
 
-    values = {"f": 0.1}
-    values["g"] = array([1, 2])
-    values["h"] = [10]
+    values = {"f": 0.1, "g": array([1, 2]), "h": [10]}
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
         10, keys_group, values
     )
     assert new_values == {"h": [10]}
     assert idx_mapping == {"h": 2}
 
-    values = {"f": 0.1}
-    values["g"] = array([1, 2])
+    values = {"f": 0.1, "g": array([1, 2])}
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
         10, keys_group, values
     )
     assert new_values == {}
     assert idx_mapping is None
 
-    values = {"f": 0.1}
-    values["g"] = array([1, 2])
-    values["h"] = [2, 3]
-    values["i"] = 20
+    values = {"f": 0.1, "g": array([1, 2]), "h": [2, 3], "i": 20}
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
         10, keys_group, values
     )
@@ -562,9 +552,8 @@ def test_duplicates():
     x_vect = array([1.9, 8.9])
     value = rosen(x_vect)
     gradient = rosen_der(x_vect)
-    values_dict = {"Rosenbrock": value, "@Rosenbrock": gradient}
+    values_dict = {"Rosenbrock": value, "@Rosenbrock": gradient, "Iter^2": [1]}
     # Insert the point twice with stacked data (e.g. 'Iter_squared'):
-    values_dict["Iter^2"] = [1]
     database.store(x_vect, values_dict)
     values_dict["Iter^2"] = [1, 4]
     database.store(x_vect, values_dict)
@@ -597,9 +586,7 @@ def test_missing_tag():
     database.store(array([1.0, 1.0]), {"Rosenbrock": 0.0})
     # Check that a missing tag is added during history extraction:
     functions = ["Rosenbrock", Database.get_gradient_name("Rosenbrock")]
-    f_history, _ = database.get_complete_history(
-        functions, add_missing_tag=True, missing_tag="NA"
-    )
+    f_history, _ = database.get_complete_history(functions, add_missing_tag=True)
     assert f_history == [[value, gradient], [0.0, "NA"]]
 
 

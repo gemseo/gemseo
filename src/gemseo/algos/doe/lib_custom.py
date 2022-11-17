@@ -164,11 +164,7 @@ class CustomDOE(DOELibrary):
         """
         try:
             samples = loadtxt(
-                doe_file,
-                comments=comments,
-                delimiter=delimiter,
-                skiprows=skiprows,
-                unpack=False,
+                doe_file, comments=comments, delimiter=delimiter, skiprows=skiprows
             )
             samples = atleast_2d(samples)
             if (

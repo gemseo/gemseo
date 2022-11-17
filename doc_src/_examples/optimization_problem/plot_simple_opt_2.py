@@ -62,7 +62,7 @@ objective = f_1 - f_2
 # -----------------------
 # Then, we define the :class:`.DesignSpace` with |g|.
 design_space = DesignSpace()
-design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
+design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 
 #############################################################################
 # Define the optimization problem

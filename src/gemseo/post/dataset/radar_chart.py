@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a radar chart from a :class:`.Dataset`. """
+r"""Draw a radar chart from a :class:`.Dataset`."""
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
@@ -75,7 +75,7 @@ class RadarChart(DatasetPlot):
         axes.grid(True, color="k", linewidth=0.3, linestyle=":")
         axes.tick_params(labelsize=self.font_size)
 
-        all_data, _, sizes = self.dataset.get_all_data(False, False)
+        all_data, _, sizes = self.dataset.get_all_data(False)
         variables_names = self.dataset.columns_names
         if self.rmin is None:
             self.rmin = all_data.min()
@@ -141,7 +141,7 @@ class RadarChart(DatasetPlot):
                     angle = 360 - (180 - angle)
 
                 if 180 < angle < 270:
-                    angle = angle - 180
+                    angle -= 180
 
                 lab.set_rotation(angle)
                 labels.append(lab)

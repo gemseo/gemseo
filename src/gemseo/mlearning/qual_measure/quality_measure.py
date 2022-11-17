@@ -252,7 +252,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     ) -> bool:
         """Compare the quality between two values.
 
-        This methods returns ``True`` if the first one is better than the second one.
+        This method returns ``True`` if the first one is better than the second one.
 
         For most measures, a smaller value is "better" than a larger one (MSE
         etc.). But for some, like an R2-measure, higher values are better than

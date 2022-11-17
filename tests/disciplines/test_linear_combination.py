@@ -58,11 +58,7 @@ def test_check_gradient(linear_combination_for_tests):
         "beta": array([1.0]),
         "gamma": array([1.0]),
     }
-    assert linear_combination_for_tests.check_jacobian(
-        linearization_mode="auto",
-        threshold=1e-3,
-        step=1e-4,
-    )
+    assert linear_combination_for_tests.check_jacobian(threshold=1e-3, step=1e-4)
 
 
 def test_check_gradient2points(linear_combination_for_tests):
@@ -72,8 +68,4 @@ def test_check_gradient2points(linear_combination_for_tests):
         "beta": array([1.0, -1.0]),
         "gamma": array([1.0, 0.0]),
     }
-    assert linear_combination_for_tests.check_jacobian(
-        linearization_mode="auto",
-        threshold=1e-3,
-        step=1e-4,
-    )
+    assert linear_combination_for_tests.check_jacobian(threshold=1e-3, step=1e-4)

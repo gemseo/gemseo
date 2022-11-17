@@ -150,7 +150,7 @@ def test_adapter_reset_x0_before_opt(scenario):
     initial_x = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
     assert np_all(initial_x == initial_design)
 
-    adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=False)
+    adapter = MDOScenarioAdapter(scenario, inputs, outputs)
     adapter.execute()
     new_initial_design = design_space.dict_to_array(
         design_space.get_current_value(as_dict=True)
@@ -269,7 +269,6 @@ def test_compute_jacobian_exceptions(scenario):
 
 
 def build_struct_scenario():
-
     ds = SobieskiProblem().design_space
     sc_str = MDOScenario(
         disciplines=[SobieskiStructure()],
@@ -286,7 +285,6 @@ def build_struct_scenario():
 
 
 def build_prop_scenario():
-
     ds = SobieskiProblem().design_space
     sc_prop = MDOScenario(
         disciplines=[SobieskiPropulsion()],
@@ -302,7 +300,6 @@ def build_prop_scenario():
 
 
 def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_threshold):
-
     opt_problem = adapter.scenario.formulation.opt_problem
     outvars = opt_problem.objective.outvars
     constraints = opt_problem.get_constraints_names()
@@ -324,7 +321,6 @@ def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_thre
 
 
 def test_adapter_jacobian():
-
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
@@ -351,7 +347,6 @@ def test_adapter_jacobian():
 
 
 def test_add_outputs():
-
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
@@ -399,7 +394,6 @@ def check_obj_scenario_adapter(
 
 
 def test_obj_scenario_adapter():
-
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     check_obj_scenario_adapter(

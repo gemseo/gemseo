@@ -1284,7 +1284,8 @@ class Dataset:
 
         return cache
 
-    def get_available_plots(self) -> list[str]:
+    @staticmethod
+    def get_available_plots() -> list[str]:
         """Return the available plot methods."""
         return DatasetPlotFactory().plots
 

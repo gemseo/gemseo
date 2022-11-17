@@ -221,7 +221,7 @@ class MatlabEngine:
         The name given here can be found using "license('inuse')" in MATLAB.
 
         Args:
-            toolbox_name: The name of the toolbox to be check.
+            toolbox_name: The name of the toolbox to be checked.
         """
         self.__toolboxes.add(toolbox_name)
 
@@ -229,7 +229,7 @@ class MatlabEngine:
         """Remove a toolbox from the engine.
 
         Args:
-            toolbox_name: The name of the toolbox to be check.
+            toolbox_name: The name of the toolbox to be checked.
         """
         self.__toolboxes.remove(toolbox_name)
 

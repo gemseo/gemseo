@@ -984,7 +984,7 @@ def _get_schema(
         table.add_column("Type", types)
         table.sortby = "Name"
         table.min_width = 25
-        print(table)  # noqa: T001
+        print(table)  # noqa: T201
         LOGGER.info("%s", table)
 
     if output_json:
@@ -1086,7 +1086,7 @@ def create_scenario(
     >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
     >>> design_space = SellarDesignSpace()
     >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-    >>>                            'SellarMDFScenario', 'MDO')
+    'SellarMDFScenario')
 
     See also
     --------
@@ -1409,7 +1409,7 @@ def execute_post(
     >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
     >>> design_space = SellarDesignSpace()
     >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-    >>>                            'SellarMDFScenario', 'MDO')
+    'SellarMDFScenario')
     >>> scenario.execute({'algo': 'NLOPT_SLSQP', 'max_iter': 100})
     >>> execute_post(scenario, 'OptHistoryView', show=False, save=True)
 
@@ -1531,7 +1531,7 @@ def print_configuration() -> None:
 
     settings = _log_settings()
     LOGGER.info("%s", settings)
-    print(settings)  # noqa: T001
+    print(settings)  # noqa: T201
     for factory in (
         DisciplinesFactory,
         OptimizersFactory,
@@ -1543,7 +1543,7 @@ def print_configuration() -> None:
     ):
         factory_repr = repr(factory().factory)
         LOGGER.info("%s", factory_repr)
-        print(factory_repr)  # noqa: T001
+        print(factory_repr)  # noqa: T201
 
 
 def read_design_space(
@@ -1860,7 +1860,7 @@ def compute_doe(
     )
 
 
-def _log_settings() -> None:
+def _log_settings() -> str:
     from gemseo.algos.driver_lib import DriverLib
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -1903,7 +1903,7 @@ def _log_settings() -> None:
         "The progress bar is {}activated.",
         add_de_prefix(DriverLib.activate_progress_bar),
     )
-    return text
+    return str(text)
 
 
 AlgorithmFeatures = namedtuple(

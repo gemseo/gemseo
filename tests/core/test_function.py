@@ -461,7 +461,7 @@ class TestMDOLinearFunction(unittest.TestCase):
             value_at_zero=array([0.0, 0.0]),
         )
         MDOLinearFunction(coeffs_as_mat, "f", value_at_zero=array([0.0]))
-        func = MDOLinearFunction(coeffs_as_mat, "f", value_at_zero=0.0)
+        func = MDOLinearFunction(coeffs_as_mat, "f")
         assert (func.value_at_zero == array([0.0])).all()
 
     def test_args_generation(self):

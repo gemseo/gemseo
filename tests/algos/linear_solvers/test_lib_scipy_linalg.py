@@ -145,7 +145,7 @@ def test_hard_conv(tmp_wd, seed):
         tol=1e-14,
     )
 
-    assert problem.compute_residuals(True) < 1e-10
+    assert problem.compute_residuals() < 1e-10
 
 
 def test_inconsistent_options():
@@ -187,7 +187,7 @@ def test_algo_none():
     lib = ScipyLinalgAlgos()
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
-        lib.execute(problem, algo_name=None)
+        lib.execute(problem)
 
 
 def test_library_name():

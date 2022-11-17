@@ -38,8 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PostOptimalAnalysis:
-    r"""
-    Post-optimal analysis of a parameterized optimization problem.
+    r"""Post-optimal analysis of a parameterized optimization problem.
 
     Consider the parameterized optimization problem below, whose objective and
     constraint functions depend on both the optimization variable :math:`x` and

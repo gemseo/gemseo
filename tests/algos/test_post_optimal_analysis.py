@@ -136,7 +136,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         self.assertRaises(ValueError, PostOptimalAnalysis, opt_problem)
 
         # Pass a multi-named objective
-        opt_problem = self.get_problem(solve=True)
+        opt_problem = self.get_problem()
         opt_problem.objective.outvars = ["f", "f"]
         self.assertRaises(ValueError, PostOptimalAnalysis, opt_problem)
 
@@ -192,7 +192,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         """Tests the validity check."""
         # Set up a post-optimal analyzer
         p = 0.5
-        opt_problem = self.get_problem(p, solve=True)
+        opt_problem = self.get_problem(p)
         analyzer = PostOptimalAnalysis(opt_problem)
         sol, sol_der, jac_at_sol = self.get_solution(p)
         total_jac = {
@@ -209,7 +209,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         assert allclose(eq_corr["p"], 0.0)
 
         # Check validity for a maximization problem
-        opt_problem = self.get_problem(p, minimize=False, solve=True)
+        opt_problem = self.get_problem(p, minimize=False)
         valid, ineq_corr, eq_corr = analyzer.check_validity(
             total_jac, jac_at_sol, ["p"], threshold=1e-10
         )
@@ -222,15 +222,15 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         p = 1.0
 
         # Pass a minimization problem
-        min_problem = self.get_problem(p, minimize=True, solve=True)
-        sol, sol_der, jac_at_sol = self.get_solution(p, minimize=True)
+        min_problem = self.get_problem(p)
+        sol, sol_der, jac_at_sol = self.get_solution(p)
         jac_target = 2.0 * dot(sol, sol_der) + 2.0 * p
         post_optimal_analyzer = PostOptimalAnalysis(min_problem)
         jac_computed = post_optimal_analyzer.execute(["f"], ["p"], jac_at_sol)
         assert allclose(jac_computed["f"]["p"], jac_target)
 
         # Pass a maximization problem
-        max_problem = self.get_problem(p, minimize=False, solve=True)
+        max_problem = self.get_problem(p, minimize=False)
         _, _, jac_at_sol = self.get_solution(p, minimize=False)
         post_optimal_analyzer = PostOptimalAnalysis(max_problem)
         jac_computed = post_optimal_analyzer.execute(["f"], ["p"], jac_at_sol)

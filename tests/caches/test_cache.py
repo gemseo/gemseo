@@ -279,7 +279,7 @@ def test_to_real():
 def test_write_data(tmp_wd):
     file_sing = HDF5FileSingleton("out2.h5")
     input_data = {"i": arange(3)}
-    file_sing.write_data(input_data, "group", 1, "node", None)
+    file_sing.write_data(input_data, "group", 1, "node")
 
 
 #             h5_file = h5py.File(join(tmp_out, "out51.h5"), "a")
@@ -296,20 +296,19 @@ def test_write_data(tmp_wd):
 def test_read_hashes(tmp_wd):
     file_sing = HDF5FileSingleton("out1.h5")
     input_data = {"i": arange(3)}
-    file_sing.write_data(input_data, "group", 1, "node", None)
+    file_sing.write_data(input_data, "group", 1, "node")
     assert file_sing.read_hashes({}, "unknown") == 0
     hashes_dict = {}
     file_sing.read_hashes(hashes_dict, "unknown")
     n_0 = len(hashes_dict)
     file_sing.read_hashes(hashes_dict, "unknown")
     assert n_0 == len(hashes_dict)
-    hashes_dict = {}
-    hashes_dict[977299934065931519957167197057685376965897664534] = []
+    hashes_dict = {977299934065931519957167197057685376965897664534: []}
     file_sing.read_hashes(hashes_dict, "node")
 
 
 def test_read_group(tmp_wd):
-    cache = HDF5Cache("out3.h5", "node")
+    cache = HDF5Cache("out3.h5")
     cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
     cache._read_input_output_data([1], {"x": arange(3), "y": arange(2)})
 
@@ -390,7 +389,7 @@ def test_multithreading(memory_full_cache, memory_full_cache_loc):
         s_s.cache = c_2
         assert len(c_1) == 0
         assert len(c_2) == 0
-        par = MDOParallelChain([s_1, s_s], use_threading=True)
+        par = MDOParallelChain([s_1, s_s])
         ds = SellarDesignSpace("float64")
         scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
 
@@ -541,7 +540,7 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     HDF5Cache.update_file_format(deprecated_cache_path)
 
     cache_path = Path("cache.h5")
-    cache = HDF5Cache(cache_path, "node")
+    cache = HDF5Cache(cache_path)
     cache.cache_outputs({"x": array([1.0])}, {"y": array([2.0])})
 
     file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION

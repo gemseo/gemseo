@@ -62,7 +62,7 @@ def test_discipline_self_coupled_two_disciplines(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
     fpath = Path("xls_n2.pdf")
     study.generate_n2(fpath, fig_size=(5, 5))
-    study.generate_xdsm(".", latex_output=False)
+    study.generate_xdsm(".")
     assert fpath.exists()
 
 
@@ -75,7 +75,7 @@ def test_discipline_self_coupled_one_disc(tmp_wd):
     with pytest.raises(ValueError, match="N2 diagrams need at least two disciplines."):
         study.generate_n2("xls_n2.pdf", fig_size=(5, 5))
 
-    study.generate_xdsm(".", latex_output=False)
+    study.generate_xdsm(".")
     assert Path("xdsm.html").exists()
 
 
@@ -108,14 +108,14 @@ def test_xdsm_bilevel(tmp_wd):
 
     disc_names = [d.name for d in study.disciplines.values()]
     assert dnames == disc_names
-    study.generate_n2("n2.pdf")
-    study.generate_xdsm(".", latex_output=False)
+    study.generate_n2()
+    study.generate_xdsm(".")
 
 
 def test_xdsm_bilevel_d(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
     study.generate_n2("n2_d.pdf")
-    study.generate_xdsm(".", latex_output=False)
+    study.generate_xdsm(".")
 
 
 def test_none_inputs():

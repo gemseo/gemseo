@@ -43,11 +43,11 @@ class ExponentialToleranceInterval(ToleranceInterval):
         rate: float,
         location: float,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """
         Args:
             rate: The estimation of the rate of the exponential distribution.
             location: The estimation of the location of the exponential distribution.
-        """
+        """  # noqa: D205 D212 D415
         super().__init__(size)
         self.__rate = rate
         self.__location = location

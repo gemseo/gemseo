@@ -56,7 +56,6 @@ def test_composite_malformed_levels(levels, msg):
         execute_problem(
             DOE_LIB_NAME,
             algo_name="OT_COMPOSITE",
-            dim=3,
             n_samples=20,
             levels=levels,
             centers=[0.0, 0.0, 0.0],
@@ -85,7 +84,6 @@ def test_composite_malformed_centers(centers, exception):
         execute_problem(
             DOE_LIB_NAME,
             algo_name="OT_COMPOSITE",
-            dim=3,
             centers=centers,
             levels=[0.1, 0.2, 0.3],
         )

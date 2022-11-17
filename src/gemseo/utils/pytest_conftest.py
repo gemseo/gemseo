@@ -47,7 +47,7 @@ def __tmp_wd(tmp_path):
 
 @pytest.fixture(scope="module")
 def module_tmp_wd(tmp_path_factory):
-    """Generator to move into a temporary sub-directory forth and back.
+    """Generator to move into a temporary subdirectory forth and back.
 
     Return the path to the temporary directory.
     """

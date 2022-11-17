@@ -237,7 +237,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             sweep: The wing sweep.
 
         Returns:
-            The derivative of the the 2D minimum drag coefficient
+            The derivative of the 2D minimum drag coefficient
             with respect to the sweep.
         """
         ang_rad = sweep * DEG_TO_RAD
@@ -722,7 +722,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         # coeff_dir=(1.04-0.96)/(0.06-0.04)# = 4
         #         g_2[0] = coeff_dir*Z[0]+0.8
         if not true_cstr:
-            g_2[0] = g_2[0] - self.PRESSURE_GRADIENT_LIMIT
+            g_2[0] -= self.PRESSURE_GRADIENT_LIMIT
 
         return y_2, y_21, y_23, y_24, g_2
 

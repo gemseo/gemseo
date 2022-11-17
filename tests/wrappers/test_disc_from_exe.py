@@ -240,7 +240,6 @@ def test_exec_json(tmp_wd):
 
 
 def test_disc_from_exe_wrong_inputs(tmp_wd):
-
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
 
@@ -270,7 +269,6 @@ def test_disc_from_exe_wrong_inputs(tmp_wd):
 
 
 def test_disc_from_exe_fail_exe(xfail_if_windows_unc_issue, tmp_wd):
-
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc = create_discipline(

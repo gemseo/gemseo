@@ -192,7 +192,7 @@ class MDAChain(MDA):
                         if disc in coupled_disciplines:
                             inner_mda_disciplines.append(disc)
 
-                    # create a inner-MDA
+                    # create an inner-MDA
                     mda = create_mda(
                         inner_mda_name,
                         inner_mda_disciplines,

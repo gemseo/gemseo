@@ -185,8 +185,8 @@ class Database:
         n_cval = len(curr_val)
         return (n_cval == 1 and self.ITER_TAG in curr_val) or n_cval == 0
 
+    @staticmethod
     def get_hashed_key(
-        self,
         x_vect: ndarray | HashableNdarray,
         copy: bool = False,
     ) -> HashableNdarray:
@@ -367,7 +367,7 @@ class Database:
         if nkeys == 0:
             raise ValueError("The database is empty.")
         if iteration < 0:
-            iteration = nkeys + iteration
+            iteration += nkeys
         if iteration >= nkeys or (iteration < 0 and -iteration > nkeys):
             raise ValueError(
                 "Iteration required should be lower "
@@ -494,7 +494,7 @@ class Database:
         Returns:
             True if the history of the gradient is empty, False otherwise.
         """
-        return len(self.get_func_grad_history(funcname, x_hist=False)) == 0
+        return len(self.get_func_grad_history(funcname)) == 0
 
     def contains_x(self, x_vect: ndarray) -> bool:
         """Check if the history contains a specific value of input design variables.
@@ -851,8 +851,8 @@ class Database:
         """
         return array(array(data, copy=False).real, dtype=float64)
 
+    @staticmethod
     def _add_hdf_input_dataset(
-        self,
         index_dataset: int,
         design_vars_group: h5py.Group,
         design_vars_values: HashableNdarray,
@@ -920,8 +920,8 @@ class Database:
         if values:
             self._add_hdf_scalar_output(index_dataset, values_group, values)
 
+    @staticmethod
     def _get_missing_hdf_output_dataset(
-        self,
         index_dataset: int,
         keys_group: h5py.Group,
         output_values: Mapping[str, float | ndarray | list[int]],
@@ -964,8 +964,8 @@ class Database:
 
         return missing_names_values, missing_names_idx_mapping
 
+    @staticmethod
     def _add_hdf_name_output(
-        self,
         index_dataset: int,
         keys_group: h5py.Group,
         keys: list[str],
@@ -1030,20 +1030,20 @@ class Database:
     ) -> None:
         """Add a new vector of values to the hdf5 group of output values.
 
-        Create a sub-group dedicated to vectors in the group of output
+        Create a subgroup dedicated to vectors in the group of output
         values.
-        Inside this sub-group, a new dataset is created for each vector.
-        If the sub-group already exists, it is just appended.
+        Inside this subgroup, a new dataset is created for each vector.
+        If the subgroup already exists, it is just appended.
         Otherwise, the sub-group is created.
 
         Args:
             index_dataset: The index of the hdf5 entry.
-            idx_sub_group: The index of the dataset in the sub-group of vectors.
+            idx_sub_group: The index of the dataset in the subgroup of vectors.
             values_group: The hdf5 group of the output values.
             value: The vector which is added to the group.
 
         Raises:
-            ValueError: If the index of the dataset in the sub-group of vectors
+            ValueError: If the index of the dataset in the subgroup of vectors
                 already exist.
         """
         sub_group_name = f"arr_{index_dataset}"
@@ -1105,7 +1105,7 @@ class Database:
     ):
         """Create the new hdf5 datasets for the given inputs and outputs.
 
-        Useful when exporting the database to an hdf5 file.
+        Useful when exporting the database to a hdf5 file.
 
         Args:
             index_dataset: The index of the new hdf5 entry.
@@ -1185,7 +1185,7 @@ class Database:
         Args:
             filename: The path of the HDF file.
         """
-        with h5py.File(filename, "r") as h5file:
+        with h5py.File(filename) as h5file:
             design_vars_grp = h5file["x"]
             keys_group = h5file["k"]
             values_group = h5file["v"]
@@ -1368,7 +1368,7 @@ class Database:
             design_variables_names: The names of the input design variables.
         """
         values_array, variables_names, functions = self.get_history_array(
-            functions, design_variables_names, add_missing_tag=True, missing_tag="NA"
+            functions, design_variables_names, add_missing_tag=True
         )
         LOGGER.info("Export to ggobi for functions: %s", str(functions))
         LOGGER.info("Export to ggobi file: %s", file_path)

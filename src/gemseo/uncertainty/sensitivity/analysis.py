@@ -433,7 +433,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 for which to display sensitivity indices,
                 either a name or a tuple of the form (name, component)
                 where (name, component) is used to sort the inputs.
-                If name, its first component is considered.
+                If it is a name, its first component is considered.
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
                 or a (p, 2) array for a 2D one. If None, assume a 1D functional output.

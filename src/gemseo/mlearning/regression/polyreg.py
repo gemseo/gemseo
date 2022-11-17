@@ -178,7 +178,7 @@ class PolynomialRegressor(LinearRegressor):
         n_inputs = self._poly.n_input_features_
         n_powers = self._poly.n_output_features_
         n_outputs = self.algo.coef_.shape[0]
-        coefs = self.get_coefficients(False)
+        coefs = self.get_coefficients()
 
         jac_intercept = zeros((n_outputs, n_inputs))
         jac_coefs = zeros((n_outputs, n_powers, n_inputs))

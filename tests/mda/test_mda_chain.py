@@ -58,11 +58,7 @@ DISC_DESCR_16D = [
 def test_set_tolerances(sellar_disciplines):
     """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
-        sellar_disciplines,
-        tolerance=1e-3,
-        linear_solver_tolerance=1e-6,
-        max_mda_iter=20,
-        chain_linearize=False,
+        sellar_disciplines, tolerance=1e-3, linear_solver_tolerance=1e-6
     )
     assert mda_chain.tolerance == 1e-3
     assert mda_chain.linear_solver_tolerance == 1e-6
@@ -77,8 +73,6 @@ def test_set_solver(sellar_disciplines):
         sellar_disciplines,
         tolerance=1e-3,
         linear_solver_tolerance=1e-6,
-        max_mda_iter=20,
-        chain_linearize=False,
         use_lu_fact=True,
         linear_solver="LGMRES",
         linear_solver_options={"restart": 5},
@@ -106,8 +100,6 @@ def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines
         MDAChain(
             sellar_disciplines,
             tolerance=1e-12,
-            max_mda_iter=20,
-            chain_linearize=False,
             linear_solver_options=linear_solver_options,
         )
 
@@ -118,12 +110,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
     In this test, we check that the exception is raised when linearizing the MDA.
     """
     linear_solver_options = {"tol": 1e-6}
-    mda_chain = MDAChain(
-        sellar_disciplines,
-        tolerance=1e-12,
-        max_mda_iter=20,
-        chain_linearize=False,
-    )
+    mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     mda_chain.linear_solver_options = linear_solver_options
     input_data = {
         "x_local": np.array([0.7]),
@@ -145,9 +132,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
 
 def test_sellar(tmp_wd, sellar_disciplines):
     """"""
-    mda_chain = MDAChain(
-        sellar_disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
-    )
+    mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     input_data = {
         "x_local": np.array([0.7]),
         "x_shared": np.array([1.97763897, 0.2]),
@@ -209,7 +194,7 @@ def generate_disciplines_from_desc(
 
 def test_16_disc_parallel():
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    MDAChain(disciplines, inner_mda_name="MDAJacobi")
+    MDAChain(disciplines)
 
 
 @pytest.mark.parametrize(
@@ -217,11 +202,7 @@ def test_16_disc_parallel():
 )
 def test_simple_grammar_type(in_gtype):
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    mda = MDAChain(
-        disciplines,
-        inner_mda_name="MDAJacobi",
-        grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
-    )
+    mda = MDAChain(disciplines, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE)
 
     assert type(mda.input_grammar) == SimpleGrammar
     assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
@@ -238,10 +219,7 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
 
     out_1 = mda_chain_s.execute()
 
-    mda_chain = MDAChain(
-        sellar_disciplines,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-    )
+    mda_chain = MDAChain(sellar_disciplines)
     assert type(mda_chain.input_grammar) == JSONGrammar
 
     out_2 = mda_chain.execute()

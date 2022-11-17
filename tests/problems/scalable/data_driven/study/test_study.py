@@ -111,13 +111,13 @@ def test_scalabilitystudy1(sellar_use_case):
     with pytest.raises(TypeError):
         study.set_fill_factor("SellarSystem", OBJ, 1.4)
     with pytest.raises(ValueError):
-        study.execute(1)
+        study.execute()
     study.add_optimization_strategy(
         "NLOPT_SLSQP", 2, "MDF", formulation_options={"chain_linearize": True}
     )
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
     study.add_scaling_strategies(variables=variables)
-    study.execute(1)
+    study.execute()
     with pytest.raises(TypeError):
         study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF", algo_options="dummy")
     tol = 1e-4

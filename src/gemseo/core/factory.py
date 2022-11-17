@@ -59,14 +59,14 @@ class Factory(Multiton):
             a-name = plugin_package_name
 
     Above ``a-name`` is not used
-    and can be any name
+    and can be any name,
     but we advise to use the plugin name.
 
     The plugin entry point searched by the factory could be changed
     with :class:`.Factory.PLUGIN_ENTRY_POINT`.
 
     If a class,
-    despite being a sub-class of the base class,
+    despite being a subclass of the base class,
     or even the base class itself,
     does not belong to the modules sources
     then it is not taken into account
@@ -218,7 +218,7 @@ class Factory(Multiton):
                 self.failed_imports[mod_name] = err
 
     def __get_sub_classes(self, cls: type[Any]) -> dict[str, type[Any]]:
-        """Find all the sub classes of a class.
+        """Find all the subclasses of a class.
 
         The class names are unique,
         the last imported is kept when more than one class have the same name.
@@ -227,7 +227,7 @@ class Factory(Multiton):
             cls: A class.
 
         Returns:
-            A mapping from the names to the unique sub-classes.
+            A mapping from the names to the unique subclasses.
         """
         all_sub_classes = {}
         for sub_class in cls.__subclasses__():

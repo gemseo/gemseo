@@ -32,12 +32,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DataProcessor:
-    """Abstract class for pre and post processing data of MDODisciplines.
+    """Abstract class for pre and post-processing data of MDODisciplines.
 
-    Executes a pre processing of input data after they are checked by
+    Executes a pre-processing of input data after they are checked by
     MDODiscipline.check_data, and before the _run method of the discipline
     is called.
-    Similarly, the post processing method is executed after the _run method
+    Similarly, the post-processing method is executed after the _run method
     and before the output data is checked by |g|
 
     This is usefull to cast the data types, since the |g| kernel only handles
@@ -46,7 +46,7 @@ class DataProcessor:
     """
 
     def pre_process_data(self, data):
-        """Executes a pre processing of input data after they are checked by
+        """Executes a pre-processing of input data after they are checked by
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
@@ -59,7 +59,7 @@ class DataProcessor:
         raise NotImplementedError()
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data after the _run method of
+        """Executes a post-processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         Args:
@@ -76,7 +76,7 @@ class FloatDataProcessor(DataProcessor):
     converts all discipline output data to numpy arrays."""
 
     def pre_process_data(self, data):
-        """Executes a pre processing of input data after they are checked by
+        """Executes a pre-processing of input data after they are checked by
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
@@ -95,7 +95,7 @@ class FloatDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data after the _run method of
+        """Executes a post-processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         Args:
@@ -118,7 +118,7 @@ class ComplexDataProcessor(DataProcessor):
     arrays, and converts all discipline output data to numpy complex arrays."""
 
     def pre_process_data(self, data):
-        """Executes a pre processing of input data after they are checked by
+        """Executes a pre-processing of input data after they are checked by
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
@@ -134,7 +134,7 @@ class ComplexDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data after the _run method of
+        """Executes a post-processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         Args:
@@ -169,7 +169,7 @@ class NameMapping(DataProcessor):
         }
 
     def pre_process_data(self, data):
-        """Executes a pre processing of input data after they are checked by
+        """Executes a pre-processing of input data after they are checked by
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
@@ -183,7 +183,7 @@ class NameMapping(DataProcessor):
         return {mapping[global_key]: value for global_key, value in data.items()}
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data after the _run method of
+        """Executes a post-processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         Args:

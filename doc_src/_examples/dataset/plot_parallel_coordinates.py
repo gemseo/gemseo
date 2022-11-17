@@ -46,6 +46,6 @@ iris = load_dataset("IrisDataset")
 # a.k.a. cowebplot, where each samples is represented by a continuous straight
 # line in pieces whose nodes are indexed by the variables names and measure the
 # variables values.
-ParallelCoordinates(iris, classifier="specy").execute(save=False, show=False)
+ParallelCoordinates(iris, classifier="specy").execute(save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

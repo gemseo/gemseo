@@ -43,7 +43,7 @@ class ConstrAggegationDisc(MDODiscipline):
     is to aggregate the constraint in a discipline.
 
     This can be included in a MDO formulation,
-    and in particular in a MDA,
+    and in particular in an MDA,
     so only one adjoint calculation can be performed for the aggregated
     constraint instead of one adjoint per original constraint dimension.
 

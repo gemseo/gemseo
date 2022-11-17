@@ -1977,7 +1977,7 @@ class OptimizationProblem:
         design_space = DesignSpace(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
-        with h5py.File(file_path, "r") as h5file:
+        with h5py.File(file_path) as h5file:
             group = get_hdf5_group(h5file, opt_pb.OPT_DESCR_GROUP)
 
             for attr_name, attr in group.items():
@@ -1996,7 +1996,7 @@ class OptimizationProblem:
             # The generated functions can be called at the x stored in
             # the database
             attr.set_pt_from_database(
-                opt_pb.database, design_space, jac=True, x_tolerance=x_tolerance
+                opt_pb.database, design_space, x_tolerance=x_tolerance
             )
             opt_pb.objective = attr
 
@@ -2474,7 +2474,7 @@ class OptimizationProblem:
         Args:
             name: The name of the constraint.
             from_original_constraints: Whether to get the constraint from the original
-                constraints; otherwise get the constraint from the the pre-processed
+                constraints; otherwise get the constraint from the pre-processed
                 constraints.
 
         Returns:
