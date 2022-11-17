@@ -29,6 +29,7 @@ from typing import Mapping
 
 from pandas import DataFrame  # noqa F401
 from pandas import read_excel
+from pandas._typing import IntStrT
 
 from gemseo.api import create_design_space
 from gemseo.api import create_scenario
@@ -37,6 +38,9 @@ from gemseo.api import get_available_formulations
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.utils.python_compatibility import Final
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,6 +96,7 @@ class XLSStudyParser:
     FORMULATION = "Formulation"
     OPTIONS = "Options"
     OPTIONS_VALUES = "Options values"
+    __SPACE: Final[str] = MultiLineString.INDENTATION
 
     def __init__(self, xls_study_path: str) -> None:
         """Initialize the study from the Excel specification.
@@ -110,11 +115,11 @@ class XLSStudyParser:
             LOGGER.error("Failed to open the study file: %s", xls_study_path)
             raise
 
-        LOGGER.info("Detected the following disciplines: %s", list(self.frames.keys()))
+        self.__log_number_objects_detected(True)
         self.disciplines = dict()
         self.scenarios = dict()
-        self.inputs = dict()
-        self.outputs = dict()
+        self.inputs = set()
+        self.outputs = set()
 
         self._init_disciplines()
         self._get_opt_pb_descr()
@@ -130,15 +135,17 @@ class XLSStudyParser:
         """
         all_inputs = []
         all_outputs = []
+        string = MultiLineString()
+        string.indent()
+        missing_column_msg = "The sheet of the discipline '{}' must have a column '{}'"
         for disc_name, frame in self.frames.items():
             if disc_name.startswith(self.SCENARIO_PREFIX):
                 continue
-            LOGGER.info("Parsing discipline %s", disc_name)
 
-            missing_column_msg = (
-                "The sheet of the discipline '{}' must have a column '{}'"
-            )
-
+            # We use add("{}", disc_name) rather than add(disc_name)
+            # to prevent problems with special characters in disc_name,
+            # e.g. "Discipline{1}".
+            string.add("{}", disc_name)
             try:
                 inputs = self._get_frame_series_values(frame, "Inputs")
             except ValueError:
@@ -154,11 +161,13 @@ class XLSStudyParser:
             disc = MDODiscipline(disc_name)
             disc.input_grammar.update(inputs)
             disc.output_grammar.update(outputs)
-            LOGGER.info("Inputs: %s", inputs)
-            LOGGER.info("Outputs: %s", outputs)
-
+            string.indent()
+            string.add("Inputs: {}", pretty_str(inputs))
+            string.add("Outputs: {}", pretty_str(outputs))
+            string.dedent()
             self.disciplines[disc_name] = disc
 
+        LOGGER.info("%s", string)
         self.inputs = set(all_inputs)
         self.outputs = set(all_outputs)
 
@@ -167,7 +176,7 @@ class XLSStudyParser:
         frame: DataFrame,
         series_name: str,
         return_none: bool | None = False,
-    ) -> None:
+    ) -> list[str] | None:
         """Return the data of a named column.
 
         Removes empty data.
@@ -179,7 +188,7 @@ class XLSStudyParser:
                 instead of raising a ValueError.
 
         Returns:
-            The list of a named column.
+            The list of a named column, if the series exist.
 
         Raises:
             ValueError: If the sheet has no name.
@@ -188,7 +197,7 @@ class XLSStudyParser:
         if series is None:
             if return_none:
                 return None
-            raise ValueError(f"The sheet has no serie named '{series_name}'")
+            raise ValueError(f"The sheet has no series named '{series_name}'")
         # Remove empty data
         # pylint: disable=comparison-with-itself
         return [val for val in series.tolist() if val == val]
@@ -207,14 +216,9 @@ class XLSStudyParser:
                 * if a scenario has different number of option values.
         """
         self.scenarios = dict()
-
-        for frame_name, frame in self.frames.items():
-            if not frame_name.startswith(self.SCENARIO_PREFIX):
-                continue
-            LOGGER.info("Detected scenario in sheet: %s", frame_name)
-
-            missing_column_msg = "Scenario {} has no {} column!"
-
+        frames = self.__log_number_objects_detected(False)
+        missing_column_msg = "Scenario {} has no {} column."
+        for frame_name, frame in frames.items():
             try:
                 disciplines = self._get_frame_series_values(frame, self.DISCIPLINES)
             except ValueError:
@@ -261,7 +265,7 @@ class XLSStudyParser:
 
             if len(formulation) != 1:
                 raise ValueError(
-                    "Scenario {} must have one {} value!".format(
+                    "Scenario {} must have one {} value.".format(
                         str(frame_name), self.FORMULATION
                     )
                 )
@@ -270,7 +274,7 @@ class XLSStudyParser:
                 if len(options) != len(options_values):
                     raise ValueError(
                         "Options {} and Options values {} "
-                        "must have the same length!".format(options, options_values)
+                        "must have the same length.".format(options, options_values)
                     )
 
             formulation = formulation[0]
@@ -296,6 +300,29 @@ class XLSStudyParser:
                 desc[self.FORMULATION],
                 name,
             )
+
+    def __log_number_objects_detected(
+        self, is_discipline: bool
+    ) -> DataFrame | dict[IntStrT, DataFrame]:
+        """Log the number of objects detected.
+
+        Args:
+            is_discipline: Whether the object is a discipline.
+                Otherwise a scenario.
+        """
+        object_name = "discipline" if is_discipline else "scenario"
+        frames = {
+            name: value
+            for name, value in self.frames.items()
+            if name.startswith(self.SCENARIO_PREFIX) is not is_discipline
+        }
+        if frames:
+            n_objects = len(frames)
+            LOGGER.info(
+                "%s %s%s detected", n_objects, object_name, "s" if n_objects > 1 else ""
+            )
+
+        return frames
 
     def _check_opt_pb(
         self,
@@ -324,12 +351,18 @@ class XLSStudyParser:
                 * the objective function is not an output of any discipline,
                 * the formulation is unknown.
         """
-        LOGGER.info("New scenario: %s", scn_name)
-        LOGGER.info("Objectives: %s", objectives)
-        LOGGER.info("Disciplines: %s", disciplines)
-        LOGGER.info("Constraints: %s", constraints)
-        LOGGER.info("Design variables: %s", design_variables)
-        LOGGER.info("Formulation: %s", formulation)
+        string = MultiLineString()
+        string.indent()
+        # We use add("{}", scn_name) rather than add(scn_name)
+        # to prevent problems with special characters in scn_name, e.g. "Scenario{1}".
+        string.add("{}", scn_name)
+        string.indent()
+        string.add("Objectives: {}", pretty_str(objectives))
+        string.add("Disciplines: {}", pretty_str(disciplines))
+        string.add("Constraints: {}", pretty_str(constraints))
+        string.add("Design variables: {}", pretty_str(design_variables))
+        string.add("Formulation: {}", formulation)
+        LOGGER.info("%s", string)
 
         missing = set(design_variables) - self.inputs
         if missing:
@@ -590,7 +623,7 @@ class StudyAnalysis:
             i += 1
             for name, scn in self.scenarios_descr.items():
                 discs = self._get_disciplines_instances(scn)
-                if discs is not None:  # All depdendencies resolved
+                if discs is not None:  # All dependencies resolved
                     for disc in discs:
                         if not disc.is_scenario():
                             temp_discs[disc.name] = disc
@@ -607,7 +640,7 @@ class StudyAnalysis:
         if len(self.scenarios) != n_scn:
             raise ValueError(
                 "Scenarios dependencies cannot be resolved, "
-                "check for cycling dependencies between scenarios!"
+                "check for cycling dependencies between scenarios."
             )
 
         self.disciplines = dict()
