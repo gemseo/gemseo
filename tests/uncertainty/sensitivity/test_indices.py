@@ -245,7 +245,9 @@ def ishigami() -> SobolAnalysis:
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol_analysis = SobolAnalysis([Ishigami1D()], space, 100)
+    sobol_analysis = SobolAnalysis(
+        [Ishigami1D()], space, 100, compute_second_order=False
+    )
     sobol_analysis.main_method = "total"
     sobol_analysis.compute_indices()
     return sobol_analysis
