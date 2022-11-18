@@ -29,7 +29,6 @@ from typing import Mapping
 
 from pandas import DataFrame  # noqa F401
 from pandas import read_excel
-from pandas._typing import IntStrT
 
 from gemseo.api import create_design_space
 from gemseo.api import create_scenario
@@ -304,12 +303,11 @@ class XLSStudyParser:
 
     def __log_number_objects_detected(
         self, is_discipline: bool
-    ) -> DataFrame | dict[IntStrT, DataFrame]:
+    ) -> dict[str | int, DataFrame]:
         """Log the number of objects detected.
 
         Args:
-            is_discipline: Whether the object is a discipline.
-                Otherwise a scenario.
+            is_discipline: Whether the object is a discipline. Otherwise, a scenario.
         """
         object_name = "discipline" if is_discipline else "scenario"
         frames = {
