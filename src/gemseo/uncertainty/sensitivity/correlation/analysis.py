@@ -31,13 +31,6 @@ from typing import Sequence
 
 from numpy import array
 from numpy import vstack
-from openturns import CorrelationAnalysis_PCC
-from openturns import CorrelationAnalysis_PearsonCorrelation
-from openturns import CorrelationAnalysis_PRCC
-from openturns import CorrelationAnalysis_SignedSRC
-from openturns import CorrelationAnalysis_SpearmanCorrelation
-from openturns import CorrelationAnalysis_SRC
-from openturns import CorrelationAnalysis_SRRC
 from openturns import Sample
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
@@ -48,6 +41,13 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.compatibility.openturns import compute_pcc
+from gemseo.utils.compatibility.openturns import compute_pearson_correlation
+from gemseo.utils.compatibility.openturns import compute_prcc
+from gemseo.utils.compatibility.openturns import compute_signed_src
+from gemseo.utils.compatibility.openturns import compute_spearman_correlation
+from gemseo.utils.compatibility.openturns import compute_src
+from gemseo.utils.compatibility.openturns import compute_srrc
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
@@ -91,13 +91,13 @@ class CorrelationAnalysis(SensitivityAnalysis):
     _SRRC = "srrc"
     _SSRRC = "ssrrc"
     _ALGORITHMS = {
-        _PEARSON: CorrelationAnalysis_PearsonCorrelation,
-        _SPEARMAN: CorrelationAnalysis_SpearmanCorrelation,
-        _PCC: CorrelationAnalysis_PCC,
-        _PRCC: CorrelationAnalysis_PRCC,
-        _SRC: CorrelationAnalysis_SRC,
-        _SRRC: CorrelationAnalysis_SRRC,
-        _SSRRC: CorrelationAnalysis_SignedSRC,
+        _PEARSON: compute_pearson_correlation,
+        _SPEARMAN: compute_spearman_correlation,
+        _PCC: compute_pcc,
+        _PRCC: compute_prcc,
+        _SRC: compute_src,
+        _SRRC: compute_srrc,
+        _SSRRC: compute_signed_src,
     }
     DEFAULT_DRIVER = "OT_MONTE_CARLO"
 
