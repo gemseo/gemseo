@@ -46,7 +46,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
-from matplotlib import pyplot as plt
 from numpy import array
 from numpy import ones
 
@@ -160,13 +159,14 @@ print(dataset.get_data_by_names(["y_1", "y2"], False))
 # we can generate plots with the observable variables. Have a look at the
 # Basic History plot and the Scatter Plot Matrix:
 scenario.post_process(
-    "BasicHistory", variable_names=["obj", "y_1", "y2"], save=False, show=False
+    "BasicHistory",
+    variable_names=["obj", "y_1", "y2"],
+    save=False,
+    show=True,
 )
 scenario.post_process(
     "ScatterPlotMatrix",
-    save=False,
-    show=False,
     variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

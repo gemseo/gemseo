@@ -45,7 +45,6 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot
-from matplotlib import pyplot as plt
 from numpy import array
 from numpy import ones
 
@@ -245,9 +244,7 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # following plots. Many other post-processings are available in |g| and
 # are described in :ref:`Post-processing <post_processing>`.
 
-scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
 # .. note::

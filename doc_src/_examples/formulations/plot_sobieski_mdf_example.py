@@ -28,7 +28,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -183,69 +182,72 @@ scenario.print_execution_metrics()
 #
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=False)
+scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "BasicHistory", variable_names=["x_shared"], save=False, show=False
+    "BasicHistory", variable_names=["x_shared"], save=False, show=True
 )
 
 # %%
 # Plot the constraints and objective history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ObjConstrHist", save=False, show=False)
+scenario.post_process("ObjConstrHist", save=False, show=True)
 
 # %%
 # Plot the constraints history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ConstraintsHistory", save=False, show=False, constraint_names=["g_1", "g_2", "g_3"]
+    "ConstraintsHistory",
+    constraint_names=["g_1", "g_2", "g_3"],
+    save=False,
+    show=True,
 )
 
 # %%
 # Plot the constraints history using a radar chart
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "RadarChart", save=False, show=False, constraint_names=["g_1", "g_2", "g_3"]
+    "RadarChart",
+    constraint_names=["g_1", "g_2", "g_3"],
+    save=False,
+    show=True,
 )
 
 # %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
+scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
 
 # %%
 # Plot the functions using a SOM
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("SOM", save=False, show=False)
+scenario.post_process("SOM", save=False, show=True)
 
 # %%
 # Plot the scatter matrix of variables of interest
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
     "ScatterPlotMatrix",
-    save=False,
-    show=False,
     variable_names=["-y_4", "g_1"],
+    save=False,
+    show=True,
     fig_size=(14, 14),
 )
 
 # %%
 # Plot the variables using the parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ParallelCoordinates", save=False, show=False)
+scenario.post_process("ParallelCoordinates", save=False, show=True)
 
 # %%
 # Plot the robustness of the solution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("Robustness", save=False, show=False)
+scenario.post_process("Robustness", save=True, show=True)
 
 # %%
 # Plot the influence of the design variables
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("VariableInfluence", save=False, show=False, fig_size=(14, 14))
-
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("VariableInfluence", fig_size=(14, 14), save=False, show=True)

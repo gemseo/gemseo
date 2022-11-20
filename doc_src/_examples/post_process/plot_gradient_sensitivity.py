@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 # %%
 # Import
@@ -128,7 +127,8 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 scenario.post_process(
-    "GradientSensitivity", save=False, show=False, compute_missing_gradients=True
+    "GradientSensitivity",
+    compute_missing_gradients=True,
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

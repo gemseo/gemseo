@@ -29,7 +29,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.curves import Curves
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -59,6 +58,4 @@ print(dataset)
 ##############################################################################
 # Plot the data
 # -------------
-Curves(dataset, "x", "u_t").execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+Curves(dataset, "x", "u_t").execute(save=False, show=True)

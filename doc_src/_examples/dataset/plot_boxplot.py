@@ -27,7 +27,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
-from matplotlib import pyplot as plt
 from numpy import hstack
 from numpy import linspace
 
@@ -59,9 +58,7 @@ plot = Boxplot(dataset)
 plot.xlabel = "Variables"
 plot.ylabel = "Values"
 plot.title = "Standard boxplots"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)
 
 ############################################################################
 # Plot with centering
@@ -69,9 +66,7 @@ plt.show()
 # We can center the data:
 plot = Boxplot(dataset, center=True)
 plot.title = "With centering"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)
 
 ############################################################################
 # Plot with scaling
@@ -79,9 +74,7 @@ plt.show()
 # We can scale the data (normalization with the standard deviation):
 plot = Boxplot(dataset, scale=True)
 plot.title = "With scaling"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)
 
 ############################################################################
 # Plot without outliers
@@ -89,9 +82,7 @@ plt.show()
 # We can remove the outliers:
 plot = Boxplot(dataset, add_outliers=False)
 plot.title = "Without outliers"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)
 
 ############################################################################
 # Plot with confidence intervals
@@ -99,9 +90,7 @@ plt.show()
 # We can add confidence intervals for the median:
 plot = Boxplot(dataset, add_confidence_interval=True)
 plot.title = "Confidence intervals"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)
 
 ############################################################################
 # Plot horizontally
@@ -109,9 +98,7 @@ plt.show()
 # We can use horizontal bars:
 plot = Boxplot(dataset, use_vertical_bars=False)
 plot.title = "Horizontal bars"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)
 
 ############################################################################
 # Plot with other datasets
@@ -119,6 +106,4 @@ plt.show()
 # We can add a dataset:
 plot = Boxplot(dataset, other_dataset)
 plot.title = "Additional dataset"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)

@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -114,7 +113,8 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    :ref:`gen_post_algos`.
 
 scenario.post_process(
-    "ConstraintsHistory", constraint_names=all_constraints, save=False, show=False
+    "ConstraintsHistory",
+    constraint_names=all_constraints,
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

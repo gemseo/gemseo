@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -44,6 +43,4 @@ dataset = load_dataset("RosenbrockDataset")
 # We can use the :class:`.ZvsXY` plot
 plot = ZvsXY(dataset, x="x", y="x", y_comp=1, z="rosen")
 plot.colormap = "viridis"
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)

@@ -29,7 +29,6 @@ import pprint
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
-from matplotlib import pyplot as plt
 
 # %%
 # In this example,
@@ -75,7 +74,5 @@ print(sensitivity_analysis.sort_parameters("y"))
 #######################################################################################
 # Lastly,
 # we can use the method :meth:`.MorrisAnalysis.plot`
-# to visualize the different paris of indices:
-sensitivity_analysis.plot("y", save=False, show=False, lower_mu=0, lower_sigma=0)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+# to visualize the different series of indices:
+sensitivity_analysis.plot("y", save=False, show=True, lower_mu=0, lower_sigma=0)

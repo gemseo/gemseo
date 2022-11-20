@@ -29,7 +29,6 @@ import pprint
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
-from matplotlib import pyplot as plt
 
 # %%
 # In this example,
@@ -79,6 +78,4 @@ print(sensitivity_analysis.sort_parameters("y"))
 # Lastly,
 # we can use the method :meth:`.CorrelationAnalysis.plot`
 # to visualize the different correlation coefficients:
-sensitivity_analysis.plot("y", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+sensitivity_analysis.plot("y", save=False, show=True)

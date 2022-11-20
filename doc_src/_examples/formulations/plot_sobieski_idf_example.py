@@ -28,7 +28,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -127,12 +126,9 @@ scenario.print_execution_metrics()
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=False)
+scenario.post_process("OptHistoryView", save=True, show=True)
 
 # %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
-
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)

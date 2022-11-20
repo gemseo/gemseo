@@ -55,7 +55,7 @@ scenario.post_process(
     n_y=2,
     save=True,
     show=False,
-    file_path="mdf2_" + str(num),
+    file_path=f"mdf2_{num}",
     extension="png",
 )
 scenario.post_process(
@@ -64,7 +64,7 @@ scenario.post_process(
     n_y=4,
     save=True,
     show=False,
-    file_path="mdf4_" + str(num),
+    file_path=f"mdf4_{num}",
     extension="png",
 )
 scenario.post_process(
@@ -73,6 +73,6 @@ scenario.post_process(
     n_y=16,
     save=True,
     show=False,
-    file_path="mdf16_" + str(num),
+    file_path=f"mdf16_{num}",
     extension="png",
 )

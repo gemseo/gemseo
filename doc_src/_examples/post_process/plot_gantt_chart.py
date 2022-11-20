@@ -38,7 +38,6 @@ from gemseo.api import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -95,9 +94,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Post-process scenario
 # ---------------------
 # Lastly, we plot the Gantt chart.
-create_gantt_chart(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+create_gantt_chart(save=False, show=True)
 
 # Finally, we deactivate the time stamps for other executions
 MDODiscipline.deactivate_time_stamps()

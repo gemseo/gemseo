@@ -57,7 +57,6 @@ from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.radviz import Radar
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from matplotlib import pyplot as plt
 from numpy.random import choice
 
 configure_logger()
@@ -117,7 +116,7 @@ print(labels[shown_samples, :])
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False)
+ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False, show=True)
 
 ##############################################################################
 # Plot parallel coordinates
@@ -127,7 +126,7 @@ ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False)
 # a.k.a. cowebplot, where each samples
 # is represented by a continuous straight line in pieces whose nodes are
 # indexed by the variables names and measure the variables values.
-ParallelCoordinates(iris, "specy").execute(save=False)
+ParallelCoordinates(iris, "specy").execute(save=False, show=True)
 
 ##############################################################################
 # Plot Andrews curves
@@ -136,12 +135,10 @@ ParallelCoordinates(iris, "specy").execute(save=False)
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
-AndrewsCurves(iris, "specy").execute(save=False)
+AndrewsCurves(iris, "specy").execute(save=False, show=True)
 
 ##############################################################################
 # Plot Radar
 # ~~~~~~~~~~
 # We can use the :class:`.Radar` plot
-Radar(iris, "specy").execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+Radar(iris, "specy").execute(save=False, show=True)

@@ -38,7 +38,6 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
-from matplotlib import pyplot as plt
 from numpy import array
 
 configure_logger()
@@ -156,6 +155,5 @@ scenario_doe.add_observable("obj2")
 run_inputs = {"n_samples": 50, "algo": "fullfact"}
 scenario_doe.execute(run_inputs)
 scenario_doe.post_process(
-    "ParetoFront", objectives=["obj1", "obj2"], save=False, show=False
+    "ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )
-plt.show()

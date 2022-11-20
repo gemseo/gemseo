@@ -28,7 +28,6 @@ from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnaly
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
-from matplotlib import pyplot as plt
 
 # %%
 # In this example,
@@ -68,10 +67,8 @@ morris.compute_indices()
 # we compare these analyses
 # with the graphical method :meth:`.SensitivityAnalysis.plot_comparison`,
 # either using a bar chart:
-morris.plot_comparison(correlation, "y", save=False)
+morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=True)
 
 # %%
 # or a radar plot:
-morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=True)

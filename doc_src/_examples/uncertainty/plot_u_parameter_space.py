@@ -31,7 +31,6 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -115,9 +114,7 @@ print(dataset.export_to_dataframe())
 ###############################################################################
 # or with a graphical post-processing,
 # e.g. a scatter plot matrix:
-dataset.plot("ScatterMatrix", show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+dataset.plot("ScatterMatrix")
 
 ###############################################################################
 # Sample a discipline over the uncertain space
