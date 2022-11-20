@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
-from matplotlib import pyplot as plt
 from numpy import cos
 from numpy import linspace
 from numpy import pi
@@ -55,6 +54,4 @@ dataset.add_variable("y2", outputs_2, "outputs", cache_as_input=False)
 # We can use the :class:`.Lines` plot.
 plot = Lines(dataset, variables=["y1", "y2"])
 plot.linestyle = ["--", "-"]
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)

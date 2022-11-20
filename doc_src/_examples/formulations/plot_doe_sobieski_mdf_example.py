@@ -30,7 +30,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -159,7 +158,7 @@ dataframe = dataset.export_to_dataframe(
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", show=False, save=False)
+scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
 # .. tip::
@@ -174,12 +173,13 @@ scenario.post_process("OptHistoryView", show=False, save=False)
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ScatterPlotMatrix", show=False, save=False, variable_names=["y_4", "x_shared"]
+    "ScatterPlotMatrix",
+    save=False,
+    show=True,
+    variable_names=["y_4", "x_shared"],
 )
 
 # %%
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
-scenario.post_process("Correlations", show=False, save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("Correlations", save=False, show=True)

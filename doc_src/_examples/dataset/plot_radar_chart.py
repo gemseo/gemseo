@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
-from matplotlib import pyplot as plt
 from numpy import array
 
 configure_logger()
@@ -50,6 +49,4 @@ dataset.row_names = ["series_1", "series_2"]
 plot = RadarChart(dataset, connect=True, radial_ticks=True)
 plot.rmin = -0.5
 plot.rmax = 1.0
-plot.execute(save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)

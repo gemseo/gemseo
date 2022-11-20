@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -124,9 +123,7 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 
-scenario.post_process("SOM", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("SOM", save=False, show=True)
 
 ###############################################################################
 # Figure :ref:`fig-ssbj-mdf-som100` illustrates another :term:`SOM` on the Sobieski

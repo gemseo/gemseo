@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -122,9 +121,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # is positive and relatively high compared to the previous one but the combined
 # effects of :math:`x_0` and  :math:`x_2` are non-negligible in comparison.
 
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
 
 ###############################################################################
 # The second plot represents the quadratic approximation of the objective around the

@@ -35,7 +35,6 @@ from gemseo.api import execute_post
 from gemseo.api import get_available_post_processings
 from gemseo.api import get_post_processing_options_schema
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -66,6 +65,4 @@ disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 design_space = SellarDesignSpace()
 scenario = create_scenario(disciplines, "MDF", "obj", design_space, "SellarMDFScenario")
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
-execute_post(scenario, "OptHistoryView", show=False, save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+execute_post(scenario, "OptHistoryView", save=False, show=True)

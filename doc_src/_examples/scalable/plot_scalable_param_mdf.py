@@ -38,7 +38,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -66,6 +65,4 @@ scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 #######################################################################################
 # Post-process the results
 # ------------------------
-scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("OptHistoryView", save=False, show=True)

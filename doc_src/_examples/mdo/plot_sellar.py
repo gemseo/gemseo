@@ -49,7 +49,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
 from gemseo.api import create_scenario
 from gemseo.core.discipline import MDODiscipline
-from matplotlib import pyplot as plt
 from numpy import array
 from numpy import ones
 
@@ -227,6 +226,4 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 # Finally,
 # we can generate plots of the optimization history:
-scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("OptHistoryView", save=False, show=True)

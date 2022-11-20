@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 # %%
 # Import
@@ -105,9 +104,12 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 scenario.post_process(
-    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=False
+    "BasicHistory",
+    variable_names=["g_1", "g_2", "g_3"],
+    save=False,
+    show=True,
 )
-scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=False)
+scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=True)
 # %%
 # .. note::
 #
@@ -115,6 +117,4 @@ scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=F
 #    :attr:`.OptimizationProblem.use_standardized_objective` to ``False``
 #    to plot the objective to maximize as a performance function.
 scenario.use_standardized_objective = False
-scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=True)

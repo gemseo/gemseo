@@ -26,7 +26,6 @@ from __future__ import annotations
 
 from gemseo.api import configure_logger
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
-from matplotlib import pyplot as plt
 from numpy.random import randn
 from numpy.random import seed
 
@@ -72,9 +71,7 @@ print(exp_dist)
 # The returned object is an :class:`.OTDistribution`
 # that we can represent graphically
 # in terms of probability and cumulative density functions:
-norm_dist.plot(show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+norm_dist.plot()
 
 ###############################################################################
 # Measure the goodness-of-fit

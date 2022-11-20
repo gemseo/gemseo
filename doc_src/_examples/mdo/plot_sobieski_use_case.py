@@ -66,7 +66,6 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -239,9 +238,8 @@ scenario.execute(algo_args)
 # :ref:`post_processing`.
 #
 # To visualize the optimization history:
-scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("OptHistoryView", save=False, show=True)
+
 ##############################################################################
 # Influence of gradient computation method on performance
 # -------------------------------------------------------

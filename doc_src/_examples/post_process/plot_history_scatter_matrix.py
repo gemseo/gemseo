@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -111,9 +110,7 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 design_variables = ["x_shared", "x_1", "x_2", "x_3"]
 scenario.post_process(
     "ScatterPlotMatrix",
-    save=False,
-    show=False,
     variable_names=design_variables + ["-y_4"],
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

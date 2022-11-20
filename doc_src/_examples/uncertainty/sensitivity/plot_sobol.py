@@ -29,7 +29,6 @@ import pprint
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
 from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
-from matplotlib import pyplot as plt
 
 # %%
 # In this example,
@@ -83,6 +82,4 @@ print(sensitivity_analysis.sort_parameters("y"))
 # Lastly,
 # we can use the method :meth:`.SobolAnalysis.plot`
 # to visualize both first-order and total Sobol' indices:
-sensitivity_analysis.plot("y", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+sensitivity_analysis.plot("y", save=False, show=True)
