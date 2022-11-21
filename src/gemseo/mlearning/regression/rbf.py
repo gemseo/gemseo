@@ -41,7 +41,6 @@ from __future__ import annotations
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 from typing import Union
 
 from numpy import average
@@ -99,7 +98,7 @@ class RBFRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         function: str | Callable[[float, float], float] = MULTIQUADRIC,

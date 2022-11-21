@@ -69,11 +69,11 @@ def test_constructor_from_algo(dataset):
 
 
 def test_repr(dataset):
-    surr = SurrogateDiscipline("LinearRegressor", dataset)
-    msg = "SurrogateDiscipline(name=LinReg_func, "
-    msg += "algo=LinearRegressor, data=func, "
-    msg += "size=9, inputs=[x_1, x_2], outputs=[y_1, y_2], jacobian=auto)"
-    assert repr(surr) == msg
+    """Check the __repr__ of a surrogate discipline."""
+    assert repr(SurrogateDiscipline("LinearRegressor", dataset)) == (
+        "SurrogateDiscipline(algo=LinearRegressor, data=func, inputs=[x_1, x_2], "
+        "jacobian=auto, name=LinReg_func, outputs=[y_1, y_2], size=9)"
+    )
 
 
 def test_str(dataset):

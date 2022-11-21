@@ -35,7 +35,6 @@ from __future__ import annotations
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import ndarray
 from sklearn.svm import SVC
@@ -55,7 +54,7 @@ class SVMClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         C=1.0,  # noqa: N803

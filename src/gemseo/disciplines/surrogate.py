@@ -53,7 +53,7 @@ class SurrogateDiscipline(MDODiscipline):
         self,
         surrogate: str | MLRegressionAlgo,
         data: Dataset | None = None,
-        transformer: TransformerType | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+        transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
         disc_name: str | None = None,
         default_inputs: dict[str, ndarray] | None = None,
         input_names: Iterable[str] | None = None,
@@ -65,27 +65,29 @@ class SurrogateDiscipline(MDODiscipline):
             surrogate: Either the class name
                 or the instance of the :class:`.MLRegressionAlgo`.
             data: The learning dataset to train the regression model.
-                If None, the regression model is supposed to be trained.
+                If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
                 The values are instances of :class:`.Transformer`
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
-                e.g. "inputs" or "outputs" in the case of the regression algorithms.
+                e.g. ``"inputs"`` or ``"outputs"``
+                in the case of the regression algorithms.
                 If a group is specified,
                 the :class:`.Transformer` will be applied
                 to all the variables of this group.
-                If None, do not transform the variables.
+                If :attr:`~.MLAlgo.IDENTITY, do not transform the variables.
                 The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
                 the :class:`.MinMaxScaler` strategy for both input and output variables.
             disc_name: The name to be given to the surrogate discipline.
-                If None, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
+                If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
             default_inputs: The default values of the inputs.
-                If None, use the center of the learning input space.
+                If ``None``, use the center of the learning input space.
             input_names: The names of the input variables.
-                If None, consider all input variables mentioned in the learning dataset.
+                If ``None``, consider all input variables mentioned in the learning dataset.
             output_names: The names of the output variables.
-                If None, consider all input variables mentioned in the learning dataset.
+                If ``None``,
+                consider all input variables mentioned in the learning dataset.
             **parameters: The parameters of the machine learning algorithm.
 
         Raises:
@@ -140,29 +142,23 @@ class SurrogateDiscipline(MDODiscipline):
         LOGGER.info("%s", msg)
 
     def __repr__(self) -> str:
-        model = self.regression_model.__class__.__name__
-        data_name = self.regression_model.learning_set.name
-        length = len(self.regression_model.learning_set)
         arguments = [
             f"name={self.name}",
-            f"algo={model}",
-            f"data={data_name}",
-            f"size={length}",
+            f"algo={self.regression_model.__class__.__name__}",
+            f"data={self.regression_model.learning_set.name}",
+            f"size={len(self.regression_model.learning_set)}",
             f"inputs=[{pretty_str(self.regression_model.input_names)}]",
             f"outputs=[{pretty_str(self.regression_model.output_names)}]",
             f"jacobian={self.linearization_mode}",
         ]
-        msg = "SurrogateDiscipline({})".format(", ".join(arguments))
-        return msg
+        return f"SurrogateDiscipline({pretty_str(arguments)})"
 
     def __str__(self) -> str:
-        data_name = self.regression_model.learning_set.name
-        length = len(self.regression_model.learning_set)
         msg = MultiLineString()
         msg.add("Surrogate discipline: {}", self.name)
         msg.indent()
-        msg.add("Dataset name: {}", data_name)
-        msg.add("Dataset size: {}", length)
+        msg.add("Dataset name: {}", self.regression_model.learning_set.name)
+        msg.add("Dataset size: {}", len(self.regression_model.learning_set))
         msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
         msg.add("Inputs: {}", pretty_str(self.regression_model.input_names))
         msg.add("Outputs: {}", pretty_str(self.regression_model.output_names))
@@ -177,22 +173,22 @@ class SurrogateDiscipline(MDODiscipline):
 
         Args:
             input_names: The names of the inputs to consider.
-                If None, use all the inputs of the regression model.
+                If ``None``, use all the inputs of the regression model.
             output_names: The names of the inputs to consider.
-                If None, use all the inputs of the regression model.
+                If ``None``, use all the inputs of the regression model.
         """
         self.input_grammar.update(input_names or self.regression_model.input_names)
         self.output_grammar.update(output_names or self.regression_model.output_names)
 
     def _set_default_inputs(
         self,
-        default_inputs: Mapping[str, ndarray] = None,
+        default_inputs: Mapping[str, ndarray] | None = None,
     ) -> None:
         """Set the default values of the inputs.
 
         Args:
            default_inputs: The default values of the inputs.
-               If None, use the center of the learning input space.
+               If ``None``, use the center of the learning input space.
         """
         if default_inputs is None:
             self.default_inputs = self.regression_model.input_space_center
@@ -200,16 +196,13 @@ class SurrogateDiscipline(MDODiscipline):
             self.default_inputs = default_inputs
 
     def _run(self) -> None:
-        input_data = self.get_input_data()
-        output_data = self.regression_model.predict(input_data)
-        output_data = {key: val.flatten() for key, val in output_data.items()}
-        self.local_data.update(output_data)
+        for name, value in self.regression_model.predict(self.get_input_data()).items():
+            self.local_data[name] = value.flatten()
 
     def _compute_jacobian(
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        input_data = self.get_input_data()
         self._init_jacobian(inputs, outputs)
-        self.jac = self.regression_model.predict_jacobian(input_data)
+        self.jac = self.regression_model.predict_jacobian(self.get_input_data())

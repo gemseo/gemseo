@@ -35,7 +35,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Dict
 from typing import Iterable
-from typing import Mapping
 from typing import Sequence
 from typing import Union
 
@@ -71,7 +70,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,

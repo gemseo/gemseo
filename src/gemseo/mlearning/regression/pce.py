@@ -87,7 +87,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import concatenate
@@ -155,7 +154,7 @@ class PCERegressor(MLRegressionAlgo):
         self,
         data: Dataset | None,
         probability_space: ParameterSpace,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         degree: int = 2,

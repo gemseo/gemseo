@@ -37,7 +37,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
 from typing import Sequence
 from typing import Union
@@ -74,7 +73,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLUnsupervisedAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:

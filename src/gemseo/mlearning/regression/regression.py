@@ -62,9 +62,9 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 from __future__ import annotations
 
 import collections
+from types import MappingProxyType
 from typing import Callable
 from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
 
 from numpy import eye
@@ -73,6 +73,7 @@ from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import DefaultTransformerType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
@@ -89,15 +90,17 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     :meth:`!MLRegressionAlgo._predict_jacobian` method if possible.
     """
 
-    DEFAULT_TRANSFORMER = {
-        Dataset.INPUT_GROUP: MinMaxScaler(),
-        Dataset.OUTPUT_GROUP: MinMaxScaler(),
-    }
+    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType(
+        {
+            Dataset.INPUT_GROUP: MinMaxScaler(),
+            Dataset.OUTPUT_GROUP: MinMaxScaler(),
+        }
+    )
 
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,

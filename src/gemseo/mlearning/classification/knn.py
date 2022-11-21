@@ -92,7 +92,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import ndarray
 from numpy import stack
@@ -113,7 +112,7 @@ class KNNClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_neighbors: int = 5,

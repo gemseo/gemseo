@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Mapping
 
 from gemseo.api import _get_schema
 from gemseo.core.dataset import Dataset
@@ -59,8 +58,7 @@ def get_mlearning_models() -> list[str]:
     """
     from gemseo.mlearning.core.factory import MLAlgoFactory
 
-    factory = MLAlgoFactory()
-    return factory.models
+    return MLAlgoFactory().models
 
 
 def get_regression_models() -> list[str]:
@@ -77,8 +75,7 @@ def get_regression_models() -> list[str]:
     """
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
-    factory = RegressionModelFactory()
-    return factory.models
+    return RegressionModelFactory().models
 
 
 def get_classification_models() -> list[str]:
@@ -95,8 +92,7 @@ def get_classification_models() -> list[str]:
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
-    factory = ClassificationModelFactory()
-    return factory.models
+    return ClassificationModelFactory().models
 
 
 def get_clustering_models() -> list[str]:
@@ -113,14 +109,13 @@ def get_clustering_models() -> list[str]:
     """
     from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 
-    factory = ClusteringModelFactory()
-    return factory.models
+    return ClusteringModelFactory().models
 
 
 def create_mlearning_model(
     name: str,
     data: Dataset,
-    transformer: Mapping[str, TransformerType] | None = None,
+    transformer: TransformerType = MLAlgo.IDENTITY,
     **parameters,
 ) -> MLAlgo:
     """Create a machine learning algorithm from a learning dataset.
@@ -131,7 +126,7 @@ def create_mlearning_model(
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.Transformer`
             while keys are names of either variables or groups of variables.
-            If None, do not transform the variables.
+            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the machine learning algorithm.
 
     Returns:
@@ -155,8 +150,7 @@ minmax_inputs = {Dataset.INPUT_GROUP: MinMaxScaler()}
 def create_regression_model(
     name: str,
     data: Dataset,
-    transformer: Mapping[str, TransformerType]
-    | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
     **parameters,
 ) -> MLRegressionAlgo:
     """Create a regression model from a learning dataset.
@@ -167,7 +161,7 @@ def create_regression_model(
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.Transformer`
             while keys are names of either variables or groups of variables.
-            If None, do not transform the variables.
+            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the regression model.
 
     Returns:
@@ -198,8 +192,7 @@ def create_regression_model(
 def create_classification_model(
     name: str,
     data: Dataset,
-    transformer: Mapping[str, TransformerType]
-    | None = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
     **parameters,
 ) -> MLClassificationAlgo:
     """Create a classification model from a learning dataset.
@@ -210,7 +203,7 @@ def create_classification_model(
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.Transformer`
             while keys are names of either variables or groups of variables.
-            If None, do not transform the variables.
+            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the classification model.
 
     Returns:
@@ -224,14 +217,15 @@ def create_classification_model(
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
-    factory = ClassificationModelFactory()
-    return factory.create(name, data=data, transformer=transformer, **parameters)
+    return ClassificationModelFactory().create(
+        name, data=data, transformer=transformer, **parameters
+    )
 
 
 def create_clustering_model(
     name: str,
     data: Dataset,
-    transformer: Mapping[str, TransformerType] | None = None,
+    transformer: TransformerType = MLClusteringAlgo.DEFAULT_TRANSFORMER,
     **parameters,
 ) -> MLClusteringAlgo:
     """Create a clustering model from a learning dataset.
@@ -242,7 +236,7 @@ def create_clustering_model(
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.Transformer`
             while keys are names of either variables or groups of variables.
-            If None, do not transform the variables.
+            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the clustering model.
 
     Returns:
@@ -256,13 +250,12 @@ def create_clustering_model(
     """
     from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 
-    factory = ClusteringModelFactory()
-    return factory.create(name, data=data, transformer=transformer, **parameters)
+    return ClusteringModelFactory().create(
+        name, data=data, transformer=transformer, **parameters
+    )
 
 
-def import_mlearning_model(
-    directory: str | Path,
-) -> MLAlgo:
+def import_mlearning_model(directory: str | Path) -> MLAlgo:
     """Import a machine learning algorithm from a directory.
 
     Args:
@@ -279,13 +272,10 @@ def import_mlearning_model(
     """
     from gemseo.mlearning.core.factory import MLAlgoFactory
 
-    factory = MLAlgoFactory()
-    return factory.load(directory)
+    return MLAlgoFactory().load(directory)
 
 
-def import_regression_model(
-    directory: str | Path,
-) -> MLRegressionAlgo:
+def import_regression_model(directory: str | Path) -> MLRegressionAlgo:
     """Import a regression model from a directory.
 
     Args:
@@ -302,13 +292,10 @@ def import_regression_model(
     """
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
-    factory = RegressionModelFactory()
-    return factory.load(directory)
+    return RegressionModelFactory().load(directory)
 
 
-def import_classification_model(
-    directory: str | Path,
-) -> MLClassificationAlgo:
+def import_classification_model(directory: str | Path) -> MLClassificationAlgo:
     """Import a classification model from a directory.
 
     Args:
@@ -325,13 +312,10 @@ def import_classification_model(
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
-    factory = ClassificationModelFactory()
-    return factory.load(directory)
+    return ClassificationModelFactory().load(directory)
 
 
-def import_clustering_model(
-    directory: str | Path,
-) -> MLClusteringAlgo:
+def import_clustering_model(directory: str | Path) -> MLClusteringAlgo:
     """Import a clustering model from a directory.
 
     Args:
@@ -348,14 +332,11 @@ def import_clustering_model(
     """
     from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 
-    factory = ClusteringModelFactory()
-    return factory.load(directory)
+    return ClusteringModelFactory().load(directory)
 
 
 def get_mlearning_options(
-    model_name: str,
-    output_json: bool = False,
-    pretty_print: bool = True,
+    model_name: str, output_json: bool = False, pretty_print: bool = True
 ) -> dict[str, str] | str:
     """Find the available options for a machine learning algorithm.
 
@@ -375,15 +356,15 @@ def get_mlearning_options(
     """
     from gemseo.mlearning.core.factory import MLAlgoFactory
 
-    factory = MLAlgoFactory().factory
-    grammar = factory.get_options_grammar(model_name)
-    return _get_schema(grammar, output_json, pretty_print)
+    return _get_schema(
+        MLAlgoFactory().factory.get_options_grammar(model_name),
+        output_json,
+        pretty_print,
+    )
 
 
 def get_regression_options(
-    model_name: str,
-    output_json: bool = False,
-    pretty_print: bool = True,
+    model_name: str, output_json: bool = False, pretty_print: bool = True
 ) -> dict[str, str] | str:
     """Find the available options for a regression model.
 
@@ -403,15 +384,15 @@ def get_regression_options(
     """
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
-    factory = RegressionModelFactory().factory
-    grammar = factory.get_options_grammar(model_name)
-    return _get_schema(grammar, output_json, pretty_print)
+    return _get_schema(
+        RegressionModelFactory().factory.get_options_grammar(model_name),
+        output_json,
+        pretty_print,
+    )
 
 
 def get_classification_options(
-    model_name: str,
-    output_json: bool = False,
-    pretty_print: bool = True,
+    model_name: str, output_json: bool = False, pretty_print: bool = True
 ) -> dict[str, str] | str:
     """Find the available options for a classification model.
 
@@ -431,15 +412,15 @@ def get_classification_options(
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
-    factory = ClassificationModelFactory().factory
-    grammar = factory.get_options_grammar(model_name)
-    return _get_schema(grammar, output_json, pretty_print)
+    return _get_schema(
+        ClassificationModelFactory().factory.get_options_grammar(model_name),
+        output_json,
+        pretty_print,
+    )
 
 
 def get_clustering_options(
-    model_name: str,
-    output_json: bool = False,
-    pretty_print: bool = True,
+    model_name: str, output_json: bool = False, pretty_print: bool = True
 ) -> dict[str, str] | str:
     """Find the available options for clustering model.
 
@@ -459,6 +440,8 @@ def get_clustering_options(
     """
     from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 
-    factory = ClusteringModelFactory().factory
-    grammar = factory.get_options_grammar(model_name)
-    return _get_schema(grammar, output_json, pretty_print)
+    return _get_schema(
+        ClusteringModelFactory().factory.get_options_grammar(model_name),
+        output_json,
+        pretty_print,
+    )

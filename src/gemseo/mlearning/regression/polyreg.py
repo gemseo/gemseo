@@ -80,7 +80,6 @@ import pickle
 from pathlib import Path
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import concatenate
 from numpy import ndarray
@@ -103,7 +102,7 @@ class PolynomialRegressor(LinearRegressor):
         self,
         data: Dataset,
         degree: int,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = LinearRegressor.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         fit_intercept: bool = True,
