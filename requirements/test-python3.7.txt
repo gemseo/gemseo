@@ -77,7 +77,7 @@ numpy==1.21.6
     #   scipy
 openpyxl==3.0.10
     # via gemseo (setup.py)
-openturns==1.19.post1
+openturns==1.19
     # via gemseo (setup.py)
 packaging==21.3
     # via
