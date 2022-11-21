@@ -221,8 +221,11 @@ def test_coupling_structure_plot(tmp_wd, graph_with_self_coupling, file_path, me
 
 def test_no_graphviz(caplog, graph_with_self_coupling):
     """Check the message logged when graphviz is missing."""
-    with patch("gemseo.core.dependency_graph.graphviz", None):
+    with patch("gemseo.core.dependency_graph.GraphView", None):
         assert graph_with_self_coupling.write_full_graph("graph.pdf") is None
         _, log_level, log_message = caplog.record_tuples[0]
         assert log_level == logging.WARNING
-        assert log_message == "Cannot write graph: graphviz cannot be imported."
+        assert log_message == (
+            "Cannot write graph: "
+            "GraphView cannot be imported because graphviz is not installed."
+        )
