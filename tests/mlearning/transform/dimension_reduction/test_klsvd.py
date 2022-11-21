@@ -28,6 +28,7 @@ from numpy import linspace
 from numpy import pi
 from numpy import sin
 from numpy.random import rand
+from openturns import __version__ as openturns_version
 from openturns import ResourceMap
 
 N_SAMPLES = 100
@@ -71,14 +72,20 @@ def test_learn(data):
     """Test learn with the default number of components (None)."""
     algo = KLSVD(MESH)
     algo.fit(data)
-    assert algo.n_components == 10
+    # Use
+    # assert algo.n_components == 10
+    # once python 3.7 removed.
+    assert algo.n_components == (3 if openturns_version.startswith("1.19") else 10)
 
 
 def test_learn_custom(data):
-    """Test learn with a custom number of components."""
-    algo = KLSVD(MESH, 10)
+    """Test learn with a number of components different from the mesh size."""
+    algo = KLSVD(MESH, 9)
     algo.fit(data)
-    assert algo.n_components == 10
+    # Use
+    # assert algo.n_components == 9
+    # once python 3.7 removed.
+    assert algo.n_components == (3 if openturns_version.startswith("1.19") else 9)
 
 
 def test_transform(data, data2d):
