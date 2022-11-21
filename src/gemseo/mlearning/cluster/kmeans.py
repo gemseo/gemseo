@@ -72,7 +72,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import finfo
 from numpy import ndarray
@@ -96,7 +95,7 @@ class KMeans(MLPredictiveClusteringAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_clusters: int = 5,
         random_state: int | None = 0,
@@ -105,8 +104,8 @@ class KMeans(MLPredictiveClusteringAlgo):
         """
         Args:
             n_clusters: The number of clusters of the K-means algorithm.
-            random_state: If None, use a random generation of the initial centroids.
-                If not None,
+            random_state: If ``None``, use a random generation of the initial centroids.
+                Otherwise,
                 the integer is used to make the initialization deterministic.
         """
         super().__init__(

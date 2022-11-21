@@ -71,7 +71,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
 
 from numpy import ndarray
@@ -92,7 +91,7 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_components: int = 5,
         **parameters: int | float | str | bool | None,

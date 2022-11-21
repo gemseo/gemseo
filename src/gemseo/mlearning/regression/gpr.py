@@ -129,7 +129,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         kernel: Kernel | None = None,
