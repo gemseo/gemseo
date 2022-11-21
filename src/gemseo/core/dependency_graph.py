@@ -23,15 +23,14 @@ import logging
 from typing import Iterable
 from typing import Iterator
 
-from gemseo.post._graph_view import GraphView
 from gemseo.utils.string_tools import pretty_str
 
 # graphviz is an optional dependency
 
 try:
-    import graphviz
+    from gemseo.post._graph_view import GraphView
 except ImportError:
-    graphviz = None
+    GraphView = None
 
 from networkx import Graph
 from networkx import DiGraph
@@ -231,8 +230,11 @@ class DependencyGraph:
             file_path: The file path to save the visualization.
             is_full: Whether the graph is full.
         """
-        if graphviz is None:
-            LOGGER.warning("Cannot write graph: graphviz cannot be imported.")
+        if GraphView is None:
+            LOGGER.warning(
+                "Cannot write graph: "
+                "GraphView cannot be imported because graphviz is not installed."
+            )
             return
 
         graph_view = GraphView()
