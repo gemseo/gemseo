@@ -103,6 +103,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
+from typing import Dict
 from typing import Mapping
 from typing import MutableMapping
 from typing import Optional
@@ -121,7 +122,7 @@ from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
-SavedObjectType = Union[Dataset, dict[str, Transformer], str, bool, int]
+SavedObjectType = Union[Dataset, Dict[str, Transformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
 SubTransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
