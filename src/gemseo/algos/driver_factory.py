@@ -21,6 +21,11 @@
 """Abstract factory to create drivers."""
 from __future__ import annotations
 
+from typing import Any
+
+from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.factory import Factory
 
 
@@ -30,7 +35,7 @@ class DriverFactory:
     Automates the creation of library interfaces given a name of the algorithm.
     """
 
-    def __init__(self, driver_lib_class, driver_package):
+    def __init__(self, driver_lib_class: type[DriverLib], driver_package: str) -> None:
         """Initializes the factory: scans the directories to search for subclasses of
         DriverLib.
 
@@ -43,7 +48,7 @@ class DriverFactory:
             for algo_name in lib.algorithms:
                 self.__algo_name_to_lib_name[algo_name] = lib_name
 
-    def is_available(self, name):
+    def is_available(self, name: str) -> bool:
         """Check the availability of a library name or algorithm name.
 
         Args:
@@ -55,17 +60,17 @@ class DriverFactory:
         return name in self.__algo_name_to_lib_name or self.factory.is_available(name)
 
     @property
-    def algorithms(self):
+    def algorithms(self) -> list[str]:
         """The available algorithms names."""
         return list(self.__algo_name_to_lib_name.keys())
 
     @property
-    def algo_names_to_libraries(self):
+    def algo_names_to_libraries(self) -> dict[str, str]:
         """The mapping from the algorithm names to the libraries."""
         return self.__algo_name_to_lib_name
 
     @property
-    def libraries(self):
+    def libraries(self) -> list[str]:
         """List the available library names in the present configuration.
 
         Returns:
@@ -73,7 +78,7 @@ class DriverFactory:
         """
         return self.factory.classes
 
-    def create(self, name):
+    def create(self, name: str) -> DriverLib:
         """Create a driver library from an algorithm name or a library name.
 
         Args:
@@ -99,12 +104,20 @@ class DriverFactory:
         lib_created.algo_name = algo_name
         return lib_created
 
-    def execute(self, problem, algo_name, **options):
+    def execute(
+        self,
+        problem: OptimizationProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> OptimizationResult:
         """Execute a problem with an algorithm.
 
         Args:
             problem: The problem to execute.
             algo_name: The name of the algorithm.
             **options: The options of the algorithm.
+
+        Returns:
+            The optimization result.
         """
         return self.create(algo_name).execute(problem, algo_name=algo_name, **options)
