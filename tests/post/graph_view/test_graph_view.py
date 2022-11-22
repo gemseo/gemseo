@@ -54,6 +54,7 @@ def test_graph_view(tmp_wd):
         file_path.read_text().strip()
         == (Path(__file__).parent / file_path).read_text().strip()
     )
+    assert file_path.exists()
 
 
 @pytest.mark.parametrize("use_directed_edges", [False, True])
@@ -75,10 +76,3 @@ def test_clean_up(tmp_wd, clean_up):
     """Check the argument clean_up."""
     GraphView().visualize(show=False, clean_up=clean_up)
     assert Path("graph_view.dot").exists() is not clean_up
-
-
-@pytest.mark.parametrize("save", [False, True])
-def test_save(tmp_wd, save):
-    """Check the argument save."""
-    GraphView().visualize(show=False, save=save)
-    assert Path("graph_view.png").exists() is save

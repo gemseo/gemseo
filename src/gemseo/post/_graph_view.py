@@ -18,19 +18,16 @@ from __future__ import annotations
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from graphviz import Digraph
 
+from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.python_compatibility import Final
 
 
 class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
     """A tool for graph visualization."""
-
-    DEFAULT_FILE_PATH: ClassVar[Path] = Path("graph_view.png")
-    """The default file path."""
 
     @dataclass
     class DefaultNodeAttributeValues:
@@ -112,28 +109,26 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
 
     def visualize(
         self,
-        save: bool = False,
         show: bool = True,
-        file_path: str | Path = DEFAULT_FILE_PATH,
+        file_path: str | Path = "",
         clean_up: bool = True,
     ):
-        """Create the visualization.
+        """Create the visualization and save it on the disk.
 
         Args:
-            save: Whether to save the graph.
-            show: Whether to display the graph with the default application.
+            show: Whether to display the graph
+                with the default application associated to the file extension.
             file_path: The file path with extension to save the graph.
-                If ``None``, use a default one.
+                If ``""``, use the class name with PNG format.
             clean_up: Whether to remove the source files.
         """
-        file_path = Path(file_path)
-        file_format = file_path.suffix[1:]
+        file_path = Path(
+            file_path or f"{FilePathManager.to_snake_case(self.__class__.__name__)}.png"
+        )
         self.render(
             file_path.with_suffix(self.__DOT_SUFFIX),
-            format=file_format,
+            format=file_path.suffix[1:],
             outfile=file_path,
             view=show,
             cleanup=clean_up,
         )
-        if not save:
-            file_path.unlink()
