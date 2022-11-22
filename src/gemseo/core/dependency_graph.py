@@ -280,7 +280,7 @@ class DependencyGraph:
             graph_view.hide_node(tail_name)
 
         # 4. Write the dot and target files.
-        graph_view.visualize(show=False, file_path=file_path, save=True, clean_up=False)
+        graph_view.visualize(show=False, file_path=file_path, clean_up=False)
 
     def write_full_graph(self, file_path):
         """Write a representation of the full graph.
