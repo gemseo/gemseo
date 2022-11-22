@@ -1683,3 +1683,19 @@ def test_get_missing_observable(constrained_problem):
 def test_execute_twice(problem_executed_twice, name):
     """Check that the second evaluations of an OptimizationProblem works."""
     assert len(problem_executed_twice.database.get_func_history(name)) == 2
+
+
+def test_avoid_complex_in_dataset():
+    """Check that exporting database to dataset casts complex numbers to real."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(
+        lambda x: array([0j]), "f", jac=lambda x: array([[0j]])
+    )
+    problem.preprocess_functions()
+    problem.evaluate_functions(array([0.25 + 0j]), eval_jac=True)
+    dataset = problem.export_to_dataset(export_gradients=True)
+    for name in ["@f", "f", "x"]:
+        assert dataset[name].dtype.kind == "f"

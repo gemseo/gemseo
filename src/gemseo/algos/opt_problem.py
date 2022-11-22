@@ -2101,7 +2101,7 @@ class OptimizationProblem:
             input_history, names_to_sizes, input_names
         )
         for input_name, input_value in sorted(input_history.items()):
-            dataset.add_variable(input_name, input_value, input_group)
+            dataset.add_variable(input_name, input_value.real, input_group)
 
         # Add database outputs
         variable_names = self.database.get_all_data_names(skip_iter=True)
@@ -2163,7 +2163,7 @@ class OptimizationProblem:
 
             dataset.add_variable(
                 output_name,
-                output_history.reshape((n_samples, -1)),
+                output_history.reshape((n_samples, -1)).real,
                 output_group,
                 cache_as_input=cache_output_as_input,
             )
@@ -2203,7 +2203,7 @@ class OptimizationProblem:
 
             dataset.add_variable(
                 Database.get_gradient_name(output_name),
-                gradient_history.reshape(n_samples, -1),
+                gradient_history.reshape(n_samples, -1).real,
                 gradient_group,
                 cache_as_input=cache_output_as_input,
             )
