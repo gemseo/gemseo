@@ -133,8 +133,7 @@ Changed
   `#445 <https://gitlab.com/gemseo/dev/gemseo/-/issues/445>`_
 - The graphs produced by :class:`.OptHistoryView` use the same :attr:`~.OptHistoryView.xlabel`.
   `#449 <https://gitlab.com/gemseo/dev/gemseo/-/issues/449>`_
-- :method:`Database.notify_store_listener` design vector is taken as input and when not provided last iteration design vector is employed.
-  ).
+- :meth:`.Database.notify_store_listener` takes a design vector as input and when not provided the last iteration design vector is employed.
   The KKT criterion when kkt tolerances are provided is computed at each new storage.
   `#457 <https://gitlab.com/gemseo/dev/gemseo/-/issues/457>`_
 
