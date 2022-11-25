@@ -20,8 +20,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+from gemseo.uncertainty.distributions import distribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
@@ -32,6 +34,7 @@ from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
+from gemseo.utils.testing import image_comparison
 from numpy import allclose
 from numpy import array
 from numpy import inf
@@ -203,12 +206,57 @@ def test_triangular():
     assert str(distribution) == "Triangular(lower=0.0, mode=0.5, upper=1.0)"
 
 
-def test_plot(tmp_wd):
-    distribution = OTTriangularDistribution("x", dimension=2)
-    figures = distribution.plot_all(False, True)
-    assert Path("distribution_x_0.png").exists()
-    assert Path("distribution_x_1.png").exists()
-    assert len(figures) == 2
+@pytest.mark.parametrize(
+    "dimension, baseline_images",
+    [
+        (1, ["image_1_0"]),
+        (2, ["image_2_0", "image_2_1"]),
+    ],
+)
+@image_comparison(None)
+def test_plot_all_show(dimension, baseline_images, pyplot_close_all):
+    """Check the figures returned by plot_all()."""
+    distribution = OTTriangularDistribution("x", dimension=dimension)
+    distribution.plot_all(show=False)
+
+
+@pytest.mark.parametrize(
+    "dimension, index, file_path, directory_path, file_name, file_extension, expected",
+    [
+        (1, 0, None, None, None, None, "distribution_x.png"),
+        (2, 0, None, None, None, None, "distribution_x_0.png"),
+        (2, 1, None, None, None, None, "distribution_x_1.png"),
+        (2, 0, "foo/bar.png", None, None, None, Path("foo/bar_0.png")),
+        (2, 0, None, "foo", None, None, Path("foo/distribution_x_0.png")),
+        (2, 0, None, "foo", "bar", "svg", Path("foo/bar_0.svg")),
+    ],
+)
+def test_plot_save(
+    dimension,
+    index,
+    file_path,
+    directory_path,
+    file_name,
+    file_extension,
+    expected,
+    tmp_wd,
+):
+    """Check the file path computed by plot()."""
+    triangular = OTTriangularDistribution("x", dimension=dimension)
+    with patch.object(distribution, "save_show_figure") as mock_method:
+        triangular.plot(
+            index=index,
+            show=False,
+            save=True,
+            file_path=file_path,
+            directory_path=directory_path,
+            file_name=file_name,
+            file_extension=file_extension,
+        )
+        if isinstance(expected, Path):
+            assert mock_method.call_args.args[2] == expected
+        else:
+            assert mock_method.call_args.args[2] == Path(tmp_wd / expected)
 
 
 @pytest.fixture
