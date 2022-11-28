@@ -32,6 +32,7 @@ import random
 from collections import namedtuple
 from pathlib import Path
 from random import uniform
+from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
@@ -48,6 +49,7 @@ from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -192,6 +194,18 @@ class SobieskiProblem:
         "SFC",
         "Engine weight",
     )
+
+    __DESIGN_VARIABLE_NAMES: Final[tuple[str]] = ("x_1", "x_2", "x_3", "x_shared")
+
+    USE_ORIGINAL_DESIGN_VARIABLES_ORDER: ClassVar[bool] = False
+    """Whether to sort the :attr:`.DesignSpace` as in :cite:`SobieskiBLISS98`.
+
+    If so,
+    the order of the design variables will be
+    ``"x_1"``, ``"x_2"``, ``"x_3"`` and ``"x_shared"``.
+    Otherwise,
+    ``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``.
+    """
 
     STRESS_LIMIT = SobieskiStructure.STRESS_LIMIT
     TWIST_UPPER_LIMIT = SobieskiStructure.TWIST_UPPER_LIMIT
@@ -495,7 +509,7 @@ class SobieskiProblem:
             names = [names]
 
         if names is None:
-            names = ["x_1", "x_2", "x_3", "x_shared"]
+            names = self.__DESIGN_VARIABLE_NAMES
 
         return concatenate([self.__names_to_feasible_values[name] for name in names])
 
@@ -722,26 +736,24 @@ class SobieskiProblem:
         outputs = self.__compute_mda(design_vector, true_cstr=true_cstr)
         return outputs[-3], outputs[-2], outputs[-1]
 
-    @property
-    def design_space(self) -> DesignSpace:
-        """The design space."""
-        if self.__design_space is None:
-            input_file = Path(__file__).parent / "sobieski_design_space.txt"
-            self.__design_space = DesignSpace.read_from_txt(input_file)
-            if self.__dtype == complex128:
-                current_x = self.__design_space.get_current_value(as_dict=True)
-                for variable_name, variable_value in current_x.items():
-                    current_x[variable_name] = array(variable_value, dtype=complex128)
-                self.__design_space.set_current_value(current_x)
+    def __read_design_space(self, suffix: str = "") -> DesignSpace:
+        """Create a design space from a file.
 
-        return self.__design_space
+        Args:
+            suffix: The suffix used in the file name.
 
-    @property
-    def design_space_with_physical_naming(self) -> DesignSpace:
-        """The design space with physical naming."""
+        Returns:
+            The design space.
+        """
         if self.__design_space is None:
-            input_file = Path(__file__).parent / "sobieski_design_space_pn.txt"
-            self.__design_space = DesignSpace.read_from_txt(input_file)
+            if self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER:
+                file_name = f"sobieski_original_design_space{suffix}.txt"
+            else:
+                file_name = f"sobieski_design_space{suffix}.txt"
+
+            self.__design_space = DesignSpace.read_from_txt(
+                Path(__file__).parent / file_name
+            )
             if self.__dtype == complex128:
                 current_x = self.__design_space.get_current_value(as_dict=True)
                 for variable_name, current_value in current_x.items():
@@ -749,3 +761,13 @@ class SobieskiProblem:
                 self.__design_space.set_current_value(current_x)
 
         return self.__design_space
+
+    @property
+    def design_space(self) -> DesignSpace:
+        """The design space."""
+        return self.__read_design_space()
+
+    @property
+    def design_space_with_physical_naming(self) -> DesignSpace:
+        """The design space with physical naming."""
+        return self.__read_design_space("_pn")
