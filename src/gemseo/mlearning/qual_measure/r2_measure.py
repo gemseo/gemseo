@@ -61,7 +61,7 @@ class R2Measure(MLErrorMeasure):
     def __init__(
         self,
         algo: MLRegressionAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MLErrorMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -83,7 +83,7 @@ class R2Measure(MLErrorMeasure):
         n_folds: int = 5,
         samples: list[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = MLErrorMeasure._RANDOMIZE,
         seed: int | None = None,
     ) -> float | ndarray:
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)

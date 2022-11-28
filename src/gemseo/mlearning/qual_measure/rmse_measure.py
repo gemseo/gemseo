@@ -54,7 +54,7 @@ class RMSEMeasure(MSEMeasure):
     def __init__(
         self,
         algo: MLRegressionAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MSEMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -84,7 +84,7 @@ class RMSEMeasure(MSEMeasure):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = MSEMeasure._RANDOMIZE,
         seed: int | None = None,
     ) -> float | ndarray:
         mse = super().evaluate_kfolds(

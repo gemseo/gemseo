@@ -58,7 +58,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     def __init__(
         self,
         algo: MLPredictiveClusteringAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MLPredictiveClusteringMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -79,7 +79,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = MLPredictiveClusteringMeasure._RANDOMIZE,
         seed: int | None = None,
     ) -> float | ndarray:
         raise NotImplementedError

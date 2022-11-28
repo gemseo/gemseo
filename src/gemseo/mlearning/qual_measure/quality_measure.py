@@ -88,10 +88,20 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     SMALLER_IS_BETTER: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
 
+    _FIT_TRANSFORMERS: ClassVar[bool] = True
+    """Whether to re-fit the transformers when using resampling techniques.
+
+    If ``False``,
+    use the transformers of the algorithm fitted from the whole learning dataset.
+    """
+
+    _RANDOMIZE: ClassVar[bool] = True
+    """Whether to shuffle the samples before dividing them in folds."""
+
     def __init__(
         self,
         algo: MLAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = _FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -200,7 +210,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = _RANDOMIZE,
         seed: int | None = None,
     ) -> NoReturn:
         """Evaluate the quality measure using the k-folds technique.

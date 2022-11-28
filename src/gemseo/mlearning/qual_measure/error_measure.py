@@ -44,7 +44,7 @@ class MLErrorMeasure(MLQualityMeasure):
     def __init__(
         self,
         algo: MLSupervisedAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MLQualityMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -84,7 +84,7 @@ class MLErrorMeasure(MLQualityMeasure):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = MLQualityMeasure._RANDOMIZE,
         seed: int | None = None,
     ) -> float | ndarray:
         self._train_algo(samples)

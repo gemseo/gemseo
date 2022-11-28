@@ -45,7 +45,7 @@ class MLClusteringMeasure(MLQualityMeasure):
     def __init__(
         self,
         algo: MLClusteringAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MLQualityMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -98,7 +98,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     def __init__(
         self,
         algo: MLPredictiveClusteringAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MLQualityMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -121,7 +121,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = MLClusteringMeasure._RANDOMIZE,
         seed: int | None = None,
     ) -> float | ndarray:
         self._train_algo(samples)
