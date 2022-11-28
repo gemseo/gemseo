@@ -25,7 +25,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from typing import Dict
 from typing import Mapping
 from typing import MutableMapping
 
@@ -543,10 +542,10 @@ class PSevenOpt(OptimizationLibrary):
 
     def __check_expensive_evaluations_budget(
         self,
-        options,  # type: Dict[str, Any]
-        samples,  # type: Dict[str, ndarray]
-        max_iter,  # type: int
-    ):  # type: (...) -> None
+        options: dict[str, Any],
+        samples: dict[str, ndarray],
+        max_iter: int,
+    ) -> None:
         """Check whether the expensive evaluations budget is sufficient.
 
         Args:
