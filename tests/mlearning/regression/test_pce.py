@@ -487,12 +487,23 @@ def test_prediction_jacobian(pce):
     )
 
 
-def test_sobol(pce):
+@pytest.mark.parametrize(
+    "order,expected",
+    [
+        ("first", [{"x1": 0.31, "x2": 0.69}, {"x1": 0.31, "x2": 0.69}]),
+        (
+            "second",
+            [{"x1": {"x2": 0}, "x2": {"x1": 0}}, {"x1": {"x2": 0}, "x2": {"x1": 0}}],
+        ),
+        ("total", [{"x1": 0.31, "x2": 0.69}, {"x1": 0.31, "x2": 0.69}]),
+    ],
+)
+def test_sobol(pce, order, expected):
     """Check the computation of Sobol' indices."""
-    assert isinstance(pce.first_sobol_indices, dict)
-    assert isinstance(pce.total_sobol_indices, dict)
-    assert len(pce.first_sobol_indices) == 2
-    assert len(pce.total_sobol_indices) == 2
+    computed = getattr(pce, f"{order}_sobol_indices")
+    assert len(computed) == len(expected)
+    for value1, value2 in zip(computed, expected):
+        assert compare_dict_of_arrays(value1, value2, 0.01)
 
 
 def test_mean_cov_var_std(pce):
@@ -523,6 +534,7 @@ def test_mean_cov_var_std(pce):
         "variance",
         "standard_deviation",
         "first_sobol_indices",
+        "second_sobol_indices",
         "total_sobol_indices",
     ],
 )
@@ -549,6 +561,7 @@ def test_save_load_with_pickle(pce, tmp_wd):
     assert model._variance.size
     assert model._standard_deviation.size
     assert model._first_order_sobol_indices
+    assert model._second_order_sobol_indices
     assert model._total_order_sobol_indices
 
 
@@ -562,4 +575,5 @@ def test_save_load(pce, tmp_wd):
     assert model._variance.size
     assert model._standard_deviation.size
     assert model._first_order_sobol_indices
+    assert model._second_order_sobol_indices
     assert model._total_order_sobol_indices

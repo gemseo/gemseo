@@ -1,0 +1,1 @@
+:class:`.PCERegressor` computes the Sobol' indices for all the output dimensions.

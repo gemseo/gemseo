@@ -316,8 +316,9 @@ class PCERegressor(MLRegressionAlgo):
         self._covariance = array([])
         self._variance = array([])
         self._standard_deviation = array([])
-        self._first_order_sobol_indices = {}
-        self._total_order_sobol_indices = {}
+        self._first_order_sobol_indices = []
+        self._second_order_sobol_indices = []
+        self._total_order_sobol_indices = []
         self._prediction_function = None
 
     def __instantiate_functional_chaos_algorithm(
@@ -424,14 +425,35 @@ class PCERegressor(MLRegressionAlgo):
 
         # Compute some sensitivity indices.
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
-        self._first_order_sobol_indices = {
-            name: sensitivity_analysis.getSobolIndex(index)
-            for index, name in enumerate(self.input_names)
-        }
-        self._total_order_sobol_indices = {
-            name: sensitivity_analysis.getSobolTotalIndex(index)
-            for index, name in enumerate(self.input_names)
-        }
+        self._first_order_sobol_indices = [
+            {
+                name: sensitivity_analysis.getSobolIndex(index, output_index)
+                for index, name in enumerate(self.input_names)
+            }
+            for output_index in range(self.output_dimension)
+        ]
+        self._second_order_sobol_indices = [
+            {
+                first_name: {
+                    second_name: sensitivity_analysis.getSobolGroupedIndex(
+                        [first_index, second_index], output_index
+                    )
+                    - sensitivity_analysis.getSobolIndex(first_index, output_index)
+                    - sensitivity_analysis.getSobolIndex(second_index, output_index)
+                    for second_index, second_name in enumerate(self.input_names)
+                    if second_index != first_index
+                }
+                for first_index, first_name in enumerate(self.input_names)
+            }
+            for output_index in range(self.output_dimension)
+        ]
+        self._total_order_sobol_indices = [
+            {
+                name: sensitivity_analysis.getSobolTotalIndex(index, output_index)
+                for index, name in enumerate(self.input_names)
+            }
+            for output_index in range(self.output_dimension)
+        ]
 
     def _predict(self, input_data: ndarray) -> ndarray:
         return array(self._prediction_function(input_data))
@@ -523,14 +545,20 @@ class PCERegressor(MLRegressionAlgo):
         return self._standard_deviation
 
     @property
-    def first_sobol_indices(self) -> dict[str, ndarray]:
-        """The first-order Sobol' indices."""
+    def first_sobol_indices(self) -> list[dict[str, float]]:
+        """The first-order Sobol' indices for the different output dimensions."""
         self._check_is_trained()
         return self._first_order_sobol_indices
 
     @property
-    def total_sobol_indices(self) -> dict[str, ndarray]:
-        """The total Sobol' indices."""
+    def second_sobol_indices(self) -> list[dict[str, dict[str, float]]]:
+        """The second-order Sobol' indices for the different output dimensions."""
+        self._check_is_trained()
+        return self._second_order_sobol_indices
+
+    @property
+    def total_sobol_indices(self) -> list[dict[str, float]]:
+        """The total Sobol' indices for the different output dimensions."""
         self._check_is_trained()
         return self._total_order_sobol_indices
 
@@ -542,5 +570,6 @@ class PCERegressor(MLRegressionAlgo):
         objects["_variance"] = self._variance
         objects["_standard_deviation"] = self._standard_deviation
         objects["_first_order_sobol_indices"] = self._first_order_sobol_indices
+        objects["_second_order_sobol_indices"] = self._second_order_sobol_indices
         objects["_total_order_sobol_indices"] = self._total_order_sobol_indices
         return objects
