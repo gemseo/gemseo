@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from typing import Iterable
+from typing import MutableSequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -99,3 +100,53 @@ def get_all_outputs(
             )
         )
     )
+
+
+def get_sub_disciplines(
+    disciplines: list[MDODiscipline], recursive: bool = False
+) -> list[MDODiscipline]:
+    """Determine the sub-disciplines.
+
+    This method lists the sub-disciplines' disciplines. It will list up to one level
+    of disciplines contained inside another one unless the ``recursive`` argument is
+    set to ``True``.
+
+    Args:
+        disciplines: The disciplines from which the sub-disciplines will be determined.
+        recursive: If ``True``, the method will look inside any discipline that has
+            other disciplines inside until it reaches a discipline without
+            sub-disciplines, in this case the return value will not include any
+            discipline that has sub-disciplines. If ``False``, the method will list
+            up to one level of disciplines contained inside another one, in this
+            case the return value may include disciplines that contain
+            sub-disciplines.
+
+    Returns:
+        The sub-disciplines.
+    """
+    sub_disciplines = []
+
+    for discipline in disciplines:
+        if not discipline.disciplines:
+            _add_to_sub([discipline], sub_disciplines)
+        elif recursive:
+            _add_to_sub(discipline.get_sub_disciplines(recursive=True), sub_disciplines)
+        else:
+            _add_to_sub(discipline.disciplines, sub_disciplines)
+
+    return sub_disciplines
+
+
+def _add_to_sub(
+    disciplines: Iterable[MDODiscipline],
+    sub_disciplines: MutableSequence[MDODiscipline],
+) -> None:
+    """Add the disciplines of the sub-scenarios to the sub-disciplines.
+
+    A sub-discipline is only added if it is not already in ``sub_disciplines``.
+
+    Args:
+        disciplines: The disciplines.
+        sub_disciplines: The current sub-disciplines.
+    """
+    sub_disciplines.extend(disc for disc in disciplines if disc not in sub_disciplines)

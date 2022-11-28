@@ -968,3 +968,28 @@ def test_no_cache():
 
     with pytest.raises(ValueError, match="does not have a cache"):
         disc.cache_tol = 1.0
+
+
+@pytest.mark.parametrize(
+    "recursive, expected", [(False, {"d1", "d2", "chain1"}), (True, {"d1", "d2", "d3"})]
+)
+def test_get_sub_disciplines_recursive(recursive, expected):
+    """Test the recursive option of get_sub_disciplines.
+
+    Args:
+        recursive: Whether to list sub-disciplines recursively.
+        expected: The expected disciplines.
+    """
+    d1 = MDODiscipline("d1")
+    d2 = MDODiscipline("d2")
+    d3 = MDODiscipline("d3")
+    chain1 = MDOChain([d3], "chain1")
+    chain2 = MDOChain([d2, chain1], "chain2")
+    chain3 = MDOChain([d1, chain2], "chain3")
+
+    classes = [
+        discipline.name
+        for discipline in chain3.get_sub_disciplines(recursive=recursive)
+    ]
+
+    assert set(classes) == expected

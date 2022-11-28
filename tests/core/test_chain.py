@@ -33,6 +33,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.sobieski.process.mdo_chain import SobieskiChain
 from numpy import allclose
 from numpy import ones
 
@@ -139,3 +140,22 @@ class Testmdochain(unittest.TestCase):
 
         # Check the output Jacobian
         chain.check_jacobian(threshold=1e-5)
+
+
+def test_get_sub_disciplines():
+    """Test the get_sub_disciplines method."""
+    chain = SobieskiChain()
+    assert chain.get_sub_disciplines() == chain.disciplines
+
+
+def test_get_sub_disciplines_parallel():
+    """Test the get_sub_disciplines method with an MDOParallelChain."""
+    parallel_chain = MDOParallelChain(
+        [
+            SobieskiStructure(),
+            SobieskiMission(),
+            SobieskiAerodynamics(),
+            SobieskiPropulsion(),
+        ]
+    )
+    assert parallel_chain.get_sub_disciplines() == parallel_chain.disciplines

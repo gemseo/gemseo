@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -46,7 +45,7 @@ class MDF(MDOFormulation):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,

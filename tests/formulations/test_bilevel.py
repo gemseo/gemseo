@@ -32,6 +32,10 @@ from gemseo.formulations.bilevel_test_helper import create_sobieski_bilevel_scen
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
@@ -276,3 +280,23 @@ def test_bilevel_mda_setter(dummy_bilevel_scenario):
         dummy_bilevel_scenario.formulation.mda1 = discipline
     with pytest.raises(AttributeError, match="can't set attribute"):
         dummy_bilevel_scenario.formulation.mda2 = discipline
+
+
+def test_get_sub_disciplines(sobieski_bilevel_scenario):
+    """Test the get_sub_disciplines method with the BiLevel formulation.
+
+    Args:
+        sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
+    """
+    scenario = sobieski_bilevel_scenario()
+    classes = [
+        discipline.__class__
+        for discipline in scenario.formulation.get_sub_disciplines()
+    ]
+
+    assert set(classes) == {
+        SobieskiPropulsion().__class__,
+        SobieskiMission().__class__,
+        SobieskiAerodynamics().__class__,
+        SobieskiStructure().__class__,
+    }

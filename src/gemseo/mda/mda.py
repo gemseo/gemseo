@@ -26,7 +26,6 @@ from typing import Any
 from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -54,7 +53,6 @@ class MDA(MDODiscipline):
 
     N_CPUS = cpu_count()
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "disciplines",
         "warm_start",
         "_input_couplings",
         "reset_history_each_run",
@@ -97,9 +95,6 @@ class MDA(MDODiscipline):
     max_mda_iter: int
     """The maximum iterations number for the MDA algorithm."""
 
-    disciplines: Sequence[MDODiscipline]
-    """The disciplines from which to compute the MDA."""
-
     coupling_structure: MDOCouplingStructure
     """The coupling structure to be used by the MDA."""
 
@@ -140,7 +135,7 @@ class MDA(MDODiscipline):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         max_mda_iter: int = 10,
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
@@ -185,7 +180,7 @@ class MDA(MDODiscipline):
         self.linear_solver_tolerance = linear_solver_tolerance
         self.linear_solver_options = linear_solver_options or {}
         self.max_mda_iter = max_mda_iter
-        self.disciplines = disciplines
+        self._disciplines = disciplines
         if coupling_structure is None:
             self.coupling_structure = MDOCouplingStructure(disciplines)
         else:

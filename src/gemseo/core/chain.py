@@ -46,9 +46,6 @@ LOGGER = logging.getLogger(__name__)
 class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
-    disciplines: Sequence[MDODiscipline]
-    """The chained disciplines."""
-
     AVAILABLE_MODES = [
         JacobianAssembly.REVERSE_MODE,
         JacobianAssembly.AUTO_MODE,
@@ -56,11 +53,11 @@ class MDOChain(MDODiscipline):
         MDODiscipline.COMPLEX_STEP,
     ]
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("disciplines",)
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
@@ -74,7 +71,7 @@ class MDOChain(MDODiscipline):
                 e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
         """
         super().__init__(name, grammar_type=grammar_type)
-        self.disciplines = disciplines
+        self._disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
         self._update_default_inputs()
@@ -341,7 +338,7 @@ class MDOParallelChain(MDODiscipline):
             Each discipline may itself run on several CPUs.
         """
         super().__init__(name, grammar_type=grammar_type)
-        self.disciplines = disciplines
+        self._disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
         self._update_default_inputs()
@@ -487,7 +484,7 @@ class MDOAdditiveChain(MDOParallelChain):
 
     def __init__(
         self,
-        disciplines: Iterable[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         outputs_to_sum: Iterable[str],
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,

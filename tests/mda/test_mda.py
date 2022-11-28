@@ -277,3 +277,15 @@ def test_deactivate_scaling(mda_class, scale_active):
     mda.set_residuals_scaling_options(False, scale_active)
     mda.execute()
     assert (mda.residual_history[0] == 1.0) == scale_active
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
+def test_get_sub_disciplines(mda_class, sellar_disciplines):
+    """Test the get_sub_disciplines method.
+
+    Args:
+        mda_class: The specific MDA to be tested.
+        sellar_disciplines: Fixture that returns the disciplines of the Sellar problem.
+    """
+    mda = mda_class(sellar_disciplines)
+    assert mda.get_sub_disciplines() == mda.disciplines == sellar_disciplines
