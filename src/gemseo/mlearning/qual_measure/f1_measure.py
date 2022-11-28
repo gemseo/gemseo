@@ -49,7 +49,7 @@ class F1Measure(MLErrorMeasure):
     def __init__(
         self,
         algo: MLClassificationAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = MLErrorMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:

@@ -1,0 +1,2 @@
+:class:`.MLQualityMeasure` uses ``True`` as the default value for ``fit_transformers``, which means that the :class:`.Transformer` instances attached to the assessed :class:`.MLAlgo` are re-trained on each training subset of the cross-validation partition.
+:meth:`.MLQualityMeasure.evaluate_kfolds` uses ``True`` as default value for ``randomize``, which means that the learning samples attached to the assessed :class:`.MLAlgo` are shuffled before building the cross-validation partition.

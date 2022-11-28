@@ -162,10 +162,11 @@ def test_evaluate_bootstrap(dataset):
 
 @pytest.mark.parametrize("fit", [False, True])
 def test_fit_transformers(algo_for_transformer, fit):
-    """Check that transformers are fitted with the sub-datasets."""
+    """Check that the transformers are fitted with the sub-datasets.
+
+    By default, the transformers are fitted with the sub-datasets. If False, use the
+    transformers of the assessed algorithm as they are.
+    """
     m1 = R2Measure(algo_for_transformer)
     m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
-    assert (
-        allclose(m1.evaluate("kfolds", seed=0), m2.evaluate("kfolds", seed=0))
-        is not fit
-    )
+    assert allclose(m1.evaluate("kfolds", seed=0), m2.evaluate("kfolds", seed=0)) is fit
