@@ -1,0 +1,5 @@
+The :meth:`.Scenario.set_differentiation_method` now casts automatically all float default inputs of the disciplines
+in its formulation to complex when using :attr:`~.OptimizationProblem.COMPLEX_STEP` and setting the option
+``cast_default_inputs_to_complex`` to ``True``.
+The :meth:`.Scenario.set_differentiation_method` now casts automatically the current value of the :class:`.DesignSpace`
+to complex when using :attr:`~.OptimizationProblem.COMPLEX_STEP`.

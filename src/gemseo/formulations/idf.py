@@ -62,7 +62,7 @@ class IDF(MDOFormulation):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,

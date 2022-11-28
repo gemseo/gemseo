@@ -24,7 +24,6 @@ from typing import Any
 from typing import Callable
 from typing import Iterable
 from typing import Mapping
-from typing import Sequence
 
 from numpy import ndarray
 
@@ -67,7 +66,7 @@ class BiLevel(MDOFormulation):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,

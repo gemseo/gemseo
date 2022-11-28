@@ -58,6 +58,7 @@ from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_dict
 from gemseo.core.namespaces import remove_prefix_from_list
+from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
 from gemseo.utils.multiprocessing import get_multi_processing_manager
@@ -201,6 +202,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         "_status",
         "cache",
         "data_processor",
+        "_disciplines",
         "exec_for_lin",
         "exec_time",
         "input_grammar",
@@ -274,6 +276,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         # : list of outputs that shall be null, to be considered as residuals
         self.residual_variables = {}
+
+        self._disciplines = []
 
         self.run_solves_residuals = False
 
@@ -355,6 +359,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
+
+    @property
+    def disciplines(self) -> list[MDODiscipline]:
+        """The sub-disciplines, if any."""
+        return self._disciplines
 
     @property
     def local_data(self) -> DisciplineData:
@@ -656,15 +665,26 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 cache_type,
             )
 
-    def get_sub_disciplines(
-        self,
-    ) -> list[MDODiscipline]:  # pylint: disable=R0201
-        """Return the sub-disciplines if any.
+    def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
+        """Determine the sub-disciplines.
+
+        This method lists the sub-disciplines' disciplines. It will list up to one level
+        of disciplines contained inside another one unless the ``recursive`` argument is
+        set to ``True``.
+
+        Args:
+            recursive: If ``True``, the method will look inside any discipline that has
+                other disciplines inside until it reaches a discipline without
+                sub-disciplines, in this case the return value will not include any
+                discipline that has sub-disciplines. If ``False``, the method will list
+                up to one level of disciplines contained inside another one, in this
+                case the return value may include disciplines that contain
+                sub-disciplines.
 
         Returns:
             The sub-disciplines.
         """
-        return []
+        return get_sub_disciplines(self._disciplines, recursive)
 
     def get_expected_workflow(self) -> SerialExecSequence:
         """Return the expected execution sequence.

@@ -43,6 +43,9 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import int64
 from numpy.linalg import norm
 from numpy.testing import assert_equal
 
@@ -587,3 +590,106 @@ def test_use_standardized_objective(
     assert expr in caplog.text
     assert f"Objective: {val}" in caplog.text
     assert f"obj={int(val)}" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "cast_default_inputs_to_complex, expected_dtype",
+    [(True, complex128), (False, float64)],
+)
+def test_complex_casting(
+    cast_default_inputs_to_complex, expected_dtype, mdf_scenario: MDOScenario
+):
+    """Check the automatic casting of default inputs when complex_step is selected.
+
+    Args:
+        cast_default_inputs_to_complex: Whether to cast the default inputs of the
+            scenario's disciplines to complex.
+        expected_dtype: The expected ``dtype`` after setting the differentiation method.
+        mdf_scenario: A fixture for the MDOScenario.
+    """
+    for discipline in mdf_scenario.disciplines:
+        for value in discipline.default_inputs.values():
+            assert value.dtype == float64
+
+    mdf_scenario.set_differentiation_method(
+        mdf_scenario.COMPLEX_STEP,
+        cast_default_inputs_to_complex=cast_default_inputs_to_complex,
+    )
+    for discipline in mdf_scenario.disciplines:
+        for value in discipline.default_inputs.values():
+            assert value.dtype == expected_dtype
+
+
+@pytest.fixture
+def scenario_with_non_float_variables() -> MDOScenario:
+    """Create an ``MDOScenario`` from an ``AnalyticDiscipline`` with non-float inputs.
+
+    Returns:
+        The MDOScenario.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    discipline = AnalyticDiscipline({"y": "x"})
+    discipline.input_grammar.update(["z"])
+    discipline.input_grammar.update(["w"])
+    discipline.default_inputs["z"] = "some_str"
+    discipline.default_inputs["w"] = array(1, dtype=int64)
+
+    return MDOScenario([discipline], "DisciplinaryOpt", "y", design_space)
+
+
+@pytest.mark.parametrize(
+    "cast_default_inputs_to_complex, expected_dtype",
+    [(True, complex128), (False, float64)],
+)
+def test_complex_casting_with_non_float_variables(
+    cast_default_inputs_to_complex, expected_dtype, scenario_with_non_float_variables
+):
+    """Test that the scenario will not cast non-float variables to complex.
+
+    Args:
+        cast_default_inputs_to_complex: Whether to cast the float default inputs of the
+            scenario's disciplines to complex.
+        expected_dtype: The expected ``dtype`` after setting the differentiation method.
+        scenario_with_non_float_variables: Fixture that returns an ``MDOScenario`` with
+            an AnalyticDiscipline that has integer and string inputs.
+    """
+    scenario_with_non_float_variables.set_differentiation_method(
+        scenario_with_non_float_variables.COMPLEX_STEP,
+        cast_default_inputs_to_complex=cast_default_inputs_to_complex,
+    )
+
+    assert (
+        scenario_with_non_float_variables.formulation.design_space._current_value[
+            "x"
+        ].dtype
+        == complex128
+    )
+    assert (
+        scenario_with_non_float_variables.disciplines[0].default_inputs["x"].dtype
+        == expected_dtype
+    )
+    assert isinstance(
+        scenario_with_non_float_variables.disciplines[0].default_inputs["z"], str
+    )
+    assert (
+        scenario_with_non_float_variables.disciplines[0].default_inputs["w"].dtype
+        == int64
+    )
+
+
+def test_check_disciplines():
+    """Test that an exception is raised when two disciplines compute the same output."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    discipline_1 = AnalyticDiscipline({"y": "x"}, name="foo")
+    discipline_2 = AnalyticDiscipline({"y": "x + 1"}, name="bar")
+    with pytest.raises(
+        ValueError,
+        match="Two disciplines, among "
+        f"which {discipline_2.name}, "
+        "compute the same output: {'y'}",
+    ):
+        MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)

@@ -32,6 +32,11 @@ from typing import Mapping
 from typing import Sequence
 from typing import Union
 
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import ndarray
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
@@ -77,9 +82,6 @@ class Scenario(MDODiscipline):
     that can be listed by :attr:`.Scenario.posts`.
     """
 
-    disciplines: list[MDODiscipline]
-    """The disciplines."""
-
     formulation: MDOFormulation
     """The MDO formulation."""
 
@@ -105,13 +107,12 @@ class Scenario(MDODiscipline):
         "_algo_name",
         "_algo_factory",
         "clear_history_before_run",
-        "disciplines",
         "formulation",
     )
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
@@ -142,7 +143,6 @@ class Scenario(MDODiscipline):
         """
         self.formulation = None
         self.formulation_name = None
-        self.disciplines = disciplines
         self.optimization_result = None
         self._algo_factory = None
         self._opt_hist_backup_path = None
@@ -150,12 +150,14 @@ class Scenario(MDODiscipline):
         self._algo_name = None
         self._lib = None
 
-        self._check_disciplines()
         self._init_algo_factory()
         self._form_factory = self._formulation_factory
         super().__init__(
             name=name, grammar_type=grammar_type, auto_detect_grammar_files=True
         )
+        self._disciplines = disciplines
+        self._check_disciplines()
+
         self._init_formulation(
             formulation,
             objective_name,
@@ -204,8 +206,10 @@ class Scenario(MDODiscipline):
             outs = set(disc.get_output_data_names())
             common = outs & all_outs
             if len(common) > 0:
-                msg = "Two disciplines, among which {}, compute the same output: {}"
-                raise ValueError(msg.format(disc.name, common))
+                raise ValueError(
+                    f"Two disciplines, among which {disc.name}, "
+                    f"compute the same output: {common}"
+                )
             all_outs |= outs
 
     @property
@@ -217,19 +221,42 @@ class Scenario(MDODiscipline):
         self,
         method: str | None = "user",
         step: float = 1e-6,
+        cast_default_inputs_to_complex: bool = False,
     ) -> None:
         """Set the differentiation method for the process.
 
+        When the selected method to differentiate the process is ``complex_step`` the
+        :class:`.DesignSpace` current value will be cast to ``complex128``;
+        additionally, if the option ``cast_default_inputs_to_complex`` is ``True``,
+        the default inputs of the scenario's disciplines will be cast as well provided
+        that they are ``ndarray`` with ``dtype`` ``float64``.
+
         Args:
             method: The method to use to differentiate the process,
-                either "user", "finite_differences", "complex_step" or "no_derivatives",
-                which is equivalent to ``None``.
+                either ``"user"``, ``"finite_differences"``, ``"complex_step"`` or
+                ``"no_derivatives"``, which is equivalent to ``None``.
             step: The finite difference step.
+            cast_default_inputs_to_complex: Whether to cast all float default inputs
+                of the scenario's disciplines if the selected method is
+                ``"complex_step"``.
         """
         if method is None:
-            method = "no_derivatives"
+            method = OptimizationProblem.NO_DERIVATIVES
+
+        elif method == OptimizationProblem.COMPLEX_STEP:
+            self.formulation.design_space.to_complex()
+            if cast_default_inputs_to_complex:
+                self.__cast_default_inputs_to_complex()
+
         self.formulation.opt_problem.differentiation_method = method
         self.formulation.opt_problem.fd_step = step
+
+    def __cast_default_inputs_to_complex(self) -> None:
+        """Cast the float default inputs of all disciplines to complex."""
+        for discipline in self.formulation.get_sub_disciplines(recursive=True):
+            for key, value in discipline.default_inputs.items():
+                if isinstance(value, ndarray) and value.dtype == float64:
+                    discipline.default_inputs[key] = array(value, dtype=complex128)
 
     def add_constraint(
         self,
