@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -253,10 +254,16 @@ def test_plot_save(
             file_name=file_name,
             file_extension=file_extension,
         )
-        if isinstance(expected, Path):
-            assert mock_method.call_args.args[2] == expected
+
+        if sys.version_info[:2] == (3, 7):
+            args = mock_method.call_args[0]
         else:
-            assert mock_method.call_args.args[2] == Path(tmp_wd / expected)
+            args = mock_method.call_args.args
+
+        if isinstance(expected, Path):
+            assert args[2] == expected
+        else:
+            assert args[2] == Path(tmp_wd / expected)
 
 
 @pytest.fixture
