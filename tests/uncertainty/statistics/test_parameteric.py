@@ -26,6 +26,7 @@ from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
+from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import inf
 from numpy import vstack
@@ -138,6 +139,14 @@ def test_distfitstats_plot(random_sample, tmp_wd):
         array, tested_distributions, fitting_criterion="Kolmogorov"
     )
     stats.plot_criteria("X_1", save=True, show=False)
+
+
+@pytest.mark.parametrize("baseline_images", [(["fitting.png"])])
+@image_comparison(None)
+def test_plot_criteria(baseline_images, random_sample, pyplot_close_all):
+    dataset, tested_distributions, _ = random_sample
+    stats = ParametricStatistics(dataset, ["Exponential", "Normal", "Uniform"])
+    stats.plot_criteria("X_0", show=False)
 
 
 def test_distfitstats_tolint(random_sample):
