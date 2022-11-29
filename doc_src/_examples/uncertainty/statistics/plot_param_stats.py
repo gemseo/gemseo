@@ -48,7 +48,7 @@ from numpy.random import weibull
 
 configure_logger()
 
-###############################################################################
+# %%
 # Create synthetic data
 # ---------------------
 
@@ -67,7 +67,7 @@ variables = ["x_0", "x_1", "x_2", "x_3"]
 
 print(data)
 
-###############################################################################
+# %%
 # Create a :class:`.ParametricStatistics` object
 # ----------------------------------------------
 # We create a :class:`.ParametricStatistics` object
@@ -75,7 +75,7 @@ print(data)
 
 dataset = create_dataset("Dataset", data, variables)
 
-###############################################################################
+# %%
 # and a list of names of candidate probability distributions:
 # exponential, normal and uniform distributions
 # (see :meth:`.ParametricStatistics.get_available_distributions`).
@@ -90,7 +90,7 @@ analysis = create_statistics(
 )
 print(analysis)
 
-###############################################################################
+# %%
 # Print the fitting matrix
 # ------------------------
 # At this step,
@@ -103,26 +103,31 @@ print(analysis)
 # the goodness-of-fit measures are the p-values.
 print(analysis.get_fitting_matrix())
 
-###############################################################################
+# %%
+# One can also plot the tested distributions over an histogram of the data
+# as well as the corresponding values of the Kolmogorov fitting criterion:
+analysis.plot_criteria("x_0")
+
+# %%
 # Get statistics
 # --------------
 # From this :class:`.ParametricStatistics` instance,
 # we can easily get statistics for the different variables
 # based on the selected distributions.
 
-###############################################################################
+# %%
 # Get minimum
 # ~~~~~~~~~~~
 # Here is the minimum value for the different variables:
 print(analysis.compute_minimum())
 
-###############################################################################
+# %%
 # Get maximum
 # ~~~~~~~~~~~
 # Here is the minimum value for the different variables:
 print(analysis.compute_maximum())
 
-###############################################################################
+# %%
 # Get range
 # ~~~~~~~~~
 # Here is the range,
@@ -130,56 +135,56 @@ print(analysis.compute_maximum())
 # for the different variables:
 print(analysis.compute_range())
 
-###############################################################################
+# %%
 # Get mean
 # ~~~~~~~~
 # Here is the mean value for the different variables:
 print(analysis.compute_mean())
 
-###############################################################################
+# %%
 # Get standard deviation
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Here is the standard deviation for the different variables:
 print(analysis.compute_standard_deviation())
 
-###############################################################################
+# %%
 # Get variance
 # ~~~~~~~~~~~~
 # Here is the variance for the different variables:
 print(analysis.compute_variance())
 
-###############################################################################
+# %%
 # Get quantile
 # ~~~~~~~~~~~~
 # Here is the quantile with level 80% for the different variables:
 print(analysis.compute_quantile(0.8))
 
-###############################################################################
+# %%
 # Get quartile
 # ~~~~~~~~~~~~
 # Here is the second quartile for the different variables:
 print(analysis.compute_quartile(2))
 
-###############################################################################
+# %%
 # Get percentile
 # ~~~~~~~~~~~~~~
 # Here is the 50th percentile for the different variables:
 print(analysis.compute_percentile(50))
 
-###############################################################################
+# %%
 # Get median
 # ~~~~~~~~~~
 # Here is the median for the different variables:
 print(analysis.compute_median())
 
-###############################################################################
+# %%
 # Get tolerance interval
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Here is the two-sided tolerance interval with a coverage level equal to 50%
 # with a confidence level of 95% for the different variables:
 print(analysis.compute_tolerance_interval(0.5))
 
-###############################################################################
+# %%
 # Get B-value
 # ~~~~~~~~~~~
 # Here is the B-value for the different variables, which is a left-sided

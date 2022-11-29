@@ -38,6 +38,7 @@ from scipy.sparse.linalg import LinearOperator
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 
 def none_factory():
@@ -863,19 +864,15 @@ class JacobianAssembly:
             list(inputs_positions.values()), list(inputs_positions.keys()), rotation=90
         )
 
-        filename = None
         if save:
             if filepath is None:
                 filename = "coupled_jacobian.pdf"
             else:
-                filename = "coupled_jacobian_" + filepath + ".pdf"
-            plt.savefig(filename)
-
-        if show:
-            plt.show()
+                filename = f"coupled_jacobian_{filepath}.pdf"
         else:
-            plt.close()
+            filename = None
 
+        save_show_figure(fig, show, filename)
         return filename
 
 
