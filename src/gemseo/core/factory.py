@@ -380,7 +380,10 @@ class Factory(Multiton):
         """
         default_option_values = self.get_default_options_values(name)
         option_descriptions = {
-            option_name: option_description
+            # The parsed docstrings contain carriage returns
+            # in the descriptions of the arguments for a better HTML rendering
+            # but the JSON grammars do not contain this special character.
+            option_name: option_description.replace("\n", " ")
             for option_name, option_description in self.get_options_doc(name).items()
             if option_name in default_option_values
         }

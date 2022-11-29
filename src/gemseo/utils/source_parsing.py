@@ -106,9 +106,7 @@ RE_PATTERN_ARGS = re.compile(
 )
 
 
-def parse_google(
-    docstring: str,
-) -> dict[str, str]:
+def parse_google(docstring: str) -> dict[str, str]:
     """Parse a Google docstring.
 
     Args:
@@ -129,7 +127,9 @@ def parse_google(
     parsed_doc = {}
 
     for name, desc in RE_PATTERN_ARGS.findall(args_section):
-        # remove multiple blank spaces and carriage returns
-        parsed_doc[name] = re.sub(r"\s+", " ", desc).strip()
+        # remove multiple blank spaces
+        parsed_doc[name] = re.sub(
+            r"\n ", "\n", re.sub(r"[\r\t\f\v ]+", " ", desc).strip()
+        )
 
     return parsed_doc

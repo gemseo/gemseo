@@ -109,24 +109,22 @@ class RBFRegressor(MLRegressionAlgo):
     ) -> None:
         r"""
         Args:
-            function: The radial basis function taking a radius ``r`` as input,
+            function: The radial basis function taking a radius :math:`r` as input,
                 representing a distance between two points.
                 If it is a string,
                 then it must be one of the following:
 
-                .. code::
-
-                    'multiquadric': sqrt((r/self.epsilon)**2 + 1)
-                    'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
-                    'gaussian': exp(-(r/self.epsilon)**2)
-                    'linear': r
-                    'cubic': r**3
-                    'quintic': r**5
-                    'thin_plate': r**2 * log(r)
+                - ``"multiquadric"`` for :math:`\sqrt{(r/\epsilon)^2 + 1}`,
+                - ``"inverse"`` for :math:`1/\sqrt{(r/\epsilon)^2 + 1}`,
+                - ``"gaussian"`` for :math:`\exp(-(r/\epsilon)^2)`,
+                - ``"linear"`` for :math:`r`,
+                - ``"cubic"`` for :math:`r^3`,
+                - ``"quintic"`` for :math:`r^5`,
+                - ``"thin_plate"`` for :math:`r^2\log(r)`.
 
                 If it is a callable,
-                then it must take two arguments ``(self, r)``,
-                e.g. ``lambda self, r: return sqrt((r/self.epsilon)**2 + 1)``
+                then it must take the two arguments ``self`` and ``r`` as inputs,
+                e.g. ``lambda self, r: sqrt((r/self.epsilon)**2 + 1)``
                 for the multiquadric function.
                 The epsilon parameter will be available as ``self.epsilon``.
                 Other keyword arguments passed in will be available as well.
