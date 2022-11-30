@@ -23,6 +23,7 @@ import h5py
 import pytest
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.utils.string_tools import MultiLineString
+from numpy import array
 from numpy import ones
 
 
@@ -88,3 +89,17 @@ def test_str(tmp_wd):
     expected.add("HDF file path: dummy.h5")
     expected.add("HDF node path: Dummy")
     assert str(cache) == str(expected)
+
+
+def test_cache_array_str(tmp_wd):
+    """Test a cache with arrays of strings.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
+    cache = create_cache()
+    inputs = {"i": array(["some_string"])}
+    outputs = {"o": ones(1)}
+    cache.cache_outputs(inputs, outputs)
+    assert cache.last_entry[0] == inputs
+    assert cache.last_entry[1] == outputs

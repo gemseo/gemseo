@@ -123,7 +123,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 value = data.get(name)
                 if value is not None:
                     if value.dtype.type is unicode_:
-                        group.create_dataset(name, data=data.astype("bytes"))
+                        group.create_dataset(name, data=value.astype("bytes"))
                     else:
                         group.create_dataset(name, data=to_real(value))
 
