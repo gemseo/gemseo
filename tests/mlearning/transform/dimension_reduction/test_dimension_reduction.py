@@ -19,26 +19,16 @@
 """Test dimension reduction transformer module."""
 from __future__ import annotations
 
-import pytest
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from numpy import arange
+from gemseo.utils.pytest_conftest import concretize_classes
 
 
 def test_constructor():
     """Test constructor."""
-    dimred = DimensionReduction()
-    assert dimred.name == "DimensionReduction"
+    with concretize_classes(DimensionReduction):
+        transformer = DimensionReduction(n_components=3)
 
-
-def test_not_implemented():
-    """Test not implemented methods."""
-    data = arange(50).reshape((10, 5))
-    dimred = DimensionReduction()
-    with pytest.raises(NotImplementedError):
-        dimred.fit(data)
-    with pytest.raises(NotImplementedError):
-        dimred.transform(data)
-    with pytest.raises(NotImplementedError):
-        dimred.inverse_transform(data)
+    assert transformer.name == "DimensionReduction"
+    assert transformer.n_components == 3

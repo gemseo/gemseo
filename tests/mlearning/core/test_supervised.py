@@ -309,7 +309,7 @@ def test_fit_transformers_option(dataset, name, fit_transformers):
 )
 def test_compute_transformed_variable_sizes(dataset, name, expected):
     """Check that the compute_transformed_variable_sizes method works."""
-    with concretize_classes(MLSupervisedAlgo):
+    with concretize_classes(MLSupervisedAlgo, DimensionReduction):
         algo = MLSupervisedAlgo(
             dataset, transformer={name: DimensionReduction(n_components=3)}
         )

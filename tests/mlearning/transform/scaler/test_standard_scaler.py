@@ -23,9 +23,11 @@ import pytest
 from gemseo.mlearning.transform.scaler.standard_scaler import StandardScaler
 from numpy import allclose
 from numpy import arange
+from numpy import array
 from numpy import mean as npmean
 from numpy import ndarray
 from numpy import std as npstd
+from numpy.testing import assert_almost_equal
 
 
 @pytest.fixture
@@ -76,3 +78,27 @@ def test_inverse_transform(data):
     other_unscaled_data = another_scaler.inverse_transform(data)
     assert allclose(unscaled_data, mean + std * data)
     assert allclose(other_unscaled_data, mean + std * data)
+
+
+@pytest.mark.parametrize(
+    ["data", "transformed_data"],
+    [
+        (
+            array([[1.0, 2.0, 6.0], [2.0, 2.0, 2.0]]),
+            array([[-1.0, 0.0, 1.0], [1.0, 0.0, -1.0]]),
+        ),
+        (
+            array([[1.0, 2.0, 6.0], [2.0, 5.0, 2.0]]),
+            array([[-1.0, -1.0, 1.0], [1.0, 1.0, -1.0]]),
+        ),
+        (array([[2.0], [4.0]]), array([[-1.0], [1.0]])),
+        (array([[1.0], [1.0]]), array([[0.0], [0.0]])),
+        (array([1.0, 1.0]), array([0.0, 0.0])),
+        (array([2.0, 4.0]), array([-1.0, 1.0])),
+    ],
+)
+def test_constant(data, transformed_data):
+    """Check scaling with a constant feature."""
+    transformer = StandardScaler(data)
+    assert_almost_equal(transformer.fit_transform(data), transformed_data)
+    assert_almost_equal(transformer.inverse_transform(transformed_data), data)

@@ -17,29 +17,36 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Scaling a variable with a statistical linear transformation.
+r"""Scaling a variable with a statistical linear transformation.
 
 The :class:`.StandardScaler` class implements the Standard scaling method
 applying to some parameter :math:`z`:
 
 .. math::
 
-    \\bar{z} := \\text{offset} + \\text{coefficient}\\times z
-    = \\frac{z-\\text{mean}(z)}{\\text{std}(z)}
+    \bar{z} := \text{offset} + \text{coefficient}\times z
+    = \frac{z-\text{mean}(z)}{\text{std}(z)}
 
-where :math:`\\text{offset}=-\\text{mean}(z)/\\text{std}(z)` and
-:math:`\\text{coefficient}=1/\\text{std}(z)`.
+where :math:`\text{offset}=-\text{mean}(z)/\text{std}(z)` and
+:math:`\text{coefficient}=1/\text{std}(z)`.
 
 In this standard scaling method,
 the scaling operation linearly transforms the original variable math:`z`
 such that in the scaled space,
 the original data have zero mean and unit standard deviation.
+
+Warnings:
+
+    When :math:`\text{std}(z)=0`,
+    we use :math:`\bar{z}=\frac{z}{\text{mean}(z)}-1`.
 """
 from __future__ import annotations
 
 from numpy import mean
+from numpy import nan_to_num
 from numpy import ndarray
 from numpy import std
+from numpy import where
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
@@ -62,12 +69,8 @@ class StandardScaler(Scaler):
         """
         super().__init__(name, offset, coefficient)
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
-        average = mean(data, 0)
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         std_ = std(data, 0)
-        self.offset = -average / std_
-        self.coefficient = 1.0 / std_
+        is_constant = std_ == 0
+        self.coefficient = where(is_constant, nan_to_num(1 / data[0]), 1.0 / std_)
+        self.offset = where(is_constant, -1.0, -mean(data, 0) / std_)

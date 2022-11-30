@@ -55,36 +55,20 @@ class PCA(DimensionReduction):
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = SKLPCA(n_components, **parameters)
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         self.algo.fit(data)
         self.parameters["n_components"] = self.algo.n_components_
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:
         return self.algo.transform(data)
 
-    def inverse_transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:
         return self.algo.inverse_transform(data)
 
-    def compute_jacobian(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def compute_jacobian(self, data: ndarray) -> ndarray:
         return self.algo.components_
 
-    def compute_jacobian_inverse(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
         return self.algo.components_.T
 
     @property
