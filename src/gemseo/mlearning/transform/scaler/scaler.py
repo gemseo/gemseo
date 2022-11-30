@@ -45,12 +45,14 @@ from __future__ import annotations
 
 import logging
 
+from numpy import atleast_1d
 from numpy import diag
-from numpy import eye
+from numpy import full
 from numpy import ndarray
 
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,11 +60,14 @@ LOGGER = logging.getLogger(__name__)
 class Scaler(Transformer):
     """Data scaler."""
 
+    __OFFSET: Final[str] = "offset"
+    __COEFFICIENT: Final[str] = "coefficient"
+
     def __init__(
         self,
         name: str = "Scaler",
-        offset: float = 0.0,
-        coefficient: float = 1.0,
+        offset: float | ndarray = 0.0,
+        coefficient: float | ndarray = 1.0,
     ) -> None:
         """
         Args:
@@ -70,37 +75,44 @@ class Scaler(Transformer):
             offset: The offset of the linear transformation.
             coefficient: The coefficient of the linear transformation.
         """
-        super().__init__(name, offset=offset, coefficient=coefficient)
+        super().__init__(name)
+        self.offset = offset
+        self.coefficient = coefficient
 
     @property
-    def offset(self) -> float:
+    def offset(self) -> ndarray:
         """The scaling offset."""
-        return self.parameters["offset"]
+        return self.parameters[self.__OFFSET]
 
     @property
-    def coefficient(self) -> float:
+    def coefficient(self) -> ndarray:
         """The scaling coefficient."""
-        return self.parameters["coefficient"]
+        return self.parameters[self.__COEFFICIENT]
 
     @offset.setter
-    def offset(
-        self,
-        value: float,
-    ) -> None:
-        self.parameters["offset"] = value
+    def offset(self, value: float | ndarray) -> None:
+        self.parameters[self.__OFFSET] = atleast_1d(value)
 
     @coefficient.setter
-    def coefficient(
-        self,
-        value: float,
-    ) -> None:
-        self.parameters["coefficient"] = value
+    def coefficient(self, value: float | ndarray) -> None:
+        self.parameters[self.__COEFFICIENT] = atleast_1d(value)
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+        if data.ndim == 1:
+            data = data[:, None]
+
+        super().fit(data, *args)
+
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+        n_features = data.shape[1]
+        coefficient = self.parameters[self.__COEFFICIENT]
+        if coefficient.size == 1 and n_features > 1:
+            self.parameters[self.__COEFFICIENT] = full(n_features, coefficient[0])
+
+        offset = self.parameters[self.__OFFSET]
+        if offset.size == 1 and n_features > 1:
+            self.parameters[self.__OFFSET] = full(n_features, offset[0])
+
         LOGGER.warning(
             (
                 "The %s.fit() function does nothing; "
@@ -111,32 +123,14 @@ class Scaler(Transformer):
             self.__class__.__name__,
         )
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:
         return self.offset + self.coefficient * data
 
-    def inverse_transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:
         return (data - self.offset) / self.coefficient
 
-    def compute_jacobian(
-        self,
-        data: ndarray,
-    ) -> ndarray:
-        if not isinstance(self.coefficient, ndarray):
-            return self.coefficient * eye(data.shape[-1])
-        else:
-            return diag(self.coefficient)
+    def compute_jacobian(self, data: ndarray) -> ndarray:
+        return diag(self.coefficient)
 
-    def compute_jacobian_inverse(
-        self,
-        data: ndarray,
-    ) -> ndarray:
-        if not isinstance(self.coefficient, ndarray):
-            return 1 / self.coefficient * eye(data.shape[-1])
-        else:
-            return diag(1 / self.coefficient)
+    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
+        return diag(1 / self.coefficient)

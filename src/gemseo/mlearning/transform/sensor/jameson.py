@@ -52,11 +52,7 @@ class JamesonSensor(Transformer):
         self.removing_part = removing_part
         self.dimension = dimension
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         self.threshold *= amax(data)
 
     def transform(
@@ -66,10 +62,11 @@ class JamesonSensor(Transformer):
         mesh_size = data.shape[1] - 2
         min_mesh_size = int(mesh_size * self.removing_part)
         max_mesh_size = int(mesh_size * (1 - self.removing_part))
-        norm = np_abs(data[:, :-2])
-        norm += 2 * np_abs(data[:, 1:-1])
-        norm += np_abs(data[:, 2:])
-        norm = norm + self.threshold
+        norm = (
+            np_abs(data[:, :-2])
+            + 2 * np_abs(data[:, 1:-1])
+            + np_abs(data[:, 2:])
+            + self.threshold
+        )
         result = abs(data[:, :-2] - 2 * data[:, 1:-1] + data[:, 2:]) / norm
-        result = result[:, min_mesh_size:max_mesh_size]
-        return result
+        return result[:, min_mesh_size:max_mesh_size]

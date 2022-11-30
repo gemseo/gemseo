@@ -31,41 +31,48 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
+from typing import ClassVar
 from typing import NoReturn
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.factory import Factory
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
+ParameterType = Union[bool, int, float, ndarray, str, None]
 TransformerFitOptionType = Union[float, int, str]
 
 
-class Transformer(metaclass=GoogleDocstringInheritanceMeta):
-    """Transformer baseclass."""
+class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
+    """A data transformer fitted from some samples."""
 
     name: str
     """The name of the transformer."""
 
-    parameters: str
-    """The parameters of the transformer."""
+    CROSSED: ClassVar[bool] = False
+    """Whether the :meth:`.fit` method requires two data arrays."""
 
-    CROSSED = False
-
-    def __init__(
-        self,
-        name: str = "Transformer",
-        **parameters: bool | int | float | ndarray | str | None,
-    ) -> None:
+    def __init__(self, name: str = "Transformer", **parameters: ParameterType) -> None:
         """
         Args:
             name: A name for this transformer.
             **parameters: The parameters of the transformer.
         """
         self.name = name
-        self.parameters = parameters
-        self.is_fitted = False
+        self.__parameters = parameters
+        self.__is_fitted = False
+
+    @property
+    def is_fitted(self) -> bool:
+        """Whether the transformer has been fitted from some data."""
+        return self.__is_fitted
+
+    @property
+    def parameters(self) -> dict[str, ParameterType]:
+        """The parameters of the transformer."""
+        return self.__parameters
 
     def duplicate(self) -> Transformer:
         """Duplicate the current object.
@@ -75,35 +82,25 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.__class__(self.name, **self.parameters)
 
-    def fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> NoReturn:
+    def fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         """Fit the transformer to the data.
 
         Args:
             data: The data to be fitted.
         """
         self._fit(data, *args)
-        self.is_fitted = True
+        self.__is_fitted = True
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> NoReturn:
+    @abstractmethod
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         """Fit the transformer to the data.
 
         Args:
             data: The data to be fitted.
         """
-        raise NotImplementedError
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> NoReturn:
+    @abstractmethod
+    def transform(self, data: ndarray) -> ndarray:
         """Transform the data.
 
         Args:
@@ -112,12 +109,8 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The transformed data.
         """
-        raise NotImplementedError
 
-    def inverse_transform(
-        self,
-        data: ndarray,
-    ) -> NoReturn:
+    def inverse_transform(self, data: ndarray) -> NoReturn:
         """Perform an inverse transform on the data.
 
         Args:
@@ -128,11 +121,7 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def fit_transform(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> ndarray:
+    def fit_transform(self, data: ndarray, *args: TransformerFitOptionType) -> ndarray:
         """Fit the transformer to the data and transform the data.
 
         Args:
@@ -144,10 +133,7 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         self.fit(data, *args)
         return self.transform(data)
 
-    def compute_jacobian(
-        self,
-        data: ndarray,
-    ) -> NoReturn:
+    def compute_jacobian(self, data: ndarray) -> NoReturn:
         """Compute Jacobian of transformer.transform().
 
         Args:
@@ -158,10 +144,7 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def compute_jacobian_inverse(
-        self,
-        data: ndarray,
-    ) -> NoReturn:
+    def compute_jacobian_inverse(self, data: ndarray) -> NoReturn:
         """Compute Jacobian of the transformer.inverse_transform().
 
         Args:

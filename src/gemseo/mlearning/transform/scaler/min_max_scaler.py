@@ -17,26 +17,33 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Scaling a variable with a geometrical linear transformation.
+r"""Scaling a variable with a geometrical linear transformation.
 
 The :class:`.MinMaxScaler` class implements the MinMax scaling method
 applying to some parameter :math:`z`:
 
 .. math::
 
-    \\bar{z} := \\text{offset} + \\text{coefficient}\\times z
-    = \\frac{z-\\text{min}(z)}{(\\text{max}(z)-\\text{min}(z))},
+    \bar{z} := \text{offset} + \text{coefficient}\times z
+    = \frac{z-\text{min}(z)}{(\text{max}(z)-\text{min}(z))},
 
-where :math:`\\text{offset}=-\\text{min}(z)/(\\text{max}(z)-\\text{min}(z))`
-and :math:`\\text{coefficient}=1/(\\text{max}(z)-\\text{min}(z))`.
+where :math:`\text{offset}=-\text{min}(z)/(\text{max}(z)-\text{min}(z))`
+and :math:`\text{coefficient}=1/(\text{max}(z)-\text{min}(z))`.
 
 In the MinMax scaling method,
 the scaling operation linearly transforms the original variable :math:`z`
 such that the minimum of the original data corresponds to 0 and the maximum to 1.
+
+Warnings:
+
+    When :math:`\text{min}(z)=\text{max}(z)`,
+    we use :math:`\bar{z}=\frac{z}{\text{min}(z)}-0.5`.
 """
 from __future__ import annotations
 
+from numpy import nan_to_num
 from numpy import ndarray
+from numpy import where
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
@@ -59,12 +66,9 @@ class MinMaxScaler(Scaler):
         """
         super().__init__(name, offset, coefficient)
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         l_b = data.min(0)
-        u_b = data.max(0)
-        self.offset = -l_b / (u_b - l_b)
-        self.coefficient = 1 / (u_b - l_b)
+        delta = data.max(0) - l_b
+        is_constant = delta == 0
+        self.coefficient = where(is_constant, nan_to_num(1 / l_b), 1 / delta)
+        self.offset = where(is_constant, -0.5, -l_b / delta)
