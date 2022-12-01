@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 from unittest import mock
 
@@ -235,4 +236,10 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
             )
             == expected
         )
-        assert mock_method.call_args.args[2] == expected
+
+        if sys.version_info[:2] == (3, 7):
+            args = mock_method.call_args[0]
+        else:
+            args = mock_method.call_args.args
+
+        assert args[2] == expected
