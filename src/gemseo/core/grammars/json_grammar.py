@@ -27,6 +27,7 @@ from numbers import Number
 from pathlib import Path
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import Iterator
@@ -79,6 +80,8 @@ class JSONGrammar(BaseGrammar):
         "float": Number,
     }
     """The binding from JSON types to Python types."""
+
+    __NUMERIC_TYPE_NAMES: ClassVar[tuple[str]] = ("number", "float", "integer")
 
     def __init__(
         self,
@@ -222,9 +225,40 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_object(self.__cast_array_to_list(data))
         self.__init_dependencies()
 
-    def is_array(self, name: str) -> bool:
+    def is_array(
+        self,
+        name: str,
+        numeric_only: bool = False,
+    ) -> bool:
         self._check_name(name)
-        return "array" == self.schema["properties"][name].get("type")
+
+        prop = self.schema.get("properties").get(name)
+        if prop.get("type") != "array":
+            return False
+        if numeric_only:
+            return self.__is_array_of_numeric_value(prop)
+        return True
+
+    @staticmethod
+    def __is_array_of_numeric_value(prop: Any) -> bool:
+        """Whether the array (which can be nested) contains numeric values at the end.
+
+        This method is recursive in order to be able to take into account nested arrays.
+
+        Args:
+            prop: The grammar property.
+
+        Returns:
+            Whether the property contains numeric values at the end.
+        """
+        sub_prop = prop.get("items")
+        # If the sub_prob is not defined, we assume that it is a numeric value
+        if sub_prop is None:
+            return True
+        sub_prop_type = sub_prop.get("type")
+        if sub_prop_type == "array":
+            return JSONGrammar.__is_array_of_numeric_value(sub_prop)
+        return sub_prop.get("type") in JSONGrammar.__NUMERIC_TYPE_NAMES
 
     def restrict_to(
         self,

@@ -279,6 +279,26 @@ def test_deactivate_scaling(mda_class, scale_active):
     assert (mda.residual_history[0] == 1.0) == scale_active
 
 
+def test_not_numeric_couplings():
+    """Test that an exception is raised if strings are used as couplings in MDA."""
+    sellar1 = Sellar1()
+    # Tweak the ouput grammar and set y_1 as an array of string
+    prop = sellar1.output_grammar.schema.get("properties").get("y_1")
+    sub_prop = prop.get("items")
+    sub_prop["type"] = "string"
+
+    # Tweak the input grammar and set y_1 as an array of string
+    sellar2 = Sellar2()
+    prop = sellar2.input_grammar.schema.get("properties").get("y_1")
+    sub_prop = prop.get("items")
+    sub_prop["type"] = "string"
+
+    with pytest.raises(
+        TypeError, match=r"The coupling variables \['y\_1'\] must be of type array\."
+    ):
+        MDA([sellar1, sellar2])
+
+
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
 def test_get_sub_disciplines(mda_class, sellar_disciplines):
     """Test the get_sub_disciplines method.

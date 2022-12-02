@@ -219,13 +219,17 @@ class SimpleGrammar(BaseGrammar):
     ) -> None:
         self.update({name: type(value) for name, value in data.items()})
 
-    def is_array(self, name: str) -> bool:
+    def is_array(
+        self,
+        name: str,
+        numeric_only: bool = False,
+    ) -> bool:
         self._check_name(name)
         element_type = self.__names_to_types[name]
         if element_type is None:
             return False
-        # TODO: why only ndarray here vs array in json grammar?
         return issubclass(element_type, ndarray)
+        # TODO: why only ndarray here vs array in json grammar?
 
     def restrict_to(
         self,
