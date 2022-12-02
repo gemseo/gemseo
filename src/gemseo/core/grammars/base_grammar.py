@@ -122,14 +122,20 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         """
 
     @abc.abstractmethod
-    def is_array(self, name: str) -> bool:
-        """Check whether an element type shall be an array.
+    def is_array(
+        self,
+        name: str,
+        numeric_only: bool = False,
+    ) -> bool:
+        """Check if an element is an array.
 
         Args:
             name: The name of the element.
+            numeric_only: Whether to check if the array elements are numbers.
 
         Returns:
-            Whether the element type shall be an array.
+            Whether the element is an array. If `check_items_number` is set to `True`,
+            then return whether the element is an array and its items are numbers.
 
         Raises:
             KeyError: If the element is not in the grammar.

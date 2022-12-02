@@ -644,3 +644,29 @@ def test_update_from_error():
         TypeError, match="A JSONGrammar cannot be updated from a grammar"
     ):
         g.update(g2)
+
+
+@pytest.mark.parametrize(
+    "var, check_is_numeric_array, expected",
+    [
+        pytest.param(
+            "IDONTEXIST",
+            False,
+            None,
+            marks=pytest.mark.xfail(raises=KeyError, math="is not in the grammar"),
+        ),
+        ("not_array_var", False, False),
+        ("array_number_var", False, True),
+        ("array_str_var", False, True),
+        ("not_array_var", True, False),
+        ("array_number_var", True, True),
+        ("array_wo_type", True, True),
+        ("array_str_var", True, False),
+        ("array_array_number_var", True, True),
+        ("array_array_str_var", True, False),
+    ],
+)
+def test_is_type_array_errors(var, check_is_numeric_array, expected):
+    fpath = DATA_PATH / "grammar_test6.json"
+    gram = JSONGrammar(name="toto", schema_path=fpath)
+    assert gram.is_array(var, check_is_numeric_array) == expected

@@ -387,7 +387,9 @@ class MDA(MDODiscipline):
         for discipline in self.disciplines:
             for grammar in (discipline.input_grammar, discipline.output_grammar):
                 for coupling in self.all_couplings:
-                    if coupling in grammar and not grammar.is_array(coupling):
+                    if coupling in grammar and not grammar.is_array(
+                        coupling, numeric_only=True
+                    ):
                         not_arrays.append(coupling)
 
         if not_arrays:
