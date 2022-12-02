@@ -136,7 +136,8 @@ class LagrangeMultipliers:
 
         # Check feasibility
         self._check_feasibility(x_vect)
-
+        # get jacobian of objective
+        rhs = -self.get_objective_jacobian(x_vect).T
         # get jacobian of all active constraints, and an
         # ordered list of their name
         self.__compute_constraint_violation(x_vect)
@@ -144,6 +145,7 @@ class LagrangeMultipliers:
         if jac_act is None:
             # There is no active constraint
             multipliers = []
+            self.kkt_residual = norm(rhs)
             self._store_multipliers(multipliers)
             return self.lagrange_multipliers
         lhs = jac_act.T
@@ -153,9 +155,6 @@ class LagrangeMultipliers:
         LOGGER.info("Rank of jacobian = %s", str(rank))
         if act_constr_nb > rank:
             LOGGER.warning("Number of active constraints > rank !")
-
-        # get jacobian of objective
-        rhs = -self.get_objective_jacobian(x_vect).T
 
         # Compute the Lagrange multipliers as a feasible solution of a
         # linear optimization problem
