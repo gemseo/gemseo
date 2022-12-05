@@ -1,0 +1,1 @@
+:class:`.OptProblem.get_violation_criteria` is inf for constraints with NaN values.

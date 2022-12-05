@@ -1699,3 +1699,38 @@ def test_avoid_complex_in_dataset():
     dataset = problem.export_to_dataset(export_gradients=True)
     for name in ["@f", "f", "x"]:
         assert dataset[name].dtype.kind == "f"
+
+
+@pytest.mark.parametrize("cstr_type", ["eq", "ineq"])
+def test_nan_get_violation_criteria(cstr_type):
+    """Test get_violation_criteria in the presence of NaN constraints."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.ineq_tolerance = 1e-3
+    problem.eq_tolerance = 1e-3
+    problem.objective = MDOFunction(lambda x: x, "obj")
+    problem.add_constraint(MDOFunction(lambda x: x, "cstr"), cstr_type=cstr_type)
+
+    x_vect1 = array([1.0])
+    problem.database.store(x_vect1, {"obj": array([1]), "cstr": array([float("NaN")])})
+
+    is_pt_feasible, f_violation = problem.get_violation_criteria(x_vect1)
+    assert not is_pt_feasible
+    assert f_violation == float("inf")
+
+    x_vect2 = array([2.0])
+    problem.database.store(x_vect2, {"obj": array([1.0]), "cstr": array([0.0])})
+    is_pt_feasible2, f_violation2 = problem.get_violation_criteria(x_vect2)
+    assert is_pt_feasible2
+    assert f_violation2 == 0.0
+
+    x_vect3 = array([3.0])
+    problem.database.store(array([3.0]), {"obj": array([0.0]), "cstr": array([2.0])})
+    is_pt_feasible3, f_violation3 = problem.get_violation_criteria(x_vect3)
+    assert not is_pt_feasible3
+    assert f_violation3 == (2.0 - 1e-3) ** 2
+
+    opt = problem.get_optimum()
+    assert opt[0] == 1.0
