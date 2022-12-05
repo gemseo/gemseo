@@ -77,6 +77,7 @@ class NormFunction(MDOFunction):
             args=orig_func.args,
             dim=orig_func.dim,
             outvars=orig_func.outvars,
+            special_repr=orig_func.special_repr,
         )
 
     def _func_to_wrap(
