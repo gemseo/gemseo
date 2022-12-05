@@ -83,6 +83,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import inf
 from numpy import insert
+from numpy import isnan
 from numpy import issubdtype
 from numpy import multiply
 from numpy import nan
@@ -1668,6 +1669,8 @@ class OptimizationProblem:
             if eval_cstr is None:
                 break
             if not self._satisfied_constraint(constraint.f_type, eval_cstr):
+                if isnan(eval_cstr).any():
+                    return False, inf
                 is_pt_feasible = False
                 if constraint.f_type == MDOFunction.TYPE_INEQ:
                     if isinstance(eval_cstr, ndarray):
