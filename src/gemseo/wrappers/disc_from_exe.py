@@ -257,7 +257,7 @@ class DiscFromExe(MDODiscipline):
     ) -> None:
         if value not in FoldersIter:
             raise ValueError(f"{value} is not a valid FoldersIter value.")
-        self.__folders_iter = FoldersIter.get_member_from_name(value)
+        self.__folders_iter = FoldersIter[value]
 
     def __check_base_path_on_windows(self) -> None:
         """Check that the base path can be used.

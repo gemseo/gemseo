@@ -25,6 +25,7 @@ from unittest.mock import patch
 
 import pytest
 from gemseo.uncertainty.distributions import distribution
+from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
@@ -43,6 +44,11 @@ from numpy import ndarray
 from numpy.random import randn
 from numpy.random import seed
 from openturns import RandomGenerator
+
+
+def test_composed_distribution():
+    """Check the composed distribution associated with a OTDistribution."""
+    assert OTDistribution._COMPOSED_DISTRIBUTION == OTComposedDistribution
 
 
 def test_constructor():

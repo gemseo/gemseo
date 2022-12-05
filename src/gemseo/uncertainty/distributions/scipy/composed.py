@@ -43,6 +43,8 @@ from typing import Iterable
 from typing import Sequence
 from typing import TYPE_CHECKING
 
+from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.base_enum import get_names
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
@@ -55,15 +57,21 @@ from gemseo.uncertainty.distributions.composed import ComposedDistribution
 class SPComposedDistribution(ComposedDistribution):
     """Scipy composed distribution."""
 
-    _COPULA = {ComposedDistribution._INDEPENDENT_COPULA: None}
-    AVAILABLE_COPULA_MODELS = sorted(_COPULA.keys())
+    class CopulaModel(BaseEnum):
+        """A copula model."""
+
+        independent_copula = None
+
+    # TODO: API: remove this attribute in the next major release.
+    AVAILABLE_COPULA_MODELS = get_names(CopulaModel)
 
     def __init__(  # noqa: D107
         self,
         distributions: Sequence[SPDistribution],
-        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+        copula: CopulaModel | str = CopulaModel.independent_copula,
+        variable: str = "",
     ) -> None:
-        super().__init__(distributions, copula)
+        super().__init__(distributions, copula=copula, variable=variable)
         self.distribution = distributions
         self._mapping = {}
         index = 0
