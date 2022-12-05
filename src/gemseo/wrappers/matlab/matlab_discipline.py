@@ -114,7 +114,7 @@ class MatlabDiscipline(MDODiscipline):
         cache_file_path: str | None = None,
         is_jac_returned_by_func: bool = False,
     ) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             matlab_fct: The path of the Matlab file or Name of the function.
@@ -149,7 +149,7 @@ class MatlabDiscipline(MDODiscipline):
                 Default is False.
                 If True, the conventional name 'jac_dout_din' is used as jacobian
                 term of any output 'out' with respect to input 'in'.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             name=name,
             input_grammar_file=input_grammar_file,

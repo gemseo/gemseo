@@ -70,7 +70,7 @@ class MDOQuadraticFunction(MDOFunction):
                 If ``None``, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
                 If ``None``, the value at zero will be zero.
-        """
+        """  # noqa: D205, D212, D415
         self._input_dim = 0
         self._quad_coeffs = array([])
         self.quad_coeffs = quad_coeffs  # sets the input dimension

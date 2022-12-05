@@ -132,7 +132,7 @@ class ParameterSpace(DesignSpace):
         """
         Args:
             copula: A name of copula defining the dependency between random variables.
-        """
+        """  # noqa: D205, D212, D415
         LOGGER.debug("*** Create a new parameter space ***")
         super().__init__(hdf_file=hdf_file, name=name)
         self.uncertain_variables = []
@@ -534,14 +534,14 @@ class ParameterSpace(DesignSpace):
 
         return concatenate_dict_of_arrays_to_array(x_u, data_names)
 
-    def transform_vect(
+    def transform_vect(  # noqa:D102
         self,
         vector: ndarray,
         out: ndarray | None = None,
     ) -> ndarray:
         return self.normalize_vect(vector, use_dist=True, out=out)
 
-    def untransform_vect(
+    def untransform_vect(  # noqa:D102
         self,
         vector: ndarray,
         no_check: bool = False,
@@ -770,7 +770,7 @@ class ParameterSpace(DesignSpace):
                 value=item.value,
             )
 
-    def rename_variable(
+    def rename_variable(  # noqa:D102
         self,
         current_name: str,
         new_name: str,

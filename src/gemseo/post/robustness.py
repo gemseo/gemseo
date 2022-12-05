@@ -60,7 +60,7 @@ class Robustness(OptPostProcessor):
             stddev: The standard deviation of the normal uncertain variable
                 to be added to the optimal design value;
                 expressed as a fraction of the bounds of the design variables.
-        """
+        """  # noqa: D205, D212, D415
         seed(0)
         self._add_figure(self.__boxplot(stddev))
 

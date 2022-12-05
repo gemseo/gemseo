@@ -42,7 +42,7 @@ class ConstraintsHistory(OptPostProcessor):
 
     DEFAULT_FIG_SIZE = (11.0, 11.0)
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -61,7 +61,7 @@ class ConstraintsHistory(OptPostProcessor):
 
         Raises:
             ValueError: If a given element of `constraint_names` is not a function.
-        """
+        """  # noqa: D205, D212, D415
         all_constraint_names = self.opt_problem.constraint_names.keys()
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:

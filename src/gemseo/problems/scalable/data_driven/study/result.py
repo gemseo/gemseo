@@ -79,8 +79,8 @@ class ScalabilityResult:
         old_varsizes,
         new_varsizes,
     ):
-        """Get a scalability result for a given optimization strategy and a given
-        scaling strategy.
+        """Get a scalability result for a given optimization strategy and a given scaling
+        strategy.
 
         :param str algo: name of the optimization algorithm
         :param dict algo_options: options of the optimization algorithm

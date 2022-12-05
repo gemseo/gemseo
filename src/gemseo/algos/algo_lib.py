@@ -108,7 +108,7 @@ class AlgoLib(metaclass=GoogleDocstringInheritanceMeta):
     _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar("AlgoLibOptions")
     """The grammar defining the options common to all the algorithms of the library."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         # Library settings and check
         self.descriptions = {}
         self.algo_name = None

@@ -60,7 +60,7 @@ class LinearSolverLib(AlgoLib):
     save_fpath: str | None
     """The file path to save the linear problem."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.save_fpath = None
 

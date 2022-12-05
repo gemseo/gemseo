@@ -53,8 +53,8 @@ def test_outputs():
 
 
 def test_inputs_and_outputs_size_unknown():
-    """Test that size of input and output variables are unknown when initializing
-    without matlab data."""
+    """Test that size of input and output variables are unknown when initializing without
+    matlab data."""
     mat1 = MatlabDiscipline(MATLAB_SIMPLE_FUNC)
 
     assert mat1._MatlabDiscipline__inputs_size["x"] == -1

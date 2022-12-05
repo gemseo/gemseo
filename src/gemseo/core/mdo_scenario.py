@@ -54,7 +54,7 @@ class MDOScenario(Scenario):
     MAX_ITER = "max_iter"
     X_OPT = "x_opt"
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         disciplines: Sequence[MDODiscipline],
         formulation: str,

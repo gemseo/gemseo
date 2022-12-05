@@ -100,7 +100,7 @@ class AutoPyDiscipline(MDODiscipline):
         use_arrays: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """
         Args:
             py_func: The Python function to compute the outputs from the inputs.
             py_jac: The Python function to compute the Jacobian from the inputs;
@@ -114,7 +114,7 @@ class AutoPyDiscipline(MDODiscipline):
 
         Raises:
             TypeError: When ``py_func`` is not callable.
-        """
+        """  # noqa: D205 D212 D415
         if not callable(py_func):
             raise TypeError("py_func must be callable.")
 

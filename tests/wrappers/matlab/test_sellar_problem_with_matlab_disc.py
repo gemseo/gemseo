@@ -85,8 +85,8 @@ def build_matlab_scenario():
 
 
 def test_matlab_jacobians_sellar1():
-    """Check that jacobian matrices returned by matlab functions are correct with
-    respect to finite difference computation for Sellar1."""
+    """Check that jacobian matrices returned by matlab functions are correct with respect
+    to finite difference computation for Sellar1."""
     sellar1, sellar2, sellar_system = build_matlab_disciplines()
 
     threshold = 1e-7

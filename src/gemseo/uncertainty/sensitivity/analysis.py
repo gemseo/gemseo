@@ -107,7 +107,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.
@@ -120,7 +120,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             algo_options: The options of the DOE algorithm.
             formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
             **formulation_options: The options of the :class:`.MDOFormulation`.
-        """
+        """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
         self._algo_name = algo or self.DEFAULT_DRIVER
         self._output_names = output_names or get_all_outputs(disciplines)

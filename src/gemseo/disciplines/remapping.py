@@ -61,7 +61,7 @@ class RemappingDiscipline(MDODiscipline):
         input_mapping: NameMapping,
         output_mapping: NameMapping,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """..
         Args:
             discipline: The original discipline.
             input_mapping: The input names to the original input names.
@@ -69,7 +69,7 @@ class RemappingDiscipline(MDODiscipline):
 
         Raises:
             ValueError: When the original discipline has no default input values.
-        """
+        """  # noqa: D205, D212, D415
         if not discipline.default_inputs:
             raise ValueError("The original discipline has no default input values.")
 

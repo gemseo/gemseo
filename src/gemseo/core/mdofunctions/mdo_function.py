@@ -263,7 +263,7 @@ class MDOFunction:
             force_real: Whether to cast the output values to real.
             special_repr: The string representation of the function.
                 If empty, use :meth:`.default_repr`.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__()
 
         # Initialize attributes

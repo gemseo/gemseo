@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 class GrammarFactory:
     """A factory of :class:`.BaseGrammar`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         self.__factory = Factory(BaseGrammar, ("gemseo.core.grammars",))
 
     def create(

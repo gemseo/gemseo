@@ -53,11 +53,11 @@ class DependencyGraph:
     The couplings between the disciplines can also be computed.
     """
 
-    def __init__(self, disciplines):  # noqa: D201,D205,D212,D415
+    def __init__(self, disciplines) -> None:
         """
         Args:
             disciplines: The disciplines to build the graph with.
-        """
+        """  # noqa: D205, D212, D415
         self.__graph = self.__create_graph(disciplines)
 
     @property

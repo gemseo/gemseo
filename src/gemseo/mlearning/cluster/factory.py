@@ -19,9 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create clustering models.
 
-This module contains a factory to instantiate a :class:`.MLClusteringAlgo` from its
-class name. It also provides a list of available clustering models and allows testing if
-a clustering model type is available.
+This module contains a factory to instantiate a :class:`.MLClusteringAlgo` from its class
+name. It also provides a list of available clustering models and allows testing if a
+clustering model type is available.
 """
 from __future__ import annotations
 
@@ -35,8 +35,8 @@ class ClusteringModelFactory(MLAlgoFactory):
 
     The class can be either internal or external. In this second case, it can be either
     implemented in a module referenced in the "GEMSEO_PATH" or in a module The class can
-    be either internal or external. In the second case, it can be either implemented in
-    a module referenced in the GEMSEO_PATH environment variable or in a module starting
+    be either internal or external. In the second case, it can be either implemented in a
+    module referenced in the GEMSEO_PATH environment variable or in a module starting
     with "gemseo_" and referenced in the PYTHONPATH environment variable.
     """
 

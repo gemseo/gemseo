@@ -33,8 +33,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class KMeans(OptPostProcessor):
-    """The **KMeans** post processing performs a k-means clustering on optimization
-    history.
+    """Performs a k-means clustering on optimization history.
 
     The default number of clusters is 5 and can be modified in option.
 
@@ -59,7 +58,7 @@ class KMeans(OptPostProcessor):
         """
         Args:
             n_clusters: The number of clusters.
-        """
+        """  # noqa: D205, D212, D415
         self.__build_clusters(n_clusters=n_clusters)
 
     def __build_clusters(

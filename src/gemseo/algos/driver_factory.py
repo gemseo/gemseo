@@ -40,7 +40,7 @@ class DriverFactory:
         DriverLib.
 
         Searches subclasses of driver_lib_class in "GEMSEO_PATH" and driver_package.
-        """
+        """  # noqa: D205, D212, D415
         self.factory = Factory(driver_lib_class, (driver_package,))
         self.__algo_name_to_lib_name = {}
         for lib_name in self.libraries:

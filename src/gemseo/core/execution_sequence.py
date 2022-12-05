@@ -17,17 +17,16 @@
 #                         documentation
 #        :author: Francois Gallard, Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Abstraction for workflow
-************************
-"""
+"""Abstraction for workflow."""
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from typing import Iterable
 from uuid import uuid4
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ STATUS_PENDING = MDODiscipline.STATUS_PENDING
 STATUS_RUNNING = MDODiscipline.STATUS_RUNNING
 
 
-class ExecutionSequence:
+class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base class for execution sequences.
 
     The execution sequence structure is introduced to reflect the main workflow
@@ -49,7 +48,11 @@ class ExecutionSequence:
     START_STR = "["
     END_STR = "]"
 
-    def __init__(self, sequence=None):  # pylint: disable=unused-argument
+    def __init__(self, sequence=None) -> None:
+        """
+        Args:
+            sequence: This argument is not used.
+        """  # noqa: D205, D212, D415
         self.uuid = str(uuid4())
         self.uuid_to_disc = {}
         self.disc_to_uuids = {}
@@ -57,6 +60,7 @@ class ExecutionSequence:
         self._enabled = False
         self._parent = None
 
+    @abstractmethod
     def accept(self, visitor):
         """Accept a visitor object (see Visitor pattern).
 
@@ -65,8 +69,8 @@ class ExecutionSequence:
         Args:
             visitor: A visitor object.
         """
-        raise NotImplementedError()
 
+    @abstractmethod
     def set_observer(self, obs):
         """Register an observer.
 
@@ -77,7 +81,6 @@ class ExecutionSequence:
         Returns:
             The disciplines.
         """
-        raise NotImplementedError()
 
     @property
     def status(self):
@@ -143,11 +146,11 @@ class ExecutionSequence:
         self._enabled = False
 
     def _compute_disc_to_uuids(self):
-        """
-        Update discipline to uuids mapping from uuids to discipline mapping
-        Note: a discipline might correspond to several
-        AtomicExecutionSeuqence hence might correspond to several uuids.
+        """Update discipline to uuids mapping from uuids to discipline mapping.
 
+        Note:
+            A discipline might correspond to several AtomicExecutionSeuqence hence
+            might correspond to several uuids.
         """
         self.disc_to_uuids = {}
         for key, value in self.uuid_to_disc.items():
@@ -157,8 +160,12 @@ class ExecutionSequence:
 class AtomicExecSequence(ExecutionSequence):
     """An execution sequence to represent the single execution of a given discipline."""
 
-    def __init__(self, discipline=None):
-        super().__init__(discipline)
+    def __init__(self, discipline: MDODiscipline | None = None) -> None:
+        """
+        Args:
+            discipline: A discipline.
+        """  # noqa: D205, D212, D415
+        super().__init__()
         if not isinstance(discipline, MDODiscipline):
             raise Exception(
                 "Atomic sequence shall be a discipline"
@@ -236,7 +243,9 @@ class AtomicExecSequence(ExecutionSequence):
                 self._observer.update(self)
 
     def force_statuses(self, status):
-        """Force the self status and the status of subsequences without notifying the
+        """Force the self status and the status of subsequences.
+
+        This is done without notifying the
         parent (as the force_status is called by a parent), but notify the observer is
         status changed.
 
@@ -265,21 +274,20 @@ class CompositeExecSequence(ExecutionSequence):
     disciplines: list[MDODiscipline]
     """The disciplines."""
 
-    def __init__(self, sequence=None):
-        super().__init__(sequence)
+    def __init__(self, sequence=None) -> None:  # noqa:D107
+        super().__init__()
         self.sequences = []
         self.disciplines = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         string = self.START_STR
         for sequence in self.sequences:
             string += str(sequence) + ", "
         string += self.END_STR
         return string
 
-    def accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern) and then make its children
-        accept it too.
+    def accept(self, visitor) -> None:
+        """Accept a visitor object and then make its children accept it too.
 
         Args:
             visitor: A visitor object implementing the :meth:`visit_serial` method.
@@ -288,7 +296,8 @@ class CompositeExecSequence(ExecutionSequence):
         for sequence in self.sequences:
             sequence.accept(visitor)
 
-    def _accept(self, visitor):
+    @abstractmethod
+    def _accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).
 
         To be specifically implemented
@@ -297,9 +306,8 @@ class CompositeExecSequence(ExecutionSequence):
         Args:
             visitor: An object implementing the :meth:`visit_serial` method.
         """
-        raise NotImplementedError()
 
-    def set_observer(self, obs):
+    def set_observer(self, obs) -> None:
         """Set observer obs to subsequences.
 
         Override super.set_observer()
@@ -310,13 +318,13 @@ class CompositeExecSequence(ExecutionSequence):
         for sequence in self.sequences:
             sequence.set_observer(obs)
 
-    def disable(self):
+    def disable(self) -> None:
         """Unsubscribe subsequences from receiving status changes of disciplines."""
         super().disable()
         for sequence in self.sequences:
             sequence.disable()
 
-    def force_statuses(self, status):
+    def force_statuses(self, status) -> None:
         """Force the self status and the status of subsequences.
 
         Args:
@@ -338,9 +346,11 @@ class CompositeExecSequence(ExecutionSequence):
             uuids_to_statuses.update(sequence.get_statuses())
         return uuids_to_statuses
 
-    def update_child_status(self, child):
-        """Manage status change of child execution sequences. Propagates status change
-        to the parent (containing execution sequence)
+    def update_child_status(self, child) -> None:
+        """Manage status change of child execution sequences.
+
+        Propagates status change
+        to the parent (containing execution sequence).
 
         Args:
             child: The child execution sequence (contained in sequences)
@@ -351,14 +361,16 @@ class CompositeExecSequence(ExecutionSequence):
         if self._parent and self.status != old_status:
             self._parent.update_child_status(self)
 
+    @abstractmethod
     def _update_child_status(self, child):
-        """Handle child execution change. To be implemented in subclasses.
+        """Handle child execution change.
+
+        To be implemented in subclasses.
 
         Args:
             child: the child execution sequence (contained in sequences)
                 whose status has changed.
         """
-        raise NotImplementedError()
 
 
 class ExtendableExecSequence(CompositeExecSequence):
@@ -367,8 +379,8 @@ class ExtendableExecSequence(CompositeExecSequence):
     Intended to be subclassed.
     """
 
-    def __init__(self, sequence=None):
-        super().__init__(sequence)
+    def __init__(self, sequence=None):  # noqa:D107
+        super().__init__()
         if sequence is not None:
             self.extend(sequence)
 
@@ -448,8 +460,9 @@ class ExtendableExecSequence(CompositeExecSequence):
         self.uuid_to_disc.update(sequence.uuid_to_disc)
 
     def _update_child_status(self, child):
-        """Manage status change of child execution sequences. Done status management is
-        handled in subclasses.
+        """Manage status change of child execution sequences.
+
+        Done status management is handled in subclasses.
 
         Args:
             child: The child execution sequence (contained in sequences)
@@ -462,15 +475,16 @@ class ExtendableExecSequence(CompositeExecSequence):
         else:
             self.status = child.status
 
+    @abstractmethod
     def _update_child_done_status(self, child):
-        """Handle done status of child execution sequences. To be implemented in
-        subclasses.
+        """Handle done status of child execution sequences.
+
+        To be implemented in subclasses.
 
         Args:
             child: The child execution sequence (contained in sequences)
                 whose status has changed.
         """
-        raise NotImplementedError()
 
 
 class SerialExecSequence(ExtendableExecSequence):
@@ -479,7 +493,7 @@ class SerialExecSequence(ExtendableExecSequence):
     START_STR = "["
     END_STR = "]"
 
-    def __init__(self, sequence=None):
+    def __init__(self, sequence=None):  # noqa:D107
         super().__init__(sequence)
         self.exec_index = None
 
@@ -501,8 +515,9 @@ class SerialExecSequence(ExtendableExecSequence):
             raise Exception("Serial execution is empty")
 
     def _update_child_done_status(self, child):
-        """Activate next child to given child execution sequence. Disable itself when
-        all children done.
+        """Activate next child to given child execution sequence.
+
+        Disable itself when all children done.
 
         Args:
             child: The child execution sequence in done state.
@@ -558,6 +573,11 @@ class LoopExecSequence(CompositeExecSequence):
     END_STR = "}"
 
     def __init__(self, controller, sequence):
+        """
+        Args:
+            controller: A controller.
+            sequence: A sequence.
+        """  # noqa: D205, D212, D415
         if isinstance(controller, AtomicExecSequence):
             control = controller
         elif not isinstance(controller, MDODiscipline):
@@ -625,13 +645,15 @@ class ExecutionSequenceFactory:
     """A factory class for ExecutionSequence objects.
 
     Allow to create AtomicExecutionSequence, SerialExecutionSequence,
-    ParallelExecutionSequence and LoopExecutionSequence. Main |g| workflow is intended
-    to be expressed with those four ExecutionSequence types
+    ParallelExecutionSequence and LoopExecutionSequence. Main |g| workflow is intended to
+    be expressed with those four ExecutionSequence types
     """
 
     @staticmethod
     def atom(discipline):
-        """Returns a structure representing the execution of a discipline. This function
+        """Return a structure representing the execution of a discipline.
+
+        This function
         is intended to be called by MDOFormulation.get_expected_workflow methods.
 
         Args:
@@ -644,9 +666,10 @@ class ExecutionSequenceFactory:
 
     @staticmethod
     def serial(sequence=None):
-        """Returns a structure representing the serial execution of the given
-        disciplines. This function is intended to be called by
-        MDOFormulation.get_expected_workflow methods.
+        """Return a structure representing the serial execution of disciplines.
+
+        This function is intended to be called by MDOFormulation.get_expected_workflow
+        methods.
 
         Args:
             sequence: Any number of discipline
@@ -659,9 +682,10 @@ class ExecutionSequenceFactory:
 
     @staticmethod
     def parallel(sequence=None):
-        """Returns a structure representing the parallel execution of the given
-        disciplines. This function is intended to be called by
-        MDOFormulation.get_expected_workflow methods.
+        """Return a structure representing the parallel execution of disciplines.
+
+        This function is intended to be called by MDOFormulation.get_expected_workflow
+        methods.
 
         Args:
             sequence: Any number of discipline or
@@ -674,8 +698,9 @@ class ExecutionSequenceFactory:
 
     @staticmethod
     def loop(control, composite_sequence):
-        """Returns a structure representing a loop execution of a function is intended
-        to be called by MDOFormulation.get_expected_workflow methods.
+        """Return a structure representing a loop execution of a function.
+
+        It is intended to be called by MDOFormulation.get_expected_workflow methods.
 
         Args:
             control: The discipline object, controller of the loop.

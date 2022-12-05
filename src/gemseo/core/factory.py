@@ -89,12 +89,11 @@ class Factory(Multiton):
         base_class: type[Any],
         module_names: Iterable[str] | None = None,
     ) -> None:
-        # noqa: D205, D212, D405, D415
         """
         Args:
             base_class: The base class to be considered.
             module_names: The fully qualified modules names to be searched.
-        """
+        """  # noqa: D205, D212, D415
         if not isinstance(base_class, type):
             raise TypeError("Class to search must be a class!")
 
@@ -439,7 +438,8 @@ class Factory(Multiton):
         return cls.get_default_sub_options_values(**options)
 
     @staticmethod
-    def cache_clear():
+    def cache_clear() -> None:
+        """Clear the cache."""
         _Multiton.cache_clear()
 
     def __str__(self) -> str:

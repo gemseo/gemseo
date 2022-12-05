@@ -57,12 +57,12 @@ class MatlabParser:
     RE_ARGS = re.compile(r"\((.*?)\)")
 
     def __init__(self, full_path: str | None = None) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             full_path: The path to the matlab file.
                 If ``None``, the user shall parse the file explicitly.
-        """
+        """  # noqa: D205, D212, D415
         self.__inputs = None
         self.__outputs = None
         self.__fct_name = None

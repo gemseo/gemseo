@@ -218,7 +218,6 @@ class DOELibrary(DriverLib):
                 * If neither ``n_samples`` nor ``levels`` is provided.
                 * If both ``n_samples`` and ``levels`` are provided.
         """
-
         if not levels and not n_samples:
             raise ValueError(
                 "Either 'n_samples' or 'levels' is required as an input "

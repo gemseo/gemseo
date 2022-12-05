@@ -53,7 +53,7 @@ class QuadApprox(OptPostProcessor):
 
     SR1_APPROX = "SR1"
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -72,8 +72,7 @@ class QuadApprox(OptPostProcessor):
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
                 If ``None`` and if the output is multidimensional, an error is raised.
-        """
-
+        """  # noqa: D205, D212, D415
         problem = self.opt_problem
         if function == self._obj_name:
             b_mat = self.__build_approx(self._standardized_obj_name, func_index)

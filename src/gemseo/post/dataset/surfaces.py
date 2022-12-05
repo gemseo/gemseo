@@ -60,7 +60,7 @@ class Surfaces(DatasetPlot):
             levels: Either the number of contour lines
                 or the values of the contour lines in increasing order.
                 If ``None``, select them automatically.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             mesh=mesh,

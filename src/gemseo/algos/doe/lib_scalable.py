@@ -39,7 +39,7 @@ class DiagonalDOE(DOELibrary):
     __ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
     LIBRARY_NAME = "GEMSEO"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         for algo, description in self.__ALGO_DESC.items():
             self.descriptions[algo] = DOEAlgorithmDescription(

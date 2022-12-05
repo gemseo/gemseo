@@ -1,6 +1,10 @@
 #! /usr/bin/env python
+"""A script to check the plugins against a new gemseo release."""
+from __future__ import annotations
+
 from pathlib import Path
-from subprocess import CalledProcessError, run
+from subprocess import CalledProcessError
+from subprocess import run
 
 DRY_RUN = False
 
@@ -44,14 +48,14 @@ def main() -> int:
             repo_path = Path(repo_name).absolute()
 
             if not repo_path.is_dir():
-                print(f"ERROR: no such directory {repo_path}")
+                print(f"ERROR: no such directory {repo_path}")  # noqa:T201
                 return 1
 
-            print(f"PROCESSING: {repo_path}", end="\n\n")
+            print(f"PROCESSING: {repo_path}", end="\n\n")  # noqa:T201
             actions = ACTIONS.format(remote=remote).split("\n")
 
             for command in actions:
-                print(f"RUNNING: {command}")
+                print(f"RUNNING: {command}")  # noqa:T201
 
                 if DRY_RUN:
                     continue
@@ -66,12 +70,12 @@ def main() -> int:
                         text=True,
                     )
                 except CalledProcessError as error:
-                    print(f"ERROR: {error}")
-                    print(f"{error.stdout}")
-                    print(f"{error.stderr}")
+                    print(f"ERROR: {error}")  # noqa:T201
+                    print(f"{error.stdout}")  # noqa:T201
+                    print(f"{error.stderr}")  # noqa:T201
                     return 1
 
-                print(output.stdout, end="\n\n")
+                print(output.stdout, end="\n\n")  # noqa:T201
     return 0
 
 

@@ -59,7 +59,7 @@ class ScatterPlotMatrix(OptPostProcessor):
             ValueError: If `filter_non_feasible` is set to True and no feasible
                 points exist. If an element from variable_names is not either
                 a function or a design variable.
-        """
+        """  # noqa: D205, D212, D415
         problem = self.opt_problem
         add_design_variables = False
         all_function_names = problem.get_all_functions_names()

@@ -62,7 +62,7 @@ class SVMClassifier(MLClassificationAlgo):
         probability: bool = False,
         **parameters: int | float | bool | str | None,
     ) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             C: The inverse L2 regularization parameter.
@@ -72,7 +72,7 @@ class SVMClassifier(MLClassificationAlgo):
                 or a callable.
             probability: Whether to enable the probability estimates.
                 The algorithm is faster if set to False.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             data,
             transformer=transformer,

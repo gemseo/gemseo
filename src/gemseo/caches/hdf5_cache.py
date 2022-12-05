@@ -64,7 +64,7 @@ class HDF5Cache(AbstractFullCache):
             This class relies on some multiprocessing features, it is therefore
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
-        """
+        """  # noqa: D205, D212, D415
         self.__hdf_node_path = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
         if not name:
@@ -133,7 +133,7 @@ class HDF5Cache(AbstractFullCache):
         return self.__hdf_file.has_group(index, group, self.__hdf_node_path)
 
     @synchronized
-    def clear(self) -> None:
+    def clear(self) -> None:  # noqa:D102
         super().clear()
         self.__hdf_file.clear(self.__hdf_node_path)
 
@@ -150,7 +150,7 @@ class HDF5Cache(AbstractFullCache):
                 This improves performance
                 but is incompatible with multiprocess/treading.
                 If ``None``, open it.
-        """
+        """  # noqa: D205, D212, D415
         data = self.__hdf_file.read_data(
             index, group, self.__hdf_node_path, h5_open_file=h5_open_file
         )[0]

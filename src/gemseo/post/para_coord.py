@@ -35,8 +35,7 @@ from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
 
 class ParallelCoordinates(OptPostProcessor):
-    """Parallel coordinates among design variables, outputs functions and
-    constraints."""
+    """Parallel coordinates among design variables, outputs functions and constraints."""
 
     DEFAULT_FIG_SIZE = (10.0, 5.0)
 

@@ -99,7 +99,7 @@ class LagrangeMultipliers:
         Args:
             opt_problem: The optimization problem
                 on which Lagrange multipliers shall be computed.
-        """
+        """  # noqa: D205, D212, D415
         self.opt_problem = opt_problem
         self.active_lb_names = []
         self.active_ub_names = []
@@ -192,13 +192,11 @@ class LagrangeMultipliers:
         return self.lagrange_multipliers
 
     def _check_feasibility(self, x_vect: ndarray) -> None:
-        """Check that the given point is in the design space and satisfies all
-        constraints.
+        """Check that a point is in the design space and satisfies all the constraints.
 
         Args:
             x_vect: The point at which the Lagrange multipliers are to be computed.
         """
-        # Check that the point is within bounds
         self.opt_problem.design_space.check_membership(x_vect)
 
         # Check that the point satisfies other constraints

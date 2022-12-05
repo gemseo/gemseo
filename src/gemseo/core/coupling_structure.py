@@ -70,7 +70,7 @@ class MDOCouplingStructure:
         """
         Args:
             disciplines: The disciplines that possibly exchange coupling variables.
-        """
+        """  # noqa: D205, D212, D415
         self.disciplines = disciplines
         self.graph = DependencyGraph(disciplines)
         self.sequence = self.graph.get_execution_sequence()
@@ -107,8 +107,10 @@ class MDOCouplingStructure:
 
     @property
     def strongly_coupled_disciplines(self) -> list[MDODiscipline]:
-        """The disciplines that are strongly coupled, ie that lie in cycles in the
-        coupling graphs."""
+        """The disciplines that are strongly coupled.
+
+        The disciplines that lie in cycles in the coupling graphs.
+        """
         if self._strongly_coupled_disc is None:
             self._strongly_coupled_disc = self.get_strongly_coupled_disciplines()
         return self._strongly_coupled_disc
@@ -119,16 +121,17 @@ class MDOCouplingStructure:
         add_self_coupled: bool = True,
         by_group: bool = False,
     ) -> list[MDODiscipline] | list[list[MDODiscipline]]:
-        """Determines the strongly coupled disciplines, that is the disciplines that
-        occur in (possibly different) MDAs.
+        """Determines the strongly coupled disciplines.
+
+        That is the disciplines that occur in (possibly different) MDAs.
 
         Args:
-            add_self_coupled: if True, adds the disciplines that are self-coupled
-                to the list of strongly coupled disciplines
-            by_group: if True, returns a list of list of strongly coupled disciplines
+            add_self_coupled: Whether to add the disciplines that are self-coupled
+                to the list of strongly coupled disciplines.
+            by_group: If True, returns a list of lists of strongly coupled disciplines
                 where the sublist contains the groups of disciplines that
                 are strongly coupled together.
-                if False, returns a single list
+                If False, returns a single list.
 
         Returns:
             The coupled disciplines list or list of list
@@ -177,8 +180,10 @@ class MDOCouplingStructure:
 
     @property
     def strong_couplings(self) -> list[str]:
-        """The outputs of the strongly coupled disciplines that are also inputs of a
-        strongly coupled discipline."""
+        """The outputs of the strongly coupled disciplines.
+
+        They are also inputs of a strongly coupled discipline.
+        """
         if self._strong_couplings is None:
             self._compute_strong_couplings()
         return self._strong_couplings
@@ -186,8 +191,8 @@ class MDOCouplingStructure:
     def _compute_strong_couplings(self) -> None:
         """Determine the strong couplings.
 
-        These are the outputs of the strongly coupled disciplines that are also inputs
-        of the strongly coupled disciplines.
+        These are the outputs of the strongly coupled disciplines that are also inputs of
+        the strongly coupled disciplines.
         """
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline
@@ -224,20 +229,22 @@ class MDOCouplingStructure:
 
     @property
     def all_couplings(self) -> list[str]:
-        """The inputs of disciplines that are also ouputs of other disciplines."""
+        """The inputs of disciplines that are also outputs of other disciplines."""
         if self._all_couplings is None:
             self._compute_all_couplings()
         return self._all_couplings
 
     def _compute_all_couplings(self) -> None:
-        """Compute the inputs of disciplines that are also ouputs of other
-        disciplines."""
+        """Compute the disciplines couplings.
+
+        These are the inputs of disciplines that are also outputs of other disciplines.
+        """
         inputs = []
         outputs = []
         for discipline in self.disciplines:
             inputs += discipline.get_input_data_names()
             outputs += discipline.get_output_data_names()
-        self._all_couplings = sorted(list(set(inputs) & set(outputs)))
+        self._all_couplings = sorted(set(inputs) & set(outputs))
 
     def get_output_couplings(
         self,
@@ -490,7 +497,6 @@ class MDOCouplingStructure:
             fig: The figure where the couplings will be added.
             axe: The axes of the figure.
         """
-
         max_coupling_size = max(len(variables) for _, _, variables in couplings)
 
         for source, destination, variables in couplings:

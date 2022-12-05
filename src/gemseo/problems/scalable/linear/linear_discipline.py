@@ -42,7 +42,7 @@ class LinearDiscipline(MDODiscipline):
         outputs_size: int = 1,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             name: The discipline name.
@@ -56,7 +56,7 @@ class LinearDiscipline(MDODiscipline):
 
         Raises:
             ValueError: if ``input_names`` or ``output_names`` are empty.
-        """
+        """  # noqa: D205, D212, D415
         if not input_names:
             raise ValueError("input_names must not be empty.")
         if not output_names:

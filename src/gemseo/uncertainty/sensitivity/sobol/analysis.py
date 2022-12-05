@@ -196,7 +196,7 @@ class SobolAnalysis(SensitivityAnalysis):
         use_asymptotic_distributions: bool = True,
         **formulation_options: Any,
     ) -> None:
-        r""".. # noqa: D205 D212 D415
+        r"""..
         Args:
             compute_second_order: Whether to compute the second-order indices.
             use_asymptotic_distributions: Whether to estimate the confidence intervals
@@ -218,7 +218,7 @@ class SobolAnalysis(SensitivityAnalysis):
              for a small budget ``n_samples``,
              the user can choose to set ``compute_second_order`` to ``False``
              to ensure a better estimation of the first- and second-order indices.
-        """
+        """  # noqa: D205, D212, D415
         self.__output_names_to_sobol_algos = {}
         if algo_options is None:
             algo_options = {}

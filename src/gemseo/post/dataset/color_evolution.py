@@ -54,7 +54,7 @@ class ColorEvolution(DatasetPlot):
             use_log: Whether to use a symmetric logarithmic scale.
             opacity: The level of opacity (0 = transparent; 1 = opaque).
             **options: The options for the matplotlib function :meth:`imshow`.
-        """
+        """  # noqa: D205, D212, D415
         options_ = {
             "interpolation": "nearest",
             "aspect": "auto",

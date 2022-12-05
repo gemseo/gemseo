@@ -91,7 +91,7 @@ class OptimizationLibrary(DriverLib):
     PG_TOL = "pg_tol"
     VERBOSE = "verbose"
 
-    def __init__(self):
+    def __init__(self):  # noqa:D107
         super().__init__()
         self._ftol_rel = 0.0
         self._ftol_abs = 0.0
@@ -172,8 +172,10 @@ class OptimizationLibrary(DriverLib):
             )
 
     def get_right_sign_constraints(self):
-        """Transforms the problem constraints into their opposite sign counterpart if
-        the algorithm requires positive constraints."""
+        """Transform the problem constraints into their opposite sign counterpart.
+
+        This is done if the algorithm requires positive constraints.
+        """
         if self.problem.has_ineq_constraints() and self.is_algo_requires_positive_cstr(
             self.algo_name
         ):

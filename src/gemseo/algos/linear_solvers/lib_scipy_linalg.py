@@ -81,7 +81,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.methods_map = {
             "LGMRES": lgmres,

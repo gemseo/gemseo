@@ -60,7 +60,6 @@ def worker(
         queue_out: The queue object where the outputs of the function will
             be saved.
     """
-
     for args in iter(queue_in.get, None):
         try:
             sys.stdout.flush()
@@ -130,7 +129,7 @@ class ParallelExecution:
         Raises:
             ValueError: If there are duplicated workers in `workers` when
                 using multithreading.
-        """
+        """  # noqa: D205, D212, D415
         self.workers = workers
         self.n_processes = n_processes
         self.use_threading = use_threading
@@ -203,7 +202,6 @@ class ParallelExecution:
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
         """
-
         n_tasks = len(input_values)
         self.input_values = input_values
 

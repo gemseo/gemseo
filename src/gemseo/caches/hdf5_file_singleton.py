@@ -72,7 +72,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         """
         Args:
             hdf_file_path: The path to the HDF file.
-        """
+        """  # noqa: D205, D212, D415
         self.hdf_file_path = hdf_file_path
         self.__check_file_format_version()
         # Attach the lock to the file and NOT the Cache because it is a singleton.
@@ -196,12 +196,16 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         hdf_node_path: str,
         h5_open_file: h5py.File,
     ) -> bool:
-        """
+        """Return whether a group exists.
+
         Args:
             hdf_node_path: The name of the HDF group where the entries are stored.
             h5_open_file: The opened HDF file.
                 This improves performance
                 but is incompatible with multiprocess/treading.
+
+        Returns:
+            Whether a group exists.
         """
         entry = h5_open_file[hdf_node_path].get(str(index))
         if entry is None:
@@ -275,7 +279,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         self,
         hdf_node_path: str,
     ) -> None:
-        """
+        """Clear a node.
+
         Args:
             hdf_node_path: The name of the HDF group to clear.
         """

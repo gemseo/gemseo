@@ -104,12 +104,12 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
     def __init__(
         self,
         history: Database,
-    ) -> None:  # noqa: E262, E261
+    ) -> None:
         """
         Args:
             history: The optimization history
                 containing input values, output values and Jacobian values.
-        """
+        """  # noqa: D205, D212, D415
         self.history = history
         self.x_ref = None
         self.fgrad_ref = None
@@ -791,7 +791,7 @@ class BFGSApprox(HessianApproximation):
     """Hessian matrix approximation with the BFGS algorithm."""
 
     @staticmethod
-    def iterate_s_k_y_k(
+    def iterate_s_k_y_k(  # noqa:D102
         x_hist: ndarray,
         x_grad_hist: ndarray,
     ) -> Generator[tuple[ndarray, ndarray]]:
@@ -828,7 +828,7 @@ class SR1Approx(HessianApproximation):
     EPSILON = 1e-8
 
     @staticmethod
-    def iterate_approximation(
+    def iterate_approximation(  # noqa:D102
         b_mat: ndarray,
         s_k: ndarray,
         y_k: ndarray,
@@ -848,7 +848,7 @@ class SR1Approx(HessianApproximation):
 class LSTSQApprox(HessianApproximation):
     """Least squares approximation of a Hessian matrix from an optimization history."""
 
-    def build_approximation(
+    def build_approximation(  # noqa:D102
         self,
         funcname: str,
         save_diag: bool = False,

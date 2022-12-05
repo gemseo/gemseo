@@ -82,7 +82,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             use_threading: Whether to use threads instead of processes to parallelize
                 the execution.
             normalize_design_space: Whether the design variables are normalized.
-        """
+        """  # noqa: D205, D212, D415
         self.__normalize_design_space = normalize_design_space
         self.__problem = problem
         self.__use_gradient = use_gradient
@@ -352,7 +352,7 @@ class Worker:
             problem: The optimization problem to be adapted to pSeven.
             use_gradient: Whether to use the derivatives of the functions.
                 If the functions have no derivative then this value has no effect.
-        """
+        """  # noqa: D205, D212, D415
         self.__problem = problem
         self.__use_gradient = use_gradient
 

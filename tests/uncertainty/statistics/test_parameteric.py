@@ -200,8 +200,7 @@ def test_distfitstats_tolint_uniform():
 
 
 def test_distfitstats_tolint_lognormal():
-    """Test returned values by tolerance_interval() method for Lognormal
-    distribution."""
+    """Test returned values by tolerance_interval() method for Lognormal distribution."""
     seed(0)
     n_samples = 100
     lognormal_rand = lognormal(size=n_samples).reshape((-1, 1))

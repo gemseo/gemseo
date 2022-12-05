@@ -127,7 +127,7 @@ class OpenTURNS(DOELibrary):
 
     LIBRARY_NAME = "OpenTURNS"
 
-    def __init__(self):
+    def __init__(self):  # noqa:D107
         super().__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():
@@ -389,7 +389,6 @@ class OpenTURNS(DOELibrary):
         Returns:
             The samples.
         """
-
         lhs = openturns.LHSExperiment(
             self.__get_uniform_distribution(dimension), n_samples
         )

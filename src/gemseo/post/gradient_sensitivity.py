@@ -65,7 +65,7 @@ class GradientSensitivity(OptPostProcessor):
                    :class:`.OptimizationProblem` instance was imported from an HDF5
                    file. This option requires an :class:`.OptimizationProblem` with a
                    gradient-based algorithm.
-        """
+        """  # noqa: D205, D212, D415
         if iteration is None:
             design_value = self.opt_problem.solution.x_opt
         else:

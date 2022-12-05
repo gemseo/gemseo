@@ -16,8 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An analytical problem to test the non-early termination of optimization
-algorithms."""
+"""An analytical problem to test the non-early termination of optimization algorithms."""
 from __future__ import annotations
 
 from gemseo.algos.design_space import DesignSpace

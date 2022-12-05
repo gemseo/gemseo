@@ -326,8 +326,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         return self.get_optimum_from_database(opt_result.message, opt_result.success)
 
     def __get_non_linear_constraints(self) -> tuple[NonlinearConstraint]:
-        """Create the constraints to be passed to a SciPy algorithm as
-        NonLinearConstraints.
+        """Create the constraints to be passed to as NonLinearConstraints.
 
         :return: The constraints.
         :rtype: tuple(NonLinearConstraint)

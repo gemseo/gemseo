@@ -45,7 +45,7 @@ class MaterialModelInterpolation(MDODiscipline):
         empty_elements: Sequence[int],
         full_elements: Sequence[int],
         contrast: float = 1e9,
-    ) -> None:  # noqa: D205,D212,D415
+    ) -> None:
         """
         Args:
             e0: The full material Young modulus.
@@ -58,7 +58,7 @@ class MaterialModelInterpolation(MDODiscipline):
                 ids that are not part of the design space.
             contrast: The ratio between the full material Young's modulus
                 and void material Young's modulus.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__()
         self.E0 = e0
         self.penalty = penalty

@@ -115,7 +115,7 @@ class Database:
                 It should have been generated with :meth:`.Database.export_hdf`.
             name: The name to be given to the database.
                 If ``None``, use the class name.
-        """
+        """  # noqa: D205, D212, D415
         if name is None:
             self.name = self.__class__.__name__
         else:
@@ -780,8 +780,9 @@ class Database:
         all_iterations: bool = False,
         stacked_data: Iterable[str] | None = None,
     ) -> tuple[list[list[float | ndarray]], list[ndarray]]:
-        """Return the complete history of the optimization: design variables, functions
-        and gradients.
+        """Return the complete history of the optimization.
+
+        This includes the design variables, functions and gradients.
 
         Args:
             functions: The names of output functions.
@@ -1442,7 +1443,7 @@ class HashableNdarray:
         Args:
             wrapped: The array that must be wrapped.
             tight: If True, the wrapped array is copied.
-        """
+        """  # noqa: D205, D212, D415
         self.__tight = tight
         self.wrapped = array(wrapped) if tight else wrapped
         self.__hash = int(xxh3_64_hexdigest(wrapped.view(uint8)), 16)

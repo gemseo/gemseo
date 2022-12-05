@@ -103,7 +103,7 @@ class ProgressBar(tqdm.tqdm):
     """
 
     @classmethod
-    def format_meter(cls, n, total, elapsed, **kwargs):
+    def format_meter(cls, n, total, elapsed, **kwargs):  # noqa: D102
         if elapsed != 0.0:
             rate, unit = cls.__convert_rate(total, elapsed)
             kwargs["rate"] = rate
@@ -211,7 +211,7 @@ class DriverLib(AlgoLib):
         schema_path=Path(__file__).parent / "driver_lib_options.json",
     )
 
-    def __init__(self):
+    def __init__(self):  # noqa:D107
         # Library settings and check
         super().__init__()
         self.__progress_bar = None
@@ -300,10 +300,7 @@ class DriverLib(AlgoLib):
             self.__progress_bar.update()
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
-        """Callback called at each new iteration, i.e. every time a design vector that
-        is not already in the database is proposed by the optimizer.
-
-        Iterate the progress bar, implement the stop criteria.
+        """Iterate the progress bar, implement the stop criteria.
 
         Args:
             x_vect: The design variables values. If None, use the values of the
@@ -355,9 +352,8 @@ class DriverLib(AlgoLib):
             LOGGER.info("%s", log)
         LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
 
-    def _post_run(self, problem, algo_name, result, **options):  # pylint: disable=W0613
-        """To be overridden by subclasses Specific method to be executed just after _run
-        method call.
+    def _post_run(self, problem, algo_name, result, **options):
+        """To be overridden by subclasses.
 
         Args:
             problem: The problem to be solved.
@@ -493,8 +489,7 @@ class DriverLib(AlgoLib):
         return result
 
     def _process_specific_option(self, options, option_key):
-        """Process one option as a special treatment, at the beginning of the general
-        treatment and checks of _process_options.
+        """Process one option as a special treatment.
 
         Args:
             options: The options as preprocessed by _process_options.
@@ -543,8 +538,7 @@ class DriverLib(AlgoLib):
         return result
 
     def get_optimum_from_database(self, message=None, status=None):
-        """Retrieves the optimum from the database and builds an optimization result
-        object from it."""
+        """Retrieve the optimum from the database and build an optimization."""
         problem = self.problem
         if len(problem.database) == 0:
             return OptimizationResult(
@@ -595,8 +589,7 @@ class DriverLib(AlgoLib):
         return self.descriptions[algo_name].require_gradient
 
     def get_x0_and_bounds_vects(self, normalize_ds):
-        """Gets x0, bounds, normalized or not depending on algo options, all as numpy
-        arrays.
+        """Return x0 and bounds.
 
         Args:
             normalize_ds: Whether to normalize the input variables

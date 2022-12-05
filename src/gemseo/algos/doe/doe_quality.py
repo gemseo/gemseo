@@ -79,7 +79,7 @@ class DOEQuality:
             discrepancy_type_name: The type of discrepancy.
             **discrepancy_options: The options
                 passed to ``scipy.stats.qmc.discrepancy``.
-        """
+        """  # noqa: D205, D212, D415
         self.measures = DOEMeasures(
             compute_discrepancy(
                 samples,

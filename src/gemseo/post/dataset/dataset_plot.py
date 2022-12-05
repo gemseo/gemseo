@@ -152,7 +152,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
         Raises:
             ValueError: If the dataset is empty.
-        """
+        """  # noqa: D205, D212, D415
         param = namedtuple(f"{self.__class__.__name__}Parameters", kwargs.keys())
         self._param = param(**kwargs)
 
@@ -438,7 +438,6 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             linestyle: The default line style to use
                 when :attr:`.linestyle` is ``None`.
         """
-
         self.linestyle = self.linestyle or linestyle
         if isinstance(self.linestyle, str):
             self.linestyle = [self.linestyle] * n_items
