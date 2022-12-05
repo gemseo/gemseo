@@ -56,8 +56,8 @@ def test_xdsm_mdf(tmp_wd):
 def test_discipline_self_coupled_two_disciplines(tmp_wd):
     """Test that a GEMSEO study can be performed with a self-coupled discipline.
 
-    In this test, two disciplines with one self-coupled discipline are present in the
-    MDO process.
+    In this test, two disciplines with one self-coupled discipline are present in the MDO
+    process.
     """
     study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
     fpath = Path("xls_n2.pdf")

@@ -166,7 +166,7 @@ class AbstractCache(ABCMapping):
                 It could be something like ``2 * numpy.finfo(float).eps``.
             name: A name for the cache.
                 If ``None``, use the class name.
-        """
+        """  # noqa: D205, D212, D415
         self.tolerance = tolerance
         self.name = name if name is not None else self.__class__.__name__
         self.__names_to_sizes = {}
@@ -359,7 +359,7 @@ class AbstractCache(ABCMapping):
 class AbstractFullCache(AbstractCache):
     """Abstract cache to store all the data, either in memory or on the disk.
 
-    See also:
+    See Also:
         :class:`.MemoryFullCache`: store all the data in memory.
         :class:`.HDF5Cache`: store all the data in an HDF5 file.
     """
@@ -391,7 +391,7 @@ class AbstractFullCache(AbstractCache):
     _last_accessed_index: Value
     """The index of the last accessed data."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         tolerance: float = 0.0,
         name: str | None = None,
@@ -535,7 +535,7 @@ class AbstractFullCache(AbstractCache):
         return False
 
     @synchronized
-    def cache_outputs(
+    def cache_outputs(  # noqa: D102
         self,
         input_data: Data,
         output_data: Data,
@@ -551,7 +551,7 @@ class AbstractFullCache(AbstractCache):
         )
 
     @synchronized
-    def cache_jacobian(
+    def cache_jacobian(  # noqa: D102
         self,
         input_data: Data,
         jacobian_data: JacobianData,
@@ -571,7 +571,7 @@ class AbstractFullCache(AbstractCache):
         )
 
     @synchronized
-    def clear(self) -> None:
+    def clear(self) -> None:  # noqa: D102
         super().clear()
         self._hashes_to_indices.clear()
         self._max_index.value = 0
@@ -579,7 +579,7 @@ class AbstractFullCache(AbstractCache):
 
     @property
     @synchronized
-    def last_entry(self) -> CacheEntry:
+    def last_entry(self) -> CacheEntry:  # noqa: D102
         if not self:
             return CacheEntry({}, {}, {})
 

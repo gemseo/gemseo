@@ -51,7 +51,7 @@ class RadarChart(DatasetPlot):
             n_levels: The number of grid levels.
             scientific_notation: Whether to format the grid levels
                 with the scientific notation.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             display_zero=display_zero,

@@ -49,8 +49,8 @@ class MDOScenarioAdapter(MDODiscipline):
     """An adapter class for MDO Scenario.
 
     The specified input variables update the default input data of the top level
-    discipline while the output ones filter the output data from the top level
-    discipline outputs.
+    discipline while the output ones filter the output data from the top level discipline
+    outputs.
     """
 
     scenario: Scenario
@@ -94,7 +94,7 @@ class MDOScenarioAdapter(MDODiscipline):
         name: str | None = None,
         keep_opt_history: bool = False,
     ) -> None:
-        """.. # noqa: D205,D212,D415.
+        """..
         Args:
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.
@@ -115,7 +115,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
-        """
+        """  # noqa: D205, D212, D415
         if reset_x0_before_opt and set_x0_before_opt:
             raise ValueError("Inconsistent options for MDOScenarioAdapter.")
         self.scenario = scenario

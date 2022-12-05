@@ -17,75 +17,60 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Data conversion between discipline data check and _run()
-********************************************************
-"""
+"""The data conversion processors."""
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
+from typing import Mapping
 
 from numpy import array
 from numpy import complex128
 
+from gemseo.core.discipline_data import Data
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
 LOGGER = logging.getLogger(__name__)
 
 
-class DataProcessor:
-    """Abstract class for pre and post-processing data of MDODisciplines.
+class DataProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
+    """Base class for pre- and post-processing data.
 
-    Executes a pre-processing of input data after they are checked by
-    MDODiscipline.check_data, and before the _run method of the discipline
-    is called.
-    Similarly, the post-processing method is executed after the _run method
-    and before the output data is checked by |g|
-
-    This is usefull to cast the data types, since the |g| kernel only handles
-    numpy arrays, and interfaces to disciplinary tools, workflow engines or
-    environment can require different types
+    This is useful to cast the data types, since the |g| kernel only handles numpy
+    arrays, and interfaces to disciplinary tools, workflow engines or environment can
+    require different types.
     """
 
-    def pre_process_data(self, data):
-        """Executes a pre-processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline is
-        called.
+    @abstractmethod
+    def pre_process_data(self, data: Data) -> Data:
+        """Pre-process data.
 
         Args:
-            data: The input data to process.
+            data: The data to process.
 
         Returns:
-            The processed input data.
+            The processed data.
         """
-        raise NotImplementedError()
 
-    def post_process_data(self, data):
-        """Executes a post-processing of discipline output data after the _run method of
-        the discipline, before they are checked by  MDODiscipline.check_output_data,
+    @abstractmethod
+    def post_process_data(self, data: Data) -> Data:
+        """Execute a post-processing of the output data.
 
         Args:
-            data: The output data to process.
+            data: The data to process.
 
         Returns:
-            The processed output data.
+            The processed data.
         """
-        raise NotImplementedError()
 
 
 class FloatDataProcessor(DataProcessor):
-    """A data preprocessor that converts all gemseo scalar input data to floats, and
-    converts all discipline output data to numpy arrays."""
+    """A data preprocessor that converts all scalar input data to floats.
 
-    def pre_process_data(self, data):
-        """Executes a pre-processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline is
-        called.
+    It converts all discipline output data to numpy arrays
+    """
 
-        Args:
-            data: The input data to process.
-
-        Returns:
-            The processed input data.
-        """
+    def pre_process_data(self, data: Data) -> Data:  # noqa: D102
         processed_data = data.copy()
         for key, val in data.items():
             if len(val) == 1:
@@ -94,16 +79,7 @@ class FloatDataProcessor(DataProcessor):
                 processed_data[key] = [float(val_i) for val_i in val]
         return processed_data
 
-    def post_process_data(self, data):
-        """Executes a post-processing of discipline output data after the _run method of
-        the discipline, before they are checked by  MDODiscipline.check_output_data,
-
-        Args:
-            data: The output data to process.
-
-        Returns:
-            The processed output data.
-        """
+    def post_process_data(self, data: Data) -> Data:  # noqa: D102
         processed_data = data.copy()
         for key, val in data.items():
             if not hasattr(val, "__len__"):
@@ -114,35 +90,15 @@ class FloatDataProcessor(DataProcessor):
 
 
 class ComplexDataProcessor(DataProcessor):
-    """A data preprocessor that converts all gemseo complex arrays input data to floats
-    arrays, and converts all discipline output data to numpy complex arrays."""
+    """Data preprocessor to convert complex arrays to float arrays back and forth."""
 
-    def pre_process_data(self, data):
-        """Executes a pre-processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline is
-        called.
-
-        Args:
-            data: The input data to process.
-
-        Returns:
-            The processed input data.
-        """
+    def pre_process_data(self, data: Data) -> Data:  # noqa: D102
         processed_data = data.copy()
         for key, val in data.items():
             processed_data[key] = array(val.real)
         return processed_data
 
-    def post_process_data(self, data):
-        """Executes a post-processing of discipline output data after the _run method of
-        the discipline, before they are checked by  MDODiscipline.check_output_data,
-
-        Args:
-            data: The output data to process.
-
-        Returns:
-            The processed output data.
-        """
+    def post_process_data(self, data: Data) -> Data:  # noqa: D102
         processed_data = data.copy()
         for key, val in data.items():
             processed_data[key] = array(val, dtype=complex128)
@@ -150,10 +106,9 @@ class ComplexDataProcessor(DataProcessor):
 
 
 class NameMapping(DataProcessor):
-    """A data preprocessor that maps process level data names to local discipline data
-    names."""
+    """A data preprocessor to map process level names to local discipline names."""
 
-    def __init__(self, mapping):
+    def __init__(self, mapping: Mapping[str, str]) -> None:
         """
         Args:
             mapping: A mapping structure of the form ``{global_name: local_name}``
@@ -161,36 +116,17 @@ class NameMapping(DataProcessor):
                 with the grammar of the discipline.
                 The local name is the data provided
                 to the :meth:`.MDODiscipline._run` method.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__()
         self.mapping = mapping
         self.reverse_mapping = {
             local_key: global_key for global_key, local_key in mapping.items()
         }
 
-    def pre_process_data(self, data):
-        """Executes a pre-processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline is
-        called.
-
-        Args:
-            data: The input data to process.
-
-        Returns:
-            The processed input data.
-        """
+    def pre_process_data(self, data: Data) -> Data:  # noqa: D102
         mapping = self.mapping
         return {mapping[global_key]: value for global_key, value in data.items()}
 
-    def post_process_data(self, data):
-        """Executes a post-processing of discipline output data after the _run method of
-        the discipline, before they are checked by  MDODiscipline.check_output_data,
-
-        Args:
-            data: The output data to process.
-
-        Returns:
-            The processed output data.
-        """
+    def post_process_data(self, data: Data) -> Data:  # noqa: D102
         reverse_mapping = self.reverse_mapping
         return {reverse_mapping[local_key]: value for local_key, value in data.items()}

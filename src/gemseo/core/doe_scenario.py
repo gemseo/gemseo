@@ -51,7 +51,7 @@ class DOEScenario(Scenario):
     SEED = "seed"
     _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + ("seed",)
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
         formulation: str,
@@ -122,7 +122,7 @@ class DOEScenario(Scenario):
         for name in ("n_samples", "algo_options"):
             self.input_grammar.required_names.remove(name)
 
-    def export_to_dataset(
+    def export_to_dataset(  # noqa: D102
         self,
         name: str | None = None,
         by_group: bool = True,

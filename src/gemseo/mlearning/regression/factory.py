@@ -19,9 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create regression models.
 
-This module contains a factory to instantiate a :class:`.MLRegressionAlgo` from its
-class name. It also provides the available regression models and allows testing if a
-regression model type is available.
+This module contains a factory to instantiate a :class:`.MLRegressionAlgo` from its class
+name. It also provides the available regression models and allows testing if a regression
+model type is available.
 """
 from __future__ import annotations
 

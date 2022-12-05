@@ -69,7 +69,7 @@ class Boxplot(DatasetPlot):
                 around the median; a CI is also called *notch*.
             add_outliers: Whether to add the outliers.
             **boxplot_options: The options of the wrapped boxplot function.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             datasets=datasets,

@@ -263,9 +263,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 do not cache the discipline evaluations.
             cache_file_path: The HDF file path
                 when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
-        """
-
-        # : data converters between execute and _run
+        """  # noqa: D205, D212, D415
         self.data_processor = None
         self._default_inputs = None
         self.input_grammar = None
@@ -751,12 +749,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         return []
 
     def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:
-        """Return the disciplines that must be shown as blocks within the XDSM
-        representation of a chain.
+        """Return the disciplines that must be shown as blocks in the XDSM.
 
         By default, only the discipline itself is shown.
-        This function can be differently implemented for
-        any type of inherited discipline.
+        This function can be differently implemented for any type of inherited discipline.
 
         Returns:
             The disciplines shown in the XDSM chain.
@@ -1552,7 +1548,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
         """
-
         if inputs is None:
             inputs_names = self._differentiated_inputs
         else:

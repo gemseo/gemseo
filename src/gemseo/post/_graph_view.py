@@ -73,18 +73,18 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
         """
         Args:
             is_directed: Whether to use directed edges by default.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__()
         self.__dir = self.__FORWARD if is_directed else self.__NONE
 
-    def node(
+    def node(  # noqa:D102
         self, name: str, label: str | None = None, _attributes=None, **attrs: str
     ) -> None:
         new_attrs = asdict(self.DefaultNodeAttributeValues())
         new_attrs.update(attrs)
         super().node(name, label=label, _attributes=_attributes, **new_attrs)
 
-    def edge(
+    def edge(  # noqa:D102
         self,
         tail_name: str,
         head_name: str,

@@ -59,7 +59,7 @@ class NormDBFunction(MDOFunction):
                 when function is called (avoid recursive call).
             optimization_problem: The optimization problem object that contains
                 the function.
-        """
+        """  # noqa: D205, D212, D415
         self.__normalize = normalize
         self.__orig_func = orig_func
         self.__is_observable = is_observable
@@ -189,5 +189,5 @@ class NormDBFunction(MDOFunction):
             return jac_u.real
 
     @property
-    def expects_normalized_inputs(self) -> bool:
+    def expects_normalized_inputs(self) -> bool:  # noqa:D102
         return self.__normalize

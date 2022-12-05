@@ -140,7 +140,7 @@ class Scenario(MDODiscipline):
                 or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options of the :class:`.MDOFormulation`.
-        """
+        """  # noqa: D205, D212, D415
         self.formulation = None
         self.formulation_name = None
         self.optimization_result = None
@@ -173,8 +173,10 @@ class Scenario(MDODiscipline):
 
     @property
     def use_standardized_objective(self) -> bool:
-        """Whether to use the standardized :attr:`.OptimizationProblem.objective` for
-        logging and post-processing."""
+        """Whether to use the standardized objective for logging and post-processing.
+
+        The objective is :attr:`.OptimizationProblem.objective`.
+        """
         return self.formulation.opt_problem.use_standardized_objective
 
     @use_standardized_objective.setter
@@ -200,7 +202,6 @@ class Scenario(MDODiscipline):
         Raises:
             ValueError: If two disciplines compute the same output.
         """
-
         all_outs = set()
         for disc in self.disciplines:
             outs = set(disc.get_output_data_names())
@@ -602,12 +603,12 @@ class Scenario(MDODiscipline):
                 outfilename=outfilename,
             )
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.formulation.get_expected_dataflow()
 
-    def get_expected_workflow(self) -> LoopExecSequence:
+    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
         exp_wf = self.formulation.get_expected_workflow()
         return ExecutionSequenceFactory.loop(self, exp_wf)
 

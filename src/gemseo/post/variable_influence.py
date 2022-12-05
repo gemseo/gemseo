@@ -52,7 +52,7 @@ class VariableInfluence(OptPostProcessor):
     - proportion of the total sensitivity
       to use as a threshold to filter the variables,
     - the use of a logarithmic scale,
-    - the possibility to save the indice of the influential variables indices
+    - the possibility to save the indices of the influential variables indices
       in a NumPy file.
     """
 
@@ -73,7 +73,7 @@ class VariableInfluence(OptPostProcessor):
             log_scale: Whether to set the y-axis as log scale.
             save_var_files: Whether to save the influential variables indices
                 to a NumPy file.
-        """
+        """  # noqa: D205, D212, D415
         function_names = self.opt_problem.get_all_functions_names()
         _, x_opt, _, _, _ = self.opt_problem.get_optimum()
         x_0 = self.database.get_x_by_iter(0)

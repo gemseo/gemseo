@@ -292,7 +292,6 @@ class OptimizationProblem:
         use_standardized_objective: bool = True,
         **parallel_differentiation_options: int | bool,
     ) -> None:
-        # noqa: D205, D212, D415
         """
         Args:
             design_space: The design space on which the functions are evaluated.
@@ -308,7 +307,7 @@ class OptimizationProblem:
                 for logging and post-processing.
             **parallel_differentiation_options: The options
                 to approximate the derivatives in parallel.
-        """
+        """  # noqa: D205, D212, D415
         self._objective = None
         self.nonproc_objective = None
         self.constraints = []

@@ -42,7 +42,7 @@ LOGGER = logging.getLogger(__name__)
 class DatasetPlotFactory:
     """This factory instantiates a :class:`.DatasetPlot` from its class name."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         self.factory = Factory(DatasetPlot, ("gemseo.post.dataset",))
 
     def create(

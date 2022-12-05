@@ -216,7 +216,7 @@ class Dataset:
                 If None, use the name of the class.
             by_group: If True, store the data by group.
                 Otherwise, store them by variables.
-        """
+        """  # noqa: D205, D212, D415
         self.name = name or self.__class__.__name__
         self._names = {}  # key = group, value = varnames
         self._groups = {}  # key = varname, value = group
@@ -1399,7 +1399,6 @@ class Dataset:
     @property
     def row_names(self) -> list[str]:
         """The names of the rows."""
-
         return self.__row_names or [str(val) for val in range(len(self))]
 
     @row_names.setter

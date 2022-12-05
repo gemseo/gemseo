@@ -20,8 +20,8 @@
 """Custom Enumerations.
 
 The `.BaseEnum` class enables the specification of options which were previously defined
-using class attributes. It enables backward compatibility, as the user can either
-provide the Enum member or its name as a string. The conversion is then made implicitly.
+using class attributes. It enables backward compatibility, as the user can either provide
+the Enum member or its name as a string. The conversion is then made implicitly.
 """
 from __future__ import annotations
 

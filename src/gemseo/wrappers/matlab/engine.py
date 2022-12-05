@@ -123,11 +123,11 @@ class MatlabEngine:
     """The matlab engine."""
 
     def __init__(self, engine_name: str) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             engine_name: The name identifying the engine.
-        """
+        """  # noqa: D205, D212, D415
         self.__engine_name = engine_name
         self.__matlab = None
         self.__is_closed = True

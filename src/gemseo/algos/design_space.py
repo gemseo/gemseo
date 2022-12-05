@@ -208,7 +208,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 If None, start with an empty design space.
             name: The name to be given to the design space,
                 `None` if the design space is unnamed.
-        """
+        """  # noqa: D205, D212, D415
         self.name = name
         self.variables_names = []
         self.dimension = 0
@@ -1205,7 +1205,6 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def __update_normalization_vars(self) -> None:
         """Compute the inner attributes used for normalization and unnormalization."""
-
         self.__lower_bounds_array = self.get_lower_bounds()
         self.__upper_bounds_array = self.get_upper_bounds()
         self._norm_factor = self.__upper_bounds_array - self.__lower_bounds_array

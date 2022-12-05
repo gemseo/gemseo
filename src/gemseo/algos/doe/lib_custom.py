@@ -72,7 +72,7 @@ class CustomDOE(DOELibrary):
 
     LIBRARY_NAME = "GEMSEO"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         name = self.__class__.__name__
         self.algo_name = name
@@ -188,7 +188,7 @@ class CustomDOE(DOELibrary):
                 If both `doe_file` and `samples` are given.
                 If the dimension of `samples` is different from the
                 one of the problem.
-        """
+        """  # noqa: D205, D212, D415
         error_message = (
             "The algorithm CustomDOE requires "
             "either 'doe_file' or 'samples' as option."

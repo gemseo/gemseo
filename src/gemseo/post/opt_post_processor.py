@@ -88,7 +88,7 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             ValueError: If the JSON grammar file
                 for the options of the post-processor does not exist.
-        """
+        """  # noqa: D205, D212, D415
         self.opt_problem = opt_problem
         self._obj_name = opt_problem.get_objective_name(False)
         self._standardized_obj_name = opt_problem.get_objective_name()

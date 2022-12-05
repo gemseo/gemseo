@@ -75,7 +75,7 @@ class JacobianAssembly:
         Args:
             coupling_structure: The CouplingStructure associated disciplines that form
                 the coupled system.
-        """
+        """  # noqa: D205, D212, D415
         self.coupling_structure = coupling_structure
         self.sizes = {}
         self.disciplines = {}
@@ -206,7 +206,7 @@ class JacobianAssembly:
 
     @staticmethod
     def _check_mode(mode, n_variables, n_functions):
-        """Check the differentiation mode (direct or adjoint)
+        """Check the differentiation mode (direct or adjoint).
 
         Args:
             mode: The differentiation mode.
@@ -224,8 +224,7 @@ class JacobianAssembly:
         return mode
 
     def compute_dimension(self, names):
-        """Compute the total number of functions/variables/couplings of the whole
-        system.
+        """Compute the total number of functions/variables/couplings of the full system.
 
         Args:
             names: The names of the inputs or the outputs.
@@ -516,8 +515,7 @@ class JacobianAssembly:
         residual_variables=None,
         **linear_solver_options,
     ):
-        """Compute the Jacobian of total derivatives of the coupled system formed by the
-        disciplines.
+        """Compute the Jacobian of total derivatives of the coupled system.
 
         Args:
             in_data: The input data dict.
@@ -696,7 +694,6 @@ class JacobianAssembly:
             j_split[function] = sub_jac
         return j_split
 
-    # Newton step computation
     def compute_newton_step(
         self,
         in_data,
@@ -706,8 +703,7 @@ class JacobianAssembly:
         matrix_type=SPARSE,
         **linear_solver_options,
     ):
-        """Compute the Newton step for the coupled system of residuals formed by the
-        disciplines.
+        """Compute the Newton step for the coupled system of disciplines residuals.
 
         Args:
             in_data: The input data.
@@ -802,7 +798,6 @@ class JacobianAssembly:
 
         return concatenate(residuals, axis=1)[0, :]
 
-    # plot method
     def plot_dependency_jacobian(
         self,
         functions,
@@ -812,8 +807,9 @@ class JacobianAssembly:
         filepath=None,
         markersize=None,
     ):
-        """Plot the Jacobian matrix Nonzero elements of the sparse matrix are
-        represented by blue squares.
+        """Plot the Jacobian matrix.
+
+        Nonzero elements of the sparse matrix are represented by blue squares.
 
         Args:
             functions: The functions to plot.
@@ -885,7 +881,7 @@ class CoupledSystem:
         - factorized for multiple RHS
     """
 
-    def __init__(self):
+    def __init__(self):  # noqa:D107
         self.n_linear_resolutions = 0
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0

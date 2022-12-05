@@ -39,12 +39,12 @@ class Splitter(MDODiscipline):
         input_name: str,
         output_names_to_input_indices: dict[str, Iterable[int] | int],
     ):
-        """# noqa: D205 D212 D415
+        """
         Args:
             input_name: The name of the input to split.
             output_names_to_input_indices: The input indices associated with the
                 output names.
-        """
+        """  # noqa: D205, D212, D415
         self.__input_name = input_name
         for output_name, input_indices in output_names_to_input_indices.items():
             if isinstance(input_indices, int):

@@ -51,7 +51,7 @@ class ObjConstrHist(OptPostProcessor):
 
     DEFAULT_FIG_SIZE = (11.0, 6.0)
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -69,7 +69,7 @@ class ObjConstrHist(OptPostProcessor):
         Args:
             constraint_names: The names of the constraints to plot.
                 If ``None``, use all the constraints.
-        """
+        """  # noqa: D205, D212, D415
         # 0. Initialize the figure.
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)

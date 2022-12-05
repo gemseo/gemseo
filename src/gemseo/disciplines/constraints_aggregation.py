@@ -57,7 +57,7 @@ class ConstrAggegationDisc(MDODiscipline):
         name: str | None = None,
         **meth_options: Any,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """..
         Args:
             constr_data_names: The names of the constraints to aggregate.
                 It shall be the output data of other disciplines.
@@ -67,7 +67,7 @@ class ConstrAggegationDisc(MDODiscipline):
 
         Raises:
             ValueError: If the method is not supported.
-        """
+        """  # noqa: D205, D212, D415
         if method_name not in METHODS_MAP:
             raise ValueError(f"Unsupported aggregation method named {method_name}.")
 

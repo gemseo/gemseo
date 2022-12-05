@@ -27,7 +27,7 @@ from gemseo.core.factory import Factory
 class CacheFactory:
     """A factory for :class:`.AbstractCache`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         self.factory = Factory(AbstractCache, ("gemseo.caches",))
 
     def create(self, cache_name: str, **options) -> AbstractCache:

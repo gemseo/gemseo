@@ -51,7 +51,7 @@ class ConvexLinearApprox(MDOFunction):
             ValueError: If the length of boolean array
                 and the number of inputs of the functions are inconsistent.
             AttributeError: If the function does not have a Jacobian function.
-        """
+        """  # noqa: D205, D212, D415
         self.__x_vect = x_vect
         self.__mdo_function = mdo_function
         self.__approx_indexes = approx_indexes

@@ -60,7 +60,7 @@ class FunctionRestriction(MDOFunction):
         Raises:
             ValueError: If the `frozen_indexes` and the `frozen_values` arrays do
                 not have the same shape.
-        """
+        """  # noqa: D205, D212, D415
         # Check the shapes of the passed arrays
         if frozen_indexes.shape != frozen_values.shape:
             raise ValueError("Arrays of frozen indexes and values must have same shape")

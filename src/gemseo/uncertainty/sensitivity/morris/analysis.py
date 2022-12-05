@@ -229,7 +229,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        r""".. # noqa: D205,D212,D415
+        r"""..
         Args:
             n_replicates: The number of times
                 the OAT method is repeated. Used only if ``n_samples`` is None.
@@ -240,7 +240,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
         Raises:
             ValueError: If at least one input dimension is not equal to 1.
-        """
+        """  # noqa: D205, D212, D415
         if parameter_space.dimension != len(parameter_space.variables_names):
             raise ValueError("Each input dimension must be equal to 1.")
 

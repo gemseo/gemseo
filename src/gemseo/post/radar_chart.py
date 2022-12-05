@@ -61,7 +61,7 @@ class RadarChart(OptPostProcessor):
             ValueError: When a requested name is not a constraint
                 or when the requested iteration is neither a database index
                 nor the tag ``"opt"``.
-        """
+        """  # noqa: D205, D212, D415
         if constraint_names is None:
             constraint_names = self.opt_problem.get_constraints_names()
         else:

@@ -98,7 +98,7 @@ class JSONGrammar(BaseGrammar):
                 in the form: ``{element_name: element_meaning}``.
                 If ``None``, use the descriptions available in the JSON schema if any.
             **kwargs: These arguments are not used.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name)
         if schema_path is not None:
             self.update_from_file(schema_path)
@@ -120,7 +120,7 @@ class JSONGrammar(BaseGrammar):
     def __iter__(self) -> Iterator[Any]:
         return iter(self.__schema_builder)
 
-    def rename_element(self, current_name: str, new_name: str) -> None:
+    def rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__schema_builder.properties[
             new_name
         ] = self.__schema_builder.properties.pop(current_name)
@@ -171,7 +171,7 @@ class JSONGrammar(BaseGrammar):
             raise TypeError()
         self.__init_dependencies()
 
-    def clear(self) -> None:
+    def clear(self) -> None:  # noqa: D102
         self.__schema_builder = MutableMappingSchemaBuilder()
         self.__init_dependencies()
 
@@ -187,7 +187,7 @@ class JSONGrammar(BaseGrammar):
         Raises:
             InvalidDataException: If the passed data is not a dictionary,
                 or if the data is not consistent with the grammar.
-        """
+        """  # noqa: D205, D212, D415
         error_message = MultiLineString()
 
         # Check the required names explicitly to provide a clearer message.
@@ -219,13 +219,13 @@ class JSONGrammar(BaseGrammar):
         Notes:
             The types of the values of the ``data`` will be converted
             to JSON Schema types and define the elements of the JSON Schema.
-        """
+        """  # noqa: D205, D212, D415
         if not data:
             return
         self.__schema_builder.add_object(self.__cast_array_to_list(data))
         self.__init_dependencies()
 
-    def is_array(
+    def is_array(  # noqa: D102
         self,
         name: str,
         numeric_only: bool = False,
@@ -260,7 +260,7 @@ class JSONGrammar(BaseGrammar):
             return JSONGrammar.__is_array_of_numeric_value(sub_prop)
         return sub_prop.get("type") in JSONGrammar.__NUMERIC_TYPE_NAMES
 
-    def restrict_to(
+    def restrict_to(  # noqa: D102
         self,
         names: Sequence[str],
     ) -> None:
@@ -270,7 +270,7 @@ class JSONGrammar(BaseGrammar):
                 del self.__schema_builder[element_name]
         self.__init_dependencies()
 
-    def convert_to_simple_grammar(self) -> SimpleGrammar:
+    def convert_to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         grammar = SimpleGrammar(self.name)
         grammar.update(self.__get_names_to_types())
         for name in set(self.keys()) - self.required_names:
@@ -278,7 +278,7 @@ class JSONGrammar(BaseGrammar):
         return grammar
 
     @property
-    def required_names(self) -> set[str]:
+    def required_names(self) -> set[str]:  # noqa: D102
         return self.__schema_builder.required
 
     # API not in the base class.

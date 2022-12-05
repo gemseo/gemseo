@@ -95,7 +95,7 @@ class PyDOE(DOELibrary):
     CENTER_CC_KEYWORD = "center_cc"
     LIBRARY_NAME = "PyDOE"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         for idx, algo in enumerate(self.ALGO_LIST):
             self.descriptions[algo] = DOEAlgorithmDescription(

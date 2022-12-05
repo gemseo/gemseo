@@ -41,7 +41,7 @@ class BarPlot(DatasetPlot):
         """
         Args:
             n_digits: The number of digits to print the different bar values.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(dataset, n_digits=n_digits)
 
     def _plot(

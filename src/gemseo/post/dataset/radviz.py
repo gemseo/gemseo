@@ -70,7 +70,7 @@ class Radar(DatasetPlot):
         """
         Args:
             classifier: The name of the variable to group the data.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(dataset, classifier=classifier)
 
     def _plot(

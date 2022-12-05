@@ -32,7 +32,7 @@ class UpdaterFactory:
     PENALTY = "penalty"
     TRUST_PARAMETERS = [RADIUS, PENALTY]
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         self.__update_name_to_updater = {
             UpdaterFactory.RADIUS: RadiusUpdater,
             UpdaterFactory.PENALTY: PenaltyUpdater,

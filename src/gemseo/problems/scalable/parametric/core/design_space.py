@@ -38,9 +38,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TMDesignSpace:
-    """The design space for the scalable problem introduced by Tedford and Martins
-    (2010) defines the lower and upper bounds of both local design parameters, shared
-    design parameters and coupling variables, as well as default values.
+    """The design space for the scalable problem introduced by Tedford and Martins (2010)
+    defines the lower and upper bounds of both local design parameters, shared design
+    parameters and coupling variables, as well as default values.
 
     The lower bounds are all equal to 0, the upper bounds are all equal to 1 and default
     values are all equal to 0.5.
@@ -57,8 +57,8 @@ class TMDesignSpace:
         """The construction of the design space requires the number of shared design
         parameters, the number of local design parameters per discipline and the number
         of coupling variables per discipline. The two latter arguments must be list of
-        integers with the same length which corresponds to the number of strongly
-        coupled disciplines. By default, the design space considers two disciplines.
+        integers with the same length which corresponds to the number of strongly coupled
+        disciplines. By default, the design space considers two disciplines.
 
         :param int n_shared: size of the shared design parameters.
             Default: 1.

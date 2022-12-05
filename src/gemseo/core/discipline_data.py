@@ -124,7 +124,7 @@ class DisciplineData(abc.MutableMapping):
             data: A dict-like object or a :class:`.DisciplineData` object.
             input_to_namespaced: The mapping from input data names to their prefixed names.
             output_to_namespaced: The mapping from output data names to their prefixed names.
-        """
+        """  # noqa: D205, D212, D415
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
             self.__data = getattr(data, f"_{self.__class__.__name__}__data")

@@ -91,7 +91,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         maximize_objective: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
         **options: Any,
-    ) -> None:  # pylint: disable=W0613
+    ) -> None:
         """
         Args:
             disciplines: The disciplines.
@@ -103,7 +103,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
                 or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             **options: The options of the formulation.
-        """
+        """  # noqa: D205, D212, D415
         self._disciplines = disciplines
         self._objective_name = objective_name
         self.opt_problem = OptimizationProblem(design_space)
@@ -636,7 +636,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
     def get_default_sub_options_values(
         cls, **options: str
     ) -> dict:  # pylint: disable=W0613
-        """Get the default values of the sub-options of the formulation.
+        """Return the default values of the sub-options of the formulation.
 
         When some options of the formulation depend on higher level options,
         the default values of these sub-options may be obtained here,
@@ -671,6 +671,11 @@ class BaseFormulationsFactory:
     """A factory of :class:`~gemseo.core.base_formulation.BaseFormulation`."""
 
     def __init__(self, cls: type, module_names: Iterable[str] | None = None) -> None:
+        """
+        Args:
+            cls: The base class.
+            module_names: The names of the modules to search in.
+        """  # noqa: D205, D212, D415
         self.factory = Factory(cls, module_names)
 
     def create(

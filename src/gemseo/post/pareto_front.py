@@ -66,7 +66,7 @@ class ParetoFront(OptPostProcessor):
         Raises:
             ValueError: If the numbers of objectives and objectives
                 labels are different.
-        """
+        """  # noqa: D205, D212, D415
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
 

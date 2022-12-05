@@ -61,7 +61,6 @@ class MDOChain(MDODiscipline):
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        # noqa: D205 D212 D415
         """
         Args:
             disciplines: The disciplines.
@@ -69,7 +68,7 @@ class MDOChain(MDODiscipline):
                 If None, use the class name.
             grammar_type: The type of grammar to use for inputs and outputs declaration,
                 e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
         self.initialize_grammars()
@@ -285,7 +284,7 @@ class MDOChain(MDODiscipline):
 
         return disciplines_couplings
 
-    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:  # noqa: D102
         dataflow = []
         for disc in self.disciplines:
             dataflow.extend(disc.get_disciplines_in_dataflow_chain())
@@ -311,7 +310,6 @@ class MDOParallelChain(MDODiscipline):
         use_threading: bool = True,
         n_processes: int | None = None,
     ) -> None:
-        # noqa: D205 D212 D415
         """
         Args:
             disciplines: The disciplines.
@@ -336,7 +334,7 @@ class MDOParallelChain(MDODiscipline):
             if there are less than ``n_processes`` disciplines.
             ``n_processes`` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
         self.initialize_grammars()
@@ -413,11 +411,10 @@ class MDOParallelChain(MDODiscipline):
                 chain_jacobian.update(output_jacobian)
         self._init_jacobian(inputs, outputs, with_zeros=True, fill_missing_keys=True)
 
-    def add_differentiated_inputs(
+    def add_differentiated_inputs(  # noqa: D102
         self,
         inputs: Iterable[str] = None,
     ) -> None:
-        # noqa: D102
         MDODiscipline.add_differentiated_inputs(self, inputs)
         self._set_disciplines_diff_inputs(inputs)
 
@@ -436,11 +433,10 @@ class MDOParallelChain(MDODiscipline):
             if inputs_set:
                 discipline.add_differentiated_inputs(list(inputs_set))
 
-    def add_differentiated_outputs(
+    def add_differentiated_outputs(  # noqa: D102
         self,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        # noqa: D102
         MDODiscipline.add_differentiated_outputs(self, outputs)
         self._set_disciplines_diff_outputs(outputs)
 
@@ -491,7 +487,6 @@ class MDOAdditiveChain(MDOParallelChain):
         use_threading: bool = True,
         n_processes: int | None = None,
     ) -> None:
-        # noqa: D205 D212 D415
         """
         Args:
             disciplines: The disciplines.
@@ -517,7 +512,7 @@ class MDOAdditiveChain(MDOParallelChain):
             if there are less than ``n_processes`` disciplines.
             ``n_processes`` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(disciplines, name, grammar_type, use_threading, n_processes)
         self._outputs_to_sum = outputs_to_sum
 

@@ -55,7 +55,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             TypeError: When the second operand is
                 neither an :class:`.MDOFunction` nor a ``Number``.
-        """
+        """  # noqa: D205, D212, D415
         f_type = ""
         expr = ""
         args = None
@@ -181,7 +181,7 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
         """
         Args:
             inverse: Whether to apply the inverse operation, i.e. subtraction.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             cls,
             first_operand,
@@ -217,7 +217,7 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
         """
         Args:
             inverse: Whether to apply the inverse operation, i.e. subtraction.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             cls,
             first_operand,

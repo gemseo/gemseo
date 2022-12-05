@@ -43,7 +43,7 @@ class BasicHistory(OptPostProcessor):
         """
         Args:
             variable_names: The names of the variables.
-        """
+        """  # noqa: D205, D212, D415
         problem = self.opt_problem
         dataset = problem.export_to_dataset(opt_naming=False, by_group=False)
         if self._obj_name in variable_names:

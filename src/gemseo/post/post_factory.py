@@ -43,7 +43,7 @@ class PostFactory:
     and from disk, from a serialized optimization problem.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:  # noqa:D107
         self.factory = Factory(OptPostProcessor, ("gemseo.post",))
         self.executed_post = []
 

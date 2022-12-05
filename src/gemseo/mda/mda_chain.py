@@ -275,7 +275,7 @@ class MDAChain(MDA):
     def add_differentiated_outputs(
         self,
         outputs: Iterable[str] | None = None,
-    ) -> None:
+    ) -> None:  # noqa: D102
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)

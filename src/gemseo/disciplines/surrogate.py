@@ -60,7 +60,7 @@ class SurrogateDiscipline(MDODiscipline):
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:
-        """.. # noqa: D205 D212 D415
+        """..
         Args:
             surrogate: Either the class name
                 or the instance of the :class:`.MLRegressionAlgo`.
@@ -93,7 +93,7 @@ class SurrogateDiscipline(MDODiscipline):
         Raises:
             ValueError: If the learning dataset is missing
                 whilst the regression model is not trained.
-        """
+        """  # noqa: D205, D212, D415
         if isinstance(surrogate, MLRegressionAlgo):
             self.regression_model = surrogate
             name = self.regression_model.learning_set.name

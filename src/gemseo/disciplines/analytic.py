@@ -84,7 +84,7 @@ class AnalyticDiscipline(MDODiscipline):
             fast_evaluation: Whether to apply ``sympy.lambdify`` to the expressions
                 in order to accelerate their numerical evaluation;
                 otherwise the expressions are evaluated with ``sympy.Expr.evalf``.
-        """  # noqa: D205 D212 D415
+        """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self.expressions = expressions
         self.output_names_to_symbols = {}
