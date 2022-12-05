@@ -216,7 +216,6 @@ class OptimizationLibrary(DriverLib):
         self.__kkt_abs_tol = options.get(self._KKT_TOL_ABS, None)
         self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
-        problem.add_callback(self.new_iteration_callback)
         if (
             self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None
         ) and self.descriptions[self.algo_name].require_gradient:

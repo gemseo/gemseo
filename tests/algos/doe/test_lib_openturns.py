@@ -23,8 +23,11 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import unique
 
@@ -33,6 +36,17 @@ from .utils import generate_test_functions
 from .utils import get_problem
 
 DOE_LIB_NAME = "OpenTURNS"
+
+
+@pytest.fixture
+def identity_problem() -> OptimizationProblem:
+    """A problem whose objective is the identity function defined over [0,1]."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x, "f")
+    return problem
 
 
 def test_library_from_factory():
@@ -315,3 +329,28 @@ def test_compute_stratified_doe(variables_space, name, size):
 def test_library_name():
     """Check the library name."""
     assert OpenTURNS.LIBRARY_NAME == "OpenTURNS"
+
+
+@pytest.mark.parametrize("n_samples", [2, 3, 4])
+@pytest.mark.parametrize("seed", [1, 2])
+def test_executed_twice(identity_problem, n_samples, seed):
+    """Check that the second call to execute() is correctly taken into account."""
+    library = OpenTURNS()
+    library.execute(
+        identity_problem, "OT_MONTE_CARLO", n_samples=3, algo_type="doe", seed=1
+    )
+    library.execute(
+        identity_problem,
+        "OT_MONTE_CARLO",
+        n_samples=n_samples,
+        algo_type="doe",
+        seed=seed,
+    )
+    if seed == 1:
+        assert len(identity_problem.database) == max(3, n_samples)
+        assert identity_problem.max_iter == n_samples
+        assert identity_problem.current_iter == max(n_samples - 3, 0)
+    else:
+        assert len(identity_problem.database) == 3 + n_samples
+        assert identity_problem.max_iter == n_samples
+        assert identity_problem.current_iter == n_samples

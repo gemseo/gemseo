@@ -270,6 +270,7 @@ class DriverLib(AlgoLib):
 
         self._start_time = time()
         self.problem.max_iter = max_iter
+        self.problem.current_iter = 0
 
     def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
         """Set the objective value in the progress bar.
@@ -312,10 +313,8 @@ class DriverLib(AlgoLib):
             MaxTimeReached: If the elapsed time is greater than the maximum
                 execution time.
         """
-        # First check if the max_iter is reached and update the progress bar
         self.__iter += 1
         self.problem.current_iter = self.__iter
-
         if self._max_time > 0:
             delta_t = time() - self._start_time
             if delta_t > self._max_time:
@@ -481,16 +480,16 @@ class DriverLib(AlgoLib):
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
             eval_obs_jac=eval_obs_jac,
         )
-
+        problem.database.add_new_iter_listener(problem.execute_observables_callback)
+        problem.database.add_new_iter_listener(self.new_iteration_callback)
         try:  # Term criteria such as max iter or max_time can be triggered in pre_run
             self._pre_run(problem, self.algo_name, **options)
             result = self._run(**options)
         except TerminationCriterion as error:
             result = self._termination_criterion_raised(error)
         self.finalize_iter_observer()
-        self.problem.clear_listeners()
+        problem.database.clear_listeners()
         self._post_run(problem, algo_name, result, **options)
-
         return result
 
     def _process_specific_option(self, options, option_key):

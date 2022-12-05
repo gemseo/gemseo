@@ -157,6 +157,12 @@ class OptimizationProblem:
     when analytical gradient is not available.
     """
 
+    current_iter: int
+    """The current iteration."""
+
+    max_iter: int
+    """The maximum iteration."""
+
     nonproc_objective: MDOFunction
     """The non-processed objective function."""
 
@@ -317,7 +323,7 @@ class OptimizationProblem:
         self.pb_type = pb_type
         self.ineq_tolerance = 1e-4
         self.eq_tolerance = 1e-2
-        self.max_iter = None
+        self.max_iter = 0
         self.current_iter = 0
         self.use_standardized_objective = use_standardized_objective
         self.__functions_are_preprocessed = False
@@ -353,7 +359,7 @@ class OptimizationProblem:
         Returns:
             Whether the maximum amount of iterations has been reached.
         """
-        if self.max_iter is None or self.current_iter is None:
+        if self.max_iter in [None, 0] or self.current_iter in [None, 0]:
             return False
         return self.current_iter >= self.max_iter
 
@@ -371,15 +377,12 @@ class OptimizationProblem:
         self.__parallel_differentiation = value
 
     @property
-    def parallel_differentiation_options(self) -> bool:
+    def parallel_differentiation_options(self) -> dict[str, int | bool]:
         """The options to approximate the derivatives in parallel."""
         return self.__parallel_differentiation_options
 
     @parallel_differentiation_options.setter
-    def parallel_differentiation_options(
-        self,
-        value: bool,
-    ) -> None:
+    def parallel_differentiation_options(self, value: dict[str, int | bool]) -> None:
         self.__raise_exception_if_functions_are_already_preprocessed()
         self.__parallel_differentiation_options = value
 
@@ -1318,7 +1321,6 @@ class OptimizationProblem:
             self.__functions_are_preprocessed = True
             self.check()
             self.__eval_obs_jac = eval_obs_jac
-            self.database.add_new_iter_listener(self.execute_observables_callback)
 
     def execute_observables_callback(self, last_x: ndarray) -> None:
         """The callback function to be passed to the database.

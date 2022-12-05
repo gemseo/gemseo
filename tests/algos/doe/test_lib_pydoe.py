@@ -128,7 +128,7 @@ def test_export_error():
     """Check that a DOELibrary.export_samples raises an error if there is no samples."""
     doe_library = DOEFactory().create(DOE_LIB_NAME)
     with pytest.raises(
-        Exception, match="Samples are None, execute method before export."
+        Exception, match="Samples are missing, execute method before export."
     ):
         doe_library.export_samples("test.csv")
 
