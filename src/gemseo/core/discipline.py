@@ -528,6 +528,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """Add the inputs against which to differentiate the outputs.
 
+        If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+        an input is either a non-numeric array or not an array, it will be ignored.
+        If an input is declared as an array but the type of its items is not defined, it
+        is assumed as a numeric array.
+
+        If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+        an input is not an array, it will be ignored. Keep in mind that in this case
+        the array subtype is not checked.
+
         Args:
             inputs: The input variables against which to differentiate the outputs.
                 If None, all the inputs of the discipline are used.
@@ -538,14 +547,18 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         if (inputs is not None) and (not self.is_all_inputs_existing(inputs)):
             raise ValueError(
-                "Cannot differentiate the discipline {} wrt the inputs "
-                "that are not among the discipline inputs: {}.".format(
-                    self.name, self.get_input_data_names()
-                )
+                f"Cannot differentiate the discipline {self.name} w.r.t. the inputs "
+                "that are not among the discipline inputs: "
+                f"{self.get_input_data_names()}."
             )
 
         if inputs is None:
             inputs = self.get_input_data_names()
+
+        inputs = [
+            input_ for input_ in inputs if self.input_grammar.is_array(input_, True)
+        ]
+
         in_diff = self._differentiated_inputs
         self._differentiated_inputs = list(set(in_diff).union(inputs))
 
@@ -554,6 +567,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         outputs: Iterable[str] | None = None,
     ) -> None:
         """Add the outputs to be differentiated.
+
+        If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+        an output is either a non-numeric array or not an array, it will be ignored.
+        If an output is declared as an array but the type of its items is not defined,
+        it is assumed as a numeric array.
+
+        If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+        an output is not an array, it will be ignored. Keep in mind that in this case
+        the array subtype is not checked.
 
         Args:
             outputs: The output variables to be differentiated.
@@ -564,15 +586,19 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         if (outputs is not None) and (not self.is_all_outputs_existing(outputs)):
             raise ValueError(
-                "Cannot differentiate {} "
-                "that are not among the discipline outputs {}.".format(
-                    self.name, self.get_output_data_names()
-                )
+                f"Cannot differentiate the discipline {self.name} w.r.t. the outputs "
+                "that are not among the discipline outputs: "
+                f"{self.get_output_data_names()}."
             )
 
         out_diff = self._differentiated_outputs
         if outputs is None:
             outputs = self.get_output_data_names()
+
+        outputs = [
+            output for output in outputs if self.output_grammar.is_array(output, True)
+        ]
+
         self._differentiated_outputs = list(set(out_diff).union(outputs))
 
     def __create_new_cache(
