@@ -172,13 +172,14 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
         if grad_hist_length < 2:
             raise ValueError(
-                "Cannot build approximation for function: {} "
-                "because its gradient history is too small : {}.".format(
-                    funcname, grad_hist_length
-                )
+                f"Cannot build approximation for function: {funcname} "
+                f"because its gradient history is too small: {grad_hist_length}."
             )
 
         grad_hist = array(grad_hist)
+        if grad_hist.ndim == 1:
+            grad_hist = grad_hist[:, None]
+
         x_hist = array(x_hist)
         if x_hist.shape != (grad_hist.shape[0], grad_hist.shape[-1]):
             # TODO: add shapes in the exception message
@@ -188,21 +189,22 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
         # Function is a vector, Jacobian is a 2D matrix
         if grad_hist.ndim == 3:
-            if func_index is None:
-                raise ValueError(
-                    "Function {} has a vector output "
-                    "then function index of output "
-                    "must be specified.".format(funcname)
-                )
-
-            output_size = grad_hist.shape[1]
-            if not 0 <= func_index < output_size:
-                raise ValueError(
-                    "Function {} has a vector output of size {}, "
-                    "function index {} is out of range.".format(
-                        funcname, output_size, func_index
+            if grad_hist.shape[1] == 1:
+                func_index = 0
+            else:
+                if func_index is None:
+                    raise ValueError(
+                        f"Function {funcname} has a vector output, "
+                        "the function index of the output must be specified."
                     )
-                )
+
+                output_size = grad_hist.shape[1]
+                if not 0 <= func_index < output_size:
+                    raise ValueError(
+                        f"Function {funcname} has a vector output "
+                        f"of size {output_size}, "
+                        f"function index {func_index} is out of range."
+                    )
 
             grad_hist = grad_hist[:, func_index, :]
 
@@ -223,7 +225,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             # TODO: split into two tests
             raise ValueError(
                 "Insufficient optimization history size, "
-                "niter={} nparam = {}.".format(n_iterations, input_dimension)
+                f"niter={n_iterations} nparam={input_dimension}."
             )
 
         self.x_ref = x_hist[-1]
@@ -298,8 +300,8 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         n_iterations = x_grad_hist.shape[0]
         if iteration >= n_iterations:
             raise ValueError(
-                "Iteration {} is higher than number of gradients "
-                "in the database : {}.".format(iteration, n_iterations)
+                f"Iteration {iteration} is higher than the number of gradients "
+                f"in the database: {n_iterations}."
             )
 
         input_diff = atleast_2d(x_hist[iteration + 1] - x_hist[iteration]).T
