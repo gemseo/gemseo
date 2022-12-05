@@ -380,9 +380,17 @@ def test_data_processor():
 def test_diff_inputs_outputs():
     """Test the differentiation w.r.t inputs and outputs."""
     d = MDODiscipline()
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=f"Cannot differentiate the discipline {d.name} w.r.t. the inputs "
+        r"that are not among the discipline inputs: \[\]",
+    ):
         d.add_differentiated_inputs(["toto"])
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=f"Cannot differentiate the discipline {d.name} w.r.t. the outputs "
+        r"that are not among the discipline outputs: \[\]",
+    ):
         d.add_differentiated_outputs(["toto"])
     d.add_differentiated_inputs()
 
@@ -993,3 +1001,71 @@ def test_get_sub_disciplines_recursive(recursive, expected):
     ]
 
     assert set(classes) == expected
+
+
+@pytest.mark.parametrize(
+    "inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs",
+    [
+        (
+            {"x": array([1.0]), "in_path": "some_string"},
+            {"y": array([0.0]), "out_path": "another_string"},
+            MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+            ["x"],
+            ["y"],
+        ),
+        (
+            {"x": array([1]), "in_path": "some_string"},
+            {"y": 1, "out_path": "another_string"},
+            MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+            ["x"],
+            [],
+        ),
+        (
+            {"x": array([1.0]), "in_path": array(["some_string"])},
+            {"y": array([0.0]), "out_path": array(["another_string"])},
+            MDODiscipline.JSON_GRAMMAR_TYPE,
+            ["x"],
+            ["y"],
+        ),
+        (
+            {"x": array([1.0]), "in_path": "some_string"},
+            {"y": array([0.0]), "out_path": "another_string"},
+            MDODiscipline.JSON_GRAMMAR_TYPE,
+            ["x"],
+            ["y"],
+        ),
+        (
+            {"x": array([1]), "in_path": "some_string"},
+            {"y": 1, "out_path": "another_string"},
+            MDODiscipline.JSON_GRAMMAR_TYPE,
+            ["x"],
+            [],
+        ),
+    ],
+)
+def test_add_differentiated_io_non_numeric(
+    inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs
+):
+    """Check that non-numeric i/o are ignored in add_differentiated_inputs/outputs.
+
+    If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+    an input/output is either a non-numeric array or not an array, it will be ignored.
+
+    If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+    an input/output is not an array, it will be ignored. Keep in mind that in this case
+    the array subtype is not checked.
+
+    Args:
+        inputs: The inputs of the discipline.
+        outputs: The outputs of the discipline.
+        grammar_type: The discipline grammar type.
+        expected_diff_inputs: The expected differentiated inputs.
+        expected_diff_outputs: The expected differentiated outputs.
+    """
+    discipline = MDODiscipline(grammar_type=grammar_type)
+    discipline.input_grammar.update_from_data(inputs)
+    discipline.output_grammar.update_from_data(outputs)
+    discipline.add_differentiated_inputs()
+    discipline.add_differentiated_outputs()
+    assert discipline._differentiated_inputs == expected_diff_inputs
+    assert discipline._differentiated_outputs == expected_diff_outputs

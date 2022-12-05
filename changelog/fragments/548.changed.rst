@@ -1,0 +1,2 @@
+The methods :meth:`.MDODiscipline.add_differentiated_inputs` and :meth:`.MDODiscipline.add_differentiated_outputs`
+now ignore inputs or outputs that are not numeric.
