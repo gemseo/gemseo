@@ -33,6 +33,7 @@ from typing import MutableMapping
 from typing import Tuple
 from typing import Union
 
+from numpy import array
 from numpy import ndarray
 from numpy import savetxt
 
@@ -64,10 +65,10 @@ class DOEAlgorithmDescription(DriverDescription):
 class DOELibrary(DriverLib):
     """Abstract class to use for DOE library link See DriverLib."""
 
-    unit_samples: ndarray | None
+    unit_samples: ndarray
     """The input samples transformed in :math:`[0,1]`."""
 
-    samples: ndarray | None
+    samples: ndarray
     """The input samples."""
 
     seed: int
@@ -76,6 +77,9 @@ class DOELibrary(DriverLib):
     It increments with each generation of samples
     so that repeating the generation of sets of :math:`N` leads to different sets.
     """
+
+    eval_jac: bool
+    """Whether to evaluate the Jacobian."""
 
     DESIGN_ALGO_NAME = "Design algorithm"
     SAMPLES_TAG = "samples"
@@ -94,9 +98,10 @@ class DOELibrary(DriverLib):
     def __init__(self):
         """Constructor Abstract class."""
         super().__init__()
-        self.unit_samples = None
-        self.samples = None
+        self.unit_samples = array([])
+        self.samples = array([])
         self.seed = 0
+        self.eval_jac = False
 
     # TODO: API: remove this method
     @staticmethod
@@ -147,7 +152,6 @@ class DOELibrary(DriverLib):
                 self.problem.database.store(sample, {}, add_iter=True)
 
         self.init_iter_observer(len(self.unit_samples))
-        self.problem.add_callback(self.new_iteration_callback)
 
     def _generate_samples(self, **options: Any) -> ndarray:
         """Generate the samples of the input variables.
@@ -279,8 +283,9 @@ class DOELibrary(DriverLib):
         Args:
             doe_output_file: The path to the output file.
         """
-        if self.unit_samples is None:
-            raise RuntimeError("Samples are None, execute method before export.")
+        if not self.unit_samples.size:
+            raise RuntimeError("Samples are missing, execute method before export.")
+
         savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
     def _worker(self, sample: ndarray) -> DOELibraryOutputType:

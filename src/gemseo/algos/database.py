@@ -637,10 +637,7 @@ class Database:
             if cval_ok and values_not_empty:
                 self.notify_newiter_listeners(x_vect)
 
-    def add_store_listener(
-        self,
-        listener_func: Callable,
-    ) -> None:
+    def add_store_listener(self, listener_func: Callable) -> None:
         """Add a listener to be called when an item is stored to the database.
 
         Args:
