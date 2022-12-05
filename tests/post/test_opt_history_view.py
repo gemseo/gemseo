@@ -174,3 +174,51 @@ def test_common_scenario(
     opt = OptHistoryView(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
     opt.execute(save=False)
+
+
+@pytest.mark.parametrize(
+    "case,baseline_images",
+    [
+        (
+            1,
+            [
+                "461_1_opt_history_view_variables",
+                "461_1_opt_history_view_objective",
+                "461_1_opt_history_view_x_xstar",
+                "461_1_opt_history_view_hessian",
+            ],
+        ),
+        (
+            2,
+            [
+                "461_2_opt_history_view_variables",
+                "461_2_opt_history_view_objective",
+                "461_2_opt_history_view_x_xstar",
+                "461_2_opt_history_view_hessian",
+            ],
+        ),
+    ],
+)
+@image_comparison(None)
+def test_461(case, baseline_images):
+    """Check that OptHistoryView works with the cases mentioned in issue 461.
+
+    1. Design space of dimension 1 and scalar output.
+    2. Design space of dimension > 1 and vector output.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=-2, u_b=2.0, value=-2.0)
+    if case == 2:
+        design_space.add_variable("y", l_b=-2, u_b=2.0, value=-2.0)
+
+    problem = OptimizationProblem(design_space)
+    if case == 1:
+        problem.objective = MDOFunction(lambda x: x[0] ** 2, "func")
+    elif case == 2:
+        problem.objective = problem.objective = MDOFunction(
+            lambda x: array([x[0] ** 2 + x[1] ** 2]), "func"
+        )
+    problem.differentiation_method = problem.FINITE_DIFFERENCES
+
+    execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
+    execute_post(problem, "OptHistoryView", save=False, show=False)
