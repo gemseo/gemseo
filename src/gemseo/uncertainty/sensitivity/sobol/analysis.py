@@ -122,6 +122,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.base_enum import get_names
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import pretty_repr
@@ -176,7 +177,8 @@ class SobolAnalysis(SensitivityAnalysis):
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
 
-    AVAILABLE_ALGOS: ClassVar[list[str]] = sorted(Algorithm._member_names_)
+    # TODO: API: remove this attribute in the next major release.
+    AVAILABLE_ALGOS: ClassVar[list[str]] = get_names(Algorithm)
     """The names of the available algorithms to estimate the Sobol' indices."""
 
     DEFAULT_DRIVER: ClassVar[str] = OpenTURNS.OT_SOBOL_INDICES
@@ -243,13 +245,8 @@ class SobolAnalysis(SensitivityAnalysis):
                 f"{name} is not an appropriate method; "
                 f"available ones are {pretty_repr([m.name for m in self.Method])}."
             )
-        if isinstance(name, str):
-            method = self.Method[name].value
-        else:
-            method = name.value
-
-        self._main_method = method
-        LOGGER.info("Use %s order indices as main indices.", method)
+        self._main_method = self.Method[name].value
+        LOGGER.info("Use %s order indices as main indices.", self._main_method)
 
     def compute_indices(
         self,
@@ -265,11 +262,7 @@ class SobolAnalysis(SensitivityAnalysis):
                 f"The algorithm {algo} is not available to compute the Sobol' indices."
             )
 
-        if isinstance(algo, str):
-            algorithm = self.Algorithm[algo].value
-        else:
-            algorithm = algo.value
-
+        algorithm = self.Algorithm[algo].value
         output_names = outputs or self.default_output
         if not isinstance(output_names, list):
             output_names = [output_names]

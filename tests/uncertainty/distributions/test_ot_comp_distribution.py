@@ -19,7 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import Sequence
+
 import pytest
+from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 from numpy import allclose
@@ -28,12 +31,18 @@ from numpy import inf
 from numpy.random import seed
 
 
-@pytest.fixture
-def composed_distribution():
-    distribution1 = OTNormalDistribution("x1", dimension=2)
-    distribution2 = OTNormalDistribution("x2", dimension=2)
-    distributions = [distribution1, distribution2]
-    return OTDistribution._COMPOSED_DISTRIBUTION(distributions)
+@pytest.fixture(scope="module")
+def distributions() -> list[OTNormalDistribution]:
+    """Two normal distributions."""
+    return [OTNormalDistribution(name, dimension=2) for name in ["x1", "x2"]]
+
+
+@pytest.fixture(scope="module")
+def composed_distribution(
+    distributions: Sequence[OTDistribution],
+) -> OTComposedDistribution:
+    """A composed distribution."""
+    return OTComposedDistribution(distributions)
 
 
 def test_constructor(composed_distribution):
@@ -43,6 +52,28 @@ def test_constructor(composed_distribution):
     assert composed_distribution.transformation == "x1_x2"
     assert len(composed_distribution.parameters) == 1
     assert composed_distribution.parameters[0] == "independent_copula"
+
+
+@pytest.mark.parametrize(
+    "copula",
+    [OTComposedDistribution.CopulaModel.independent_copula, "independent_copula"],
+)
+def test_copula_enum_or_str(distributions, copula):
+    """Check that copula passed to __init__ can be either a CopulaModel or a str."""
+    assert (
+        str(OTComposedDistribution(distributions, copula=copula).parameters[0])
+        == "independent_copula"
+    )
+
+
+def test_available_copula_models():
+    """Check AVAILABLE_COPULA_MODELS."""
+    assert "independent_copula" in OTComposedDistribution.AVAILABLE_COPULA_MODELS
+
+
+def test_variable_name(distributions):
+    """Check the use of a custom variable name."""
+    assert OTComposedDistribution(distributions, variable="foo").variable_name == "foo"
 
 
 def test_str(composed_distribution):

@@ -126,7 +126,7 @@ class ParameterSpace(DesignSpace):
     def __init__(
         self,
         hdf_file: str | Path | None = None,
-        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
         name: str | None = None,
     ) -> None:
         """
@@ -660,7 +660,7 @@ class ParameterSpace(DesignSpace):
         dataset: Dataset,
         groups: Iterable[str] | None = None,
         uncertain: Mapping[str, bool] | None = None,
-        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
     ) -> ParameterSpace:
         """Initialize the parameter space from a dataset.
 
