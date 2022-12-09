@@ -176,6 +176,7 @@ def test_common_scenario(
     opt.execute(save=False)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "case,baseline_images",
     [
