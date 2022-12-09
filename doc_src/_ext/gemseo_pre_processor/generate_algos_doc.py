@@ -154,6 +154,7 @@ class AlgoOptionsDoc:
         long_algo_type: str,
         algo_factory: Any | Factory,
         template: str | None = None,
+        user_guide_anchor: str = "",
     ) -> None:
         """
         Args:
@@ -165,6 +166,8 @@ class AlgoOptionsDoc:
             template: The name of the template file located in the same directory
                 as the current file.
                 If None, :attr:`AlgoOptionsDoc.TEMPLATE` will be used.
+            user_guide_anchor: The anchor of the section of the user guide
+                about these algorithms.
         """
         if template is None:
             self.template = self.TEMPLATE
@@ -194,6 +197,7 @@ class AlgoOptionsDoc:
         self.get_website = None
         self.get_description = None
         self.get_features = None
+        self.user_guide_anchor = user_guide_anchor
 
     def get_module(self, algo_name: str) -> str:
         """Return the module path of an algorithm.
@@ -285,6 +289,7 @@ class AlgoOptionsDoc:
             descriptions=self.descriptions,
             features=self.features,
             libraries=self.libraries,
+            user_guide_anchor=self.user_guide_anchor,
         )
         output_file_path = Path(GEN_OPTS_PATH).parent / output_file_name
         with open(output_file_path, "w", encoding="utf-8") as outf:
@@ -324,6 +329,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         long_algo_type: str,
         algo_factory: Any | Factory,
         template: str | None = None,
+        user_guide_anchor: str = "",
     ) -> None:
 
         super().__init__(
@@ -331,6 +337,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             long_algo_type,
             algo_factory,
             template=template,
+            user_guide_anchor=user_guide_anchor,
         )
         self.algos_names = algo_factory.algorithms
         self.get_description = self.__default_description_getter(algo_factory)
@@ -411,12 +418,14 @@ class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
         long_algo_type: str,
         algo_factory: Any | Factory,
         template: str | None = None,
+        user_guide_anchor: str = "",
     ) -> None:
         super().__init__(
             algo_type,
             long_algo_type,
             algo_factory,
             template=template,
+            user_guide_anchor=user_guide_anchor,
         )
 
         def get_options_schema(algo):
@@ -438,12 +447,14 @@ class InitOptionsDoc(AlgoOptionsDoc):
         long_algo_type: str,
         algo_factory: Any | Factory,
         template: str | None = None,
+        user_guide_anchor: str = "",
     ) -> None:
         super().__init__(
             algo_type,
             long_algo_type,
             algo_factory,
             template=template,
+            user_guide_anchor=user_guide_anchor,
         )
         self.get_options_schema = lambda algo: self.get_options_schema_from_method(
             self.get_class(algo).__init__
@@ -463,7 +474,7 @@ def main(gen_opts_path: str | Path) -> None:
         InitOptionsDoc("mda", "MDA", MDAFactory()),
         InitOptionsDoc("formulation", "MDO Formulation", MDOFormulationsFactory()),
         OptPostProcessorAlgoOptionsDoc("post", "Post-processing", PostFactory()),
-        DriverOptionsDoc("doe", "DOE", DOEFactory()),
+        DriverOptionsDoc("doe", "DOE", DOEFactory(), user_guide_anchor="doe"),
         DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
         DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
         InitOptionsDoc(
