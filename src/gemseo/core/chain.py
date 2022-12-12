@@ -33,8 +33,8 @@ from numpy import zeros
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution import DiscParallelExecution
@@ -47,8 +47,8 @@ class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
     AVAILABLE_MODES = [
-        JacobianAssembly.REVERSE_MODE,
-        JacobianAssembly.AUTO_MODE,
+        derivation_modes.REVERSE_MODE,
+        derivation_modes.AUTO_MODE,
         MDODiscipline.FINITE_DIFFERENCES,
         MDODiscipline.COMPLEX_STEP,
     ]
@@ -144,7 +144,7 @@ class MDOChain(MDODiscipline):
         # use coupling_structure graph path for that
         last_cached = discipline.get_input_data()
         # The graph traversal algorithm avoid to force_all linearizations
-        discipline.linearize(last_cached, force_no_exec=True)
+        discipline.linearize(last_cached, force_no_exec=True, force_all=False)
 
         for output_name in chain_outputs:
             if output_name in self.jac:
@@ -209,7 +209,7 @@ class MDOChain(MDODiscipline):
         last_cached = last_discipline.get_input_data()
 
         # The graph traversal algorithm avoid to force_all linearizations
-        last_discipline.linearize(last_cached, force_no_exec=True)
+        last_discipline.linearize(last_cached, force_no_exec=True, force_all=False)
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines

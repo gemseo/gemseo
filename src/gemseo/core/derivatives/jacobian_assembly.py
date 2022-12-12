@@ -21,7 +21,9 @@
 from __future__ import annotations
 
 import itertools
+import logging
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import atleast_2d
@@ -29,6 +31,7 @@ from numpy import concatenate
 from numpy import empty
 from numpy import ones
 from numpy import zeros
+from numpy.linalg import norm
 from scipy.sparse import dia_matrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import vstack
@@ -38,7 +41,15 @@ from scipy.sparse.linalg import LinearOperator
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.utils.matplotlib_figure import save_show_figure
+
+if TYPE_CHECKING:
+    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from typing import Sequence
+
+LOGGER = logging.getLogger(__name__)
 
 
 def none_factory():
@@ -59,10 +70,10 @@ class JacobianAssembly:
     Typically, assemble discipline's Jacobians into a system Jacobian.
     """
 
-    DIRECT_MODE = "direct"
-    ADJOINT_MODE = "adjoint"
-    AUTO_MODE = "auto"
-    REVERSE_MODE = "reverse"
+    DIRECT_MODE = derivation_modes.DIRECT_MODE
+    ADJOINT_MODE = derivation_modes.ADJOINT_MODE
+    AUTO_MODE = derivation_modes.AUTO_MODE
+    REVERSE_MODE = derivation_modes.REVERSE_MODE
     AVAILABLE_MODES = (DIRECT_MODE, ADJOINT_MODE, AUTO_MODE, REVERSE_MODE)
 
     # matrix types
@@ -79,8 +90,11 @@ class JacobianAssembly:
         self.coupling_structure = coupling_structure
         self.sizes = {}
         self.disciplines = {}
+        self.__last_diff_inouts = tuple()
+        self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
         self.n_newton_linear_resolutions = 0
+        self.__linear_solver_factory = LinearSolversFactory()
 
     def __check_inputs(self, functions, variables, couplings, matrix_type, use_lu_fact):
         """Check the inputs before differentiation.
@@ -500,6 +514,55 @@ class JacobianAssembly:
             out_j += variable_size
         return dfun_dy
 
+    def _compute_diff_ios_and_couplings(
+        self,
+        variables: Sequence[str],
+        functions: Sequence[str],
+        states: Sequence[str],
+        coupling_structure: MDOCouplingStructure,
+    ):
+        """Compute the minimal differentiated inputs, outputs and couplings.
+
+        This is done form the
+        disciplines that are required to differentiate the functions with respect to the
+        variables.
+
+        This uses a graph algorithm that computes the dependency
+        process graph and address the "jacobian accumulation" problem with a heuristic
+        but conservative approach.
+
+        Args:
+            variables: The differentiation variables.
+            functions: The functions to differentiate.
+            states: The state variables.
+            coupling_structure: The coupling structure containing all the disciplines.
+
+        Returns: The minimal coupling variables set requires to differentiate the
+            functions with respect to the variables.
+        """
+        diff_ios = (set(variables), set(functions))
+        if self.__last_diff_inouts != diff_ios:
+            diff_ios_merged = traverse_add_diff_io_mda(
+                coupling_structure, variables, functions
+            )
+            self.__last_diff_inouts = diff_ios
+
+            couplings = [
+                coupl
+                for coupls in diff_ios_merged.values()
+                for coupl in list(coupls[0]) + list(coupls[1])
+            ]
+
+            minimal_couplings = set(couplings).intersection(
+                coupling_structure.all_couplings
+            )
+            # The state variables are not coupling variables although they are inputs
+            # and outputs of the disciplines with residuals.
+            minimal_couplings = sorted(minimal_couplings.difference(states))
+
+            self.__minimal_couplings = minimal_couplings
+        return self.__minimal_couplings
+
     def total_derivatives(
         self,
         in_data,
@@ -549,14 +612,23 @@ class JacobianAssembly:
 
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
-        couplings_and_res = couplings.copy()
-        couplings_and_states = couplings.copy()
+        if residual_variables:
+            states = list(residual_variables.values())
+        else:
+            states = []
+        couplings_minimal = self._compute_diff_ios_and_couplings(
+            variables,
+            functions,
+            states,
+            self.coupling_structure,
+        )
+
+        couplings_and_res = couplings_minimal.copy()
+        couplings_and_states = couplings_minimal.copy()
         # linearize all the disciplines
         if residual_variables is not None and residual_variables:
-            couplings_and_res += list(residual_variables.keys())
-            couplings_and_states += list(residual_variables.values())
-
-        self._add_differentiated_inouts(functions, variables, couplings_and_res)
+            couplings_and_res += residual_variables.keys()
+            couplings_and_states += states
 
         for disc in self.coupling_structure.disciplines:
             if disc.cache is not None and exec_cache_tol is not None:
@@ -564,10 +636,10 @@ class JacobianAssembly:
             disc.linearize(in_data, force_no_exec=force_no_exec)
 
         # compute the sizes from the Jacobians
-        self.compute_sizes(functions, variables, couplings, residual_variables)
+        self.compute_sizes(functions, variables, couplings_minimal, residual_variables)
         n_variables = self.compute_dimension(variables)
         n_functions = self.compute_dimension(functions)
-        n_residuals = self.compute_dimension(couplings)
+        n_residuals = self.compute_dimension(couplings_minimal)
         if residual_variables:
             n_residuals += self.compute_dimension(residual_variables.keys())
             n_variables += self.compute_dimension(residual_variables.values())
@@ -583,7 +655,7 @@ class JacobianAssembly:
         (dfun_dx, dfun_dy) = ({}, {})
         for fun in functions:
             dfun_dx[fun] = self.dfun_dvar(fun, variables, n_variables)
-            dfun_dy[fun] = self.dfun_dvar(fun, couplings, n_residuals)
+            dfun_dy[fun] = self.dfun_dvar(fun, couplings_minimal, n_residuals)
 
         mode = self._check_mode(mode, n_variables, n_functions)
 
@@ -636,42 +708,6 @@ class JacobianAssembly:
             raise ValueError("Incorrect linearization mode " + str(mode))
 
         return self.split_jac(total_derivatives, variables)
-
-    def _add_differentiated_inouts(self, functions, variables, couplings):
-        """Add functions to the differentiated outputs of all the disciplines.
-
-        WRT couplings and variables of the discipline.
-
-        Args:
-            functions: The functions to differentiate.
-            variables: The differentiation variables.
-            couplings: The coupling variables.
-
-        Raises:
-            ValueError: When no inputs are provided.
-        """
-        couplings_and_functions = set(couplings) | set(functions)
-        couplings_and_variables = set(couplings) | set(variables)
-
-        for discipline in self.coupling_structure.disciplines:
-            # outputs
-            disc_outputs = discipline.get_output_data_names()
-            outputs = list(couplings_and_functions & set(disc_outputs))
-
-            # inputs
-            disc_inputs = discipline.get_input_data_names()
-            inputs = list(set(disc_inputs) & couplings_and_variables)
-
-            if inputs and outputs:
-                discipline.add_differentiated_inputs(inputs)
-                discipline.add_differentiated_outputs(outputs)
-            if outputs and not inputs:
-                base_msg = (
-                    "Discipline '{}' has the outputs '{}' that must be "
-                    "differentiated, but no coupling or design "
-                    "variables as inputs"
-                )
-                raise ValueError(base_msg.format(discipline.name, outputs))
 
     def split_jac(self, coupled_system, variables):
         """Split a Jacobian dict into a dict of dict.
@@ -752,9 +788,10 @@ class JacobianAssembly:
         # form the residuals
         res = self.residuals(in_data, couplings)
         # solve the linear system
-        factory = LinearSolversFactory()
         linear_problem = LinearProblem(dres_dy, -relax_factor * res)
-        factory.execute(linear_problem, linear_solver, **linear_solver_options)
+        self.__linear_solver_factory.execute(
+            linear_problem, linear_solver, **linear_solver_options
+        )
         newton_step = linear_problem.solution
         self.n_newton_linear_resolutions += 1
 
@@ -886,7 +923,7 @@ class CoupledSystem:
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0
         self.lu_fact = 0
-        self.linear_solver_factory = LinearSolversFactory()
+        self.__linear_solver_factory = LinearSolversFactory()
         self.linear_problem = None
 
     def direct_mode(
@@ -1016,7 +1053,7 @@ class CoupledSystem:
             linear_solver_options["outer_v"] = []
         for var_index in range(n_variables):
             self.linear_problem.rhs = -dres_dx[:, var_index]
-            self.linear_solver_factory.execute(
+            self.__linear_solver_factory.execute(
                 self.linear_problem, linear_solver, **linear_solver_options
             )
             dy_dx[:, var_index] = self.linear_problem.solution
@@ -1068,7 +1105,7 @@ class CoupledSystem:
             # compute adjoint vector for each component of the function
             for fun_component in range(dfunction_dy.shape[0]):
                 self.linear_problem.rhs = -dfunction_dy[fun_component, :].T
-                self.linear_solver_factory.execute(
+                self.__linear_solver_factory.execute(
                     self.linear_problem, linear_solver, **linear_solver_options
                 )
                 adjoint = self.linear_problem.solution
@@ -1079,7 +1116,15 @@ class CoupledSystem:
         return jac
 
     def _direct_mode_lu(
-        self, functions, n_variables, n_couplings, dres_dx, dres_dy, dfun_dx, dfun_dy
+        self,
+        functions,
+        n_variables,
+        n_couplings,
+        dres_dx,
+        dres_dy,
+        dfun_dx,
+        dfun_dy,
+        tol=1e-10,
     ):
         """Compute the total derivative Jacobian in direct mode.
 
@@ -1091,6 +1136,8 @@ class CoupledSystem:
             dres_dy: The Jacobian of the residuals wrt the coupling variables.
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
+            tol: Tolerance on the relative residuals norm to consider that the linear
+                system is solved. If not, raises a warning.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -1099,20 +1146,33 @@ class CoupledSystem:
         # function to differentiate
         dy_dx = empty((n_couplings, n_variables))
         # compute LU decomposition
-        solve = factorized(csc_matrix(dres_dy))
+        lhs = csc_matrix(dres_dy)
+        solve = factorized(lhs)
         self.lu_fact += 1
 
         for var_index in range(n_variables):
             rhs = -dres_dx[:, var_index].todense()
-            dy_dx[:, var_index] = solve(rhs).squeeze()
+            sol = solve(rhs)
+            dy_dx[:, var_index] = sol.squeeze()
             self.n_linear_resolutions += 1
+            res = norm(lhs.dot(sol) - rhs) / norm(rhs)
+            if res > tol:
+                LOGGER.warning(
+                    "The linear system in _direct_mode_lu used to compute the coupled "
+                    "derivatives is not well resolved, "
+                    "residuals > tolerance : %s > %s ",
+                    res,
+                    tol,
+                )
         # assemble the total derivatives of the functions using dy_dx
         jac = {}
         for fun in functions:
             jac[fun] = dfun_dx[fun].toarray() + dfun_dy[fun].dot(dy_dx)
         return jac
 
-    def _adjoint_mode_lu(self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy):
+    def _adjoint_mode_lu(
+        self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, tol=1e-10
+    ):
         """Compute the total derivative Jacobian in adjoint mode.
 
         Args:
@@ -1121,6 +1181,8 @@ class CoupledSystem:
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             dres_dy_t: The Jacobian of the residuals wrt the coupling variables.
+            tol: Tolerance on the relative residuals norm to consider that the linear
+                system is solved. If not, raises a warning.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -1136,7 +1198,19 @@ class CoupledSystem:
             jac[fun] = empty(dfunction_dx.shape)
             # compute adjoint vector for each component of the function
             for fun_component in range(dfunction_dy.shape[0]):
-                adjoint = solve(-dfunction_dy[fun_component, :].todense().T)
+                rhs = -dfunction_dy[fun_component, :].todense().T
+                adjoint = solve(rhs)
+                res = norm(dres_dy_t.dot(adjoint) - rhs) / norm(rhs)
+                if res > tol:
+                    LOGGER.warning(
+                        "The linear system in _adjoint_mode_lu used to compute the "
+                        "coupled "
+                        "derivatives is not well resolved, "
+                        "residuals > tolerance : %s > %s ",
+                        res,
+                        tol,
+                    )
+
                 self.n_linear_resolutions += 1
                 jac[fun][fun_component, :] = (
                     dfunction_dx[fun_component, :] + (dres_dx.T.dot(adjoint)).T

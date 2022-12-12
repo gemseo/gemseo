@@ -23,6 +23,7 @@ import logging
 from typing import Iterable
 from typing import Iterator
 
+from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.string_tools import pretty_str
 
 # graphviz is an optional dependency
@@ -37,7 +38,6 @@ from networkx import DiGraph
 from networkx import strongly_connected_components
 from networkx import condensation
 
-from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)
 

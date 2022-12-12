@@ -29,6 +29,8 @@ from typing import Sequence
 from typing import Sized
 from typing import TYPE_CHECKING
 
+from gemseo.core.derivatives.derivation_modes import AVAILABLE_APPROX_MODES
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 
@@ -62,9 +64,6 @@ LOGGER = logging.getLogger(__name__)
 
 class DisciplineJacApprox:
     """Approximates a discipline Jacobian using finite differences or Complex step."""
-
-    COMPLEX_STEP = "complex_step"
-    FINITE_DIFFERENCES = "finite_differences"
 
     N_CPUS = cpu_count()
 
@@ -134,7 +133,7 @@ class DisciplineJacApprox:
         self.func = self.generator.get_function(
             input_names=inputs, output_names=outputs
         )
-        if self.approx_method not in [self.FINITE_DIFFERENCES, self.COMPLEX_STEP]:
+        if self.approx_method not in AVAILABLE_APPROX_MODES:
             raise ValueError(
                 f"Unknown Jacobian approximation method {self.approx_method}."
             )
