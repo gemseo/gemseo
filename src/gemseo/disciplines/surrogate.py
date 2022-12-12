@@ -27,7 +27,7 @@ from typing import Mapping
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives import derivation_modes
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
@@ -134,7 +134,7 @@ class SurrogateDiscipline(MDODiscipline):
         self.add_differentiated_outputs()
         try:
             self.regression_model.predict_jacobian(self.default_inputs)
-            self.linearization_mode = JacobianAssembly.AUTO_MODE
+            self.linearization_mode = derivation_modes.AUTO_MODE
             msg.add("Jacobian: use surrogate model jacobian")
         except NotImplementedError:
             self.linearization_mode = self.FINITE_DIFFERENCES

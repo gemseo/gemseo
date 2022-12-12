@@ -282,8 +282,6 @@ class ScipyLinalgAlgos(LinearSolverLib):
                     self.problem.compute_residuals(True),
                 )
                 LOGGER.warning("info = %s", info)
-            else:
-                LOGGER.warning("Failed to converge")
             return False
 
         # check the dimensions
@@ -353,5 +351,6 @@ class ScipyLinalgAlgos(LinearSolverLib):
             self.problem.is_converged = True
         else:
             info = 1
+            self.problem.is_converged = False
 
         return best_sol, info

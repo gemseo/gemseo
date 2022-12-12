@@ -37,6 +37,7 @@ from numpy.linalg import norm
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -49,7 +50,7 @@ LOGGER = logging.getLogger(__name__)
 class MDA(MDODiscipline):
     """An MDA analysis."""
 
-    FINITE_DIFFERENCES = "finite_differences"
+    FINITE_DIFFERENCES = FINITE_DIFFERENCES
 
     N_CPUS = cpu_count()
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (

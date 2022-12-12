@@ -31,6 +31,7 @@ from numpy import zeros
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
@@ -54,7 +55,7 @@ class ComplexStep(GradientApproximator):
     ACM Transactions on Mathematical Software (TOMS) 29.3 (2003): 245-262.
     """
 
-    ALIAS = "complex_step"
+    ALIAS = COMPLEX_STEP
 
     def __init__(
         self,

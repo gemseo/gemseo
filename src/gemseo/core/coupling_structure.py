@@ -29,6 +29,7 @@ from typing import List
 from typing import Sequence
 from typing import Set
 from typing import Tuple
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Axes
@@ -37,7 +38,9 @@ from matplotlib.text import Text
 from pylab import gca
 
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_html import N2HTML
 
 LOGGER = logging.getLogger(__name__)

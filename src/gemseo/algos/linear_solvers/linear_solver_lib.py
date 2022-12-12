@@ -166,6 +166,10 @@ class LinearSolverLib(AlgoLib):
             result: The result of the run, i.e. the solution.
             **options: The options for the algorithm, see associated JSON file.
         """
+        if not self.problem.is_converged:
+            LOGGER.warning(
+                "The linear solver %s did not converge.", self.problem.solver_name
+            )
         if options.get(self.SAVE_WHEN_FAIL, False):
             if not self.problem.is_converged:
                 f_path = f"linear_system_{uuid4()}.pck"

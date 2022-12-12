@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 import pickle
 from os import remove
 
@@ -32,6 +33,7 @@ from numpy import zeros
 from scipy.linalg import norm
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
+
 
 RESIDUALS_TOL = 1e-12
 
@@ -107,17 +109,19 @@ def test_common_dtype_cplx():
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
-def test_not_converged():
+def test_not_converged(caplog):
     """Tests the cases when convergence fails and save_when_fail option."""
     factory = LinearSolversFactory()
     random.seed(1)
     n = 100
     problem = LinearProblem(random.rand(n, n), random.rand(n))
     lib = factory.create("ScipyLinalgAlgos")
+    caplog.set_level(logging.WARNING)
     lib.solve(
         problem, "BICGSTAB", max_iter=2, save_when_fail=True, use_ilu_precond=False
     )
     assert not problem.is_converged
+    assert "The linear solver BICGSTAB did not converge." in caplog.text
 
     problem2 = pickle.load(open(lib.save_fpath, "rb"))
     remove(lib.save_fpath)

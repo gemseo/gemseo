@@ -50,7 +50,7 @@ from numpy import zeros
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives import derivation_modes
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars.base_grammar import BaseGrammar
@@ -154,8 +154,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     GRAMMAR_DIRECTORY: ClassVar[str | None] = None
     """The directory in which to search for the grammar files if not the class one."""
 
-    COMPLEX_STEP = "complex_step"
-    FINITE_DIFFERENCES = "finite_differences"
+    COMPLEX_STEP = derivation_modes.COMPLEX_STEP
+    FINITE_DIFFERENCES = derivation_modes.FINITE_DIFFERENCES
 
     SIMPLE_CACHE = "SimpleCache"
     HDF5_CACHE = "HDF5Cache"
@@ -166,12 +166,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
     AVAILABLE_MODES = (
-        JacobianAssembly.AUTO_MODE,
-        JacobianAssembly.DIRECT_MODE,
-        JacobianAssembly.ADJOINT_MODE,
-        JacobianAssembly.REVERSE_MODE,
-        FINITE_DIFFERENCES,
-        COMPLEX_STEP,
+        derivation_modes.AUTO_MODE,
+        derivation_modes.DIRECT_MODE,
+        derivation_modes.ADJOINT_MODE,
+        derivation_modes.REVERSE_MODE,
+        derivation_modes.FINITE_DIFFERENCES,
+        derivation_modes.COMPLEX_STEP,
     )
 
     RE_EXECUTE_DONE_POLICY = "RE_EXEC_DONE"
@@ -316,7 +316,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._cache_was_loaded = False
 
         # linearize mode :auto, adjoint, direct
-        self._linearization_mode = JacobianAssembly.AUTO_MODE
+        self._linearization_mode = derivation_modes.AUTO_MODE
 
         self._grammar_type = grammar_type
 

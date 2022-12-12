@@ -34,6 +34,8 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from numpy import ndarray
+from numpy import random
+from scipy.sparse import csr_matrix
 
 CWD = Path(__file__).parent
 
@@ -111,18 +113,6 @@ def test_compute_sizes_ko(assembly):
         match=re.escape("Failed to determine the size of input variable foo"),
     ):
         assembly.compute_sizes(["y_4"], ["foo"], ["y_24"])
-
-
-def test__add_differentiated_inouts_ko(assembly):
-    """Check the consistency error raised by _add_differentiated_inouts()."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Discipline 'SobieskiMission' has the outputs '['y_4']' "
-            "that must be differentiated, but no coupling or design variables as inputs"
-        ),
-    ):
-        assembly._add_differentiated_inouts(["y_4"], ["x_4"], [])
 
 
 def compare_mda_jac_ref(jacobian: dict[str, dict[str, ndarray]]) -> bool:
@@ -243,3 +233,44 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
             args = mock_method.call_args.args
 
         assert args[2] == expected
+
+
+def test_lu_convergence_warning(assembly, caplog):
+    random.seed(1)
+    n_x = 5
+    n_y = 10
+    n_f = 1
+    dres_dy_t = random.rand(n_y, n_y)
+    dres_dy_t[0, :] = 0.0
+    dres_dy_t[0, 0] = 1e-30
+    dfun_dy = {"y_4": csr_matrix(random.rand(n_f, n_y))}
+    dfun_dx = {"y_4": csr_matrix(random.rand(n_f, n_x))}
+    dres_dx = csr_matrix(random.rand(n_y, n_x))
+
+    assembly.coupled_system._adjoint_mode_lu(
+        ["y_4"], dres_dx=dres_dx, dres_dy_t=dres_dy_t, dfun_dx=dfun_dx, dfun_dy=dfun_dy
+    )
+
+    expected = (
+        "The linear system in _adjoint_mode_lu used to compute the coupled "
+        "derivatives is not well resolved, residuals > tolerance"
+    )
+
+    assert expected in caplog.text
+
+    assembly.coupled_system._direct_mode_lu(
+        ["y_4"],
+        n_variables=n_x,
+        n_couplings=n_y,
+        dres_dx=dres_dx,
+        dres_dy=dres_dy_t,
+        dfun_dx=dfun_dx,
+        dfun_dy=dfun_dy,
+    )
+
+    expected = (
+        "The linear system in _direct_mode_lu used to compute the coupled "
+        "derivatives is not well resolved, residuals > tolerance"
+    )
+
+    assert expected in caplog.text

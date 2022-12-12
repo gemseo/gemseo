@@ -101,6 +101,8 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
+from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
@@ -235,8 +237,8 @@ class OptimizationProblem:
     AVAILABLE_PB_TYPES: ClassVar[str] = [LINEAR_PB, NON_LINEAR_PB]
 
     USER_GRAD: Final[str] = "user"
-    COMPLEX_STEP: Final[str] = "complex_step"
-    FINITE_DIFFERENCES: Final[str] = "finite_differences"
+    COMPLEX_STEP: Final[str] = COMPLEX_STEP
+    FINITE_DIFFERENCES: Final[str] = FINITE_DIFFERENCES
     __DIFFERENTIATION_CLASSES: ClassVar[str] = {
         COMPLEX_STEP: ComplexStep,
         FINITE_DIFFERENCES: FirstOrderFD,
