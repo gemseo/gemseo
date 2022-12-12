@@ -78,6 +78,9 @@ class MDOScenarioAdapter(MDODiscipline):
         "_set_bounds_before_opt",
         "_output_names",
         "_output_multipliers",
+        "keep_opt_history",
+        "_dv_in_names",
+        "_bounds_names",
     )
 
     def __init__(

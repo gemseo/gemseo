@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import os
+import pickle
 import unittest
 from itertools import permutations
 
@@ -159,3 +160,23 @@ def test_get_sub_disciplines_parallel():
         ]
     )
     assert parallel_chain.get_sub_disciplines() == parallel_chain.disciplines
+
+
+def test_mdo_chain_serialization(tmp_wd):
+    """Test that an MDOChain can be serialized, loaded and executed.
+
+    The focus of this test is to guarantee that the loaded MDOChain instance can be
+    executed, if an AttributeError is raised, it means that the attribute is missing in
+    MDOChain._ATTR_TO_SERIALIZE.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
+    chain = SobieskiChain()
+    with open("chain.pkl", "wb") as file:
+        pickle.dump(chain, file)
+
+    with open("chain.pkl", "rb") as file:
+        chain = pickle.load(file)
+    chain.check_jacobian(threshold=1e-5)
+    chain.execute()

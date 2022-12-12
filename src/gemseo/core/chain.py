@@ -53,7 +53,10 @@ class MDOChain(MDODiscipline):
         MDODiscipline.COMPLEX_STEP,
     ]
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "_coupling_structure",
+        "_last_diff_inouts",
+    )
 
     def __init__(
         self,

@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
 import re
 import unittest
 from pathlib import Path
@@ -693,3 +694,25 @@ def test_check_disciplines():
         "compute the same output: {'y'}",
     ):
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
+
+
+def test_lib_serialization(tmp_wd, mdf_scenario):
+    """Test the serialization of an MDOScenario with an instantiated opt_lib.
+
+    Args:
+        mdf_scenario: A fixture for the MDOScenario.
+    """
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.formulation.opt_problem.reset(database=False, design_space=False)
+
+    with open("scenario.pkl", "wb") as file:
+        pickle.dump(mdf_scenario, file)
+
+    with open("scenario.pkl", "rb") as file:
+        pickled_scenario = pickle.load(file)
+
+    assert pickled_scenario._lib is None
+
+    pickled_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+
+    assert pickled_scenario._lib.internal_algo_name == "SLSQP"

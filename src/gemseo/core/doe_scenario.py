@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from typing import Mapping
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
@@ -138,3 +139,10 @@ class DOEScenario(Scenario):
             export_gradients=export_gradients,
             input_values=self.__samples,
         )
+
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        super().__setstate__(state)
+        # DOELibrary objects cannot be serialized, _algo_name and _lib are set to None
+        # to force the lib creation in _run_algorithm.
+        self._algo_name = None
+        self._lib = None

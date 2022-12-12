@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from typing import Mapping
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
@@ -113,3 +114,10 @@ class MDOScenario(Scenario):
     def _update_grammar_input(self) -> None:
         self.input_grammar.update(dict(algo=str, max_iter=int, algo_options=dict))
         self.input_grammar.required_names.remove("algo_options")
+
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        super().__setstate__(state)
+        # OptimizationLibrary objects cannot be serialized, _algo_name and _lib are
+        # set to None to force the lib creation in _run_algorithm.
+        self._algo_name = None
+        self._lib = None
