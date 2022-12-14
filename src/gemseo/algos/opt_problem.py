@@ -402,9 +402,8 @@ class OptimizationProblem:
             value = value[0].decode()
         if value not in self.DIFFERENTIATION_METHODS:
             raise ValueError(
-                "'{}' is not a differentiation methods; available ones are: '{}'.".format(
-                    value, "', '".join(self.DIFFERENTIATION_METHODS)
-                )
+                "'{}' is not a differentiation methods; available ones are: '{"
+                "}'.".format(value, "', '".join(self.DIFFERENTIATION_METHODS))
             )
         self.__differentiation_method = value
 
@@ -1723,6 +1722,9 @@ class OptimizationProblem:
             outputs_opt = f_history[best_i]
             x_opt = x_history[best_i]
             f_opt = outputs_opt.get(self.objective.name)
+        if isinstance(f_opt, ndarray):
+            if len(f_opt) == 1:
+                f_opt = f_opt[0]
 
         return x_opt, f_opt, is_opt_feasible, outputs_opt
 
@@ -1794,6 +1796,9 @@ class OptimizationProblem:
                     c_opt[c_name] = feas_f[i].get(c_name)
                     c_key = Database.get_gradient_name(c_name)
                     c_opt_grad[constraint.name] = feas_f[i].get(c_key)
+        if isinstance(f_opt, ndarray):
+            if len(f_opt) == 1:
+                f_opt = f_opt[0]
         return x_opt, f_opt, c_opt, c_opt_grad
 
     def get_optimum(self) -> OptimumType:
