@@ -130,7 +130,9 @@ def test_weak_strong_coupling_mda_jac():
 
 
 def analytic_disciplines_from_desc(descriptions):
-    return [AnalyticDiscipline(desc) for desc in descriptions]
+    return [
+        AnalyticDiscipline(desc, name=str(i)) for i, desc in enumerate(descriptions)
+    ]
 
 
 @pytest.mark.parametrize(
@@ -146,7 +148,7 @@ def analytic_disciplines_from_desc(descriptions):
         (
             ({"y": "x+y", "c1": "1-0.2*c2"}, {"c2": "0.1*c1"}),
             "The following disciplines contain self-couplings and strong couplings: "
-            "['AnalyticDiscipline'].",
+            "['0'].",
         ),
     ],
 )

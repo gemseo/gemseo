@@ -25,7 +25,7 @@ from typing import Mapping
 from typing import Tuple
 from typing import TYPE_CHECKING
 
-from networkx import bfs_edges
+from networkx import edge_bfs
 from networkx import Graph
 from networkx import reverse_view
 
@@ -108,9 +108,8 @@ def _bfs_one_way_diff_io(
         outputs_dest_edge_index = 1
 
     diff_io = {}
-
     for source_disc in source_disciplines:
-        for edge in bfs_edges(graph, source=source_disc):
+        for edge in edge_bfs(graph, source=source_disc):
             coupl_io = graph.get_edge_data(*edge)["io"]
             # The origin of the edge is the discipline that computes the outputs.
             # These outputs are added to the outputs to be differentiated.
