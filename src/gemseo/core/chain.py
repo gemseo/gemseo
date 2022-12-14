@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
@@ -37,6 +38,7 @@ from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution import DiscParallelLinearization
 
@@ -305,6 +307,11 @@ class MDOChain(MDODiscipline):
 class MDOParallelChain(MDODiscipline):
     """Chain of processes that executes disciplines in parallel."""
 
+    _ATTR_TO_SERIALIZE: ClassVar[tuple[str]] = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "disciplines",
+        "parallel_execution",
+    )
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -460,14 +467,23 @@ class MDOParallelChain(MDODiscipline):
         for discipline in self.disciplines:
             discipline.reset_statuses_for_run()
 
-    def get_expected_workflow(self) -> None:  # noqa: D102
+    def get_expected_workflow(self) -> SerialExecSequence:  # noqa: D102
         sequence = ExecutionSequenceFactory.parallel()
         for discipline in self.disciplines:
             sequence.extend(discipline.get_expected_workflow())
         return sequence
 
-    def get_expected_dataflow(self) -> None:  # noqa: D102
+    def get_expected_dataflow(  # noqa: D102
+        self,
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return []
+
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:  # noqa: D102
+        return [
+            sub_discipline
+            for discipline in self.disciplines
+            for sub_discipline in discipline.get_disciplines_in_dataflow_chain()
+        ]
 
     def _set_cache_tol(
         self,

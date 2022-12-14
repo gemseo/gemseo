@@ -23,6 +23,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
@@ -317,3 +318,76 @@ def test_mda_chain_self_coupling():
 
     assert mdachain_root.mdo_chain.disciplines[0] == mdachain_lower
     assert len(mdachain_root.mdo_chain.disciplines) == 1
+
+
+def test_mdachain_parallelmdochain():
+    """Test that the MDAChain creates MDOParallelChain for parallel tasks, if
+    requested."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"a": "x"},
+            {"y1": "x1", "b": "a+1"},
+            {"x1": "1.-0.3*y1"},
+            {"y2": "x2", "c": "a+2"},
+            {"x2": "1.-0.3*y2"},
+            {"obj1": "x1+x2"},
+            {"obj2": "b+c"},
+            {"obj": "obj1+obj2"},
+        )
+    )
+    mdachain = MDAChain(
+        disciplines, name="mdachain_lower", mdachain_parallelize_tasks=True
+    )
+    assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
+    assert type(mdachain.mdo_chain.disciplines[1]) is MDOParallelChain
+    assert type(mdachain.mdo_chain.disciplines[2]) is MDOParallelChain
+
+
+PARALLEL_OPTIONS = [
+    {
+        "mdachain_parallelize_tasks": False,
+        "mdachain_parallel_options": {},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": True, "n_processes": 1},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": False, "n_processes": 1},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": True, "n_processes": 2},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": False, "n_processes": 2},
+    },
+]
+
+
+@pytest.mark.parametrize("parallel_options", PARALLEL_OPTIONS)
+def test_mdachain_parallelmdochain_options(parallel_options):
+    """Test the parallel MDO chain in a MDAChain with various arguments."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"a": "x"},
+            {"y1": "x1", "b": "a+1"},
+            {"x1": "1.-0.3*y1"},
+            {"y2": "x2", "c": "a+2"},
+            {"x2": "1.-0.3*y2"},
+            {"obj1": "x1+x2"},
+            {"obj2": "b+c"},
+            {"obj": "obj1+obj2"},
+        )
+    )
+    mdachain_parallelize_tasks = parallel_options["mdachain_parallelize_tasks"]
+    mdo_parallel_chain_options = parallel_options["mdachain_parallel_options"]
+    mdachain = MDAChain(
+        disciplines,
+        name="mdachain_lower",
+        mdachain_parallelize_tasks=mdachain_parallelize_tasks,
+        mdachain_parallel_options=mdo_parallel_chain_options,
+    )
+    assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])

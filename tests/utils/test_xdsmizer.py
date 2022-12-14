@@ -29,6 +29,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline
 from gemseo.core.chain import MDOChain
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.mdo_scenario import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
@@ -286,6 +287,47 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
         "html_output": False,
         "json_output": True,
         "outfilename": "xdsmized_nested_chains.json",
+    }
+
+    assert_xdsm(nested_chains, **options)
+
+
+def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
+    """Test the XDSM representation of nested ``MDOParallelChain``s.
+
+    Here, we build a 3-levels nested chain.
+    """
+
+    def get_name(x: int) -> str:
+        return f"x_{x}"
+
+    beg_chain = elementary_discipline(get_name(1), get_name(2))
+
+    deep_chain = MDOParallelChain(
+        [
+            elementary_discipline(get_name(2), get_name(3)),
+            elementary_discipline(get_name(2), get_name(4)),
+        ]
+    )
+
+    inter_chain = MDOParallelChain(
+        [deep_chain, elementary_discipline(get_name(4), get_name(5))]
+    )
+
+    design_space = DesignSpace()
+    design_space.add_variable(get_name(1))
+
+    nested_chains = MDOScenario(
+        [beg_chain, inter_chain],
+        formulation="DisciplinaryOpt",
+        objective_name=get_name(5),
+        design_space=design_space,
+    )
+
+    options = {
+        "html_output": False,
+        "json_output": True,
+        "outfilename": "xdsmized_nested_parallel_chains.json",
     }
 
     assert_xdsm(nested_chains, **options)
