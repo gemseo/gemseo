@@ -105,7 +105,7 @@ class ProgressBar(tqdm.tqdm):
     @classmethod
     def format_meter(cls, n, total, elapsed, **kwargs):  # noqa: D102
         if elapsed != 0.0:
-            rate, unit = cls.__convert_rate(total, elapsed)
+            rate, unit = cls.__convert_rate(n, elapsed)
             kwargs["rate"] = rate
             kwargs["unit"] = unit
         meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
@@ -221,6 +221,7 @@ class DriverLib(AlgoLib):
         self._start_time = None
         self._max_time = None
         self.__message = None
+        self.__is_current_iteration_logged = True
 
     @classmethod
     def _get_unsuitability_reason(
@@ -267,7 +268,6 @@ class DriverLib(AlgoLib):
             )
         else:
             self.deactivate_progress_bar()
-
         self._start_time = time()
         self.problem.max_iter = max_iter
         self.problem.current_iter = 0
@@ -287,17 +287,26 @@ class DriverLib(AlgoLib):
             )
 
         if value is not None:
+            self.__is_current_iteration_logged = True
             # if maximization problem: take the opposite
             if (
                 not self.problem.minimize_objective
                 and not self.problem.use_standardized_objective
             ):
                 value = -value
-
-            self.__progress_bar.set_postfix(refresh=False, obj=value)
-            self.__progress_bar.update()
+            self.__progress_bar.n += 1
+            if isinstance(value, ndarray):
+                if len(value) == 1:
+                    value = value[0]
+            self.__progress_bar.set_postfix(refresh=True, obj=value)
+            #
         else:
-            self.__progress_bar.update()
+            if self.__is_current_iteration_logged:
+                self.__is_current_iteration_logged = False
+            else:
+                self.__is_current_iteration_logged = True
+                self.__progress_bar.n += 1
+                self.__progress_bar.set_postfix(refresh=True, obj="Not evaluated")
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Iterate the progress bar, implement the stop criteria.
@@ -310,6 +319,11 @@ class DriverLib(AlgoLib):
             MaxTimeReached: If the elapsed time is greater than the maximum
                 execution time.
         """
+        # First check if the max_iter is reached and update the progress bar
+        if self.__progress_bar is not None and not self.__is_current_iteration_logged:
+            self.__set_progress_bar_objective_value(
+                self.problem.database.get_x_by_iter(self.problem.current_iter - 1)
+            )
         self.__iter += 1
         self.problem.current_iter = self.__iter
         if self._max_time > 0:
@@ -323,6 +337,11 @@ class DriverLib(AlgoLib):
     def finalize_iter_observer(self) -> None:
         """Finalize the iteration observer."""
         if self.__progress_bar is not None:
+            if not self.__is_current_iteration_logged:
+                self.__set_progress_bar_objective_value(
+                    self.problem.database.get_x_by_iter(self.problem.current_iter - 1)
+                )
+            self.__progress_bar.leave = False
             self.__progress_bar.close()
 
     def _pre_run(

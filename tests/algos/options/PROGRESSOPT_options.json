@@ -1,0 +1,7 @@
+{
+    "name": "PROGRESSBAROPT_options",
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "id": "#MYDRIVER"
+}
