@@ -32,16 +32,13 @@ from typing import Union
 from numpy import append
 from numpy import array
 from numpy import concatenate
-from numpy import float as np_float
-from numpy import float64
 from numpy import full
 from numpy import hstack
-from numpy import int as np_int
+from numpy import int32
 from numpy import isinf
 from numpy import ndarray
 from numpy import ones
 from numpy import reshape
-from numpy import str as np_str
 from numpy import vstack
 from numpy import where
 from numpy import zeros
@@ -436,7 +433,7 @@ class SnOpt(OptimizationLibrary):
         return 1.0
 
     def __preprocess_snopt_constraints(
-        self, names: ndarray(dtype=np_str)
+        self, names: ndarray(dtype=str)
     ) -> SnOptPreprocessType:
         """Set the snopt parameters according to the constraints.
 
@@ -471,7 +468,7 @@ class SnOpt(OptimizationLibrary):
             funcon = self.cb_snopt_dummy_func
             blc = append(blc, full((1,), -INFINITY))
             buc = append(buc, full((1,), INFINITY))
-            names = append(names, array(["dummy"], dtype=np_str))
+            names = append(names, array(["dummy"], dtype=str))
         else:
             funcon = self.cb_opt_constraints_snoptb
         return funcon, blc, buc, names, n_constraints
@@ -520,17 +517,17 @@ class SnOpt(OptimizationLibrary):
         u_b = where(isinf(u_b), INFINITY, u_b)
 
         names = array(["dv" + str(i) for i in range(n_design_variables)], dtype=str)
-        i_obj = array([0], np_int)
+        i_obj = array([0], int32)
 
         funcon, blc, buc, names, n_constraints = self.__preprocess_snopt_constraints(
             names
         )
         n_nl_func = n_constraints
-        x0_snopt = append(x_0, zeros((n_constraints,), dtype=float64))
+        x0_snopt = append(x_0, zeros((n_constraints,), dtype=float))
         lower_bounds = concatenate((l_b, blc))
         upper_bounds = concatenate((u_b, buc))
         jacobian = ones((n_nl_func, x_0.shape[0]))
-        obj_add = array([0.0], np_float)
+        obj_add = array([0.0], float)
         snopt_problem.snoptb(
             # name='SNOPTB',
             m=n_nl_func,
