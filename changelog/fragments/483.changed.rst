@@ -1,2 +1,0 @@
-The jacobian computation in :class:`.MDOChain` now uses the minimal jacobians of the disciplines
-instead of the ``force_all`` option of the disciplines linearization.

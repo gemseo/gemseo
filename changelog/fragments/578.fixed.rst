@@ -1,2 +1,0 @@
-:class:`.DOEScenario` and :class:`.MDOScenario` can be serialized after an execution.
-Added missing ``_ATTR_TO_SERIALIZE`` to :class:`.MDOChain` and :class:`.MDOScenarioAdapter`.

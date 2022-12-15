@@ -1,1 +1,0 @@
-An :class:`.MDODiscipline` can now be composed of :attr:`~.MDODiscipline.disciplines`.

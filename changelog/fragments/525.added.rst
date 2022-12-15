@@ -1,1 +1,0 @@
-:class:`.PCERegressor` has a new attribute :attr:`~PCERegressor.second_sobol_indices`.

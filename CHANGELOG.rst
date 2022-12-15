@@ -27,6 +27,96 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 4.2.0 (2022-12-15)
+**************************
+
+
+
+Added
+-----
+
+- API changes:
+
+  - ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
+  - :class:`.PCERegressor` has new arguments:
+    - ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
+    - ``use_lars`` to get a sparse PCE with the LARS algorithm in the case of the least-squares regression.
+    - ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
+    - ``hyperbolic_parameter`` to truncate the PCE before training.
+  `#496 <https://gitlab.com/gemseo/dev/gemseo/-/issues/496>`_
+- The Ishigami use case to illustrate and benchmark UQ techniques (:class:`.IshigamiFunction`, :class:`.IshigamiSpace`, :class:`.IshigamiProblem` and :class:`.IshigamiDiscipline`).
+  `#517 <https://gitlab.com/gemseo/dev/gemseo/-/issues/517>`_
+- An :class:`.MDODiscipline` can now be composed of :attr:`~.MDODiscipline.disciplines`.
+  `#520 <https://gitlab.com/gemseo/dev/gemseo/-/issues/520>`_
+- :class:`.SobolAnalysis` can compute the :attr:`~.SobolAnalysis.second_order_indices`.
+  :class:`.SobolAnalysis` uses asymptotic distributions by default to compute the confidence intervals.
+  `#524 <https://gitlab.com/gemseo/dev/gemseo/-/issues/524>`_
+- :class:`.PCERegressor` has a new attribute :attr:`~PCERegressor.second_sobol_indices`.
+  `#525 <https://gitlab.com/gemseo/dev/gemseo/-/issues/525>`_
+- The :class:`.DistributionFactory` has two new methods: :meth:`~.DistributionFactory.create_marginal_distribution` and :meth:`~.DistributionFactory.create_composed_distribution`.
+  `#526 <https://gitlab.com/gemseo/dev/gemseo/-/issues/526>`_
+- :class:`.SobieskiProblem` has a new attribute :meth:`.USE_ORIGINAL_DESIGN_VARIABLES_ORDER` to order the design variables of the :attr:`.SobieskiProblem.design_space` according to their original order (``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``) rather than the |g| one (``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``), as :class:`.SobieskiProblem` and :class:`.SobieskiBase` are based on this original order.
+  `#550 <https://gitlab.com/gemseo/dev/gemseo/-/issues/550>`_
+
+Fixed
+-----
+
+- :class:`.Factory` no longer considers abstract classes.
+  `#280 <https://gitlab.com/gemseo/dev/gemseo/-/issues/280>`_
+- When the :meth:`.DOELibrary.execute` is called twice with different DOEs, the functions attached to the :class:`.OptimizationProblem` are correctly sampled during the second execution and the results correctly stored in the :class:`.Database`.
+  `#435 <https://gitlab.com/gemseo/dev/gemseo/-/issues/435>`_
+- The cleaning options of :class:`.PCERegressor` now depend on the polynomial degree.
+  `#481 <https://gitlab.com/gemseo/dev/gemseo/-/issues/481>`_
+- A :class:`.ParameterSpace` prevents the mixing of probability distributions coming from different libraries.
+  `#495 <https://gitlab.com/gemseo/dev/gemseo/-/issues/495>`_
+- :class:`.MinMaxScaler` and :class:`.StandardScaler` can now deal with constant variables.
+  `#512 <https://gitlab.com/gemseo/dev/gemseo/-/issues/512>`_
+- The options ``use_database``, ``round_ints`` and ``normalized_design_space`` passed to :meth:`.DriverLib.execute` are no longer ignored.
+  `#537 <https://gitlab.com/gemseo/dev/gemseo/-/issues/537>`_
+- :class:`.OptimizationProblem` casts the complex numbers to real when exporting its :attr:`~.OptimizationProblem.database` to a :class:`.Dataset`.
+  `#546 <https://gitlab.com/gemseo/dev/gemseo/-/issues/546>`_
+- :class:`.PCERegressor` computes the Sobol' indices for all the output dimensions.
+  `#557 <https://gitlab.com/gemseo/dev/gemseo/-/issues/557>`_
+- Fixed a bug in :class:`.HDF5FileSingleton` that caused the :class:`.HDF5Cache` to crash when writing data that included
+  arrays of string.
+  `#559 <https://gitlab.com/gemseo/dev/gemseo/-/issues/559>`_
+- :class:`.OptProblem.get_violation_criteria` is inf for constraints with NaN values.
+  `#561 <https://gitlab.com/gemseo/dev/gemseo/-/issues/561>`_
+- Progress Bar fixed, tests added to ensure the right behavior.
+  `#562 <https://gitlab.com/gemseo/dev/gemseo/-/issues/562>`_
+- :class:`.NormFunction` and :class:`.NormDBFunction` now use the :attr:`~.MDOFunction.special_repr` of the original :class:`.MDOFunction`.
+  `#568 <https://gitlab.com/gemseo/dev/gemseo/-/issues/568>`_
+- :class:`.DOEScenario` and :class:`.MDOScenario` can be serialized after an execution.
+  Added missing ``_ATTR_TO_SERIALIZE`` to :class:`.MDOChain` and :class:`.MDOScenarioAdapter`.
+  `#578 <https://gitlab.com/gemseo/dev/gemseo/-/issues/578>`_
+
+Changed
+-------
+
+- The batches requested by pSeven are evaluated in parallel.
+  `#207 <https://gitlab.com/gemseo/dev/gemseo/-/issues/207>`_
+- The :class:`.LagrangeMultipliers` of a non-solved :class:`.OptimizationProblem` can be approximated.
+  The errors raised by :class:`.LagrangeMultipliers` are now raised by :class:`.PostOptimalAnalysis`.
+  `#372 <https://gitlab.com/gemseo/dev/gemseo/-/issues/372>`_
+- The jacobian computation in :class:`.MDOChain` now uses the minimal jacobians of the disciplines
+  instead of the ``force_all`` option of the disciplines linearization.
+  `#483 <https://gitlab.com/gemseo/dev/gemseo/-/issues/483>`_
+- The :meth:`.Scenario.set_differentiation_method` now casts automatically all float default inputs of the disciplines
+  in its formulation to complex when using :attr:`~.OptimizationProblem.COMPLEX_STEP` and setting the option
+  ``cast_default_inputs_to_complex`` to ``True``.
+  The :meth:`.Scenario.set_differentiation_method` now casts automatically the current value of the :class:`.DesignSpace`
+  to complex when using :attr:`~.OptimizationProblem.COMPLEX_STEP`.
+  The :attr:`~.MDODiscipline.disciplines` is now a property that returns the protected attribute
+  :attr:`~.MDODiscipline._disciplines`.
+  `#520 <https://gitlab.com/gemseo/dev/gemseo/-/issues/520>`_
+- The methods :meth:`.MDODiscipline.add_differentiated_inputs` and :meth:`.MDODiscipline.add_differentiated_outputs`
+  now ignore inputs or outputs that are not numeric.
+  `#548 <https://gitlab.com/gemseo/dev/gemseo/-/issues/548>`_
+- :class:`.MLQualityMeasure` uses ``True`` as the default value for ``fit_transformers``, which means that the :class:`.Transformer` instances attached to the assessed :class:`.MLAlgo` are re-trained on each training subset of the cross-validation partition.
+  :meth:`.MLQualityMeasure.evaluate_kfolds` uses ``True`` as default value for ``randomize``, which means that the learning samples attached to the assessed :class:`.MLAlgo` are shuffled before building the cross-validation partition.
+  `#553 <https://gitlab.com/gemseo/dev/gemseo/-/issues/553>`_
+
+
 Version 4.1.0 (2022-10-25)
 **************************
 

@@ -1,1 +1,0 @@
-The batches requested by pSeven are evaluated in parallel.

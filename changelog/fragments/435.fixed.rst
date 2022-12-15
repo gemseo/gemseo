@@ -1,1 +1,0 @@
-When the :meth:`.DOELibrary.execute` is called twice with different DOEs, the functions attached to the :class:`.OptimizationProblem` are correctly sampled during the second execution and the results correctly stored in the :class:`.Database`.

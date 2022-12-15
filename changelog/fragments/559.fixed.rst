@@ -1,2 +1,0 @@
-Fixed a bug in :class:`.HDF5FileSingleton` that caused the :class:`.HDF5Cache` to crash when writing data that included
-arrays of string.

@@ -1,2 +1,0 @@
-:class:`.SobolAnalysis` can compute the :attr:`~.SobolAnalysis.second_order_indices`.
-:class:`.SobolAnalysis` uses asymptotic distributions by default to compute the confidence intervals.

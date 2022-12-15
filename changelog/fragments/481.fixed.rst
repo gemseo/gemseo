@@ -1,1 +1,0 @@
-The cleaning options of :class:`.PCERegressor` now depend on the polynomial degree.

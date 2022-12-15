@@ -1,1 +1,0 @@
-:class:`.MinMaxScaler` and :class:`.StandardScaler` can now deal with constant variables.
