@@ -82,7 +82,7 @@ Fixed
   `#559 <https://gitlab.com/gemseo/dev/gemseo/-/issues/559>`_
 - :class:`.OptProblem.get_violation_criteria` is inf for constraints with NaN values.
   `#561 <https://gitlab.com/gemseo/dev/gemseo/-/issues/561>`_
-- Progress Bar fixed, tests added to ensure the right behavior.
+- Fixed a bug in the iterations progress bar, that displayed inconsistent objective function and duration values.
   `#562 <https://gitlab.com/gemseo/dev/gemseo/-/issues/562>`_
 - :class:`.NormFunction` and :class:`.NormDBFunction` now use the :attr:`~.MDOFunction.special_repr` of the original :class:`.MDOFunction`.
   `#568 <https://gitlab.com/gemseo/dev/gemseo/-/issues/568>`_
