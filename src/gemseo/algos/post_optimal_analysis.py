@@ -38,8 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PostOptimalAnalysis:
-    r"""
-    Post-optimal analysis of a parameterized optimization problem.
+    r"""Post-optimal analysis of a parameterized optimization problem.
 
     Consider the parameterized optimization problem below, whose objective and
     constraint functions depend on both the optimization variable :math:`x` and
@@ -93,7 +92,7 @@ class PostOptimalAnalysis:
 
         Raises:
             ValueError: If the optimization problem is not solved.
-        """
+        """  # noqa: D205, D212, D415
         if opt_problem.solution is None:
             raise ValueError(
                 "The post-optimal analysis can only be conducted after the "

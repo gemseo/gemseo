@@ -51,12 +51,12 @@ def test_create(dataset):
     assert hasattr(knn, "parameters")
 
 
-def test_load(dataset, tmp_path):
+def test_load(dataset, tmp_wd):
     """Test the loading of a model from data."""
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     knn.learn()
-    dirname = knn.save(path=str(tmp_path))
+    dirname = knn.save()
     loaded_knn = factory.load(dirname)
     assert hasattr(loaded_knn, "parameters")
 

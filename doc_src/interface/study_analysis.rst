@@ -12,8 +12,8 @@
 
 .. _gemseo_study:
 
-|g| Study Analysis
-==============================
+Study analysis
+==============
 
 Objective and scope
 -------------------
@@ -34,10 +34,6 @@ customers, to define the MDO problem, from the white sheet. This way, the study 
 any process or tool being actually ready.
 
 There is no need to write any line of code to use this tool. A command line executable is available.
-
-.. warning::
-
-  |g| study analysis only works under Python 3.7 and higher versions.
 
 Examples
 --------
@@ -81,14 +77,15 @@ The XDSM diagrams are generated as standalone HTML files, by default, or as Late
    IDF XDSM diagram of the study
 
 
-Multi level formulations can be also used. You need to define multiple scenarios,
-and add the name of the scenarios in the disciplines list. Use an MDO formulation
-that is distributed (BiLevel for instance).
+For more complex use cases, multi-level formulations can also be used.
+You first need to define the sub-scenarios in dedicated sheets,
+and then add the names of these sheets in the cell block "Disciplines" of the sheet defining the main scenario.
+Finally, a multilevel MDO formulation has to be chosen, e.g. ``"BiLevel"``.
 
 .. figure:: figs/study_2.png
    :scale: 70 %
 
-   BiLevel scenario definition
+   Definition of a scenario based on a bi-level formulation
 
 Class documentation
 -------------------

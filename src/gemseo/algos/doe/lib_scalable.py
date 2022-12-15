@@ -19,7 +19,6 @@
 """Build a diagonal DOE for scalable model construction."""
 from __future__ import annotations
 
-import logging
 from typing import Container
 from typing import Optional
 from typing import Union
@@ -33,8 +32,6 @@ from gemseo.algos.doe.doe_lib import DOELibrary
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
-LOGGER = logging.getLogger(__name__)
-
 
 class DiagonalDOE(DOELibrary):
     """Class used to create a diagonal DOE."""
@@ -42,7 +39,7 @@ class DiagonalDOE(DOELibrary):
     __ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
     LIBRARY_NAME = "GEMSEO"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         for algo, description in self.__ALGO_DESC.items():
             self.descriptions[algo] = DOEAlgorithmDescription(

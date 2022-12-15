@@ -66,8 +66,8 @@ OBJECTIVE_NAME = "obj"
 
 
 def check_consistency(n_shared, n_local, n_coupling):
-    """Check if n_shared is an integer and if n_local and n_coupling are list of
-    integers with the same length."""
+    """Check if n_shared is an integer and if n_local and n_coupling are list of integers
+    with the same length."""
     if not isinstance(n_shared, int) or n_shared < 1:
         raise TypeError("n_shared must be an integer > 0.")
     if not isinstance(n_local, list):

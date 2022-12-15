@@ -25,8 +25,7 @@ from jinja2 import Template
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
-
-from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import MDODiscipline
 
 
 class N2JSON:

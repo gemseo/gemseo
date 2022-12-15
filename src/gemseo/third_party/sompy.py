@@ -520,10 +520,8 @@ class SOM(object):
         self.init_map()
         LOGGER.debug("initialization done in %f seconds" % round(timer() - t0))
 
-        batchtrain(self, njob=n_job, phase="rough", shared_memory="no", verbose=verbose)
-        batchtrain(
-            self, njob=n_job, phase="finetune", shared_memory="no", verbose=verbose
-        )
+        batchtrain(self, njob=n_job, phase="rough", verbose=verbose)
+        batchtrain(self, njob=n_job, phase="finetune", verbose=verbose)
         err = np.mean(getattr(self, "bmu")[1])
         ts = round(timer() - t0, 3)
         LOGGER.debug("Total time elapsed: %f secodns" % ts)
@@ -550,7 +548,7 @@ class SOM(object):
         # the codebook values are all normalized
         # we can normalize the input data based on mean and std of original
         # data
-        data = normalize_by(data_raw, data, method="var")
+        data = normalize_by(data_raw, data)
         # data = normalize(data, method='var')
         # plt.hist(data[:,2])
         Predicted_labels = clf.predict(data)
@@ -583,10 +581,10 @@ class SOM(object):
         dimdata = data.shape[1]
         if dimdata == dim:
             data[:, Target] = 0
-            data = normalize_by(data_raw, data, method="var")
+            data = normalize_by(data_raw, data)
             data = data[:, indX]
         elif dimdata == dim - 1:
-            data = normalize_by(data_raw[:, indX], data, method="var")
+            data = normalize_by(data_raw[:, indX], data)
             # data = normalize(data, method='var')
         Predicted_values = clf.predict(data)
         Predicted_values = denormalize_by(data_raw[:, Target], Predicted_values)
@@ -614,7 +612,7 @@ class SOM(object):
         # the codebook values are all normalized
         # we can normalize the input data based on mean and std of original
         # data
-        X_test = normalize_by(data_raw[:, :Target], X_test, method="var")
+        X_test = normalize_by(data_raw[:, :Target], X_test)
         Predicted_values = clf.predict(X_test)
         Predicted_values = denormalize_by(data_raw[:, Target], Predicted_values)
         return Predicted_values
@@ -636,7 +634,7 @@ class SOM(object):
         # the codebook values are all normalized
         # we can normalize the input data based on mean and std of original
         # data
-        data = normalize_by(data_raw, data, method="var")
+        data = normalize_by(data_raw, data)
         return neigh.kneighbors(data)
 
     def ind_to_xy(self, bm_ind):
@@ -667,7 +665,7 @@ class SOM(object):
 
         km = clust.KMeans(n_clusters=n_clusters)
         labels = km.fit_predict(
-            denormalize_by(self.data_raw, self.codebook, n_method="var")
+            denormalize_by(self.data_raw, self.codebook)
         )
         setattr(self, "cluster_labels", labels)
         return labels
@@ -844,12 +842,12 @@ class SOM(object):
         dimdata = data.shape[1]
         if dimdata == dim:
             data[:, Target] = 0
-            data = normalize_by(data_raw, data, method="var")
+            data = normalize_by(data_raw, data)
             data = data[:, indX]
         elif dimdata == dim - 1:
-            data = normalize_by(data_raw[:, indX], data, method="var")
+            data = normalize_by(data_raw[:, indX], data)
             # data = normalize(data, method='var')
-        weights, ind = clf.kneighbors(data, n_neighbors=K, return_distance=True)
+        weights, ind = clf.kneighbors(data, n_neighbors=K)
         weights = 1.0 / weights
         sum_ = np.sum(weights, axis=1)
         weights = weights / sum_[:, np.newaxis]
@@ -890,7 +888,7 @@ class SOM(object):
             # the codebook values are all normalized
             # we can normalize the input data based on mean and std of original
             # data
-            data = normalize_by(data_raw, data, method="var")
+            data = normalize_by(data_raw, data)
             weights, ind = clf.kneighbors(data)
 
             # Softmax function
@@ -1000,7 +998,7 @@ def chunk_based_bmu_find(self, x, y, y_2):
     while i0 + 1 <= dlen:
         Low = i0
         High = min(dlen, i0 + blen)
-        i0 = i0 + blen
+        i0 += blen
         ddata = x[Low : High + 1]
         d = np.dot(y, ddata.T)
         d *= -2
@@ -1039,7 +1037,7 @@ def batchtrain(self, njob=1, phase=None, shared_memory="no", verbose="on"):
 
     ms = max(mapsize[0], mapsize[1])
     if mn == 1:
-        ms = ms / 5.0
+        ms /= 5.0
     # Based on somtoolbox, Matlab
     # case 'train',    sTrain.trainlen = ceil(50*mpd);
     # case 'rough',    sTrain.trainlen = ceil(10*mpd);
@@ -1352,7 +1350,7 @@ def view_2d_Pack(
             if grid == "Yes":
                 pl = plt.pcolor(mp[::-1])
             elif grid == "No":
-                plt.imshow(mp[::-1], norm=None, cmap=CMAP)
+                plt.imshow(mp[::-1], cmap=CMAP)
                 #             	plt.pcolor(mp[::-1])
                 plt.axis("off")
 
@@ -1512,7 +1510,7 @@ def lininit(self):
         coord = (coord - 0.5) * 2
         data = getattr(self, "data")
         me = np.mean(data, 0)
-        data = data - me
+        data -= me
         codebook = np.tile(me, (nnodes, 1))
         pca = RandomizedPCA(n_components=2)  # Randomized PCA is scalable
         # pca = PCA(n_components=2)
@@ -1541,7 +1539,7 @@ def lininit(self):
         # LOGGER.debug(coord)
         data = getattr(self, "data")
         me = np.mean(data, 0)
-        data = data - me
+        data -= me
         codebook = np.tile(me, (nnodes, 1))
         pca = RandomizedPCA(n_components=1)  # Randomized PCA is scalable
         # pca = PCA(n_components=2)

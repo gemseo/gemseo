@@ -29,7 +29,7 @@ class Offset(MDOFunction):
         Args:
             value: The offset value.
             mdo_function: The original MDOFunction object.
-        """
+        """  # noqa: D205, D212, D415
         function = mdo_function.offset(value)
         super().__init__(
             function.func,

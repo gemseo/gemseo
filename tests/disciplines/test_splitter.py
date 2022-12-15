@@ -41,8 +41,5 @@ def test_check_gradient(splitting_discipline_for_test):
         "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
     }
     assert splitting_discipline_for_test.check_jacobian(
-        input_data={"E": array([1.0, 2.0, 3.0, 4.0, 5.0])},
-        linearization_mode="auto",
-        threshold=1e-3,
-        step=1e-4,
+        input_data={"E": array([1.0, 2.0, 3.0, 4.0, 5.0])}, threshold=1e-3, step=1e-4
     )

@@ -67,7 +67,7 @@ def test_bench_many_io():
         data_dict = {"t": ones(n_t)}
 
         def run_check():
-            return grammar.validate(data_dict)
+            return grammar.validate(data_dict)  # noqa: B023
 
         tref = timeit.timeit(stmt=run_check, number=100)
         ref_check_times[n_t] = tref
@@ -83,12 +83,12 @@ def test_large_data_validation(sizes=(10, 1000, 100000), n_repeats=5):
         inputs = {"t": ones(n_t)}
 
         def create_chain():
-            grammar.validate(inputs)
+            grammar.validate(inputs)  # noqa: B023
 
         tref = timeit.timeit(stmt=create_chain, number=n_repeats)
         ref_check_times[n_t] = tref / n_repeats
 
-    print(ref_check_times)  # noqa: T001
+    print(ref_check_times)  # noqa: T201
     return ref_check_times
 
 

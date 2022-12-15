@@ -27,5 +27,5 @@ from gemseo.core.formulation import MDOFormulation
 class MDOFormulationsFactory(BaseFormulationsFactory):
     """A factory of :class:`~gemseo.core.formulation.MDOFormulation`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__(MDOFormulation, ("gemseo.formulations",))

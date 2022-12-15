@@ -31,7 +31,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -84,7 +83,7 @@ scenario = create_scenario(
     maximize_objective=True,
     design_space=design_space,
 )
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
@@ -104,6 +103,4 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
-scenario.post_process("ObjConstrHist", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("ObjConstrHist", save=False, show=True)

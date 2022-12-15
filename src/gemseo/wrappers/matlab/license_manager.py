@@ -42,7 +42,7 @@ LOGGER = logging.getLogger(__name__)
 class LicenseManager:
     """Manage Matlab License.
 
-    The licenseManager was created to enables de-synchronised
+    The licenseManager was created to enable de-synchronised
     launch of optimization using matlab_discipline. The goal
     is to wait until all licenses that are needed are available
     in Matlab workspace.
@@ -67,11 +67,11 @@ class LicenseManager:
     CURVE_FIT_TOOL = "Curve_Fitting_Toolbox"
 
     def __init__(self, engine: MatlabEngine) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             engine: The MatlabEngine instance.
-        """
+        """  # noqa: D205, D212, D415
         self.__engine = engine
         if self.__engine.is_closed:
             # If engine is not (re)started here, add_path

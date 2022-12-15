@@ -28,7 +28,7 @@ from pathlib import Path
 
 
 class N2HTML:
-    """Generate a HTML file to visualize a dynamic and interactive N2 chart."""
+    """Generate an HTML file to visualize a dynamic and interactive N2 chart."""
 
     def __init__(
         self,

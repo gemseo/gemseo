@@ -19,113 +19,208 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from os import remove
+from typing import Callable
 
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
+from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.utils.testing import compare_dict_of_arrays
+from gemseo.utils.testing import image_comparison
+from numpy import array
+from numpy import ndarray
 from numpy import pi
+from numpy import sin
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
 
-@pytest.fixture
-def sobol() -> SobolAnalysis:
-    """A Sobol' analysis."""
-    discipline = create_discipline(
-        "AnalyticDiscipline",
-        expressions={"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"},
-        name="Ishigami",
-    )
-    space = ParameterSpace()
-    for name in ["x1", "x2", "x3"]:
-        space.add_random_variable(
-            name, "OTUniformDistribution", minimum=-pi, maximum=pi
+@pytest.fixture(scope="module")
+def py_func() -> Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]:
+    """The Ishigami function."""
+
+    def ishigami(x1, x23):
+        y = array([sin(x1[0]) + 7 * sin(x23[0]) ** 2 + 0.1 * x23[1] ** 4 * sin(x1[0])])
+        z = array([y[0], y[0]])
+        return y, z
+
+    return ishigami
+
+
+@pytest.fixture(scope="module")
+def discipline(
+    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]
+) -> AutoPyDiscipline:
+    """The discipline of interest."""
+    return AutoPyDiscipline(py_func=py_func, use_arrays=True)
+
+
+@pytest.fixture(scope="module")
+def uncertain_space() -> ParameterSpace:
+    """The uncertain space of interest."""
+    parameter_space = ParameterSpace()
+    for name, size in zip(["x1", "x23"], [1, 2]):
+        parameter_space.add_random_variable(
+            name, "OTUniformDistribution", minimum=-pi, maximum=pi, size=size
         )
-    return SobolAnalysis([discipline], space, 100)
+    return parameter_space
 
 
-def test_sobol_algos():
-    expected = sorted(["Saltelli", "Jansen", "MauntzKucherenko", "Martinez"])
-    assert SobolAnalysis.AVAILABLE_ALGOS == expected
+@pytest.fixture(scope="module")
+def sobol(discipline: MDODiscipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
+    """A Sobol' analysis."""
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis.compute_indices()
+    return analysis
 
 
-def test_sobol(sobol, tmp_path):
-    varnames = ["x1", "x2", "x3"]
-    assert sobol.main_method == sobol._FIRST_METHOD
-    sobol.compute_indices()
-    indices = sobol.indices
-    first_order = indices["first"]
-    total_order = indices["total"]
-    main_indices = sobol.main_indices
-    assert main_indices == first_order
-    sobol.main_method = "total"
-    assert sobol.main_method == sobol._TOTAL_METHOD
-    assert sobol.main_indices == total_order
-    assert {"y"} == set(first_order.keys())
-    assert len(first_order["y"]) == 1
-    assert {"y"} == set(total_order.keys())
-    assert len(total_order["y"]) == 1
-    for name in varnames:
-        assert len(first_order["y"][0][name]) == 1
-        assert len(total_order["y"][0][name]) == 1
+@pytest.fixture(scope="module")
+def first_intervals(sobol: SobolAnalysis) -> IndicesType:
+    """The intervals of the first-order indices."""
+    return sobol.get_intervals()
 
-    with pytest.raises(NotImplementedError):
-        sobol.main_method = "foo"
 
-    with pytest.raises(TypeError):
+@pytest.fixture(scope="module")
+def total_intervals(sobol: SobolAnalysis) -> IndicesType:
+    """The intervals of the total-order indices."""
+    return sobol.get_intervals(False)
+
+
+def test_algorithms():
+    """Check the available algorithms to estimate the Sobol' indices."""
+    assert SobolAnalysis.AVAILABLE_ALGOS == [
+        "Jansen",
+        "Martinez",
+        "MauntzKucherenko",
+        "Saltelli",
+    ]
+
+
+def test_wrong_algo(sobol):
+    """Check that a wrong estimation algorithm raises an error."""
+    with pytest.raises(
+        ValueError,
+        match="The algorithm foo is not available to compute the Sobol' indices.",
+    ):
         sobol.compute_indices(algo="foo")
 
-    intervals = sobol.get_intervals()
-    assert {"y"} == set(intervals.keys())
-    assert len(intervals["y"]) == 1
-    for name in varnames:
-        assert intervals["y"][0][name].shape == (2,)
 
-    intervals = sobol.get_intervals(False)
-    for name in varnames:
-        assert intervals["y"][0][name].shape == (2,)
-
-    sobol.plot("y", save=True, show=False, directory_path=tmp_path)
-    assert (tmp_path / "sobol_analysis.png").exists()
-    remove(str(tmp_path / "sobol_analysis.png"))
-    sobol.plot("y", save=True, show=False, sort=False, directory_path=tmp_path)
-    assert (tmp_path / "sobol_analysis.png").exists()
-    remove(str(tmp_path / "sobol_analysis.png"))
-    sobol.plot(
-        "y",
-        save=True,
-        show=False,
-        sort=False,
-        sort_by_total=False,
-        directory_path=tmp_path,
+def test_algo(discipline, uncertain_space):
+    """Check that algorithm can be passed either as a str or an Algorithm."""
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    indices = analysis.compute_indices(algo=analysis.Algorithm.Jansen)["first"]["y"][0]
+    assert compare_dict_of_arrays(
+        indices, analysis.compute_indices(algo="Jansen")["first"]["y"][0]
     )
-    assert (tmp_path / "sobol_analysis.png").exists()
-    remove(str(tmp_path / "sobol_analysis.png"))
 
 
-def test_sobol_outputs(tmp_path):
-    expressions = {
-        "y1": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)",
-        "y2": "sin(x2)+7*sin(x1)**2+0.1*x3**4*sin(x2)",
-    }
-    varnames = ["x1", "x2", "x3"]
-    discipline = create_discipline(
-        "AnalyticDiscipline", expressions=expressions, name="Ishigami2"
+@pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.total])
+def test_method(sobol, method):
+    """Check the use of the main method."""
+    assert sobol.main_method == "Sobol(first)"
+    assert compare_dict_of_arrays(
+        sobol.main_indices["y"][0], sobol.indices["first"]["y"][0], 0.1
     )
-    space = ParameterSpace()
-    for variable in varnames:
-        space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
-        )
 
-    sobol = SobolAnalysis([discipline], space, 100)
-    sobol.compute_indices()
-    assert {"y1", "y2"} == set(sobol.main_indices.keys())
+    sobol.main_method = method
+    assert sobol.main_method == "Sobol(total)"
+    assert compare_dict_of_arrays(
+        sobol.main_indices["y"][0], sobol.indices["total"]["y"][0], 0.1
+    )
 
-    sobol = SobolAnalysis([discipline], space, 100)
-    sobol.compute_indices("y1")
-    assert {"y1"} == set(sobol.main_indices.keys())
+    sobol.main_method = SobolAnalysis.Method.first
+
+
+def test_wrong_method(sobol):
+    """Check that a wrong method raises an error."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"second is not an appropriate method; available ones are 'first', 'total'."
+        ),
+    ):
+        sobol.main_method = "second"
+
+
+@pytest.mark.parametrize(
+    "name,bound,expected",
+    [
+        ("x1", 0, [-0.3]),
+        ("x23", 0, [-0.3, -1.3]),
+        ("x1", 1, [0.1]),
+        ("x23", 1, [0.1, 0.2]),
+    ],
+)
+def test_first_intervals(first_intervals, name, bound, expected):
+    """Check the values of the intervals for the first-order indices."""
+    assert_almost_equal(
+        first_intervals["y"][0][name][bound], array(expected), decimal=1
+    )
+
+
+@pytest.mark.parametrize(
+    "name,bound,expected",
+    [
+        ("x1", 0, [0.1]),
+        ("x23", 0, [0.3, -0.2]),
+        ("x1", 1, [1.2]),
+        ("x23", 1, [0.7, 0.9]),
+    ],
+)
+def test_total_intervals(total_intervals, name, bound, expected):
+    """Check the values of the intervals for the total-order indices."""
+    assert_almost_equal(
+        total_intervals["y"][0][name][bound], array(expected), decimal=1
+    )
+
+
+@pytest.mark.parametrize(
+    "name,sort,sort_by_total,baseline_images",
+    [
+        ("y", False, False, ["plot"]),
+        ("y", True, False, ["plot_sort_by_first"]),
+        ("y", True, True, ["plot_sort_by_total"]),
+        ("z", False, False, ["plot_name"]),
+        (("z", 1), False, False, ["plot_name_component"]),
+    ],
+)
+@image_comparison(None)
+def test_plot(name, sobol, sort, sort_by_total, baseline_images, pyplot_close_all):
+    """Check the main visualization method."""
+    sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total)
+
+
+@pytest.mark.parametrize(
+    "order,reference",
+    [
+        (
+            "first",
+            {"x1": array([-0.06]), "x23": array([-0.10, -0.53])},
+        ),
+        (
+            "second",
+            {
+                "x1": {"x1": array([[0.0]]), "x23": array([[0.79, 1.45]])},
+                "x23": {
+                    "x1": array([[0.79], [1.45]]),
+                    "x23": array([[0.0, 0.97], [0.97, 0.0]]),
+                },
+            },
+        ),
+        (
+            "total",
+            {"x1": array([0.63]), "x23": array([0.48, 0.38])},
+        ),
+    ],
+)
+def test_indices(sobol, order, reference):
+    """Check the values of the indices."""
+    assert compare_dict_of_arrays(sobol.indices[order]["y"][0], reference, 0.1)
+    assert compare_dict_of_arrays(
+        getattr(sobol, f"{order}_order_indices")["y"][0], reference, 0.1
+    )
 
 
 def test_save_load(sobol, tmp_wd):
@@ -134,3 +229,31 @@ def test_save_load(sobol, tmp_wd):
     new_sobol = SobolAnalysis.load("foo.pkl")
     assert_equal(new_sobol.dataset.data, sobol.dataset.data)
     assert new_sobol.default_output == sobol.default_output
+
+
+@pytest.mark.parametrize("compute_second_order", [False, True])
+def test_second_order(discipline, uncertain_space, compute_second_order):
+    """Check the computation of second-order indices."""
+    analysis = SobolAnalysis(
+        [discipline], uncertain_space, 100, compute_second_order=compute_second_order
+    )
+    analysis.compute_indices()
+    assert bool(analysis.indices["second"]) is compute_second_order
+    assert bool(analysis.second_order_indices) is compute_second_order
+    assert len(analysis.dataset) == (96 if compute_second_order else 100)
+
+
+def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space):
+    """Check the method to compute the confidence intervals."""
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis.compute_indices()
+    asymptotic_interval = analysis.get_intervals()["y"][0]["x1"]
+
+    analysis = SobolAnalysis(
+        [discipline], uncertain_space, 100, use_asymptotic_distributions=False
+    )
+    analysis.compute_indices()
+    bootstrap_interval = analysis.get_intervals()["y"][0]["x1"]
+
+    assert asymptotic_interval[0][0] != bootstrap_interval[0][0]
+    assert asymptotic_interval[1][0] != bootstrap_interval[1][0]

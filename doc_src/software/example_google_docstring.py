@@ -146,7 +146,7 @@ class ExampleClass:
         arg1: int,
         arg2: int,
         arg3: float,
-    ) -> None:  # noqa: D205,D212,D415
+    ) -> None:
         """
         Args:
             arg1: Description of `arg1`.
@@ -160,8 +160,8 @@ class ExampleClass:
             add to the return type annotation
             another comment to discard the legit style checks
             for missing docstring parts, the comment shall be
-            # noqa: D205,D212,D415
-        """
+
+        """  # noqa: D205, D212, D415
         self.attr1 = arg1
         self.attr2 = arg2
         self._attr3 = arg3

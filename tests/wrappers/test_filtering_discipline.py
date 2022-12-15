@@ -34,7 +34,6 @@ def discipline():
 
 
 def test_standard(discipline):
-
     fdisc = FilteringDiscipline(discipline)
     assert set(fdisc.get_input_data_names()) == set(discipline.get_input_data_names())
     assert set(fdisc.get_output_data_names()) == set(discipline.get_output_data_names())

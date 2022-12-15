@@ -32,16 +32,23 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_16_DISC
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
-from gemseo.problems.scalable.linear.disciplines_generator import DESC_5_DISC
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_DISC_REPEATED
 
 DESCRIPTIONS = [
     DESC_3_DISC_WEAK,
     DESC_4_DISC_WEAK,
-    DESC_5_DISC,
     DESC_16_DISC,
     DESC_DISC_REPEATED,
 ]
+
+
+def test_fail_no_output():
+    """Tests that the LinearDiscipline fails when there are no inputs or outputs in the
+    description."""
+    with pytest.raises(ValueError, match="output_names must not be empty."):
+        create_disciplines_from_desc([("A", ["x"], [])])
+    with pytest.raises(ValueError, match="input_names must not be empty."):
+        create_disciplines_from_desc([("A", [], ["y"])])
 
 
 @pytest.mark.parametrize("descriptions", DESCRIPTIONS)

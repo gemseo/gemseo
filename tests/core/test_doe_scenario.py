@@ -18,6 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
+
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline
@@ -280,3 +282,46 @@ def test_export_to_dataset_normalized_integers():
             "obj": samples * 2,
         },
     )
+
+
+def test_lib_serialization(tmp_wd):
+    """Test the serialization of a DOEScenario with an instantiated DOELibrary.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary work directory.
+    """
+    discipline = AnalyticDiscipline({"y": "2*x"}, name="func")
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", design_space)
+    scenario.execute(
+        {
+            "algo": "CustomDOE",
+            "algo_options": {"samples": array([[1.0]])},
+        }
+    )
+
+    scenario.formulation.opt_problem.reset(database=False, design_space=False)
+
+    with open("doe.pkl", "wb") as file:
+        pickle.dump(scenario, file)
+
+    with open("doe.pkl", "rb") as file:
+        pickled_scenario = pickle.load(file)
+
+    assert pickled_scenario._lib is None
+
+    pickled_scenario.execute(
+        {
+            "algo": "CustomDOE",
+            "algo_options": {"samples": array([[0.5]])},
+        }
+    )
+
+    assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
+    assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
+        "y", array([0.5])
+    ) == array([1.0])
+    assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
+        "y", array([1.0])
+    ) == array([2.0])

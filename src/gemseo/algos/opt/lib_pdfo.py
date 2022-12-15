@@ -20,7 +20,6 @@
 """PDFO optimization library wrapper, see `PDFO website <https://www.pdfo.net/>`_."""
 from __future__ import annotations
 
-import logging
 import os
 from dataclasses import dataclass
 from typing import Any
@@ -55,8 +54,6 @@ else:
     ] = conda_dll_search_modification_enable
 
 OptionType = Optional[Union[str, int, float, bool, ndarray]]
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -136,7 +133,7 @@ class PDFOOpt(OptimizationLibrary):
     ) -> dict[str, Any]:
         r"""Set the options default values.
 
-        To get the best and up to date information about algorithms options,
+        To get the best and up-to-date information about algorithms options,
         go to pdfo documentation on the `PDFO website <https://www.pdfo.net/>`_.
 
         Args:

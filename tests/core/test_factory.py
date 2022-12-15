@@ -28,13 +28,14 @@ from pathlib import Path
 import pytest
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
+from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.python_compatibility import importlib_metadata
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
 
 
-def test_print_configuration(tmp_path, reset_factory):
+def test_print_configuration(reset_factory):
     """Verify the string representation of a factory."""
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
 
@@ -98,7 +99,7 @@ def test_parse_docstrings(reset_factory, tmp_wd):
         file_name = f"{grammar.name}.json"
         assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
 
-        grammar.validate(opt_vals, raise_exception=True)
+        grammar.validate(opt_vals)
 
         opt_doc = factory.get_options_doc(form)
         data_names = grammar.keys()
@@ -117,7 +118,7 @@ def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
     if sys.version_info < (3, 8):
         # dirs_exist_ok appeared in python 3.8
         tmp_path.rmdir()
-        shutil.copytree(str(DATA), str(tmp_path))
+        shutil.copytree(DATA, tmp_path)
     else:
         shutil.copytree(DATA, tmp_path, dirs_exist_ok=True)
 
@@ -182,3 +183,10 @@ def test_get_library_name(reset_factory):
     """Verify that the library names found are the expected ones."""
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
     assert factory.get_library_name("MDF") == "gemseo"
+
+
+def test_concrete_classes():
+    """Check that the factory considers only the concrete classes."""
+    factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
+    assert "OTComposedDistribution" in factory.classes
+    assert "ComposedDistribution" not in factory.classes

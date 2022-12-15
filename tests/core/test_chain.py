@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import os
+import pickle
 import unittest
 from itertools import permutations
 
@@ -33,6 +34,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.sobieski.process.mdo_chain import SobieskiChain
 from numpy import allclose
 from numpy import ones
 
@@ -80,7 +82,7 @@ class Testmdochain(unittest.TestCase):
     def test_parallel_chain_combinatorial_thread(self):
         for perm in permutations(range(4)):
             disciplines = self.get_disciplines_list(perm)
-            chain = MDOParallelChain(disciplines, use_threading=True)
+            chain = MDOParallelChain(disciplines)
             chain.linearize(force_all=True)
             ok = chain.check_jacobian(
                 chain.default_inputs,
@@ -139,3 +141,42 @@ class Testmdochain(unittest.TestCase):
 
         # Check the output Jacobian
         chain.check_jacobian(threshold=1e-5)
+
+
+def test_get_sub_disciplines():
+    """Test the get_sub_disciplines method."""
+    chain = SobieskiChain()
+    assert chain.get_sub_disciplines() == chain.disciplines
+
+
+def test_get_sub_disciplines_parallel():
+    """Test the get_sub_disciplines method with an MDOParallelChain."""
+    parallel_chain = MDOParallelChain(
+        [
+            SobieskiStructure(),
+            SobieskiMission(),
+            SobieskiAerodynamics(),
+            SobieskiPropulsion(),
+        ]
+    )
+    assert parallel_chain.get_sub_disciplines() == parallel_chain.disciplines
+
+
+def test_mdo_chain_serialization(tmp_wd):
+    """Test that an MDOChain can be serialized, loaded and executed.
+
+    The focus of this test is to guarantee that the loaded MDOChain instance can be
+    executed, if an AttributeError is raised, it means that the attribute is missing in
+    MDOChain._ATTR_TO_SERIALIZE.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
+    chain = SobieskiChain()
+    with open("chain.pkl", "wb") as file:
+        pickle.dump(chain, file)
+
+    with open("chain.pkl", "rb") as file:
+        chain = pickle.load(file)
+    chain.check_jacobian(threshold=1e-5)
+    chain.execute()

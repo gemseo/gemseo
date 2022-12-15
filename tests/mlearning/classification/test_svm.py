@@ -170,9 +170,9 @@ def test_not_predict_proba(dataset):
         svm.predict_proba(INPUT_VALUES, False)
 
 
-def test_save_and_load(model, tmp_path):
+def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     imported_model = import_classification_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

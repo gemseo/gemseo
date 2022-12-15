@@ -33,6 +33,7 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
@@ -48,7 +49,7 @@ class FirstOrderFD(GradientApproximator):
         \frac{df(x)}{dx}\approx\frac{f(x+\\delta x)-f(x)}{\\delta x}
     """
 
-    ALIAS = "finite_differences"
+    ALIAS = FINITE_DIFFERENCES
 
     def __init__(
         self,
@@ -170,7 +171,7 @@ class FirstOrderFD(GradientApproximator):
                  at the previous step :math:`x-\\delta_x`.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
-                By default Machine epsilon (appx 1e-16),
+                By default, Machine epsilon (appx 1e-16),
                 but can be higher.
                 when the calculation of :math:`f` requires a numerical resolution.
 
@@ -216,7 +217,7 @@ class FirstOrderFD(GradientApproximator):
             x_vect: The input vector.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
-                By default machine epsilon (appx 1e-16),
+                By default, machine epsilon (appx 1e-16),
                 but can be higher.
                 when the calculation of :math:`f` requires a numerical resolution.
             **kwargs: The additional arguments passed to the function.

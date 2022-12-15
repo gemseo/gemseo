@@ -26,6 +26,7 @@ from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
+from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import inf
 from numpy import vstack
@@ -117,7 +118,7 @@ def test_distfitstats_statistics(random_sample):
     stats.compute_minimum()
     stats.compute_range()
     thresh = {name: array([0.0]) for name in ["X_0", "X_1", "X_2", "X_3"]}
-    stats.compute_probability(thresh, greater=True)
+    stats.compute_probability(thresh)
     stats.compute_probability(thresh, greater=False)
     stats.compute_moment(1)
     stats.compute_variance()
@@ -126,21 +127,26 @@ def test_distfitstats_statistics(random_sample):
     assert stats.compute_margin(3.0) == stats.compute_mean_std(3.0)
 
 
-def test_distfitstats_plot(random_sample, tmpdir):
+def test_distfitstats_plot(random_sample, tmp_wd):
     """Test plot methods."""
     array, tested_distributions, _ = random_sample
-    directory = str(tmpdir.mkdir("plot"))
     stats = ParametricStatistics(array, tested_distributions)
-    stats.plot_criteria("X_1", save=True, show=False, directory=directory)
-    stats.plot_criteria(
-        "X_1", title="title", save=True, show=False, directory=directory
-    )
+    stats.plot_criteria("X_1", save=True, show=False)
+    stats.plot_criteria("X_1", title="title", save=True, show=False)
     with pytest.raises(ValueError):
-        stats.plot_criteria("dummy", save=True, show=False, directory=directory)
+        stats.plot_criteria("dummy", save=True, show=False)
     stats = ParametricStatistics(
         array, tested_distributions, fitting_criterion="Kolmogorov"
     )
-    stats.plot_criteria("X_1", save=True, show=False, directory=directory)
+    stats.plot_criteria("X_1", save=True, show=False)
+
+
+@pytest.mark.parametrize("baseline_images", [(["fitting.png"])])
+@image_comparison(None)
+def test_plot_criteria(baseline_images, random_sample, pyplot_close_all):
+    dataset, tested_distributions, _ = random_sample
+    stats = ParametricStatistics(dataset, ["Exponential", "Normal", "Uniform"])
+    stats.plot_criteria("X_0", show=False)
 
 
 def test_distfitstats_tolint(random_sample):
@@ -194,8 +200,7 @@ def test_distfitstats_tolint_uniform():
 
 
 def test_distfitstats_tolint_lognormal():
-    """Test returned values by tolerance_interval() method for Lognormal
-    distribution."""
+    """Test returned values by tolerance_interval() method for Lognormal distribution."""
     seed(0)
     n_samples = 100
     lognormal_rand = lognormal(size=n_samples).reshape((-1, 1))

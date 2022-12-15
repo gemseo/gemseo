@@ -56,7 +56,7 @@ mathematical :attr:`.Distribution.support`.
 
     We call mathematical *support* the set of values that the random variable
     can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
-    and numerical *range* the set of values that it can can take in practice,
+    and numerical *range* the set of values that it can take in practice,
     taking into account the values rounded to zero double precision.
     Both support and range are described in terms of lower and upper bounds
 
@@ -74,6 +74,7 @@ by means of the :meth:`.Distribution.compute_samples` method.
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -83,7 +84,6 @@ from typing import Tuple
 from typing import Union
 
 import matplotlib.pyplot as plt
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import arange
 from numpy import array
@@ -92,6 +92,7 @@ from numpy import ndarray
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -101,7 +102,7 @@ StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 
 
-class Distribution(metaclass=GoogleDocstringInheritanceMeta):
+class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Probability distribution related to a random variable.
 
     The dimension of the random variable can be greater than 1. In this case,
@@ -177,7 +178,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
@@ -188,7 +189,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
             dimension: The dimension of the random variable.
             standard_parameters: The standard representation
                 of the parameters of the probability distribution.
-        """
+        """  # noqa: D205,D212,D415
         self.math_lower_bound = None
         self.math_upper_bound = None
         self.num_lower_bound = None
@@ -217,6 +218,7 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
     def __str__(self) -> str:
         return f"{self.distribution_name}({pretty_str(self.standard_parameters)})"
 
+    @abstractmethod
     def compute_samples(
         self,
         n_samples: int = 1,
@@ -232,8 +234,8 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
             The number of columns is equal to the dimension of the variable
             and the number of lines is equal to the number of samples.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def compute_cdf(
         self,
         vector: Iterable[float],
@@ -249,8 +251,8 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The CDF values of the components of the random variable.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def compute_inverse_cdf(
         self,
         vector: Iterable[float],
@@ -264,17 +266,16 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The ICDF values of the components of the random variable.
         """
-        raise NotImplementedError
 
     @property
+    @abstractmethod
     def mean(self) -> ndarray:
         """The analytical mean of the random variable."""
-        raise NotImplementedError
 
     @property
+    @abstractmethod
     def standard_deviation(self) -> ndarray:
         """The analytical standard deviation of the random variable."""
-        raise NotImplementedError
 
     @property
     def range(self) -> list[ndarray]:
@@ -328,15 +329,15 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
             show: If True, display the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
-                If None,
+                If ``None``,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_extension``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If ``None``, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
-            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If ``None``, use a default one generated by the post-processing.
+            file_extension: A file extension, e.g. ``'png'``, ``'pdf'``, ``'svg'``, ...
+                If ``None``, use a default file extension.
 
         Returns:
             The figures.
@@ -374,35 +375,39 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
             show: If True, display the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
-                If None,
+                If ``None``,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_extension``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If ``None``, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
-            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If ``None``, use a default one generated by the post-processing.
+            file_extension: A file extension, e.g. ``'png'``, ``'pdf'``, ``'svg'``, ...
+                If ``None``, use a default file extension.
 
         Returns:
             The figure.
         """
         variable_name = self.variable_name
         if self.dimension > 1:
-            variable_name = f"{variable_name}({index})"
+            variable_name = f"{variable_name}[{index}]"
+
         l_b = self.num_lower_bound[index]
         u_b = self.num_upper_bound[index]
         x_values = arange(l_b, u_b, (u_b - l_b) / 100)
-        y1_values = [self._pdf(index)(x_value) for x_value in x_values]
-        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.4, 3.2))
         fig.suptitle(f"Probability distribution of {variable_name}")
-        ax1.plot(x_values, y1_values)
+        ax1.plot(x_values, [self._pdf(index)(x_value) for x_value in x_values])
+        ax1.grid()
         ax1.set_xlabel(variable_name)
-        ax1.set_title("PDF")
-        y2_values = [self._cdf(index)(x_value) for x_value in x_values]
-        ax2.plot(x_values, y2_values)
+        ax1.set_ylabel("Probability density function")
+        ax1.set_box_aspect(1)
+        ax2.plot(x_values, [self._cdf(index)(x_value) for x_value in x_values])
+        ax2.grid()
         ax2.set_xlabel(variable_name)
-        ax2.set_title("Cumulative density function")
+        ax2.set_ylabel("Cumulative distribution function")
+        ax2.yaxis.tick_right()
+        ax2.set_box_aspect(1)
         if save:
             file_path = self.__file_path_manager.create_file_path(
                 file_path=file_path,
@@ -411,9 +416,10 @@ class Distribution(metaclass=GoogleDocstringInheritanceMeta):
                 file_extension=file_extension,
             )
             if self.dimension > 1:
-                file_path = self.__file_path_manager.add_suffix(file_path, index)
+                file_path = self.__file_path_manager.add_suffix(file_path, str(index))
         else:
             file_path = None
+
         save_show_figure(fig, show, file_path)
         return fig
 

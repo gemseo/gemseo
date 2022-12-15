@@ -52,7 +52,7 @@ class ConsistencyCstr(MDOFunction):
         Args:
             output_couplings: The names of the output couplings.
             formulation: The IDF formulation of the problem.
-        """
+        """  # noqa: D205, D212, D415
         self.__formulation = formulation
         self.__output_couplings = output_couplings
         self.__coupl_func = FunctionFromDiscipline(

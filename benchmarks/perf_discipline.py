@@ -30,7 +30,7 @@ def run():
         MDODiscipline()
 
 
-print("Toto")  # noqa: T001
+print("Toto")  # noqa: T201
 
 if __name__ == "__main__":
     from time import time
@@ -46,10 +46,10 @@ if __name__ == "__main__":
     HDF5Cache()
     tf = time()
     # noqa: N802
-    print("Total time =" + str(tf - t0))  # noqa: T001
+    print("Total time =" + str(tf - t0))  # noqa: T201
 
     t0 = time()
     run()
     tf = time()
     # noqa: N802
-    print("Total time =" + str(tf - t0))  # noqa: T001
+    print("Total time =" + str(tf - t0))  # noqa: T201

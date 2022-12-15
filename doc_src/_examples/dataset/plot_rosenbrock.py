@@ -44,7 +44,6 @@ from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.zvsxy import ZvsXY
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -74,9 +73,7 @@ print(dataset)
 # Plot the data
 # -------------
 ZvsXY(dataset, x="x", x_comp=0, y="x", y_comp=1, z="rosen").execute(
-    save=False, show=False
+    save=False, show=True
 )
 
-YvsX(dataset, x="x", x_comp=0, y="rosen").execute(save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+YvsX(dataset, x="x", x_comp=0, y="rosen").execute(save=False, show=True)

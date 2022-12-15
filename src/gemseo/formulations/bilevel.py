@@ -24,7 +24,6 @@ from typing import Any
 from typing import Callable
 from typing import Iterable
 from typing import Mapping
-from typing import Sequence
 
 from numpy import ndarray
 
@@ -67,7 +66,7 @@ class BiLevel(MDOFormulation):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
@@ -91,7 +90,7 @@ class BiLevel(MDOFormulation):
             parallel_scenarios: Whether to run the sub-scenarios in parallel.
             multithread_scenarios: If True and parallel_scenarios=True,
                 the sub-scenarios are run in parallel using multi-threading;
-                if False and parallel_scenarios=True, multi-processing is used.
+                if False and parallel_scenarios=True, multiprocessing is used.
             apply_cstr_tosub_scenarios: Whether the :meth:`.add_constraint` method
                 adds the constraint to the optimization problem of the sub-scenario
                 capable of computing the constraint.
@@ -101,7 +100,7 @@ class BiLevel(MDOFormulation):
                 from the initial guesses, otherwise warm start them.
             **main_mda_options: The options of the main MDA, which may include those
                 of the inner-MDA.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
@@ -289,17 +288,10 @@ class BiLevel(MDOFormulation):
     def get_default_sub_options_values(
         cls, **options: str
     ) -> Mapping[str, str | int | float | bool | None] | None:
-        """Return the options value of the selected MDA.
-
-        Args:
-             **options: The options of the BiLevel formulation.
-
-        Returns:
-            The MDA options values.
-
+        """
         Raises:
             ValueError: When the MDA name is not provided.
-        """
+        """  # noqa: D205, D212, D415
         main_mda_name = options.get("main_mda_name")
         if main_mda_name is None:
             raise ValueError(
@@ -401,11 +393,10 @@ class BiLevel(MDOFormulation):
             run_mda1_orig = self._mda1._run
 
             def _run_mda() -> Callable[[Mapping[str, ndarray]], None]:
-                """Redefine mda1 execution to warm start the chain with previous x_local
-                opt.
+                """Set mda1 execution to warm start the chain with previous x_local opt.
 
                 Returns:
-                     A reference to the MDA1 _run method
+                     A reference to the MDA1 _run method.
                 """
                 # TODO : Define a pre run method to be overloaded in MDA maybe
                 # Or use observers at the system driver level to pass the local
@@ -438,15 +429,15 @@ class BiLevel(MDOFormulation):
                 if coupling in design_space.variables_names:
                     design_space.remove_variable(coupling)
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:
+    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
         return [self.chain]
 
-    def get_expected_workflow(
+    def get_expected_workflow(  # noqa:D102
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         return self.chain.get_expected_workflow()
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.chain.get_expected_dataflow()
@@ -465,7 +456,7 @@ class BiLevel(MDOFormulation):
         Args:
             levels: The levels at which the constraint is to be added
                 (sublist of Bilevel.LEVELS).
-                By default the policy set at the initialization
+                By default, the policy set at the initialization
                 of the formulation is enforced.
 
         Raises:

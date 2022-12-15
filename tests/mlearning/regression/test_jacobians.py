@@ -37,6 +37,7 @@ from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 from numpy import array
 
@@ -136,16 +137,13 @@ def dataset(request) -> Dataset:
 
 def test_regression_model():
     """Test that by default the computation of the Jacobian raises an error."""
-
-    class MockRegressionAlgo(MLRegressionAlgo):
-        pass
-
     dataset = dataset_factory(*DATASETS_DESCRIPTIONS[0])
-    model = MockRegressionAlgo(dataset)
-    error_msg = "Derivatives are not available for MockRegressionAlgo"
-
-    with pytest.raises(NotImplementedError, match=error_msg):
-        model.predict_jacobian(array([1.0]))
+    with pytest.raises(
+        NotImplementedError,
+        match="Derivatives are not available for MLRegressionAlgo.",
+    ):
+        with concretize_classes(MLRegressionAlgo):
+            MLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)

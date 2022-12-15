@@ -42,4 +42,4 @@ def test_common_scenario(
     """Check BasicHistory with objective, standardized or not."""
     opt = BasicHistory(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], show=False, save=False)
+    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)

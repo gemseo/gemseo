@@ -20,13 +20,9 @@
 """Factory for the trust updater."""
 from __future__ import annotations
 
-import logging
-
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
 from gemseo.algos.opt.core.trust_updater import TrustUpdater
-
-LOGGER = logging.getLogger(__name__)
 
 
 class UpdaterFactory:
@@ -36,7 +32,7 @@ class UpdaterFactory:
     PENALTY = "penalty"
     TRUST_PARAMETERS = [RADIUS, PENALTY]
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         self.__update_name_to_updater = {
             UpdaterFactory.RADIUS: RadiusUpdater,
             UpdaterFactory.PENALTY: PenaltyUpdater,

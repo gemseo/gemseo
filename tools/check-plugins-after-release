@@ -1,0 +1,83 @@
+#! /usr/bin/env python
+"""A script to check the plugins against a new gemseo release."""
+from __future__ import annotations
+
+from pathlib import Path
+from subprocess import CalledProcessError
+from subprocess import run
+
+DRY_RUN = False
+
+REMOTE_TO_REPO_NAME = {
+    "upstream": (
+        "gemseo-petsc",
+        "gemseo-scilab",
+        "gemseo-pymoo",
+        "gemseo-umdo",
+        "gemseo-calibration",
+        "gemseo-mlearning",
+    ),
+    "origin": (
+        "gemseo-umdo-private",
+        "gemseo-mlearning-private",
+        "gemseo-private-members-plugins",
+    ),
+}
+
+BRANCH = "check-gemseo-4.1.0"
+PARENT_BRANCH = "develop"
+
+ACTIONS = f"""
+git fetch {{remote}}
+git stash
+git checkout {{remote}}/{PARENT_BRANCH} -b {BRANCH}
+tox -e update-deps-test-py37
+tox -e update-deps-test-py38
+tox -e update-deps-test-py39
+tox -e update-deps-test-py310
+git add -u
+git commit -m "build: udpate deps"
+git push origin {BRANCH}
+""".strip()
+
+
+def main() -> int:
+    """Main entry point."""
+    for remote, repo_names in REMOTE_TO_REPO_NAME.items():
+        for repo_name in repo_names:
+            repo_path = Path(repo_name).absolute()
+
+            if not repo_path.is_dir():
+                print(f"ERROR: no such directory {repo_path}")  # noqa:T201
+                return 1
+
+            print(f"PROCESSING: {repo_path}", end="\n\n")  # noqa:T201
+            actions = ACTIONS.format(remote=remote).split("\n")
+
+            for command in actions:
+                print(f"RUNNING: {command}")  # noqa:T201
+
+                if DRY_RUN:
+                    continue
+
+                try:
+                    output = run(
+                        command,
+                        shell=True,
+                        check=True,
+                        capture_output=True,
+                        cwd=repo_path,
+                        text=True,
+                    )
+                except CalledProcessError as error:
+                    print(f"ERROR: {error}")  # noqa:T201
+                    print(f"{error.stdout}")  # noqa:T201
+                    print(f"{error.stderr}")  # noqa:T201
+                    return 1
+
+                print(output.stdout, end="\n\n")  # noqa:T201
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

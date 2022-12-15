@@ -32,11 +32,9 @@ generated/sklearn.svm.SVC.html>`_.
 """
 from __future__ import annotations
 
-import logging
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import ndarray
 from sklearn.svm import SVC
@@ -45,8 +43,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.utils.python_compatibility import Final
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SVMClassifier(MLClassificationAlgo):
@@ -58,7 +54,7 @@ class SVMClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         C=1.0,  # noqa: N803
@@ -66,7 +62,7 @@ class SVMClassifier(MLClassificationAlgo):
         probability: bool = False,
         **parameters: int | float | bool | str | None,
     ) -> None:
-        # noqa: D205,D212,D415
+
         """
         Args:
             C: The inverse L2 regularization parameter.
@@ -76,7 +72,7 @@ class SVMClassifier(MLClassificationAlgo):
                 or a callable.
             probability: Whether to enable the probability estimates.
                 The algorithm is faster if set to False.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             data,
             transformer=transformer,

@@ -48,7 +48,7 @@ class KPCA(DimensionReduction):
         fit_inverse_transform: bool = True,
         kernel: str = "linear",
         **parameters: float | int | str | None,
-    ):
+    ) -> None:
         """
         Args:
             fit_inverse_transform: If True, learn the inverse transform
@@ -65,22 +65,12 @@ class KPCA(DimensionReduction):
             **parameters,
         )
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         self.algo.fit(data)
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:
         return self.algo.transform(data)
 
-    def inverse_transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:
         return self.algo.inverse_transform(data)

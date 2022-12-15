@@ -39,7 +39,7 @@ the concept of scalability study:
    particular parameters rather than groups of parameters.
 5. Lastly, the user executes the :class:`.ScalabilityStudy` and the results
    are written in several files and stored into directories
-   in a hierarchical way, where names depends on both MDO formulation,
+   in a hierarchical way, where names depend on both MDO formulation,
    scaling strategy and replications when it is necessary. Different kinds
    of files are stored: optimization graphs, dependency matrix plots and
    of course, scalability results by means of a dedicated class:
@@ -287,8 +287,7 @@ class ScalabilityStudy:
         self._fill_factor[discipline][output] = fill_factor
 
     def __check_discipline(self, discipline):
-        """Check if discipline is a string comprised in the list of disciplines
-        names."""
+        """Check if discipline is a string comprised in the list of disciplines names."""
         if not isinstance(discipline, str):
             raise TypeError("The argument discipline should be a string")
         disciplines_names = self.disciplines_names
@@ -373,8 +372,7 @@ class ScalabilityStudy:
         formulation_options=None,
         top_level_diff="auto",
     ):
-        """Add both optimization algorithm and MDO formulation, as well as their
-        options.
+        """Add both optimization algorithm and MDO formulation, as well as their options.
 
         :param str algo: name of the optimization algorithm.
         :param int max_iter: maximum number of iterations
@@ -511,7 +509,7 @@ class ScalabilityStudy:
         if isinstance(formatted_sizes, int) or formatted_sizes is None:
             formatted_sizes = [formatted_sizes]
         if len(formatted_sizes) == 1:
-            formatted_sizes = formatted_sizes * n_scaling
+            formatted_sizes *= n_scaling
         return formatted_sizes
 
     @staticmethod
@@ -529,8 +527,8 @@ class ScalabilityStudy:
 
     @staticmethod
     def __check_scaling_consistency(n_var_scaling, n_scaling):
-        """Check that for the different types of variables, the number of scalings is
-        the same or equal to 1.
+        """Check that for the different types of variables, the number of scalings is the
+        same or equal to 1.
 
         :param int n_var_scaling: number of scalings
         :param int n_scaling: expected number of scalings

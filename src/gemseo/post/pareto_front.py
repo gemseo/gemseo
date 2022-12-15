@@ -58,15 +58,15 @@ class ParetoFront(OptPostProcessor):
         """
         Args:
             objectives: The functions names or design variables to plot.
-                If None, use the objective function (may be a vector).
+                If None, use the objective function (maybe a vector).
             objectives_labels: The labels of the objective components.
                 If None, use the objective name suffixed by an index.
-            show_non_feasible: If True, show the non feasible points in the plot.
+            show_non_feasible: If True, show the non-feasible points in the plot.
 
         Raises:
             ValueError: If the numbers of objectives and objectives
                 labels are different.
-        """
+        """  # noqa: D205, D212, D415
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
 
@@ -122,9 +122,7 @@ class ParetoFront(OptPostProcessor):
             design_variables_labels = []
             all_data_names = objectives
             _, objective_labels, _ = self.database.get_history_array(
-                functions=objectives,
-                design_variables_names=None,
-                add_dv=False,
+                functions=objectives, add_dv=False
             )
         elif not objectives:
             design_variables_labels = self._generate_x_names(variables=design_variables)
@@ -134,16 +132,14 @@ class ParetoFront(OptPostProcessor):
             design_variables_labels = self._generate_x_names(variables=design_variables)
             all_data_names = objectives + design_variables
             _, objective_labels, _ = self.database.get_history_array(
-                functions=objectives,
-                design_variables_names=None,
-                add_dv=False,
+                functions=objectives, add_dv=False
             )
 
         all_data_names.sort()
         all_labels = sorted(objective_labels + design_variables_labels)
 
         sample_values = self.opt_problem.get_data_by_names(
-            names=all_data_names, as_dict=False, filter_non_feasible=False
+            names=all_data_names, as_dict=False
         )
 
         return sample_values, all_labels
@@ -207,7 +203,7 @@ class ParetoFront(OptPostProcessor):
             sample_values: The sample values.
 
         Returns:
-            An array of size ``n_samples``, True if the point is non feasible.
+            An array of size ``n_samples``, True if the point is non-feasible.
         """
         x_feasible, _ = self.opt_problem.get_feasible_points()
         feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]

@@ -21,7 +21,6 @@
 """scipy.optimize optimization library wrapper."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import Any
 
@@ -33,8 +32,6 @@ from scipy import optimize
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -139,7 +136,7 @@ class ScipyOpt(OptimizationLibrary):
     ) -> dict[str, Any]:
         r"""Set the options default values.
 
-        To get the best and up to date information about algorithms options,
+        To get the best and up-to-date information about algorithms options,
         go to scipy.optimize documentation:
         https://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
@@ -287,7 +284,6 @@ class ScipyOpt(OptimizationLibrary):
             jac=jac,
             bounds=bounds,
             constraints=cstr_scipy,
-            tol=None,
             options=options,
         )
 

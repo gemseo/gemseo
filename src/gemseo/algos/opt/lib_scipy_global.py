@@ -20,7 +20,6 @@
 """scipy.optimize global optimization library wrapper."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import Any
 from typing import Mapping
@@ -37,8 +36,6 @@ from scipy.optimize import NonlinearConstraint
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -136,7 +133,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
     ) -> dict[str, Any]:  # pylint: disable=W0221
         r"""Set the options default values.
 
-        To get the best and up to date information about algorithms options,
+        To get the best and up-to-date information about algorithms options,
         go to scipy.optimize documentation:
         https://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
@@ -289,13 +286,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 local_search_options={},
                 initial_temp=5230.0,
                 restart_temp_ratio=2e-05,
-                visit=2.62,
-                accept=-5.0,
                 maxfun=self.max_func_calls,
                 seed=options["seed"],
-                no_local_search=False,
-                callback=None,
-                x0=None,
             )
         elif self.internal_algo_name == "shgo":
             constraints = self.__get_constraints_as_scipy_dictionary()
@@ -305,8 +297,6 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 args=(),
                 n=options["n"],
                 iters=options["iters"],
-                callback=None,
-                minimizer_kwargs=None,
                 sampling_method=options["sampling_method"],
                 constraints=constraints,
                 options=local_options,
@@ -336,8 +326,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         return self.get_optimum_from_database(opt_result.message, opt_result.success)
 
     def __get_non_linear_constraints(self) -> tuple[NonlinearConstraint]:
-        """Create the constraints to be passed to a SciPy algorithm as
-        NonLinearConstraints.
+        """Create the constraints to be passed to as NonLinearConstraints.
 
         :return: The constraints.
         :rtype: tuple(NonLinearConstraint)

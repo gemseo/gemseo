@@ -23,7 +23,9 @@ import pytest
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import arange
+from numpy import array
 from numpy import ndarray
+from numpy.testing import assert_almost_equal
 
 
 @pytest.fixture
@@ -74,3 +76,27 @@ def test_inverse_transform(data):
     other_unscaled_data = another_scaler.inverse_transform(data)
     assert allclose(unscaled_data, left + (right - left) * data)
     assert allclose(other_unscaled_data, left + (right - left) * data)
+
+
+@pytest.mark.parametrize(
+    ["data", "transformed_data"],
+    [
+        (
+            array([[1.0, 2.0, 6.0], [4.0, 2.0, 3.0]]),
+            array([[0, 0.5, 1.0], [1.0, 0.5, 0.0]]),
+        ),
+        (
+            array([[1.0, 2.0, 6.0], [4.0, 5.0, 3.0]]),
+            array([[0, 0, 1.0], [1.0, 1.0, 0.0]]),
+        ),
+        (array([[2.0], [4.0]]), array([[0.0], [1.0]])),
+        (array([[1.0], [1.0]]), array([[0.5], [0.5]])),
+        (array([1.0, 1.0]), array([0.5, 0.5])),
+        (array([2.0, 1.0]), array([1.0, 0.0])),
+    ],
+)
+def test_constant(data, transformed_data):
+    """Check scaling with a constant feature."""
+    transformer = MinMaxScaler(data)
+    assert_almost_equal(transformer.fit_transform(data), transformed_data)
+    assert_almost_equal(transformer.inverse_transform(transformed_data), data)

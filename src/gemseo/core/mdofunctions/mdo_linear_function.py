@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from numbers import Number
+from typing import Any
 from typing import Sequence
 
 from numpy import array
@@ -29,7 +30,7 @@ from gemseo.core.mdofunctions.mdo_function import OutputType
 
 
 class MDOLinearFunction(MDOFunction):
-    r"""Linear multivariate function defined by
+    r"""Linear multivariate function defined by.
 
     * a matrix :math:`A` of first-order coefficients
       :math:`(a_{ij})_{\substack{i = 1, \dots m \\ j = 1, \dots n}}`
@@ -48,7 +49,6 @@ class MDOLinearFunction(MDOFunction):
         \begin{bmatrix} x_1 \\ \vdots \\ x_n \end{bmatrix}
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
-
     """
 
     def __init__(
@@ -72,7 +72,7 @@ class MDOLinearFunction(MDOFunction):
             value_at_zero: The value :math:`b` of the linear function output at zero.
             output_names: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
-        """
+        """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
@@ -99,9 +99,9 @@ class MDOLinearFunction(MDOFunction):
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> OutputType:
-        """Return the linear combination with an offset:
+        """Return the linear combination with an offset.
 
-        sum_{i=1}^n a_i * x_i + b
+        :math:`sum_{i=1}^n a_i * x_i + b`
 
         Args:
             x_vect: The design variables values.
@@ -111,18 +111,19 @@ class MDOLinearFunction(MDOFunction):
             value = value[0]
         return value
 
-    def _jac_to_wrap(self, _) -> ArrayType:
-        """.. note::
+    def _jac_to_wrap(self, _: Any) -> ArrayType:
+        """Set and return the coefficients.
 
         If the function is scalar, the gradient of the function is returned as a
-        1d-array. If the function is vectorial, the Jacobian of the function is returned
-        as a 2d-array.
+        1d-array. If the function is vectorial, the Jacobian of the function is
+        returned as a 2d-array.
+
+        Args:
+            _: This argument is not used.
         """
         if self._coefficients.shape[0] == 1:
-            jac = self._coefficients[0, :]
-        else:
-            jac = self._coefficients
-        return jac
+            return self._coefficients[0, :]
+        return self._coefficients
 
     @property
     def coefficients(self) -> ArrayType:
@@ -157,7 +158,7 @@ class MDOLinearFunction(MDOFunction):
         This is the vector :math:`b` in the expression :math:`y=Ax+b`.
 
         Raises:
-            ValueError: If the value at zero is neither an ndarray nor a number.
+            ValueError: If the value at zero is neither a ndarray nor a number.
         """
         return self._value_at_zero
 
@@ -249,7 +250,7 @@ class MDOLinearFunction(MDOFunction):
                 )
         return "".join(strings)
 
-    def __neg__(self) -> MDOLinearFunction:
+    def __neg__(self) -> MDOLinearFunction:  # noqa:D102
         return self.__class__(
             -self._coefficients,
             f"-{self.name}",
@@ -258,7 +259,7 @@ class MDOLinearFunction(MDOFunction):
             -self._value_at_zero,
         )
 
-    def offset(self, value: OutputType) -> MDOLinearFunction:
+    def offset(self, value: OutputType) -> MDOLinearFunction:  # noqa:D102
         return self.__class__(
             self._coefficients,
             self.name,

@@ -45,7 +45,6 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import generate_n2_plot
-from matplotlib import pyplot as plt
 from numpy import array
 from numpy import ones
 
@@ -160,11 +159,11 @@ generate_n2_plot(disciplines, save=False, show=True)
 # object. The design space definition reads:
 
 design_space = create_design_space()
-design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
-design_space.add_variable("x_shared_1", 1, l_b=-10, u_b=10.0, value=array([4.0]))
-design_space.add_variable("x_shared_2", 1, l_b=0.0, u_b=10.0, value=array([3.0]))
-design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
-design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
+design_space.add_variable("x_shared_1", l_b=-10, u_b=10.0, value=array([4.0]))
+design_space.add_variable("x_shared_2", l_b=0.0, u_b=10.0, value=array([3.0]))
+design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
 print(design_space)
 
 # %%
@@ -245,9 +244,7 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # following plots. Many other post-processings are available in |g| and
 # are described in :ref:`Post-processing <post_processing>`.
 
-scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
 # .. note::

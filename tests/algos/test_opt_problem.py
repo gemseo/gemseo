@@ -167,7 +167,7 @@ def test_add_constraints(pow2_problem):
 
     ineq2 = MDOFunction(Power2.ineq_constraint1, name="ineq2")
     with pytest.raises(ValueError):
-        problem.add_constraint(ineq2, value=None, cstr_type=None)
+        problem.add_constraint(ineq2)
 
     problem.add_constraint(ineq1, positive=True)
 
@@ -520,16 +520,14 @@ def test_normalize_linear_function():
     initial_value = objective(x_0)
     problem = OptimizationProblem(design_space)
     problem.objective = objective
-    problem.preprocess_functions(
-        is_function_input_normalized=True, use_database=False, round_ints=False
-    )
+    problem.preprocess_functions(use_database=False, round_ints=False)
     assert allclose(problem.objective(zeros(2)), low_bnd_value)
     assert allclose(problem.objective(ones(2)), upp_bnd_value)
     assert allclose(problem.objective(0.8 * ones(2)), initial_value)
 
 
 def test_export_hdf(tmp_wd):
-    file_path = tmp_wd / "power2.h5"
+    file_path = Path("power2.h5")
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP")
     problem.export_hdf(file_path, append=True)  # Shall still work now
@@ -543,7 +541,7 @@ def test_export_hdf(tmp_wd):
         assert problem.get_eq_cstr_total_dim() == 1
         assert problem.get_ineq_cstr_total_dim() == 2
 
-    problem.export_hdf(file_path, append=False)
+    problem.export_hdf(file_path)
 
     imp_pb = OptimizationProblem.import_hdf(file_path)
     check_pb(imp_pb)
@@ -790,7 +788,7 @@ def test_append_export(tmp_wd):
     func = problem.objective
     file_path_db = "test_pb_append.hdf5"
     # Export empty file
-    problem.export_hdf(file_path_db, append=False)
+    problem.export_hdf(file_path_db)
 
     n_calls = 200
     for i in range(n_calls):
@@ -815,7 +813,7 @@ def test_grad_normalization(pow2_problem):
     problem = pow2_problem
     x_vec = ones(3)
     grad = problem.objective.jac(x_vec)
-    problem.preprocess_functions(is_function_input_normalized=True)
+    problem.preprocess_functions()
     norm_grad = problem.objective.jac(x_vec)
 
     assert 0.0 == pytest.approx(norm(norm_grad - 2 * grad))
@@ -1084,9 +1082,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
     """
     f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", 1, l_b=1, u_b=3, value=array([1]), var_type="integer"
-    )
+    design_space.add_variable("x", l_b=1, u_b=3, value=array([1]), var_type="integer")
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
 
@@ -1504,7 +1500,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
     OptimizersFactory().execute(pow2_problem, "SLSQP")
 
     # Export and import the optimization problem.
-    file_path = tmp_wd / "power2.h5"
+    file_path = "power2.h5"
     pow2_problem.export_hdf(file_path)
     imp_pb = OptimizationProblem.import_hdf(file_path)
 
@@ -1609,7 +1605,7 @@ def test_observables_normalization():
     """Test that the observables are called at each iteration."""
     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     design_space = DesignSpace()
-    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )
@@ -1687,3 +1683,54 @@ def test_get_missing_observable(constrained_problem):
 def test_execute_twice(problem_executed_twice, name):
     """Check that the second evaluations of an OptimizationProblem works."""
     assert len(problem_executed_twice.database.get_func_history(name)) == 2
+
+
+def test_avoid_complex_in_dataset():
+    """Check that exporting database to dataset casts complex numbers to real."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(
+        lambda x: array([0j]), "f", jac=lambda x: array([[0j]])
+    )
+    problem.preprocess_functions()
+    problem.evaluate_functions(array([0.25 + 0j]), eval_jac=True)
+    dataset = problem.export_to_dataset(export_gradients=True)
+    for name in ["@f", "f", "x"]:
+        assert dataset[name].dtype.kind == "f"
+
+
+@pytest.mark.parametrize("cstr_type", ["eq", "ineq"])
+def test_nan_get_violation_criteria(cstr_type):
+    """Test get_violation_criteria in the presence of NaN constraints."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.ineq_tolerance = 1e-3
+    problem.eq_tolerance = 1e-3
+    problem.objective = MDOFunction(lambda x: x, "obj")
+    problem.add_constraint(MDOFunction(lambda x: x, "cstr"), cstr_type=cstr_type)
+
+    x_vect1 = array([1.0])
+    problem.database.store(x_vect1, {"obj": array([1]), "cstr": array([float("NaN")])})
+
+    is_pt_feasible, f_violation = problem.get_violation_criteria(x_vect1)
+    assert not is_pt_feasible
+    assert f_violation == float("inf")
+
+    x_vect2 = array([2.0])
+    problem.database.store(x_vect2, {"obj": array([1.0]), "cstr": array([0.0])})
+    is_pt_feasible2, f_violation2 = problem.get_violation_criteria(x_vect2)
+    assert is_pt_feasible2
+    assert f_violation2 == 0.0
+
+    x_vect3 = array([3.0])
+    problem.database.store(array([3.0]), {"obj": array([0.0]), "cstr": array([2.0])})
+    is_pt_feasible3, f_violation3 = problem.get_violation_criteria(x_vect3)
+    assert not is_pt_feasible3
+    assert f_violation3 == (2.0 - 1e-3) ** 2
+
+    opt = problem.get_optimum()
+    assert opt[0] == 1.0

@@ -96,37 +96,41 @@ to be carefully tuned in order to maximize the generalization power of the model
 from __future__ import annotations
 
 import inspect
-import logging
 import pickle
+from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
+from typing import Dict
 from typing import Mapping
+from typing import MutableMapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
-LOGGER = logging.getLogger(__name__)
-
-TransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
-SavedObjectType = Union[Dataset, TransformerType, str, bool]
+SavedObjectType = Union[Dataset, Dict[str, Transformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
+SubTransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
+TransformerType = MutableMapping[str, SubTransformerType]
+DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
 
-class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
+class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract machine learning algorithm.
 
     Such a model is built from a training dataset,
@@ -145,7 +149,8 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
     """The parameters of the machine learning algorithm."""
 
     transformer: dict[str, Transformer]
-    """The strategies to transform the variables.
+    """The strategies to transform the variables, if any.
+
     The values are instances of :class:`.Transformer`
     while the keys are the names of
     either the variables
@@ -154,7 +159,6 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
     If a group is specified,
     the :class:`.Transformer` will be applied
     to all the variables of this group.
-    If None, do not transform the variables.
     """
 
     algo: Any
@@ -173,10 +177,16 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     FILENAME: ClassVar[str] = "ml_algo.pkl"
 
+    IDENTITY: Final[DefaultTransformerType] = MappingProxyType({})
+    """A transformer leaving the input and output variables as they are."""
+
+    DEFAULT_TRANSFORMER: DefaultTransformerType = IDENTITY
+    """The default transformer for the input and output data, if any."""
+
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = IDENTITY,
         **parameters: MLAlgoParameterType,
     ) -> None:
         """
@@ -187,11 +197,12 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
-                e.g. "inputs" or "outputs" in the case of the regression algorithms.
+                e.g. ``"inputs"`` or ``"outputs"``
+                in the case of the regression algorithms.
                 If a group is specified,
                 the :class:`.Transformer` will be applied
                 to all the variables of this group.
-                If None, do not transform the variables.
+                If :attr:`.IDENTITY`, do not transform the variables.
             **parameters: The parameters of the machine learning algorithm.
 
         Raises:
@@ -201,7 +212,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         self.learning_set = data
         self.parameters = parameters
         self.transformer = {}
-        if transformer is not None:
+        if transformer:
             self.transformer = {
                 key: self.__create_transformer(transf)
                 for key, transf in transformer.items()
@@ -222,9 +233,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
                 )
 
     @staticmethod
-    def __create_transformer(
-        transformer: TransformerType,
-    ) -> Transformer:
+    def __create_transformer(transformer: SubTransformerType) -> Transformer:
         if isinstance(transformer, Transformer):
             return transformer.duplicate()
 
@@ -266,7 +275,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
+                If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
         """
         if samples is not None:
@@ -274,6 +283,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         self._learn(samples, fit_transformers)
         self._trained = True
 
+    @abstractmethod
     def _learn(
         self,
         indices: Sequence[int] | None,
@@ -283,10 +293,9 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             indices: The indices of the learning samples.
-                If None, use the whole learning dataset.
+                If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
         """
-        raise NotImplementedError
 
     def __str__(self) -> str:
         msg = MultiLineString()
@@ -368,7 +377,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The objects to save.
         """
-        objects = {
+        return {
             "data": self.learning_set,
             "transformer": self.transformer,
             "parameters": self.parameters,
@@ -376,7 +385,6 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
             "sizes": self.sizes,
             "_trained": self._trained,
         }
-        return objects
 
     def _check_is_trained(self) -> None:
         """Check if the algorithm is trained.

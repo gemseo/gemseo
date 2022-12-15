@@ -62,7 +62,7 @@ class IDF(MDOFormulation):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
@@ -88,7 +88,7 @@ class IDF(MDOFormulation):
                 you shall use multiprocessing.
             start_at_equilibrium: If True,
                 an MDA is used to initialize the coupling variables.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
@@ -152,7 +152,7 @@ class IDF(MDOFormulation):
             )
         self._set_default_input_values_from_design_space()
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:
+    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
         # All functions and constraints are built from the top level disc
         # If we are in parallel mode: return the parallel execution
         if self._parallel_exec is not None:
@@ -294,12 +294,12 @@ class IDF(MDOFormulation):
                 cstr = ConsistencyCstr(couplings, self)
                 self.opt_problem.add_eq_constraint(cstr)
 
-    def get_expected_workflow(
+    def get_expected_workflow(  # noqa:D102
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         return ExecutionSequenceFactory.parallel(self.disciplines)
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return []

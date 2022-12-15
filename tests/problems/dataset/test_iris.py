@@ -23,7 +23,6 @@ from gemseo.problems.dataset.iris import IrisDataset
 
 
 def test_constructor():
-
     dataset = IrisDataset()
     assert dataset.name == "Iris"
     assert len(dataset) == 150

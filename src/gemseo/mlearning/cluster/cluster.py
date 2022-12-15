@@ -35,8 +35,8 @@ which inherits from :class:`.MLClusteringAlgo`.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
 from typing import Sequence
 from typing import Union
@@ -73,7 +73,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLUnsupervisedAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:
@@ -148,6 +148,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             clusters = clusters[0]
         return clusters
 
+    @abstractmethod
     def _predict(
         self,
         data: ndarray,
@@ -160,7 +161,6 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         Returns:
             The predicted clusters with shape (n_samples,).
         """
-        raise NotImplementedError
 
     def predict_proba(
         self,
@@ -169,7 +169,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
     ) -> ndarray:
         """Predict the probability of belonging to each cluster from input data.
 
-        The user can specified these input data either as a numpy array,
+        The user can specify these input data either as a numpy array,
         e.g. :code:`array([1., 2., 3.])`
         or as a dictionary,
         e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
@@ -240,6 +240,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             probas[i, pred] = 1
         return probas
 
+    @abstractmethod
     def _predict_proba_soft(
         self,
         data: ndarray,
@@ -253,4 +254,3 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             The probability of belonging to each cluster
                 with shape (n_samples, n_clusters).
         """
-        raise NotImplementedError

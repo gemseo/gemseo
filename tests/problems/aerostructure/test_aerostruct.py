@@ -207,8 +207,8 @@ class TestAerostructureScenarios(unittest.TestCase):
 
     @staticmethod
     def build_and_run_scenario(formulation, algo, lin_method="complex_step"):
-        """Create a scenario with given formulation, solver and linearization method,
-        and solve it.
+        """Create a scenario with given formulation, solver and linearization method, and
+        solve it.
 
         :param formulation: param algo:
         :param lin_method: Default value = 'complex_step')
@@ -250,7 +250,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         """Scenario with MDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
-            "MDF", "SLSQP", lin_method="complex_step"
+            "MDF", "SLSQP"
         )
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, f_ref, 1)
@@ -260,7 +260,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         """Scenario with IDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
-            "IDF", "SLSQP", lin_method="complex_step"
+            "IDF", "SLSQP"
         )
         # vector of design variables contains y targets at the end
         x_opt = x_opt[:3]

@@ -76,8 +76,5 @@ def test_jacobian(finite_element_analysis):
     """Check the analytic Jacobian by finite differences."""
     indata = finite_element_analysis.get_input_data()
     assert finite_element_analysis.check_jacobian(
-        indata,
-        threshold=1e-5,
-        derr_approx=finite_element_analysis.FINITE_DIFFERENCES,
-        auto_set_step=True,
+        indata, threshold=1e-5, auto_set_step=True
     )

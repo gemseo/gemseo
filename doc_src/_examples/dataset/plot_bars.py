@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
-from matplotlib import pyplot as plt
 from numpy import array
 
 configure_logger()
@@ -49,6 +48,4 @@ dataset.row_names = ["series_1", "series_2"]
 # We can use the :class:`.BarPlot` plot
 plot = BarPlot(dataset)
 plot.colormap = "PiYG"
-plot.execute(save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)

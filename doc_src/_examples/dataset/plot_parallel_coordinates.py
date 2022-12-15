@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -46,6 +45,4 @@ iris = load_dataset("IrisDataset")
 # a.k.a. cowebplot, where each samples is represented by a continuous straight
 # line in pieces whose nodes are indexed by the variables names and measure the
 # variables values.
-ParallelCoordinates(iris, classifier="specy").execute(save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+ParallelCoordinates(iris, classifier="specy").execute(save=False, show=True)

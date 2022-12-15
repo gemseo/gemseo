@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
-from matplotlib import pyplot as plt
 from numpy import linspace
 from numpy import pi
 from numpy import sin
@@ -52,6 +51,4 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # We can use the :class:`.YvsX` plot
 plot = YvsX(dataset, "x", "y")
 plot.linestyle = "--o"
-plot.execute(save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+plot.execute(save=False, show=True)

@@ -69,6 +69,9 @@ from the libraries `PyDOE <https://github.com/clicumu/pyDOE2>`__ and `OpenTURNS 
    The names of the algorithms coming from OpenTURNS starts with ``"OT_"``, e.g. ``"OT_OPT_LHS"``.
    You need to :ref:`install <installation>` the full features of |g| in order to use them.
 
+.. seealso::
+   All the DOE algorithms and their settings are listed on :ref:`this page <gen_doe_algos>`.
+
 These DOE algorithms can be classified into categories:
 
 - the Monte Carlo sampling generates values in the input space

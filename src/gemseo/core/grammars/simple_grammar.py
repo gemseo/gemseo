@@ -39,9 +39,9 @@ NamesToTypes = Mapping[str, Optional[type]]
 class SimpleGrammar(BaseGrammar):
     """A grammar only based on names and types with a dictionary-like interface.
 
-    The grammar could be empty, in that case the data validation always pass. If the
-    type bound to a name is ``None`` then the type of the corresponding data name is
-    always valid.
+    The grammar could be empty, in that case the data validation always pass. If the type
+    bound to a name is ``None`` then the type of the corresponding data name is always
+    valid.
     """
 
     __names_to_types: dict[str, type]
@@ -65,7 +65,7 @@ class SimpleGrammar(BaseGrammar):
             required_names: The names of the required elements.
                 If ``None``, all elements are required.
             **kwargs: These arguments are not used.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name)
         if names_to_types:
             self.update(names_to_types)
@@ -180,10 +180,11 @@ class SimpleGrammar(BaseGrammar):
             self._update_namespaces_from_grammar(grammar)
 
     def clear(self) -> None:
+        """"""  # noqa: D102
         self.__names_to_types = {}
         self.__required_names = set()
 
-    def validate(
+    def validate(  # noqa: D102
         self,
         data: Data,
         raise_exception: bool = True,
@@ -213,21 +214,25 @@ class SimpleGrammar(BaseGrammar):
             if raise_exception:
                 raise InvalidDataException(str(error_message))
 
-    def update_from_data(
+    def update_from_data(  # noqa: D102
         self,
         data: Data,
     ) -> None:
         self.update({name: type(value) for name, value in data.items()})
 
-    def is_array(self, name: str) -> bool:
+    def is_array(  # noqa: D102
+        self,
+        name: str,
+        numeric_only: bool = False,
+    ) -> bool:
         self._check_name(name)
         element_type = self.__names_to_types[name]
         if element_type is None:
             return False
-        # TODO: why only ndarray here vs array in json grammar?
         return issubclass(element_type, ndarray)
+        # TODO: why only ndarray here vs array in json grammar?
 
-    def restrict_to(
+    def restrict_to(  # noqa: D102
         self,
         names: Iterable[str],
     ) -> None:
@@ -238,11 +243,11 @@ class SimpleGrammar(BaseGrammar):
                 if element_name in self.__required_names:
                     self.__required_names.remove(element_name)
 
-    def convert_to_simple_grammar(self) -> SimpleGrammar:
+    def convert_to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         return self
 
     @property
-    def required_names(self) -> set[str]:
+    def required_names(self) -> set[str]:  # noqa: D102
         return self.__required_names
 
     @staticmethod
@@ -260,7 +265,7 @@ class SimpleGrammar(BaseGrammar):
             if name not in self.__names_to_types:
                 raise KeyError(f"The name {name} is not in the grammar.")
 
-    def rename_element(self, current_name: str, new_name: str) -> None:
+    def rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)
 
         if current_name in self.__required_names:

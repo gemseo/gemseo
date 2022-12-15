@@ -23,8 +23,6 @@ The Rosenbrock analytic problem
 """
 from __future__ import annotations
 
-import logging
-
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
@@ -37,8 +35,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Rosenbrock(OptimizationProblem):

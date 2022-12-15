@@ -31,12 +31,8 @@ and to check is a type of scalable model is available
 """
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.factory import Factory
 from gemseo.problems.scalable.data_driven.model import ScalableModel
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ScalableModelFactory:
@@ -57,7 +53,7 @@ class ScalableModelFactory:
     def create(self, model_name, data, sizes=None, **parameters):
         """Create a scalable model.
 
-        :param str model_name: name of the scalable model (its classname)
+        :param str model_name: name of the scalable model (its class name)
         :param Dataset data: learning dataset.
         :param dict sizes: sizes of input and output variables.
             If None, use the original sizes.

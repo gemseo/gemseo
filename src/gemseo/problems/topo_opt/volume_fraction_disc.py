@@ -44,7 +44,7 @@ class VolumeFraction(MDODiscipline):
         empty_elements: Sequence[int] | None = None,
         full_elements: Sequence[int] | None = None,
         name: str | None = None,
-    ) -> None:  # noqa: D205,D212,D415
+    ) -> None:
         """
         Args:
             n_x: The number of elements in the x-direction.
@@ -55,7 +55,7 @@ class VolumeFraction(MDODiscipline):
                 ids that are not part of the design space.
             name: The name of the discipline.
                 If None, use the class name.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name=name)
         self.n_x = n_x
         self.n_y = n_y

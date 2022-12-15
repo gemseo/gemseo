@@ -62,11 +62,10 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import get_available_formulations
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -182,7 +181,7 @@ scenario = create_scenario(
 # vailable for Sobieski test-case, they can be used instead of computing
 # the derivatives with finite-differences or with the complex-step method.
 # The easiest way to set a method is to let the optimizer determine it:
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 ##############################################################################
 #
 # The default behavior of the optimizer triggers :term:`finite differences`.
@@ -239,9 +238,8 @@ scenario.execute(algo_args)
 # :ref:`post_processing`.
 #
 # To visualize the optimization history:
-scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario.post_process("OptHistoryView", save=False, show=True)
+
 ##############################################################################
 # Influence of gradient computation method on performance
 # -------------------------------------------------------

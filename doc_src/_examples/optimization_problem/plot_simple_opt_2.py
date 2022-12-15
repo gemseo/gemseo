@@ -34,7 +34,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import configure_logger
 from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from matplotlib import pyplot as plt
 from numpy import cos
 from numpy import exp
 from numpy import ones
@@ -62,7 +61,7 @@ objective = f_1 - f_2
 # -----------------------
 # Then, we define the :class:`.DesignSpace` with |g|.
 design_space = DesignSpace()
-design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
+design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 
 #############################################################################
 # Define the optimization problem
@@ -96,9 +95,7 @@ problem.export_hdf("my_optim.hdf5")
 #############################################################################
 # Post-process the results
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-execute_post(problem, "OptHistoryView", show=False, save=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+execute_post(problem, "OptHistoryView", show=True, save=False)
 
 #############################################################################
 # .. note::

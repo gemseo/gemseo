@@ -20,22 +20,24 @@
 from __future__ import annotations
 
 import logging
-from shutil import move
 from typing import Iterable
 from typing import Iterator
 
+from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.string_tools import pretty_str
 
 # graphviz is an optional dependency
 
 try:
-    import graphviz
+    from gemseo.post._graph_view import GraphView
 except ImportError:
-    graphviz = None
-import networkx as nx
+    GraphView = None
 
-from gemseo.core.discipline import MDODiscipline
-from pathlib import Path
+from networkx import Graph
+from networkx import DiGraph
+from networkx import strongly_connected_components
+from networkx import condensation
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,17 +53,22 @@ class DependencyGraph:
     The couplings between the disciplines can also be computed.
     """
 
-    def __init__(self, disciplines):  # noqa: D201,D205,D212,D415
+    def __init__(self, disciplines) -> None:
         """
         Args:
             disciplines: The disciplines to build the graph with.
-        """
+        """  # noqa: D205, D212, D415
         self.__graph = self.__create_graph(disciplines)
 
     @property
     def disciplines(self) -> Iterator[MDODiscipline]:
         """The disciplines used to build the graph."""
         return iter(self.__graph.nodes)
+
+    @property
+    def graph(self) -> Graph:
+        """The disciplines data graph."""
+        return self.__graph
 
     def get_execution_sequence(self):
         """Compute the execution sequence of the disciplines.
@@ -91,8 +98,10 @@ class DependencyGraph:
         # scc = nx.kosaraju_strongly_connected_components(self.__graph)
         # scc = nx.strongly_connected_components_recursive(self.__graph)
         # fastest routine
-        scc = nx.strongly_connected_components(self.__graph)
-        return nx.condensation(self.__graph, scc=self.__get_ordered_scc(scc))
+        return condensation(
+            self.__graph,
+            scc=self.__get_ordered_scc(strongly_connected_components(self.__graph)),
+        )
 
     def __get_ordered_scc(self, scc):
         """Return the scc nodes ordered by the initial disciplines.
@@ -132,9 +141,7 @@ class DependencyGraph:
         return couplings
 
     @staticmethod
-    def __create_graph(
-        disciplines: Iterable[MDODiscipline],
-    ) -> tuple[nx.DiGraph, dict[str, tuple[str]]]:
+    def __create_graph(disciplines: Iterable[MDODiscipline]) -> DiGraph:
         """Create the full graph.
 
         The coupled inputs and outputs names are stored as an edge attributes named io.
@@ -153,11 +160,9 @@ class DependencyGraph:
                 set(disc.get_output_data_names()),
             )
 
-        graph = nx.DiGraph()
+        graph = DiGraph()
         graph.add_nodes_from(disciplines)
-
         graph_add_edge = graph.add_edge
-
         # Create the graph edges by discovering the coupled disciplines
         for disc_i, (_, outputs_i) in nodes_to_ios.items():
             for disc_j, (inputs_j, _) in nodes_to_ios.items():
@@ -217,75 +222,65 @@ class DependencyGraph:
             input_names.update(disc.get_input_data_names())
         return output_names & input_names
 
-    def __write_graph(self, graph: nx.DiGraph, file_path: str, is_full: bool):
+    def __write_graph(self, graph: DiGraph, file_path: str, is_full: bool) -> None:
         """Write the representation of a graph.
 
         Args:
             graph: A graph.
-            file_path: A path to the file.
+            file_path: The file path to save the visualization.
             is_full: Whether the graph is full.
         """
-        if graphviz is None:
-            LOGGER.warning("Cannot write graph: graphviz cannot be imported.")
+        if GraphView is None:
+            LOGGER.warning(
+                "Cannot write graph: "
+                "GraphView cannot be imported because graphviz is not installed."
+            )
             return
 
-        viz_graph = graphviz.Digraph(name="Dependency graph")
+        graph_view = GraphView()
 
-        # add edges
-        for node_from, node_to, edge_names in graph.edges(data="io"):
-            name_from = self.__get_node_name(graph, node_from)
-            name_to = self.__get_node_name(graph, node_to)
-
-            if not isinstance(node_to, MDODiscipline):
+        # 1. Add the edges with different head and tail nodes
+        #    (case: some outputs of a discipline are inputs of another one)
+        for head_node, tail_node, coupling_names in graph.edges(data="io"):
+            head_name = self.__get_node_name(graph, head_node)
+            tail_name = self.__get_node_name(graph, tail_node)
+            if not isinstance(tail_node, MDODiscipline):
                 # a scc edge
-                edge_names = self.__get_scc_edge_names(graph, node_from, node_to)
+                coupling_names = self.__get_scc_edge_names(graph, head_node, tail_node)
 
-            if edge_names is not None:
-                label = ",".join(sorted(edge_names))
-            else:
-                label = None
+            graph_view.edge(head_name, tail_name, pretty_str(coupling_names, ","))
 
-            viz_graph.edge(name_from, name_to, label=label)
-
+        # 2. Add the edges with same head and tail nodes
+        #    (case: some outputs of a discipline are inputs of itself)
         if is_full:
-            # add edges for the self-couplings
-            for disc in self.__graph.nodes:
-                coupled_io = set(disc.get_input_data_names()).intersection(
-                    disc.get_output_data_names()
+            for discipline in self.__graph.nodes:
+                coupling_names = set(discipline.get_input_data_names()).intersection(
+                    discipline.get_output_data_names()
                 )
-                if coupled_io:
-                    viz_graph.edge(disc.name, disc.name, label=pretty_str(coupled_io))
+                if coupling_names:
+                    name = discipline.name
+                    graph_view.edge(name, name, pretty_str(coupling_names, ","))
 
-        # add leaves with an invisible node so an edge with the edge names are visible
-        for node_from in self.__get_leaves(graph):
-            if isinstance(node_from, MDODiscipline):
-                edge_names = node_from.get_output_data_names()
-                node_name = str(node_from)
+        # 3. Add the edges without head node
+        #    (case: some output variables of discipline are not coupling variables).
+        for head_name in self.__get_leaves(graph):
+            if isinstance(head_name, MDODiscipline):
+                output_names = head_name.get_output_data_names()
+                node_name = str(head_name)
             else:
                 # a scc edge
-                edge_names = self.__get_scc_edge_names(graph, node_from)
-                node_name = self.__get_node_name(graph, node_from)
+                output_names = self.__get_scc_edge_names(graph, head_name)
+                node_name = self.__get_node_name(graph, head_name)
 
-            if not edge_names:
+            if not output_names:
                 continue
 
-            dummy_node_name = f"_{node_from}"
-            viz_graph.node(dummy_node_name, style="invis", shape="point")
-            viz_graph.edge(
-                node_name, dummy_node_name, label=",".join(sorted(edge_names))
-            )
+            tail_name = f"_{head_name}"
+            graph_view.edge(node_name, tail_name, pretty_str(output_names, ","))
+            graph_view.hide_node(tail_name)
 
-        # write the dot and target files
-        path = Path(file_path)
-        viz_graph.render(str(path.with_suffix("")), format=path.suffix[1:], view=False)
-
-        # rename the dot file left by graphviz with the proper extension
-        path_with_dot = path.with_suffix(".dot")
-
-        if path_with_dot.exists():
-            path_with_dot.unlink()
-
-        move(str(path.with_suffix("")), str(path_with_dot))
+        # 4. Write the dot and target files.
+        graph_view.visualize(show=False, file_path=file_path, clean_up=False)
 
     def write_full_graph(self, file_path):
         """Write a representation of the full graph.

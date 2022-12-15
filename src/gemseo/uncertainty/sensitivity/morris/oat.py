@@ -48,7 +48,6 @@ From these elementary effects, we can compare their absolute values
 """
 from __future__ import annotations
 
-import logging
 from copy import deepcopy
 from typing import ClassVar
 from typing import Mapping
@@ -66,8 +65,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-
-LOGGER = logging.getLogger(__name__)
 
 
 class _OATSensitivity(MDODiscipline):

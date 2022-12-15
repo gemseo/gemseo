@@ -48,7 +48,7 @@ class TMProblem:
     coupled models (:class:`.TMSubModel`) completed by a main model
     (:class:`.TMMainModel`) computing the objective function and the constraints.
 
-    These disciplines are defined on an unit design space whose parameters comprised in
+    These disciplines are defined on a unit design space whose parameters comprised in
     [0, 1] (:class:`.TMDesignSpace`). This problem is defined by the number of shared
     design parameters, the number of local design parameters per discipline and the
     number of output coupling variables per discipline. The strongly coupled disciplines

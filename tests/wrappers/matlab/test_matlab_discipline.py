@@ -53,8 +53,8 @@ def test_outputs():
 
 
 def test_inputs_and_outputs_size_unknown():
-    """Test that size of input and output variables are unknown when initializing
-    without matlab data."""
+    """Test that size of input and output variables are unknown when initializing without
+    matlab data."""
     mat1 = MatlabDiscipline(MATLAB_SIMPLE_FUNC)
 
     assert mat1._MatlabDiscipline__inputs_size["x"] == -1
@@ -292,11 +292,11 @@ def test_check_cleaning_interval():
         MatlabDiscipline(MATLAB_SIMPLE_FUNC, clean_cache_each_n=2.3)
 
 
-def test_save_data(tmp_path):
+def test_save_data(tmp_wd):
     """Test that discipline data are correctly exported into a matlab file."""
     mat = MatlabDiscipline(MATLAB_SIMPLE_FUNC)
     mat.execute({"x": array([2])})
-    output_file = tmp_path / "output_file.mat"
+    output_file = "output_file.mat"
     mat.save_data_to_matlab(output_file)
     written_data = load_matlab_file(output_file)
     assert array(written_data["x"]) == pytest.approx(2)

@@ -37,9 +37,6 @@
             "type": "integer",
             "minimum": 1
         },
-        "normalize_design_space": {
-			"type": "boolean"
-	},
         "kkt_tol_abs": {
             "type": ["null","number"],
             "minimum": 0.0

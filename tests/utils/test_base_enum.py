@@ -20,14 +20,18 @@
 """Tests for BaseEnum."""
 from __future__ import annotations
 
+import re
+
 import pytest
 from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.base_enum import CallableEnum
 from gemseo.utils.base_enum import CamelCaseEnum
+from gemseo.utils.base_enum import get_names
 
 
 class MyEnum(BaseEnum):
-    ELEM_1 = 0
     ELEM_2 = 1
+    ELEM_1 = 0
     ELEM_3 = 2
 
 
@@ -35,9 +39,25 @@ class MyEnum2(BaseEnum):
     ELEM_1 = 0
 
 
+def test_str():
+    """Check MetaEnum.str."""
+    assert str(MyEnum) == "['ELEM_1', 'ELEM_2', 'ELEM_3']"
+
+
+def test_repr():
+    """Check MetaEnum.repr."""
+    assert repr(MyEnum) == "MyEnum: ['ELEM_1', 'ELEM_2', 'ELEM_3']"
+
+
 def test_base_enum1():
     """Test the existence of an Enum member in an Enum."""
     assert MyEnum.ELEM_1 in MyEnum
+
+
+def test_getitem():
+    """Test the __getitem__ class method."""
+    assert MyEnum["ELEM_1"] == MyEnum.ELEM_1
+    assert MyEnum[MyEnum.ELEM_1] == MyEnum.ELEM_1
 
 
 def test_get_member_from_name():
@@ -48,10 +68,12 @@ def test_get_member_from_name():
 
 def test_get_member_from_name_incorrect_enum():
     """Test that providing an incorrect Enum will raise an Exception."""
-    msg = (
-        "^The type of value is \\<{1}.*\\>{1} but \\<{1}.*\\>{1} or str are expected.$"
-    )
-    with pytest.raises(TypeError, match=msg):
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "The type of value is ['ELEM_1'] but MyEnum or str are expected."
+        ),
+    ):
         MyEnum.get_member_from_name(MyEnum2.ELEM_1)
 
 
@@ -91,8 +113,24 @@ def test_meta_enum_not_in():
     assert MyEnum.ELEM_2 not in MyEnum2
 
 
+def test_get_names():
+    """Test get_names()."""
+    assert get_names(MyEnum) == ["ELEM_1", "ELEM_2", "ELEM_3"]
+
+
 def test_camel_case_enum():
     """Verify the representation of a camel case Enum."""
     Enum = CamelCaseEnum("Enum", "FOO_BAR FOO")  # noqa: N806
     assert str(Enum.FOO_BAR) == "FooBar"
     assert str(Enum.FOO) == "Foo"
+
+
+def test_callable_enum():
+    """Check that a CallableEnum is callable."""
+
+    def f(a, b=1):
+        return a + b
+
+    Function = CallableEnum("Function", {"f": f})  # noqa: N806
+    assert Function.f(1) == 2
+    assert Function.f(1, 2) == 3

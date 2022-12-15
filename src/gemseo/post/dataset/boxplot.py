@@ -20,7 +20,7 @@
 """Draw the boxplots of some variables from a :class:`.Dataset`.
 
 A boxplot represents the median and the first and third quartiles of numerical data. The
-variability outside the inter-quartile domain can be represented with lines, called
+variability outside the inter quartile domain can be represented with lines, called
 *whiskers*. The numerical data that are significantly different are called *outliers*
 and can be plotted as individual points beyond the whiskers.
 """
@@ -69,7 +69,7 @@ class Boxplot(DatasetPlot):
                 around the median; a CI is also called *notch*.
             add_outliers: Whether to add the outliers.
             **boxplot_options: The options of the wrapped boxplot function.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             datasets=datasets,

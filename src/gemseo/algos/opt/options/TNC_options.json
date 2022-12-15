@@ -29,9 +29,6 @@
                 		"minItems": 1
                 		}
         },
-        "normalize_design_space": {
-			"type": "boolean"
-		},
         "offset": {
             "type": ["null","number"]
         },

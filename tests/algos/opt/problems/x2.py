@@ -16,8 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An analytical problem to test the non-early termination of optimization
-algorithms."""
+"""An analytical problem to test the non-early termination of optimization algorithms."""
 from __future__ import annotations
 
 import logging
@@ -51,14 +50,14 @@ class X2(OptimizationProblem):
             initial_value: The initial design value of the problem.
         """
         design_space = DesignSpace()
-        design_space.add_variable("x", 1, l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable("x", l_b=-1.0, u_b=1.0, value=initial_value)
         # The latter design variables are not used in the function
         # This is done on purpose to check that they do not trigger an early
         # termination of the tested optimization algorithm.
-        design_space.add_variable("a", 1, l_b=-1.0, u_b=1.0, value=initial_value)
-        design_space.add_variable("b", 1, l_b=-1.0, u_b=1.0, value=initial_value)
-        design_space.add_variable("c", 1, l_b=-1.0, u_b=1.0, value=initial_value)
-        design_space.add_variable("d", 1, l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable("a", l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable("b", l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable("c", l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable("d", l_b=-1.0, u_b=1.0, value=initial_value)
 
         super().__init__(design_space)
         self.objective = MDOFunction(

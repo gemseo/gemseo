@@ -20,7 +20,6 @@
 """PyDOE algorithms wrapper."""
 from __future__ import annotations
 
-import logging
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -31,6 +30,7 @@ from numpy import array
 from numpy import ndarray
 from numpy.random import RandomState
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -38,8 +38,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 OptionType = Optional[
     Union[str, int, float, bool, Sequence[int], Tuple[int, int], ndarray]
 ]
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PyDOE(DOELibrary):
@@ -97,7 +95,7 @@ class PyDOE(DOELibrary):
     CENTER_CC_KEYWORD = "center_cc"
     LIBRARY_NAME = "PyDOE"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         for idx, algo in enumerate(self.ALGO_LIST):
             self.descriptions[algo] = DOEAlgorithmDescription(
@@ -269,18 +267,14 @@ class PyDOE(DOELibrary):
         doe[:, null_indices] = 0.5
         return doe
 
-    @staticmethod
-    def is_algorithm_suited(
+    @classmethod
+    def _get_unsuitability_reason(
+        cls,
         algorithm_description: DOEAlgorithmDescription,
         problem: OptimizationProblem,
-    ) -> bool:
-        """Check if the algorithm is suited to the problem according to its description.
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason or problem.dimension >= algorithm_description.minimum_dimension:
+            return reason
 
-        Args:
-            algorithm_description: The description of the algorithm.
-            problem: The problem to be solved.
-
-        Returns:
-            Whether the algorithm is suited to the problem.
-        """
-        return problem.dimension >= algorithm_description.minimum_dimension
+        return _UnsuitabilityReason.SMALL_DIMENSION

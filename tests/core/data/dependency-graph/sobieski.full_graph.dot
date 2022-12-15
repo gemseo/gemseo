@@ -1,12 +1,12 @@
-digraph "Dependency graph" {
-	SobieskiAerodynamics -> SobieskiStructure [label=y_21]
-	SobieskiAerodynamics -> SobieskiPropulsion [label=y_23]
-	SobieskiAerodynamics -> SobieskiMission [label=y_24]
-	SobieskiStructure -> SobieskiAerodynamics [label=y_12]
-	SobieskiStructure -> SobieskiMission [label=y_14]
-	SobieskiPropulsion -> SobieskiAerodynamics [label=y_32]
-	SobieskiPropulsion -> SobieskiStructure [label=y_31]
-	SobieskiPropulsion -> SobieskiMission [label=y_34]
-	_SobieskiMission [shape=point style=invis]
-	SobieskiMission -> _SobieskiMission [label=y_4]
+digraph {
+	SobieskiAerodynamics -> SobieskiStructure [label=y_21 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiAerodynamics -> SobieskiPropulsion [label=y_23 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiAerodynamics -> SobieskiMission [label=y_24 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiStructure -> SobieskiAerodynamics [label=y_12 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiStructure -> SobieskiMission [label=y_14 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiPropulsion -> SobieskiAerodynamics [label=y_32 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiPropulsion -> SobieskiStructure [label=y_31 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiPropulsion -> SobieskiMission [label=y_34 color=black dir=forward fontcolor=black penwidth=1.0]
+	SobieskiMission -> _SobieskiMission [label=y_4 color=black dir=forward fontcolor=black penwidth=1.0]
+	_SobieskiMission [style=invis]
 }

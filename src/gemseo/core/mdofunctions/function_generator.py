@@ -59,7 +59,7 @@ class MDOFunctionGenerator:
         """
         Args:
             discipline: The discipline from which the generator builds the functions.
-        """
+        """  # noqa: D205, D212, D415
         self.discipline = discipline
 
     def get_function(

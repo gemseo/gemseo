@@ -107,7 +107,7 @@ class ParetoPlotBiObjective:
                 True if non_feasible.
             bi_obj: True if there are only two objective values.
             show_non_feasible: True to show the non-feasible points.
-        """
+        """  # noqa: D205, D212, D415
         self.__nb_pareto_pts = obj_values.shape[0]
         self.__axes = axes
         self.__obj_values = obj_values

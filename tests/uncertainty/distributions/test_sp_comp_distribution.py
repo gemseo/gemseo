@@ -19,7 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import Sequence
+
 import pytest
+from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
 from numpy import allclose
@@ -28,12 +31,23 @@ from numpy import inf
 from numpy.random import seed
 
 
-@pytest.fixture
-def composed_distribution():
-    distribution1 = SPNormalDistribution("x1", dimension=2)
-    distribution2 = SPNormalDistribution("x2", dimension=2)
-    distributions = [distribution1, distribution2]
-    return SPDistribution._COMPOSED_DISTRIBUTION(distributions)
+@pytest.fixture(scope="module")
+def distributions() -> list[SPNormalDistribution]:
+    """Two normal distributions."""
+    return [SPNormalDistribution(name, dimension=2) for name in ["x1", "x2"]]
+
+
+@pytest.fixture(scope="module")
+def composed_distribution(
+    distributions: Sequence[SPDistribution],
+) -> SPComposedDistribution:
+    """The composed distribution."""
+    return SPComposedDistribution(distributions)
+
+
+def test_available_copula_models():
+    """Check AVAILABLE_COPULA_MODELS."""
+    assert "independent_copula" in SPComposedDistribution.AVAILABLE_COPULA_MODELS
 
 
 def test_constructor(composed_distribution):
@@ -42,7 +56,24 @@ def test_constructor(composed_distribution):
     assert composed_distribution.distribution_name == "Composed"
     assert composed_distribution.transformation == "x1_x2"
     assert len(composed_distribution.parameters) == 1
-    assert composed_distribution.parameters[0] == "independent_copula"
+    assert composed_distribution.parameters[0].name == "independent_copula"
+
+
+@pytest.mark.parametrize(
+    "copula",
+    [SPComposedDistribution.CopulaModel.independent_copula, "independent_copula"],
+)
+def test_copula_enum_or_str(distributions, copula):
+    """Check that copula passed to __init__ can be either a CopulaModel or a str."""
+    assert (
+        str(SPComposedDistribution(distributions, copula=copula).parameters[0])
+        == "independent_copula"
+    )
+
+
+def test_variable_name(distributions):
+    """Check the use of a custom variable name."""
+    assert SPComposedDistribution(distributions, variable="foo").variable_name == "foo"
 
 
 def test_str(composed_distribution):

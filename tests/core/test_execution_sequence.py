@@ -24,7 +24,6 @@ from copy import deepcopy
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import AtomicExecSequence
-from gemseo.core.execution_sequence import CompositeExecSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
@@ -51,9 +50,6 @@ class TestExecSequence(unittest.TestCase):
         assert tmp.__repr__() == ("SobieskiAerodynamics(None, " + str(tmp.uuid) + ")")
 
     def test_loop_exec_sequence(self):
-        self.assertRaises(
-            Exception, LoopExecSequence, "not_a_discipline", CompositeExecSequence()
-        )
         self.assertRaises(
             Exception,
             LoopExecSequence,

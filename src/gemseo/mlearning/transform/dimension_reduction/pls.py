@@ -29,20 +29,19 @@ generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
 from __future__ import annotations
 
-from typing import NoReturn
-
 from numpy import ndarray
 from sklearn.cross_decomposition import PLSRegression
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+from gemseo.utils.python_compatibility import Final
 
 
 class PLS(DimensionReduction):
     """Partial Least Square regression."""
 
-    CROSSED = True
+    CROSSED: Final[bool] = True
 
     def __init__(
         self,
@@ -57,11 +56,7 @@ class PLS(DimensionReduction):
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)
 
-    def _fit(
-        self,
-        data: ndarray,
-        other_data: ndarray,
-    ) -> None:
+    def _fit(self, data: ndarray, other_data: ndarray) -> None:
         """Fit the transformer to the data.
 
         Args:
@@ -73,26 +68,8 @@ class PLS(DimensionReduction):
         self.algo.fit(data, other_data)
         self.parameters["n_components"] = self.algo.n_components
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:
         return self.algo.transform(data)
 
-    def inverse_transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:
         return self.algo.inverse_transform(data)
-
-    def compute_jacobian(
-        self,
-        data: ndarray,
-    ) -> NoReturn:
-        raise NotImplementedError
-
-    def compute_jacobian_inverse(
-        self,
-        data: ndarray,
-    ) -> NoReturn:
-        raise NotImplementedError

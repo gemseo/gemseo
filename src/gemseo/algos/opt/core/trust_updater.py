@@ -21,16 +21,12 @@
 """Updates a trust parameter according to a decreases' ratio."""
 from __future__ import annotations
 
-import logging
-
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import divide
 from numpy import maximum
 from numpy import minimum
 from numpy import multiply
 from numpy import ndarray
-
-LOGGER = logging.getLogger(__name__)
 
 
 class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
@@ -47,7 +43,7 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
             thresholds: The thresholds for the decreases' ratio.
             multipliers: The multipliers for the trust parameter.
             bound: The absolute bound for the trust parameter.
-        """
+        """  # noqa: D205, D212, D415
         if not isinstance(thresholds, tuple):
             raise ValueError(
                 "The thresholds must be input as a tuple; "
@@ -84,7 +80,7 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
 class PenaltyUpdater(TrustUpdater):
     """Update the penalty parameter."""
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         thresholds: tuple[float, float] = (0.0, 0.25),
         multipliers: tuple[float, float] = (0.5, 2.0),
@@ -125,7 +121,7 @@ class PenaltyUpdater(TrustUpdater):
                 "must be greater than or equal to one."
             )
 
-    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
+    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:  # noqa:D102
         # The iteration is declared successful if and only if the ratio is
         #         greater than or equal to the lower threshold.
         success = ratio >= self._ratio_thresholds[0]
@@ -146,7 +142,7 @@ class PenaltyUpdater(TrustUpdater):
 class RadiusUpdater(TrustUpdater):
     """Update the radius of the trust region."""
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         thresholds: tuple[float, float] = (0.0, 0.25),
         multipliers: tuple[float, float] = (0.5, 2.0),
@@ -187,7 +183,7 @@ class RadiusUpdater(TrustUpdater):
                 f"The expansion factor ({expan_fact}) must be greater than one."
             )
 
-    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
+    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:  # noqa:D102
         # The iteration is declared successful if and only if the ratio is
         # greater than or equal to the lower threshold.
         success = ratio >= self._ratio_thresholds[0]
@@ -216,7 +212,7 @@ class BoundsUpdater:
             lower_bounds: The reference lower bounds.
             upper_bounds: The reference upper bounds.
             normalize: Whether to apply the radius to the normalized bounds.
-        """
+        """  # noqa: D205, D212, D415
         self._lower_bounds = lower_bounds
         self._upper_bounds = upper_bounds
         self._normalized_update = normalize

@@ -198,8 +198,8 @@ class SobieskiBase:
         self.__mtx_shifted[2, 1] = s_bound[index]
         self.__mtx_shifted[0, 2] = self.__mtx_shifted[2, 2] = s_bound[index] ** 2
 
+    @staticmethod
     def __compute_a(
-        self,
         mtx_shifted: ndarray,
         f_bound: ndarray,
         ao_coeff: ndarray,

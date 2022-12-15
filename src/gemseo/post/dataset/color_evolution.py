@@ -19,7 +19,6 @@
 """Evolution of the variables by means of a color scale."""
 from __future__ import annotations
 
-import logging
 from typing import Iterable
 
 from matplotlib.axes import Axes
@@ -29,8 +28,6 @@ from numpy import arange
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ColorEvolution(DatasetPlot):
@@ -57,7 +54,7 @@ class ColorEvolution(DatasetPlot):
             use_log: Whether to use a symmetric logarithmic scale.
             opacity: The level of opacity (0 = transparent; 1 = opaque).
             **options: The options for the matplotlib function :meth:`imshow`.
-        """
+        """  # noqa: D205, D212, D415
         options_ = {
             "interpolation": "nearest",
             "aspect": "auto",

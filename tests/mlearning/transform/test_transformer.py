@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 from numpy import ndarray
 
@@ -33,9 +34,11 @@ def data() -> ndarray:
 
 def test_constructor():
     """Test constructor."""
-    transformer = Transformer()
-    another_transformer = Transformer("Another Transformer")
-    assert transformer.name is not None
+    with concretize_classes(Transformer):
+        transformer = Transformer()
+        another_transformer = Transformer("Another Transformer")
+
+    assert transformer.name == "Transformer"
     assert another_transformer.name == "Another Transformer"
     assert not transformer.is_fitted
 
@@ -45,52 +48,17 @@ def test_fit(data):
 
     fit calls _fit which is an abstract method and then sets is_fitted as True.
     """
-    transformer = Transformer()
-    with pytest.raises(NotImplementedError):
-        transformer.fit(data)
+    with concretize_classes(Transformer):
+        transformer = Transformer()
 
     transformer._fit = lambda data, *args: None
     transformer.fit("foo")
     assert transformer.is_fitted
 
 
-def test_transform(data):
-    """Test transform method."""
-    transformer = Transformer()
-    with pytest.raises(NotImplementedError):
-        transformer.transform(data)
-
-
-def test_inverse_transform(data):
-    """Test inverse_transform method."""
-    transformer = Transformer()
-    with pytest.raises(NotImplementedError):
-        transformer.inverse_transform(data)
-
-
-def test_fit_transform(data):
-    """Test fit_transform method."""
-    transformer = Transformer()
-    with pytest.raises(NotImplementedError):
-        transformer.fit_transform(data)
-
-
-def test_compute_jacobian(data):
-    """Test inverse_transform method."""
-    transformer = Transformer()
-    with pytest.raises(NotImplementedError):
-        transformer.compute_jacobian(data)
-
-
-def test_compute_jacobian_inverse(data):
-    """Test fit_transform method."""
-    transformer = Transformer()
-    with pytest.raises(NotImplementedError):
-        transformer.compute_jacobian_inverse(data)
-
-
 def test_str():
     """Test string representation."""
-    transformer = Transformer()
-    repres = str(transformer)
-    assert "Transformer" in repres
+    with concretize_classes(Transformer):
+        transformer = Transformer()
+
+    assert str(transformer) == "Transformer"

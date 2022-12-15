@@ -294,7 +294,7 @@ or sampling the problem, e.g.
        formulation=formulation,
        objective_name=objective_name,
        design_space=design_space,
-       scenario_type=scenario_type,
+       scenario_type="DOE",
    )
    doe_scenario.execute({'algo': 'lhs', 'n_samples': 100}) # DOE case
 

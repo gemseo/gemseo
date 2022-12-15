@@ -55,21 +55,21 @@ def design_space():
     Feel free to add new variables.
     """
     ds = DesignSpace()
-    ds.add_variable("x1", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=2.0)
-    ds.add_variable("x2", size=1, var_type=DesignVariableType.FLOAT, l_b=-2.0, u_b=2.0)
-    ds.add_variable("x3", size=1, var_type=DesignVariableType.INTEGER, l_b=0, u_b=2)
-    ds.add_variable("x4", size=1, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
+    ds.add_variable("x1", l_b=0.0, u_b=2.0)
+    ds.add_variable("x2", l_b=-2.0, u_b=2.0)
+    ds.add_variable("x3", var_type=DesignVariableType.INTEGER, l_b=0, u_b=2)
+    ds.add_variable("x4", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     ds.add_variable("x5", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
-    ds.add_variable("x6", size=1, var_type=DesignVariableType.FLOAT, l_b=None, u_b=2.0)
-    ds.add_variable("x7", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=None)
-    ds.add_variable("x8", size=1, var_type=DesignVariableType.INTEGER, l_b=1, u_b=1)
-    ds.add_variable("x9", size=3, var_type=DesignVariableType.FLOAT, l_b=-1.0, u_b=2.0)
+    ds.add_variable("x6", u_b=2.0)
+    ds.add_variable("x7", l_b=0.0)
+    ds.add_variable("x8", var_type=DesignVariableType.INTEGER, l_b=1, u_b=1)
+    ds.add_variable("x9", size=3, l_b=-1.0, u_b=2.0)
     ds.add_variable("x10", size=3)
     ds.add_variable("x11", size=2)
-    ds.add_variable("x12", size=1)
-    ds.add_variable("x13", var_type=DesignVariableType.FLOAT, value=array([0.5]))
+    ds.add_variable("x12")
+    ds.add_variable("x13", value=array([0.5]))
     ds.add_variable("x14", var_type=DesignVariableType.INTEGER, value=array([2.0]))
-    ds.add_variable("x15", value=None)
+    ds.add_variable("x15")
     ds.add_variable(
         "x16", size=2, var_type=[DesignVariableType.FLOAT] * 2, value=array([1.0, 2.0])
     )
@@ -81,7 +81,7 @@ def design_space():
     ds.add_variable("x20", var_type=b"float")
     ds.add_variable("x21", value=0.5)
     ds.add_variable("x22", size=2)
-    ds.add_variable("x23", 1, l_b=0.0, u_b=1.0, value=array([1]), var_type="float")
+    ds.add_variable("x23", l_b=0.0, u_b=1.0, value=array([1]), var_type="float")
     return ds
 
 
@@ -333,9 +333,7 @@ def test_filter_by_variables_dimensions(design_space):
 def test_extend():
     """Test the extension of a design space with another."""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x1", size=1, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5
-    )
+    design_space.add_variable("x1", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     other = DesignSpace()
     other.add_variable("x2", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     design_space.extend(other)
@@ -353,13 +351,9 @@ def test_active_bounds():
     """Check whether active bounds are correctly identified."""
 
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=2.0
-    )
-    design_space.add_variable(
-        "y", size=1, var_type=DesignVariableType.FLOAT, l_b=-2.0, u_b=2.0
-    )
-    design_space.add_variable("z", size=1, var_type=DesignVariableType.FLOAT)
+    design_space.add_variable("x", l_b=0.0, u_b=2.0)
+    design_space.add_variable("y", l_b=-2.0, u_b=2.0)
+    design_space.add_variable("z")
     lb_1, ub_1 = design_space.get_active_bounds(
         {"x": array([0.0]), "y": array([2.0]), "z": array([2.0])}
     )
@@ -446,21 +440,11 @@ def test_normalization():
     """Check the normalization of design variables."""
     design_space = DesignSpace()
     design_space.add_variable(
-        "x_1",
-        size=2,
-        var_type=DesignVariableType.FLOAT,
-        l_b=array([None, 0.0]),
-        u_b=array([0.0, None]),
+        "x_1", size=2, l_b=array([None, 0.0]), u_b=array([0.0, None])
     )
+    design_space.add_variable("x_2", l_b=0.0, u_b=10.0)
     design_space.add_variable(
-        "x_2", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=10.0
-    )
-    design_space.add_variable(
-        "x_3",
-        size=1,
-        var_type=DesignVariableType.INTEGER,
-        l_b=0.0,
-        u_b=10.0,
+        "x_3", var_type=DesignVariableType.INTEGER, l_b=0.0, u_b=10.0
     )
     # Test the normalization policies:
     assert not design_space.normalize["x_1"][0]
@@ -509,11 +493,7 @@ def test_norm_policy():
     """Check the normalization policy."""
     design_space = DesignSpace()
     design_space.add_variable(
-        "x_1",
-        size=2,
-        var_type=DesignVariableType.FLOAT,
-        l_b=array([None, 0.0]),
-        u_b=array([0.0, None]),
+        "x_1", size=2, l_b=array([None, 0.0]), u_b=array([0.0, None])
     )
 
     with pytest.raises(ValueError, match="Variable 'foo' is not known."):
@@ -530,22 +510,10 @@ def test_norm_policy():
     ):
         design_space._add_norm_policy("x_1")
 
-    design_space.add_variable(
-        "x_c",
-        size=1,
-        var_type=DesignVariableType.FLOAT,
-        l_b=array([0.0]),
-        u_b=array([0.0]),
-    )
+    design_space.add_variable("x_c", l_b=array([0.0]), u_b=array([0.0]))
     assert not design_space.normalize["x_c"]
 
-    design_space.add_variable(
-        "x_e",
-        size=1,
-        var_type=DesignVariableType.FLOAT,
-        l_b=array([0.0]),
-        u_b=array([0.0]),
-    )
+    design_space.add_variable("x_e", l_b=array([0.0]), u_b=array([0.0]))
     design_space.variables_types["x_e"] = array(["toto"])
     with pytest.raises(
         ValueError, match="The normalization policy for type toto is not implemented."
@@ -622,9 +590,7 @@ def test_current_x():
         design_space.add_variable("error", l_b=1.0, u_b=0.0)
 
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=2.0
-    )
+    design_space.add_variable("x", l_b=0.0, u_b=2.0)
     design_space.set_current_value({"x": None})
     assert not design_space.has_current_value()
 
@@ -663,7 +629,7 @@ def get_sobieski_design_space():
 def test_read_write(tmp_wd):
     """Check that read_from_txt and export_to_txt works correctly."""
     ref_ds = get_sobieski_design_space()
-    f_path = tmp_wd / "sobieski_design_space.txt"
+    f_path = Path("sobieski_design_space.txt")
     ref_ds.export_to_txt(f_path)
     read_ds = DesignSpace.read_from_txt(f_path)
     read_ds.get_lower_bounds()
@@ -687,19 +653,15 @@ def test_read_write(tmp_wd):
     ds.set_lower_bound("x_shared", None)
     ds.set_upper_bound("x_shared", None)
 
-    out_f = tmp_wd / "table.txt"
+    out_f = Path("table.txt")
     ds.export_to_txt(out_f, sortby="upper_bound")
     assert out_f.exists()
 
 
 def test_dict_to_array():
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=2.0
-    )
-    design_space.add_variable(
-        "y", size=1, var_type=DesignVariableType.FLOAT, l_b=-2.0, u_b=2.0
-    )
+    design_space.add_variable("x", l_b=0.0, u_b=2.0)
+    design_space.add_variable("y", l_b=-2.0, u_b=2.0)
 
     with pytest.raises(TypeError, match="x_dict values must be ndarray."):
         design_space.dict_to_array({"x": 1.0}, variable_names=["x"])
@@ -744,7 +706,7 @@ def check_ds(ref_ds, read_ds, f_path):
 def test_hdf5_export(tmp_wd):
     """Tests the export of a Design space in the HDF5 format."""
     ref_ds = get_sobieski_design_space()
-    f_path = tmp_wd / "_sobieski_design_space.h5"
+    f_path = Path("_sobieski_design_space.h5")
     ref_ds.export_hdf(f_path)
     read_ds = DesignSpace(f_path)
     check_ds(ref_ds, read_ds, f_path)
@@ -976,7 +938,7 @@ def test_unnormalize_vect(input_vec, ref):
 def test_unnormalize_vect_logging(caplog):
     """Check the warning logged when unnormalizing a vector."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 1)  # unbounded variable
+    design_space.add_variable("x")  # unbounded variable
     design_space.add_variable("y", 2, l_b=-3.0, u_b=4.0)  # bounded variable
     design_space.unnormalize_vect(array([2.0, -5.0, 6.0]))
     msg = "All components of the normalized vector should be between 0 and 1; "
@@ -1397,13 +1359,13 @@ def test_get_current_value_order():
     design_space = DesignSpace()
     design_space.add_variable("x", value=0.0)
     design_space.add_variable("y", value=1.0)
-    assert_equal(design_space.get_current_value(as_dict=False), array([0.0, 1.0]))
+    assert_equal(design_space.get_current_value(), array([0.0, 1.0]))
     assert_equal(
-        design_space.get_current_value(as_dict=False, variable_names=["x", "y"]),
+        design_space.get_current_value(variable_names=["x", "y"]),
         array([0.0, 1.0]),
     )
     assert_equal(
-        design_space.get_current_value(as_dict=False, variable_names=["y", "x"]),
+        design_space.get_current_value(variable_names=["y", "x"]),
         array([1.0, 0.0]),
     )
 

@@ -218,7 +218,7 @@ class ScalableProblem(unittest.TestCase):
             design_space=design_space,
             maximize_objective=True,
         )
-        scenario.set_differentiation_method("finite_differences", step=1e-6)
+        scenario.set_differentiation_method("finite_differences")
 
         # add disciplinary constraints
         cstr_threshold = 0.5

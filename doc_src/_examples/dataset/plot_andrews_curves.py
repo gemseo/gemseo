@@ -28,7 +28,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -45,6 +44,4 @@ iris = load_dataset("IrisDataset")
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
-AndrewsCurves(iris, "specy").execute(save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+AndrewsCurves(iris, "specy").execute(save=False, show=True)

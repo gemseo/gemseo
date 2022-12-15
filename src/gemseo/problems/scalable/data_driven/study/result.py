@@ -23,11 +23,8 @@ Scalability study - Result
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from pathlib import Path
-
-LOGGER = logging.getLogger(__name__)
 
 RESULTS_DIRECTORY = Path("results")
 
@@ -39,8 +36,8 @@ class ScalabilityResult:
         """Constructor.
 
         :param str name: name of the scalability result.
-        :param int id_scaling: scaling identifiant
-        :param int id_sample: sample identifiant
+        :param int id_scaling: scaling identifier
+        :param int id_sample: sample identifier
         """
         self.name = name
         self.id_scaling = id_scaling
@@ -82,8 +79,8 @@ class ScalabilityResult:
         old_varsizes,
         new_varsizes,
     ):
-        """Get a scalability result for a given optimization strategy and a given
-        scaling strategy.
+        """Get a scalability result for a given optimization strategy and a given scaling
+        strategy.
 
         :param str algo: name of the optimization algorithm
         :param dict algo_options: options of the optimization algorithm

@@ -47,7 +47,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __init__(self, sobieski_base: SobieskiBase) -> None:
         super().__init__(sobieski_base)
-        # Surface fit to engine deck with least square method
+        # Surface fit to engine deck with the least square method
         # Polynomial coefficients for SFC computation
         self.__ao_coeff = zeros(1, dtype=self.dtype)
         self.__ai_coeff = zeros(3, dtype=self.dtype)

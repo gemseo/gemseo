@@ -43,7 +43,7 @@ class BasicHistory(OptPostProcessor):
         """
         Args:
             variable_names: The names of the variables.
-        """
+        """  # noqa: D205, D212, D415
         problem = self.opt_problem
         dataset = problem.export_to_dataset(opt_naming=False, by_group=False)
         if self._obj_name in variable_names:
@@ -62,7 +62,7 @@ class BasicHistory(OptPostProcessor):
         plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
         figures = plot.execute(
-            save=False, show=False, variables=problem.get_function_names(variable_names)
+            save=False, variables=problem.get_function_names(variable_names)
         )
         for figure in figures:
             self._add_figure(figure)

@@ -59,7 +59,7 @@ class NormDBFunction(MDOFunction):
                 when function is called (avoid recursive call).
             optimization_problem: The optimization problem object that contains
                 the function.
-        """
+        """  # noqa: D205, D212, D415
         self.__normalize = normalize
         self.__orig_func = orig_func
         self.__is_observable = is_observable
@@ -83,6 +83,7 @@ class NormDBFunction(MDOFunction):
             args=orig_func.args,
             dim=orig_func.dim,
             outvars=orig_func.outvars,
+            special_repr=orig_func.special_repr,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
@@ -111,7 +112,7 @@ class NormDBFunction(MDOFunction):
             xn_vect = None
         # For performance, hash once, and reuse in get/store methods
         database = self.__optimization_problem.database
-        hashed_xu = database.get_hashed_key(xu_vect, False)
+        hashed_xu = database.get_hashed_key(xu_vect)
         # try to retrieve the evaluation
         value = database.get_f_of_x(self.name, hashed_xu)
 
@@ -189,5 +190,5 @@ class NormDBFunction(MDOFunction):
             return jac_u.real
 
     @property
-    def expects_normalized_inputs(self) -> bool:
+    def expects_normalized_inputs(self) -> bool:  # noqa:D102
         return self.__normalize

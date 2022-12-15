@@ -34,7 +34,6 @@ from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives.derivatives_approx import comp_best_step
 from numpy import array
 
-
 DS_FILE = Path(__file__).parent / "sobieski_design_space.txt"
 NLOPT_OPTIONS = {
     "eq_tolerance": 1e-11,
@@ -66,7 +65,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     lagrange = LagrangeMultipliers(problem)
     x_opt = problem.solution.x_opt
     x_n = problem.design_space.normalize_vect(x_opt)
-    problem.evaluate_functions(x_n, eval_jac=True, normalize=True)
+    problem.evaluate_functions(x_n, eval_jac=True)
     lagrangian = lagrange.compute(x_opt)
     assert ("upper_bounds" in lagrangian) is upper_bound
     assert "lower_bounds" in lagrangian
@@ -195,15 +194,25 @@ def test_lagrange_store(problem):
     lagrange._store_multipliers(-1 * np.ones(10))
 
 
+@pytest.fixture(params=[0.0, 0.1, 1.0])
+def x0(request):
+    return request.param
+
+
+@pytest.fixture(params=[0.0, 0.1, 1.0])
+def y0(request):
+    return request.param
+
+
 @pytest.fixture
-def analytical_test_2d_ineq():
+def analytical_test_2d_ineq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(
         name="2D_test", expressions={"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}
     )
     ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=1)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0)
+    ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
+    ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
     scenario = create_scenario(
         disciplines=[disc],
         formulation="DisciplinaryOpt",
@@ -215,14 +224,14 @@ def analytical_test_2d_ineq():
 
 
 @pytest.fixture
-def analytical_test_2d_eq():
+def analytical_test_2d_eq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(
         name="2D_test", expressions={"f": "(x)**2+(y)**2", "g": "x+y-1"}
     )
     ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=1)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0)
+    ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
+    ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
     scenario = create_scenario(
         disciplines=[disc],
         formulation="DisciplinaryOpt",
@@ -259,9 +268,31 @@ def analytical_test_2d_mixed_rank_deficient():
     return scenario
 
 
-def test_2d_ineq(analytical_test_2d_ineq):
+parametrized_options = pytest.mark.parametrize(
+    "options",
+    [
+        {
+            "max_iter": 50,
+            "algo_options": {"kkt_tol_abs": 1e-3, "kkt_tol_rel": 1e-3},
+        },
+        {
+            "max_iter": 50,
+        },
+    ],
+)
+parametrized_algo_ineq = pytest.mark.parametrize(
+    "algo_ineq", ["NLOPT_MMA", "SLSQP", "NLOPT_SLSQP"]
+)
+parametrized_algo_eq = pytest.mark.parametrize("algo_eq", ["SLSQP", "NLOPT_SLSQP"])
+
+
+@parametrized_options
+@parametrized_algo_ineq
+def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq):
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d_ineq.execute({"max_iter": 50, "algo": "SLSQP"})
+    opt = options.copy()
+    opt["algo"] = algo_ineq
+    analytical_test_2d_ineq.execute(opt)
     problem = analytical_test_2d_ineq.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -272,9 +303,13 @@ def test_2d_ineq(analytical_test_2d_ineq):
     assert pytest.approx(lag["inequality"][1], 1.1 * epsilon) == array([1.0])
 
 
-def test_2d_eq(analytical_test_2d_eq):
+@parametrized_options
+@parametrized_algo_eq
+def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d_eq.execute({"max_iter": 50, "algo": "SLSQP"})
+    opt = options.copy()
+    opt["algo"] = algo_eq
+    analytical_test_2d_eq.execute(opt)
     problem = analytical_test_2d_eq.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -285,9 +320,13 @@ def test_2d_eq(analytical_test_2d_eq):
     assert pytest.approx(lag["equality"][1], 1.1 * epsilon) == array([-1.0])
 
 
-def test_2d_mixed(analytical_test_2d_mixed_rank_deficient):
+@parametrized_options
+@parametrized_algo_eq
+def test_2d_mixed(analytical_test_2d_mixed_rank_deficient, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d_mixed_rank_deficient.execute({"max_iter": 50, "algo": "SLSQP"})
+    opt = options.copy()
+    opt["algo"] = algo_eq
+    analytical_test_2d_mixed_rank_deficient.execute(opt)
     problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3

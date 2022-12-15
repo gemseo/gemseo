@@ -50,7 +50,7 @@ for the different variables:
 - :meth:`.Statistics.compute_range`: the difference between minimum and maximum values,
 - :meth:`.Statistics.compute_mean`: the expectation (a.k.a. mean value),
 - :meth:`.Statistics.compute_moment`: a central moment,
-  which is a the expected value
+  which is the expected value
   of a specified integer power
   of the deviation from the mean,
 - :meth:`.Statistics.compute_variance`: the variance,
@@ -132,14 +132,14 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         variables_names: Iterable[str] | None = None,
         name: str | None = None,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             dataset: A dataset.
             variables_names: The variables of interest.
                 Default: consider all the variables available in the dataset.
             name: A name for the object.
                 Default: use the concatenation of the class and dataset names.
-        """
+        """  # noqa: D205,D212,D415
         class_name = self.__class__.__name__
         default_name = f"{class_name}_{dataset.name}"
         self.name = name or default_name

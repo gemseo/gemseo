@@ -110,8 +110,4 @@ def test_check_gradient(
 ):
     """Test the Jacobian computation by finite differences."""
     concatenation_disc.default_inputs = input_data
-    assert concatenation_disc.check_jacobian(
-        linearization_mode="auto",
-        threshold=1e-3,
-        step=1e-4,
-    )
+    assert concatenation_disc.check_jacobian(threshold=1e-3, step=1e-4)

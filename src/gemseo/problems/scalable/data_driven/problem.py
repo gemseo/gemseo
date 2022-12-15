@@ -183,7 +183,7 @@ class ScalableProblem:
         for scalable_discipline in self.scaled_disciplines:
             func = scalable_discipline.scalable_model.plot_1d_interpolations
             fnames = func(save, show, step, varnames, directory, png)
-            allfnames = allfnames + [os.path.join(directory, fname) for fname in fnames]
+            allfnames += [os.path.join(directory, fname) for fname in fnames]
         return allfnames
 
     def plot_dependencies(self, save=True, show=False, directory="."):

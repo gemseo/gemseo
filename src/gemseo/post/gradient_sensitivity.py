@@ -65,7 +65,7 @@ class GradientSensitivity(OptPostProcessor):
                    :class:`.OptimizationProblem` instance was imported from an HDF5
                    file. This option requires an :class:`.OptimizationProblem` with a
                    gradient-based algorithm.
-        """
+        """  # noqa: D205, D212, D415
         if iteration is None:
             design_value = self.opt_problem.solution.x_opt
         else:
@@ -110,7 +110,7 @@ class GradientSensitivity(OptPostProcessor):
             The gradients of the outputs
             indexed by the names of the output,
             e.g. ``"output_name"`` for a mono-dimensional output,
-            or ``"output_name_i"`` for the i-th component of a multi-dimensional output.
+            or ``"output_name_i"`` for the i-th component of a multidimensional output.
         """
         gradient_values = {}
         if compute_missing_gradients:
@@ -179,11 +179,7 @@ class GradientSensitivity(OptPostProcessor):
         n_rows = sum(divmod(n_gradients, n_cols))
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows,
-            ncols=n_cols,
-            sharex=True,
-            sharey=False,
-            figsize=self.DEFAULT_FIG_SIZE,
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=self.DEFAULT_FIG_SIZE
         )
 
         axes = atleast_2d(axes)

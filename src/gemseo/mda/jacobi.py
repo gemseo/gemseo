@@ -19,7 +19,6 @@
 """A Jacobi algorithm for solving MDAs."""
 from __future__ import annotations
 
-import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import Any
@@ -40,12 +39,11 @@ from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
-LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 
 class MDAJacobi(MDA):
-    """Perform a MDA analysis using a Jacobi algorithm.
+    """Perform an MDA analysis using a Jacobi algorithm.
 
     This algorithm is an iterative technique to solve the linear system:
 
@@ -141,10 +139,10 @@ class MDAJacobi(MDA):
     def _compute_input_couplings(self) -> None:
         """Compute all the coupling variables that are inputs of the MDA.
 
-        This must be overloaded here because the Jacobi algorithm induces a delay
-        between the couplings, the strong couplings may be fully resolved but the weak
-        ones may need one more iteration. The base MDA class uses strong couplings only
-        which is not satisfying here if all disciplines are not strongly coupled.
+        This must be overloaded here because the Jacobi algorithm induces a delay between
+        the couplings, the strong couplings may be fully resolved but the weak ones may
+        need one more iteration. The base MDA class uses strong couplings only which is
+        not satisfying here if all disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
@@ -283,7 +281,7 @@ class MDAJacobi(MDA):
         """Compute the next iterate according to the m2d method.
 
         Minimize the sub-problem in the d-2 method.
-        Use a least squares solver to find he minimizer of:
+        Use the least squares solver to find he minimizer of:
 
         .. math::
 

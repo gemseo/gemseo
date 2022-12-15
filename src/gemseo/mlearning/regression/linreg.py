@@ -51,10 +51,8 @@ linear_model.html>`_.
 """
 from __future__ import annotations
 
-import logging
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import ndarray
@@ -75,8 +73,6 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.python_compatibility import Final
 
-LOGGER = logging.getLogger(__name__)
-
 
 class LinearRegressor(MLRegressionAlgo):
     """Linear regression model."""
@@ -87,7 +83,7 @@ class LinearRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         fit_intercept: bool = True,

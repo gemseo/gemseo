@@ -19,8 +19,6 @@
 """A formulation for uncoupled or weakly coupled problems."""
 from __future__ import annotations
 
-from typing import Sequence
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
@@ -37,9 +35,9 @@ class DisciplinaryOpt(MDOFormulation):
     from an ordered list of disciplines, an objective function and a design space.
     """
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
@@ -60,21 +58,21 @@ class DisciplinaryOpt(MDOFormulation):
         # Build the objective from its objective name
         self._build_objective_from_disc(objective_name)
 
-    def get_expected_workflow(
+    def get_expected_workflow(  # noqa:D102
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         if self.chain is None:
             return ExecutionSequenceFactory.serial(self.disciplines[0])
         return self.chain.get_expected_workflow()
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         if self.chain is None:
             return []
         return self.chain.get_expected_dataflow()
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:
+    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
         if self.chain is not None:
             return [self.chain]
         return self.disciplines

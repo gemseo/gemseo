@@ -40,9 +40,9 @@ from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
-    """Singleton to access a HDF file.
+    """Singleton to access an HDF file.
 
-    Used for multithreaded/multiprocessing access with a lock.
+    Used for multithreading/multiprocessing access with a lock.
     """
 
     # We create a single instance of cache per HDF5 file
@@ -72,7 +72,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         """
         Args:
             hdf_file_path: The path to the HDF file.
-        """
+        """  # noqa: D205, D212, D415
         self.hdf_file_path = hdf_file_path
         self.__check_file_format_version()
         # Attach the lock to the file and NOT the Cache because it is a singleton.
@@ -123,7 +123,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 value = data.get(name)
                 if value is not None:
                     if value.dtype.type is unicode_:
-                        group.create_dataset(name, data=data.astype("bytes"))
+                        group.create_dataset(name, data=value.astype("bytes"))
                     else:
                         group.create_dataset(name, data=to_real(value))
 
@@ -163,7 +163,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             The group data and the input data hash.
         """
         if h5_open_file is None:
-            h5_file = h5py.File(self.hdf_file_path, "r")
+            h5_file = h5py.File(self.hdf_file_path)
         else:
             h5_file = h5_open_file
 
@@ -196,12 +196,16 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         hdf_node_path: str,
         h5_open_file: h5py.File,
     ) -> bool:
-        """
+        """Return whether a group exists.
+
         Args:
             hdf_node_path: The name of the HDF group where the entries are stored.
             h5_open_file: The opened HDF file.
                 This improves performance
                 but is incompatible with multiprocess/treading.
+
+        Returns:
+            Whether a group exists.
         """
         entry = h5_open_file[hdf_node_path].get(str(index))
         if entry is None:
@@ -228,7 +232,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         Returns:
             Whether the entry has data for this group.
         """
-        with h5py.File(self.hdf_file_path, "r") as h5file:
+        with h5py.File(self.hdf_file_path) as h5file:
             return self._has_group(index, group, hdf_node_path, h5file)
 
     def read_hashes(
@@ -249,7 +253,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             return 0
 
         # We must lock so that no data is added to the cache meanwhile
-        with h5py.File(self.hdf_file_path, "r") as h5file:
+        with h5py.File(self.hdf_file_path) as h5file:
             root = h5file.get(hdf_node_path)
 
             if root is None:
@@ -275,7 +279,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         self,
         hdf_node_path: str,
     ) -> None:
-        """
+        """Clear a node.
+
         Args:
             hdf_node_path: The name of the HDF group to clear.
         """
@@ -292,7 +297,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         if not Path(self.hdf_file_path).exists():
             return
 
-        h5_file = h5py.File(self.hdf_file_path, "r")
+        h5_file = h5py.File(self.hdf_file_path)
 
         if not len(h5_file):
             h5_file.close()

@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
-    """An helper to create a function applying an operation to another function."""
+    """A helper to create a function applying an operation to another function."""
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             TypeError: When the second operand is
                 neither an :class:`.MDOFunction` nor a ``Number``.
-        """
+        """  # noqa: D205, D212, D415
         f_type = ""
         expr = ""
         args = None
@@ -165,7 +165,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
 
 
 class _AdditionFunctionMaker(_OperationFunctionMaker):
-    """An helper to create a function summing a function with a constant or a function.
+    """A helper to create a function summing a function with a constant or a function.
 
     If the function operands have a Jacobian, the function will support automatic
     differentiation.
@@ -181,7 +181,7 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
         """
         Args:
             inverse: Whether to apply the inverse operation, i.e. subtraction.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             cls,
             first_operand,
@@ -201,7 +201,7 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
 
 
 class _MultiplicationFunctionMaker(_OperationFunctionMaker):
-    """An helper to create a function multiplying a function by a number or a function.
+    """A helper to create a function multiplying a function by a number or a function.
 
     If the function operands have a Jacobian, the function will support automatic
     differentiation.
@@ -217,7 +217,7 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
         """
         Args:
             inverse: Whether to apply the inverse operation, i.e. subtraction.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             cls,
             first_operand,

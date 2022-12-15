@@ -67,6 +67,8 @@ through the :class:`.MLSupervisedAlgo` class based on a :class:`.Dataset`.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
+from types import MappingProxyType
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
@@ -83,6 +85,7 @@ from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import DefaultTransformerType
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSaveObjectType
@@ -94,7 +97,6 @@ from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.python_compatibility import Final
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], Dict[str, ndarray]]
 
@@ -116,14 +118,14 @@ class MLSupervisedAlgo(MLAlgo):
     """The names of the output variables."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
-    DEFAULT_TRANSFORMER: Final[dict[str, Transformer]] = {
-        Dataset.INPUT_GROUP: MinMaxScaler()
-    }
+    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType(
+        {Dataset.INPUT_GROUP: MinMaxScaler()}
+    )
 
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = DEFAULT_TRANSFORMER,
+        transformer: TransformerType = MLAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
@@ -641,6 +643,7 @@ class MLSupervisedAlgo(MLAlgo):
             data, self.learning_set.get_data_by_names(self.output_names, False)[indices]
         )
 
+    @abstractmethod
     def _fit(
         self,
         input_data: ndarray,
@@ -652,7 +655,6 @@ class MLSupervisedAlgo(MLAlgo):
             input_data: The input data with the shape (n_samples, n_inputs).
             output_data: The output data with shape (n_samples, n_outputs).
         """
-        raise NotImplementedError
 
     @DataFormatters.format_input_output
     def predict(
@@ -683,6 +685,7 @@ class MLSupervisedAlgo(MLAlgo):
         """
         return self._predict(input_data)
 
+    @abstractmethod
     def _predict(
         self,
         input_data: ndarray,
@@ -695,7 +698,6 @@ class MLSupervisedAlgo(MLAlgo):
         Returns:
             output_data: The output data with shape (n_samples, n_outputs).
         """
-        raise NotImplementedError
 
     def __compute_reduced_dimensions(self) -> tuple[int, int]:
         """Return the reduced input and output dimensions after transformations.

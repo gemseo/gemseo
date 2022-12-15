@@ -45,10 +45,11 @@ def test_invalid_algo():
     algo_name = "invalid_algo"
     with pytest.raises(
         KeyError,
-        match="Requested algorithm {} is not in list of available algorithms: "
-        "{}.".format(algo_name, DOE_LIB_NAME),
+        match=(
+            f"The algorithm {algo_name} is unknown; available ones are: {DOE_LIB_NAME}."
+        ),
     ):
-        execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=100)
+        execute_problem(DOE_LIB_NAME, algo_name=algo_name, n_samples=100)
 
 
 def test_diagonal_doe():

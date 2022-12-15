@@ -70,7 +70,7 @@ class ZvsXY(DatasetPlot):
                 If ``None``, select them automatically.
             other_datasets: Additional datasets to be plotted as points
                 above the surface.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset=dataset,
             x=x,

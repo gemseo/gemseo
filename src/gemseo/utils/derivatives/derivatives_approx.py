@@ -29,6 +29,8 @@ from typing import Sequence
 from typing import Sized
 from typing import TYPE_CHECKING
 
+from gemseo.core.derivatives.derivation_modes import AVAILABLE_APPROX_MODES
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 
@@ -42,7 +44,6 @@ from numpy import (
     allclose,
     amax,
     arange,
-    array,
     atleast_2d,
     concatenate,
     divide,
@@ -63,9 +64,6 @@ LOGGER = logging.getLogger(__name__)
 
 class DisciplineJacApprox:
     """Approximates a discipline Jacobian using finite differences or Complex step."""
-
-    COMPLEX_STEP = "complex_step"
-    FINITE_DIFFERENCES = "finite_differences"
 
     N_CPUS = cpu_count()
 
@@ -135,7 +133,7 @@ class DisciplineJacApprox:
         self.func = self.generator.get_function(
             input_names=inputs, output_names=outputs
         )
-        if self.approx_method not in [self.FINITE_DIFFERENCES, self.COMPLEX_STEP]:
+        if self.approx_method not in AVAILABLE_APPROX_MODES:
             raise ValueError(
                 f"Unknown Jacobian approximation method {self.approx_method}."
             )
@@ -176,7 +174,7 @@ class DisciplineJacApprox:
                 and truncation error estimates.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
-                By default Machine epsilon (appx 1e-16),
+                By default, Machine epsilon (appx 1e-16),
                 but can be higher.
                 when the calculation of :math:`f` requires a numerical resolution.
 
@@ -244,10 +242,7 @@ class DisciplineJacApprox:
         self.discipline.cache_tol = 0.0
         local_data = self.discipline.local_data
         x_vect = self._prepare_xvect(inputs)
-        if (
-            self.auto_steps is not None
-            and array([key in self.auto_steps for key in inputs]).all()
-        ):
+        if self.auto_steps and all(key in self.auto_steps for key in inputs):
             step = concatenate([self.auto_steps[key] for key in inputs])
         else:
             step = self.step
@@ -582,11 +577,7 @@ class DisciplineJacApprox:
             nrows += 1
         ncols = 2
         fig, axes = plt.subplots(
-            nrows=nrows,
-            ncols=2,
-            sharex=True,
-            sharey=False,
-            figsize=(fig_size_x, fig_size_y),
+            nrows=nrows, ncols=2, sharex=True, figsize=(fig_size_x, fig_size_y)
         )
         i = 0
         j = -1

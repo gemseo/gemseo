@@ -25,6 +25,7 @@ import logging
 import os
 import pkgutil
 import sys
+from inspect import isabstract
 from typing import Any
 from typing import Iterable
 
@@ -58,14 +59,14 @@ class Factory(Multiton):
             a-name = plugin_package_name
 
     Above ``a-name`` is not used
-    and can be any name
+    and can be any name,
     but we advise to use the plugin name.
 
     The plugin entry point searched by the factory could be changed
     with :class:`.Factory.PLUGIN_ENTRY_POINT`.
 
     If a class,
-    despite being a sub-class of the base class,
+    despite being a subclass of the base class,
     or even the base class itself,
     does not belong to the modules sources
     then it is not taken into account
@@ -88,12 +89,11 @@ class Factory(Multiton):
         base_class: type[Any],
         module_names: Iterable[str] | None = None,
     ) -> None:
-        # noqa: D205, D212, D405, D415
         """
         Args:
             base_class: The base class to be considered.
             module_names: The fully qualified modules names to be searched.
-        """
+        """  # noqa: D205, D212, D415
         if not isinstance(base_class, type):
             raise TypeError("Class to search must be a class!")
 
@@ -102,7 +102,6 @@ class Factory(Multiton):
         self.__names_to_classes = {}
         self.__names_to_library_names = {}
         self.failed_imports = {}
-
         self.update()
 
     def update(self) -> None:
@@ -151,7 +150,7 @@ class Factory(Multiton):
 
         names_to_classes = self.__get_sub_classes(self.__base_class)
         for name, cls in names_to_classes.items():
-            if self.__is_class_in_modules(module_names, cls):
+            if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
                 self.__names_to_classes[name] = cls
                 self.__names_to_library_names[name] = cls.__module__.split(".")[0]
 
@@ -218,7 +217,7 @@ class Factory(Multiton):
                 self.failed_imports[mod_name] = err
 
     def __get_sub_classes(self, cls: type[Any]) -> dict[str, type[Any]]:
-        """Find all the sub classes of a class.
+        """Find all the subclasses of a class.
 
         The class names are unique,
         the last imported is kept when more than one class have the same name.
@@ -227,7 +226,7 @@ class Factory(Multiton):
             cls: A class.
 
         Returns:
-            A mapping from the names to the unique sub-classes.
+            A mapping from the names to the unique subclasses.
         """
         all_sub_classes = {}
         for sub_class in cls.__subclasses__():
@@ -256,13 +255,10 @@ class Factory(Multiton):
                 return True
         return False
 
+    # TODO: API: rename classes to class_names
     @property
     def classes(self) -> list[str]:
-        """Return the available classes.
-
-        Returns:
-            The sorted names of the available classes.
-        """
+        """The sorted names of the available classes."""
         return sorted(self.__names_to_classes.keys())
 
     def is_available(self, name: str) -> bool:
@@ -383,7 +379,10 @@ class Factory(Multiton):
         """
         default_option_values = self.get_default_options_values(name)
         option_descriptions = {
-            option_name: option_description
+            # The parsed docstrings contain carriage returns
+            # in the descriptions of the arguments for a better HTML rendering
+            # but the JSON grammars do not contain this special character.
+            option_name: option_description.replace("\n", " ")
             for option_name, option_description in self.get_options_doc(name).items()
             if option_name in default_option_values
         }
@@ -439,7 +438,8 @@ class Factory(Multiton):
         return cls.get_default_sub_options_values(**options)
 
     @staticmethod
-    def cache_clear():
+    def cache_clear() -> None:
+        """Clear the cache."""
         _Multiton.cache_clear()
 
     def __str__(self) -> str:

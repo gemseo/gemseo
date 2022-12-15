@@ -20,7 +20,6 @@
 """A factory to instantiate MDA from their class names."""
 from __future__ import annotations
 
-import logging
 from typing import Iterable
 from typing import Optional
 from typing import Sequence
@@ -30,8 +29,6 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.factory import Factory
 from gemseo.mda.mda import MDA
-
-LOGGER = logging.getLogger(__name__)
 
 MDAOptionType = Optional[
     Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[MDA]]
@@ -50,7 +47,7 @@ class MDAFactory:
         disciplines: Sequence[MDODiscipline],
         **options: MDAOptionType,
     ) -> MDA:
-        """Create a MDA.
+        """Create an MDA.
 
         Args:
             mda_name: The name of the MDA (its class name).

@@ -1,0 +1,43 @@
+{
+    "name": "grammar_test1",
+    "properties": {
+        "not_array_var": {
+            "type": "number"
+        },
+        "array_number_var": {
+            "type": "array",
+            "items": {
+                "type": "number"
+           }
+        },
+        "array_wo_type": {
+            "type": "array"
+        },
+        "array_array_number_var": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            }
+        },
+        "array_array_str_var": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "array_str_var": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "type": "object"
+}

@@ -31,11 +31,11 @@ def save_show_figure(
 
     Args:
         fig: The Matplotlib figure to be saved or shown.
-        show: If True, display the Matplotlib figure.
+        show: Whether to display the Matplotlib figure.
         file_path: The file path to save the Matplotlib figure.
-            If None, do not save the figure.
-        fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
-            If None, use the current size of the figure.
+            If ``None``, do not save the figure.
+        fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
+            If ``None``, use the current size of the figure.
     """
     save = file_path is not None
 
@@ -45,10 +45,7 @@ def save_show_figure(
         fig.savefig(str(file_path), bbox_inches="tight")
 
     if show:
-        try:
-            plt.show(fig)
-        except TypeError:
-            plt.show()
+        plt.show()
 
-    if save or show:
+    if save:
         plt.close(fig)

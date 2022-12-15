@@ -27,7 +27,6 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -44,17 +43,6 @@ def io_dataset():
     dataset = Dataset("dataset_name")
     dataset.set_from_array(data, variables, sizes, groups)
     return dataset
-
-
-def test_notimplementederror(io_dataset):
-    """Test not implemented methods."""
-    ml_algo = MLRegressionAlgo(io_dataset)
-    with pytest.raises(NotImplementedError):
-        ml_algo.learn()
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
-    with pytest.raises(NotImplementedError):
-        ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
 
 
 def test_predict(io_dataset):

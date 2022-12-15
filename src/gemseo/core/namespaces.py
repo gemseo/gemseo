@@ -100,7 +100,7 @@ def update_namespaces(
 
     Args:
         namespaces: The namespaces to update.
-        other_ns: The namespaces to update from.
+        other_namespaces: The namespaces to update from.
     """
     for name, other_ns in other_namespaces.items():
         curr_ns = namespaces.get(name)

@@ -107,7 +107,7 @@ class TestPropaneScenario(unittest.TestCase):
 
     def test_init_mdf(self):
         """"""
-        self.build_mdo_scenario("MDF")
+        self.build_mdo_scenario()
 
     def test_init_idf(self):
         """"""

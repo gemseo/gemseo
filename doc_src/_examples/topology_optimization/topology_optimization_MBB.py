@@ -99,7 +99,7 @@ scenario.execute(input_data={"max_iter": 200, "algo": "NLOPT_MMA"})
 # %%
 # Results
 # -------
-# Post-process the optmization history:
+# Post-process the optimization history:
 scenario.post_process(
     "BasicHistory",
     variable_names=["compliance"],

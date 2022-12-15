@@ -257,13 +257,13 @@ class DiscFromExe(MDODiscipline):
     ) -> None:
         if value not in FoldersIter:
             raise ValueError(f"{value} is not a valid FoldersIter value.")
-        self.__folders_iter = FoldersIter.get_member_from_name(value)
+        self.__folders_iter = FoldersIter[value]
 
     def __check_base_path_on_windows(self) -> None:
         """Check that the base path can be used.
 
         Raises:
-            ValueError: When the users uses the shell under Windows
+            ValueError: When the users use the shell under Windows
             and the base path is located on a network location.
         """
         if sys.platform.startswith("win") and self.__use_shell:
@@ -452,7 +452,7 @@ def write_input_file(
             ``end`` is the index of the end character in the file,
             and ``line_number`` is the index of the line in the file.
             An index is a line index, i.e. a character number on the line.
-        input_lines: The lines of the file..
+        input_lines: The lines of the file.
         float_format: The format of the input data in the file.
     """
     f_text = deepcopy(input_lines)

@@ -20,7 +20,6 @@
 """A parallel coordinates plot of functions and x."""
 from __future__ import annotations
 
-import logging
 from typing import Sequence
 
 import matplotlib
@@ -34,12 +33,9 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
-LOGGER = logging.getLogger(__name__)
-
 
 class ParallelCoordinates(OptPostProcessor):
-    """Parallel coordinates among design variables, outputs functions and
-    constraints."""
+    """Parallel coordinates among design variables, outputs functions and constraints."""
 
     DEFAULT_FIG_SIZE = (10.0, 5.0)
 
@@ -90,7 +86,7 @@ class ParallelCoordinates(OptPostProcessor):
     def _plot(self, **options: OptPostProcessorOptionType) -> None:
         problem = self.opt_problem
         variable_history, variable_names, _ = self.database.get_history_array(
-            problem.get_all_functions_names(), add_dv=True
+            problem.get_all_functions_names()
         )
         n_x = len(self.database.get_x_by_iter(0))
         design_names = variable_names[len(variable_names) - n_x :]

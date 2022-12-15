@@ -26,7 +26,6 @@ from typing import Any
 from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -38,10 +37,11 @@ from numpy.linalg import norm
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 LOGGER = logging.getLogger(__name__)
@@ -50,11 +50,10 @@ LOGGER = logging.getLogger(__name__)
 class MDA(MDODiscipline):
     """An MDA analysis."""
 
-    FINITE_DIFFERENCES = "finite_differences"
+    FINITE_DIFFERENCES = FINITE_DIFFERENCES
 
     N_CPUS = cpu_count()
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "disciplines",
         "warm_start",
         "_input_couplings",
         "reset_history_each_run",
@@ -97,9 +96,6 @@ class MDA(MDODiscipline):
     max_mda_iter: int
     """The maximum iterations number for the MDA algorithm."""
 
-    disciplines: Sequence[MDODiscipline]
-    """The disciplines from which to compute the MDA."""
-
     coupling_structure: MDOCouplingStructure
     """The coupling structure to be used by the MDA."""
 
@@ -140,7 +136,7 @@ class MDA(MDODiscipline):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         max_mda_iter: int = 10,
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
@@ -185,7 +181,7 @@ class MDA(MDODiscipline):
         self.linear_solver_tolerance = linear_solver_tolerance
         self.linear_solver_options = linear_solver_options or {}
         self.max_mda_iter = max_mda_iter
-        self.disciplines = disciplines
+        self._disciplines = disciplines
         if coupling_structure is None:
             self.coupling_structure = MDOCouplingStructure(disciplines)
         else:
@@ -392,7 +388,9 @@ class MDA(MDODiscipline):
         for discipline in self.disciplines:
             for grammar in (discipline.input_grammar, discipline.output_grammar):
                 for coupling in self.all_couplings:
-                    if coupling in grammar and not grammar.is_array(coupling):
+                    if coupling in grammar and not grammar.is_array(
+                        coupling, numeric_only=True
+                    ):
                         not_arrays.append(coupling)
 
         if not_arrays:

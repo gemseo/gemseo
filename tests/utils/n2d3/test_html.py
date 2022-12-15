@@ -53,9 +53,9 @@ def test_from_graph(graph, tmp_wd):
         graph (DependencyGraph): The dependency graph used to create the HTML file.
         tmp_wd (Path): A temporary working directory.
     """
-    path = tmp_wd / "n2.html"
-    N2HTML(path).from_graph(graph, self_coupled_disciplines=["D3"])
-    assert cmp(str(path), str(Path(__file__).parent / "expected_from_graph.html"))
+    file_path = "n2.html"
+    N2HTML(file_path).from_graph(graph, self_coupled_disciplines=["D3"])
+    assert cmp(file_path, str(Path(__file__).parent / "expected_from_graph.html"))
 
 
 def test_from_json(tmp_wd):
@@ -64,6 +64,6 @@ def test_from_json(tmp_wd):
     Args:
         tmp_wd (Path): A temporary working directory.
     """
-    path = tmp_wd / "n2.html"
-    N2HTML(path).from_json(Path(__file__).parent / "n2.json")
-    assert cmp(str(path), str(Path(__file__).parent / "expected_from_json.html"))
+    file_path = "n2.html"
+    N2HTML(file_path).from_json(Path(__file__).parent / "n2.json")
+    assert cmp(file_path, str(Path(__file__).parent / "expected_from_json.html"))

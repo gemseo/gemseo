@@ -44,7 +44,7 @@ def test_common_scenario(
     """Check Robustness with objective, standardized or not."""
     opt = Robustness(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(show=False, save=False)
+    opt.execute(save=False)
 
 
 @pytest.mark.parametrize(
@@ -61,4 +61,4 @@ def test_common_scenario_std(
 ):
     """Check Robustness with a custom standard deviation."""
     opt = Robustness(common_problem)
-    opt.execute(stddev=0.2, show=False, save=False)
+    opt.execute(stddev=0.2, save=False)
