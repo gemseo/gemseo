@@ -49,7 +49,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from numpy import array
 from numpy import atleast_3d
-from numpy import bool as np_bool
 from numpy import median
 from numpy import poly1d
 from numpy import polyfit
@@ -453,7 +452,7 @@ class PostScalabilityStudy:
         if len(data.shape) == 3:
             data = data[0, :, :]
 
-        if data.dtype == np_bool:
+        if data.dtype == bool:
             # To prevent error when arrays are substracted with recent numpy
             data = data.astype(int)
 
