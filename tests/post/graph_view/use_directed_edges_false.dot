@@ -1,0 +1,3 @@
+digraph {
+	A -> B [color=black dir=none fontcolor=black penwidth=1.0]
+}

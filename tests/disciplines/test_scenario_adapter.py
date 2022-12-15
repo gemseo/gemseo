@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
 from copy import deepcopy
 
 import pytest
@@ -114,8 +115,7 @@ def test_adapter_set_x0_before_opt(scenario):
 
 
 def test_adapter_set_and_reset_x0(scenario):
-    """Test that set and reset x_0 cannot be done at MDOScenarioAdapter
-    instantiation."""
+    """Test that set and reset x_0 cannot be done at MDOScenarioAdapter instantiation."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
     msg = "Inconsistent options for MDOScenarioAdapter."
@@ -150,7 +150,7 @@ def test_adapter_reset_x0_before_opt(scenario):
     initial_x = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
     assert np_all(initial_x == initial_design)
 
-    adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=False)
+    adapter = MDOScenarioAdapter(scenario, inputs, outputs)
     adapter.execute()
     new_initial_design = design_space.dict_to_array(
         design_space.get_current_value(as_dict=True)
@@ -269,7 +269,6 @@ def test_compute_jacobian_exceptions(scenario):
 
 
 def build_struct_scenario():
-
     ds = SobieskiProblem().design_space
     sc_str = MDOScenario(
         disciplines=[SobieskiStructure()],
@@ -286,7 +285,6 @@ def build_struct_scenario():
 
 
 def build_prop_scenario():
-
     ds = SobieskiProblem().design_space
     sc_prop = MDOScenario(
         disciplines=[SobieskiPropulsion()],
@@ -302,7 +300,6 @@ def build_prop_scenario():
 
 
 def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_threshold):
-
     opt_problem = adapter.scenario.formulation.opt_problem
     outvars = opt_problem.objective.outvars
     constraints = opt_problem.get_constraints_names()
@@ -324,7 +321,6 @@ def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_thre
 
 
 def test_adapter_jacobian():
-
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
@@ -351,7 +347,6 @@ def test_adapter_jacobian():
 
 
 def test_add_outputs():
-
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
@@ -399,7 +394,6 @@ def check_obj_scenario_adapter(
 
 
 def test_obj_scenario_adapter():
-
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     check_obj_scenario_adapter(
@@ -458,3 +452,30 @@ def test_keep_opt_history(scenario):
     for database in adapter.databases:
         assert isinstance(database, Database)
         assert len(database) > 2
+
+
+@pytest.mark.parametrize("set_x0_before_opt", [True, False])
+def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt):
+    """Test that an MDOScenarioAdapter can be serialized, loaded and executed.
+
+    The focus of this test is to guarantee that the loaded MDOChain instance can be
+    executed, if an AttributeError is raised, it means that the attribute is missing in
+    MDOScenarioAdapter._ATTR_TO_SERIALIZE.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        scenario: Fixture that returns a DOEScenario for the Sobieski's SSBJ use case
+            without physical naming.
+    """
+    adapter = MDOScenarioAdapter(
+        scenario, ["x_shared"], ["y_4"], set_x0_before_opt=set_x0_before_opt
+    )
+
+    with open("adapter.pkl", "wb") as file:
+        pickle.dump(adapter, file)
+
+    with open("adapter.pkl", "rb") as file:
+        adapter = pickle.load(file)
+
+    adapter.execute()
+    assert adapter.scenario.optimization_result.is_feasible

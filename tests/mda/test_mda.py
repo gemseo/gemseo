@@ -25,9 +25,9 @@ import os
 import numpy as np
 import pytest
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -130,7 +130,9 @@ def test_weak_strong_coupling_mda_jac():
 
 
 def analytic_disciplines_from_desc(descriptions):
-    return [AnalyticDiscipline(desc) for desc in descriptions]
+    return [
+        AnalyticDiscipline(desc, name=str(i)) for i, desc in enumerate(descriptions)
+    ]
 
 
 @pytest.mark.parametrize(
@@ -146,7 +148,7 @@ def analytic_disciplines_from_desc(descriptions):
         (
             ({"y": "x+y", "c1": "1-0.2*c2"}, {"c2": "0.1*c1"}),
             "The following disciplines contain self-couplings and strong couplings: "
-            "['AnalyticDiscipline'].",
+            "['0'].",
         ),
     ],
 )
@@ -198,9 +200,7 @@ def test_convergence_warning(caplog):
     assert not max_iter_is_reached
 
     mda.norm0 = 1.0
-    mda._compute_residual(
-        np.array([1, 2]), np.array([10, 10]), log_normed_residual=False
-    )
+    mda._compute_residual(np.array([1, 2]), np.array([10, 10]))
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
     assert (
@@ -257,7 +257,7 @@ def test_scale_res_size(mda_class, norm0, scale_coupl_active):
 
     mda_scale = mda_class(disciplines, max_mda_iter=1)
     mda.norm0 = norm0
-    mda_scale.set_residuals_scaling_options(scale_coupl_active, True)
+    mda_scale.set_residuals_scaling_options(scale_coupl_active)
     mda_scale.execute()
 
     scaled_res = mda.residual_history[-1] / ((2 * coupl_size) ** 0.5)
@@ -279,3 +279,35 @@ def test_deactivate_scaling(mda_class, scale_active):
     mda.set_residuals_scaling_options(False, scale_active)
     mda.execute()
     assert (mda.residual_history[0] == 1.0) == scale_active
+
+
+def test_not_numeric_couplings():
+    """Test that an exception is raised if strings are used as couplings in MDA."""
+    sellar1 = Sellar1()
+    # Tweak the ouput grammar and set y_1 as an array of string
+    prop = sellar1.output_grammar.schema.get("properties").get("y_1")
+    sub_prop = prop.get("items")
+    sub_prop["type"] = "string"
+
+    # Tweak the input grammar and set y_1 as an array of string
+    sellar2 = Sellar2()
+    prop = sellar2.input_grammar.schema.get("properties").get("y_1")
+    sub_prop = prop.get("items")
+    sub_prop["type"] = "string"
+
+    with pytest.raises(
+        TypeError, match=r"The coupling variables \['y\_1'\] must be of type array\."
+    ):
+        MDA([sellar1, sellar2])
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
+def test_get_sub_disciplines(mda_class, sellar_disciplines):
+    """Test the get_sub_disciplines method.
+
+    Args:
+        mda_class: The specific MDA to be tested.
+        sellar_disciplines: Fixture that returns the disciplines of the Sellar problem.
+    """
+    mda = mda_class(sellar_disciplines)
+    assert mda.get_sub_disciplines() == mda.disciplines == sellar_disciplines

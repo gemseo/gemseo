@@ -49,8 +49,8 @@ class MDOScenarioAdapter(MDODiscipline):
     """An adapter class for MDO Scenario.
 
     The specified input variables update the default input data of the top level
-    discipline while the output ones filter the output data from the top level
-    discipline outputs.
+    discipline while the output ones filter the output data from the top level discipline
+    outputs.
     """
 
     scenario: Scenario
@@ -78,6 +78,9 @@ class MDOScenarioAdapter(MDODiscipline):
         "_set_bounds_before_opt",
         "_output_names",
         "_output_multipliers",
+        "keep_opt_history",
+        "_dv_in_names",
+        "_bounds_names",
     )
 
     def __init__(
@@ -94,7 +97,7 @@ class MDOScenarioAdapter(MDODiscipline):
         name: str | None = None,
         keep_opt_history: bool = False,
     ) -> None:
-        """.. # noqa: D205,D212,D415.
+        """..
         Args:
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.
@@ -115,7 +118,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
-        """
+        """  # noqa: D205, D212, D415
         if reset_x0_before_opt and set_x0_before_opt:
             raise ValueError("Inconsistent options for MDOScenarioAdapter.")
         self.scenario = scenario
@@ -367,14 +370,7 @@ class MDOScenarioAdapter(MDODiscipline):
         if last_eval_not_opt:
             # Revaluate all functions at optimum
             # To re execute all disciplines and get the right data
-            opt_problem.evaluate_functions(
-                x_opt,
-                eval_jac=False,
-                eval_obj=True,
-                normalize=False,
-                # Force call without database
-                no_db_no_norm=True,
-            )
+            opt_problem.evaluate_functions(x_opt, normalize=False, no_db_no_norm=True)
 
         # Retrieves top-level discipline outputs
         self._retrieve_top_level_outputs()
@@ -386,8 +382,8 @@ class MDOScenarioAdapter(MDODiscipline):
     def _retrieve_top_level_outputs(self) -> None:
         """Retrieve the top-level outputs.
 
-        This methods overwrites the adapter outputs with the top-level discipline
-        outputs and the optimal design parameters.
+        This method overwrites the adapter outputs with the top-level discipline outputs
+        and the optimal design parameters.
         """
         formulation = self.scenario.formulation
         top_level_disciplines = formulation.get_top_level_disc()
@@ -404,7 +400,7 @@ class MDOScenarioAdapter(MDODiscipline):
     def _compute_lagrange_multipliers(self) -> None:
         """Compute the Lagrange multipliers for the optimal solution of the scenario.
 
-        This methods stores the multipliers in the local data.
+        This method stores the multipliers in the local data.
         """
         # Compute the Lagrange multipliers
         problem = self.scenario.formulation.opt_problem
@@ -471,7 +467,7 @@ class MDOScenarioAdapter(MDODiscipline):
                 if the dimension of the objective function is greater than 1,
                 if a specified input is not an input of the adapter,
                 if a specified output is not an output of the adapter,
-                or if there is non differentiable outputs.
+                or if there is non-differentiable outputs.
         """
         opt_problem = self.scenario.formulation.opt_problem
         objective_names = self.scenario.formulation.opt_problem.objective.outvars
@@ -518,7 +514,7 @@ class MDOScenarioAdapter(MDODiscipline):
         self._init_jacobian(diff_inputs, outputs)
 
         # Compute the Jacobians of the optimization functions
-        jacobians = self._compute_auxiliary_jacobians(diff_inputs, use_threading=True)
+        jacobians = self._compute_auxiliary_jacobians(diff_inputs)
 
         # Perform the post-optimal analysis
         ineq_tolerance = opt_problem.ineq_tolerance

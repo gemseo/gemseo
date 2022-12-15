@@ -99,7 +99,7 @@ class LagrangeMultipliers:
         Args:
             opt_problem: The optimization problem
                 on which Lagrange multipliers shall be computed.
-        """
+        """  # noqa: D205, D212, D415
         self.opt_problem = opt_problem
         self.active_lb_names = []
         self.active_ub_names = []
@@ -136,7 +136,8 @@ class LagrangeMultipliers:
 
         # Check feasibility
         self._check_feasibility(x_vect)
-
+        # get jacobian of objective
+        rhs = -self.get_objective_jacobian(x_vect).T
         # get jacobian of all active constraints, and an
         # ordered list of their name
         self.__compute_constraint_violation(x_vect)
@@ -144,6 +145,7 @@ class LagrangeMultipliers:
         if jac_act is None:
             # There is no active constraint
             multipliers = []
+            self.kkt_residual = norm(rhs)
             self._store_multipliers(multipliers)
             return self.lagrange_multipliers
         lhs = jac_act.T
@@ -153,9 +155,6 @@ class LagrangeMultipliers:
         LOGGER.info("Rank of jacobian = %s", str(rank))
         if act_constr_nb > rank:
             LOGGER.warning("Number of active constraints > rank !")
-
-        # get jacobian of objective
-        rhs = -self.get_objective_jacobian(x_vect).T
 
         # Compute the Lagrange multipliers as a feasible solution of a
         # linear optimization problem
@@ -181,7 +180,7 @@ class LagrangeMultipliers:
                     [0.0] * (act_constr_nb - act_eq_constr_nb)
                     + [-np.inf] * act_eq_constr_nb
                 )
-                upper_bound = array([np.inf] * (act_constr_nb))
+                upper_bound = array([np.inf] * act_constr_nb)
                 optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
                 mul = optim_result.x
                 self.kkt_residual = optim_result.cost
@@ -193,13 +192,11 @@ class LagrangeMultipliers:
         return self.lagrange_multipliers
 
     def _check_feasibility(self, x_vect: ndarray) -> None:
-        """Check that the given point is in the design space and satisfies all
-        constraints.
+        """Check that a point is in the design space and satisfies all the constraints.
 
         Args:
             x_vect: The point at which the Lagrange multipliers are to be computed.
         """
-        # Check that the point is within bounds
         self.opt_problem.design_space.check_membership(x_vect)
 
         # Check that the point satisfies other constraints

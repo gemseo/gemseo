@@ -35,7 +35,7 @@ scenario = create_scenario(
     design_space="design_space.txt",
 )
 
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 
 algo_options = {"max_iter": 10, "algo": "SLSQP"}
 for constraint in ["g_1", "g_2", "g_3"]:

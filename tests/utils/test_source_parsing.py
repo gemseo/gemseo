@@ -94,8 +94,8 @@ def test_google():
     parsed_docstring = parse_google(DOCSTRING)
     assert parsed_docstring == {
         "arg1": "A one-line description: with colon.",
-        "arg2": "A multi-line description.",
-        "arg3": "A description with a first paragraph. And a second one.",
+        "arg2": "A multi-line\ndescription.",
+        "arg3": "A description with a first paragraph.\n\nAnd a second one.",
         "arg4": "A kwargs.",
     }
 

@@ -83,6 +83,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import inf
 from numpy import insert
+from numpy import isnan
 from numpy import issubdtype
 from numpy import multiply
 from numpy import nan
@@ -100,6 +101,8 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
+from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
+from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
@@ -156,6 +159,12 @@ class OptimizationProblem:
     of finite differences or complex step wrappers on functions,
     when analytical gradient is not available.
     """
+
+    current_iter: int
+    """The current iteration."""
+
+    max_iter: int
+    """The maximum iteration."""
 
     nonproc_objective: MDOFunction
     """The non-processed objective function."""
@@ -228,8 +237,8 @@ class OptimizationProblem:
     AVAILABLE_PB_TYPES: ClassVar[str] = [LINEAR_PB, NON_LINEAR_PB]
 
     USER_GRAD: Final[str] = "user"
-    COMPLEX_STEP: Final[str] = "complex_step"
-    FINITE_DIFFERENCES: Final[str] = "finite_differences"
+    COMPLEX_STEP: Final[str] = COMPLEX_STEP
+    FINITE_DIFFERENCES: Final[str] = FINITE_DIFFERENCES
     __DIFFERENTIATION_CLASSES: ClassVar[str] = {
         COMPLEX_STEP: ComplexStep,
         FINITE_DIFFERENCES: FirstOrderFD,
@@ -285,7 +294,6 @@ class OptimizationProblem:
         use_standardized_objective: bool = True,
         **parallel_differentiation_options: int | bool,
     ) -> None:
-        # noqa: D205, D212, D415
         """
         Args:
             design_space: The design space on which the functions are evaluated.
@@ -301,7 +309,7 @@ class OptimizationProblem:
                 for logging and post-processing.
             **parallel_differentiation_options: The options
                 to approximate the derivatives in parallel.
-        """
+        """  # noqa: D205, D212, D415
         self._objective = None
         self.nonproc_objective = None
         self.constraints = []
@@ -317,7 +325,7 @@ class OptimizationProblem:
         self.pb_type = pb_type
         self.ineq_tolerance = 1e-4
         self.eq_tolerance = 1e-2
-        self.max_iter = None
+        self.max_iter = 0
         self.current_iter = 0
         self.use_standardized_objective = use_standardized_objective
         self.__functions_are_preprocessed = False
@@ -353,7 +361,7 @@ class OptimizationProblem:
         Returns:
             Whether the maximum amount of iterations has been reached.
         """
-        if self.max_iter is None or self.current_iter is None:
+        if self.max_iter in [None, 0] or self.current_iter in [None, 0]:
             return False
         return self.current_iter >= self.max_iter
 
@@ -371,15 +379,12 @@ class OptimizationProblem:
         self.__parallel_differentiation = value
 
     @property
-    def parallel_differentiation_options(self) -> bool:
+    def parallel_differentiation_options(self) -> dict[str, int | bool]:
         """The options to approximate the derivatives in parallel."""
         return self.__parallel_differentiation_options
 
     @parallel_differentiation_options.setter
-    def parallel_differentiation_options(
-        self,
-        value: bool,
-    ) -> None:
+    def parallel_differentiation_options(self, value: dict[str, int | bool]) -> None:
         self.__raise_exception_if_functions_are_already_preprocessed()
         self.__parallel_differentiation_options = value
 
@@ -397,9 +402,8 @@ class OptimizationProblem:
             value = value[0].decode()
         if value not in self.DIFFERENTIATION_METHODS:
             raise ValueError(
-                "'{}' is not a differentiation methods; available ones are: '{}'.".format(
-                    value, "', '".join(self.DIFFERENTIATION_METHODS)
-                )
+                "'{}' is not a differentiation methods; available ones are: '{"
+                "}'.".format(value, "', '".join(self.DIFFERENTIATION_METHODS))
             )
         self.__differentiation_method = value
 
@@ -1318,7 +1322,6 @@ class OptimizationProblem:
             self.__functions_are_preprocessed = True
             self.check()
             self.__eval_obs_jac = eval_obs_jac
-            self.database.add_new_iter_listener(self.execute_observables_callback)
 
     def execute_observables_callback(self, last_x: ndarray) -> None:
         """The callback function to be passed to the database.
@@ -1666,6 +1669,8 @@ class OptimizationProblem:
             if eval_cstr is None:
                 break
             if not self._satisfied_constraint(constraint.f_type, eval_cstr):
+                if isnan(eval_cstr).any():
+                    return False, inf
                 is_pt_feasible = False
                 if constraint.f_type == MDOFunction.TYPE_INEQ:
                     if isinstance(eval_cstr, ndarray):
@@ -1717,6 +1722,9 @@ class OptimizationProblem:
             outputs_opt = f_history[best_i]
             x_opt = x_history[best_i]
             f_opt = outputs_opt.get(self.objective.name)
+        if isinstance(f_opt, ndarray):
+            if len(f_opt) == 1:
+                f_opt = f_opt[0]
 
         return x_opt, f_opt, is_opt_feasible, outputs_opt
 
@@ -1788,6 +1796,9 @@ class OptimizationProblem:
                     c_opt[c_name] = feas_f[i].get(c_name)
                     c_key = Database.get_gradient_name(c_name)
                     c_opt_grad[constraint.name] = feas_f[i].get(c_key)
+        if isinstance(f_opt, ndarray):
+            if len(f_opt) == 1:
+                f_opt = f_opt[0]
         return x_opt, f_opt, c_opt, c_opt_grad
 
     def get_optimum(self) -> OptimumType:
@@ -1977,7 +1988,7 @@ class OptimizationProblem:
         design_space = DesignSpace(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
-        with h5py.File(file_path, "r") as h5file:
+        with h5py.File(file_path) as h5file:
             group = get_hdf5_group(h5file, opt_pb.OPT_DESCR_GROUP)
 
             for attr_name, attr in group.items():
@@ -1996,7 +2007,7 @@ class OptimizationProblem:
             # The generated functions can be called at the x stored in
             # the database
             attr.set_pt_from_database(
-                opt_pb.database, design_space, jac=True, x_tolerance=x_tolerance
+                opt_pb.database, design_space, x_tolerance=x_tolerance
             )
             opt_pb.objective = attr
 
@@ -2101,7 +2112,7 @@ class OptimizationProblem:
             input_history, names_to_sizes, input_names
         )
         for input_name, input_value in sorted(input_history.items()):
-            dataset.add_variable(input_name, input_value, input_group)
+            dataset.add_variable(input_name, input_value.real, input_group)
 
         # Add database outputs
         variable_names = self.database.get_all_data_names(skip_iter=True)
@@ -2163,7 +2174,7 @@ class OptimizationProblem:
 
             dataset.add_variable(
                 output_name,
-                output_history.reshape((n_samples, -1)),
+                output_history.reshape((n_samples, -1)).real,
                 output_group,
                 cache_as_input=cache_output_as_input,
             )
@@ -2203,7 +2214,7 @@ class OptimizationProblem:
 
             dataset.add_variable(
                 Database.get_gradient_name(output_name),
-                gradient_history.reshape(n_samples, -1),
+                gradient_history.reshape(n_samples, -1).real,
                 gradient_group,
                 cache_as_input=cache_output_as_input,
             )
@@ -2474,7 +2485,7 @@ class OptimizationProblem:
         Args:
             name: The name of the constraint.
             from_original_constraints: Whether to get the constraint from the original
-                constraints; otherwise get the constraint from the the pre-processed
+                constraints; otherwise get the constraint from the pre-processed
                 constraints.
 
         Returns:

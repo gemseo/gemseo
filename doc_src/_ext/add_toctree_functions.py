@@ -134,15 +134,11 @@ def docutils_node_to_jinja(list_item, only_pages=False, numbered=False):
         return None
 
     # Converting the docutils attributes into jinja-friendly objects
-    nav = {}
-    nav["title"] = title
-    nav["url"] = url
-    nav["active"] = active
+    nav = {"title": title, "url": url, "active": active, "children": []}
 
     # Recursively convert children as well
     # If there are sub-pages for this list_item, there should be two children:
     # a paragraph, and a bullet_list.
-    nav["children"] = []
     if len(list_item.children) > 1:
         # The `.children` of the bullet_list has the nodes of the sub-pages.
         subpage_list = list_item.children[1].children

@@ -46,11 +46,7 @@ class Power(Transformer):
     _TRANSFORMER_NAME: ClassVar[str] = "yeo-johnson"
     """The name of the transformer in scikit-learn."""
 
-    def __init__(
-        self,
-        name: str | None = None,
-        standardize: bool = True,
-    ) -> None:
+    def __init__(self, name: str | None = None, standardize: bool = True) -> None:
         """
         Args:
             name: A name for this transformer. If ``None``, use the class name.
@@ -65,18 +61,11 @@ class Power(Transformer):
             standardize=standardize,
         )
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         self.__power_transformer.fit(data)
         self.lambdas_ = self.__power_transformer.lambdas_
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:
         return self.__power_transformer.transform(data)
 
     def inverse_transform(self, data: ndarray) -> ndarray:

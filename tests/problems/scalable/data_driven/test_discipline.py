@@ -29,11 +29,11 @@ from numpy import array
 def dataset():
     data = Dataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
-    data.add_variable("x", (val * 2)[:, None], data.INPUT_GROUP, True)
-    data.add_variable("y", val[:, None], data.INPUT_GROUP, True)
+    data.add_variable("x", (val * 2)[:, None], data.INPUT_GROUP)
+    data.add_variable("y", val[:, None], data.INPUT_GROUP)
     data.add_variable("z", val[:, None], data.OUTPUT_GROUP, False)
     return data
 
 
-def test_constructor(dataset, tmp_path):
+def test_constructor(dataset):
     ScalableDiscipline("ScalableDiagonalModel", dataset)

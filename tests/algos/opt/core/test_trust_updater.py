@@ -158,9 +158,7 @@ class TestBoundsUpdater(TestCase):
 
     def test_nonnormalized_update(self):
         """Tests the non-normalized update of trust bounds."""
-        trust_bounds = BoundsUpdater(
-            self.lower_bounds, self.upper_bounds, normalize=False
-        )
+        trust_bounds = BoundsUpdater(self.lower_bounds, self.upper_bounds)
         lower_bounds, upper_bounds = trust_bounds.update(0.5, self.center)
         assert allclose(lower_bounds, 1.5 * ones(self.dim))
         assert allclose(upper_bounds, 2.5 * ones(self.dim))

@@ -32,7 +32,6 @@ from gemseo.api import generate_n2_plot
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -158,6 +157,4 @@ system_scenario.add_constraint("lift", "eq", value=0.5)
 system_scenario.execute(
     {"algo": "NLOPT_COBYLA", "max_iter": 7, "algo_options": algo_options}
 )
-system_scenario.post_process("OptHistoryView", save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+system_scenario.post_process("OptHistoryView", save=False, show=True)

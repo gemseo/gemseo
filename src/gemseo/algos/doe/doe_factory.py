@@ -17,10 +17,7 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A factory to execute DOE algorithms from their class names
-**********************************************************
-"""
+"""A factory to execute DOE algorithms from their class names."""
 from __future__ import annotations
 
 from gemseo.algos.doe.doe_lib import DOELibrary

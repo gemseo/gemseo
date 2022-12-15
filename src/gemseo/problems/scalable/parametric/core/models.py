@@ -154,12 +154,11 @@ class TMMainModel:
 
 class TMSubModel:
 
-    r"""A sub-discipline from the scalable problem introduced by
-    Tedford and Martins (2010) takes local design parameters :math:`x_i`
-    and shared design parameters :math:`z` in input as well as coupling
-    variables :math:`\left(y_i\right)_{1\leq j \leq N\atop j\neq i}`
-    from :math:`N-1` elementary disciplines,
-    and returns the coupling variables:
+    r"""A sub-discipline from the scalable problem introduced by Tedford and Martins
+    (2010) takes local design parameters :math:`x_i` and shared design parameters
+    :math:`z` in input as well as coupling variables :math:`\left(y_i\right)_{1\leq j
+    \leq N\atop j\neq i}` from :math:`N-1` elementary disciplines, and returns the
+    coupling variables:
 
     .. math::
 

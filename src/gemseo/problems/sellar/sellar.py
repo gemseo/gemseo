@@ -17,7 +17,7 @@
 #        :author: Charlie Vanaret
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The disciplines for the MDO problem proposed by Sellar et al. in
+r"""The disciplines for the MDO problem proposed by Sellar et al. in.
 
 Sellar, R., Batill, S., & Renaud, J. (1996).
 Response surface based, concurrent subspace optimization

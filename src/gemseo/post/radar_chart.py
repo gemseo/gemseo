@@ -61,7 +61,7 @@ class RadarChart(OptPostProcessor):
             ValueError: When a requested name is not a constraint
                 or when the requested iteration is neither a database index
                 nor the tag ``"opt"``.
-        """
+        """  # noqa: D205, D212, D415
         if constraint_names is None:
             constraint_names = self.opt_problem.get_constraints_names()
         else:
@@ -117,7 +117,7 @@ class RadarChart(OptPostProcessor):
         radar.title = f"Constraints at iteration {iteration}{title_suffix}"
 
         figures = radar.execute(
-            save=False, show=False, display_zero=False, radial_ticks=show_names_radially
+            save=False, display_zero=False, radial_ticks=show_names_radially
         )
         for figure in figures:
             self._add_figure(figure)

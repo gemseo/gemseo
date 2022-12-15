@@ -67,7 +67,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class OptHistoryView(OptPostProcessor):
-    """The **OptHistoryView** post processing performs separated plots: the design
+    """The **OptHistoryView** post processing performs separated plots.
+
+    The design
     variables history, the objective function history, the history of hessian
     approximation of the objective, the inequality constraint history, the equality
     constraint history, and constraints histories.
@@ -84,7 +86,7 @@ class OptHistoryView(OptPostProcessor):
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -110,7 +112,7 @@ class OptHistoryView(OptPostProcessor):
                 If None, use the minimum value of the objective history.
             obj_relative: If True, plot the objective value difference
                 with the initial value.
-        """
+        """  # noqa: D205, D212, D415
         # compute the names of the inequality and equality constraints
         ineq_cstr = self.opt_problem.get_ineq_constraints()
         ineq_cstr_names = [c.name for c in ineq_cstr]
@@ -170,8 +172,9 @@ class OptHistoryView(OptPostProcessor):
         function_name: str,
         variables_names: Sequence[str],
     ) -> tuple[ndarray, ndarray, int]:
-        """Access the optimization history of a function and the design variables at
-        which it was computed.
+        """Access the optimization history of a function and the design variables.
+
+        This is done at which it was computed.
 
         Args:
             function_name: The name of the function.
@@ -595,7 +598,7 @@ class OptHistoryView(OptPostProcessor):
         else:
             thick_max = 0
         thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num, base=10.0)
+        levels_pos = logspace(thick_min, thick_max, num=thick_num)
         if vmax != 0.0:
             levels_pos = np_sort(append(levels_pos, vmax))
         levels_neg = np_sort(-levels_pos)
@@ -663,13 +666,13 @@ class OptHistoryView(OptPostProcessor):
         thick_min = int(np_log10(linthresh))
         thick_max = int(np_log10(vmax))
         thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num, base=10.0)
+        levels_pos = logspace(thick_min, thick_max, num=thick_num)
         levels_pos = append(levels_pos, vmax)
         levels_neg = np_sort(-levels_pos)
         levels_neg = append(levels_neg, 0)
         levels = concatenate((levels_neg, levels_pos))
 
-        l_f = LogFormatter(base=10, labelOnlyBase=False)
+        l_f = LogFormatter(base=10)
         cax = fig.add_subplot(grid[0, 1])
         cax.invert_yaxis()
         fig.colorbar(img, cax=cax, ticks=levels, format=l_f)

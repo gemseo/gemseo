@@ -46,9 +46,5 @@ def test_jacobian(density_filter):
 
     input_data = density_filter.get_input_data()
     assert density_filter.check_jacobian(
-        input_data,
-        threshold=THRESHOLD,
-        derr_approx=density_filter.FINITE_DIFFERENCES,
-        step=1e-5,
-        auto_set_step=True,
+        input_data, threshold=THRESHOLD, step=1e-5, auto_set_step=True
     )

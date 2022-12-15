@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
@@ -57,15 +58,72 @@ def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq):
     assert lib.algorithm_handles_ineqcstr(name) is handle_ineq
 
 
-@pytest.mark.parametrize(
-    "name,remove_eq_constraint,suited",
-    [("L-BFGS-B", False, False), ("SLSQP", True, True), ("L-BFGS-B", True, False)],
-)
-def test_is_algorithm_suited(lib, power, name, remove_eq_constraint, suited):
-    """Check is_algorithm_suited."""
-    if remove_eq_constraint:
-        power.constraints = power.constraints[0:1]
-    assert lib.is_algorithm_suited(lib.descriptions[name], power) is suited
+def test_is_algorithm_suited():
+    """Check is_algorithm_suited when True."""
+    description = OptimizationAlgorithmDescription("foo", "bar")
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    problem = OptimizationProblem(design_space)
+    assert OptimizationLibrary.is_algorithm_suited(description, problem)
+
+
+def test_is_algorithm_suited_design_space():
+    """Check is_algorithm_suited with unhandled empty design space."""
+    description = OptimizationAlgorithmDescription("foo", "bar")
+    problem = OptimizationProblem(DesignSpace())
+    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert (
+        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        == _UnsuitabilityReason.EMPTY_DESIGN_SPACE
+    )
+
+
+def test_is_algorithm_suited_has_eq_constraints():
+    """Check is_algorithm_suited with unhandled equality constraints."""
+    description = OptimizationAlgorithmDescription(
+        "foo", "bar", handle_equality_constraints=False
+    )
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    problem = OptimizationProblem(design_space)
+    problem.has_eq_constraints = lambda: True
+    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert (
+        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        == _UnsuitabilityReason.EQUALITY_CONSTRAINTS
+    )
+
+
+def test_is_algorithm_suited_has_ineq_constraints():
+    """Check is_algorithm_suited with unhandled inequality constraints."""
+    description = OptimizationAlgorithmDescription(
+        "foo", "bar", handle_inequality_constraints=False
+    )
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    problem = OptimizationProblem(design_space)
+    problem.has_ineq_constraints = lambda: True
+    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert (
+        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        == _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
+    )
+
+
+def test_is_algorithm_suited_pbm_type():
+    """Check is_algorithm_suited with unhandled problem type."""
+    description = OptimizationAlgorithmDescription(
+        "foo", "bar", problem_type=OptimizationProblem.LINEAR_PB
+    )
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    problem = OptimizationProblem(design_space)
+    problem.pb_type = problem.NON_LINEAR_PB
+    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert (
+        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        == _UnsuitabilityReason.NON_LINEAR_PROBLEM
+    )
 
 
 def test_pre_run_fail(lib, power):

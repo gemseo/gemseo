@@ -20,7 +20,6 @@
 """Caching module to store all the entries in memory."""
 from __future__ import annotations
 
-import logging
 from multiprocessing import RLock
 from typing import Any
 
@@ -30,8 +29,6 @@ from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multiprocessing import get_multi_processing_manager
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MemoryFullCache(AbstractFullCache):
@@ -58,7 +55,7 @@ class MemoryFullCache(AbstractFullCache):
             This class relies on some multiprocessing features, it is therefore
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(tolerance, name)
         self.__is_memory_shared = is_memory_shared
         if self.__is_memory_shared:
@@ -86,7 +83,7 @@ class MemoryFullCache(AbstractFullCache):
         return group in self.__data.get(index)
 
     @synchronized
-    def clear(self) -> None:
+    def clear(self) -> None:  # noqa:D102
         super().clear()
         self.__data.clear()
 

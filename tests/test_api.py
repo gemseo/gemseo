@@ -113,7 +113,7 @@ def test_generate_n2_plot(tmp_wd):
         ]
     )
     file_path = "n2.png"
-    generate_n2_plot(disciplines, file_path, save=True, show=False, fig_size=(5, 5))
+    generate_n2_plot(disciplines, file_path, fig_size=(5, 5))
     assert Path(file_path).exists()
 
 
@@ -146,7 +146,7 @@ def test_get_algorithm_options_schema(tmp_wd):
     """
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 12
+    assert len(schema_dict["properties"]) == 14
 
     schema_json = get_algorithm_options_schema("SLSQP", output_json=True)
     out_dict = json.loads(schema_json)
@@ -481,11 +481,11 @@ def test_create_scalable(tmp_wd):
 
     data = Dataset("sinus")
     x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, None]
-    data.add_variable("x1", x1_val, data.INPUT_GROUP, True)
-    data.add_variable("x2", x2_val, data.INPUT_GROUP, True)
-    data.add_variable("x3", x2_val, data.INPUT_GROUP, True)
-    data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.OUTPUT_GROUP, True)
-    data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.OUTPUT_GROUP, True)
+    data.add_variable("x1", x1_val, data.INPUT_GROUP)
+    data.add_variable("x2", x2_val, data.INPUT_GROUP)
+    data.add_variable("x3", x2_val, data.INPUT_GROUP)
+    data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.OUTPUT_GROUP)
+    data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.OUTPUT_GROUP)
     create_scalable("ScalableDiagonalModel", data, fill_factor=0.7)
 
 
@@ -525,13 +525,13 @@ def test_get_discipline_inputs_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     mission = create_discipline("SobieskiMission")
-    schema_dict = get_discipline_inputs_schema(mission, False)
+    schema_dict = get_discipline_inputs_schema(mission)
     for key in mission.get_input_data_names():
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_inputs_schema(mission, True)
     assert isinstance(schema_str, str)
-    get_discipline_inputs_schema(mission, False, pretty_print=True)
+    get_discipline_inputs_schema(mission, pretty_print=True)
 
 
 def test_get_discipline_outputs_schema(tmp_wd):
@@ -541,16 +541,16 @@ def test_get_discipline_outputs_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     mission = create_discipline("SobieskiMission")
-    schema_dict = get_discipline_outputs_schema(mission, False)
+    schema_dict = get_discipline_outputs_schema(mission)
     for key in mission.get_output_data_names():
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_outputs_schema(mission, True)
     assert isinstance(schema_str, str)
-    get_discipline_outputs_schema(mission, False, pretty_print=True)
+    get_discipline_outputs_schema(mission, pretty_print=True)
 
 
-def test_get_scenario_differenciation_modes(tmp_wd):
+def test_get_scenario_differentiation_modes(tmp_wd):
     """Test that the scenario differentiation modes are retrieved correctly.
 
     Args:
@@ -666,7 +666,7 @@ def test_create_parameter_space(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     parameter_space = create_parameter_space()
-    parameter_space.add_variable("name", 1, var_type="float", l_b=-1, u_b=1, value=0)
+    parameter_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
     parameter_space.add_random_variable("other_name", "OTNormalDistribution")
     parameter_space.check()
 
@@ -678,7 +678,7 @@ def test_create_design_space(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("name", 1, var_type="float", l_b=-1, u_b=1, value=0)
+    design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
     design_space.check()
 
 
@@ -689,7 +689,7 @@ def test_export_design_space(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("name", 1, var_type="float", l_b=-1, u_b=1, value=0)
+    design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
     export_design_space(design_space, "design_space.txt")
     export_design_space(design_space, "design_space.h5", True)
 
@@ -826,7 +826,7 @@ def test_compute_doe_nontransformed(variables_space):
 
 def test_import_analytic_discipline(tmp_wd):
     """Check that an analytic discipline performs correctly after import."""
-    file_path = tmp_wd / "saved_discipline.pkl"
+    file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
     discipline.serialize(file_path)
@@ -841,7 +841,7 @@ def test_import_analytic_discipline(tmp_wd):
 
 def test_import_discipline(tmp_wd):
     """Check that a discipline performs correctly after import."""
-    file_path = tmp_wd / "saved_discipline.pkl"
+    file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("Sellar1")
     discipline.serialize(file_path)
@@ -886,14 +886,7 @@ def test_configure(
     assert Scenario.activate_input_data_check
     assert Scenario.activate_output_data_check
     assert MDA.activate_cache
-    configure(
-        activate_discipline_counters=True,
-        activate_function_counters=True,
-        activate_progress_bar=True,
-        activate_discipline_cache=True,
-        check_input_data=True,
-        check_output_data=True,
-    )
+    configure()
 
 
 def test_configure_default():

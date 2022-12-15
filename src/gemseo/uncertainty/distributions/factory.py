@@ -21,12 +21,15 @@
 from __future__ import annotations
 
 from typing import Optional
+from typing import Sequence
 from typing import Union
 
 from gemseo.core.factory import Factory
+from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.distributions.distribution import ParametersType
 from gemseo.uncertainty.distributions.distribution import StandardParametersType
+from gemseo.utils.string_tools import pretty_str
 
 DistributionParametersType = Union[
     int, ParametersType, Optional[StandardParametersType], float
@@ -62,13 +65,13 @@ class DistributionFactory:
     def __init__(self) -> None:  # noqa: D107
         self.factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
 
-    def create(
+    def create_marginal_distribution(
         self,
         distribution_name: str,
         variable: str,
         **parameters: DistributionParametersType,
     ) -> Distribution:
-        """Create a probability distribution for a given random variable.
+        """Create a marginal probability distribution for a given random variable.
 
         Args:
             distribution_name: The name of a class defining a distribution.
@@ -76,19 +79,51 @@ class DistributionFactory:
             **parameters: The parameters of the distribution.
 
         Returns:
-            The probability distribution instance.
+            The marginal probability distribution.
         """
         return self.factory.create(distribution_name, variable=variable, **parameters)
+
+    create = create_marginal_distribution
+
+    def create_composed_distribution(
+        self,
+        distributions: Sequence[Distribution],
+        copula_name: str = ComposedDistribution.CopulaModel.independent_copula.value,
+        variable: str = "",
+    ) -> ComposedDistribution:
+        """Create a composed probability distribution from marginal ones.
+
+        Args:
+            distributions: The marginal distributions.
+            copula_name: The name of the copula.
+            variable: The name of the variable, if any;
+                otherwise,
+                concatenate the names of the random variables
+                defined by ``distributions``.
+
+        Returns:
+            The composed probability distribution.
+        """
+        identifiers = {dist.__class__.__name__[0:2] for dist in distributions}
+        if len(identifiers) > 1:
+            raise ValueError(
+                "A composed probability distribution cannot mix distributions "
+                f"with different identifiers; got {pretty_str(identifiers)}."
+            )
+
+        return self.factory.create(
+            f"{next(iter(identifiers))}ComposedDistribution",
+            distributions=distributions,
+            copula=copula_name,
+            variable=variable,
+        )
 
     @property
     def available_distributions(self) -> list[str]:
         """The available probability distributions."""
         return self.factory.classes
 
-    def is_available(
-        self,
-        distribution_name: str,
-    ) -> bool:
+    def is_available(self, distribution_name: str) -> bool:
         """Check the availability of a probability distribution.
 
         Args:

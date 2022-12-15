@@ -27,8 +27,8 @@ from numpy import array
 def test_notimplementederror():
     dataset = Dataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
-    dataset.add_variable("x", (val * 2)[:, None], dataset.INPUT_GROUP, True)
-    dataset.add_variable("y", val[:, None], dataset.INPUT_GROUP, True)
+    dataset.add_variable("x", (val * 2)[:, None], dataset.INPUT_GROUP)
+    dataset.add_variable("y", val[:, None], dataset.INPUT_GROUP)
     dataset.add_variable("z", val[:, None], dataset.OUTPUT_GROUP, False)
     with pytest.raises(NotImplementedError):
         ScalableModel(dataset)

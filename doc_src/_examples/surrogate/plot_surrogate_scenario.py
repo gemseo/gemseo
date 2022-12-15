@@ -214,7 +214,6 @@ scenario = create_scenario(
     formulation="DisciplinaryOpt",
     objective_name="y_4",
     design_space=design_space,
-    scenario_type="MDO",
     maximize_objective=True,
 )
 scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})

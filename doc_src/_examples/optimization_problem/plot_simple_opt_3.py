@@ -36,7 +36,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import configure_logger
 from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from matplotlib import pyplot as plt
 from numpy import sum as np_sum
 
 LOGGER = configure_logger()
@@ -75,10 +74,12 @@ DOEFactory().execute(problem, "fullfact", n_samples=11**2)
 # Post-process the results
 # ------------------------
 execute_post(
-    problem, "ScatterPlotMatrix", variable_names=["x", "f"], save=False, show=False
+    problem,
+    "ScatterPlotMatrix",
+    variable_names=["x", "f"],
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
 
 #############################################################################
 # Note that you can get all the optimization algorithms names:

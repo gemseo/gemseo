@@ -16,10 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Monitoring mechanism to track |g| execution (update events)
-***********************************************************
-"""
+"""Monitoring mechanism to track |g| execution (update events)."""
 from __future__ import annotations
 
 from gemseo.core.scenario import Scenario
@@ -38,7 +35,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
         """
         Args:
             scenario: The scenario to be monitored.
-        """
+        """  # noqa: D205, D212, D415
         self._observers = []
         self.workflow = scenario.get_expected_workflow()
         self.workflow.set_observer(self)

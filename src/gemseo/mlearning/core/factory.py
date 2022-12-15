@@ -25,7 +25,6 @@ testing if a machine learning algorithm is available.
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from pathlib import Path
 
@@ -35,8 +34,6 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.utils.python_compatibility import Final
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MLAlgoFactory:

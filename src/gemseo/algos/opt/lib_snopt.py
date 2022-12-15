@@ -253,7 +253,6 @@ class SnOpt(OptimizationLibrary):
         Returns:
             The solution status, the evaluation of the objective function and its
             gradient.
-
         """
         obj_func = self.problem.objective
         status = -1
@@ -508,11 +507,11 @@ class SnOpt(OptimizationLibrary):
         snopt_problem.setOption("Verbose", True)
         snopt_problem.setOption("Solution print", True)
 
-        #        n_nonlinear_constraints = n_ineq_constraints + n_eq_constraints
-        #        It is assumed that all constraints provided to optimizer are not
-        #        inear
-        #        n_linear_constraints = 0
-        #        n_nonlinear_constraints = n_ineq_constraints + n_eq_constraints
+        # n_nonlinear_constraints = n_ineq_constraints + n_eq_constraints
+        # It is assumed that all constraints provided to optimizer are not
+        # linear
+        # n_linear_constraints = 0
+        # n_nonlinear_constraints = n_ineq_constraints + n_eq_constraints
 
         n_design_variables = x_0.shape[0]
 

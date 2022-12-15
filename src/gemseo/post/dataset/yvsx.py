@@ -49,7 +49,7 @@ class YvsX(DatasetPlot):
             y: The name of the variable on the y-axis.
             x_comp: The component of x.
             y_comp: The component of y.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
 
     def _plot(

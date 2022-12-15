@@ -31,7 +31,6 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -70,21 +69,19 @@ doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 PostFactory().execute(
     problem,
     "ParetoFront",
-    save=False,
-    show=False,
     show_non_feasible=False,
     objectives=["compute_binhkorn"],
     objectives_labels=["f1", "f2"],
+    save=False,
+    show=True,
 )
 
 PostFactory().execute(
     problem,
     "ParetoFront",
-    save=False,
-    show=False,
     show_non_feasible=True,
     objectives=["compute_binhkorn"],
     objectives_labels=["f1", "f2"],
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

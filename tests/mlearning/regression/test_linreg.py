@@ -128,7 +128,7 @@ def test_coefficients_with_transform(dataset, model_with_transform):
             "dimensions of the variables."
         ),
     ):
-        model_with_pca.get_coefficients(as_dict=True)
+        model_with_pca.get_coefficients()
 
 
 def test_intercept(model):
@@ -150,7 +150,7 @@ def test_intercept_with_output_dimension_change(dataset):
             "dimensions of the output variables."
         ),
     ):
-        model.get_intercept(as_dict=True)
+        model.get_intercept()
 
 
 def test_prediction(model):
@@ -241,9 +241,9 @@ def test_jacobian_transform(model_with_transform):
     assert allclose(jac["y_2"]["x_2"], array([[-3.0]]))
 
 
-def test_save_and_load(model, tmp_path):
+def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     imported_model = import_regression_model(dirname)
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     out1 = model.predict(input_value)

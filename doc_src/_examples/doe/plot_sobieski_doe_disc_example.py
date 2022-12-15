@@ -27,7 +27,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -66,13 +65,14 @@ scenario.execute({"n_samples": 30, "algo": "lhs"})
 ##############################################################################
 # Plot optimization history view
 # ------------------------------
-scenario.post_process("OptHistoryView", save=False, show=False)
+scenario.post_process("OptHistoryView", save=False, show=True)
 
 ##############################################################################
 # Plot parallel coordinates
 # -------------------------
 scenario.post_process(
-    "ScatterPlotMatrix", save=False, show=False, variable_names=["y_4", "y_24", "y_34"]
+    "ScatterPlotMatrix",
+    variable_names=["y_4", "y_24", "y_34"],
+    save=False,
+    show=True,
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

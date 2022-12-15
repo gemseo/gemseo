@@ -52,5 +52,5 @@ def test_som(is_annotated, h5_path, baseline_images, pyplot_close_all):
     """Test the SOM post-processing."""
     problem = OptimizationProblem.import_hdf(h5_path)
     PostFactory().execute(
-        problem, "SOM", n_x=4, n_y=3, show=False, save=False, annotate=is_annotated
+        problem, "SOM", n_x=4, n_y=3, save=False, annotate=is_annotated
     )

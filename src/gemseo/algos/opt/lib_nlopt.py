@@ -129,7 +129,7 @@ class Nlopt(OptimizationLibrary):
 
     LIBRARY_NAME = "NLopt"
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"

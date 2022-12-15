@@ -21,6 +21,7 @@ from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.qual_measure.cluster_measure import MLClusteringMeasure
 from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClusteringMeasure
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import array
 
 
@@ -52,6 +53,9 @@ class NewPredictiveAlgo(MLPredictiveClusteringAlgo):
     def _predict(self, data):
         return array([int(value <= 2.0) for value in data[:, 0]])
 
+    def _predict_proba_soft(self, data):
+        return array([[0.2, 0.6, 0.2] for _ in data])
+
 
 class NewMLClusteringMeasure(MLClusteringMeasure):
     def _compute_measure(self, data, labels, multioutput=True):
@@ -70,7 +74,9 @@ def test_evaluate_learn(learning_data, train, samples, multioutput):
     algo = NewAlgo(learning_data)
     if train:
         algo.learn()
-    assert NewMLClusteringMeasure(algo).evaluate_learn(samples, multioutput) == 1.0
+
+    with concretize_classes(NewMLClusteringMeasure):
+        assert NewMLClusteringMeasure(algo).evaluate_learn(samples, multioutput) == 1.0
 
 
 @pytest.mark.parametrize("train", [False, True])

@@ -84,7 +84,7 @@ class ScatterMatrix(DatasetPlot):
             marker: The marker for the points.
             plot_lower: Whether to plot the lower part.
             plot_upper: Whether to plot the upper part.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             variable_names=variable_names,

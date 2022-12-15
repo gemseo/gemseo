@@ -36,8 +36,8 @@ import pytest
 from gemseo.api import create_discipline
 from gemseo.api import create_mda
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from numpy import array
 from numpy import ndarray
 from pytest import fixture

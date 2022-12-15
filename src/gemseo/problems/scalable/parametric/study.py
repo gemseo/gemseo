@@ -37,6 +37,7 @@ from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.parametric.core.variables import get_constraint_name
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ class TMParamSS:
         - the number of disciplines,
         - the number of shared design parameters,
         - the number of local design parameters for each discipline,
-        - the number of coupling variables for each each discipline.
+        - the number of coupling variables for each discipline.
 
         One of the three latter should be a list of integers
         whose components define scaling strategies.
@@ -388,7 +389,7 @@ class TMScalableStudy:
         - the number of disciplines,
         - the number of shared design parameters,
         - the number of local design parameters for each discipline,
-        - the number of coupling variables for each each discipline.
+        - the number of coupling variables for each discipline.
 
         :param int n_disciplines: number of disciplines.
         :param int n_shared: number of shared design parameters.
@@ -638,8 +639,9 @@ class TMScalableStudy:
         indices = arange(len(self.exec_time[self.formulations[0]]))
         factor = 0
         colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
+        fig, ax = plt.subplots()
         for formulation in self.formulations:
-            plt.bar(
+            ax.bar(
                 indices + bar_width * factor,
                 series[factor],
                 bar_width,
@@ -648,31 +650,25 @@ class TMScalableStudy:
                 label=formulation,
             )
             for name in ["mda", "mdo_chain", "sub_mda"]:
-                plt.bar(
+                ax.bar(
                     [0.0 + bar_width * factor],
                     [self.exec_time[formulation][name]],
                     bar_width,
                     fill=False,
                 )
             factor += 1
-        plt.xlabel("Disciplines")
-        plt.ylabel("Execution time")
-        plt.xticks(indices + bar_width, self.disc_names)
-        plt.legend()
-        plt.tight_layout()
-
-        if save:
-            plt.savefig(file_path)
-        if show:
-            plt.show()
-        plt.close()
+        ax.set_xlabel("Disciplines")
+        ax.set_ylabel("Execution time")
+        ax.set_xticks(indices + bar_width, self.disc_names)
+        ax.legend()
+        save_show_figure(fig, show, file_path if save else None)
 
 
 def mkdir(dirname, subdirname=None):
     """Create a directory if not exists.
 
     :param str dirname: name of the directory.
-    :param str subdirname: name of the sub-directory. If None, only considers
+    :param str subdirname: name of the subdirectory. If None, only considers
         the directory. Default: None.
     """
     if subdirname is not None:

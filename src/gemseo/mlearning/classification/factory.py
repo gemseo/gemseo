@@ -27,13 +27,9 @@ and allows testing if a classification model type is available.
 """
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.factory import Factory
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.factory import MLAlgoFactory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ClassificationModelFactory(MLAlgoFactory):

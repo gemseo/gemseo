@@ -97,7 +97,6 @@ generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
 from __future__ import annotations
 
-import logging
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
@@ -117,8 +116,6 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.python_compatibility import Final
 
-LOGGER = logging.getLogger(__name__)
-
 __Bounds = Tuple[float, float]
 
 
@@ -132,7 +129,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         kernel: Kernel | None = None,
@@ -179,9 +176,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             )
 
         self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
-            normalize_y=False,
             kernel=kernel,
-            copy_X_train=True,
             alpha=alpha,
             optimizer=optimizer,
             n_restarts_optimizer=n_restarts_optimizer,

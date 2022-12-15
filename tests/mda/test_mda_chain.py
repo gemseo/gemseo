@@ -23,11 +23,12 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.mda_chain import MDAChain
 from numpy import array
 from numpy import isclose
@@ -58,11 +59,7 @@ DISC_DESCR_16D = [
 def test_set_tolerances(sellar_disciplines):
     """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
-        sellar_disciplines,
-        tolerance=1e-3,
-        linear_solver_tolerance=1e-6,
-        max_mda_iter=20,
-        chain_linearize=False,
+        sellar_disciplines, tolerance=1e-3, linear_solver_tolerance=1e-6
     )
     assert mda_chain.tolerance == 1e-3
     assert mda_chain.linear_solver_tolerance == 1e-6
@@ -77,8 +74,6 @@ def test_set_solver(sellar_disciplines):
         sellar_disciplines,
         tolerance=1e-3,
         linear_solver_tolerance=1e-6,
-        max_mda_iter=20,
-        chain_linearize=False,
         use_lu_fact=True,
         linear_solver="LGMRES",
         linear_solver_options={"restart": 5},
@@ -106,8 +101,6 @@ def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines
         MDAChain(
             sellar_disciplines,
             tolerance=1e-12,
-            max_mda_iter=20,
-            chain_linearize=False,
             linear_solver_options=linear_solver_options,
         )
 
@@ -118,12 +111,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
     In this test, we check that the exception is raised when linearizing the MDA.
     """
     linear_solver_options = {"tol": 1e-6}
-    mda_chain = MDAChain(
-        sellar_disciplines,
-        tolerance=1e-12,
-        max_mda_iter=20,
-        chain_linearize=False,
-    )
+    mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     mda_chain.linear_solver_options = linear_solver_options
     input_data = {
         "x_local": np.array([0.7]),
@@ -145,9 +133,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
 
 def test_sellar(tmp_wd, sellar_disciplines):
     """"""
-    mda_chain = MDAChain(
-        sellar_disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
-    )
+    mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     input_data = {
         "x_local": np.array([0.7]),
         "x_shared": np.array([1.97763897, 0.2]),
@@ -209,7 +195,7 @@ def generate_disciplines_from_desc(
 
 def test_16_disc_parallel():
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    MDAChain(disciplines, inner_mda_name="MDAJacobi")
+    MDAChain(disciplines)
 
 
 @pytest.mark.parametrize(
@@ -217,11 +203,7 @@ def test_16_disc_parallel():
 )
 def test_simple_grammar_type(in_gtype):
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    mda = MDAChain(
-        disciplines,
-        inner_mda_name="MDAJacobi",
-        grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
-    )
+    mda = MDAChain(disciplines, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE)
 
     assert type(mda.input_grammar) == SimpleGrammar
     assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
@@ -238,10 +220,7 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
 
     out_1 = mda_chain_s.execute()
 
-    mda_chain = MDAChain(
-        sellar_disciplines,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-    )
+    mda_chain = MDAChain(sellar_disciplines)
     assert type(mda_chain.input_grammar) == JSONGrammar
 
     out_2 = mda_chain.execute()
@@ -339,3 +318,76 @@ def test_mda_chain_self_coupling():
 
     assert mdachain_root.mdo_chain.disciplines[0] == mdachain_lower
     assert len(mdachain_root.mdo_chain.disciplines) == 1
+
+
+def test_mdachain_parallelmdochain():
+    """Test that the MDAChain creates MDOParallelChain for parallel tasks, if
+    requested."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"a": "x"},
+            {"y1": "x1", "b": "a+1"},
+            {"x1": "1.-0.3*y1"},
+            {"y2": "x2", "c": "a+2"},
+            {"x2": "1.-0.3*y2"},
+            {"obj1": "x1+x2"},
+            {"obj2": "b+c"},
+            {"obj": "obj1+obj2"},
+        )
+    )
+    mdachain = MDAChain(
+        disciplines, name="mdachain_lower", mdachain_parallelize_tasks=True
+    )
+    assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
+    assert type(mdachain.mdo_chain.disciplines[1]) is MDOParallelChain
+    assert type(mdachain.mdo_chain.disciplines[2]) is MDOParallelChain
+
+
+PARALLEL_OPTIONS = [
+    {
+        "mdachain_parallelize_tasks": False,
+        "mdachain_parallel_options": {},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": True, "n_processes": 1},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": False, "n_processes": 1},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": True, "n_processes": 2},
+    },
+    {
+        "mdachain_parallelize_tasks": True,
+        "mdachain_parallel_options": {"use_threading": False, "n_processes": 2},
+    },
+]
+
+
+@pytest.mark.parametrize("parallel_options", PARALLEL_OPTIONS)
+def test_mdachain_parallelmdochain_options(parallel_options):
+    """Test the parallel MDO chain in a MDAChain with various arguments."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"a": "x"},
+            {"y1": "x1", "b": "a+1"},
+            {"x1": "1.-0.3*y1"},
+            {"y2": "x2", "c": "a+2"},
+            {"x2": "1.-0.3*y2"},
+            {"obj1": "x1+x2"},
+            {"obj2": "b+c"},
+            {"obj": "obj1+obj2"},
+        )
+    )
+    mdachain_parallelize_tasks = parallel_options["mdachain_parallelize_tasks"]
+    mdo_parallel_chain_options = parallel_options["mdachain_parallel_options"]
+    mdachain = MDAChain(
+        disciplines,
+        name="mdachain_lower",
+        mdachain_parallelize_tasks=mdachain_parallelize_tasks,
+        mdachain_parallel_options=mdo_parallel_chain_options,
+    )
+    assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])

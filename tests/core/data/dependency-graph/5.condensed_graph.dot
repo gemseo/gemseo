@@ -1,4 +1,4 @@
-digraph "Dependency graph" {
-	"MDA of C, D" -> E [label=f]
-	"MDA of A, B" -> "MDA of C, D" [label=c]
+digraph {
+	"MDA of C, D" -> E [label=f color=black dir=forward fontcolor=black penwidth=1.0]
+	"MDA of A, B" -> "MDA of C, D" [label=c color=black dir=forward fontcolor=black penwidth=1.0]
 }

@@ -27,12 +27,7 @@ The :class:`.DimensionReduction` class implements the concept of dimension reduc
 """
 from __future__ import annotations
 
-from typing import NoReturn
-
-from numpy import ndarray
-
 from gemseo.mlearning.transform.transformer import Transformer
-from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class DimensionReduction(Transformer):
@@ -42,7 +37,7 @@ class DimensionReduction(Transformer):
         self,
         name: str = "DimensionReduction",
         n_components: int | None = None,
-        **parameters: bool | int | float | ndarray | str | None,
+        **parameters: bool | int | float | str | None,
     ) -> None:
         """
         Args:
@@ -54,18 +49,6 @@ class DimensionReduction(Transformer):
             **parameters: The parameters of the transformer.
         """
         super().__init__(name, n_components=n_components, **parameters)
-
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> NoReturn:
-        """Fit the transformer to the data.
-
-        Args:
-            data: The data to be fitted.
-        """
-        raise NotImplementedError
 
     @property
     def n_components(self) -> int:

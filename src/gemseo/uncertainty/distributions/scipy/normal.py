@@ -45,13 +45,13 @@ class SPNormalDistribution(SPDistribution):
         sigma: float = 1.0,
         dimension: int = 1,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the normal random variable.
             mu: The mean of the normal random variable.
             sigma: The standard deviation of the normal random variable.
             dimension: The dimension of the normal random variable.
-        """
+        """  # noqa: D205,D212,D415
         standard_parameters = {self._MU: mu, self._SIGMA: sigma}
         parameters = {"loc": mu, "scale": sigma}
         super().__init__(variable, "norm", parameters, dimension, standard_parameters)

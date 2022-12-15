@@ -39,6 +39,7 @@ import io
 import logging
 import string
 from dataclasses import dataclass
+from pathlib import Path
 from time import time
 from typing import Callable
 from typing import ClassVar
@@ -53,6 +54,7 @@ from numpy import zeros
 from tqdm.utils import _unicode
 from tqdm.utils import disp_len
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.design_space import DesignSpace
@@ -66,6 +68,7 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
@@ -100,9 +103,9 @@ class ProgressBar(tqdm.tqdm):
     """
 
     @classmethod
-    def format_meter(cls, n, total, elapsed, **kwargs):
+    def format_meter(cls, n, total, elapsed, **kwargs):  # noqa: D102
         if elapsed != 0.0:
-            rate, unit = cls.__convert_rate(total, elapsed)
+            rate, unit = cls.__convert_rate(n, elapsed)
             kwargs["rate"] = rate
             kwargs["unit"] = unit
         meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
@@ -203,7 +206,12 @@ class DriverLib(AlgoLib):
     activate_progress_bar: ClassVar[bool] = True
     """Whether to activate the progress bar in the optimization log."""
 
-    def __init__(self):
+    _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar(
+        "DriverLibOptions",
+        schema_path=Path(__file__).parent / "driver_lib_options.json",
+    )
+
+    def __init__(self):  # noqa:D107
         # Library settings and check
         super().__init__()
         self.__progress_bar = None
@@ -213,6 +221,17 @@ class DriverLib(AlgoLib):
         self._start_time = None
         self._max_time = None
         self.__message = None
+        self.__is_current_iteration_logged = True
+
+    @classmethod
+    def _get_unsuitability_reason(
+        cls, algorithm_description: DriverDescription, problem: OptimizationProblem
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason or problem.design_space:
+            return reason
+
+        return _UnsuitabilityReason.EMPTY_DESIGN_SPACE
 
     def deactivate_progress_bar(self) -> None:
         """Deactivate the progress bar."""
@@ -249,9 +268,9 @@ class DriverLib(AlgoLib):
             )
         else:
             self.deactivate_progress_bar()
-
         self._start_time = time()
         self.problem.max_iter = max_iter
+        self.problem.current_iter = 0
 
     def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
         """Set the objective value in the progress bar.
@@ -268,23 +287,29 @@ class DriverLib(AlgoLib):
             )
 
         if value is not None:
+            self.__is_current_iteration_logged = True
             # if maximization problem: take the opposite
             if (
                 not self.problem.minimize_objective
                 and not self.problem.use_standardized_objective
             ):
                 value = -value
-
-            self.__progress_bar.set_postfix(refresh=False, obj=value)
-            self.__progress_bar.update()
+            self.__progress_bar.n += 1
+            if isinstance(value, ndarray):
+                if len(value) == 1:
+                    value = value[0]
+            self.__progress_bar.set_postfix(refresh=True, obj=value)
+            #
         else:
-            self.__progress_bar.update()
+            if self.__is_current_iteration_logged:
+                self.__is_current_iteration_logged = False
+            else:
+                self.__is_current_iteration_logged = True
+                self.__progress_bar.n += 1
+                self.__progress_bar.set_postfix(refresh=True, obj="Not evaluated")
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
-        """Callback called at each new iteration, i.e. every time a design vector that
-        is not already in the database is proposed by the optimizer.
-
-        Iterate the progress bar, implement the stop criteria.
+        """Iterate the progress bar, implement the stop criteria.
 
         Args:
             x_vect: The design variables values. If None, use the values of the
@@ -295,9 +320,12 @@ class DriverLib(AlgoLib):
                 execution time.
         """
         # First check if the max_iter is reached and update the progress bar
+        if self.__progress_bar is not None and not self.__is_current_iteration_logged:
+            self.__set_progress_bar_objective_value(
+                self.problem.database.get_x_by_iter(self.problem.current_iter - 1)
+            )
         self.__iter += 1
         self.problem.current_iter = self.__iter
-
         if self._max_time > 0:
             delta_t = time() - self._start_time
             if delta_t > self._max_time:
@@ -309,6 +337,11 @@ class DriverLib(AlgoLib):
     def finalize_iter_observer(self) -> None:
         """Finalize the iteration observer."""
         if self.__progress_bar is not None:
+            if not self.__is_current_iteration_logged:
+                self.__set_progress_bar_objective_value(
+                    self.problem.database.get_x_by_iter(self.problem.current_iter - 1)
+                )
+            self.__progress_bar.leave = False
             self.__progress_bar.close()
 
     def _pre_run(
@@ -338,9 +371,8 @@ class DriverLib(AlgoLib):
             LOGGER.info("%s", log)
         LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
 
-    def _post_run(self, problem, algo_name, result, **options):  # pylint: disable=W0613
-        """To be overridden by subclasses Specific method to be executed just after _run
-        method call.
+    def _post_run(self, problem, algo_name, result, **options):
+        """To be overridden by subclasses.
 
         Args:
             problem: The problem to be solved.
@@ -463,21 +495,20 @@ class DriverLib(AlgoLib):
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
             eval_obs_jac=eval_obs_jac,
         )
-
+        problem.database.add_new_iter_listener(problem.execute_observables_callback)
+        problem.database.add_new_iter_listener(self.new_iteration_callback)
         try:  # Term criteria such as max iter or max_time can be triggered in pre_run
             self._pre_run(problem, self.algo_name, **options)
             result = self._run(**options)
         except TerminationCriterion as error:
             result = self._termination_criterion_raised(error)
         self.finalize_iter_observer()
-        self.problem.clear_listeners()
+        problem.database.clear_listeners()
         self._post_run(problem, algo_name, result, **options)
-
         return result
 
     def _process_specific_option(self, options, option_key):
-        """Process one option as a special treatment, at the beginning of the general
-        treatment and checks of _process_options.
+        """Process one option as a special treatment.
 
         Args:
             options: The options as preprocessed by _process_options.
@@ -526,8 +557,7 @@ class DriverLib(AlgoLib):
         return result
 
     def get_optimum_from_database(self, message=None, status=None):
-        """Retrieves the optimum from the database and builds an optimization result
-        object from it."""
+        """Retrieve the optimum from the database and build an optimization."""
         problem = self.problem
         if len(problem.database) == 0:
             return OptimizationResult(
@@ -565,23 +595,7 @@ class DriverLib(AlgoLib):
             optimum_index=optimum_index,
         )
 
-    def _get_options(self, **options):
-        """Retrieve the options of the library. To be overloaded by subclasses. Used to
-        define default values for options using keyword arguments.
-
-        Args:
-            **options: The options of the driver.
-        """
-        raise NotImplementedError()
-
-    def _run(self, **options):
-        """Run the algorithm, to be overloaded by subclasses.
-
-        Args:
-            **options: The options of the driver.
-        """
-        raise NotImplementedError()
-
+    # TODO: API: rename to requires_gradient?
     def is_algo_requires_grad(self, algo_name):
         """Returns True if the algorithm requires a gradient evaluation.
 
@@ -594,8 +608,7 @@ class DriverLib(AlgoLib):
         return self.descriptions[algo_name].require_gradient
 
     def get_x0_and_bounds_vects(self, normalize_ds):
-        """Gets x0, bounds, normalized or not depending on algo options, all as numpy
-        arrays.
+        """Return x0 and bounds.
 
         Args:
             normalize_ds: Whether to normalize the input variables

@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.exponential import SPExponentialDistribution
 from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
@@ -30,6 +31,11 @@ from numpy import array
 from numpy import inf
 from numpy import ndarray
 from numpy.random import seed
+
+
+def test_composed_distribution():
+    """Check the composed distribution associated with a SPDistribution."""
+    assert SPDistribution._COMPOSED_DISTRIBUTION == SPComposedDistribution
 
 
 def test_constructor():

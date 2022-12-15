@@ -38,7 +38,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scalable
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -109,14 +108,14 @@ scalable = create_scalable("ScalableDiagonalModel", dataset)
 # these degrees are contributions to the output component and they add up to 1.
 # In other words, a degree expresses this contribution in percentage
 # and for a given column, the elements add up to 100.
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Visualize the 1D interpolations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For every output, we can also visualize a spline interpolation of the output
 # samples over the diagonal of the input space.
-scalable.scalable_model.plot_1d_interpolations(save=False, show=False)
+scalable.scalable_model.plot_1d_interpolations(save=False, show=True)
 
 ###############################################################################
 # Increased problem dimension
@@ -130,7 +129,7 @@ scalable.scalable_model.plot_1d_interpolations(save=False, show=False)
 # For example, we can increase the size of each input by a factor of 2.
 sizes = {name: dataset.sizes[name] * 2 for name in input_names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Twice as many outputs
@@ -141,7 +140,7 @@ sizes = {
     for name in discipline.get_output_data_names()
 }
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Twice as many variables
@@ -150,7 +149,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 names = input_names + list(discipline.get_output_data_names())
 sizes = {name: dataset.sizes[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Binary IO dependencies
@@ -171,19 +170,19 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 # Fill factor = 0.2
 # ~~~~~~~~~~~~~~~~~
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.2)
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Fill factor = 0.5
 # ~~~~~~~~~~~~~~~~~
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.5)
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Fill factor = 0.8
 # ~~~~~~~~~~~~~~~~~
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.8)
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Heterogeneous dependencies
@@ -191,7 +190,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 scalable = create_scalable(
     "ScalableDiagonalModel", dataset, sizes, fill_factor={"y_2": 0.2}
 )
-scalable.scalable_model.plot_dependency(save=False, show=False)
+scalable.scalable_model.plot_dependency(save=False, show=True)
 
 ###############################################################################
 # Group dependencies
@@ -199,6 +198,4 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 scalable = create_scalable(
     "ScalableDiagonalModel", dataset, sizes, group_dep={"y_2": ["x_shared"]}
 )
-scalable.scalable_model.plot_dependency(save=False, show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scalable.scalable_model.plot_dependency(save=False, show=True)

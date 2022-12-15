@@ -38,7 +38,7 @@ class RobustnessQuantifier:
         Args:
             history: An approximation history.
             approximation_method: The name of an approximation method for the Hessian.
-        """
+        """  # noqa: D205, D212, D415
         self.history = history
         if approximation_method not in self.AVAILABLE_APPROXIMATIONS:
             raise ValueError(

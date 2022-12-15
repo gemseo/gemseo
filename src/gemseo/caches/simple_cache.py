@@ -20,7 +20,6 @@
 """Caching module to store only one entry."""
 from __future__ import annotations
 
-import logging
 from typing import Generator
 
 from gemseo.core.cache import AbstractCache
@@ -30,17 +29,15 @@ from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 from gemseo.utils.testing import compare_dict_of_arrays
 
-LOGGER = logging.getLogger(__name__)
-
 
 class SimpleCache(AbstractCache):
     """Dictionary-based cache storing a unique entry.
 
-    When caching an input data different from this entry, this entry is replaced by a
-    new one initialized with this input data.
+    When caching an input data different from this entry, this entry is replaced by a new
+    one initialized with this input data.
     """
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         tolerance: float = 0.0,
         name: str | None = None,
@@ -53,7 +50,7 @@ class SimpleCache(AbstractCache):
         self.__last_input_data = {}
         self.__penultimate_input_data = {}
 
-    def clear(self) -> None:
+    def clear(self) -> None:  # noqa:D102
         super().clear()
         self.__input_data_for_outputs = {}
         self.__output_data = {}
@@ -114,7 +111,7 @@ class SimpleCache(AbstractCache):
 
         return False
 
-    def cache_outputs(
+    def cache_outputs(  # noqa:D102
         self,
         input_data: Data,
         output_data: Data,
@@ -137,7 +134,7 @@ class SimpleCache(AbstractCache):
 
         return CacheEntry(input_data, output_data, jacobian_data)
 
-    def cache_jacobian(
+    def cache_jacobian(  # noqa:D102
         self,
         input_data: Data,
         jacobian_data: JacobianData,
@@ -180,5 +177,5 @@ class SimpleCache(AbstractCache):
         return CacheEntry({}, {}, {})
 
     @property
-    def last_entry(self) -> CacheEntry:
+    def last_entry(self) -> CacheEntry:  # noqa:D102
         return self.__retrieve_entry(self.__last_input_data)

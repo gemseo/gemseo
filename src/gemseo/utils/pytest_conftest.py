@@ -27,6 +27,9 @@ import pytest
 from packaging import version
 
 from gemseo.core.factory import Factory
+from gemseo.utils.python_compatibility import Final
+
+__ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 
 
 def __tmp_wd(tmp_path):
@@ -35,6 +38,21 @@ def __tmp_wd(tmp_path):
     Return the path to the temporary directory.
     """
     prev_cwd = Path.cwd()
+    os.chdir(str(tmp_path))
+    try:
+        yield tmp_path
+    finally:
+        os.chdir(str(prev_cwd))
+
+
+@pytest.fixture(scope="module")
+def module_tmp_wd(tmp_path_factory):
+    """Generator to move into a temporary subdirectory forth and back.
+
+    Return the path to the temporary directory.
+    """
+    prev_cwd = Path.cwd()
+    tmp_path = tmp_path_factory.getbasetemp()
     os.chdir(str(tmp_path))
     try:
         yield tmp_path
@@ -113,3 +131,23 @@ if "GEMSEO_KEEP_IMAGE_COMPARISONS" not in os.environ:
         return baseline_dir, result_dir
 
     matplotlib.testing.decorators._image_directories = _image_directories
+
+
+@contextlib.contextmanager
+def concretize_classes(*classes: type) -> None:
+    """Context manager forcing classes to be concrete.
+
+    Args:
+        *classes: The classes.
+    """
+    classes_to___abstractmethods__ = {}
+    for cls in classes:
+        if hasattr(cls, __ABSTRACTMETHODS__):
+            classes_to___abstractmethods__[cls] = cls.__abstractmethods__
+            del cls.__abstractmethods__
+
+    try:
+        yield
+    finally:
+        for cls, __abstractmethods__ in classes_to___abstractmethods__.items():
+            cls.__abstractmethods__ = __abstractmethods__

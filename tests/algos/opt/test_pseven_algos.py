@@ -56,20 +56,24 @@ def check_on_problem(
     """
     x_opt, f_opt = problem.get_solution()
     result = OptimizersFactory().execute(problem, algo_name, **options)
-    assert result.f_opt == pytest.approx(f_opt, abs=1e-3)
-    assert_allclose(result.x_opt, x_opt, rtol=1e-3)
+    assert result.f_opt == pytest.approx(f_opt, abs=5e-3)
+    assert_allclose(result.x_opt, x_opt, rtol=0.1)
     return problem
 
 
 @pytest.mark.parametrize(
     "algo_name,algo_options",
     [
-        ("PSEVEN", {"normalize_design_space": False}),
-        ("PSEVEN", {"normalize_design_space": True}),
-        ("PSEVEN_FD", {}),
-        ("PSEVEN_NCG", {}),
-        ("PSEVEN_NLS", {}),
-        ("PSEVEN_POWELL", {"max_iter": 200}),
+        ("PSEVEN", {"max_iter": 40, "normalize_design_space": False}),
+        ("PSEVEN", {"max_iter": 40, "normalize_design_space": True}),
+        ("PSEVEN", {"max_iter": 100, "evaluation_cost_type": "Expensive"}),
+        ("PSEVEN", {"max_iter": 40, "batch_size": 1}),
+        ("PSEVEN", {"max_iter": 40, "use_threading": False}),
+        ("PSEVEN", {"max_iter": 40, "use_threading": True}),
+        ("PSEVEN_FD", {"max_iter": 40}),
+        ("PSEVEN_NCG", {"max_iter": 70}),
+        ("PSEVEN_NLS", {"max_iter": 80}),
+        ("PSEVEN_POWELL", {"max_iter": 160}),
     ],
 )
 def test_pseven_rosenbrock(algo_name, algo_options):
@@ -83,6 +87,7 @@ def test_pseven_power2(normalize_design_space):
     check_on_problem(
         Power2(),
         "PSEVEN",
+        max_iter=10,
         normalize_design_space=normalize_design_space,
         eq_tolerance=1e-4,
     )
@@ -196,7 +201,7 @@ def test_pseven_techniques():
 @pytest.mark.parametrize(
     ["options", "message"],
     [
-        ({"max_iter": 1}, "Maximum number of iterations reached."),
+        ({"max_iter": 2}, "Maximum number of iterations reached."),
         (
             {"xtol_abs": 1e6},
             "Successive iterates of the design variables are closer than xtol_rel"
@@ -278,9 +283,9 @@ def test_disable_derivatives(use_gradient):
     )
 
 
-def test_log_file(tmpdir):
+def test_log_file(tmp_wd):
     """Check the log file."""
-    path = Path(tmpdir / "log.txt")
+    path = Path("log.txt")
     assert not path.is_file()
     OptimizersFactory().execute(
         Rosenbrock(), "PSEVEN", log_level="Info", log_path=str(path)

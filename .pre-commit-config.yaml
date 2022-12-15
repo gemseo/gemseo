@@ -3,7 +3,7 @@ exclude: ^src/gemseo/third_party
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.3.0
+  rev: v4.4.0
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
@@ -25,7 +25,7 @@ repos:
     - id: rst-inline-touching-normal
 
 - repo: https://github.com/PyCQA/autoflake
-  rev: v1.7.6
+  rev: v2.0.0
   hooks:
     - id: autoflake
       args: [
@@ -34,7 +34,7 @@ repos:
       ]
 
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.8.2
+  rev: v3.9.0
   hooks:
     - id: reorder-python-imports
       name: reorder python imports in src
@@ -60,47 +60,47 @@ repos:
       ]
 
 - repo: https://github.com/myint/docformatter
-  rev: v1.4
+  rev: v1.5.0
   hooks:
     - id: docformatter
       args: [
         --in-place,
         --wrap-summaries,
-        "88",
+        "89",
         --wrap-descriptions,
-        "88",
+        "89",
       ]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.37.2
+  rev: v3.2.3
   hooks:
     - id: pyupgrade
       args: [--py37-plus]
 
 - repo: https://github.com/psf/black
-  rev: 22.6.0
+  rev: 22.10.0
   hooks:
     - id: black
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 4.0.1
+  rev: 6.0.0
   hooks:
     - id: flake8
       additional_dependencies:
-        - flake8-bugbear==22.4.25
+        - flake8-bugbear==22.10.27
         - flake8-docstrings==1.6.0
-        - flake8-logging-format==0.6.0
-        - flake8-print==4.0.0
-        - pep8-naming==0.12.1
+        - flake8-logging-format==0.9.0
+        - flake8-print==5.0.0
+        - pep8-naming==0.13.2
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.28.1
+  rev: v2.37.1
   hooks:
     - id: commitizen
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.3.0
+  rev: v1.3.1
   hooks:
     - id: insert-license
       name: insert LGPL license

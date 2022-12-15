@@ -20,13 +20,13 @@
 """Measuring the quality of a machine learning algorithm."""
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import ClassVar
 from typing import NoReturn
 from typing import Optional
 from typing import Sequence
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import array_split
 from numpy import ndarray
@@ -36,11 +36,12 @@ from numpy.random import Generator
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 
 
-class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
+class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     """An abstract quality measure to assess a machine learning algorithm.
 
@@ -87,10 +88,20 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
     SMALLER_IS_BETTER: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
 
+    _FIT_TRANSFORMERS: ClassVar[bool] = True
+    """Whether to re-fit the transformers when using resampling techniques.
+
+    If ``False``,
+    use the transformers of the algorithm fitted from the whole learning dataset.
+    """
+
+    _RANDOMIZE: ClassVar[bool] = True
+    """Whether to shuffle the samples before dividing them in folds."""
+
     def __init__(
         self,
         algo: MLAlgo,
-        fit_transformers: bool = False,
+        fit_transformers: bool = _FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -133,6 +144,7 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         except AttributeError:
             raise ValueError(f"The method '{method}' is not available.")
 
+    @abstractmethod
     def evaluate_learn(
         self,
         samples: Sequence[int] | None = None,
@@ -149,8 +161,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def evaluate_test(
         self,
         test_data: Dataset,
@@ -169,7 +181,6 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
     def evaluate_loo(
         self,
@@ -193,12 +204,13 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
             multioutput=multioutput,
         )
 
+    @abstractmethod
     def evaluate_kfolds(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = False,
+        randomize: bool = _RANDOMIZE,
         seed: int | None = None,
     ) -> NoReturn:
         """Evaluate the quality measure using the k-folds technique.
@@ -217,8 +229,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def evaluate_bootstrap(
         self,
         n_replicates: int = 100,
@@ -241,7 +253,6 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
     @classmethod
     def is_better(
@@ -251,7 +262,7 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
     ) -> bool:
         """Compare the quality between two values.
 
-        This methods returns ``True`` if the first one is better than the second one.
+        This method returns ``True`` if the first one is better than the second one.
 
         For most measures, a smaller value is "better" than a larger one (MSE
         etc.). But for some, like an R2-measure, higher values are better than

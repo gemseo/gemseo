@@ -30,7 +30,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.uncertainty.api import create_distribution
 from gemseo.uncertainty.api import get_available_distributions
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -78,9 +77,7 @@ print(distribution_1_2)
 # ---------------------
 # We can plot both cumulative and probability density functions
 # for the first marginal:
-distribution_0_1.plot(show=False)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+distribution_0_1.plot()
 
 ###############################################################################
 # .. note::

@@ -33,7 +33,7 @@ from typing import MutableMapping
 from typing import Tuple
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
+from numpy import array
 from numpy import ndarray
 from numpy import savetxt
 
@@ -62,13 +62,13 @@ class DOEAlgorithmDescription(DriverDescription):
     """The minimum dimension of the parameter space."""
 
 
-class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
+class DOELibrary(DriverLib):
     """Abstract class to use for DOE library link See DriverLib."""
 
-    unit_samples: ndarray | None
+    unit_samples: ndarray
     """The input samples transformed in :math:`[0,1]`."""
 
-    samples: ndarray | None
+    samples: ndarray
     """The input samples."""
 
     seed: int
@@ -77,6 +77,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     It increments with each generation of samples
     so that repeating the generation of sets of :math:`N` leads to different sets.
     """
+
+    eval_jac: bool
+    """Whether to evaluate the Jacobian."""
 
     DESIGN_ALGO_NAME = "Design algorithm"
     SAMPLES_TAG = "samples"
@@ -95,9 +98,10 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     def __init__(self):
         """Constructor Abstract class."""
         super().__init__()
-        self.unit_samples = None
-        self.samples = None
+        self.unit_samples = array([])
+        self.samples = array([])
         self.seed = 0
+        self.eval_jac = False
 
     # TODO: API: remove this method
     @staticmethod
@@ -148,7 +152,6 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 self.problem.database.store(sample, {}, add_iter=True)
 
         self.init_iter_observer(len(self.unit_samples))
-        self.problem.add_callback(self.new_iteration_callback)
 
     def _generate_samples(self, **options: Any) -> ndarray:
         """Generate the samples of the input variables.
@@ -215,7 +218,6 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 * If neither ``n_samples`` nor ``levels`` is provided.
                 * If both ``n_samples`` and ``levels`` are provided.
         """
-
         if not levels and not n_samples:
             raise ValueError(
                 "Either 'n_samples' or 'levels' is required as an input "
@@ -280,8 +282,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         Args:
             doe_output_file: The path to the output file.
         """
-        if self.unit_samples is None:
-            raise RuntimeError("Samples are None, execute method before export.")
+        if not self.unit_samples.size:
+            raise RuntimeError("Samples are missing, execute method before export.")
+
         savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
     def _worker(self, sample: ndarray) -> DOELibraryOutputType:
@@ -384,21 +387,6 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                         str(sample),
                     )
                     LOGGER.error(traceback.format_exc())
-
-    @staticmethod
-    def is_algorithm_suited(
-        algorithm_description: DOEAlgorithmDescription, problem: OptimizationProblem
-    ) -> bool:
-        """Check if the algorithm is suited to the problem according to its description.
-
-        Args:
-            algorithm_description: The description of the algorithm.
-            problem: The problem to be solved.
-
-        Returns:
-            Whether the algorithm is suited to the problem.
-        """
-        return True
 
     @staticmethod
     def _rescale_samples(samples):

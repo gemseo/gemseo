@@ -17,7 +17,7 @@ CLI/blob/master/whatsopt/show_utils.py.
 
 Distributed under the Apache 2.0 license
 
-Minor modifications by Francois Gallard : merge the two methods an comment
+Minor modifications by Francois Gallard : merge the two methods a comment
 """
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ def generate_xdsm_html(
     xdsm: XdsmType,
     file_path: str | Path = "xdsm.html",
 ) -> None:
-    """Generate a HTML file to visualize a dynamic and interactive XDSM.
+    """Generate an HTML file to visualize a dynamic and interactive XDSM.
 
     Args:
         xdsm: The XDSM structure.

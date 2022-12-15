@@ -32,9 +32,9 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Dict
 from typing import Iterable
-from typing import Mapping
 from typing import Sequence
 from typing import Union
 
@@ -70,7 +70,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
@@ -101,7 +101,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     ) -> ndarray:
         """Predict the probability of belonging to each cluster from input data.
 
-        The user can specified these input data either as a numpy array,
+        The user can specify these input data either as a numpy array,
         e.g. :code:`array([1., 2., 3.])`
         or as a dictionary,
         e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
@@ -166,6 +166,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
                 probas[n_sample, prediction[n_sample, n_output], n_output] = 1
         return probas
 
+    @abstractmethod
     def _predict_proba_soft(
         self,
         input_data: ndarray,
@@ -179,7 +180,6 @@ class MLClassificationAlgo(MLSupervisedAlgo):
             The probability of belonging to each class
                 with shape (n_samples, n_classes).
         """
-        raise NotImplementedError
 
     def _get_objects_to_save(self) -> SavedObjectType:
         objects = super()._get_objects_to_save()

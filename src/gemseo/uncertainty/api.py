@@ -66,7 +66,7 @@ def create_distribution(
         Normal(mu=1, sigma=2)
         >>> print(distribution.mean, distribution.standard_deviation)
         [1. 1.] [2. 2.]
-        >>> samples = distribution.get_sample(10)
+        >>> samples = distribution.compute_samples(10)
         >>> print(samples.shape)
         (10, 2)
     """
@@ -156,7 +156,7 @@ def create_statistics(
         >>> dataset = scenario.export_to_dataset(opt_naming=False)
         >>>
         >>> statistics = create_statistics(dataset)
-        >>> mean = statistics.mean()
+        >>> mean = statistics.compute_mean()
     """
     from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics as EmpStats
     from gemseo.uncertainty.statistics.parametric import (

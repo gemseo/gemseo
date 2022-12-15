@@ -26,7 +26,6 @@ from __future__ import annotations
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_mda
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -85,8 +84,4 @@ disciplines = create_discipline(
 mda = create_mda("MDAGaussSeidel", disciplines)
 res = mda.execute()
 display_result(res, mda.name)
-mda.plot_residual_history(
-    n_iterations=10, logscale=[1e-8, 10.0], show=False, save=False, fig_size=(10, 4)
-)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+mda.plot_residual_history(n_iterations=10, logscale=[1e-8, 10.0], save=False, show=True)

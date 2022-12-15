@@ -138,10 +138,7 @@ class GSNewtonMDA(MDASequential):
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
         """
         mda_gs = MDAGaussSeidel(
-            disciplines,
-            max_mda_iter=max_mda_iter_gs,
-            name=None,
-            log_convergence=log_convergence,
+            disciplines, max_mda_iter=max_mda_iter_gs, log_convergence=log_convergence
         )
         mda_gs.tolerance = tolerance
         mda_newton = MDANewtonRaphson(

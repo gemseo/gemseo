@@ -66,12 +66,12 @@ def build_matlab_disciplines():
 def build_matlab_scenario():
     """Build the Sellar scenario for matlab tests."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, l_b=0.0, u_b=10.0, value=np.ones(1))
+    design_space.add_variable("x", l_b=0.0, u_b=10.0, value=np.ones(1))
     design_space.add_variable(
         "z", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=np.array([4.0, 3.0])
     )
-    design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=np.ones(1))
-    design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=np.ones(1))
+    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=np.ones(1))
+    design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=np.ones(1))
 
     disciplines = build_matlab_disciplines()
     scenario = create_scenario(
@@ -85,8 +85,8 @@ def build_matlab_scenario():
 
 
 def test_matlab_jacobians_sellar1():
-    """Check that jacobian matrices returned by matlab functions are correct with
-    respect to finite difference computation for Sellar1."""
+    """Check that jacobian matrices returned by matlab functions are correct with respect
+    to finite difference computation for Sellar1."""
     sellar1, sellar2, sellar_system = build_matlab_disciplines()
 
     threshold = 1e-7

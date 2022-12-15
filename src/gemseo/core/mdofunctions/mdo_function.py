@@ -261,9 +261,9 @@ class MDOFunction:
             outvars: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
             force_real: Whether to cast the output values to real.
-            special_repr: The string representation of the function..
+            special_repr: The string representation of the function.
                 If empty, use :meth:`.default_repr`.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__()
 
         # Initialize attributes
@@ -274,6 +274,7 @@ class MDOFunction:
         self._args = []
         self._expr = ""
         self._dim = 0
+        # TODO: API: rename to _output_variables
         self._outvars = []
         self._init_shared_attrs()
         # Use setters to check values
@@ -284,6 +285,7 @@ class MDOFunction:
         self.expr = expr
         self.args = args
         self.dim = dim
+        # TODO: API: rename to output_variables
         self.outvars = outvars
         self.last_eval = None
         self.force_real = force_real
@@ -778,7 +780,7 @@ class MDOFunction:
         expr: str | None = None,
         args: Sequence[str] | None = None,
     ) -> FunctionRestriction:
-        r"""Return a restriction of the function
+        r"""Return a restriction of the function.
 
         :math:`\newcommand{\frozeninds}{I}\newcommand{\xfrozen}{\hat{x}}\newcommand{
         \frestr}{\hat{f}}`

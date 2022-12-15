@@ -21,20 +21,24 @@
 from __future__ import annotations
 
 from typing import Mapping
+from typing import NamedTuple
+from typing import Optional
 
 from da import p7core
-from numpy import array
 from numpy import atleast_1d
-from numpy import concatenate
 from numpy import full
-from numpy import full_like
 from numpy import ndarray
 
+from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.parallel_execution import ParallelExecution
+
+OutputValues = list[Optional[float]]
+OutputMask = list[bool]
 
 
 class PSevenProblem(p7core.gtopt.ProblemGeneric):
@@ -53,6 +57,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         upper_bounds: ndarray | None = None,
         initial_point: ndarray | None = None,
         use_gradient: bool = True,
+        use_threading: bool = False,
+        normalize_design_space: bool = True,
     ) -> None:
         # noqa:D205,D212,D415
         """
@@ -73,9 +79,14 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
                 If None, the initial values are read from the design space.
             use_gradient: Whether to use the derivatives of the functions.
                 If the functions have no derivative then this value has no effect.
-        """
+            use_threading: Whether to use threads instead of processes to parallelize
+                the execution.
+            normalize_design_space: Whether the design variables are normalized.
+        """  # noqa: D205, D212, D415
+        self.__normalize_design_space = normalize_design_space
         self.__problem = problem
         self.__use_gradient = use_gradient
+        self.__use_threading = use_threading
 
         if evaluation_cost_type is None:
             self.__evaluation_cost_type = dict()
@@ -264,10 +275,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         #  sides.
 
     def evaluate(
-        self,
-        queryx: ndarray,
-        querymask: ndarray,
-    ) -> tuple[list[list[float]], list[ndarray]]:
+        self, queryx: ndarray, querymask: ndarray
+    ) -> tuple[list[OutputValues], list[OutputMask]]:
         """Compute the values of the objectives and the constraints for pSeven.
 
         Args:
@@ -278,120 +287,161 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             The evaluation result. (2D-array-like with one row per point.),
             The evaluation masks. (Idem.)
         """
-        functions_batch = list()
-        output_masks_batch = list()
-        for x, mask in zip(queryx, querymask):
-            # Evaluate the functions, unless a stopping criterion is satisfied
-            functions = list()
-            # Compute the objectives values
-            objectives, obj_mask = self.__compute_objectives(x, mask)
-            functions.extend(objectives)
-            # Compute the constraints values
-            constraints, constr_mask = self.__compute_constraints(
-                x, mask[len(functions) :]
-            )
-            functions.extend(constraints)
-            # Compute the objectives gradients
-            obj_grads, obj_grads_mask = self.__compute_objectives_gradients(
-                x, mask[len(functions) :]
-            )
-            functions.extend(obj_grads)
-            # Compute the constraints gradients
-            constr_grads, constr_grads_mask = self.__compute_constraints_gradients(
-                x, mask[len(functions) :]
-            )
-            functions.extend(constr_grads)
-            functions_batch.append(functions)
-            output_mask = concatenate(
-                [obj_mask, constr_mask, obj_grads_mask, constr_grads_mask]
-            )
-            output_masks_batch.append(output_mask)
+        number_of_processes = queryx.shape[0]
+        if number_of_processes == 1:
+            output_values, output_mask, _, _ = Worker(
+                self.__problem, self.__use_gradient
+            )((queryx[0], querymask[0]))
+            return [output_values], [output_mask]
 
-        return functions_batch, output_masks_batch
-
-    def __compute_objectives(
-        self,
-        x_vec: ndarray,
-        mask: ndarray,
-    ) -> tuple[list[float], ndarray]:
-        obj_dim = self.__problem.get_function_dimension(self.__problem.objective.name)
-
-        if True in mask[:obj_dim]:
-            objectives = atleast_1d(self.__problem.objective(x_vec)).tolist()
-            output_mask = full_like(mask[:obj_dim], True)
+        # Create the workers for parallel evaluations
+        if self.__use_threading:
+            workers = [
+                Worker(self.__problem, self.__use_gradient)
+                for _ in range(number_of_processes)
+            ]
         else:
-            objectives = [None] * obj_dim
-            output_mask = full_like(mask[:obj_dim], False)
+            workers = Worker(self.__problem, self.__use_gradient)
 
-        return objectives, output_mask
+        # Create a callback to fill the database on-the-fly
+        def storing_callback(index: int, outputs: Outputs) -> None:
+            """Store the outputs in the database.
 
-    def __compute_constraints(
-        self,
-        x_vec: ndarray,
-        mask: ndarray,
-    ) -> tuple[list[float], ndarray]:
-        constraints = list()
+            Args:
+                index: The index of the sample.
+                outputs: The outputs of the worker.
+            """
+            _, _, outputs, jacobians = outputs
+            for name, value in jacobians.items():
+                outputs[Database.get_gradient_name(name)] = value
+
+            x = queryx[index]
+            if self.__normalize_design_space:
+                x = self.__problem.design_space.unnormalize_vect(x)
+
+            self.__problem.database.store(x, outputs)
+
+        # Evaluate the samples in parallel
+        functions_batch, output_masks_batch, _, _ = zip(
+            *ParallelExecution(
+                workers, number_of_processes, self.__use_threading
+            ).execute(list(zip(queryx, querymask)), exec_callback=storing_callback)
+        )
+        return list(functions_batch), list(output_masks_batch)
+
+
+class Outputs(NamedTuple):
+    """The outputs of a worker."""
+
+    output_values: OutputValues
+    """The output values to be passed to pSeven."""
+    output_mask: OutputMask
+    """The mask of the output values to be passed to pSeven."""
+    values: dict[str, float | ndarray]
+    """The function values computed by GEMSEO."""
+    jacobians_values: dict[str, ndarray]
+    """The Jacobians computed by GEMSEO."""
+
+
+class Worker:
+    """A worker to evaluate the functions of a problem."""
+
+    def __init__(self, problem: OptimizationProblem, use_gradient: bool) -> None:
+        """
+        Args:
+            problem: The optimization problem to be adapted to pSeven.
+            use_gradient: Whether to use the derivatives of the functions.
+                If the functions have no derivative then this value has no effect.
+        """  # noqa: D205, D212, D415
+        self.__problem = problem
+        self.__use_gradient = use_gradient
+
+    def __call__(self, inputs: tuple[ndarray, ndarray]) -> Outputs:
+        """Execute the worker.
+
+        Evaluate the functions of the problem.
+
+        Args:
+            inputs: The points to evaluate and their masks.
+
+        Returns:
+            The outputs and their mask.
+        """
+        x, mask = inputs
+        dimensions = self.__problem.get_functions_dimensions()
+        objective_dimension = dimensions[self.__problem.objective.name]
+
+        # Get the names of the constraints to evaluate.
+        constraints_names = list()
+        mask_index = objective_dimension
+        for name in self.__problem.get_constraints_names():
+            dimension = dimensions[name]
+            if True in mask[mask_index : mask_index + dimension]:
+                constraints_names.append(name)
+
+            mask_index += dimension
+
+        # Get the names of the functions to differentiate
+        jacobians_names = list()
+        if self.__use_gradient:
+            for function in [self.__problem.objective] + self.__problem.constraints:
+                dimension = self.__problem.dimension * dimensions[function.name]
+                if (
+                    function.has_jac()
+                    and True in mask[mask_index : mask_index + dimension]
+                ):
+                    jacobians_names.append(function.name)
+
+                mask_index += dimension
+
+        # Evaluate the functions and compute the Jacobian matrices
+        values, jacobians = self.__problem.evaluate_functions(
+            x,
+            eval_obj=True in mask[:objective_dimension],
+            constraints_names=constraints_names,
+            jacobians_names=jacobians_names,
+            normalize=self.__problem.preprocess_options.get(
+                "is_function_input_normalized", False
+            ),
+        )
+
+        return self.__get_output_and_mask(values, jacobians)
+
+    def __get_output_and_mask(
+        self, values: dict[str, float | ndarray], jacobians: dict[str, ndarray]
+    ) -> Outputs:
+        """Return the outputs and their mask.
+
+        Args:
+            values: The values of the functions.
+            jacobians: The Jacobian matrices of the functions.
+
+        Returns:
+            The outputs and their mask.
+        """
+        output_values = list()
         output_mask = list()
-        n_inds = 0
+        functions = [self.__problem.objective] + self.__problem.constraints
+        dimensions = self.__problem.get_functions_dimensions()
 
-        for constraint in self.__problem.constraints:
-            constr_dim = self.__problem.get_function_dimension(constraint.name)
-            if True in mask[n_inds : n_inds + constr_dim]:
-                constraints.extend(atleast_1d(constraint(x_vec)).tolist())
-                output_mask.extend([True] * constr_dim)
+        # Get the values of the functions
+        for function in functions:
+            dimension = dimensions[function.name]
+            if function.name in values:
+                output_values.extend(atleast_1d(values[function.name]).tolist())
+                output_mask.extend([True] * dimension)
             else:
-                constraints.extend([None] * constr_dim)
-                output_mask.extend([False] * constr_dim)
-            n_inds += constr_dim
+                output_values.extend([None] * dimension)
+                output_mask.extend([False] * dimension)
 
-        return constraints, array(output_mask)
+        # Get the derivatives of the functions
+        for function in functions:
+            size = self.__problem.dimension * dimensions[function.name]
+            if function.name in jacobians:
+                output_values.extend(jacobians[function.name].flatten().tolist())
+                output_mask.extend([True] * size)
+            elif self.__use_gradient and function.has_jac():
+                output_values.extend([None] * size)
+                output_mask.extend([False] * size)
 
-    def __compute_objectives_gradients(
-        self,
-        x_vec: ndarray,
-        mask: ndarray,
-    ) -> tuple[list[float], ndarray]:
-        if not self.__use_gradient or not self.__problem.objective.has_jac():
-            return [], array([])
-
-        pb_dim = self.__problem.dimension
-        obj_dim = self.__problem.get_function_dimension(self.__problem.objective.name)
-        n_values = obj_dim * pb_dim
-
-        if True in mask[:n_values]:
-            obj_grads = self.__problem.objective.jac(x_vec).flatten().tolist()
-            output_mask = full_like(mask[:n_values], True)
-        else:
-            obj_grads = [None] * n_values
-            output_mask = full_like(mask[:n_values], False)
-
-        return obj_grads, output_mask
-
-    def __compute_constraints_gradients(
-        self,
-        x_vec: ndarray,
-        mask: ndarray,
-    ) -> tuple[list[float], ndarray]:
-        constr_grads = list()
-        output_mask = list()
-
-        if not self.__use_gradient or any(
-            not constraint.has_jac() for constraint in self.__problem.constraints
-        ):
-            return constr_grads, array(output_mask)
-
-        pb_dim = self.__problem.dimension
-        n_inds = 0
-
-        for constraint in self.__problem.constraints:
-            constr_dim = self.__problem.get_function_dimension(constraint.name)
-            n_values = constr_dim * pb_dim
-            if True in mask[n_inds : n_inds + n_values]:
-                constr_grads.extend(constraint.jac(x_vec).flatten().tolist())
-                output_mask.extend([True] * n_values)
-            else:
-                constr_grads.extend([None] * n_values)
-                output_mask.extend([False] * n_values)
-            n_inds += n_values
-
-        return constr_grads, array(output_mask)
+        return Outputs(output_values, output_mask, values, jacobians)

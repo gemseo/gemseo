@@ -24,4 +24,4 @@ from gemseo.core.base_formulation import BaseFormulation
 
 
 class MDOFormulation(BaseFormulation):
-    ...
+    """A base class for MDO formulations."""

@@ -113,8 +113,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
 def test_fullfact_levels(
     doe_problem_dim_2, doe_library_class, algo_name, options, expected
 ):
-    """Check that ``levels`` option in full-factorial is correctly taken into
-    account."""
+    """Check that ``levels`` option in full-factorial is correctly taken into account."""
 
     doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
     assert allclose(doe_problem_dim_2.database.get_x_history(), expected)
@@ -142,8 +141,8 @@ def test_fullfact_levels(
 def test_fullfact_error(
     doe_problem_dim_2, doe_library_class, algo_name, options, error_msg
 ):
-    """Check that an error is raised if both levels and n_sample are provided, or if
-    none of them are provided.
+    """Check that an error is raised if both levels and n_sample are provided, or if none
+    of them are provided.
 
     Also check negative levels
     """

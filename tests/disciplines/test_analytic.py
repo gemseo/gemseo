@@ -58,17 +58,13 @@ def test_independent_default_inputs():
 def test_fast_expression_evaluation(expressions):
     disc = AnalyticDiscipline(expressions)
     input_data = {"x": array([1.0]), "z": array([1.0])}
-    disc.check_jacobian(
-        input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
-    )
+    disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
 def test_standard_expression_evaluation(expressions):
     disc = AnalyticDiscipline(expressions, fast_evaluation=False)
     input_data = {"x": array([1.0]), "z": array([1.0])}
-    disc.check_jacobian(
-        input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
-    )
+    disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
 def test_failure_with_malformed_expressions():
@@ -108,7 +104,7 @@ def test_absolute_value(fast_evaluation):
 def test_serialize(tmp_wd, fast_evaluation):
     """Check the serialization of an AnalyticDiscipline."""
     input_data = {"x": array([2.0])}
-    file_path = tmp_wd / "discipline.h5"
+    file_path = "discipline.h5"
 
     discipline = AnalyticDiscipline({"y": "2*x"}, fast_evaluation=fast_evaluation)
     discipline.serialize(file_path)

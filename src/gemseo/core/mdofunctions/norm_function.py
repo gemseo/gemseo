@@ -56,7 +56,7 @@ class NormFunction(MDOFunction):
 
         Raises:
             ValueError: If the original function does not provide a Jacobian matrix.
-        """
+        """  # noqa: D205, D212, D415
         self.__normalize = normalize
         self.__orig_func = orig_func
         self.__round_ints = round_ints
@@ -77,6 +77,7 @@ class NormFunction(MDOFunction):
             args=orig_func.args,
             dim=orig_func.dim,
             outvars=orig_func.outvars,
+            special_repr=orig_func.special_repr,
         )
 
     def _func_to_wrap(
@@ -127,5 +128,5 @@ class NormFunction(MDOFunction):
         return g_u
 
     @property
-    def expects_normalized_inputs(self) -> bool:
+    def expects_normalized_inputs(self) -> bool:  # noqa:D102
         return self.__normalize

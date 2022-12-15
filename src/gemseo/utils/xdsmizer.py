@@ -204,7 +204,7 @@ class XDSMizer:
         """Generate a XDSM diagram from the process.
 
         By default,
-        a self contained HTML file is generated,
+        a self-contained HTML file is generated,
         that can be viewed in a browser.
 
         Args:
@@ -245,7 +245,7 @@ class XDSMizer:
 
         if html_output or open_browser:
             if no_html_loc:
-                output_directory_path = Path(mkdtemp(suffix="", prefix="tmp", dir=None))
+                output_directory_path = Path(mkdtemp(suffix="", prefix="tmp"))
             out_file_path = (output_directory_path / outfile_basename).with_suffix(
                 ".html"
             )

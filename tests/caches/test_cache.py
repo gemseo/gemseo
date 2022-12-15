@@ -155,7 +155,7 @@ def test_hdf_cache_read(tmp_wd):
     cache.cache_outputs(input_data, output_data)
 
     assert len(cache) == n + 1
-    exp_ggobi = tmp_wd / "out2.ggobi"
+    exp_ggobi = Path("out2.ggobi")
     cache.export_to_ggobi(
         str(exp_ggobi), input_names=["i", "k"], output_names=["o", "t"]
     )
@@ -263,7 +263,7 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected):
     # Use a temporary copy of the file in case the test fails.
     shutil.copy(str(DIR_PATH / hdf_name), tmp_wd)
     disc = create_discipline("AutoPyDiscipline", py_func=func)
-    disc.set_cache_policy("HDF5Cache", cache_hdf_file=str(tmp_wd / hdf_name))
+    disc.set_cache_policy("HDF5Cache", cache_hdf_file=hdf_name)
     out = disc.execute({"x": inputs})
 
     assert disc.n_calls == 0
@@ -279,7 +279,7 @@ def test_to_real():
 def test_write_data(tmp_wd):
     file_sing = HDF5FileSingleton("out2.h5")
     input_data = {"i": arange(3)}
-    file_sing.write_data(input_data, "group", 1, "node", None)
+    file_sing.write_data(input_data, "group", 1, "node")
 
 
 #             h5_file = h5py.File(join(tmp_out, "out51.h5"), "a")
@@ -296,20 +296,19 @@ def test_write_data(tmp_wd):
 def test_read_hashes(tmp_wd):
     file_sing = HDF5FileSingleton("out1.h5")
     input_data = {"i": arange(3)}
-    file_sing.write_data(input_data, "group", 1, "node", None)
+    file_sing.write_data(input_data, "group", 1, "node")
     assert file_sing.read_hashes({}, "unknown") == 0
     hashes_dict = {}
     file_sing.read_hashes(hashes_dict, "unknown")
     n_0 = len(hashes_dict)
     file_sing.read_hashes(hashes_dict, "unknown")
     assert n_0 == len(hashes_dict)
-    hashes_dict = {}
-    hashes_dict[977299934065931519957167197057685376965897664534] = []
+    hashes_dict = {977299934065931519957167197057685376965897664534: []}
     file_sing.read_hashes(hashes_dict, "node")
 
 
 def test_read_group(tmp_wd):
-    cache = HDF5Cache("out3.h5", "node")
+    cache = HDF5Cache("out3.h5")
     cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
     cache._read_input_output_data([1], {"x": arange(3), "y": arange(2)})
 
@@ -390,7 +389,7 @@ def test_multithreading(memory_full_cache, memory_full_cache_loc):
         s_s.cache = c_2
         assert len(c_1) == 0
         assert len(c_2) == 0
-        par = MDOParallelChain([s_1, s_s], use_threading=True)
+        par = MDOParallelChain([s_1, s_s])
         ds = SellarDesignSpace("float64")
         scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
 
@@ -540,8 +539,8 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     shutil.copy(str(DIR_PATH / deprecated_cache_path), deprecated_cache_path)
     HDF5Cache.update_file_format(deprecated_cache_path)
 
-    cache_path = tmp_wd / "cache.h5"
-    cache = HDF5Cache(str(cache_path), "node")
+    cache_path = Path("cache.h5")
+    cache = HDF5Cache(cache_path)
     cache.cache_outputs({"x": array([1.0])}, {"y": array([2.0])})
 
     file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION

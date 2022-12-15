@@ -72,8 +72,6 @@ def test_tm_study_param(tmp_wd):
 
     tmpss = TMParamSS(2, 2, 1, [1, 2])
     assert len(str(tmpss)) > 10
-    tmpss.run_formulation(
-        "MDF", max_iter=max_iter, post_coupling=True, post_optim=True, post_coeff=True
-    )
+    tmpss.run_formulation("MDF", max_iter=max_iter)
     with pytest.raises(ValueError):
         TMParamSS(2, [1, 2], [1, 2], 1)

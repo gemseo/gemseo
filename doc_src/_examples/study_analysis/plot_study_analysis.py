@@ -37,7 +37,7 @@ configure_logger()
 # Describe your MDO problem in an Excel file
 # ------------------------------------------
 #
-# .. image:: /_images/study_prototyping_example/disciplines_spec.png
+# .. image:: /_images/study_analysis_example/disciplines_spec.png
 #
 
 #############################################################################
@@ -57,7 +57,7 @@ study.generate_n2(file_path=join("outputs", "n2.png"), save=False, show=True)
 # ^^^^^^^^^^^^^
 study.generate_xdsm("outputs")
 #############################################################################
-# .. image:: /_images/study_prototyping_example/xdsm.png
+# .. image:: /_images/study_analysis_example/xdsm.png
 
 #############################################################################
 # Visualize this study from command line

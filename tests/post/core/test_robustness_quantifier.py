@@ -67,7 +67,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
 
     def test_init_methods(self):
         """"""
-        RobustnessQuantifier(self.database, "SR1")
+        RobustnessQuantifier(self.database)
         RobustnessQuantifier(self.database, "BFGS")
         RobustnessQuantifier(self.database, "LEAST_SQUARES")
 
@@ -75,7 +75,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
         """"""
         for method in RobustnessQuantifier.AVAILABLE_APPROXIMATIONS:
             rq = RobustnessQuantifier(self.database, method)
-            rq.compute_approximation(funcname="rosen", first_iter=0, last_iter=-1)
+            rq.compute_approximation(funcname="rosen", last_iter=-1)
 
     def method_appprox(self, method, first_iter=0):
         """
@@ -101,8 +101,8 @@ class TestRobustnessQuantifier(unittest.TestCase):
 
     def test_function_error(self):
         """"""
-        rq = RobustnessQuantifier(self.database, "SR1")
-        rq.compute_approximation(funcname="rosen", first_iter=0, last_iter=-1)
+        rq = RobustnessQuantifier(self.database)
+        rq.compute_approximation(funcname="rosen", last_iter=-1)
         rq.b_mat = None
         self.assertRaises(Exception, rq.compute_function_approximation, np.ones(self.n))
         x = np.ones(self.n) + (np.array(list(range(self.n))) + 1) / (10.0 + self.n)
@@ -118,7 +118,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
 
     def test_mc_average(self):
         """"""
-        rq = RobustnessQuantifier(self.database, approximation_method="SR1")
+        rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen")
         mu = np.ones(2)
         cov = 0.0001 * np.eye(2)
@@ -129,7 +129,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
 
     def test_compute_expected_value(self):
         """"""
-        rq = RobustnessQuantifier(self.database, approximation_method="SR1")
+        rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen")
         mu = np.ones(2)
         cov = 0.0001 * np.eye(2)
@@ -150,7 +150,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
 
     def test_compute_variance_error(self):
         """"""
-        rq = RobustnessQuantifier(self.database, approximation_method="SR1")
+        rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen")
         mu = np.ones(2)
         cov = 0.0001 * np.eye(3)

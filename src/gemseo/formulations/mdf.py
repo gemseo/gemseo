@@ -19,9 +19,7 @@
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
 from __future__ import annotations
 
-import logging
 from typing import Any
-from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -29,8 +27,6 @@ from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.mda.mda_factory import MDAFactory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MDF(MDOFormulation):
@@ -44,12 +40,12 @@ class MDF(MDOFormulation):
     - the optimization problem
       with respect to the local and global design variables is made at the top level.
 
-    Note that the multidisciplinary analysis is made at a each optimization iteration.
+    Note that the multidisciplinary analysis is made at each optimization iteration.
     """
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
@@ -67,7 +63,7 @@ class MDF(MDOFormulation):
                 MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
             **main_mda_options: The options of the main MDA, which may include
                 those of the inner-MDA.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
@@ -82,7 +78,7 @@ class MDF(MDOFormulation):
         self._update_design_space()
         self._build_objective()
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:
+    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
         return [self.mda]
 
     def _instantiate_mda(
@@ -109,7 +105,7 @@ class MDF(MDOFormulation):
         )
 
     @classmethod
-    def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
+    def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:  # noqa:D102
         main_mda = options.get("main_mda_name")
         if main_mda is None:
             raise ValueError(
@@ -119,7 +115,7 @@ class MDF(MDOFormulation):
         return factory.get_options_grammar(main_mda)
 
     @classmethod
-    def get_default_sub_options_values(cls, **options: str) -> dict:
+    def get_default_sub_options_values(cls, **options: str) -> dict:  # noqa:D102
         main_mda = options.get("main_mda_name")
         if main_mda is None:
             raise ValueError(
@@ -132,12 +128,12 @@ class MDF(MDOFormulation):
         """Build the objective function from the MDA and the objective name."""
         self._build_objective_from_disc(self._objective_name, discipline=self.mda)
 
-    def get_expected_workflow(
+    def get_expected_workflow(  # noqa:D102
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         return self.mda.get_expected_workflow()
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.mda.get_expected_dataflow()

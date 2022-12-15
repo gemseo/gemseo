@@ -45,6 +45,9 @@ from typing import TYPE_CHECKING
 
 import openturns as ots
 
+from gemseo.utils.base_enum import CallableEnum
+from gemseo.utils.base_enum import get_names
+
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
@@ -56,28 +59,36 @@ from gemseo.uncertainty.distributions.composed import ComposedDistribution
 class OTComposedDistribution(ComposedDistribution):
     """OpenTURNS composed distribution."""
 
-    _COPULA = {ComposedDistribution._INDEPENDENT_COPULA: ots.IndependentCopula}
-    AVAILABLE_COPULA_MODELS = sorted(_COPULA.keys())
+    class CopulaModel(CallableEnum):
+        """A copula model."""
+
+        independent_copula = ots.IndependentCopula
+
+    # TODO: API: remove this attribute in the next major release.
+    AVAILABLE_COPULA_MODELS = get_names(CopulaModel)
 
     def __init__(  # noqa: D107
         self,
         distributions: Sequence[OTDistribution],
-        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+        copula: CopulaModel | str = CopulaModel.independent_copula,
+        variable: str = "",
     ) -> None:
-        super().__init__(distributions, copula)
+        super().__init__(distributions, copula=copula, variable=variable)
         marginals = [
             marginal
             for distribution in distributions
             for marginal in distribution.marginals
         ]
-        ot_copula = self._COPULA[copula](len(marginals))
-        self.distribution = ots.ComposedDistribution(marginals, ot_copula)
+        self.distribution = ots.ComposedDistribution(
+            marginals, self.CopulaModel[copula](len(marginals))
+        )
         self._mapping = {}
         index = 0
         for distribution_index, distribution in enumerate(distributions):
             for marginal_index in range(distribution.dimension):
                 self._mapping[index] = (distribution_index, marginal_index)
                 index += 1
+
         self._set_bounds(distributions)
 
     def compute_samples(  # noqa: D102

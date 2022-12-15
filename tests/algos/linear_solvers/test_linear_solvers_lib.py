@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
@@ -40,6 +41,11 @@ def test_linear_solver_for_symmetric_lhs(is_symmetric, lhs_must_be_symmetric):
     problem = LinearProblem(eye(2), ones(2), is_symmetric=is_symmetric)
     is_suited = LinearSolverLib.is_algorithm_suited(description, problem)
     assert is_suited is (not lhs_must_be_symmetric or is_symmetric)
+    if not is_suited:
+        assert (
+            LinearSolverLib._get_unsuitability_reason(description, problem)
+            == _UnsuitabilityReason.NOT_SYMMETRIC
+        )
 
 
 @pytest.mark.parametrize("is_positive_def", [False, True])
@@ -56,6 +62,11 @@ def test_linear_solver_for_positive_definite_lhs(
     problem = LinearProblem(eye(2), ones(2), is_positive_def=is_positive_def)
     is_suited = LinearSolverLib.is_algorithm_suited(description, problem)
     assert is_suited is (not lhs_must_be_positive_definite or is_positive_def)
+    if not is_suited:
+        assert (
+            LinearSolverLib._get_unsuitability_reason(description, problem)
+            == _UnsuitabilityReason.NOT_POSITIVE_DEFINITE
+        )
 
 
 @pytest.mark.parametrize("lhs_must_be_linear_operator", [False, True])
@@ -72,3 +83,8 @@ def test_linear_solver_for_linear_operator(lhs, lhs_must_be_linear_operator):
     assert is_suited is (
         lhs_must_be_linear_operator or not isinstance(lhs, LinearOperator)
     )
+    if not is_suited:
+        assert (
+            LinearSolverLib._get_unsuitability_reason(description, problem)
+            == _UnsuitabilityReason.NOT_LINEAR_OPERATOR
+        )

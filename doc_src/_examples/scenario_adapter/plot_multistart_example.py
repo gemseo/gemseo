@@ -33,7 +33,6 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -50,7 +49,7 @@ constraint = create_discipline(
 # Create the design space
 # -----------------------
 design_space = create_design_space()
-design_space.add_variable("x", 1, l_b=-1.5, u_b=1.5, value=1.5)
+design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=1.5)
 
 ##############################################################################
 # Create the MDO scenario
@@ -89,8 +88,4 @@ scenario_doe.execute(run_inputs)
 ##############################################################################
 # Plot the optimum objective for different x0
 # -------------------------------------------
-scenario_doe.post_process(
-    "BasicHistory", variable_names=["obj"], save=False, show=False
-)
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
+scenario_doe.post_process("BasicHistory", variable_names=["obj"], save=False, show=True)

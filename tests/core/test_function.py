@@ -31,7 +31,6 @@ from gemseo.core.mdofunctions.concatenate import Concatenate
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
@@ -461,7 +460,7 @@ class TestMDOLinearFunction(unittest.TestCase):
             value_at_zero=array([0.0, 0.0]),
         )
         MDOLinearFunction(coeffs_as_mat, "f", value_at_zero=array([0.0]))
-        func = MDOLinearFunction(coeffs_as_mat, "f", value_at_zero=0.0)
+        func = MDOLinearFunction(coeffs_as_mat, "f")
         assert (func.value_at_zero == array([0.0])).all()
 
     def test_args_generation(self):
@@ -584,59 +583,6 @@ class TestMDOLinearFunction(unittest.TestCase):
         linear_approximation = function.linear_approximation(x_vect)
         assert (linear_approximation.coefficients == mat).all()
         assert (linear_approximation.value_at_zero == vec).all()
-
-
-class TestMDOQuadraticFunction(unittest.TestCase):
-    """Tests for quadratic functions."""
-
-    def test_init(self):
-        """Test the exceptions at initialization."""
-        self.assertRaises(ValueError, MDOQuadraticFunction, "test", "f")
-        self.assertRaises(ValueError, MDOQuadraticFunction, array([1, 2]), "f")
-        self.assertRaises(ValueError, MDOQuadraticFunction, array([[1, 2]]), "f")
-
-    def test_values(self):
-        """Test the function value and Jacobian."""
-        quad_coeffs = array([[1.0, 2.0], [3.0, 4.0]])
-        linear_coeffs = array([5.0, 6.0])
-        value_at_zero = 7.0
-        x_vect = array([1.0, 2.0])
-        quad_func = MDOQuadraticFunction(
-            quad_coeffs, "f", linear_coeffs=linear_coeffs, value_at_zero=value_at_zero
-        )
-        assert quad_func(x_vect) == 51.0
-        assert (quad_func.jac(x_vect) == array([[17.0, 27.0]])).all()
-        quad_func.check_grad(x_vect, error_max=1e-6)
-
-    def test_expression(self):
-        """Test the string expression."""
-        args = ("x", "y")
-        quad_coeffs = array([[1.0, 2.0], [3.0, 4.0]])
-        linear_coeffs = array([5.0, 6.0])
-        value_at_zero = 7.0
-        coeff_format = MDOFunction.COEFF_FORMAT_ND
-
-        # Check a quadratic expression without first-order coefficients
-        quad_func = MDOQuadraticFunction(
-            quad_coeffs, "f", args=args, value_at_zero=value_at_zero
-        )
-        expr = "[x]'[{} {}][x] + {}\n[y] [{} {}][y]".format(
-            *(coeff_format.format(coeff) for coeff in (1, 2, 7, 3, 4))
-        )
-        assert quad_func.expr == expr
-
-        # Check a quadratic expression with first-order coefficients
-        quad_func = MDOQuadraticFunction(
-            quad_coeffs,
-            "f",
-            args=args,
-            linear_coeffs=linear_coeffs,
-            value_at_zero=value_at_zero,
-        )
-        expr = "[x]'[{} {}][x] + [{}]'[x] + {}\n[y] [{} {}][y]   [{}] [y]".format(
-            *(coeff_format.format(coeff) for coeff in (1, 2, 5, 7, 3, 4, 6))
-        )
-        assert quad_func.expr == expr
 
 
 @pytest.fixture

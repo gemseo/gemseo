@@ -41,7 +41,6 @@ With regard to the diagonal DOE, |g| proposes the
 """
 from __future__ import annotations
 
-import logging
 from numbers import Number
 from pathlib import Path
 
@@ -70,8 +69,6 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ScalableDiagonalModel(ScalableModel):
@@ -438,8 +435,8 @@ class ScalableDiagonalModel(ScalableModel):
         return r_io_dependency
 
     def __generate_random_output_map(self):
-        """Generate the dependency between the original and new output components for
-        the different outputs.
+        """Generate the dependency between the original and new output components for the
+        different outputs.
 
         :return: component dependencies
         :rtype: dict(int)
@@ -491,8 +488,8 @@ class ScalableDiagonalModel(ScalableModel):
 
 class ScalableDiagonalApproximation:
     """Methodology that captures the trends of a physical problem, and extends it into a
-    problem that has scalable input and outputs dimensions The original and the
-    resulting scalable problem have the same interface:
+    problem that has scalable input and outputs dimensions The original and the resulting
+    scalable problem have the same interface:
 
     all inputs and outputs have the same names; only their dimensions vary.
     """
@@ -624,8 +621,8 @@ class ScalableDiagonalApproximation:
         return input_size, output_size
 
     def _extrapolate(self, function_name, input_names, input_size, output_size):
-        """Extrapolate a 1D function to arbitrary input and output dimensions. Generate
-        a function that produces an output with a given size from an input with a given
+        """Extrapolate a 1D function to arbitrary input and output dimensions. Generate a
+        function that produces an output with a given size from an input with a given
         size, and its derivative.
 
         :param str function_name: name of the output function

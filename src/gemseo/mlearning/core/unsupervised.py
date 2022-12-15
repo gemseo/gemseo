@@ -28,9 +28,9 @@ which inherits from the :class:`.MLAlgo` class.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
 from typing import Sequence
 
@@ -58,14 +58,14 @@ class MLUnsupervisedAlgo(MLAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:
         """
         Args:
             var_names: The names of the variables.
-                If None, consider all variables mentioned in the learning dataset.
+                If ``None``, consider all variables mentioned in the learning dataset.
         """
         super().__init__(
             data, transformer=transformer, var_names=var_names, **parameters
@@ -99,6 +99,7 @@ class MLUnsupervisedAlgo(MLAlgo):
 
         self._fit(data)
 
+    @abstractmethod
     def _fit(
         self,
         data: ndarray,
@@ -108,4 +109,3 @@ class MLUnsupervisedAlgo(MLAlgo):
         Args:
             data: The data with shape (n_samples, n_variables).
         """
-        raise NotImplementedError

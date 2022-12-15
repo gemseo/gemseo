@@ -52,13 +52,9 @@ otherwise the model uses default values.
 """
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ScalableDiscipline(MDODiscipline):

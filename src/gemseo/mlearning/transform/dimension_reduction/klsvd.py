@@ -44,7 +44,20 @@ from gemseo.utils.compatibility.openturns import get_eigenvalues
 
 
 class KLSVD(DimensionReduction):
-    """The Karhunen-Loève SVD Algorithm."""
+    """The Karhunen-Loève SVD algorithm.
+
+    Based on OpenTURNS.
+
+    Warnings:
+        Under Python 3.7,
+        |g| requires openturns 1.19 which removes the non-significant components,
+        whatever the value of ``n_components`` passed at instantiation.
+        Under Python 3.8 and above,
+        the number of components is equal to ``n_components`` if not ``None``,
+        otherwise to the mesh size.
+    """
+
+    # Remove the Warnings block once python 3.7 removed.
 
     __HALKO2010 = "halko2010"
     __HALKO2011 = "halko2011"
@@ -91,11 +104,7 @@ class KLSVD(DimensionReduction):
         """The mesh."""
         return self.parameters["mesh"]
 
-    def _fit(
-        self,
-        data: ndarray,
-        *args: TransformerFitOptionType,
-    ) -> None:
+    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         self.__update_resource_map()
         klsvd = KarhunenLoeveSVDAlgorithm(
             self._get_process_sample(data),
@@ -124,16 +133,10 @@ class KLSVD(DimensionReduction):
             self.__HALKO2010 if self.parameters["use_halko2010"] else self.__HALKO2011,
         )
 
-    def transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:
         return array(self.algo.project(self._get_process_sample(data)))
 
-    def inverse_transform(
-        self,
-        data: ndarray,
-    ) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:
         return array(
             [
                 list(self.algo.liftAsSample(Point(list(coefficients))))
@@ -156,10 +159,7 @@ class KLSVD(DimensionReduction):
         """The eigen values."""
         return array(get_eigenvalues(self.algo))
 
-    def _get_process_sample(
-        self,
-        data: ndarray,
-    ) -> openturns.ProcessSample:
+    def _get_process_sample(self, data: ndarray) -> openturns.ProcessSample:
         """Convert numpy.ndarray data to an openturns.ProcessSample.
 
         Args:

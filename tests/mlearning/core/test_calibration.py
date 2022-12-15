@@ -41,7 +41,7 @@ def test_discipline_multioutput_fail(dataset):
     """Verify that MLAlgoAssessor raises an error if multioutput option is True."""
     with pytest.raises(
         ValueError,
-        match=("MLAlgoAssessor does not support multioutput."),
+        match="MLAlgoAssessor does not support multioutput.",
     ):
         MLAlgoAssessor(
             "PolynomialRegressor",
@@ -79,7 +79,7 @@ def test_discipline(dataset):
     assert "degree" in result
     assert "criterion" in result
     assert "learning" in result
-    assert allclose(result["criterion"], array([32107.67868617]), atol=1e0)
+    assert allclose(result["criterion"], array([25182]), atol=1e0)
     assert array_equal(result["degree"], array([3]))
 
 

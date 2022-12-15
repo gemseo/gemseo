@@ -62,7 +62,6 @@ from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import List
-from typing import Mapping
 from typing import NoReturn
 from typing import Optional
 from typing import Union
@@ -168,7 +167,7 @@ class MOERegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         hard: bool = True,
@@ -527,7 +526,7 @@ class MOERegressor(MLRegressionAlgo):
     ) -> None:
         """Train the clustering algorithm.
 
-        The methods adds resulting labels as a new output in the dataset.
+        The method adds resulting labels as a new output in the dataset.
 
         Args:
             dataset: The dataset containing input and output data.

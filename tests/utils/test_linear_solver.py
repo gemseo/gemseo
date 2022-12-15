@@ -31,7 +31,7 @@ class TestLinearSolver(unittest.TestCase):
         LinearSolver()
 
     def test_solve(self):
-        LinearSolver().solve(diag(list(range(1, 4))), ones(3), linear_solver="lgmres")
+        LinearSolver().solve(diag(list(range(1, 4))), ones(3))
 
     def test_fail_and_branches(self):
         LinearSolver().solve(diag(list(range(2))), ones(2), maxiter=1)

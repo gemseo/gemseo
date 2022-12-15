@@ -32,7 +32,6 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -88,7 +87,7 @@ scenario = create_scenario(
     maximize_objective=True,
     design_space=design_space,
 )
-scenario.set_differentiation_method("user")
+scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
@@ -113,8 +112,6 @@ scenario.post_process(
     "RadarChart",
     constraint_names=["g_1", "g_2", "g_3"],
     save=False,
-    show=False,
+    show=True,
     fig_size=(5, 5),
 )
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()

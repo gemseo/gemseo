@@ -56,8 +56,5 @@ def test_run_rho(material_model):
 def test_jacobian(material_model):
     """Check the analytic Jacobian by finite differences."""
     assert material_model.check_jacobian(
-        material_model.get_input_data(),
-        threshold=THRESHOLD,
-        derr_approx=material_model.FINITE_DIFFERENCES,
-        auto_set_step=True,
+        material_model.get_input_data(), threshold=THRESHOLD, auto_set_step=True
     )

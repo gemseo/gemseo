@@ -1792,7 +1792,7 @@ class PrettyTable(object):
                 elif valign == "b":
                     lines = [""] * dHeight + lines
                 else:
-                    lines = lines + [""] * dHeight
+                    lines += [""] * dHeight
 
             y = 0
             for l in lines:

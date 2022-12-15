@@ -12,10 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""
-Functional operations
-*********************
-"""
+"""The functional operations."""
 from __future__ import annotations
 
 from numpy import delete
@@ -48,7 +45,7 @@ class RestrictedFunction(MDOFunction):
         Raises:
             ValueError: If the shape of the restriction values is not consistent
                 with the shape of the restriction indices.
-        """
+        """  # noqa: D205, D212, D415
         if not restriction_indices.shape == restriction_values.shape:
             raise ValueError("Inconsistent shapes for restriction values and indices.")
         self.restriction_values = restriction_values
@@ -103,13 +100,12 @@ class LinearComposition(MDOFunction):
         orig_function: MDOFunction,
         interp_operator: ndarray,
     ):
-        """Constructor.
-
+        """
         Args:
             orig_function: The original function to be restricted.
             interp_operator: The operator matrix, the output of the
                 function will be f(interp_operator.dot(x)).
-        """
+        """  # noqa: D205, D212, D415
         self._orig_function = orig_function
         self._interp_operator = interp_operator
         self._orig_function = orig_function

@@ -90,7 +90,7 @@ Additional ones are:
 from __future__ import annotations
 
 import logging
-import os
+from pathlib import Path
 from typing import Iterable
 from typing import Sequence
 
@@ -111,6 +111,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class ParametricStatistics(Statistics):
         selection_criterion: str = "best",
         name: str | None = None,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             distributions: The names of the distributions.
             fitting_criterion: The name of
@@ -204,7 +205,7 @@ class ParametricStatistics(Statistics):
             selection_criterion: The name of the selection criterion
                 to select a distribution from a list of candidates.
                 Either 'first' or 'best'.
-        """
+        """  # noqa: D205,D212,D415
         super().__init__(dataset, variables_names, name)
         significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
         self.fitting_criterion = fitting_criterion
@@ -246,7 +247,7 @@ class ParametricStatistics(Statistics):
         for variable in variables:
             row, _ = self.get_criteria(variable)
             row = [variable] + [row[distribution] for distribution in distributions]
-            row = row + [self.distributions[variable]["name"]]
+            row += [self.distributions[variable]["name"]]
             table.add_row(row)
         return str(table)
 
@@ -285,7 +286,7 @@ class ParametricStatistics(Statistics):
         save: bool = False,
         show: bool = True,
         n_legend_cols: int = 4,
-        directory: str = ".",
+        directory: str | Path = ".",
     ) -> None:
         """Plot criteria for a given variable name.
 
@@ -315,42 +316,38 @@ class ParametricStatistics(Statistics):
             x_values.append(x_value)
             y_values.append(criterion)
             labels.append(distribution)
-        plt.subplot(121)
-        plt.bar(x_values, y_values, tick_label=labels, align="center")
+
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.4, 3.2))
+        ax1.bar(x_values, y_values, tick_label=labels)
         if is_p_value:
             plt.ylabel(f"p-value from {self.fitting_criterion} test")
             plt.axhline(self.level, color="r", linewidth=2.0)
-        plt.grid(True, "both")
-        plt.subplot(122)
+        ax1.grid(True, "both")
+        ax1.set_box_aspect(1)
         data = array(self.dataset[variable])
         data_min = min(data)
         data_max = max(data)
         x_values = linspace(data_min, data_max, 1000)
         distributions = self._all_distributions[variable]
-        try:
-            plt.hist(data, density=True)
-        except AttributeError:
-            plt.hist(data, normed=True)
+        ax2.hist(data, density=True)
+
         for dist_name, dist_value in distributions.items():
             pdf = dist_value["fitted_distribution"].distribution.computePDF
             y_values = [pdf([x_value])[0] for x_value in x_values]
-            plt.plot(x_values, y_values, label=dist_name, linewidth=2.0)
-        plt.legend(
-            bbox_to_anchor=(0.0, 1.02, 1.0, 0.102),
-            loc="lower left",
-            ncol=n_legend_cols,
-            mode="expand",
-            borderaxespad=0.0,
-        )
-        plt.grid(True, "both")
+            ax2.plot(x_values, y_values, label=dist_name, linewidth=2.0)
+
+        ax2.set_box_aspect(1)
+        ax2.legend()
+        ax2.grid(True, "both")
         if title is not None:
             plt.suptitle(title)
-        filename = os.path.join(directory, "criteria.pdf")
+
         if save:
-            plt.savefig(filename)
-        if show:
-            plt.show()
-        plt.close()
+            file_path = Path(directory) / "criteria.pdf"
+        else:
+            file_path = None
+
+        save_show_figure(fig, show, file_path)
 
     def _select_best_distributions(
         self, distributions_names: Sequence[str]

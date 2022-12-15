@@ -63,7 +63,7 @@ mathematical :attr:`.ComposedDistribution.support`.
 
     We call mathematical *support* the set of values that the random variable
     can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
-    and numerical *range* the set of values that it can can take in practice,
+    and numerical *range* the set of values that it can take in practice,
     taking into account the values rounded to zero double precision.
     Both support and range are described in terms of lower and upper bounds
 
@@ -81,6 +81,7 @@ by means of the :meth:`.ComposedDistribution.compute_samples` method.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
@@ -89,6 +90,9 @@ from numpy import concatenate
 from numpy import ndarray
 
 from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.base_enum import get_names
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -97,28 +101,46 @@ LOGGER = logging.getLogger(__name__)
 class ComposedDistribution(Distribution):
     """Composed distribution."""
 
-    _INDEPENDENT_COPULA = "independent_copula"
+    class CopulaModel(BaseEnum):
+        """A copula model."""
 
-    AVAILABLE_COPULA_MODELS = [_INDEPENDENT_COPULA]
+        independent_copula = "independent_copula"
+
+    # TODO: API: remove this attribute in the next major release.
+    INDEPENDENT_COPULA: Final[str] = CopulaModel.independent_copula.value
+    """The name of the independent copula."""
+
+    # TODO: API: remove this attribute in the next major release.
+    AVAILABLE_COPULA_MODELS: ClassVar[list[str]] = get_names(CopulaModel)
+    """The names of the models defining copulas."""
 
     _COMPOSED = "Composed"
 
     def __init__(
         self,
         distributions: Sequence[Distribution],
-        copula: str = _INDEPENDENT_COPULA,
+        copula: CopulaModel | str = CopulaModel.independent_copula,
+        variable: str = "",
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             distributions: The distributions.
-            copula: A name of copula.
-        """
+            copula: A copula model.
+            variable: The name of the variable, if any;
+                otherwise,
+                concatenate the names of the random variables
+                defined by ``distributions``.
+        """  # noqa: D205,D212,D415
         dimension = sum(distribution.dimension for distribution in distributions)
         self._marginal_variables = [
             distribution.variable_name for distribution in distributions
         ]
-        variable = "_".join(self._marginal_variables)
-        super().__init__(variable, self._COMPOSED, (copula,), dimension)
+        super().__init__(
+            variable or "_".join(self._marginal_variables),
+            self._COMPOSED,
+            (copula,),
+            dimension,
+        )
         self.marginals = distributions
         msg = MultiLineString()
         msg.indent()

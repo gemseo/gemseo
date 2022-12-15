@@ -36,7 +36,7 @@ class TestMDFFormulation(FormulationsBaseTest):
 
     # Complex step mdf already tested on propane, lighter
     def build_and_run_mdf_scenario_with_constraints(
-        self, formulation, algo, linearize=False, dtype="complex128", **options
+        self, formulation, algo="SLSQP", linearize=False, dtype="complex128", **options
     ):
         """
 
@@ -59,8 +59,8 @@ class TestMDFFormulation(FormulationsBaseTest):
         assert len(xdsmjson) > 0
         scenario.execute(
             {
-                "max_iter": 50,
-                "algo": "SLSQP",
+                "max_iter": 100,
+                "algo": algo,
                 "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
             }
         )

@@ -58,14 +58,14 @@ class LinearCombination(MDODiscipline):
         input_coefficients: dict[str, float] = None,
         offset: float = 0.0,
     ):
-        """# noqa: D205 D212 D415
+        """
         Args:
             input_names: The names of input variables.
             output_name: The name of the output variable.
             input_coefficients: The coefficients related to the input variables.
                 If ``None``, use 1 for all the input variables.
             offset: The output value when all the input variables are equal to zero.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__()
         self.__offset = offset
         self.__coefficients = input_coefficients

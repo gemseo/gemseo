@@ -19,7 +19,6 @@
 """Gradient approximation by complex step."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 from typing import Callable
 from typing import Sequence
@@ -32,11 +31,11 @@ from numpy import zeros
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 EPSILON = finfo(float).eps
-LOGGER = logging.getLogger(__name__)
 
 
 class ComplexStep(GradientApproximator):
@@ -54,10 +53,9 @@ class ComplexStep(GradientApproximator):
     Martins, Joaquim RRA, Peter Sturdza, and Juan J. Alonso.
     "The complex-step derivative approximation."
     ACM Transactions on Mathematical Software (TOMS) 29.3 (2003): 245-262.
-
     """
 
-    ALIAS = "complex_step"
+    ALIAS = COMPLEX_STEP
 
     def __init__(
         self,

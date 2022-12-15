@@ -29,12 +29,11 @@ from typing import KeysView
 from typing import Sequence
 from typing import TYPE_CHECKING
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
-
 from gemseo.core.discipline_data import Data
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import update_namespaces
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -42,16 +41,12 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class __MetaClass(abc.ABCMeta, GoogleDocstringInheritanceMeta):
-    pass
-
-
-class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
+class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract base class for grammars with a dictionary-like interface.
 
     A grammar considers a certain type of data defined by mandatory and optional names
-    bound to types. A name-type pair is referred to as a grammar *element*. A grammar
-    can validate a data from these elements.
+    bound to types. A name-type pair is referred to as a grammar *element*. A grammar can
+    validate a data from these elements.
     """
 
     name: str
@@ -75,7 +70,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
 
         Raises:
             ValueError: If the name is empty.
-        """
+        """  # noqa: D205, D212, D415
         if not name:
             raise ValueError("The grammar name cannot be empty.")
         self.name = name
@@ -127,14 +122,20 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
         """
 
     @abc.abstractmethod
-    def is_array(self, name: str) -> bool:
-        """Check whether an element type shall be an array.
+    def is_array(
+        self,
+        name: str,
+        numeric_only: bool = False,
+    ) -> bool:
+        """Check if an element is an array.
 
         Args:
             name: The name of the element.
+            numeric_only: Whether to check if the array elements are numbers.
 
         Returns:
-            Whether the element type shall be an array.
+            Whether the element is an array. If `check_items_number` is set to `True`,
+            then return whether the element is an array and its items are numbers.
 
         Raises:
             KeyError: If the element is not in the grammar.

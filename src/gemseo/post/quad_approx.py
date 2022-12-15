@@ -53,7 +53,7 @@ class QuadApprox(OptPostProcessor):
 
     SR1_APPROX = "SR1"
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -72,8 +72,7 @@ class QuadApprox(OptPostProcessor):
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
                 If ``None`` and if the output is multidimensional, an error is raised.
-        """
-
+        """  # noqa: D205, D212, D415
         problem = self.opt_problem
         if function == self._obj_name:
             b_mat = self.__build_approx(self._standardized_obj_name, func_index)
@@ -147,11 +146,11 @@ class QuadApprox(OptPostProcessor):
         pylab.grid(True)
         thick_min, thick_max = int(np.log10(linear_threshold)), int(np.log10(vmax))
         positive_levels = np.logspace(
-            thick_min, thick_max, num=thick_max - thick_min + 1, base=10.0
+            thick_min, thick_max, num=thick_max - thick_min + 1
         )
         pylab.plt.colorbar(
             ticks=np.concatenate((np.sort(-positive_levels), positive_levels)),
-            format=LogFormatter(base=10, labelOnlyBase=False),
+            format=LogFormatter(base=10),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")
         return fig

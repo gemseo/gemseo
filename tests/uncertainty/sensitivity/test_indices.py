@@ -193,12 +193,10 @@ def test_plot_comparison(discipline, parameter_space):
     pearson = CorrelationAnalysis([discipline], parameter_space, 10)
     pearson.main_method = pearson._PEARSON
     pearson.compute_indices()
-    plot = pearson.plot_comparison(spearman, "out", save=False, show=False, title="foo")
+    plot = pearson.plot_comparison(spearman, "out", save=False, title="foo")
     assert plot.title == "foo"
     assert isinstance(plot, BarPlot)
-    plot = pearson.plot_comparison(
-        spearman, "out", save=False, show=False, use_bar_plot=False
-    )
+    plot = pearson.plot_comparison(spearman, "out", save=False, use_bar_plot=False)
     assert isinstance(plot, RadarChart)
 
 
@@ -247,7 +245,9 @@ def ishigami() -> SobolAnalysis:
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol_analysis = SobolAnalysis([Ishigami1D()], space, 100)
+    sobol_analysis = SobolAnalysis(
+        [Ishigami1D()], space, 100, compute_second_order=False
+    )
     sobol_analysis.main_method = "total"
     sobol_analysis.compute_indices()
     return sobol_analysis

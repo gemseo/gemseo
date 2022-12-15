@@ -25,6 +25,8 @@ import unittest
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.chain import MDOChain
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -200,7 +202,7 @@ class TestMDOFormulation(unittest.TestCase):
 
         design_space = DesignSpace()
         for name in dvs:
-            design_space.add_variable(name, 1)
+            design_space.add_variable(name)
 
         f = MDOFormulation([sm], "Y5", design_space)
         self.assertRaises(Exception, lambda: f.get_objective())
@@ -244,3 +246,31 @@ def test_remove_unused_variable_logger(caplog):
         "Variable toto was removed from the Design Space, it is not an input of any "
         "discipline." in caplog.text
     )
+
+
+@pytest.mark.parametrize(
+    "recursive, expected", [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
+)
+def test_get_sub_disciplines_recursive(recursive, expected):
+    """Test the recursive option of get_sub_disciplines.
+
+    Args:
+        recursive: Whether to list sub-disciplines recursively.
+        expected: The expected disciplines.
+    """
+    d1 = MDODiscipline("d1")
+    d2 = MDODiscipline("d2")
+    d3 = MDODiscipline("d3")
+    chain1 = MDOChain([d3], "chain1")
+    chain2 = MDOChain([d2, chain1], "chain2")
+    chain3 = MDOChain([d1, chain2], "chain3")
+    design_space = DesignSpace()
+
+    formulation = MDOFormulation([chain3], "foo", design_space)
+
+    classes = [
+        discipline.name
+        for discipline in formulation.get_sub_disciplines(recursive=recursive)
+    ]
+
+    assert set(classes) == expected

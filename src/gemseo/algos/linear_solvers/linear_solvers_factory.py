@@ -19,7 +19,6 @@
 """A factory to instantiate linear solvers from their class names."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from numpy import ndarray
@@ -28,13 +27,11 @@ from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 
-LOGGER = logging.getLogger(__name__)
-
 
 class LinearSolversFactory(DriverFactory):
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         super().__init__(LinearSolverLib, "gemseo.algos.linear_solvers")
 
     @property

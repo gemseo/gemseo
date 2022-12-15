@@ -18,7 +18,6 @@
 """Optimization result."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from dataclasses import fields
 from typing import Mapping
@@ -27,8 +26,6 @@ from typing import Union
 from numpy import ndarray
 
 from gemseo.utils.string_tools import MultiLineString
-
-LOGGER = logging.getLogger(__name__)
 
 Value = Union[str, int, bool, ndarray]
 

@@ -57,7 +57,7 @@ class SOM(OptPostProcessor):
 
     DEFAULT_FIG_SIZE = (12.0, 18.0)
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -85,7 +85,6 @@ class SOM(OptPostProcessor):
         Returns:
             The self organizing map
         """
-
         LOGGER.info("Building Self Organizing Map from optimization history:")
         LOGGER.info("    Number of neurons in x direction = %s", str(som_grid_nx))
         LOGGER.info("    Number of neurons in y direction = %s", str(som_grid_ny))
@@ -93,11 +92,10 @@ class SOM(OptPostProcessor):
             "som",
             x_vars,
             mapsize=[som_grid_ny + 1, som_grid_nx + 1],
-            norm_method="var",
             initmethod=initmethod,
         )
         var_som.init_map()
-        var_som.train(n_job=1, shared_memory="no", verbose=verbose)
+        var_som.train(verbose=verbose)
         return var_som
 
     def _plot(
@@ -111,7 +109,7 @@ class SOM(OptPostProcessor):
             n_x: The number of grids in x.
             n_y: The number of grids in y.
             annotate: If True, add label of neuron value to SOM plot.
-        """
+        """  # noqa: D205, D212, D415
         criteria = [
             self.opt_problem.get_objective_name()
         ] + self.opt_problem.get_constraints_names()
@@ -275,7 +273,9 @@ class SOM(OptPostProcessor):
         som_coord: ndarray,
         max_ofset: float = 0.6,
     ) -> ndarray:
-        """Takes a coord array from SOM and adds an offset to the coordinates of the
+        """Take a coord array from SOM and adds an offset.
+
+        The offset is added to the coordinates of the
         elements in the cluster so that they can be distinguished at display.
 
         Args:

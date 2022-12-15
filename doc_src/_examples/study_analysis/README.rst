@@ -6,7 +6,7 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-Study prototyping
-=================
+Study analysis
+==============
 
-Prototype an MDO problem from a spreadsheet.
+Analyse an MDO problem from a spreadsheet.

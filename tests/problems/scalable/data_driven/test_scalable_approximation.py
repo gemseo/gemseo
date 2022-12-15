@@ -94,7 +94,7 @@ def test_build_model(sobieski_aerodynamics):
 
 def test_serialize(tmp_wd, sobieski_aerodynamics):
     """Test the serialization of a SobieskiAerodynamics instance."""
-    s_file = str(tmp_wd / "aero.o")
+    s_file = "aero.o"
     sobieski_aerodynamics.serialize(s_file)
     aero2 = MDODiscipline.deserialize(s_file)
     aero2.execute()

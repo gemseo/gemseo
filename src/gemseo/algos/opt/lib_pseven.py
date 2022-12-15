@@ -25,7 +25,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from typing import Dict
 from typing import Mapping
 from typing import MutableMapping
 
@@ -186,7 +185,6 @@ class PSevenOpt(OptimizationLibrary):
         constraints_smoothness: str = "Auto",
         global_phase_intensity: str | float = "Auto",
         max_expensive_func_iter: int = 0,
-        max_func_iter: int = 0,
         objectives_smoothness: str = "Auto",
         deterministic: str | bool = "Auto",
         log_level: str = "Error",
@@ -215,6 +213,7 @@ class PSevenOpt(OptimizationLibrary):
         eq_tolerance: float = 1e-2,
         ineq_tolerance: float = 1e-4,
         log_path: str | None = None,
+        use_threading: bool = False,
         **kwargs: Any,
     ) -> dict:
         """Set the default options values.
@@ -239,8 +238,6 @@ class PSevenOpt(OptimizationLibrary):
                 Defaults to "Auto".
             max_expensive_func_iter: The maximum number of evaluations for each
                 expensive response, excluding the evaluations of initial guesses.
-            max_func_iter: The maximum number of evaluations for any response,
-                including the evaluations of initial guesses.
             objectives_smoothness: The assumed smoothness of the objective functions:
                 "Smooth", "Noisy" or "Auto".
             deterministic: Whether to require optimization process to be reproducible
@@ -253,7 +250,9 @@ class PSevenOpt(OptimizationLibrary):
             time_limit: The maximum allowed time to solve a problem in seconds.
                 Defaults to 0, unlimited.
             max_batch_size: The maximum number of points in an evaluation batch.
+                Batches of size more than one are evaluated in parallel.
                 The (default) value 0 allows the optimizer to use any batch size.
+                The value 1 implements sequential evaluation.
             detect_nan_clusters: Whether to detect and avoid design space areas that
                 yield NaN values (for at least one function).
                 This option has no effect in the absence of "expensive" functions.
@@ -296,6 +295,8 @@ class PSevenOpt(OptimizationLibrary):
             ineq_tolerance: The tolerance on the inequality constraints.
             log_path: The path where to save the pSeven log.
                 If None, the pSeven log will not be saved.
+            use_threading: Whether to use threads instead of processes to parallelize
+                the evaluation of the functions.
             **kwargs: Other driver options.
 
         Returns:
@@ -311,7 +312,7 @@ class PSevenOpt(OptimizationLibrary):
             constraints_smoothness=constraints_smoothness,
             global_phase_intensity=global_phase_intensity,
             max_expensive_func_iter=max_expensive_func_iter,
-            max_func_iter=max_func_iter,
+            max_func_iter=max_iter,
             objectives_smoothness=objectives_smoothness,
             deterministic=deterministic,
             log_level=log_level,
@@ -340,6 +341,7 @@ class PSevenOpt(OptimizationLibrary):
             eq_tolerance=eq_tolerance,
             ineq_tolerance=ineq_tolerance,
             log_path=log_path,
+            use_threading=use_threading,
             **kwargs,
         )
 
@@ -400,6 +402,8 @@ class PSevenOpt(OptimizationLibrary):
             upper_bnd,
             initial_x,
             use_gradient=options.pop("use_gradient"),
+            use_threading=options.pop("use_threading"),
+            normalize_design_space=normalize_ds,
         )
 
         # Set up the solver and its logger
@@ -538,10 +542,10 @@ class PSevenOpt(OptimizationLibrary):
 
     def __check_expensive_evaluations_budget(
         self,
-        options,  # type: Dict[str, Any]
-        samples,  # type: Dict[str, ndarray]
-        max_iter,  # type: int
-    ):  # type: (...) -> None
+        options: dict[str, Any],
+        samples: dict[str, ndarray],
+        max_iter: int,
+    ) -> None:
         """Check whether the expensive evaluations budget is sufficient.
 
         Args:

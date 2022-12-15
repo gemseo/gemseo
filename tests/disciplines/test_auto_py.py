@@ -219,7 +219,7 @@ def test_jacobian_shape_mismatch():
     """Tests the jacobian shape."""
     disc = AutoPyDiscipline(py_func=obj, py_jac=jac)
 
-    assert disc.check_jacobian(step=1e-7, threshold=1e-5)
+    assert disc.check_jacobian(threshold=1e-5)
 
     disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
     msg = (

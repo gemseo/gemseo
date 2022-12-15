@@ -24,7 +24,6 @@ from numpy import allclose
 
 
 def test_constructor():
-
     dataset = BurgersDataset()
     assert dataset.name == "Burgers"
     assert len(dataset) == 30
@@ -33,7 +32,6 @@ def test_constructor():
 
 
 def test_constructor_categorize():
-
     dataset = BurgersDataset(categorize=False)
     assert dataset.name == "Burgers"
     assert len(dataset) == 30
@@ -42,7 +40,6 @@ def test_constructor_categorize():
 
 
 def test_constructor_parameters():
-
     nu = 0.03
     dataset = BurgersDataset(n_samples=50, n_x=100, fluid_viscosity=nu)
     assert dataset.name == "Burgers"

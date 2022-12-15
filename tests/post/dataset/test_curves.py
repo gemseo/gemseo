@@ -79,4 +79,4 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)
+    plot.execute(save=False, fig=fig, axes=axes, properties=properties)

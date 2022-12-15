@@ -69,11 +69,11 @@ def test_constructor_from_algo(dataset):
 
 
 def test_repr(dataset):
-    surr = SurrogateDiscipline("LinearRegressor", dataset)
-    msg = "SurrogateDiscipline(name=LinReg_func, "
-    msg += "algo=LinearRegressor, data=func, "
-    msg += "size=9, inputs=[x_1, x_2], outputs=[y_1, y_2], jacobian=auto)"
-    assert repr(surr) == msg
+    """Check the __repr__ of a surrogate discipline."""
+    assert repr(SurrogateDiscipline("LinearRegressor", dataset)) == (
+        "SurrogateDiscipline(algo=LinearRegressor, data=func, inputs=[x_1, x_2], "
+        "jacobian=auto, name=LinReg_func, outputs=[y_1, y_2], size=9)"
+    )
 
 
 def test_str(dataset):
@@ -116,9 +116,7 @@ def test_parallel_execute(dataset):
     surr_1 = SurrogateDiscipline("LinearRegressor", dataset)
     surr_2 = SurrogateDiscipline("LinearRegressor", dataset)
 
-    parallel_execution = DiscParallelExecution(
-        [surr_1, surr_2], use_threading=False, n_processes=2
-    )
+    parallel_execution = DiscParallelExecution([surr_1, surr_2], n_processes=2)
     parallel_execution.execute(
         [
             {"x_1": array([0.5]), "x_2": array([0.5])},
@@ -140,7 +138,7 @@ def test_parallel_execute(dataset):
 
 def test_serialize(dataset, tmp_wd):
     """Check the serialization of a surroate discipline."""
-    file_path = tmp_wd / "discipline.pkl"
+    file_path = "discipline.pkl"
     discipline = SurrogateDiscipline("LinearRegressor", dataset)
     discipline.serialize(file_path)
 

@@ -24,6 +24,7 @@ from pathlib import Path
 import pytest
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.utils.study_analysis import StudyAnalysis
+from gemseo.utils.study_analysis import XLSStudyParser
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
 
@@ -39,66 +40,63 @@ has_no_pdflatex = {
 }
 
 
-def test_generate_n2(tmp_path):
+def test_generate_n2(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
-    fpath = tmp_path / "xls_n2.pdf"
+    fpath = Path("xls_n2.pdf")
     study.generate_n2(fpath, fig_size=(5, 5))
     assert fpath.exists()
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_mdf(tmp_path):
+def test_xdsm_mdf(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
-    study.generate_xdsm(tmp_path, latex_output=True)
+    study.generate_xdsm(".", latex_output=True)
 
 
-def test_discipline_self_coupled_two_disciplines(tmp_path):
+def test_discipline_self_coupled_two_disciplines(tmp_wd):
     """Test that a GEMSEO study can be performed with a self-coupled discipline.
 
-    In this test, two disciplines with one self-coupled discipline are present in the
-    MDO process.
+    In this test, two disciplines with one self-coupled discipline are present in the MDO
+    process.
     """
     study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
-    fpath = tmp_path / "xls_n2.pdf"
+    fpath = Path("xls_n2.pdf")
     study.generate_n2(fpath, fig_size=(5, 5))
-    study.generate_xdsm(tmp_path, latex_output=False)
+    study.generate_xdsm(".")
     assert fpath.exists()
 
 
-def test_discipline_self_coupled_one_disc(tmp_path):
+def test_discipline_self_coupled_one_disc(tmp_wd):
     """Test that a GEMSEO study can be done with a self-coupled discipline.
 
     In this test, only one self-coupled discipline is present in the MDO process.
     """
     study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
-    fpath = tmp_path / "xls_n2.pdf"
-
     with pytest.raises(ValueError, match="N2 diagrams need at least two disciplines."):
-        study.generate_n2(fpath, fig_size=(5, 5))
+        study.generate_n2("xls_n2.pdf", fig_size=(5, 5))
 
-    study.generate_xdsm(tmp_path, latex_output=False)
-    xdsm_path = tmp_path / "xdsm.html"
-    assert xdsm_path.exists()
+    study.generate_xdsm(".")
+    assert Path("xdsm.html").exists()
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_mdf_special_characters(tmp_path):
+def test_xdsm_mdf_special_characters(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
-    study.generate_xdsm(tmp_path, latex_output=True)
+    study.generate_xdsm(".", latex_output=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_idf(tmp_path):
+def test_xdsm_idf(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec2.xlsx")
     dnames = ["Discipline1", "Discipline2"]
     assert list(study.disciplines_descr.keys()) == dnames
 
     disc_names = [d.name for d in study.disciplines.values()]
     assert disc_names == disc_names
-    study.generate_xdsm(tmp_path, latex_output=True)
+    study.generate_xdsm("", latex_output=True)
 
 
-def test_xdsm_bilevel(tmp_path):
+def test_xdsm_bilevel(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "study_bielvel_sobieski.xlsx")
     dnames = [
         "SobieskiAerodynamics",
@@ -110,14 +108,14 @@ def test_xdsm_bilevel(tmp_path):
 
     disc_names = [d.name for d in study.disciplines.values()]
     assert dnames == disc_names
-    study.generate_n2(tmp_path / "n2.pdf")
-    study.generate_xdsm(tmp_path, latex_output=False)
+    study.generate_n2()
+    study.generate_xdsm(".")
 
 
-def test_xdsm_bilevel_d(tmp_path):
+def test_xdsm_bilevel_d(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
-    study.generate_n2(str(tmp_path / "n2_d.pdf"))
-    study.generate_xdsm(str(tmp_path), latex_output=False)
+    study.generate_n2("n2_d.pdf")
+    study.generate_xdsm(".")
 
 
 def test_none_inputs():
@@ -126,7 +124,7 @@ def test_none_inputs():
 
 
 @pytest.mark.parametrize("file_index", range(1, 19))
-def test_wrong_inputs(tmp_path, file_index):
+def test_wrong_inputs(tmp_wd, file_index):
     fname = f"disciplines_spec_fail{file_index}.xlsx"
     with pytest.raises(ValueError):
         StudyAnalysis(INPUT_DIR / fname)
@@ -148,3 +146,30 @@ def test_options():
     assert mda.tolerance == pytest.approx(1e-5)
     assert mda.over_relax_factor == pytest.approx(1.2)
     assert mda.max_mda_iter == pytest.approx(20)
+
+
+def test_xls_study_parser(tmp_wd, caplog):
+    """Check the log of the XLSStudyParser."""
+    XLSStudyParser(INPUT_DIR / "disciplines_spec.xlsx")
+    expected_lines = [
+        "2 disciplines detected",
+        "   Discipline1",
+        "      Inputs: a, b, c",
+        "      Outputs: d, e, g",
+        "   Discipline2",
+        "      Inputs: d, e, x, z",
+        "      Outputs: a, b, f",
+        "1 scenario detected",
+        "   Scenario",
+        "      Objectives: f",
+        "      Disciplines: Discipline1, Discipline2",
+        "      Constraints: g",
+        "      Design variables: b, x",
+        "      Formulation: MDF",
+    ]
+    lines = [
+        line for (_, _, lines) in caplog.record_tuples for line in lines.split("\n")
+    ]
+    assert len(expected_lines) == len(lines)
+    for expected_line, line in zip(expected_lines, lines):
+        assert line == expected_line

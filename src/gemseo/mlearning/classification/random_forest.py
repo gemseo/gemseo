@@ -30,10 +30,8 @@ generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
 from __future__ import annotations
 
-import logging
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import ndarray
 from numpy import stack
@@ -43,8 +41,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.utils.python_compatibility import Final
-
-LOGGER = logging.getLogger(__name__)
 
 
 class RandomForestClassifier(MLClassificationAlgo):
@@ -56,7 +52,7 @@ class RandomForestClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,

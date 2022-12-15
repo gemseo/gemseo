@@ -34,7 +34,7 @@ EXAMPLE_PATHS = [
     "example_path", EXAMPLE_PATHS, ids=(path.name for path in EXAMPLE_PATHS)
 )
 def test_script_execution(example_path, tmp_wd, monkeypatch):
-    dir_path = tmp_wd / example_path.parent.name
+    dir_path = example_path.parent.name
     Path(copytree(example_path.parent, dir_path))
     monkeypatch.chdir(dir_path)
     runpy.run_path(example_path.name)

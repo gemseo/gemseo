@@ -26,11 +26,12 @@ from numpy.linalg import multi_dot
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 class MDOQuadraticFunction(MDOFunction):
-    r"""Scalar-valued quadratic multivariate function defined by
+    r"""Scalar-valued quadratic multivariate function defined by.
 
     * a *square* matrix :math:`A` of second-order coefficients
       :math:`(a_{ij})_{\substack{i = 1, \dots n \\ j = 1, \dots n}}`
@@ -54,7 +55,7 @@ class MDOQuadraticFunction(MDOFunction):
         f_type: str | None = None,
         args: Sequence[str] = None,
         linear_coeffs: ArrayType | None = None,
-        value_at_zero: float | None = None,
+        value_at_zero: OutputType = 0.0,
     ) -> None:
         """
         Args:
@@ -69,19 +70,17 @@ class MDOQuadraticFunction(MDOFunction):
                 If ``None``, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
                 If ``None``, the value at zero will be zero.
-        """
+        """  # noqa: D205, D212, D415
         self._input_dim = 0
         self._quad_coeffs = array([])
-        self._linear_coeffs = array([])
         self.quad_coeffs = quad_coeffs  # sets the input dimension
+        self._linear_part = MDOLinearFunction(zeros(self._input_dim), f"{name}_lin")
         new_args = self.generate_args(self._input_dim, args)
 
         # Build the first-order term
         if linear_coeffs is not None and linear_coeffs.size:
-            self._linear_part = MDOLinearFunction(
-                linear_coeffs, f"{name}_lin", args=new_args
-            )
-            self.linear_coeffs = self._linear_part.coefficients
+            self._linear_part.coefficients = linear_coeffs
+
         self._value_at_zero = value_at_zero
 
         super().__init__(
@@ -90,7 +89,7 @@ class MDOQuadraticFunction(MDOFunction):
             f_type,
             self._jac_to_wrap,
             self.__build_expression(
-                self._quad_coeffs, new_args, self._linear_coeffs, self._value_at_zero
+                self._quad_coeffs, new_args, self.linear_coeffs, self._value_at_zero
             ),
             args=new_args,
             dim=1,
@@ -105,12 +104,11 @@ class MDOQuadraticFunction(MDOFunction):
         Returns:
             The value of the quadratic function.
         """
-        value = multi_dot((x_vect.T, self._quad_coeffs, x_vect))
-        if self._linear_coeffs is not None:
-            value += self._linear_part(x_vect)
-        if self._value_at_zero is not None:
-            value += self._value_at_zero
-        return value
+        return (
+            multi_dot((x_vect.T, self._quad_coeffs, x_vect))
+            + self._linear_part(x_vect)
+            + self._value_at_zero
+        )
 
     def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the gradient of the quadratic function.
@@ -121,10 +119,9 @@ class MDOQuadraticFunction(MDOFunction):
         Returns:
             The value of the gradient of the quadratic function.
         """
-        gradient = matmul(self._quad_coeffs + self._quad_coeffs.T, x_vect)
-        if self._linear_coeffs is not None:
-            gradient += self._linear_part.jac(x_vect)
-        return gradient
+        return matmul(
+            self._quad_coeffs + self._quad_coeffs.T, x_vect
+        ) + self._linear_part.jac(x_vect)
 
     @property
     def quad_coeffs(self) -> ArrayType:
@@ -159,9 +156,7 @@ class MDOQuadraticFunction(MDOFunction):
             ValueError: If the number of first-order coefficients is not consistent
                 with the dimension of the input space.
         """
-        if self._linear_coeffs is None:
-            return zeros(self._input_dim)
-        return self._linear_coeffs
+        return self._linear_part.coefficients
 
     @linear_coeffs.setter
     def linear_coeffs(self, coefficients: ArrayType) -> None:
@@ -170,7 +165,7 @@ class MDOQuadraticFunction(MDOFunction):
                 "The number of first-order coefficients must be equal "
                 "to the input dimension."
             )
-        self._linear_coeffs = coefficients
+        self._linear_part.coefficients = coefficients
 
     @classmethod
     def __build_expression(

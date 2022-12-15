@@ -66,7 +66,7 @@ def test_tm_problem(varnames):
 
     assert "x_shared (1)" in pbm.__str__()
 
-    pbm = TMProblem(n_local=[1, 1, 1], n_coupling=[1, 1, 1], full_coupling=True)
+    pbm = TMProblem(n_local=[1, 1, 1], n_coupling=[1, 1, 1])
     assert "y_2" in pbm.models[1].inputs_names
     assert y_1 in pbm.models[1].inputs_names
     assert y_0 in pbm.models[2].inputs_names

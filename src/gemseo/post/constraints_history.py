@@ -19,7 +19,6 @@
 """A constraints plot."""
 from __future__ import annotations
 
-import logging
 from typing import Sequence
 
 import numpy as np
@@ -30,8 +29,6 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ConstraintsHistory(OptPostProcessor):
@@ -45,7 +42,7 @@ class ConstraintsHistory(OptPostProcessor):
 
     DEFAULT_FIG_SIZE = (11.0, 11.0)
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
     ) -> None:
@@ -64,7 +61,7 @@ class ConstraintsHistory(OptPostProcessor):
 
         Raises:
             ValueError: If a given element of `constraint_names` is not a function.
-        """
+        """  # noqa: D205, D212, D415
         all_constraint_names = self.opt_problem.constraint_names.keys()
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
@@ -98,11 +95,7 @@ class ConstraintsHistory(OptPostProcessor):
             n_rows += 1
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows,
-            ncols=2,
-            sharex=True,
-            sharey=False,
-            figsize=self.DEFAULT_FIG_SIZE,
+            nrows=n_rows, ncols=2, sharex=True, figsize=self.DEFAULT_FIG_SIZE
         )
 
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)

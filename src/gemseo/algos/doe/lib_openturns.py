@@ -39,6 +39,7 @@ from packaging import version
 
 from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 
 OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
@@ -122,9 +123,11 @@ class OpenTURNS(DOELibrary):
         OT_FACTORIAL: openturns.Factorial,
     }
 
+    __EVAL_SECOND_ORDER: Final[str] = "eval_second_order"
+
     LIBRARY_NAME = "OpenTURNS"
 
-    def __init__(self):
+    def __init__(self):  # noqa:D107
         super().__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():
@@ -151,6 +154,7 @@ class OpenTURNS(DOELibrary):
         n_replicates: int = 1000,
         seed: int | None = None,
         max_time: float = 0,
+        eval_second_order: bool = True,
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
         r"""Set the options.
@@ -180,6 +184,10 @@ class OpenTURNS(DOELibrary):
                 namely :attr:`.OpenTURNS.seed`.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
+            eval_second_order: Whether to build a DOE
+                to evaluate also the second-order indices;
+                otherwise,
+                the DOE is designed for first- and total-order indices only.
             **kwargs: The additional arguments.
 
         Returns:
@@ -188,7 +196,7 @@ class OpenTURNS(DOELibrary):
         if centers is None:
             centers = [0.5]
 
-        options = self._process_options(
+        return self._process_options(
             levels=levels,
             centers=centers,
             eval_jac=eval_jac,
@@ -201,10 +209,9 @@ class OpenTURNS(DOELibrary):
             n_replicates=n_replicates,
             seed=seed,
             max_time=max_time,
+            eval_second_order=eval_second_order,
             **kwargs,
         )
-
-        return options
 
     def __check_and_cast_levels(
         self,
@@ -306,7 +313,9 @@ class OpenTURNS(DOELibrary):
             return self.__generate_stratified(dimension, options)
 
         if self.algo_name == self.OT_SOBOL_INDICES:
-            return self.__generate_sobol(n_samples, dimension)
+            return self.__generate_sobol(
+                n_samples, dimension, options[self.__EVAL_SECOND_ORDER]
+            )
 
         if self.algo_name in self.__DISCREPANCY_SEQUENCES:
             algo = self.__DISCREPANCY_SEQUENCES[self.algo_name](dimension)
@@ -380,7 +389,6 @@ class OpenTURNS(DOELibrary):
         Returns:
             The samples.
         """
-
         lhs = openturns.LHSExperiment(
             self.__get_uniform_distribution(dimension), n_samples
         )
@@ -434,24 +442,39 @@ class OpenTURNS(DOELibrary):
         return openturns.ComposedDistribution([openturns.Uniform(0.0, 1.0)] * dimension)
 
     def __generate_sobol(
-        self,
-        n_samples: int,
-        dimension: int,
+        self, n_samples: int, dimension: int, eval_second_order: bool
     ) -> ndarray:
         """Generate a DOE using a Sobol' sampling.
 
         Args:
             n_samples: The number of samples.
             dimension: The parameter space dimension.
+            eval_second_order: Whether to build a DOE
+                to evaluate also the second-order indices;
+                otherwise,
+                the DOE is designed for first- and total-order indices only.
 
         Returns:
             The samples.
         """
-        n_samples = int(n_samples / (dimension + 2))
-        algo = openturns.SobolIndicesExperiment(
-            self.__get_uniform_distribution(dimension), n_samples
+        # If eval_second_order is set to False, the input design is of size N(2+n_X).
+        # If eval_second_order is set to False,
+        #   if n_X = 2, the input design is of size N(2+n_X).
+        #   if n_X != 2, the input design is of size N(2+2n_X).
+        # Ref: https://openturns.github.io/openturns/latest/user_manual/_generated/
+        # openturns.SobolIndicesExperiment.html#openturns.SobolIndicesExperiment
+        if eval_second_order and dimension > 2:
+            sub_sample_size = int(n_samples / (2 * dimension + 2))
+        else:
+            sub_sample_size = int(n_samples / (dimension + 2))
+
+        return array(
+            openturns.SobolIndicesExperiment(
+                self.__get_uniform_distribution(dimension),
+                sub_sample_size,
+                eval_second_order,
+            ).generate()
         )
-        return array(algo.generate())
 
     def _generate_fullfact_from_levels(
         self,

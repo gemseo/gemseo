@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 import pickle
 from os import remove
 
@@ -32,6 +33,7 @@ from numpy import zeros
 from scipy.linalg import norm
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
+
 
 RESIDUALS_TOL = 1e-12
 
@@ -107,17 +109,19 @@ def test_common_dtype_cplx():
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
-def test_not_converged():
+def test_not_converged(caplog):
     """Tests the cases when convergence fails and save_when_fail option."""
     factory = LinearSolversFactory()
     random.seed(1)
     n = 100
     problem = LinearProblem(random.rand(n, n), random.rand(n))
     lib = factory.create("ScipyLinalgAlgos")
+    caplog.set_level(logging.WARNING)
     lib.solve(
         problem, "BICGSTAB", max_iter=2, save_when_fail=True, use_ilu_precond=False
     )
     assert not problem.is_converged
+    assert "The linear solver BICGSTAB did not converge." in caplog.text
 
     problem2 = pickle.load(open(lib.save_fpath, "rb"))
     remove(lib.save_fpath)
@@ -132,7 +136,7 @@ def test_not_converged():
 
 
 @pytest.mark.parametrize("seed", range(3))
-def test_hard_conv(tmp_path, seed):
+def test_hard_conv(tmp_wd, seed):
     random.seed(seed)
     n = 300
     problem = LinearProblem(random.rand(n, n), random.rand(n))
@@ -145,7 +149,7 @@ def test_hard_conv(tmp_path, seed):
         tol=1e-14,
     )
 
-    assert problem.compute_residuals(True) < 1e-10
+    assert problem.compute_residuals() < 1e-10
 
 
 def test_inconsistent_options():
@@ -187,7 +191,7 @@ def test_algo_none():
     lib = ScipyLinalgAlgos()
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
-        lib.execute(problem, algo_name=None)
+        lib.execute(problem)
 
 
 def test_library_name():

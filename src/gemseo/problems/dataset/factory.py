@@ -20,13 +20,10 @@
 """A factory for datasets."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class DatasetFactory:

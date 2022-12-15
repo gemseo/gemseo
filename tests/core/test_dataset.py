@@ -79,14 +79,14 @@ def io_dataset():
 
 
 @pytest.fixture
-def file_dataset(tmp_path):
+def file_dataset(tmp_wd):
     inputs = arange(50).reshape(10, 5)
     outputs = arange(20).reshape(10, 2)
     data = concatenate([inputs, outputs], axis=1)
     variables = ["in_1", "in_2", "out_1"]
     sizes = {"in_1": 2, "in_2": 3, "out_1": 2}
     groups = {"in_1": "inputs", "in_2": "inputs", "out_1": "outputs"}
-    filename = tmp_path / "dataset.txt"
+    filename = "dataset.txt"
     savetxt(filename, data, delimiter=",")
     return filename, data, variables, sizes, groups
 
@@ -433,13 +433,13 @@ def test_n_samples(io_dataset):
 @pytest.mark.parametrize("cache_type", ["MemoryFullCache", "HDF5Cache"])
 @pytest.mark.parametrize("inputs", [None, ["var_1"]])
 @pytest.mark.parametrize("outputs", [None, ["var_2"]])
-def test_export_dataset_to_cache(dataset, tmp_path, cache_type, inputs, outputs):
+def test_export_dataset_to_cache(dataset, tmp_wd, cache_type, inputs, outputs):
     """Check that a dataset is correctly exported to a cache."""
     input_names = inputs or ["var_1", "var_2"]
     output_names = outputs or []
     cache = dataset.export_to_cache(
         cache_type=cache_type,
-        cache_hdf_file=str(tmp_path / "cache.hdf5"),
+        cache_hdf_file="cache.hdf5",
         inputs=inputs,
         outputs=outputs,
     )
@@ -538,9 +538,8 @@ def test_getitem_raising_error(x_dataset, item, error, msg):
         x_dataset[item]
 
 
-def test_plot(dataset, tmp_path):
-    fpath = tmp_path / "scatter"
-    post = dataset.plot("ScatterMatrix", show=False, save=True, file_path=fpath)
+def test_plot(dataset, tmp_wd):
+    post = dataset.plot("ScatterMatrix", show=False, save=True, file_path="scatter")
     assert len(post.output_files) > 0
     assert "ScatterMatrix" in dataset.get_available_plots()
 
@@ -613,7 +612,7 @@ def test_malformed_groups():
     dataset = Dataset()
     with pytest.raises(
         TypeError,
-        match=("groups must be a dictionary of the form {variable_name: group_name}."),
+        match="groups must be a dictionary of the form {variable_name: group_name}.",
     ):
         dataset.set_from_array(array([[1]]), variables=["x"], groups={"x": 1})
 
@@ -623,7 +622,7 @@ def test_malformed_variables():
     dataset = Dataset()
     with pytest.raises(
         TypeError,
-        match=("variables must be a list of string variable names."),
+        match="variables must be a list of string variable names.",
     ):
         dataset.set_from_array(array([[1]]), variables=1)
 

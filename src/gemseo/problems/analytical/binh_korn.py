@@ -62,8 +62,8 @@ class BinhKorn(OptimizationProblem):
             initial_values: Initial value of the design variables.
         """
         design_space = DesignSpace()
-        design_space.add_variable("x", 1, l_b=0.0, u_b=5.0, value=initial_values[0])
-        design_space.add_variable("y", 1, l_b=0.0, u_b=3.0, value=initial_values[1])
+        design_space.add_variable("x", l_b=0.0, u_b=5.0, value=initial_values[0])
+        design_space.add_variable("y", l_b=0.0, u_b=3.0, value=initial_values[1])
 
         super().__init__(design_space)
         self.objective = MDOFunction(

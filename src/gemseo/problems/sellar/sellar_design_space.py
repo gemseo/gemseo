@@ -64,10 +64,10 @@ class SellarDesignSpace(DesignSpace):
         super().__init__()
 
         x_local, x_shared, y_1, y_2 = self.__get_initial_solution(dtype)
-        self.add_variable(X_LOCAL, 1, l_b=0.0, u_b=10.0, value=x_local)
+        self.add_variable(X_LOCAL, l_b=0.0, u_b=10.0, value=x_local)
         self.add_variable(X_SHARED, 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=x_shared)
-        self.add_variable(Y_1, 1, l_b=-100.0, u_b=100.0, value=y_1)
-        self.add_variable(Y_2, 1, l_b=-100.0, u_b=100.0, value=y_2)
+        self.add_variable(Y_1, l_b=-100.0, u_b=100.0, value=y_1)
+        self.add_variable(Y_2, l_b=-100.0, u_b=100.0, value=y_2)
 
     @staticmethod
     def __get_initial_solution(

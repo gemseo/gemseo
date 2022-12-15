@@ -98,12 +98,7 @@ def test_pareto_minimize(
     problem.change_objective_sign()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
     PostFactory().execute(
-        problem,
-        "ParetoFront",
-        save=True,
-        show=False,
-        file_path="power",
-        objectives=["pow2", "ineq1"],
+        problem, "ParetoFront", file_path="power", objectives=["pow2", "ineq1"]
     )
 
 
@@ -116,7 +111,6 @@ def test_pareto_incorrect_objective_list():
         PostFactory().execute(
             problem,
             "ParetoFront",
-            show=False,
             save=False,
             objectives=problem.get_all_functions_names(),
             objectives_labels=["fake_label"],
@@ -136,7 +130,6 @@ def test_pareto_incorrect_objective_names():
         PostFactory().execute(
             problem,
             "ParetoFront",
-            show=False,
             save=False,
             objectives=["fake_obj"],
             file_path="power",
@@ -179,14 +172,10 @@ def test_pareto_binhkorn(
 
 
 @image_comparison(["binh_korn_design_variable"])
-def test_pareto_binhkorn_design_variable(
-    tmp_wd,
-    pyplot_close_all,
-):
+def test_pareto_binhkorn_design_variable(pyplot_close_all):
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
-        tmp_wd: Fixture to move into a temporary directory.
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
@@ -204,14 +193,10 @@ def test_pareto_binhkorn_design_variable(
 
 
 @image_comparison(["binh_korn_no_obj"])
-def test_pareto_binhkorn_no_obj(
-    tmp_wd,
-    pyplot_close_all,
-):
+def test_pareto_binhkorn_no_obj(pyplot_close_all):
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
-        tmp_wd: Fixture to move into a temporary directory.
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """

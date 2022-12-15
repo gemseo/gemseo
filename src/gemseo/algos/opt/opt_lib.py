@@ -21,11 +21,11 @@
 """Optimization library wrappers base class."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 
 from numpy import ndarray
 
+from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
@@ -36,8 +36,6 @@ from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
 from gemseo.algos.stop_criteria import XtolReached
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -93,7 +91,7 @@ class OptimizationLibrary(DriverLib):
     PG_TOL = "pg_tol"
     VERBOSE = "verbose"
 
-    def __init__(self):
+    def __init__(self):  # noqa:D107
         super().__init__()
         self._ftol_rel = 0.0
         self._ftol_abs = 0.0
@@ -174,21 +172,15 @@ class OptimizationLibrary(DriverLib):
             )
 
     def get_right_sign_constraints(self):
-        """Transforms the problem constraints into their opposite sign counterpart if
-        the algorithm requires positive constraints."""
+        """Transform the problem constraints into their opposite sign counterpart.
+
+        This is done if the algorithm requires positive constraints.
+        """
         if self.problem.has_ineq_constraints() and self.is_algo_requires_positive_cstr(
             self.algo_name
         ):
             return [-cstr for cstr in self.problem.constraints]
         return self.problem.constraints
-
-    def _run(self, **options):
-        """Run the algorithm, to be overloaded by subclasses.
-
-        Args:
-            **options: The options of the algorithm.
-        """
-        raise NotImplementedError()
 
     def _pre_run(self, problem, algo_name, **options):
         """To be overridden by subclasses.
@@ -226,7 +218,6 @@ class OptimizationLibrary(DriverLib):
         self.__kkt_abs_tol = options.get(self._KKT_TOL_ABS, None)
         self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
-        problem.add_callback(self.new_iteration_callback)
         if (
             self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None
         ) and self.descriptions[self.algo_name].require_gradient:
@@ -243,39 +234,35 @@ class OptimizationLibrary(DriverLib):
             ),
         )
 
-    @staticmethod
-    def is_algorithm_suited(
+    @classmethod
+    def _get_unsuitability_reason(
+        cls,
         algorithm_description: OptimizationAlgorithmDescription,
         problem: OptimizationProblem,
-    ) -> bool:
-        """Check if the algorithm is suited to the problem according to its description.
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason:
+            return reason
 
-        Args:
-            algorithm_description: The description of the algorithm.
-            problem: The problem to be solved.
-
-        Returns:
-            Whether the algorithm is suited to the problem.
-        """
         if (
             problem.has_eq_constraints()
             and not algorithm_description.handle_equality_constraints
         ):
-            return False
+            return _UnsuitabilityReason.EQUALITY_CONSTRAINTS
 
         if (
             problem.has_ineq_constraints()
             and not algorithm_description.handle_inequality_constraints
         ):
-            return False
+            return _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
 
         if (
             problem.pb_type == problem.NON_LINEAR_PB
             and algorithm_description.problem_type == problem.LINEAR_PB
         ):
-            return False
+            return _UnsuitabilityReason.NON_LINEAR_PROBLEM
 
-        return True
+        return reason
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Verify the design variable and objective value stopping criteria.

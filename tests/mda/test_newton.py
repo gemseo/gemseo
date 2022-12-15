@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton import MDANewtonRaphson
@@ -193,7 +193,7 @@ def test_broyden_sellar():
 def test_hybrid_sellar():
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), Sellar2()]
-    mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.HYBRID, use_gradient=True)
+    mda = MDAQuasiNewton(disciplines, use_gradient=True)
 
     mda.execute()
 

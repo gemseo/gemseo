@@ -20,18 +20,14 @@
 """A factory for caches."""
 from __future__ import annotations
 
-import logging
-
 from gemseo.core.cache import AbstractCache
 from gemseo.core.factory import Factory
-
-LOGGER = logging.getLogger(__name__)
 
 
 class CacheFactory:
     """A factory for :class:`.AbstractCache`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         self.factory = Factory(AbstractCache, ("gemseo.caches",))
 
     def create(self, cache_name: str, **options) -> AbstractCache:
@@ -55,7 +51,7 @@ class CacheFactory:
         """Check the availability of a cache.
 
         Args:
-            cache_name: The name of the cache cache.
+            cache_name: The name of the cache.
 
         Returns:
             Whether the cache is available.

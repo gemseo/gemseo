@@ -75,4 +75,4 @@ def test_plot(
     else:
         fig, axes = (None, None)
 
-    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)
+    plot.execute(save=False, fig=fig, axes=axes, properties=properties)

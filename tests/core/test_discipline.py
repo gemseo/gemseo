@@ -380,11 +380,19 @@ def test_data_processor():
 def test_diff_inputs_outputs():
     """Test the differentiation w.r.t inputs and outputs."""
     d = MDODiscipline()
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=f"Cannot differentiate the discipline {d.name} w.r.t. the inputs "
+        r"that are not among the discipline inputs: \[\]",
+    ):
         d.add_differentiated_inputs(["toto"])
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=f"Cannot differentiate the discipline {d.name} w.r.t. the outputs "
+        r"that are not among the discipline outputs: \[\]",
+    ):
         d.add_differentiated_outputs(["toto"])
-    d.add_differentiated_inputs(None)
+    d.add_differentiated_inputs()
 
 
 def test_run():
@@ -447,7 +455,7 @@ def test_linearize_errors():
 
     def _compute_jacobian(inputs=None, outputs=None):
         SobieskiMission._compute_jacobian(sm, inputs=inputs, outputs=outputs)
-        sm.jac["y_4"]["x_shared"] = sm.jac["y_4"]["x_shared"] + 3.0
+        sm.jac["y_4"]["x_shared"] += 3.0
 
     sm._compute_jacobian = _compute_jacobian
 
@@ -481,7 +489,8 @@ def test_check_jacobian():
         del sm.jac["y_4"]
 
     sm._compute_jacobian = _compute_jacobian
-    with pytest.raises(KeyError):
+    msg = f"The discipline {sm.name} was not linearized."
+    with pytest.raises(ValueError, match=msg):
         sm.linearize(force_all=True)
 
     sm2 = SobieskiMission()
@@ -538,14 +547,7 @@ def test_check_jacobian_2():
 def test_check_jacobian_parallel_fd():
     """Test check_jacobian in parallel."""
     sm = SobieskiMission()
-    sm.check_jacobian(
-        derr_approx=sm.FINITE_DIFFERENCES,
-        step=1e-6,
-        threshold=1e-6,
-        parallel=True,
-        use_threading=False,
-        n_processes=6,
-    )
+    sm.check_jacobian(step=1e-6, threshold=1e-6, parallel=True, n_processes=6)
 
 
 @pytest.mark.skip_under_windows
@@ -557,7 +559,6 @@ def test_check_jacobian_parallel_cplx():
         step=1e-30,
         threshold=1e-6,
         parallel=True,
-        use_threading=False,
         n_processes=6,
     )
 
@@ -666,9 +667,9 @@ def test_cache_h5_jac(tmp_wd):
     sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
     xs = sm.default_inputs["x_shared"]
     input_data = {"x_shared": xs}
-    jac_1 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_1 = sm.linearize(input_data, force_all=True)
     sm.execute(input_data)
-    jac_2 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_2 = sm.linearize(input_data, force_all=True)
     assert check_jac_equals(jac_1, jac_2)
 
     input_data = {"x_shared": xs + 2.0}
@@ -676,11 +677,11 @@ def test_cache_h5_jac(tmp_wd):
     jac_1 = sm.linearize(input_data, force_all=True, force_no_exec=True)
 
     input_data = {"x_shared": xs + 3.0}
-    jac_2 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_2 = sm.linearize(input_data, force_all=True)
     assert not check_jac_equals(jac_1, jac_2)
 
     sm.execute(input_data)
-    jac_3 = sm.linearize(input_data, force_all=True, force_no_exec=False)
+    jac_3 = sm.linearize(input_data, force_all=True)
     assert check_jac_equals(jac_3, jac_2)
 
     jac_4 = sm.linearize(input_data, force_all=True, force_no_exec=True)
@@ -732,17 +733,17 @@ def test_jac_approx_mix_fd():
 def test_jac_set_optimal_fd_step_force_all():
     """Test the computation of the optimal time step with force_all=True."""
     sm = SobieskiMission()
-    sm.set_jacobian_approximation(sm.FINITE_DIFFERENCES, jac_approx_n_processes=1)
+    sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(force_all=True)
-    assert sm.check_jacobian(parallel=False, n_processes=1, threshold=1e-4)
+    assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
 def test_jac_set_optimal_fd_step_input_output():
     """Test the computation of the optimal time step with force_all=True."""
     sm = SobieskiMission()
-    sm.set_jacobian_approximation(sm.FINITE_DIFFERENCES, jac_approx_n_processes=1)
+    sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(inputs=["y_14"], outputs=["y_4"])
-    assert sm.check_jacobian(parallel=False, n_processes=1, threshold=1e-4)
+    assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
 def test_jac_set_optimal_fd_step_no_jac_approx():
@@ -773,7 +774,7 @@ def test_jac_cache_trigger_shapecheck():
     aero._cache_was_loaded = True
     aero.add_differentiated_inputs(in_names)
     aero.add_differentiated_outputs(out_names)
-    aero.linearize(inpts, force_all=False, force_no_exec=True)
+    aero.linearize(inpts, force_no_exec=True)
 
 
 def test_is_linearized():
@@ -975,3 +976,96 @@ def test_no_cache():
 
     with pytest.raises(ValueError, match="does not have a cache"):
         disc.cache_tol = 1.0
+
+
+@pytest.mark.parametrize(
+    "recursive, expected", [(False, {"d1", "d2", "chain1"}), (True, {"d1", "d2", "d3"})]
+)
+def test_get_sub_disciplines_recursive(recursive, expected):
+    """Test the recursive option of get_sub_disciplines.
+
+    Args:
+        recursive: Whether to list sub-disciplines recursively.
+        expected: The expected disciplines.
+    """
+    d1 = MDODiscipline("d1")
+    d2 = MDODiscipline("d2")
+    d3 = MDODiscipline("d3")
+    chain1 = MDOChain([d3], "chain1")
+    chain2 = MDOChain([d2, chain1], "chain2")
+    chain3 = MDOChain([d1, chain2], "chain3")
+
+    classes = [
+        discipline.name
+        for discipline in chain3.get_sub_disciplines(recursive=recursive)
+    ]
+
+    assert set(classes) == expected
+
+
+@pytest.mark.parametrize(
+    "inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs",
+    [
+        (
+            {"x": array([1.0]), "in_path": "some_string"},
+            {"y": array([0.0]), "out_path": "another_string"},
+            MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+            ["x"],
+            ["y"],
+        ),
+        (
+            {"x": array([1]), "in_path": "some_string"},
+            {"y": 1, "out_path": "another_string"},
+            MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+            ["x"],
+            [],
+        ),
+        (
+            {"x": array([1.0]), "in_path": array(["some_string"])},
+            {"y": array([0.0]), "out_path": array(["another_string"])},
+            MDODiscipline.JSON_GRAMMAR_TYPE,
+            ["x"],
+            ["y"],
+        ),
+        (
+            {"x": array([1.0]), "in_path": "some_string"},
+            {"y": array([0.0]), "out_path": "another_string"},
+            MDODiscipline.JSON_GRAMMAR_TYPE,
+            ["x"],
+            ["y"],
+        ),
+        (
+            {"x": array([1]), "in_path": "some_string"},
+            {"y": 1, "out_path": "another_string"},
+            MDODiscipline.JSON_GRAMMAR_TYPE,
+            ["x"],
+            [],
+        ),
+    ],
+)
+def test_add_differentiated_io_non_numeric(
+    inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs
+):
+    """Check that non-numeric i/o are ignored in add_differentiated_inputs/outputs.
+
+    If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+    an input/output is either a non-numeric array or not an array, it will be ignored.
+
+    If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+    an input/output is not an array, it will be ignored. Keep in mind that in this case
+    the array subtype is not checked.
+
+    Args:
+        inputs: The inputs of the discipline.
+        outputs: The outputs of the discipline.
+        grammar_type: The discipline grammar type.
+        expected_diff_inputs: The expected differentiated inputs.
+        expected_diff_outputs: The expected differentiated outputs.
+    """
+    discipline = MDODiscipline(grammar_type=grammar_type)
+    discipline.input_grammar.update_from_data(inputs)
+    discipline.output_grammar.update_from_data(outputs)
+    discipline.add_differentiated_inputs()
+    discipline.add_differentiated_outputs()
+    assert discipline._differentiated_inputs == expected_diff_inputs
+    assert discipline._differentiated_outputs == expected_diff_outputs

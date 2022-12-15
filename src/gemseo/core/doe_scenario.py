@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from typing import Mapping
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
@@ -51,7 +52,7 @@ class DOEScenario(Scenario):
     SEED = "seed"
     _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + ("seed",)
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
         formulation: str,
@@ -122,7 +123,7 @@ class DOEScenario(Scenario):
         for name in ("n_samples", "algo_options"):
             self.input_grammar.required_names.remove(name)
 
-    def export_to_dataset(
+    def export_to_dataset(  # noqa: D102
         self,
         name: str | None = None,
         by_group: bool = True,
@@ -138,3 +139,10 @@ class DOEScenario(Scenario):
             export_gradients=export_gradients,
             input_values=self.__samples,
         )
+
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        super().__setstate__(state)
+        # DOELibrary objects cannot be serialized, _algo_name and _lib are set to None
+        # to force the lib creation in _run_algorithm.
+        self._algo_name = None
+        self._lib = None

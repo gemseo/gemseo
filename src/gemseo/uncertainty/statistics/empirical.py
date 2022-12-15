@@ -44,7 +44,6 @@ and the name of the :class:`.Dataset`.
 """
 from __future__ import annotations
 
-import logging
 from typing import Iterable
 
 from numpy import all as np_all
@@ -59,8 +58,6 @@ from scipy.stats import moment
 
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.statistics import Statistics
-
-LOGGER = logging.getLogger(__name__)
 
 
 class EmpiricalStatistics(Statistics):
@@ -160,7 +157,7 @@ class EmpiricalStatistics(Statistics):
         self,
         order: int,
     ) -> dict[str, ndarray]:
-        result = {name: moment(self.dataset[name], order, 0) for name in self.names}
+        result = {name: moment(self.dataset[name], order) for name in self.names}
         return result
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102

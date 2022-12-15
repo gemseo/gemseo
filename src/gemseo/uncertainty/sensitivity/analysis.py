@@ -30,7 +30,6 @@ inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from copy import deepcopy
 from pathlib import Path
@@ -66,8 +65,6 @@ from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-
-LOGGER = logging.getLogger(__name__)
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
 IndicesType = Dict[str, List[Dict[str, ndarray]]]
@@ -110,7 +107,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        """.. # noqa: D205,D212,D415
+        """
         Args:
             disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.
@@ -123,7 +120,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             algo_options: The options of the DOE algorithm.
             formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
             **formulation_options: The options of the :class:`.MDOFormulation`.
-        """
+        """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
         self._algo_name = algo or self.DEFAULT_DRIVER
         self._output_names = output_names or get_all_outputs(disciplines)
@@ -436,7 +433,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 for which to display sensitivity indices,
                 either a name or a tuple of the form (name, component)
                 where (name, component) is used to sort the inputs.
-                If name, its first component is considered.
+                If it is a name, its first component is considered.
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
                 or a (p, 2) array for a 2D one. If None, assume a 1D functional output.

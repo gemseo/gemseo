@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
@@ -32,9 +33,12 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.core.coupling_structure import DependencyGraph
+from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution import DiscParallelLinearization
 
@@ -44,24 +48,24 @@ LOGGER = logging.getLogger(__name__)
 class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
-    disciplines: Sequence[MDODiscipline]
-    """The chained disciplines."""
-
     AVAILABLE_MODES = [
-        JacobianAssembly.DIRECT_MODE,
-        JacobianAssembly.REVERSE_MODE,
-        JacobianAssembly.AUTO_MODE,
+        derivation_modes.REVERSE_MODE,
+        derivation_modes.AUTO_MODE,
+        MDODiscipline.FINITE_DIFFERENCES,
+        MDODiscipline.COMPLEX_STEP,
     ]
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("disciplines",)
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "_coupling_structure",
+        "_last_diff_inouts",
+    )
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: list[MDODiscipline],
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-        # noqa: D205 D212 D415
         """
         Args:
             disciplines: The disciplines.
@@ -69,12 +73,14 @@ class MDOChain(MDODiscipline):
                 If None, use the class name.
             grammar_type: The type of grammar to use for inputs and outputs declaration,
                 e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
-        self.disciplines = disciplines
+        self._disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
         self._update_default_inputs()
+        self._coupling_structure = None
+        self._last_diff_inouts = None
 
     def set_disciplines_statuses(
         self,
@@ -142,7 +148,8 @@ class MDOChain(MDODiscipline):
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = discipline.get_input_data()
-        discipline.linearize(last_cached, force_no_exec=True, force_all=True)
+        # The graph traversal algorithm avoid to force_all linearizations
+        discipline.linearize(last_cached, force_no_exec=True, force_all=False)
 
         for output_name in chain_outputs:
             if output_name in self.jac:
@@ -184,17 +191,30 @@ class MDOChain(MDODiscipline):
                 # Initialize. Make a copy !
                 self.jac[output_name] = MDOChain.copy_jacs(discipline.jac[output_name])
 
+    def _compute_diff_in_outs(self, inputs, outputs):
+        if self._coupling_structure is None:
+            self._coupling_structure = MDOCouplingStructure(self.disciplines)
+
+        diff_ios = (set(inputs), set(outputs))
+        if self._last_diff_inouts != diff_ios:
+            traverse_add_diff_io(self._coupling_structure.graph.graph, inputs, outputs)
+            self._last_diff_inouts = diff_ios
+
     def _compute_jacobian(
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
+        self._compute_diff_in_outs(inputs, outputs)
+
         # Initializes self jac with copy of last discipline (reverse mode)
         last_discipline = self.disciplines[-1]
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = last_discipline.get_input_data()
-        last_discipline.linearize(last_cached, force_no_exec=True, force_all=True)
+
+        # The graph traversal algorithm avoid to force_all linearizations
+        last_discipline.linearize(last_cached, force_no_exec=True, force_all=False)
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines
@@ -214,8 +234,9 @@ class MDOChain(MDODiscipline):
         # Add differentiations that should be there,
         # because inputs inputs of the chain but not
         # of all disciplines
-        for output_name, output_jacobian in self.jac.items():
+        for output_name in outputs:
             output_size = len(self.get_outputs_by_name(output_name))
+            output_jacobian = self.jac.setdefault(output_name, {})
             for input_name in inputs:
                 if input_name not in output_jacobian:
                     input_size = len(self.get_inputs_by_name(input_name))
@@ -268,7 +289,7 @@ class MDOChain(MDODiscipline):
 
         return disciplines_couplings
 
-    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:  # noqa: D102
         dataflow = []
         for disc in self.disciplines:
             dataflow.extend(disc.get_disciplines_in_dataflow_chain())
@@ -286,6 +307,11 @@ class MDOChain(MDODiscipline):
 class MDOParallelChain(MDODiscipline):
     """Chain of processes that executes disciplines in parallel."""
 
+    _ATTR_TO_SERIALIZE: ClassVar[tuple[str]] = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "disciplines",
+        "parallel_execution",
+    )
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -294,7 +320,6 @@ class MDOParallelChain(MDODiscipline):
         use_threading: bool = True,
         n_processes: int | None = None,
     ) -> None:
-        # noqa: D205 D212 D415
         """
         Args:
             disciplines: The disciplines.
@@ -319,9 +344,9 @@ class MDOParallelChain(MDODiscipline):
             if there are less than ``n_processes`` disciplines.
             ``n_processes`` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
-        self.disciplines = disciplines
+        self._disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
         self._update_default_inputs()
@@ -396,11 +421,10 @@ class MDOParallelChain(MDODiscipline):
                 chain_jacobian.update(output_jacobian)
         self._init_jacobian(inputs, outputs, with_zeros=True, fill_missing_keys=True)
 
-    def add_differentiated_inputs(
+    def add_differentiated_inputs(  # noqa: D102
         self,
         inputs: Iterable[str] = None,
     ) -> None:
-        # noqa: D102
         MDODiscipline.add_differentiated_inputs(self, inputs)
         self._set_disciplines_diff_inputs(inputs)
 
@@ -419,11 +443,10 @@ class MDOParallelChain(MDODiscipline):
             if inputs_set:
                 discipline.add_differentiated_inputs(list(inputs_set))
 
-    def add_differentiated_outputs(
+    def add_differentiated_outputs(  # noqa: D102
         self,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        # noqa: D102
         MDODiscipline.add_differentiated_outputs(self, outputs)
         self._set_disciplines_diff_outputs(outputs)
 
@@ -444,14 +467,23 @@ class MDOParallelChain(MDODiscipline):
         for discipline in self.disciplines:
             discipline.reset_statuses_for_run()
 
-    def get_expected_workflow(self) -> None:  # noqa: D102
+    def get_expected_workflow(self) -> SerialExecSequence:  # noqa: D102
         sequence = ExecutionSequenceFactory.parallel()
         for discipline in self.disciplines:
             sequence.extend(discipline.get_expected_workflow())
         return sequence
 
-    def get_expected_dataflow(self) -> None:  # noqa: D102
+    def get_expected_dataflow(  # noqa: D102
+        self,
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return []
+
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:  # noqa: D102
+        return [
+            sub_discipline
+            for discipline in self.disciplines
+            for sub_discipline in discipline.get_disciplines_in_dataflow_chain()
+        ]
 
     def _set_cache_tol(
         self,
@@ -467,14 +499,13 @@ class MDOAdditiveChain(MDOParallelChain):
 
     def __init__(
         self,
-        disciplines: Iterable[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         outputs_to_sum: Iterable[str],
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
         use_threading: bool = True,
         n_processes: int | None = None,
     ) -> None:
-        # noqa: D205 D212 D415
         """
         Args:
             disciplines: The disciplines.
@@ -500,7 +531,7 @@ class MDOAdditiveChain(MDOParallelChain):
             if there are less than ``n_processes`` disciplines.
             ``n_processes`` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(disciplines, name, grammar_type, use_threading, n_processes)
         self._outputs_to_sum = outputs_to_sum
 

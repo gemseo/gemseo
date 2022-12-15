@@ -50,7 +50,7 @@ class Lines(DatasetPlot):
                 the observations of the ``variables`` are plotted
                 in function of the indices of the observations.
             add_markers: Whether to mark the observations with dots.
-        """
+        """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             variables=variables,

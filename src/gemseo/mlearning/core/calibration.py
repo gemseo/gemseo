@@ -53,7 +53,6 @@ from __future__ import annotations
 
 from typing import Dict
 from typing import Iterable
-from typing import Mapping
 from typing import Union
 
 from numpy import argmin
@@ -117,7 +116,7 @@ class MLAlgoAssessor(MDODiscipline):
         parameters: Iterable[str],
         measure: type[MLQualityMeasure],
         measure_options: MeasureOptionsType | None = None,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
     ) -> None:
         """
@@ -129,18 +128,20 @@ class MLAlgoAssessor(MDODiscipline):
             measure_options: The options of the quality measure.
                 If "multioutput" is missing,
                 it is added with False as value.
-                If None, do not use quality measure options.
+                If ``None``, do not use quality measure options.
             transformer: The strategies
                 to transform the variables.
                 The values are instances of :class:`.Transformer`
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
-                e.g. "inputs" or "outputs" in the case of the regression algorithms.
+                e.g. ``"inputs"`` or ``"outputs"``
+                in the case of the regression algorithms.
                 If a group is specified,
                 the :class:`.Transformer` will be applied
                 to all the variables of this group.
-                If None, do not transform the variables.
+                If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+
             **algo_options: The options of the machine learning algorithm.
 
         Raises:
@@ -221,7 +222,7 @@ class MLAlgoCalibration:
         calibration_space: DesignSpace,
         measure: MLQualityMeasure,
         measure_options: MeasureOptionsType | None = None,
-        transformer: TransformerType | None = None,
+        transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
     ) -> None:
         """
@@ -233,9 +234,19 @@ class MLAlgoCalibration:
             calibration_space: The space defining the calibration variables.
             measure: A measure to assess the machine learning algorithm.
             measure_options: The options of the quality measure.
-                If None, do not use the quality measure options.
-            transformer: The transformation strategy for the data groups.
-                If None, do not transform data.
+                If ``None``, do not use the quality measure options.
+            transformer: The strategies
+                to transform the variables.
+                The values are instances of :class:`.Transformer`
+                while the keys are the names of
+                either the variables
+                or the groups of variables,
+                e.g. ``"inputs"`` or ``"outputs"``
+                in the case of the regression algorithms.
+                If a group is specified,
+                the :class:`.Transformer` will be applied
+                to all the variables of this group.
+                If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
             **algo_options: The options of the machine learning algorithm.
         """
         disc = MLAlgoAssessor(

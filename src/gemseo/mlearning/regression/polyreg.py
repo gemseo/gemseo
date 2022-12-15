@@ -76,12 +76,10 @@ linear_model.html>`_.
 """
 from __future__ import annotations
 
-import logging
 import pickle
 from pathlib import Path
 from typing import ClassVar
 from typing import Iterable
-from typing import Mapping
 
 from numpy import concatenate
 from numpy import ndarray
@@ -94,8 +92,6 @@ from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegressor
 
-LOGGER = logging.getLogger(__name__)
-
 
 class PolynomialRegressor(LinearRegressor):
     """Polynomial regression model."""
@@ -106,7 +102,7 @@ class PolynomialRegressor(LinearRegressor):
         self,
         data: Dataset,
         degree: int,
-        transformer: Mapping[str, TransformerType] | None = None,
+        transformer: TransformerType = LinearRegressor.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         fit_intercept: bool = True,
@@ -181,7 +177,7 @@ class PolynomialRegressor(LinearRegressor):
         n_inputs = self._poly.n_input_features_
         n_powers = self._poly.n_output_features_
         n_outputs = self.algo.coef_.shape[0]
-        coefs = self.get_coefficients(False)
+        coefs = self.get_coefficients()
 
         jac_intercept = zeros((n_outputs, n_inputs))
         jac_coefs = zeros((n_outputs, n_powers, n_inputs))

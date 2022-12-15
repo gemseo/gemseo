@@ -984,7 +984,7 @@ def _get_schema(
         table.add_column("Type", types)
         table.sortby = "Name"
         table.min_width = 25
-        print(table)  # noqa: T001
+        print(table)  # noqa: T201
         LOGGER.info("%s", table)
 
     if output_json:
@@ -1086,7 +1086,7 @@ def create_scenario(
     >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
     >>> design_space = SellarDesignSpace()
     >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-    >>>                            'SellarMDFScenario', 'MDO')
+    'SellarMDFScenario')
 
     See also
     --------
@@ -1136,7 +1136,7 @@ def create_scenario(
 
 def configure_logger(
     logger_name: str | None = None,
-    level: int = logging.INFO,
+    level: str | int = logging.INFO,
     date_format: str = "%H:%M:%S",
     message_format: str = "%(levelname)8s - %(asctime)s: %(message)s",
     filename: str | Path | None = None,
@@ -1147,7 +1147,15 @@ def configure_logger(
     Args:
         logger_name: The name of the logger to configure.
             If ``None``, return the root logger.
-        level: The logging level, either 'DEBUG', 'INFO', 'WARNING' and 'CRITICAL'.
+        level: The numerical value or name of the logging level,
+            as defined in :py:mod:`logging`.
+            Values can either be
+            ``logging.NOTSET`` (``"NOTSET"``),
+            ``logging.DEBUG`` (``"DEBUG"``),
+            ``logging.INFO`` (``"INFO"``),
+            ``logging.WARNING`` (``"WARNING"`` or ``"WARN"``),
+            ``logging.ERROR`` (``"ERROR"``), or
+            ``logging.CRITICAL`` (``"FATAL"`` or ``"CRITICAL"``).
         date_format: The logging date format.
         message_format: The logging message format.
         filename: The path to the log file, if outputs must be written in a file.
@@ -1282,7 +1290,7 @@ def create_scalable(
 def create_surrogate(
     surrogate: str | MLRegressionAlgo,
     data: Dataset | None = None,
-    transformer: TransformerType | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
     disc_name: str | None = None,
     default_inputs: dict[str, ndarray] | None = None,
     input_names: Iterable[str] | None = None,
@@ -1295,7 +1303,7 @@ def create_surrogate(
         surrogate: Either the class name
             or the instance of the :class:`.MLRegressionAlgo`.
         data: The learning dataset to train the regression model.
-            If None, the regression model is supposed to be trained.
+            If ``None``, the regression model is supposed to be trained.
         transformer: The strategies to transform the variables.
             The values are instances of :class:`.Transformer`
             while the keys are the names of
@@ -1309,13 +1317,13 @@ def create_surrogate(
             The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
-            If None, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
+            If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
         default_inputs: The default values of the inputs.
-            If None, use the center of the learning input space.
+            If ``None``, use the center of the learning input space.
         input_names: The names of the input variables.
-            If None, consider all input variables mentioned in the learning dataset.
+            If ``None``, consider all input variables mentioned in the learning dataset.
         output_names: The names of the output variables.
-            If None, consider all input variables mentioned in the learning dataset.
+            If ``None``, consider all input variables mentioned in the learning dataset.
         **parameters: The parameters of the machine learning algorithm.
 
     See also
@@ -1401,7 +1409,7 @@ def execute_post(
     >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
     >>> design_space = SellarDesignSpace()
     >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-    >>>                            'SellarMDFScenario', 'MDO')
+    'SellarMDFScenario')
     >>> scenario.execute({'algo': 'NLOPT_SLSQP', 'max_iter': 100})
     >>> execute_post(scenario, 'OptHistoryView', show=False, save=True)
 
@@ -1523,7 +1531,7 @@ def print_configuration() -> None:
 
     settings = _log_settings()
     LOGGER.info("%s", settings)
-    print(settings)  # noqa: T001
+    print(settings)  # noqa: T201
     for factory in (
         DisciplinesFactory,
         OptimizersFactory,
@@ -1535,7 +1543,7 @@ def print_configuration() -> None:
     ):
         factory_repr = repr(factory().factory)
         LOGGER.info("%s", factory_repr)
-        print(factory_repr)  # noqa: T001
+        print(factory_repr)  # noqa: T201
 
 
 def read_design_space(
@@ -1550,7 +1558,7 @@ def read_design_space(
             with a row for each variable
             and at least the bounds of the variable.
         header: The names of the fields saved in the file.
-            If None, read them in the file.
+            If ``None``, read them in the file.
 
     Returns:
         The design space.
@@ -1597,7 +1605,7 @@ def export_design_space(
         export_hdf: If True, save to an HDF file.
             Otherwise, save to a text file.
         fields: The fields to be exported.
-            If None, export all fields.
+            If ``None``, export all fields.
         header_char: The header character.
         **table_options: The names and values of additional attributes
             for the :class:`.PrettyTable` view
@@ -1695,7 +1703,7 @@ def create_cache(
     Args:
         cache_type: The type of the cache.
         name: The name to be given to the cache.
-            If None, use `cache_type`.
+            If ``None``, use `cache_type`.
         **options: The options of the cache.
 
     Returns:
@@ -1746,17 +1754,17 @@ def create_dataset(
         data: The data to be stored in the dataset,
             either a NumPy array or a file path.
         variables: The names of the variables.
-            If None and `header` is True,
+            If ``None`` and `header` is True,
             read the names from the first line of the file.
-            If None and `header` is False,
+            If ``None`` and `header` is False,
             use default names
             based on the patterns the :attr:`.Dataset.DEFAULT_NAMES`
             associated with the different groups.
         sizes: The sizes of the variables.
-            If None,
+            If ``None``,
             assume that all the variables have a size equal to 1.
         groups: The groups of the variables.
-            If None,
+            If ``None``,
             use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
         by_group: If True, store the data by group.
             Otherwise, store them by variables.
@@ -1765,7 +1773,7 @@ def create_dataset(
             read the variables names on the first line of the file.
         default_name: The name of the variable to be used as a pattern
             when variables is None.
-            If None,
+            If ``None``,
             use the :attr:`.Dataset.DEFAULT_NAMES` for this group if it exists.
             Otherwise, use the group name.
 
@@ -1852,7 +1860,7 @@ def compute_doe(
     )
 
 
-def _log_settings() -> None:
+def _log_settings() -> str:
     from gemseo.algos.driver_lib import DriverLib
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -1895,7 +1903,7 @@ def _log_settings() -> None:
         "The progress bar is {}activated.",
         add_de_prefix(DriverLib.activate_progress_bar),
     )
-    return text
+    return str(text)
 
 
 AlgorithmFeatures = namedtuple(

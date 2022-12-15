@@ -42,7 +42,7 @@ the concept of scalability study:
    particular parameters rather than groups of parameters.
 5. Lastly, the user executes the :class:`.ScalabilityStudy` and the results
    are written in several files and stored into directories
-   in a hierarchical way, where names depends on both MDO formulation,
+   in a hierarchical way, where names depend on both MDO formulation,
    scaling strategy and replications when it is necessary. Different kinds
    of files are stored: optimization graphs, dependency matrix plots and
    of course, scalability results by means of a dedicated class:

@@ -126,13 +126,13 @@ class ParameterSpace(DesignSpace):
     def __init__(
         self,
         hdf_file: str | Path | None = None,
-        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
         name: str | None = None,
     ) -> None:
         """
         Args:
             copula: A name of copula defining the dependency between random variables.
-        """
+        """  # noqa: D205, D212, D415
         LOGGER.debug("*** Create a new parameter space ***")
         super().__init__(hdf_file=hdf_file, name=name)
         self.uncertain_variables = []
@@ -146,6 +146,7 @@ class ParameterSpace(DesignSpace):
         # self.__distributions_definitions["u"] = ("SPNormalDistribution", {"mu": 1.})
         # where the first component of the tuple is a distribution name
         # and the second one a mapping of the distribution parameter.
+        self.__distribution_family_id = ""
 
     def is_uncertain(
         self,
@@ -208,19 +209,41 @@ class ParameterSpace(DesignSpace):
     ) -> None:
         """Add a random variable from a probability distribution.
 
+        Warnings:
+            The probability distributions must have
+            the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
+            For instance,
+            one cannot mix a random variable
+            distributed as a :class:`.OTUniformDistribution` with identifier ``"OT"``
+            and a random variable
+            distributed as a :class:`.SPNormalDistribution` with identifier ``"SP"``.
+
         Args:
             name: The name of the random variable.
             distribution: The name of a class
                 implementing a probability distribution,
-                e.g. 'OTUniformDistribution' or 'SPDistribution'.
+                e.g. ``"OTUniformDistribution"`` or ``"SPDistribution"``.
             size: The dimension of the random variable.
             **parameters: The parameters of the distribution.
+
+        Raises:
+            ValueError: When mixing probability distributions from different families,
+                e.g. an :class:`.OTDistribution` and a :class:`.SPDistribution`.
         """
         self.__distributions_definitions[name] = (distribution, parameters)
-        factory = DistributionFactory()
-        distribution = factory.create(
+        distribution = DistributionFactory().create(
             distribution, variable=name, dimension=size, **parameters
         )
+        distribution_family_id = distribution.__class__.__name__[0:2]
+        if self.__distribution_family_id:
+            if distribution_family_id != self.__distribution_family_id:
+                raise ValueError(
+                    f"A parameter space cannot mix {self.__distribution_family_id} "
+                    f"and {distribution_family_id} distributions."
+                )
+        else:
+            self.__distribution_family_id = distribution_family_id
+
         LOGGER.debug("Add the random variable: %s.", name)
         self.distributions[name] = distribution
         self.uncertain_variables.append(name)
@@ -511,14 +534,14 @@ class ParameterSpace(DesignSpace):
 
         return concatenate_dict_of_arrays_to_array(x_u, data_names)
 
-    def transform_vect(
+    def transform_vect(  # noqa:D102
         self,
         vector: ndarray,
         out: ndarray | None = None,
     ) -> ndarray:
         return self.normalize_vect(vector, use_dist=True, out=out)
 
-    def untransform_vect(
+    def untransform_vect(  # noqa:D102
         self,
         vector: ndarray,
         no_check: bool = False,
@@ -570,7 +593,7 @@ class ParameterSpace(DesignSpace):
         data_sizes = self.variables_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
-        x_n = self.evaluate_cdf(dict_sample, inverse=False)
+        x_n = self.evaluate_cdf(dict_sample)
         x_n_geom = split_array_to_dict_of_arrays(x_n_geom, data_sizes, data_names)
         missing_names = [name for name in data_names if name not in x_n]
         for name in missing_names:
@@ -637,7 +660,7 @@ class ParameterSpace(DesignSpace):
         dataset: Dataset,
         groups: Iterable[str] | None = None,
         uncertain: Mapping[str, bool] | None = None,
-        copula: str = ComposedDistribution._INDEPENDENT_COPULA,
+        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
     ) -> ParameterSpace:
         """Initialize the parameter space from a dataset.
 
@@ -668,7 +691,6 @@ class ParameterSpace(DesignSpace):
                         parameter_space.add_random_variable(
                             f"{name}_{idx}",
                             "OTUniformDistribution",
-                            1,
                             minimum=float(l_b[idx]),
                             maximum=float(u_b[idx]),
                         )
@@ -748,7 +770,7 @@ class ParameterSpace(DesignSpace):
                 value=item.value,
             )
 
-    def rename_variable(
+    def rename_variable(  # noqa:D102
         self,
         current_name: str,
         new_name: str,

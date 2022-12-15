@@ -30,7 +30,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import execute_post
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -149,14 +148,14 @@ system_scenario.execute(
 # Plot the history of the MDA residuals
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For the first MDA:
-system_scenario.formulation.mda1.plot_residual_history(show=False, save=False)
+system_scenario.formulation.mda1.plot_residual_history(save=False, show=True)
 # For the second MDA:
-system_scenario.formulation.mda2.plot_residual_history(show=False, save=False)
+system_scenario.formulation.mda2.plot_residual_history(save=False, show=True)
 
 ##############################################################################
 # Plot the system optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("OptHistoryView", show=False, save=False)
+system_scenario.post_process("OptHistoryView", save=False, show=True)
 
 ##############################################################################
 # Plot the structure optimization histories of the 2 first iterations
@@ -166,10 +165,7 @@ struct_databases = system_scenario.formulation.scenario_adapters[2].databases
 for database in struct_databases[:2]:
     opt_problem = deepcopy(sc_str.formulation.opt_problem)
     opt_problem.database = database
-    execute_post(opt_problem, "OptHistoryView", show=False, save=False)
+    execute_post(opt_problem, "OptHistoryView", save=False, show=True)
 
-
-# Workaround for HTML rendering, instead of ``show=True``
-plt.show()
 for disc in [propu, aero, mission, struct]:
     print(f"{disc.name}: {disc.n_calls} calls.")

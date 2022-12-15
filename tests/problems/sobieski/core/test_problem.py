@@ -517,4 +517,29 @@ def test_x0_optimum(problem, dtype):
     assert y_4[0].real == pytest.approx(y_4_ref, abs=1e0)
 
 
-#
+@pytest.mark.parametrize(
+    "design_variables,use_original_order",
+    [
+        (["x_shared", "x_1", "x_2", "x_3"], False),
+        (["x_1", "x_2", "x_3", "x_shared"], True),
+    ],
+)
+def test_original_design_variables_order(design_variables, use_original_order):
+    """Check the design space with original variables order."""
+    coupling_variables = [
+        "y_14",
+        "y_32",
+        "y_31",
+        "y_24",
+        "y_34",
+        "y_23",
+        "y_21",
+        "y_12",
+    ]
+
+    problem = SobieskiProblem()
+    problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
+    variables_names = design_variables + coupling_variables
+    assert problem.design_space.variables_names == variables_names
+    assert problem.design_space_with_physical_naming.variables_names == variables_names
+    assert problem.design_space_with_physical_naming.variables_names == variables_names

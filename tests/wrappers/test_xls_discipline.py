@@ -150,9 +150,7 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable):
     xlsd = XLSDiscipline(DIR_PATH / "test_excel.xlsx", copy_xls_at_setstate=True)
     xlsd_2 = XLSDiscipline(DIR_PATH / "test_excel.xlsx", copy_xls_at_setstate=True)
 
-    parallel_execution = DiscParallelExecution(
-        [xlsd, xlsd_2], use_threading=False, n_processes=2
-    )
+    parallel_execution = DiscParallelExecution([xlsd, xlsd_2], n_processes=2)
     parallel_execution.execute(
         [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
     )
@@ -171,11 +169,7 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
         copy_xls_at_setstate=True,
         recreate_book_at_run=True,
     )
-    xlsd_2 = XLSDiscipline(
-        DIR_PATH / "test_excel.xlsx",
-        copy_xls_at_setstate=False,
-        recreate_book_at_run=True,
-    )
+    xlsd_2 = XLSDiscipline(DIR_PATH / "test_excel.xlsx", recreate_book_at_run=True)
 
     parallel_execution = DiscParallelExecution(
         [xlsd, xlsd_2], use_threading=True, n_processes=2
@@ -229,9 +223,9 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
     disciplines = [sellar_1, sellar_2_xls, sellar_system]
 
     design_space = create_design_space()
-    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
-    design_space.add_variable("x_shared_1", 1, l_b=-10.0, u_b=10.0, value=array([4]))
-    design_space.add_variable("x_shared_2", 1, l_b=0.0, u_b=10.0, value=array([3]))
+    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_shared_1", l_b=-10.0, u_b=10.0, value=array([4]))
+    design_space.add_variable("x_shared_2", l_b=0.0, u_b=10.0, value=array([3]))
 
     scenario = create_scenario(
         disciplines,

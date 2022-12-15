@@ -18,8 +18,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
 import re
 import unittest
+from pathlib import Path
 from typing import Sequence
 
 import pytest
@@ -42,6 +44,9 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import int64
 from numpy.linalg import norm
 from numpy.testing import assert_equal
 
@@ -156,7 +161,7 @@ def test_save_optimization_history_exception(mdf_scenario):
     "file_format", [OptimizationProblem.GGOBI_FORMAT, OptimizationProblem.HDF5_FORMAT]
 )
 def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd):
-    file_path = tmp_wd / "file_name"
+    file_path = Path("file_name")
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
     assert file_path.exists()
@@ -172,19 +177,14 @@ def test_init_mdf(mdf_scenario):
 def test_basic_idf(tmp_wd, idf_scenario):
     """"""
     posts = idf_scenario.posts
-
     assert len(posts) > 0
-
     for post in ["OptHistoryView", "Correlations", "QuadApprox"]:
         assert post in posts
 
     # Monitor in the console
-    idf_scenario.xdsmize(
-        outdir=str(tmp_wd), json_output=True, html_output=True, open_browser=False
-    )
-
-    assert (tmp_wd / "xdsm.json").exists()
-    assert (tmp_wd / "xdsm.html").exists()
+    idf_scenario.xdsmize(json_output=True)
+    assert Path("xdsm.json").exists()
+    assert Path("xdsm.html").exists()
 
 
 def test_backup_error(tmp_wd, mdf_scenario):
@@ -199,9 +199,7 @@ def test_backup_error(tmp_wd, mdf_scenario):
         )
 
     with pytest.raises(IOError):
-        mdf_scenario.set_optimization_history_backup(
-            __file__, erase=False, pre_load=True
-        )
+        mdf_scenario.set_optimization_history_backup(__file__, pre_load=True)
 
 
 @pytest.mark.parametrize("each_iter", [False, True])
@@ -210,25 +208,21 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
     Test that, when used, the backup does not call the original objective.
     """
-    filename = "opt_history.h5"
+    file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(
-        filename,
-        erase=True,
-        pre_load=False,
-        generate_opt_plot=True,
-        each_new_iter=each_iter,
+        file_path, erase=True, generate_opt_plot=True, each_new_iter=each_iter
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     assert len(mdf_scenario.formulation.opt_problem.database) == 2
 
-    assert (tmp_wd / filename).exists()
+    assert file_path.exists()
 
-    opt_read = OptimizationProblem.import_hdf(filename)
+    opt_read = OptimizationProblem.import_hdf(file_path)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
-    mdf_scenario.set_optimization_history_backup(filename, erase=True, pre_load=False)
-    assert not (tmp_wd / filename).exists()
+    mdf_scenario.set_optimization_history_backup(file_path, erase=True)
+    assert not file_path.exists()
 
 
 @pytest.mark.parametrize(
@@ -243,7 +237,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     """
     filename = "opt_history.h5"
     mdf_variable_grammar_scenario.set_optimization_history_backup(
-        filename, erase=False, pre_load=True, generate_opt_plot=False
+        filename, pre_load=True
     )
     mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     opt_read = OptimizationProblem.import_hdf(filename)
@@ -324,11 +318,7 @@ def test_adapter(tmp_wd, idf_scenario):
     """Test the adapter."""
     # Monitor in the console
     idf_scenario.xdsmize(
-        True,
-        print_statuses=True,
-        outdir=str(tmp_wd),
-        json_output=True,
-        html_output=True,
+        True, print_statuses=True, outdir=str(tmp_wd), json_output=True
     )
 
     idf_scenario.default_inputs = {
@@ -381,13 +371,11 @@ def test_repr_str(idf_scenario):
     assert repr(idf_scenario) == "\n".join(expected)
 
 
-def test_xdsm_filename(tmp_path, idf_scenario):
+def test_xdsm_filename(tmp_wd, idf_scenario):
     """Tests the export path dir for xdsm."""
     outfilename = "my_xdsm.html"
-    idf_scenario.xdsmize(
-        outdir=tmp_path, outfilename=outfilename, latex_output=False, html_output=True
-    )
-    assert (tmp_path / outfilename).is_file()
+    idf_scenario.xdsmize(outfilename=outfilename)
+    assert Path(outfilename).is_file()
 
 
 @pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
@@ -603,3 +591,128 @@ def test_use_standardized_objective(
     assert expr in caplog.text
     assert f"Objective: {val}" in caplog.text
     assert f"obj={int(val)}" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "cast_default_inputs_to_complex, expected_dtype",
+    [(True, complex128), (False, float64)],
+)
+def test_complex_casting(
+    cast_default_inputs_to_complex, expected_dtype, mdf_scenario: MDOScenario
+):
+    """Check the automatic casting of default inputs when complex_step is selected.
+
+    Args:
+        cast_default_inputs_to_complex: Whether to cast the default inputs of the
+            scenario's disciplines to complex.
+        expected_dtype: The expected ``dtype`` after setting the differentiation method.
+        mdf_scenario: A fixture for the MDOScenario.
+    """
+    for discipline in mdf_scenario.disciplines:
+        for value in discipline.default_inputs.values():
+            assert value.dtype == float64
+
+    mdf_scenario.set_differentiation_method(
+        mdf_scenario.COMPLEX_STEP,
+        cast_default_inputs_to_complex=cast_default_inputs_to_complex,
+    )
+    for discipline in mdf_scenario.disciplines:
+        for value in discipline.default_inputs.values():
+            assert value.dtype == expected_dtype
+
+
+@pytest.fixture
+def scenario_with_non_float_variables() -> MDOScenario:
+    """Create an ``MDOScenario`` from an ``AnalyticDiscipline`` with non-float inputs.
+
+    Returns:
+        The MDOScenario.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    discipline = AnalyticDiscipline({"y": "x"})
+    discipline.input_grammar.update(["z"])
+    discipline.input_grammar.update(["w"])
+    discipline.default_inputs["z"] = "some_str"
+    discipline.default_inputs["w"] = array(1, dtype=int64)
+
+    return MDOScenario([discipline], "DisciplinaryOpt", "y", design_space)
+
+
+@pytest.mark.parametrize(
+    "cast_default_inputs_to_complex, expected_dtype",
+    [(True, complex128), (False, float64)],
+)
+def test_complex_casting_with_non_float_variables(
+    cast_default_inputs_to_complex, expected_dtype, scenario_with_non_float_variables
+):
+    """Test that the scenario will not cast non-float variables to complex.
+
+    Args:
+        cast_default_inputs_to_complex: Whether to cast the float default inputs of the
+            scenario's disciplines to complex.
+        expected_dtype: The expected ``dtype`` after setting the differentiation method.
+        scenario_with_non_float_variables: Fixture that returns an ``MDOScenario`` with
+            an AnalyticDiscipline that has integer and string inputs.
+    """
+    scenario_with_non_float_variables.set_differentiation_method(
+        scenario_with_non_float_variables.COMPLEX_STEP,
+        cast_default_inputs_to_complex=cast_default_inputs_to_complex,
+    )
+
+    assert (
+        scenario_with_non_float_variables.formulation.design_space._current_value[
+            "x"
+        ].dtype
+        == complex128
+    )
+    assert (
+        scenario_with_non_float_variables.disciplines[0].default_inputs["x"].dtype
+        == expected_dtype
+    )
+    assert isinstance(
+        scenario_with_non_float_variables.disciplines[0].default_inputs["z"], str
+    )
+    assert (
+        scenario_with_non_float_variables.disciplines[0].default_inputs["w"].dtype
+        == int64
+    )
+
+
+def test_check_disciplines():
+    """Test that an exception is raised when two disciplines compute the same output."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    discipline_1 = AnalyticDiscipline({"y": "x"}, name="foo")
+    discipline_2 = AnalyticDiscipline({"y": "x + 1"}, name="bar")
+    with pytest.raises(
+        ValueError,
+        match="Two disciplines, among "
+        f"which {discipline_2.name}, "
+        "compute the same output: {'y'}",
+    ):
+        MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
+
+
+def test_lib_serialization(tmp_wd, mdf_scenario):
+    """Test the serialization of an MDOScenario with an instantiated opt_lib.
+
+    Args:
+        mdf_scenario: A fixture for the MDOScenario.
+    """
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.formulation.opt_problem.reset(database=False, design_space=False)
+
+    with open("scenario.pkl", "wb") as file:
+        pickle.dump(mdf_scenario, file)
+
+    with open("scenario.pkl", "rb") as file:
+        pickled_scenario = pickle.load(file)
+
+    assert pickled_scenario._lib is None
+
+    pickled_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+
+    assert pickled_scenario._lib.internal_algo_name == "SLSQP"

@@ -216,7 +216,8 @@ class SobieskiMission(SobieskiDiscipline):
             * self.__compute_dlnweightratio_dwf(w_t, w_f)
         )
 
-    def __compute_dtheta_dh(self, altitude: float) -> float:
+    @staticmethod
+    def __compute_dtheta_dh(altitude: float) -> float:
         """Derive the square root of the air temperature wrt the altitude.
 
         Args:

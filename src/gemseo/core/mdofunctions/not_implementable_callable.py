@@ -19,11 +19,7 @@ from typing import NoReturn
 
 
 class NotImplementedCallable:
-    """A not implemented callable object."""
+    """A callable object which raises NotImplementedError when called."""
 
-    def __call__(self, *args, **kwargs) -> NoReturn:
-        """
-        Raises:
-            NotImplementedError: At each evaluation.
-        """
+    def __call__(self, *args, **kwargs) -> NoReturn:  # noqa:D102
         raise NotImplementedError("Function is not implemented.")

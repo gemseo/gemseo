@@ -14,7 +14,7 @@ Classification
 API
 ---
 
-.. automodule:: gemseo.mlearning.regression.regression
+.. automodule:: gemseo.mlearning.classification.classification
    :noindex:
 
 Algorithms

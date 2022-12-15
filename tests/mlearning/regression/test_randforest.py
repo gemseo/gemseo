@@ -113,9 +113,9 @@ def test_model_1d_output(model_1d_output):
     assert predictions["y_1"].shape == (3, 1)
 
 
-def test_save_and_load(model, tmp_path):
+def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save(path=str(tmp_path))
+    dirname = model.save()
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

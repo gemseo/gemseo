@@ -22,12 +22,12 @@ from .mlearning import block as mlearning
 from .opt import block as opt
 from .post import block as post
 from .scalable import block as scalable
-from .study_prototyping import block as study_prototyping
+from .study_analysis import block as study_analysis
 from .surrogate import block as surrogate
 from .uncertainty import block as uncertainty
 
 blocks = [
-    study_prototyping,
+    study_analysis,
     opt,
     doe,
     formulation,
