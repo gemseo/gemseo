@@ -32,6 +32,12 @@ MATLAB_SIMPLE_FUNC_MULTIDIM_JAC = MATLAB_FILES_DIR_PATH / "dummy_test_multidim_j
 FCT_MULTIDIM_DATASET = MATLAB_FILES_DIR_PATH / "dummy_file_multidim_fct.mat"
 
 
+def test_engine_property():
+    """Check the engine property."""
+    mat = MatlabDiscipline(MATLAB_SIMPLE_FUNC)
+    assert not mat.engine.is_closed
+
+
 def test_inputs_from_matlab():
     """Test input variables read from matlab file."""
     mat2 = MatlabDiscipline(MATLAB_COMPLEX_FUNC)

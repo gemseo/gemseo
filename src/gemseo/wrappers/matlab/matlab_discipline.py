@@ -47,6 +47,7 @@ import numpy as np
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.wrappers.matlab.engine import get_matlab_engine
+from gemseo.wrappers.matlab.engine import MatlabEngine
 from gemseo.wrappers.matlab.matlab_data_processor import convert_array_from_matlab
 from gemseo.wrappers.matlab.matlab_data_processor import double2array
 from gemseo.wrappers.matlab.matlab_data_processor import load_matlab_file
@@ -214,6 +215,15 @@ class MatlabDiscipline(MDODiscipline):
 
         if self.__is_jac_returned_by_func:
             self.__reorder_and_check_jacobian_consistency()
+
+    @property
+    def engine(self) -> MatlabEngine:
+        """The matlab engine of the discipline.
+
+        The engine is associated to the ``matlab_engine_name`` provided at the instance
+        construction.
+        """
+        return self.__engine
 
     @property
     def function_name(self) -> str:
