@@ -36,7 +36,6 @@ Added
 -----
 
 - API changes:
-
   - ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
   - :class:`.PCERegressor` has new arguments:
     - ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
@@ -44,6 +43,7 @@ Added
     - ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
     - ``hyperbolic_parameter`` to truncate the PCE before training.
   `#496 <https://gitlab.com/gemseo/dev/gemseo/-/issues/496>`_
+- The :class:`.MDAChain` has now an option to run the independent branches of the process in parallel.
 - The Ishigami use case to illustrate and benchmark UQ techniques (:class:`.IshigamiFunction`, :class:`.IshigamiSpace`, :class:`.IshigamiProblem` and :class:`.IshigamiDiscipline`).
   `#517 <https://gitlab.com/gemseo/dev/gemseo/-/issues/517>`_
 - An :class:`.MDODiscipline` can now be composed of :attr:`~.MDODiscipline.disciplines`.
@@ -100,6 +100,9 @@ Changed
   `#372 <https://gitlab.com/gemseo/dev/gemseo/-/issues/372>`_
 - The jacobian computation in :class:`.MDOChain` now uses the minimal jacobians of the disciplines
   instead of the ``force_all`` option of the disciplines linearization.
+  `#531 <https://gitlab.com/gemseo/dev/gemseo/-/issues/531>`_
+- The jacobian computation in :class:`.MDA` now uses the minimal jacobians of the disciplines
+  instead of all couplings for the disciplines linearization.
   `#483 <https://gitlab.com/gemseo/dev/gemseo/-/issues/483>`_
 - The :meth:`.Scenario.set_differentiation_method` now casts automatically all float default inputs of the disciplines
   in its formulation to complex when using :attr:`~.OptimizationProblem.COMPLEX_STEP` and setting the option
