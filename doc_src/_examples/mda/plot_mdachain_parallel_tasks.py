@@ -32,10 +32,16 @@ from gemseo.mda.mda_chain import MDAChain
 
 configure_logger()
 
-
-#############################################################################
-# Create, execute and post-process MDA
-# ------------------------------------
+################################################
+# Introduction
+# ----------------------------------------------
+#
+# In a :class:`.MDAChain`,
+# there may be an opportunity to parallelize the execution of :class:`.MDA`
+# that can be executed independently.
+# As an example,
+# let us consider the following expressions,
+# which will be used to instantiate analytic disciplines:
 
 disciplines_expressions = [
     {"a": "x"},
@@ -47,6 +53,46 @@ disciplines_expressions = [
     {"obj2": "b+c"},
     {"obj": "obj1+obj2"},
 ]
+
+# %%
+# We can easily observe in these disciplines,
+# that the :math:`x_1` and :math:`y_1` variables are strongly coupled.
+# It follows that the second and third disciplines are strongly coupled and
+# constitute a :class:`.MDA`.
+#
+#
+# The same statement can be done for the disciplines that provide the output variables
+# :math:`x_2` and :math:`y_2`,
+# and the fourth and fifth disciplines which are also strongly coupled.
+# These two MDAs are independent and only depend on the variable :math:`a` given by
+# the first discipline.
+#
+#
+# Thus,
+# they can be run in parallel,
+# hence reducing the overall :class:`.MDAChain` execution provided that enough
+# resources are available on the computing node (in our case, at least two CPUs).
+# By default, the parallel execution of the independent :class:`.MDA` are deactivated,
+# meaning that the execution of the two independent :class:`.MDA` will remain sequential.
+# Yet, a parallel execution of the two :class:`.MDA` can be  activated using the
+# `mdachain_parallelize_task` boolean option.
+#
+#
+# If activated,
+# the user has also the possibility to provide parallelization options,
+# such as using either threads or processes to perform the parallelization,
+# or the number of processes or threads to use.
+# By default, as more lightweight, threading is used but on some specific case,
+# where for instance race conditions may occur,
+# multiprocessing can be employed.
+
+####################################################
+# Example of :class:`.MDAChain` with parallelization
+# --------------------------------------------------
+#
+# We are here using the disciplines previously defined by their analytical expressions,
+# and we are going to explicitly ask for a parallelization of the execution of the
+# two independent :class:`.MDA`.
 
 disciplines = []
 for expr in disciplines_expressions:
