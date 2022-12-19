@@ -1,0 +1,207 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "0",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "MDAGaussSeidel",
+        "type": "mda"
+      },
+      {
+        "id": "Dis4",
+        "name": "1",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis5",
+        "name": "2",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis6",
+        "name": "MDAGaussSeidel",
+        "type": "mda"
+      },
+      {
+        "id": "Dis7",
+        "name": "3",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis8",
+        "name": "4",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "y2^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x"
+      },
+      {
+        "from": "Dis6",
+        "to": "Opt",
+        "name": "y2"
+      },
+      {
+        "from": "Dis7",
+        "to": "Opt",
+        "name": "y2"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "a^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "_U_",
+        "name": "y1^*, b^*"
+      },
+      {
+        "from": "Dis5",
+        "to": "_U_",
+        "name": "x1^*"
+      },
+      {
+        "from": "Dis7",
+        "to": "_U_",
+        "name": "c^*"
+      },
+      {
+        "from": "Dis7",
+        "to": "Opt",
+        "name": "y2"
+      },
+      {
+        "from": "Dis8",
+        "to": "_U_",
+        "name": "x2^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "a"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis6",
+        "name": "a"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "x1"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis5",
+        "name": "y1"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis5",
+        "name": "y1"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis3",
+        "name": "x1"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis4",
+        "name": "x1"
+      },
+      {
+        "from": "Dis6",
+        "to": "Dis7",
+        "name": "x2"
+      },
+      {
+        "from": "Dis6",
+        "to": "Dis8",
+        "name": "y2"
+      },
+      {
+        "from": "Dis7",
+        "to": "Dis8",
+        "name": "y2"
+      },
+      {
+        "from": "Dis8",
+        "to": "Dis6",
+        "name": "x2"
+      },
+      {
+        "from": "Dis8",
+        "to": "Dis7",
+        "name": "x2"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          {
+            "parallel": [
+              [
+                "Dis3",
+                [
+                  "Dis4",
+                  "Dis5"
+                ]
+              ],
+              [
+                "Dis6",
+                [
+                  "Dis7",
+                  "Dis8"
+                ]
+              ]
+            ]
+          }
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize y2(x)\n   with respect to x"
+  }
+}

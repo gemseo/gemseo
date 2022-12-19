@@ -603,7 +603,10 @@ def expand(
     elif isinstance(wks, ParallelExecSequence):
         res = []
         for sequence in wks.sequences:
-            res += expand(sequence, to_id)
+            if isinstance(sequence, AtomicExecSequence):
+                res += expand(sequence, to_id)
+            else:
+                res.append(expand(sequence, to_id))
         ids = [{"parallel": res}]
     elif isinstance(wks, LoopExecSequence):
         if (
