@@ -45,6 +45,8 @@ from gemseo.utils.xdsmizer import NodeType
 from gemseo.utils.xdsmizer import XDSMizer
 from gemseo.utils.xdsmizer import XdsmType
 
+from ..mda.test_mda import analytic_disciplines_from_desc
+
 
 @pytest.mark.usefixtures("tmp_wd")
 class TestXDSMizer(unittest.TestCase):
@@ -422,3 +424,39 @@ def assert_level_xdsm_equal(
                 found = True
         assert found, f"Edge {str(expected_edge)} not found."
     assert expected["workflow"] == generated["workflow"]
+
+
+def test_xdsmize_mdf_mdoparallelchain(tmp_wd):
+    """Test the XDSM representation of an MDF including an MDOParallelChain.
+
+    In this case, the two MDAGaussSeidel created in the MDAChain must be parallel
+    """
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"a": "x"},
+            {"y1": "x1", "b": "a+1"},
+            {"x1": "1.-0.3*y1"},
+            {"y2": "x2", "c": "a+2"},
+            {"x2": "1.-0.3*y2"},
+        )
+    )
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    mdachain_parallel_options = {"use_threading": True, "n_processes": 2}
+    scenario = MDOScenario(
+        disciplines,
+        formulation="MDF",
+        objective_name="y2",
+        design_space=design_space,
+        mdachain_parallelize_tasks=True,
+        mdachain_parallel_options=mdachain_parallel_options,
+        inner_mda_name="MDAGaussSeidel",
+    )
+
+    options = {
+        "html_output": False,
+        "json_output": True,
+        "outfilename": "xdsmized_mdf_mdoparallelchain.json",
+    }
+
+    assert_xdsm(scenario, **options)
