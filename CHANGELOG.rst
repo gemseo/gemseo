@@ -35,14 +35,6 @@ Version 4.2.0 (2022-12-15)
 Added
 -----
 
-- API changes:
-  - ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
-  - :class:`.PCERegressor` has new arguments:
-    - ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
-    - ``use_lars`` to get a sparse PCE with the LARS algorithm in the case of the least-squares regression.
-    - ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
-    - ``hyperbolic_parameter`` to truncate the PCE before training.
-  `#496 <https://gitlab.com/gemseo/dev/gemseo/-/issues/496>`_
 - The :class:`.MDAChain` has now an option to run the independent branches of the process in parallel.
 - The Ishigami use case to illustrate and benchmark UQ techniques (:class:`.IshigamiFunction`, :class:`.IshigamiSpace`, :class:`.IshigamiProblem` and :class:`.IshigamiDiscipline`).
   `#517 <https://gitlab.com/gemseo/dev/gemseo/-/issues/517>`_
@@ -65,8 +57,6 @@ Fixed
   `#280 <https://gitlab.com/gemseo/dev/gemseo/-/issues/280>`_
 - When the :meth:`.DOELibrary.execute` is called twice with different DOEs, the functions attached to the :class:`.OptimizationProblem` are correctly sampled during the second execution and the results correctly stored in the :class:`.Database`.
   `#435 <https://gitlab.com/gemseo/dev/gemseo/-/issues/435>`_
-- The cleaning options of :class:`.PCERegressor` now depend on the polynomial degree.
-  `#481 <https://gitlab.com/gemseo/dev/gemseo/-/issues/481>`_
 - A :class:`.ParameterSpace` prevents the mixing of probability distributions coming from different libraries.
   `#495 <https://gitlab.com/gemseo/dev/gemseo/-/issues/495>`_
 - :class:`.MinMaxScaler` and :class:`.StandardScaler` can now deal with constant variables.
