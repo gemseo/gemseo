@@ -93,7 +93,7 @@ class CustomDOE(DOELibrary):
 
     def _get_options(
         self,
-        doe_file: str | Path | TextIO | None = None,
+        doe_file: str | Path | None = None,
         samples: ndarray | None = None,
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
@@ -130,7 +130,7 @@ class CustomDOE(DOELibrary):
         """
         return self._process_options(
             max_time=max_time,
-            doe_file=doe_file,
+            doe_file=str(doe_file) if doe_file is not None else None,
             samples=samples,
             delimiter=delimiter,
             comments=comments,
