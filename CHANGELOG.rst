@@ -27,7 +27,7 @@ and this project adheres to
 
 .. towncrier release notes start
 
-Version 4.2.0 (2022-12-15)
+Version 4.2.0 (2022-12-22)
 **************************
 
 
@@ -35,15 +35,11 @@ Version 4.2.0 (2022-12-15)
 Added
 -----
 
-- API changes:
-
-  - ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
-  - :class:`.PCERegressor` has new arguments:
-    - ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
-    - ``use_lars`` to get a sparse PCE with the LARS algorithm in the case of the least-squares regression.
-    - ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
-    - ``hyperbolic_parameter`` to truncate the PCE before training.
-  `#496 <https://gitlab.com/gemseo/dev/gemseo/-/issues/496>`_
+- Add a new property to :class:`.MatlabDiscipline` in order to get access to the :class:`.MatlabEngine` instance attribute.
+  `#536 <https://gitlab.com/gemseo/dev/gemseo/-/issues/536>`_
+- Independent :class:`.MDA` in a :class:`.MDAChain` can be run in parallel.
+  `#587 <https://gitlab.com/gemseo/dev/gemseo/-/issues/587>`_
+- The :class:`.MDAChain` has now an option to run the independent branches of the process in parallel.
 - The Ishigami use case to illustrate and benchmark UQ techniques (:class:`.IshigamiFunction`, :class:`.IshigamiSpace`, :class:`.IshigamiProblem` and :class:`.IshigamiDiscipline`).
   `#517 <https://gitlab.com/gemseo/dev/gemseo/-/issues/517>`_
 - An :class:`.MDODiscipline` can now be composed of :attr:`~.MDODiscipline.disciplines`.
@@ -61,12 +57,12 @@ Added
 Fixed
 -----
 
+- Fix the XDSM workflow of a sequential sequence within a parallel sequence.
+  `#586 <https://gitlab.com/gemseo/dev/gemseo/-/issues/586>`_
 - :class:`.Factory` no longer considers abstract classes.
   `#280 <https://gitlab.com/gemseo/dev/gemseo/-/issues/280>`_
 - When the :meth:`.DOELibrary.execute` is called twice with different DOEs, the functions attached to the :class:`.OptimizationProblem` are correctly sampled during the second execution and the results correctly stored in the :class:`.Database`.
   `#435 <https://gitlab.com/gemseo/dev/gemseo/-/issues/435>`_
-- The cleaning options of :class:`.PCERegressor` now depend on the polynomial degree.
-  `#481 <https://gitlab.com/gemseo/dev/gemseo/-/issues/481>`_
 - A :class:`.ParameterSpace` prevents the mixing of probability distributions coming from different libraries.
   `#495 <https://gitlab.com/gemseo/dev/gemseo/-/issues/495>`_
 - :class:`.MinMaxScaler` and :class:`.StandardScaler` can now deal with constant variables.
@@ -82,7 +78,7 @@ Fixed
   `#559 <https://gitlab.com/gemseo/dev/gemseo/-/issues/559>`_
 - :class:`.OptProblem.get_violation_criteria` is inf for constraints with NaN values.
   `#561 <https://gitlab.com/gemseo/dev/gemseo/-/issues/561>`_
-- Progress Bar fixed, tests added to ensure the right behavior.
+- Fixed a bug in the iterations progress bar, that displayed inconsistent objective function and duration values.
   `#562 <https://gitlab.com/gemseo/dev/gemseo/-/issues/562>`_
 - :class:`.NormFunction` and :class:`.NormDBFunction` now use the :attr:`~.MDOFunction.special_repr` of the original :class:`.MDOFunction`.
   `#568 <https://gitlab.com/gemseo/dev/gemseo/-/issues/568>`_
@@ -93,6 +89,7 @@ Fixed
 Changed
 -------
 
+- Since version 4.1.0, when using a DOE, an integer variable passed to a discipline is casted to a floating point. The previous behavior will be restored in version 4.2.1.
 - The batches requested by pSeven are evaluated in parallel.
   `#207 <https://gitlab.com/gemseo/dev/gemseo/-/issues/207>`_
 - The :class:`.LagrangeMultipliers` of a non-solved :class:`.OptimizationProblem` can be approximated.
@@ -100,6 +97,9 @@ Changed
   `#372 <https://gitlab.com/gemseo/dev/gemseo/-/issues/372>`_
 - The jacobian computation in :class:`.MDOChain` now uses the minimal jacobians of the disciplines
   instead of the ``force_all`` option of the disciplines linearization.
+  `#531 <https://gitlab.com/gemseo/dev/gemseo/-/issues/531>`_
+- The jacobian computation in :class:`.MDA` now uses the minimal jacobians of the disciplines
+  instead of all couplings for the disciplines linearization.
   `#483 <https://gitlab.com/gemseo/dev/gemseo/-/issues/483>`_
 - The :meth:`.Scenario.set_differentiation_method` now casts automatically all float default inputs of the disciplines
   in its formulation to complex when using :attr:`~.OptimizationProblem.COMPLEX_STEP` and setting the option

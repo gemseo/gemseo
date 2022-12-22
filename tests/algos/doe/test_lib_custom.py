@@ -79,6 +79,13 @@ def test_read_file_error():
                 "doe_file": DOE_FILE_PATH,
             },
         ),
+        (
+            30,
+            {
+                "delimiter": ";",
+                "doe_file": Path(DOE_FILE_PATH),
+            },
+        ),
     ],
 )
 def test_samples_shape(n_samples, options):

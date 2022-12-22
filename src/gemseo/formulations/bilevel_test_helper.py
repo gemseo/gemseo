@@ -26,11 +26,16 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
-def create_sobieski_bilevel_scenario() -> Callable[[dict[str, float]], MDOScenario]:
-    """Create a function to generate a Sobieski BiLevel Scenario.
+def create_sobieski_bilevel_scenario(
+    scenario_formulation: str = "BiLevel",
+) -> Callable[[dict[str, float]], MDOScenario]:
+    """Create a function to generate a Sobieski Scenario.
+
+    Args:
+        scenario_formulation: The name of the formulation of the scenario.
 
     Returns:
-        A function which generates a Sobieski BiLevel Scenario with specific options.
+        A function which generates a Sobieski scenario with specific options.
     """
 
     def func(**options):
@@ -85,7 +90,7 @@ def create_sobieski_bilevel_scenario() -> Callable[[dict[str, float]], MDOScenar
         ds = SobieskiProblem().design_space
         sc_system = MDOScenario(
             sub_disciplines,
-            formulation="BiLevel",
+            formulation=scenario_formulation,
             objective_name="y_4",
             design_space=ds.filter(["x_shared", "y_14"]),
             maximize_objective=True,
