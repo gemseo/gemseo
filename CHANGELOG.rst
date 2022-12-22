@@ -27,7 +27,7 @@ and this project adheres to
 
 .. towncrier release notes start
 
-Version 4.2.0 (2022-12-15)
+Version 4.2.0 (2022-12-22)
 **************************
 
 
@@ -35,6 +35,10 @@ Version 4.2.0 (2022-12-15)
 Added
 -----
 
+- Add a new property to :class:`.MatlabDiscipline` in order to get access to the :class:`.MatlabEngine` instance attribute.
+  `#536 <https://gitlab.com/gemseo/dev/gemseo/-/issues/536>`_
+- Independent :class:`.MDA` in a :class:`.MDAChain` can be run in parallel.
+  `#587 <https://gitlab.com/gemseo/dev/gemseo/-/issues/587>`_
 - The :class:`.MDAChain` has now an option to run the independent branches of the process in parallel.
 - The Ishigami use case to illustrate and benchmark UQ techniques (:class:`.IshigamiFunction`, :class:`.IshigamiSpace`, :class:`.IshigamiProblem` and :class:`.IshigamiDiscipline`).
   `#517 <https://gitlab.com/gemseo/dev/gemseo/-/issues/517>`_
@@ -53,6 +57,8 @@ Added
 Fixed
 -----
 
+- Fix the XDSM workflow of a sequential sequence within a parallel sequence.
+  `#586 <https://gitlab.com/gemseo/dev/gemseo/-/issues/586>`_
 - :class:`.Factory` no longer considers abstract classes.
   `#280 <https://gitlab.com/gemseo/dev/gemseo/-/issues/280>`_
 - When the :meth:`.DOELibrary.execute` is called twice with different DOEs, the functions attached to the :class:`.OptimizationProblem` are correctly sampled during the second execution and the results correctly stored in the :class:`.Database`.
@@ -83,6 +89,7 @@ Fixed
 Changed
 -------
 
+- Since version 4.1.0, when using a DOE, an integer variable passed to a discipline is casted to a floating point. The previous behavior will be restored in version 4.2.1.
 - The batches requested by pSeven are evaluated in parallel.
   `#207 <https://gitlab.com/gemseo/dev/gemseo/-/issues/207>`_
 - The :class:`.LagrangeMultipliers` of a non-solved :class:`.OptimizationProblem` can be approximated.

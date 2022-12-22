@@ -1,1 +1,0 @@
-Independent :class:`.MDA` in a :class:`.MDAChain` can be run in parallel.

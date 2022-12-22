@@ -1,1 +1,0 @@
-Add a new property to :class:`.MatlabDiscipline` in order to get access to the :class:`.MatlabEngine` instance attribute.
