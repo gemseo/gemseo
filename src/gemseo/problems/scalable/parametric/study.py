@@ -659,7 +659,8 @@ class TMScalableStudy:
             factor += 1
         ax.set_xlabel("Disciplines")
         ax.set_ylabel("Execution time")
-        ax.set_xticks(indices + bar_width, self.disc_names)
+        ax.set_xticks(indices + bar_width)
+        ax.set_xticklabels(self.disc_names)
         ax.legend()
         save_show_figure(fig, show, file_path if save else None)
 
