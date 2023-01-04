@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import ClassVar
+from typing import Dict
 from typing import Optional
 from typing import Sequence
 from typing import Union
@@ -38,7 +39,7 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
-MeasureType = Union[float, ndarray, dict[str, ndarray]]
+MeasureType = Union[float, ndarray, Dict[str, ndarray]]
 
 
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
