@@ -22,36 +22,15 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.qual_measure.r2_measure import R2Measure
+from gemseo.mlearning.qual_measure.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.utils.testing import compare_dict_of_arrays
+from numpy import array
 from numpy import linspace
-
-
-@pytest.fixture
-def measure() -> MLErrorMeasure:
-    """The error measure of a linear regression based on the Rosenbrock dataset."""
-    dataset = RosenbrockDataset(opt_naming=False)
-    algo = LinearRegressor(dataset)
-    return MLErrorMeasure(algo)
-
-
-def test_evaluate(measure):
-    """Test different evaluation methods of error measure."""
-    with pytest.raises(NotImplementedError):
-        measure.evaluate_learn()
-    dataset_test = RosenbrockDataset(opt_naming=False)
-    with pytest.raises(NotImplementedError):
-        measure.evaluate_test(dataset_test)
-    with pytest.raises(NotImplementedError):
-        measure.evaluate_loo()
-    with pytest.raises(NotImplementedError):
-        measure.evaluate_kfolds()
-    with pytest.raises(NotImplementedError):
-        measure.evaluate_bootstrap()
 
 
 @pytest.mark.parametrize(
@@ -94,7 +73,9 @@ def test_dataset() -> Dataset:
 @pytest.mark.parametrize("input_names", [None, ["x1"]])
 @pytest.mark.parametrize("output_names", [None, ["y2"]])
 @pytest.mark.parametrize("method", ["bootstrap", "kfolds", "test"])
-@pytest.mark.parametrize("measure_cls,expected", [(MSEMeasure, 0.0), (R2Measure, 1.0)])
+@pytest.mark.parametrize(
+    "measure_cls,expected", [(MSEMeasure, 0.0), (RMSEMeasure, 0.0), (R2Measure, 1.0)]
+)
 def test_subset_of_inputs_and_outputs(
     measure_cls,
     expected,
@@ -116,3 +97,24 @@ def test_subset_of_inputs_and_outputs(
         measure = measure_cls(algo)
         result = measure.evaluate(method=method, **kwargs)
         assert result == pytest.approx(expected)
+        result = measure.evaluate(
+            method=method, multioutput=True, as_dict=True, **kwargs
+        )
+        assert compare_dict_of_arrays(
+            result,
+            {k: array([expected]) for k in output_names or ["y1", "y2"]},
+            tolerance=1e-3,
+        )
+        result = measure.evaluate(
+            method=method, multioutput=False, as_dict=True, **kwargs
+        )
+        if output_names is not None:
+            assert compare_dict_of_arrays(
+                result,
+                {output_names[0]: array([expected])},
+                tolerance=1e-3,
+            )
+        else:
+            assert compare_dict_of_arrays(
+                result, {"y1#y2": array([expected])}, tolerance=1e-3
+            )

@@ -39,6 +39,7 @@ from sklearn.metrics import f1_score
 
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 
 
 class F1Measure(MLErrorMeasure):
@@ -62,7 +63,7 @@ class F1Measure(MLErrorMeasure):
         outputs: ndarray,
         predictions: ndarray,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         if multioutput:
             raise NotImplementedError("F1 is only defined for single target.")
         return f1_score(outputs, predictions, average="weighted")
