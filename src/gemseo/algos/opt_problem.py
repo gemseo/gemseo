@@ -523,7 +523,9 @@ class OptimizationProblem:
         if not has_default_name:
             cstr_func.name = func_name
             if cstr_func.outvars:
-                cstr_repr = cstr_repr.replace(func_name, "#".join(cstr_func.outvars))
+                output_names = "#".join(cstr_func.outvars)
+                cstr_repr = cstr_repr.replace(func_name, output_names)
+                cstr_func.expr = cstr_func.expr.replace(func_name, output_names)
                 cstr_func.special_repr = f"{func_name}: {cstr_repr}"
 
         if func_name not in self.constraint_names:
