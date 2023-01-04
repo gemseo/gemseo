@@ -257,3 +257,19 @@ def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space):
 
     assert asymptotic_interval[0][0] != bootstrap_interval[0][0]
     assert asymptotic_interval[1][0] != bootstrap_interval[1][0]
+
+
+def test_confidence_level_default(discipline, uncertain_space):
+    """Check the default confidence level used by the algorithm."""
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis.compute_indices()
+    algos = analysis._SobolAnalysis__output_names_to_sobol_algos
+    assert algos["y"][0].getConfidenceLevel() == 0.95
+
+
+def test_confidence_level_custom(discipline, uncertain_space):
+    """Check setting a custom confidence level."""
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis.compute_indices(confidence_level=0.90)
+    algos = analysis._SobolAnalysis__output_names_to_sobol_algos
+    assert algos["y"][0].getConfidenceLevel() == 0.90
