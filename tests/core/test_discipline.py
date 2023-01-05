@@ -20,6 +20,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from pathlib import Path
@@ -1069,3 +1070,29 @@ def test_add_differentiated_io_non_numeric(
     discipline.add_differentiated_outputs()
     assert discipline._differentiated_inputs == expected_diff_inputs
     assert discipline._differentiated_outputs == expected_diff_outputs
+
+
+def test_hdf5cache_twice(tmp_wd, caplog):
+    """Check what happens when the cache policy is set twice at HDF5Cache."""
+    discipline = MDODiscipline()
+    discipline.set_cache_policy(
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="foo"
+    )
+    cache_id = id(discipline.cache)
+
+    discipline.set_cache_policy(
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="foo"
+    )
+    assert id(discipline.cache) == cache_id
+    _, log_level, log_message = caplog.record_tuples[0]
+    assert log_level == logging.WARNING
+    assert log_message == (
+        "The cache policy is already set to HDF5Cache "
+        "with the file path 'cache.hdf' and node name 'foo'; "
+        "call discipline.cache.clear() to clear the cache."
+    )
+
+    discipline.set_cache_policy(
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="bar"
+    )
+    assert id(discipline.cache) != cache_id

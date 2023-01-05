@@ -674,7 +674,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if self.cache.__class__.__name__ != cache_type or not (
             cache_type == self.HDF5_CACHE
             and cache_hdf_file == self.cache.hdf_file.hdf_file_path
-            and cache_hdf_node_name == self.cache.node_path
+            and cache_hdf_node_name == self.cache.hdf_node_name
         ):
             self.cache = self.__create_new_cache(
                 cache_type,
@@ -685,8 +685,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
         else:
             LOGGER.warning(
-                "Cache policy is set to %s: call clear() to clear a discipline cache",
+                (
+                    "The cache policy is already set to %s "
+                    "with the file path %r and node name %r; "
+                    "call discipline.cache.clear() to clear the cache."
+                ),
                 cache_type,
+                cache_hdf_file,
+                cache_hdf_node_name,
             )
 
     def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
