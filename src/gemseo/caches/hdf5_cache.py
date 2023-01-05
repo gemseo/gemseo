@@ -50,22 +50,23 @@ class HDF5Cache(AbstractFullCache):
         tolerance: float = 0.0,
         name: str | None = None,
     ) -> None:
+        # TODO: API: rename hdf_node_path to hdf_node_name.
         """
         Args:
             hdf_file_path: The path of the HDF file.
                 Initialize a singleton to access the HDF file.
                 This singleton is used for multithreading/multiprocessing access
                 with a lock.
-            hdf_node_path: The node of the HDF file.
+            hdf_node_path: The name of node of the HDF file.
             name: A name for the cache.
-                If ``None``, use ``hdf_note_path``.
+                If ``None``, use :attr:`hdf_node_name``.
 
         Warnings:
             This class relies on some multiprocessing features, it is therefore
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
         """  # noqa: D205, D212, D415
-        self.__hdf_node_path = hdf_node_path
+        self.__hdf_node_name = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
         if not name:
             name = hdf_node_path
@@ -75,15 +76,20 @@ class HDF5Cache(AbstractFullCache):
 
     @property
     def hdf_file(self) -> HDF5FileSingleton:
-        """The hdf file handler."""
+        """The HDF file handler."""
         return self.__hdf_file
+
+    @property
+    def hdf_node_name(self) -> str:
+        """The name of the HDF node."""
+        return self.__hdf_node_name
 
     def __str__(self) -> str:
         msg = MultiLineString()
         msg.add(super().__str__())
         msg.indent()
         msg.add("HDF file path: {}", self.__hdf_file.hdf_file_path)
-        msg.add("HDF node path: {}", self.__hdf_node_path)
+        msg.add("HDF node name: {}", self.__hdf_node_name)
         return str(msg)
 
     def __getstate__(self):
@@ -91,7 +97,7 @@ class HDF5Cache(AbstractFullCache):
         return dict(
             tolerance=self.tolerance,
             hdf_file_path=self.__hdf_file.hdf_file_path,
-            hdf_node_path=self.__hdf_node_path,
+            hdf_node_path=self.__hdf_node_name,
             name=self.name,
         )
 
@@ -102,7 +108,7 @@ class HDF5Cache(AbstractFullCache):
         file_path = Path(self.__hdf_file.hdf_file_path)
         return self.__class__(
             hdf_file_path=file_path.parent / ("new_" + file_path.name),
-            hdf_node_path=self.__hdf_node_path,
+            hdf_node_path=self.__hdf_node_name,
             tolerance=self.tolerance,
             name=self.name,
         )
@@ -114,7 +120,7 @@ class HDF5Cache(AbstractFullCache):
     def _read_hashes(self) -> None:
         """Read the hashes dict in the HDF file."""
         max_index = self.__hdf_file.read_hashes(
-            self._hashes_to_indices, self.__hdf_node_path
+            self._hashes_to_indices, self.__hdf_node_name
         )
         self._last_accessed_index.value = max_index
         self._max_index.value = max_index
@@ -122,7 +128,7 @@ class HDF5Cache(AbstractFullCache):
         if cache_size > 0:
             msg = "Found %s entries in the cache file : %s node : %s"
             LOGGER.info(
-                msg, cache_size, self.__hdf_file.hdf_file_path, self.__hdf_node_path
+                msg, cache_size, self.__hdf_file.hdf_file_path, self.__hdf_node_name
             )
 
     def _has_group(
@@ -130,12 +136,12 @@ class HDF5Cache(AbstractFullCache):
         index: int,
         group: str,
     ) -> bool:
-        return self.__hdf_file.has_group(index, group, self.__hdf_node_path)
+        return self.__hdf_file.has_group(index, group, self.__hdf_node_name)
 
     @synchronized
     def clear(self) -> None:  # noqa:D102
         super().clear()
-        self.__hdf_file.clear(self.__hdf_node_path)
+        self.__hdf_file.clear(self.__hdf_node_name)
 
     def _read_data(
         self,
@@ -152,7 +158,7 @@ class HDF5Cache(AbstractFullCache):
                 If ``None``, open it.
         """  # noqa: D205, D212, D415
         data = self.__hdf_file.read_data(
-            index, group, self.__hdf_node_path, h5_open_file=h5_open_file
+            index, group, self.__hdf_node_name, h5_open_file=h5_open_file
         )[0]
         if group == self._JACOBIAN_GROUP and data is not None:
             data = nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
@@ -169,7 +175,7 @@ class HDF5Cache(AbstractFullCache):
             data,
             group,
             index,
-            self.__hdf_node_path,
+            self.__hdf_node_name,
         )
 
     @synchronized
