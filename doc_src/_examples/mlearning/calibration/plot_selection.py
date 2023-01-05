@@ -34,12 +34,13 @@ np.random.seed(54321)
 ###############################################################################
 # Build dataset
 # -------------
-# The data consists of a 1D-function :math:`f:[0,1]\to[0,1]`, where
-# :math:`f(x)=x^2`. The inputs :math:`(x_i)_{i=1,\cdots,n}` are chosen randomly
-# from the interval :math:`[0,1]`. The outputs
-# :math:`y_i = f(x_i) + \epsilon_i`contain added noise, where
-# :math:`\epsilon_i\tilde \mathcal{N}(0,\sigma^2)`.
-# We choose :math:`n=20` and :math:`\sigma=0.05`.
+# The data are generated from the function :math:`f(x)=x^2`.
+# The input data :math:`\{x_i\}_{i=1,\cdots,20}` are chosen at random
+# over the interval :math:`[0,1]`.
+# The output value :math:`y_i = f(x_i) + \varepsilon_i` corresponds to
+# the evaluation of :math:`f` at :math:`x_i`
+# corrupted by a Gaussian noise :math:`\varepsilon_i`
+# with zero mean and standard deviation :math:`\sigma=0.05`.
 n = 20
 x = np.sort(np.random.random(n))
 y = x**2 + np.random.normal(0, 0.05, n)
