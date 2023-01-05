@@ -572,7 +572,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             dataset.add_variable(name, vstack(data[name]))
 
         dataset.row_names = [f"{output[0]}({output[1]})" for output in outputs]
-        plot = BarPlot(dataset)
+        plot = BarPlot(dataset, n_digits=2)
         plot.title = title
         plot.execute(
             save=save,
@@ -777,7 +777,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, None]
         dataset.row_names = [method.main_method for method in methods]
         if use_bar_plot:
-            plot = BarPlot(dataset)
+            plot = BarPlot(dataset, n_digits=2)
         else:
             plot = RadarChart(dataset)
             plot.rmin = 0.0
