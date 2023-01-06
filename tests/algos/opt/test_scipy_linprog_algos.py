@@ -38,7 +38,6 @@ class TestScipyLinprog(TestCase):
 
     @staticmethod
     def get_problem():
-
         # Design space
         design_space = DesignSpace()
         design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -58,26 +57,22 @@ class TestScipyLinprog(TestCase):
         return problem
 
     def test_init(self):
-
         factory = OptimizersFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
     def test_nonlinear_pb(self):
-
         problem = Rosenbrock()
         library = OptimizersFactory().create(self.OPT_LIB_NAME)
         adapted_algorithms = library.filter_adapted_algorithms(problem)
         assert not adapted_algorithms
 
     def test_linprog_algorithms(self):
-
         library = OptimizersFactory().create(self.OPT_LIB_NAME)
         for algo_name in library.descriptions.keys():
             self.check_algorithm(algo_name)
 
     def check_algorithm(self, algo_name):
-
         # Check that the problem must be linear
         problem = Rosenbrock()
         self.assertRaises(ValueError, OptimizersFactory().execute, problem, algo_name)

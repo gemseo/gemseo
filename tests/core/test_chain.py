@@ -45,7 +45,6 @@ class Testmdochain(unittest.TestCase):
     """"""
 
     def get_disciplines_list(self, perm, dtype="complex128"):
-
         disciplines = [
             SobieskiStructure(dtype),
             SobieskiAerodynamics(dtype),
@@ -127,7 +126,6 @@ class Testmdochain(unittest.TestCase):
         )
 
     def test_double_mission_chain(self):
-
         # Create a chain that adds two missions
         disciplines = [SobieskiMission(), SobieskiMission()]
         outputs_to_sum = ["y_4"]

@@ -220,13 +220,10 @@ class OptimizationProblem:
     use_standardized_objective: bool
     """Whether to use standardized objective for logging and post-processing.
 
-    The standardized objective corresponds to the original one
-    expressed as a cost function to minimize.
-    A :class:`.DriverLib` works with this standardized objective
-    and the :class:`.Database` stores its values.
-    However, for convenience,
-    it may be more relevant to log the expression
-    and the values of the original objective.
+    The standardized objective corresponds to the original one expressed as a cost
+    function to minimize. A :class:`.DriverLib` works with this standardized objective
+    and the :class:`.Database` stores its values. However, for convenience, it may be
+    more relevant to log the expression and the values of the original objective.
     """
 
     constraint_names: dict[str, list[str]]

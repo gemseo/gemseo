@@ -139,8 +139,8 @@ class DesignSpace(collections.abc.MutableMapping):
     """The name of the space."""
 
     dimension: int
-    """The total dimension of the space,
-    corresponding to the sum of the sizes of the variables."""
+    """The total dimension of the space, corresponding to the sum of the sizes of the
+    variables."""
 
     # TODO: API: rename all variables_x to variable_x
     variables_names: list[str]
@@ -150,13 +150,12 @@ class DesignSpace(collections.abc.MutableMapping):
     """The sizes of the variables."""
 
     variables_types: dict[str, ndarray]
-    """The types of the variables components,
-    which can be any :attr:`.DesignSpace.DesignVariableType`."""
+    """The types of the variables components, which can be any
+    :attr:`.DesignSpace.DesignVariableType`."""
 
     normalize: dict[str, ndarray]
-    """The normalization policies
-    of the variables components indexed by the variables names;
-    if `True`, the component can be normalized."""
+    """The normalization policies of the variables components indexed by the variables
+    names; if `True`, the component can be normalized."""
 
     __VARIABLE_TYPES_TO_DTYPES: ClassVar[dict[str, str]] = {
         DesignVariableType.FLOAT.value: "float64",

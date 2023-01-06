@@ -481,8 +481,8 @@ class StudyAnalysis:
     """The XLSStudyParser instance built from the Excel file."""
 
     disciplines_descr: dict[str, MDODiscipline]
-    """The descriptions of the disciplines
-    (including sub-scenario) parsed in the Excel file."""
+    """The descriptions of the disciplines (including sub-scenario) parsed in the Excel
+    file."""
 
     scenarios_descr: dict[str, dict[str, str | list[str]]]
     """The descriptions of the scenarios parsed in the Excel file."""

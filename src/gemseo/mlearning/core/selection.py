@@ -69,8 +69,8 @@ class MLAlgoSelection:
     """The learning dataset."""
 
     measure: str
-    """The name of a quality measure
-    to measure the quality of the machine learning algorithms."""
+    """The name of a quality measure to measure the quality of the machine learning
+    algorithms."""
 
     measure_options: dict[str, int | Dataset]
     """The options for the method to evaluate the quality measure."""
@@ -79,8 +79,8 @@ class MLAlgoSelection:
     """The factory used for the instantiation of machine learning algorithms."""
 
     candidates: list[tuple[MLAlgo, float]]
-    """The candidate machine learning algorithms,
-    after possible calibration, and their quality measures."""
+    """The candidate machine learning algorithms, after possible calibration, and their
+    quality measures."""
 
     def __init__(
         self,

@@ -42,9 +42,8 @@ class SobieskiDiscipline(MDODiscipline):
     """The data type for the NumPy arrays."""
 
     sobieski_problem: SobieskiProblem
-    """The Sobieski's SSBJ use case
-    defining the MDO problem,
-    e.g. disciplines, constraints, design space and reference optimum."""
+    """The Sobieski's SSBJ use case defining the MDO problem, e.g. disciplines,
+    constraints, design space and reference optimum."""
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("dtype",)
     GRAMMAR_DIRECTORY = Path(__file__).parent / "grammars"
@@ -90,10 +89,11 @@ class SobieskiMission(SobieskiDiscipline):
     """
 
     enable_delay: bool | float
-    """If ``True``,
-    wait one second before computation.
-    If a positive number, wait the corresponding number of seconds.
-    If ``False``, compute directly."""
+    """If ``True``, wait one second before computation.
+
+    If a positive number, wait the corresponding number of seconds. If ``False``, compute
+    directly.
+    """
 
     _ATTR_TO_SERIALIZE = SobieskiDiscipline._ATTR_TO_SERIALIZE + ("enable_delay",)
 

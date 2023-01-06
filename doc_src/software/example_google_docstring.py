@@ -128,8 +128,8 @@ class ExampleClass:
     """The description of ``attr2``."""
 
     class_attr1 = 0
-    """A class attribute that can be re-assigned and turned into an instance
-    attribute by an instance."""
+    """A class attribute that can be re-assigned and turned into an instance attribute by
+    an instance."""
 
     class_attr2: ClassVar[int] = 0
     """A class attribute that shall not be re-assigned by an instance."""

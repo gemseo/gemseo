@@ -43,8 +43,8 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
     """The initial values of the design variables."""
 
     sobieski_problem: SobieskiProblem
-    """The Sobieski's SSBJ use case defining the MDO problem,
-    e.g. disciplines, constraints, design space and reference optimum."""
+    """The Sobieski's SSBJ use case defining the MDO problem, e.g. disciplines,
+    constraints, design space and reference optimum."""
 
     def __init__(
         self,
@@ -76,10 +76,10 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
     """
 
     enable_delay: bool | float
-    """If ``True``,
-    wait one second before computation.
-    If a positive number, wait the corresponding number of seconds.
-    If ``False``, compute directly.
+    """If ``True``, wait one second before computation.
+
+    If a positive number, wait the corresponding number of seconds. If ``False``, compute
+    directly.
     """
 
     def __init__(

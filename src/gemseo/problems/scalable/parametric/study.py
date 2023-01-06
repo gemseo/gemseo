@@ -76,7 +76,6 @@ OPTIM_DIR = "opthistoryview"
 
 
 class TMParamSS:
-
     """This scalable parametric study realizes scalable studies with different scaling
     strategies.
 
@@ -307,7 +306,6 @@ class TMParamSS:
 
 
 class TMParamSSPost:
-
     """This class is dedicated to the post-treatment of TMParamSS results."""
 
     def __init__(self, file_path):
@@ -368,7 +366,6 @@ class TMParamSSPost:
 
 
 class TMScalableStudy:
-
     """This scalable study creates a scalable MDO problem from Tedford and Martins, 2010
     and compares its resolution according to different MDO formulations."""
 

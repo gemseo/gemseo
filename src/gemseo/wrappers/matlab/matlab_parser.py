@@ -57,7 +57,6 @@ class MatlabParser:
     RE_ARGS = re.compile(r"\((.*?)\)")
 
     def __init__(self, full_path: str | None = None) -> None:
-
         """
         Args:
             full_path: The path to the matlab file.
