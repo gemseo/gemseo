@@ -45,7 +45,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TMMainModel:
-
     r"""The main discipline from the scalable problem introduced by Tedford
     and Martins (2010) takes the  local design parameters
     :math:`x_1,x_2,\ldots,x_N` and the global design parameters :math:`z`
@@ -153,7 +152,6 @@ class TMMainModel:
 
 
 class TMSubModel:
-
     r"""A sub-discipline from the scalable problem introduced by Tedford and Martins
     (2010) takes local design parameters :math:`x_i` and shared design parameters
     :math:`z` in input as well as coupling variables :math:`\left(y_i\right)_{1\leq j

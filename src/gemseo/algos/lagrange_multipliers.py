@@ -85,8 +85,8 @@ class LagrangeMultipliers:
     """The residual of the KKT conditions, ``None`` if not computed."""
 
     constraint_violation: float | None
-    """The maximum constraint violation (taking tolerances into account),
-    ``None`` if not computed."""
+    """The maximum constraint violation (taking tolerances into account), ``None`` if not
+    computed."""
 
     LOWER_BOUNDS = "lower_bounds"
     UPPER_BOUNDS = "upper_bounds"

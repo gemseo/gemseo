@@ -46,9 +46,8 @@ class ScipyLinalgAlgos(LinearSolverLib):
     """Wrapper for scipy linalg sparse linear solvers."""
 
     save_fpath: str
-    """The path to the file to saved the problem when
-    it is not converged and the option save_when_fail
-    is active."""
+    """The path to the file to saved the problem when it is not converged and the option
+    save_when_fail is active."""
 
     methods_map: dict[str, Callable[[ndarray, ndarray, ...], tuple[ndarray, int]]]
     """The mapping between the solver names and the solvers methods in scipy.sparse."""

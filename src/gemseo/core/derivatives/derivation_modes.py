@@ -21,8 +21,8 @@
 from __future__ import annotations
 
 DIRECT_MODE = "direct"
-"""The direct Jacobian accumulation, chain rule from inputs to outputs,
-or derivation of an MDA that solves one system per input."""
+"""The direct Jacobian accumulation, chain rule from inputs to outputs, or derivation of
+an MDA that solves one system per input."""
 
 REVERSE_MODE = "reverse"
 """The reverse Jacobian accumulation, chain rule from outputs to inputs."""
@@ -35,15 +35,15 @@ AUTO_MODE = "auto"
 
 
 COMPLEX_STEP = "complex_step"
-"""The complex step method used to approximate the Jacobians by perturbing each
-variable with a small complex number."""
+"""The complex step method used to approximate the Jacobians by perturbing each variable
+with a small complex number."""
 
 FINITE_DIFFERENCES = "finite_differences"
-"""The finite differences method used to approximate the Jacobians by perturbing
-   each variable with a small real number."""
+"""The finite differences method used to approximate the Jacobians by perturbing each
+variable with a small real number."""
 
 AVAILABLE_MODES = (DIRECT_MODE, ADJOINT_MODE, AUTO_MODE, REVERSE_MODE)
-"""All possible derivation modes"""
+"""All possible derivation modes."""
 
 AVAILABLE_APPROX_MODES = (COMPLEX_STEP, FINITE_DIFFERENCES)
 """The approximation derivation modes."""

@@ -42,7 +42,6 @@ pytest.importorskip("pdfo", reason="pdfo is not available")
 
 
 class TestPDFO(TestCase):
-
     OPT_LIB_NAME = "PDFOOpt"
 
     def test_init(self):

@@ -61,7 +61,6 @@ class TMDiscipline(MDODiscipline):
 
 
 class TMMainDiscipline(TMDiscipline):
-
     r"""The system discipline from the scalable problem introduced by Tedford
     and Martins (2010) takes the  local design parameters
     :math:`x_1,x_2,\ldots,x_N` and the global design parameters :math:`z`
@@ -132,7 +131,6 @@ class TMMainDiscipline(TMDiscipline):
 
 
 class TMSubDiscipline(TMDiscipline):
-
     r"""An elementary discipline from the scalable problem introduced by Tedford and
     Martins (2010) takes local design parameters :math:`x_i` and shared design
     parameters :math:`z` in input as well as coupling variables

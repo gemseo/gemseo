@@ -102,8 +102,8 @@ class MLAlgoAssessor(MDODiscipline):
     """The transformation strategy for data groups."""
 
     algos: list[MLAlgo]
-    """The instances of the machine learning algorithm
-    (one per execution of the machine learning algorithm assessor)."""
+    """The instances of the machine learning algorithm (one per execution of the machine
+    learning algorithm assessor)."""
 
     CRITERION = "criterion"
     LEARNING = "learning"

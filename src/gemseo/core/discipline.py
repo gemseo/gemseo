@@ -114,16 +114,17 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """The policy to re-execute the same discipline."""
 
     residual_variables: Mapping[str, str]
-    """The output variables mapping to their inputs,
-    to be considered as residuals; they shall be equal to zero.
-    """
+    """The output variables mapping to their inputs, to be considered as residuals; they
+    shall be equal to zero."""
 
     run_solves_residuals: bool
     """If True, the run method shall solve the residuals."""
 
     jac: dict[str, dict[str, ndarray]]
-    """The Jacobians of the outputs wrt inputs
-    of the form ``{output: {input: matrix}}``."""
+    """The Jacobians of the outputs wrt inputs of the form ``{output: {input:
+
+    matrix}}``.
+    """
 
     exec_for_lin: bool
     """Whether the last execution was due to a linearization."""
@@ -132,8 +133,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """The name of the discipline."""
 
     cache: AbstractCache | None
-    """The cache containing one or several executions of the discipline
-    according to the cache policy."""
+    """The cache containing one or several executions of the discipline according to the
+    cache policy."""
 
     STATUS_VIRTUAL = "VIRTUAL"
     STATUS_PENDING = "PENDING"

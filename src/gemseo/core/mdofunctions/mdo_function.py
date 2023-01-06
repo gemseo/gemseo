@@ -226,9 +226,12 @@ class MDOFunction:
     """The names of the outputs of the function."""
 
     _ATTR_NOT_TO_SERIALIZE: tuple[str] = ("_n_calls",)
-    """The attributes that shall be skipped at serialization. Private attributes shall
-    be written following name mangling conventions: ``_ClassName__attribute_name``.
-    Subclasses must expand this class attribute if needed. """
+    """The attributes that shall be skipped at serialization.
+
+    Private attributes shall be written following name mangling conventions:
+    ``_ClassName__attribute_name``. Subclasses must expand this class attribute if
+    needed.
+    """
 
     __INPUT_NAME_PATTERN: Final[str] = "x"
     """The pattern to define a variable name, as ``"x!1"``."""

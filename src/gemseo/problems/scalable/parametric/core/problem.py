@@ -43,7 +43,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TMProblem:
-
     """The scalable problem from Tedford and Martins, 2010, builds a list of strongly
     coupled models (:class:`.TMSubModel`) completed by a main model
     (:class:`.TMMainModel`) computing the objective function and the constraints.

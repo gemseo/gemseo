@@ -43,7 +43,6 @@ MeasureType = Union[float, ndarray, Dict[str, ndarray]]
 
 
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
-
     """An abstract quality measure to assess a machine learning algorithm.
 
     This measure can be minimized (e.g. :class:`.MSEMeasure`)
@@ -92,8 +91,8 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     _FIT_TRANSFORMERS: ClassVar[bool] = True
     """Whether to re-fit the transformers when using resampling techniques.
 
-    If ``False``,
-    use the transformers of the algorithm fitted from the whole learning dataset.
+    If ``False``, use the transformers of the algorithm fitted from the whole learning
+    dataset.
     """
 
     _RANDOMIZE: ClassVar[bool] = True

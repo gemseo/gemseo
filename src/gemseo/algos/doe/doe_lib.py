@@ -74,8 +74,8 @@ class DOELibrary(DriverLib):
     seed: int
     """The seed to be used for replicability reasons.
 
-    It increments with each generation of samples
-    so that repeating the generation of sets of :math:`N` leads to different sets.
+    It increments with each generation of samples so that repeating the generation of
+    sets of :math:`N` leads to different sets.
     """
 
     eval_jac: bool

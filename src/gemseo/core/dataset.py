@@ -128,8 +128,7 @@ class Dataset:
     data: dict[str, ndarray]
     """The data stored by variable names or group names.
 
-    The values are NumPy arrays
-    whose columns are features and rows are observations.
+    The values are NumPy arrays whose columns are features and rows are observations.
     """
 
     sizes: dict[str, int]
@@ -144,10 +143,8 @@ class Dataset:
     strings_encoding: dict[str, dict[int, int]]
     """The encoding structure mapping the values of the string variables with integers.
 
-    The keys are the names of the variables
-    and the values are dictionaries
-    whose keys are the components of the variables
-    and the values are the integer values.
+    The keys are the names of the variables and the values are dictionaries whose keys
+    are the components of the variables and the values are the integer values.
     """
 
     metadata: dict[str, Any]

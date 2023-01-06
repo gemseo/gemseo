@@ -41,7 +41,9 @@ class LinearProblem:
 
     lhs: ndarray | LinearOperator | spmatrix
     """The left-hand side of the equation.
-    If None, the problem can't be solved and the user has to set it after init."""
+
+    If None, the problem can't be solved and the user has to set it after init.
+    """
 
     solution: ndarray
     """The current solution of the problem."""

@@ -82,7 +82,7 @@ class MDA(MDODiscipline):
     activate_cache = True
 
     tolerance: float
-    """The tolerance of the iterative direct coupling solver"""
+    """The tolerance of the iterative direct coupling solver."""
 
     linear_solver: str
     """The name of the linear solver."""
