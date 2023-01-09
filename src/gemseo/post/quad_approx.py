@@ -25,12 +25,13 @@ import logging
 from math import ceil
 
 import numpy as np
-import pylab
 from matplotlib import pyplot
+from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import LogFormatterSciNotation
+from numpy import arange
+from numpy import array
 from numpy import ndarray
-from pylab import plt
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
@@ -115,9 +116,8 @@ class QuadApprox(OptPostProcessor):
         )
         return b_mat
 
-    @classmethod
     def __plot_hessian(
-        cls,
+        self,
         hessian: ndarray,
         function: str,
     ) -> Figure:
@@ -130,27 +130,36 @@ class QuadApprox(OptPostProcessor):
         Returns:
             The plot of the Hessian of the function.
         """
-        fig = pylab.figure(figsize=cls.DEFAULT_FIG_SIZE)
-        pylab.plt.xlabel(r"$x_i$", fontsize=16)
-        pylab.plt.ylabel(r"$x_j$", fontsize=16)
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        grid = self._get_grid_layout()
+        ax1 = fig.add_subplot(grid[0, 0])
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
         linear_threshold = 10 ** (np.log10(vmax) - 5.0)
 
         # SymLog is a symmetric log scale adapted to negative values
-        pylab.imshow(
+        img = ax1.imshow(
             hessian,
             cmap=PARULA,
             interpolation="nearest",
             norm=SymLogNorm(linthresh=linear_threshold, vmin=-vmax, vmax=vmax),
         )
-        pylab.grid(True)
+        ticks = arange(self.opt_problem.dimension)
+        design_variable_names = self._get_design_variable_names()
+        ax1.set_xticks(ticks)
+        ax1.set_xticklabels(design_variable_names, rotation=45)
+        ax1.set_yticks(ticks)
+        ax1.set_yticklabels(design_variable_names)
         thick_min, thick_max = int(np.log10(linear_threshold)), int(np.log10(vmax))
         positive_levels = np.logspace(
             thick_min, thick_max, num=thick_max - thick_min + 1
         )
-        pylab.plt.colorbar(
-            ticks=np.concatenate((np.sort(-positive_levels), positive_levels)),
-            format=LogFormatter(base=10),
+        fig.colorbar(
+            img,
+            cax=fig.add_subplot(grid[0, 1]),
+            ticks=np.concatenate(
+                (np.sort(-positive_levels), array([0]), positive_levels)
+            ),
+            format=LogFormatterSciNotation(),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")
         return fig
@@ -198,7 +207,9 @@ class QuadApprox(OptPostProcessor):
         upper_bounds = self.opt_problem.design_space.get_upper_bounds()
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
 
-        for i in range(ndv):
+        for i, design_variable_name in enumerate(
+            self._get_design_variable_names(simplify_names=False)
+        ):
             ax_i = plt.subplot(nrows, ncols, i + 1)
             f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
             self.materials_for_plotting[i] = f_vals
@@ -210,6 +221,6 @@ class QuadApprox(OptPostProcessor):
             ax_i.xaxis.set_ticks(np.arange(start, stop, 0.4999999 * (stop - start)))
             start, stop = ax_i.get_ylim()
             ax_i.yaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
-            ax_i.set_xlabel(r"$x_{" + str(i) + "}$", fontsize=14)
+            ax_i.set_xlabel(design_variable_name)
         pyplot.tight_layout()
         return fig

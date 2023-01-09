@@ -1,0 +1,1 @@
+:class:`.QuadApprox` now displays the names of the design variables.
