@@ -96,6 +96,7 @@ class MDOScenarioAdapter(MDODiscipline):
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
         name: str | None = None,
         keep_opt_history: bool = False,
+        opt_history_file_prefix: str = "",
     ) -> None:
         """..
         Args:
@@ -113,8 +114,16 @@ class MDOScenarioAdapter(MDODiscipline):
                 the Lagrange multipliers of the scenario optimal solution are computed
                 and added to the outputs.
             name: The name of the scenario adapter.
-                If None, use ``"{}_adapter"``.
+                If ``None``, use the name of the scenario adapter
+                suffixed by ``"_adapter"``.
             keep_opt_history: Whether to keep databases copies after each execution.
+            opt_history_file_prefix: The base name for the databases to be exported.
+                The full names of the databases are built from
+                the provided base name suffixed by ``"_i.h5"``
+                where ``i`` is replaced by the execution number,
+                i.e the number of stored databases.
+                If empty, the databases are not exported.
+                The databases can be exported only is ``keep_opt_history=True``.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -130,6 +139,7 @@ class MDOScenarioAdapter(MDODiscipline):
         self._output_multipliers = output_multipliers
         self.keep_opt_history = keep_opt_history
         self.databases = []
+        self.__opt_history_file_prefix = opt_history_file_prefix
 
         name = name or f"{scenario.name}_adapter"
         super().__init__(name, cache_type=cache_type, grammar_type=grammar_type)
@@ -362,6 +372,10 @@ class MDOScenarioAdapter(MDODiscipline):
 
         if self.keep_opt_history and opt_problem.solution is not None:
             self.databases.append(deepcopy(opt_problem.database))
+            if self.__opt_history_file_prefix:
+                self.databases[-1].export_hdf(
+                    f"{self.__opt_history_file_prefix}_{len(self.databases)}.h5"
+                )
 
         # Test if the last evaluation is the optimum
         x_opt = design_space.get_current_value()

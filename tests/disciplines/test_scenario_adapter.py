@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import pickle
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from gemseo.algos.database import Database
@@ -440,11 +441,18 @@ def test_lagrange_multipliers_outputs():
     assert allclose(lagr_grad, zeros_like(lagr_grad))
 
 
-def test_keep_opt_history(scenario):
-    """Tests the option that keeps the local history of sub optimizations."""
-    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"], keep_opt_history=True)
+@pytest.mark.parametrize("export_name", ["", "local_database"])
+def test_keep_opt_history(tmp_wd, scenario, export_name):
+    """Test the option that keeps the local history of sub optimizations, with and
+    without the export option."""
+    adapter = MDOScenarioAdapter(
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        keep_opt_history=True,
+        opt_history_file_prefix=export_name,
+    )
     adapter.execute()
-
     adapter.execute({"x_shared": adapter.default_inputs["x_shared"] + 1.0})
 
     assert len(adapter.databases) == 2
@@ -452,6 +460,11 @@ def test_keep_opt_history(scenario):
     for database in adapter.databases:
         assert isinstance(database, Database)
         assert len(database) > 2
+
+    if export_name:
+        path = Path(export_name)
+        assert (path.parent / f"{path.name}_1.h5").exists()
+        assert (path.parent / f"{path.name}_2.h5").exists()
 
 
 @pytest.mark.parametrize("set_x0_before_opt", [True, False])
