@@ -143,6 +143,7 @@ TEST_PARAMETERS = {
             "opt_history_view_variables_standardized",
             "opt_history_view_objective_standardized",
             "opt_history_view_x_xstar_standardized",
+            "opt_history_view_hessian_approximation_standardized",
             "opt_history_view_ineq_constraints_standardized",
             "opt_history_view_eq_constraints_standardized",
         ],
@@ -153,6 +154,7 @@ TEST_PARAMETERS = {
             "opt_history_view_variables_unstandardized",
             "opt_history_view_objective_unstandardized",
             "opt_history_view_x_xstar_unstandardized",
+            "opt_history_view_hessian_approximation_unstandardized",
             "opt_history_view_ineq_constraints_unstandardized",
             "opt_history_view_eq_constraints_unstandardized",
         ],
@@ -168,11 +170,14 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+    use_standardized_objective,
+    baseline_images,
+    three_length_common_problem,
+    pyplot_close_all,
 ):
     """Check OptHistoryView with objective, standardized or not."""
-    opt = OptHistoryView(common_problem)
-    common_problem.use_standardized_objective = use_standardized_objective
+    opt = OptHistoryView(three_length_common_problem)
+    three_length_common_problem.use_standardized_objective = use_standardized_objective
     opt.execute(save=False)
 
 

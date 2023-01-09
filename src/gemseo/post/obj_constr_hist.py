@@ -22,9 +22,9 @@ from __future__ import annotations
 import logging
 from typing import Sequence
 
-import matplotlib.gridspec as gridspec
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
 from numpy import ndarray
 
@@ -61,17 +61,14 @@ class ObjConstrHist(OptPostProcessor):
         self.ineq_cstr_cmap = RG_SEISMIC
         self.eq_cstr_cmap = "seismic"
 
-    def _plot(
-        self,
-        constraint_names: Sequence[str] | None = None,
-    ) -> None:
+    def _plot(self, constraint_names: Sequence[str] | None = None) -> None:
         """
         Args:
             constraint_names: The names of the constraints to plot.
                 If ``None``, use all the constraints.
         """  # noqa: D205, D212, D415
         # 0. Initialize the figure.
-        grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
+        grid = self._get_grid_layout()
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         ax1 = fig.add_subplot(grid[0, 0])
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
@@ -80,22 +77,25 @@ class ObjConstrHist(OptPostProcessor):
 
         # 1. Plot the objective history versus the iterations with a curve.
         problem = self.opt_problem
+        objective_name = problem.get_objective_name()
         obj_history, x_history = self.database.get_func_history(
-            problem.get_objective_name(), x_hist=True
+            objective_name, x_hist=True
         )
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
-        obj_min, obj_max = obj_history.min(), obj_history.max()
-        if not problem.minimize_objective and problem.use_standardized_objective:
+        if not problem.minimize_objective and not problem.use_standardized_objective:
+            # Use the opposite of the standardized history.
             obj_history = -obj_history
-            obj_min, obj_max = obj_history.min(), obj_history.max()
+            # Remove the minus sign prefixing the objective name.
+            objective_name = objective_name[1:]
 
+        obj_min, obj_max = obj_history.min(), obj_history.max()
         plt.plot(obj_history)
         plt.xlabel("Iterations", fontsize=12)
-        plt.ylabel("Objective value", fontsize=12)
-        plt.ylim([obj_min, obj_max])
-        plt.xlim([0, len(x_history)])
+        plt.ylabel(objective_name, fontsize=12)
+        margin = (obj_max - obj_min) * self._Y_MARGIN
+        plt.ylim([obj_min - margin, obj_max + margin])
         plt.grid(True)
-        plt.title("Evolution of the objective value and maximal constraint")
+        plt.title("Evolution of the objective and maximum constraint")
 
         # 2. Plot the maximum constraint history versus the iterations
         #    with green-white-red color map.
@@ -117,12 +117,13 @@ class ObjConstrHist(OptPostProcessor):
             axis=1,
         )
         c_max = abs(constraint_history).max()
+        n_iter = len(x_history)
         im1 = ax1.imshow(
             np.atleast_2d(np.amax(constraint_history, axis=1)),
             cmap=RG_SEISMIC,
             interpolation="nearest",
             aspect="auto",
-            extent=[-0.5, len(x_history) - 0.5, obj_min, obj_max],
+            extent=[-0.5, n_iter - 0.5, obj_min - margin, obj_max + margin],
             norm=SymLogNorm(linthresh=1.0, vmin=-c_max, vmax=c_max),
         )
         # 2.c. Add vertical labels with constraint violation information.
@@ -130,14 +131,17 @@ class ObjConstrHist(OptPostProcessor):
         constraint_values = np.concatenate(
             [values for values in [ineq_history, eq_history] if values.size > 0], axis=1
         )
-        ordinate = obj_min + (obj_max + obj_min) / 2 * 0.1
+        ordinate = (obj_max + obj_min) / 2
         for iteration, i in enumerate(np.argmax(constraint_history, axis=1)):
-            ax1.text(
+            text = ax1.text(
                 iteration + 0.05,
                 ordinate,
-                f"constraint {constraint_names[i]} = {constraint_values[iteration, i]:.2e}",
+                f"${constraint_names[i]}="
+                f"{LogFormatterSciNotation().format_data(constraint_values[iteration, i])}$",
                 rotation="vertical",
+                va="center",
             )
+            text.set_bbox(dict(facecolor="white", alpha=0.7, edgecolor="none"))
         # 2.d. Add color map.
         thick_max = int(np.log10(np.abs(c_max)))
         levels_pos = np.append(
@@ -149,7 +153,7 @@ class ObjConstrHist(OptPostProcessor):
             im1,
             cax=cax,
             ticks=np.concatenate((np.append(np.sort(-levels_pos), 0), levels_pos)),
-            format="%.2e",
+            format=LogFormatterSciNotation(),
         )
         col_bar.ax.tick_params(labelsize=9)
         self._add_figure(fig)

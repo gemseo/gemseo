@@ -24,6 +24,7 @@ from math import floor
 from math import sqrt
 
 import matplotlib
+from matplotlib import pyplot as plt
 from numpy import array
 from numpy import bincount
 from numpy import float64
@@ -39,7 +40,6 @@ from numpy import nonzero
 from numpy import unique
 from numpy import where
 from numpy import zeros
-from pylab import plt
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
