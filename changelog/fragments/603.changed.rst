@@ -1,0 +1,1 @@
+The methods :meth:`~.SensitivityAnalysis.plot_bar` and :meth:`~.SensitivityAnalysis.plot_comparison` of :class:`.SensitivityAnalysis` uses two decimal places by default for a better readability.

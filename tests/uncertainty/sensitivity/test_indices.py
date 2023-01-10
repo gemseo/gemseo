@@ -26,8 +26,6 @@ from gemseo.api import create_discipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.post.dataset.bars import BarPlot
-from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
@@ -140,6 +138,7 @@ BARPLOT_TEST_PARAMETERS = {
         ["bar_plot_inputs_standardize"],
     ),
     "outputs": ({"outputs": ["y1", "y2"]}, ["bar_plot_outputs"]),
+    "n_digits": ({"outputs": "y2", "n_digits": 1}, ["bar_plot_n_digits"]),
 }
 
 
@@ -181,23 +180,32 @@ def test_plot_radar(
     mock_sensitivity_analysis.plot_radar(save=False, show=False, **kwargs)
 
 
-def test_plot_comparison(discipline, parameter_space):
-    """Check if the comparison of sensitivity indices works.
+COMPARISON_TEST_PARAMETERS = {
+    "use_bar": (True, ["comparison_bar"]),
+    "use_radar": (False, ["comparison_radar"]),
+}
 
-    Args:
-        discipline: A discipline of interest.
-        parameter_space: The parameter space related to this discipline.
-    """
+
+@pytest.mark.parametrize(
+    "use_bar_plot, baseline_images",
+    COMPARISON_TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=COMPARISON_TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_plot_comparison(
+    use_bar_plot, baseline_images, pyplot_close_all, discipline, parameter_space
+):
+    """Check if the comparison of sensitivity indices works."""
     spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
     pearson = CorrelationAnalysis([discipline], parameter_space, 10)
     pearson.main_method = pearson._PEARSON
     pearson.compute_indices()
-    plot = pearson.plot_comparison(spearman, "out", save=False, title="foo")
+    plot = pearson.plot_comparison(
+        spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot
+    )
     assert plot.title == "foo"
-    assert isinstance(plot, BarPlot)
-    plot = pearson.plot_comparison(spearman, "out", save=False, use_bar_plot=False)
-    assert isinstance(plot, RadarChart)
 
 
 def test_inputs_names(mock_sensitivity_analysis):
