@@ -1138,7 +1138,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def linearize(
         self,
-        input_data: dict[str, Any] | None = None,
+        input_data: Mapping[str, Any] | None = None,
         force_all: bool = False,
         force_no_exec: bool = False,
     ) -> dict[str, dict[str, ndarray]]:

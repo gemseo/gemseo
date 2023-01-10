@@ -158,7 +158,6 @@ from typing import TYPE_CHECKING
 
 from numpy import ndarray
 
-
 if TYPE_CHECKING:
     from logging import Logger
     from matplotlib.figure import Figure
@@ -189,6 +188,7 @@ from pathlib import Path
 # plugins is done once only
 
 LOGGER = logging.getLogger(__name__)
+
 
 # pylint: disable=import-outside-toplevel
 
@@ -1552,13 +1552,17 @@ def read_design_space(
 ) -> DesignSpace:
     """Read a design space from a file.
 
+    The following columns must be in the file:
+    "name", "lower_bound" and "upper_bound".
+
     Args:
         file_path: The path to the text file;
-            it shall contain comma-separated values
+            the file shall contain space-separated values
+            (the number of spaces is not important)
             with a row for each variable
             and at least the bounds of the variable.
         header: The names of the fields saved in the file.
-            If ``None``, read them in the file.
+            If ``None``, read them in fhe first row of the file.
 
     Returns:
         The design space.
