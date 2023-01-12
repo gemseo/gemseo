@@ -19,15 +19,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - YvsX
-===========
+Lines
+=====
 
 """
 from __future__ import annotations
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.yvsx import YvsX
+from gemseo.post.dataset.lines import Lines
+from numpy import cos
 from numpy import linspace
 from numpy import pi
 from numpy import sin
@@ -39,16 +40,18 @@ configure_logger()
 # Build a dataset
 # ---------------
 inputs = linspace(0, 1, 10)[:, None]
-outputs = sin(2 * pi * inputs)
+outputs_1 = sin(2 * pi * inputs)
+outputs_2 = cos(2 * pi * inputs)
 
 dataset = Dataset()
 dataset.add_variable("x", inputs, "inputs")
-dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
+dataset.add_variable("y1", outputs_1, "outputs", cache_as_input=False)
+dataset.add_variable("y2", outputs_2, "outputs", cache_as_input=False)
 
 ############################################################################
-# Plot y vs x
-# -----------
-# We can use the :class:`.YvsX` plot
-plot = YvsX(dataset, "x", "y")
-plot.linestyle = "--o"
+# Plot y1 and y2
+# --------------
+# We can use the :class:`.Lines` plot.
+plot = Lines(dataset, variables=["y1", "y2"])
+plot.linestyle = ["--", "-"]
 plot.execute(save=False, show=True)

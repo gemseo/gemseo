@@ -19,29 +19,33 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - Scatter matrix
-=====================
+Bars
+====
 
 """
 from __future__ import annotations
 
 from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.bars import BarPlot
+from numpy import array
 
 configure_logger()
 
 
 ############################################################################
-# Load a dataset
-# --------------
-iris = load_dataset("IrisDataset")
+# Build a dataset
+# ---------------
+dataset = Dataset()
+dataset.add_variable("x1", array([[0.25, 0.35], [0.75, 0.85]]))
+dataset.add_variable("x2", array([[0.5], [0.5]]))
+dataset.add_variable("x3", array([[0.75], [0.25]]))
+dataset.row_names = ["series_1", "series_2"]
 
 ############################################################################
-# Plot scatter matrix
-# -------------------
-# We can use the :class:`.ScatterMatrix` plot where each non-diagonal block
-# represents the samples according to the x- and y- coordinates names
-# while the diagonal ones approximate the probability distributions of the
-# variables, using either an histogram or a kernel-density estimator.
-ScatterMatrix(iris, classifier="specy").execute(save=False, show=True)
+# Plot the two series on a radar chart
+# ------------------------------------
+# We can use the :class:`.BarPlot` plot
+plot = BarPlot(dataset)
+plot.colormap = "PiYG"
+plot.execute(save=False, show=True)

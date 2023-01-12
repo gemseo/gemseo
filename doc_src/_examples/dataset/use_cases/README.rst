@@ -6,10 +6,5 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-.. _dataset:
-
-Introduction to dataset
-=======================
-
-.. automodule:: gemseo.core.dataset
-   :noindex:
+Use cases
+~~~~~~~~~

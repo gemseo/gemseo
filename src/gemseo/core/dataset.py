@@ -19,8 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A generic dataset to store data in memory.
 
-This module implements the concept of dataset
-which is a key element for machine learning, post-processing, data analysis, ...
+The concept of dataset
+is a key element for machine learning, post-processing, data analysis, ...
 
 A :class:`.Dataset` uses its attribute :attr:`.Dataset.data`
 to store :math:`N` series of data

@@ -19,16 +19,18 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - Radar chart
-==================
+Scatter
+=======
 
 """
 from __future__ import annotations
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.radar_chart import RadarChart
-from numpy import array
+from gemseo.post.dataset.scatter import Scatter
+from numpy import linspace
+from numpy import pi
+from numpy import sin
 
 configure_logger()
 
@@ -36,17 +38,18 @@ configure_logger()
 ############################################################################
 # Build a dataset
 # ---------------
+inputs = linspace(0, 1, 20)[:, None]
+outputs = sin(2 * pi * inputs)
+color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
+
 dataset = Dataset()
-dataset.add_variable("x1", array([[0.2, 0.4, 0.5], [0.1, 0.3, 0.5]]))
-dataset.add_variable("x2", array([[0.6], [0.5]]))
-dataset.add_variable("x3", array([[0.8], [0.7]]))
-dataset.row_names = ["series_1", "series_2"]
+dataset.add_variable("x", inputs, "inputs")
+dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 
 ############################################################################
-# Plot the two series on a radar chart
-# ------------------------------------
-# We can use the :class:`~gemseo.post.dataset.radar_chart.RadarChart` plot:
-plot = RadarChart(dataset, connect=True, radial_ticks=True)
-plot.rmin = -0.5
-plot.rmax = 1.0
+# Plot y vs x
+# -----------
+# We can use the :class:`.Scatter` plot
+plot = Scatter(dataset, "x", "y")
+plot.color = color
 plot.execute(save=False, show=True)
