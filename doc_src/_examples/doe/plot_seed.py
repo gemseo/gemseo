@@ -59,7 +59,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x**2"})
 
 # %%
-# This function is defined over the unit interval :math:`x\in[0,1]`:
+# This function is defined over the interval :math:`[-1,1]`:
 design_space = create_design_space()
 design_space.add_variable("x", l_b=-1, u_b=1)
 

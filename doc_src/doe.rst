@@ -118,7 +118,7 @@ the input samples can be accessed with :attr:`~.DOELibrary.samples`.
    or their lower and upper bounds.
 
 If we do not want to evaluate the functions but only obtain the input samples,
-we can use the method :meth:`~.DOELibrary.compute_doe` which returns the samples as a two-dimensional NumPy array.
+we can use the method :meth:`~gemseo.api.compute_doe` which returns the samples as a two-dimensional NumPy array.
 
 The quality of the input samples can be assessed with a :class:`.DOEQuality`
 computing the :math:`\varphi_p`, minimum-distance and discrepancy criteria.
