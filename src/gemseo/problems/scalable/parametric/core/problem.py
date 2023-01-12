@@ -77,7 +77,7 @@ class TMProblem:
             use circular coupling. Default: True.
         :param bool noised_coupling: if True, add a noise component u_local_i
             on the i-th discipline output.
-        :param int seed: seed for replicability.
+        :param int seed: seed for reproducibility.
         """
         npseed(seed)
         self._seed = seed

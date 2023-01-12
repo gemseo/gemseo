@@ -76,10 +76,10 @@ class DOELibrary(DriverLib):
     metadata."""
 
     seed: int
-    """The seed to be used for replicability reasons.
+    """The seed to be used for reproducibility reasons.
 
-    It increments with each generation of samples so that repeating the generation of
-    sets of :math:`N` leads to different sets.
+    This seed is initialized at 0 and each call to :meth:`.execute` increments it before
+    using it.
     """
 
     eval_jac: bool
