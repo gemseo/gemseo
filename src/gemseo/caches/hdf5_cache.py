@@ -65,6 +65,11 @@ class HDF5Cache(AbstractFullCache):
             This class relies on some multiprocessing features, it is therefore
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
+            Currently, the use of an HDF5Cache is not supported in parallel on Windows
+            platforms. This is due to the way subprocesses are forked in this
+            architecture. The method
+            :meth:`.DOEScenario.set_optimization_history_backup` is recommended as
+            an alternative.
         """  # noqa: D205, D212, D415
         self.__hdf_node_name = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
