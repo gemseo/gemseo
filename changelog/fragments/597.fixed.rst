@@ -1,0 +1,3 @@
+:attr:`.Statistics.n_variables` no longer corresponds to the number of variables in the :attr:`.Statistics.dataset` but to the number of variables considered by :class:`.Statistics`.
+:attr:`.ParametricStatistics` correctly handles variables with dimension greater than one.
+:meth:`.ParametricStatistics.compute_a_value` uses 0.99 as coverage level and 0.95 as confidence level.

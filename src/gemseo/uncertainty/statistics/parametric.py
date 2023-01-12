@@ -91,8 +91,12 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import ClassVar
+from typing import Dict
 from typing import Iterable
+from typing import Mapping
 from typing import Sequence
+from typing import Union
 
 import matplotlib.pyplot as plt
 from numpy import array
@@ -106,18 +110,32 @@ from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    Bounds,
+)
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
+DistributionType = Dict[str, Union[str, OTDistribution]]
+
 
 class ParametricStatistics(Statistics):
-    """Parametric estimation of statistics.
+    """A toolbox to compute statistics based on probability distribution-fitting.
+
+    Unless otherwise stated,
+    the statistics are computed *variable-wise* and *component-wise*,
+    i.e. variable-by-variable and component-by-component.
+    So, for the sake of readability,
+    the methods named as :meth:`compute_statistic` return ``dict[str, ndarray]`` objects
+    whose values are the names of the variables
+    and the values are the statistic estimated for the different component.
 
     Examples:
         >>> from gemseo.api import (
@@ -153,7 +171,7 @@ class ParametricStatistics(Statistics):
         ...     dataset, ['Normal', 'Uniform', 'Triangular']
         ... )
         >>> fitting_matrix = statistics.get_fitting_matrix()
-        >>> mean = statistics.mean()
+        >>> mean = statistics.compute_mean()
     """
 
     fitting_criterion: str
@@ -168,15 +186,28 @@ class ParametricStatistics(Statistics):
     """The name of the selection criterion to select a distribution from a list of
     candidates."""
 
-    distributions: dict[str, dict[str, OTDistribution]]
-    """The probability distributions of the random variables."""
+    distributions: dict[str, DistributionType | list[DistributionType]]
+    """The probability distributions of the random variables.
 
-    AVAILABLE_DISTRIBUTIONS = sorted(
+    When a random variable is a random vector, its probability distribution is expressed
+    as a list of marginal distributions. Otherwise, its probability distribution is
+    expressed as the unique marginal distribution.
+    """
+
+    AVAILABLE_DISTRIBUTIONS: ClassVar[list[str]] = sorted(
         OTDistributionFitter._AVAILABLE_DISTRIBUTIONS.keys()
     )
+    """The names of the available probability distributions."""
 
-    AVAILABLE_CRITERIA = sorted(OTDistributionFitter._AVAILABLE_FITTING_TESTS.keys())
-    AVAILABLE_SIGNIFICANCE_TESTS = sorted(OTDistributionFitter.SIGNIFICANCE_TESTS)
+    AVAILABLE_CRITERIA: ClassVar[list[str]] = sorted(
+        OTDistributionFitter._AVAILABLE_FITTING_TESTS.keys()
+    )
+    """The names of the available fitting criteria."""
+
+    AVAILABLE_SIGNIFICANCE_TESTS: ClassVar[list[str]] = sorted(
+        OTDistributionFitter.SIGNIFICANCE_TESTS
+    )
+    """The names of the available significance tests."""
 
     def __init__(
         self,
@@ -205,29 +236,17 @@ class ParametricStatistics(Statistics):
                 Either 'first' or 'best'.
         """  # noqa: D205,D212,D415
         super().__init__(dataset, variables_names, name)
-        significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
         self.fitting_criterion = fitting_criterion
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
-        if self.fitting_criterion in significance_tests:
+        if self.fitting_criterion in OTDistributionFitter.SIGNIFICANCE_TESTS:
             self.level = level
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
         else:
             self.level = None
-        self._all_distributions = None
-        self.distributions = None
-        self._build_distributions(distributions)
 
-    def _build_distributions(
-        self,
-        distributions: Sequence[str],
-    ) -> None:
-        """Build distributions from distributions names.
-
-        Args:
-            distributions: The names of the distributions.
-        """
         self._all_distributions = self._fit_distributions(distributions)
+        self.__distributions = {}
         self.distributions = self._select_best_distributions(distributions)
 
     def get_fitting_matrix(self) -> str:
@@ -240,43 +259,52 @@ class ParametricStatistics(Statistics):
             The printable fitting matrix.
         """
         variables = sorted(self._all_distributions.keys())
-        distributions = list(self._all_distributions[variables[0]].keys())
+        distributions = list(self._all_distributions[variables[0]][0].keys())
         table = PrettyTable(["Variable"] + distributions + ["Selection"])
         for variable in variables:
-            row, _ = self.get_criteria(variable)
-            row = [variable] + [row[distribution] for distribution in distributions]
-            row += [self.distributions[variable]["name"]]
-            table.add_row(row)
+            for index in range(self.dataset.sizes[variable]):
+                row = (
+                    [variable]
+                    + [
+                        str(self.get_criteria(variable, index)[0][distribution])
+                        for distribution in distributions
+                    ]
+                    + [self.__distributions[variable][index]["name"]]
+                )
+                table.add_row(row)
         return str(table)
 
     def get_criteria(
-        self,
-        variable: str,
+        self, variable: str, index: int = 0
     ) -> tuple[dict[str, float], bool]:
-        """Get criteria for a given variable name and the different distributions.
+        """Get the value of the fitting criterion for the different distributions.
 
         Args:
             variable: The name of the variable.
+            index: The component of the variable.
 
         Returns:
-            The criterion for the different distributions.
-            and an indicator equal to True is the criterion is a p-value.
+            The value of the fitting criterion for the given variable name and component
+            and the different distributions,
+            as well as whether this fitting criterion is a statistical test
+            and so this value a p-value.
         """
-        all_distributions = self._all_distributions[variable]
-        criteria = {
-            distribution: result["criterion"]
-            for distribution, result in all_distributions.items()
+        distribution_names_to_criterion_values = {
+            name: result["criterion"]
+            for name, result in self._all_distributions[variable][index].items()
         }
-        is_p_value = False
+        criterion_value_is_p_value = False
         significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
         if self.fitting_criterion in significance_tests:
-            criteria = {
-                distribution: result[1]["p-value"]
-                for distribution, result in criteria.items()
+            distribution_names_to_criterion_values = {
+                name: result[1]["p-value"]
+                for name, result in distribution_names_to_criterion_values.items()
             }
-            is_p_value = True
-        return criteria, is_p_value
+            criterion_value_is_p_value = True
 
+        return distribution_names_to_criterion_values, criterion_value_is_p_value
+
+    # TODO: API: remove n_legend_cols as it is not used.
     def plot_criteria(
         self,
         variable: str,
@@ -285,6 +313,7 @@ class ParametricStatistics(Statistics):
         show: bool = True,
         n_legend_cols: int = 4,
         directory: str | Path = ".",
+        index: int = 0,
     ) -> None:
         """Plot criteria for a given variable name.
 
@@ -295,16 +324,17 @@ class ParametricStatistics(Statistics):
             show: If True, show the plot.
             n_legend_cols: The number of text columns in the upper legend.
             directory: The directory path, either absolute or relative.
+            index: The index of the component of the variable.
 
         Raises:
             ValueError: If the variable is missing from the dataset.
         """
         if variable not in self.names:
             raise ValueError(
-                "The variable '{}' is missing from the dataset."
-                "Available ones are: {}.".format(variable, ", ".join(self.names))
+                f"The variable '{variable}' is missing from the dataset; "
+                f"available ones are: {pretty_str(self.names)}."
             )
-        criteria, is_p_value = self.get_criteria(variable)
+        criteria, is_p_value = self.get_criteria(variable, index)
         x_values = []
         y_values = []
         labels = []
@@ -326,7 +356,7 @@ class ParametricStatistics(Statistics):
         data_min = min(data)
         data_max = max(data)
         x_values = linspace(data_min, data_max, 1000)
-        distributions = self._all_distributions[variable]
+        distributions = self._all_distributions[variable][index]
         ax2.hist(data, density=True)
 
         for dist_name, dist_value in distributions.items():
@@ -349,7 +379,7 @@ class ParametricStatistics(Statistics):
 
     def _select_best_distributions(
         self, distributions_names: Sequence[str]
-    ) -> dict[str, dict[str, str | OTDistribution]]:
+    ) -> dict[str, DistributionType | list[DistributionType]]:
         """Select the best distributions for the different variables.
 
         Args:
@@ -360,26 +390,51 @@ class ParametricStatistics(Statistics):
         """
         LOGGER.info("Select the best distribution for each variable.")
         distributions = {}
+        select_from_measures = OTDistributionFitter.select_from_measures
         for variable in self.names:
-            all_distributions = self._all_distributions[variable]
-            criteria = [
-                all_distributions[distribution]["criterion"]
-                for distribution in distributions_names
+            distribution_names = []
+            marginal_distributions = []
+            for component, all_distributions in enumerate(
+                self._all_distributions[variable]
+            ):
+                distribution_name = distributions_names[
+                    select_from_measures(
+                        [
+                            all_distributions[distribution]["criterion"]
+                            for distribution in distributions_names
+                        ],
+                        self.fitting_criterion,
+                        self.level,
+                        self.selection_criterion,
+                    )
+                ]
+                best_dist = all_distributions[distribution_name]["fitted_distribution"]
+                distribution_names.append(distribution_name)
+                marginal_distributions.append(best_dist)
+                LOGGER.info(
+                    "| The best distribution for %s[%s] is %s.",
+                    variable,
+                    component,
+                    best_dist,
+                )
+
+            self.__distributions[variable] = [
+                {"name": distribution_name, "value": marginal_distribution}
+                for distribution_name, marginal_distribution in zip(
+                    distribution_names, marginal_distributions
+                )
             ]
-            select_from_measures = OTDistributionFitter.select_from_measures
-            index = select_from_measures(
-                criteria, self.fitting_criterion, self.level, self.selection_criterion
-            )
-            name = distributions_names[index]
-            value = all_distributions[name]["fitted_distribution"]
-            distributions[variable] = {"name": name, "value": value}
-            LOGGER.info("| The best distribution for %s is %s.", variable, value)
+            if len(marginal_distributions) == 1:
+                distributions[variable] = self.__distributions[variable][0]
+            else:
+                distributions[variable] = self.__distributions[variable]
+
         return distributions
 
     def _fit_distributions(
         self,
         distributions: Iterable[str],
-    ) -> dict[str, dict[str, dict[str, OTDistribution | MeasureType]]]:
+    ) -> dict[str, list[dict[str, dict[str, OTDistribution | MeasureType]]]]:
         """Fit different distributions for the different marginals.
 
         Args:
@@ -397,9 +452,10 @@ class ParametricStatistics(Statistics):
         for variable in self.names:
             LOGGER.info("| Fit different distributions for %s.", variable)
             dataset = self.dataset[variable]
-            results[variable] = self._fit_marginal_distributions(
-                variable, dataset, distributions
-            )
+            results[variable] = [
+                self._fit_marginal_distributions(variable, column, distributions)
+                for column in dataset.T
+            ]
         return results
 
     def _fit_marginal_distributions(
@@ -418,115 +474,158 @@ class ParametricStatistics(Statistics):
         Returns:
             The distributions for the different variables.
         """
-        result = {}
         factory = OTDistributionFitter(variable, sample)
+        result = {}
         for distribution in distributions:
             fitted_distribution = factory.fit(distribution)
-            test_result = factory.compute_measure(
-                fitted_distribution, self.fitting_criterion, self.level
-            )
-            result[distribution] = {}
-            result[distribution]["fitted_distribution"] = fitted_distribution
-            result[distribution]["criterion"] = test_result
+            result[distribution] = {
+                "fitted_distribution": fitted_distribution,
+                "criterion": factory.compute_measure(
+                    fitted_distribution, self.fitting_criterion, self.level
+                ),
+            }
         return result
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {
-            name: self.distributions[name]["value"].math_upper_bound
+        return {
+            name: array(
+                [
+                    distribution["value"].math_upper_bound[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
             for name in self.names
         }
-        return result
 
     def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {name: self.distributions[name]["value"].mean for name in self.names}
-        return result
-
-    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {
-            name: self.distributions[name]["value"].math_lower_bound
+        return {
+            name: array(
+                [
+                    distribution["value"].mean[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
             for name in self.names
         }
-        return result
+
+    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
+        return {
+            name: array(
+                [
+                    distribution["value"].math_lower_bound[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
+            for name in self.names
+        }
 
     def compute_probability(  # noqa: D102
-        self,
-        thresh: float,
-        greater: bool = True,
+        self, thresh: Mapping[str, float | ndarray], greater: bool = True
     ) -> dict[str, ndarray]:
-        dist = self.distributions
-        if greater:
-            result = {
-                name: 1 - dist[name]["value"].compute_cdf(thresh[name])[0]
-                for name in self.names
-            }
-        else:
-            result = {
-                name: dist[name]["value"].compute_cdf(thresh[name])[0]
-                for name in self.names
-            }
-        return result
+        func = lambda x: 1 - x if greater else x  # noqa: E731
+        new_thresh = {}
+        for name, value in thresh.items():
+            if isinstance(value, float):
+                new_thresh[name] = [value] * self.dataset.sizes[name]
+            elif len(value) == 1:
+                new_thresh[name] = [value[0]] * self.dataset.sizes[name]
+            else:
+                new_thresh[name] = value
+
+        return {
+            name: array(
+                [
+                    func(
+                        distribution["value"].compute_cdf([new_thresh[name][index]])[0]
+                    )
+                    for index, distribution in enumerate(self.__distributions[name])
+                ]
+            )
+            for name in self.names
+        }
+
+    def compute_joint_probability(  # noqa: D102
+        self, thresh: Mapping[str, float | ndarray], greater: bool = True
+    ) -> dict[str, float]:
+        raise NotImplementedError
 
     def compute_tolerance_interval(  # noqa: D102
         self,
         coverage: float,
         confidence: float = 0.95,
         side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> dict[str, tuple[ndarray, ndarray]]:
-
+    ) -> dict[str, list[Bounds]]:
         if not 0.0 <= coverage <= 1.0:
-            raise ValueError("The argument 'coverage' must be number in [0,1].")
+            raise ValueError("The argument 'coverage' must be a number in [0,1].")
+
         if not 0.0 <= confidence <= 1.0:
-            raise ValueError("The argument 'confidence' must be number in [0,1].")
-        limits = {}
-        factory = ToleranceIntervalFactory()
-        for variable in self.names:
-            distribution = self.distributions[variable]
-            cls = factory.get_class(distribution["name"])
-            parameters = distribution["value"].marginals[0].getParameter()
-            tolerance_interval = cls(self.n_samples, *parameters)
-            limits[variable] = tolerance_interval.compute(coverage, confidence, side)
-        return limits
+            raise ValueError("The argument 'confidence' must be a number in [0,1].")
 
-    def compute_quantile(  # noqa: D102
-        self,
-        prob: float,
-    ) -> dict[str, ndarray]:
+        tolerance_interval_factory = ToleranceIntervalFactory()
+        return {
+            name: [
+                tolerance_interval_factory.get_class(distribution["name"])(
+                    self.n_samples,
+                    *distribution["value"].marginals[0].getParameter(),
+                ).compute(coverage, confidence, side)
+                for distribution in self.__distributions[name]
+            ]
+            for name in self.names
+        }
+
+    def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
         prob = array([prob])
-        result = {
-            name: self.distributions[name]["value"].compute_inverse_cdf(prob)
+        return {
+            name: array(
+                [
+                    distribution["value"].compute_inverse_cdf(prob)[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
             for name in self.names
         }
-        return result
 
-    def compute_standard_deviation(  # noqa: D102
-        self,
-    ) -> dict[str, ndarray]:
-        result = {
-            name: self.distributions[name]["value"].standard_deviation
+    def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
+        return {
+            name: array(
+                [
+                    distribution["value"].standard_deviation[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
             for name in self.names
         }
-        return result
 
     def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {
-            name: self.distributions[name]["value"].standard_deviation ** 2
+        return {
+            name: array(
+                [
+                    distribution["value"].standard_deviation[0] ** 2
+                    for distribution in self.__distributions[name]
+                ]
+            )
             for name in self.names
         }
-        return result
 
-    def compute_moment(  # noqa: D102
-        self,
-        order: int,
-    ) -> dict[str, ndarray]:
-        dist = self.distributions
-        result = [
-            dist[name]["value"].distribution.getMoment(order)[0] for name in self.names
-        ]
-        return result
+    def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
+        return {
+            name: array(
+                [
+                    distribution["value"].distribution.getMoment(order)[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
+            for name in self.names
+        }
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {}
-        for name in self.names:
-            dist = self.distributions[name]["value"]
-            result[name] = dist.math_upper_bound - dist.math_lower_bound
-        return result
+        return {
+            name: array(
+                [
+                    distribution["value"].math_upper_bound[0]
+                    - distribution["value"].math_lower_bound[0]
+                    for distribution in self.__distributions[name]
+                ]
+            )
+            for name in self.names
+        }
