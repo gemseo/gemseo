@@ -19,30 +19,28 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - Parallel coordinates
-===========================
+ZvsXY
+=====
 
 """
 from __future__ import annotations
 
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
-from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
+from gemseo.post.dataset.zvsxy import ZvsXY
 
 configure_logger()
 
 
 ############################################################################
-# Load a dataset
-# --------------
-iris = load_dataset("IrisDataset")
+# Load the Rosenbrock dataset
+# ---------------------------
+dataset = load_dataset("RosenbrockDataset")
 
-##############################################################################
-# Plot parallel coordinates
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
-# We can use the
-# :class:`~gemseo.post.dataset.parallel_coordinates.ParallelCoordinates` plot,
-# a.k.a. cowebplot, where each samples is represented by a continuous straight
-# line in pieces whose nodes are indexed by the variables names and measure the
-# variables values.
-ParallelCoordinates(iris, classifier="specy").execute(save=False, show=True)
+############################################################################
+# Plot z vs x and y
+# -----------------
+# We can use the :class:`.ZvsXY` plot
+plot = ZvsXY(dataset, x="x", y="x", y_comp=1, z="rosen")
+plot.colormap = "viridis"
+plot.execute(save=False, show=True)

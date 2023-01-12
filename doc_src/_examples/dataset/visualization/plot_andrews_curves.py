@@ -19,37 +19,29 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - Scatter
+Andrews curves
 ==============
 
 """
 from __future__ import annotations
 
 from gemseo.api import configure_logger
-from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.scatter import Scatter
-from numpy import linspace
-from numpy import pi
-from numpy import sin
+from gemseo.api import load_dataset
+from gemseo.post.dataset.andrews_curves import AndrewsCurves
 
 configure_logger()
 
 
 ############################################################################
-# Build a dataset
-# ---------------
-inputs = linspace(0, 1, 20)[:, None]
-outputs = sin(2 * pi * inputs)
-color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
-
-dataset = Dataset()
-dataset.add_variable("x", inputs, "inputs")
-dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
+# Load a dataset
+# --------------
+iris = load_dataset("IrisDataset")
 
 ############################################################################
-# Plot y vs x
-# -----------
-# We can use the :class:`.Scatter` plot
-plot = Scatter(dataset, "x", "y")
-plot.color = color
-plot.execute(save=False, show=True)
+# Plot Andrews Curves
+# -------------------
+# We can use the :class:`.AndrewsCurves` plot
+# which can be viewed as a smooth
+# version of the parallel coordinates. Each sample is represented by a curve
+# and if there is structure in data, it may be visible in the plot.
+AndrewsCurves(iris, "specy").execute(save=False, show=True)

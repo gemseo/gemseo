@@ -19,8 +19,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - Boxplot
-==============
+Boxplot
+=======
 """
 from __future__ import annotations
 

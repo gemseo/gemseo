@@ -65,16 +65,33 @@ ReturnedHdfMissingOutputType = Tuple[
 
 
 class Database:
-    """Class to store evaluations of functions, such as DOE or optimization histories.
+    """Storage of :class:`.MDOFunction` evaluations.
 
-    Avoid multiple calls of the same functions,
-    useful when simulations are costly.
+    A :class:`.Database` is typically attached to an :class:`.OptimizationProblem`
+    to store the evaluations of its objective, constraints and observables.
 
-    It is also used to store inputs and retrieve them
-    for optimization graphical post-processing and plots
-    generation.
+    Then,
+    a :class:`.Database` can be an optimization history
+    or a collection of samples in the case of a DOE.
 
-    Can be serialized to HDF5 for portability and cold post-processing.
+    It is useful when simulations are costly
+    because it avoids re-evaluating functions
+    at points where they have already been evaluated
+
+    .. seealso:: :class:`.NormDBFunction`
+
+    It can also be post-processed by an :class:`.OptPostProcessor`
+    to visualize its content,
+    e.g. :class:`.OptHistoryView` generating a series of graphs
+    to visualize the histories of the objective, constraints and design variables.
+
+    A :class:`.Database` can be serialized to HDF5
+    for portability and cold post-processing.
+
+    .. note::
+        Serializing an :class:`.OptimizationProblem`
+        using its method :class:`~.OptimizationProblem.export_hdf`
+        also serializes its :class:`.Database`.
 
     The database is based on a two-levels dictionary-like mapping such as
     ``{key_level_1: {key_level_2: value_level_2}}`` with:

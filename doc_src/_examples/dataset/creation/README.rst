@@ -6,19 +6,5 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-..
-   Contributors:
-          :author: Matthias De Lozzo
-
-:parenttoc: True
-
-Saving / Storing data
----------------------
-
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
-.. toctree::
-   :maxdepth: 2
-
-   caching.rst
-   dataset.rst
+Creation
+~~~~~~~~

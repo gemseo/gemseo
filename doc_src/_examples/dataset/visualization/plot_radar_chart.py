@@ -19,28 +19,34 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - ZvsXY
-============
+Radar chart
+===========
 
 """
 from __future__ import annotations
 
 from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.radar_chart import RadarChart
+from numpy import array
 
 configure_logger()
 
 
 ############################################################################
-# Load the Rosenbrock dataset
-# ---------------------------
-dataset = load_dataset("RosenbrockDataset")
+# Build a dataset
+# ---------------
+dataset = Dataset()
+dataset.add_variable("x1", array([[0.2, 0.4, 0.5], [0.1, 0.3, 0.5]]))
+dataset.add_variable("x2", array([[0.6], [0.5]]))
+dataset.add_variable("x3", array([[0.8], [0.7]]))
+dataset.row_names = ["series_1", "series_2"]
 
 ############################################################################
-# Plot z vs x and y
-# -----------------
-# We can use the :class:`.ZvsXY` plot
-plot = ZvsXY(dataset, x="x", y="x", y_comp=1, z="rosen")
-plot.colormap = "viridis"
+# Plot the two series on a radar chart
+# ------------------------------------
+# We can use the :class:`~gemseo.post.dataset.radar_chart.RadarChart` plot:
+plot = RadarChart(dataset, connect=True, radial_ticks=True)
+plot.rmin = -0.5
+plot.rmax = 1.0
 plot.execute(save=False, show=True)

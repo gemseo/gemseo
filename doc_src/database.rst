@@ -11,14 +11,9 @@
           :author: Matthias De Lozzo
 
 :parenttoc: True
-.. _cache:
+.. _database:
 
-Cache
------
+Database
+========
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
-.. toctree::
-   :maxdepth: 2
-
-   cache/index.rst
+.. autoclass:: gemseo.algos.database.Database
