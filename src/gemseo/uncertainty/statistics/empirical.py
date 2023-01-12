@@ -44,7 +44,10 @@ and the name of the :class:`.Dataset`.
 """
 from __future__ import annotations
 
+from operator import ge
+from operator import le
 from typing import Iterable
+from typing import Mapping
 
 from numpy import all as np_all
 from numpy import max as np_max
@@ -61,7 +64,15 @@ from gemseo.uncertainty.statistics.statistics import Statistics
 
 
 class EmpiricalStatistics(Statistics):
-    """Empirical estimation of statistics.
+    """A toolbox to compute statistics empirically.
+
+    Unless otherwise stated,
+    the statistics are computed *variable-wise* and *component-wise*,
+    i.e. variable-by-variable and component-by-component.
+    So, for the sake of readability,
+    the methods named as :meth:`compute_statistic` return ``dict[str, ndarray]`` objects
+    whose values are the names of the variables
+    and the values are the statistic estimated for the different component.
 
     Examples:
         >>> from gemseo.api import (
@@ -95,7 +106,7 @@ class EmpiricalStatistics(Statistics):
         >>> dataset = scenario.export_to_dataset(opt_naming=False)
         >>>
         >>> statistics = EmpiricalStatistics(dataset)
-        >>> mean = statistics.mean()
+        >>> mean = statistics.compute_mean()
     """
 
     def __init__(  # noqa: D107
@@ -104,64 +115,49 @@ class EmpiricalStatistics(Statistics):
         variables_names: Iterable[str] | None = None,
         name: str | None = None,
     ) -> None:
-        name = name or dataset.name
-        super().__init__(dataset, variables_names, name)
+        super().__init__(dataset, variables_names, name or dataset.name)
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {name: np_max(self.dataset[name], 0) for name in self.names}
-        return result
+        return {name: np_max(self.dataset[name], 0) for name in self.names}
 
     def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {name: mean(self.dataset[name], 0) for name in self.names}
-        return result
+        return {name: mean(self.dataset[name], 0) for name in self.names}
 
     def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {name: np_min(self.dataset[name], 0) for name in self.names}
-        return result
+        return {name: np_min(self.dataset[name], 0) for name in self.names}
 
     def compute_probability(  # noqa: D102
-        self,
-        thresh: float,
-        greater: bool = True,
+        self, thresh: Mapping[str, float | ndarray], greater: bool = True
     ) -> dict[str, ndarray]:
-        if greater:
-            result = {
-                name: mean(np_all(self.dataset[name] >= thresh[name], 1))
-                for name in self.names
-            }
-        else:
-            result = {
-                name: mean(np_all(self.dataset[name] <= thresh[name], 1))
-                for name in self.names
-            }
-        return result
+        operator = ge if greater else le
+        return {
+            name: mean(operator(self.dataset[name], thresh[name]), 0)
+            for name in self.names
+        }
 
-    def compute_quantile(  # noqa: D102
-        self,
-        prob: float,
-    ) -> dict[str, ndarray]:
-        result = {name: quantile(self.dataset[name], prob, 0) for name in self.names}
-        return result
+    def compute_joint_probability(  # noqa: D102
+        self, thresh: Mapping[str, float | ndarray], greater: bool = True
+    ) -> dict[str, float]:
+        operator = ge if greater else le
+        return {
+            name: mean(np_all(operator(self.dataset[name], thresh[name]), 1))
+            for name in self.names
+        }
 
-    def compute_standard_deviation(  # noqa: D102
-        self,
-    ) -> dict[str, ndarray]:
-        result = {name: std(self.dataset[name], 0) for name in self.names}
-        return result
+    def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
+        return {name: quantile(self.dataset[name], prob, 0) for name in self.names}
+
+    def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
+        return {name: std(self.dataset[name], 0) for name in self.names}
 
     def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
-        result = {name: var(self.dataset[name], 0) for name in self.names}
-        return result
+        return {name: var(self.dataset[name], 0) for name in self.names}
 
-    def compute_moment(  # noqa: D102
-        self,
-        order: int,
-    ) -> dict[str, ndarray]:
-        result = {name: moment(self.dataset[name], order) for name in self.names}
-        return result
+    def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
+        return {name: moment(self.dataset[name], order) for name in self.names}
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         lower = self.compute_minimum()
-        upper = self.compute_maximum()
-        result = {name: upper[name] - lower[name] for name in self.names}
-        return result
+        return {
+            name: upper - lower[name] for name, upper in self.compute_maximum().items()
+        }

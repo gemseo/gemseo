@@ -22,11 +22,12 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from typing import NamedTuple
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import inf
-from numpy import ndarray
+from numpy.typing import NDArray
 
 from gemseo.core.factory import Factory
 from gemseo.utils.base_enum import BaseEnum
@@ -34,6 +35,13 @@ from gemseo.utils.base_enum import BaseEnum
 LOGGER = logging.getLogger(__name__)
 
 ToleranceIntervalSide = BaseEnum("ToleranceIntervalSide", "LOWER UPPER BOTH")
+
+
+class Bounds(NamedTuple):  # noqa: N801
+    """The component-wise bounds of a vector."""
+
+    lower: NDArray[float]
+    upper: NDArray[float]
 
 
 class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
@@ -116,7 +124,7 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
         alpha: float,
         size: int,
         side: ToleranceIntervalSide,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> Bounds:
         r"""Compute the bounds of the tolerance interval.
 
         Args:
@@ -148,14 +156,14 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
             upper = self._compute_upper_bound(coverage, alpha, size)
         else:
             raise ValueError("The type of tolerance interval is incorrect.")
-        return array([lower]), array([upper])
+        return Bounds(array([lower]), array([upper]))
 
     def compute(
         self,
         coverage: float,
         confidence: float = 0.95,
         side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> Bounds:
         r"""Compute a tolerance interval.
 
         Args:

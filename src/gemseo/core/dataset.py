@@ -1372,10 +1372,7 @@ class Dataset:
             raise TypeError(self.__GETITEM_ERROR_MESSAGE)
         return item
 
-    def __getitem__(
-        self,
-        item: ItemType,
-    ) -> dict[str, ndarray] | ndarray:
+    def __getitem__(self, item: ItemType) -> dict[str, ndarray] | ndarray:
         entries, variables = self.__split_item(item)
         try:
             if isinstance(variables, str):
