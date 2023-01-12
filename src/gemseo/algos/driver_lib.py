@@ -104,11 +104,12 @@ class ProgressBar(tqdm.tqdm):
 
     @classmethod
     def format_meter(cls, n, total, elapsed, **kwargs):  # noqa: D102
+        meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
         if elapsed != 0.0:
             rate, unit = cls.__convert_rate(n, elapsed)
-            kwargs["rate"] = rate
-            kwargs["unit"] = unit
-        meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
+            lstr = meter.split(",")
+            lstr[1] = f"{rate:5.2f}{unit}"
+            meter = ",".join(lstr)
         # remove the unit suffix that is hard coded in tqdm
         return meter.replace("/s,", ",").replace("/s]", "]")
 
