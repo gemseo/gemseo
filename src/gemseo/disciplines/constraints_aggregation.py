@@ -24,16 +24,30 @@ from typing import Sequence
 
 from numpy import atleast_1d
 
+from gemseo.algos.aggregation.core import compute_partial_sum_positive_square_agg_jac
+from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
 from gemseo.algos.aggregation.core import iks_agg
 from gemseo.algos.aggregation.core import iks_agg_jac
 from gemseo.algos.aggregation.core import ks_agg
 from gemseo.algos.aggregation.core import ks_agg_jac
+from gemseo.algos.aggregation.core import sum_square_agg
+from gemseo.algos.aggregation.core import sum_square_agg_jac
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
-METHODS_MAP = {"KS": ks_agg, "IKS": iks_agg}
-METHODS_JAC_MAP = {"KS": ks_agg_jac, "IKS": iks_agg_jac}
+METHODS_MAP = {
+    "KS": ks_agg,
+    "IKS": iks_agg,
+    "pos_sum": compute_sum_positive_square_agg,
+    "sum": sum_square_agg,
+}
+METHODS_JAC_MAP = {
+    "KS": ks_agg_jac,
+    "IKS": iks_agg_jac,
+    "pos_sum": compute_partial_sum_positive_square_agg_jac,
+    "sum": sum_square_agg_jac,
+}
 
 
 class ConstrAggegationDisc(MDODiscipline):

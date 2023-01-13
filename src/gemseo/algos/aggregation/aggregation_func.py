@@ -29,6 +29,8 @@ from typing import Sequence
 
 from numpy import ndarray
 
+from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
+from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
 from gemseo.algos.aggregation.core import iks_agg
 from gemseo.algos.aggregation.core import iks_agg_jac_v
 from gemseo.algos.aggregation.core import ks_agg
@@ -130,6 +132,44 @@ def aggregate_sum_square(
         f"sum²_{constr_fct.name}",
         f"sum({constr_fct.expr}**2)",
         "sum_sq_cstr",
+    )
+
+
+@check_constraint_type("ineq")
+def aggregate_positive_sum_square(
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
+    """Transform a vector of equalities into a sum of squared constraints.
+
+    Args:
+        constr_fct: The initial constraint function.
+        indices: The indices to generate a subset of the outputs to aggregate.
+            If ``None``, aggregate all the outputs.
+        scale: The scaling factor for multiplying the constraints.
+
+    Returns:
+        The aggregated function.
+    """
+
+    def compute(x):
+        return compute_sum_positive_square_agg(
+            constr_fct(x), indices=indices, scale=scale
+        )
+
+    def compute_jac(x):
+        return compute_total_sum_square_positive_agg_jac(
+            constr_fct(x), constr_fct.jac(x), indices=indices, scale=scale
+        )
+
+    return _create_mdofunc(
+        constr_fct,
+        compute,
+        compute_jac,
+        f"pos_sum_{constr_fct.name}",
+        f"sum(heaviside({constr_fct.expr})*{constr_fct.expr}**2)",
+        "pos_sum_sq_cstr",
     )
 
 
