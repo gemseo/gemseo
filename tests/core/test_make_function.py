@@ -45,7 +45,7 @@ def create_disciplinary_function(
         names_to_sizes: The input sizes passed at instantiation.
     """
 
-    def my_func(x: float, y: float = 0.0) -> ndarray:
+    def my_func(x: float, y: float = 0.0) -> float:
         z = x + y
         return z
 
@@ -57,8 +57,8 @@ def create_disciplinary_function(
     return MakeFunction(
         ["x", "y"],
         ["z"],
-        default_inputs=default_inputs,
-        mdo_function=MDOFunctionGenerator(discipline),
+        default_inputs,
+        MDOFunctionGenerator(discipline),
         names_to_sizes=names_to_sizes,
     )
 

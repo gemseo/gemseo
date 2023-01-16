@@ -97,7 +97,10 @@ class Database:
     ``{key_level_1: {key_level_2: value_level_2}}`` with:
 
         * ``key_level_1``: the values of the input design variables that have been used
-          during the evaluations;
+          during the evaluations,
+          if the types of the design variables are different,
+          then they are promoted to the unique type that can represent all them,
+          for instance integer would be promoted to float;
         * ``key_level_2``: the name of the output functions that have been returned,
           the name of the gradient
           (the gradient of a function called ``func`` is typically denoted as ``@func``),

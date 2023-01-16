@@ -34,6 +34,8 @@ from typing import Tuple
 from typing import Union
 
 from numpy import array
+from numpy import dtype
+from numpy import int32
 from numpy import ndarray
 from numpy import savetxt
 
@@ -45,6 +47,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.core.parallel_execution import SUBPROCESS_NAME
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +72,8 @@ class DOELibrary(DriverLib):
     """The input samples transformed in :math:`[0,1]`."""
 
     samples: ndarray
-    """The input samples."""
+    """The input samples with the design space variable types stored as dtype
+    metadata."""
 
     seed: int
     """The seed to be used for replicability reasons.
@@ -94,6 +98,12 @@ class DOELibrary(DriverLib):
     _VARIABLES_SIZES = "variables_sizes"
     SEED = "seed"
     _NORMALIZE_DS = False
+
+    # TODO: use DesignSpace enum once there are hashable.
+    __DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE: Final[dict[str, type]] = {
+        "float": float,
+        "integer": int32,
+    }
 
     def __init__(self):
         """Constructor Abstract class."""
@@ -130,7 +140,9 @@ class DOELibrary(DriverLib):
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
+
         self.unit_samples = self._generate_samples(**options)
+
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -141,9 +153,8 @@ class DOELibrary(DriverLib):
             len(self.unit_samples),
             self.unit_samples.shape[1],
         )
-        self.samples = self.problem.design_space.untransform_vect(
-            self.unit_samples, no_check=True
-        )
+
+        self.samples = self.__create_samples()
 
         if options.get(self.N_PROCESSES, 1) > 1:
             # Initialize the order as it is not necessarily guaranteed
@@ -152,6 +163,33 @@ class DOELibrary(DriverLib):
                 self.problem.database.store(sample, {}, add_iter=True)
 
         self.init_iter_observer(len(self.unit_samples))
+
+    def __create_samples(self) -> ndarray:
+        """Create the samples with the design variable types as dtype metadata.
+
+        Returns:
+            The samples.
+        """
+        samples = self.problem.design_space.untransform_vect(
+            self.unit_samples, no_check=True
+        )
+
+        variable_types = self.problem.design_space.variables_types
+        unique_variable_types = {t[0] for t in variable_types.values()}
+
+        if len(unique_variable_types) > 1:
+            # When the design space have both float and integer variables,
+            # the samples array has the float dtype.
+            # We record the integer variables types to later be able to restore the
+            # proper data type.
+            python_var_types = {
+                name: self.__DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE[type_[0]]
+                for name, type_ in variable_types.items()
+                if type_[0] != "float"
+            }
+            samples.dtype = dtype(samples.dtype, metadata=python_var_types)
+
+        return samples
 
     def _generate_samples(self, **options: Any) -> ndarray:
         """Generate the samples of the input variables.
