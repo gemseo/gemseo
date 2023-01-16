@@ -289,6 +289,7 @@ html_context["plugins"] = {
     "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
     "gemseo-scilab": "Interfacing Scilab functions",
     "gemseo-umdo": "Capability for MDO under uncertainty",
+    "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
 }
 
 ###############################################################################
