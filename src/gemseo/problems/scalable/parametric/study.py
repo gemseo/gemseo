@@ -118,7 +118,7 @@ class TMParamSS:
             ie each TMDiscipline depends on each other. Default: True.
         :param float active_probability: active probability
         :param float feasibility_level: level of feasibility
-        :param int seed: seed for replicability.
+        :param int seed: seed for reproducibility.
         :param str directory: directory to store results
 
         See also
@@ -399,7 +399,7 @@ class TMScalableStudy:
         :param float active_probability: active probability
         :param float feasibility_level: level of feasibility
         :param str directory: directory to store results
-        :param int seed: seed for replicability.
+        :param int seed: seed for reproducibility.
 
         See also
         --------
