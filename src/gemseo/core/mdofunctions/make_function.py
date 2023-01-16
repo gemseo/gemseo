@@ -23,8 +23,8 @@ from __future__ import annotations
 import logging
 from numbers import Number
 from typing import Callable
-from typing import Iterable
 from typing import Mapping
+from typing import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -38,7 +38,6 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 if TYPE_CHECKING:
     from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 
-
 LOGGER = logging.getLogger(__name__)
 
 OperandType = Union[ndarray, Number]
@@ -50,8 +49,8 @@ class MakeFunction(MDOFunction):
 
     def __init__(
         self,
-        input_names: Iterable[str],
-        output_names: Iterable[str],
+        input_names: Sequence[str],
+        output_names: Sequence[str],
         default_inputs: Mapping[str, ndarray] | None,
         mdo_function: MDOFunctionGenerator,
         names_to_sizes: dict[str, int] | None = None,
@@ -208,7 +207,10 @@ class MakeFunction(MDOFunction):
         self,
         x_vect: ndarray,
     ) -> dict[str, ndarray]:
-        """Return the input data of the underlying discipline.
+        """Return the input data for the underlying discipline.
+
+        The variables in the input data are cast according to the types defined in the
+        design space.
 
         Args:
             x_vect: The input vector of the function.
@@ -225,6 +227,15 @@ class MakeFunction(MDOFunction):
         if not self.__names_to_indices:
             self.__create_names_to_indices()
 
-        return {
+        input_data = {
             name: x_vect[self.__names_to_indices[name]] for name in self.__input_names
         }
+
+        variable_types = x_vect.dtype.metadata
+
+        if variable_types is not None:
+            # Restore the proper data types as declared in the design space.
+            for name, type_ in variable_types.items():
+                input_data[name] = input_data[name].astype(type_, copy=False)
+
+        return input_data

@@ -928,7 +928,8 @@ class DesignSpace(collections.abc.MutableMapping):
                 )
 
             for i in range(size):
-                x_real = x_dict[name][i].real
+                x_real = value[i].real
+
                 if l_b is not None and x_real < l_b[i] - self.__bound_tol:
                     raise ValueError(
                         f"The component {name}[{i}] of the given array ({x_real}) "

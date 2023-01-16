@@ -243,9 +243,9 @@ class MDOFunction:
         f_type: str = "",
         jac: WrappedJacobianType | None = None,
         expr: str = "",
-        args: Sequence[str] | None = None,
+        args: Iterable[str] | None = None,
         dim: int = 0,
-        outvars: Sequence[str] | None = None,
+        outvars: Iterable[str] | None = None,
         force_real: bool = False,
         special_repr: str = "",
     ) -> None:

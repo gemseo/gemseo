@@ -34,6 +34,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import execute_algo
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import array
@@ -275,3 +276,47 @@ def test_seed(algo_name):
     assert library.seed == 4
     # There are new evaluations in the database:
     assert len(problem.database) == 6
+
+
+@pytest.mark.parametrize(
+    "var_type1,var_type2",
+    (
+        ("integer", "integer"),
+        ("integer", "float"),
+        ("float", "float"),
+    ),
+)
+def test_variable_types(doe, var_type1, var_type2):
+    """Verify that input data provided to a discipline match the design space types."""
+    design_variable_type_to_python_type = (
+        DesignSpace._DesignSpace__VARIABLE_TYPES_TO_DTYPES
+    )
+
+    class Disc(MDODiscipline):
+        def __init__(self):
+            super().__init__("foo")
+            self.input_grammar.update(("x", "y"))
+            self.output_grammar.update(("z",))
+
+        def execute(self, input_data):
+            assert (
+                input_data["x"].dtype == design_variable_type_to_python_type[var_type1]
+            )
+            assert (
+                input_data["y"].dtype == design_variable_type_to_python_type[var_type2]
+            )
+            return {"z": 0.0}
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0, u_b=1, value=0, var_type=var_type1)
+    design_space.add_variable("y", l_b=0, u_b=1, value=0, var_type=var_type2)
+
+    scenario = create_scenario(
+        [Disc()],
+        design_space=design_space,
+        objective_name="z",
+        formulation="DisciplinaryOpt",
+        scenario_type="DOE",
+    )
+
+    scenario.execute({"algo": "lhs", "n_samples": 1})
