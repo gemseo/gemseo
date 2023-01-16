@@ -35,7 +35,7 @@ from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 #
 # .. math::
 #
-#    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1*x_3^4\sin(x_1)
+#    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1x_3^4\sin(x_1)
 #
 # implemented as an :class:`.MDODiscipline` by the :class:`.IshigamiDiscipline`.
 # It is commonly used

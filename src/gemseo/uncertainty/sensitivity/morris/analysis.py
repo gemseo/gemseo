@@ -415,6 +415,8 @@ class MorrisAnalysis(SensitivityAnalysis):
         ax.set_xlim(left=lower_mu)
         ax.set_ylim(bottom=lower_sigma)
         ax.set_title(title or default_title)
+        ax.set_axisbelow(True)
+        ax.grid()
         x_offset = offset * (max(x_val) - min(x_val)) / 100.0
         y_offset = offset * (max(y_val) - min(y_val)) / 100.0
         for index, txt in enumerate(names):

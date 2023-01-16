@@ -588,6 +588,8 @@ class SobolAnalysis(SensitivityAnalysis):
             output_name = f"{output_name}[{output_component}]"
 
         ax.set_title(title or f"Sobol indices for the output {output_name}")
+        ax.set_axisbelow(True)
+        ax.grid()
         self._save_show_plot(
             fig,
             save=save,
