@@ -16,13 +16,24 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A constraints plot."""
+"""A matrix of constraint history plots."""
 from __future__ import annotations
 
+from math import ceil
 from typing import Sequence
 
-import numpy as np
 from matplotlib import pyplot
+from matplotlib.ticker import MaxNLocator
+from numpy import abs as np_abs
+from numpy import arange
+from numpy import atleast_2d
+from numpy import atleast_3d
+from numpy import diff
+from numpy import flip
+from numpy import interp
+from numpy import max as np_max
+from numpy import sign
+from numpy import where
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
@@ -32,12 +43,15 @@ from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 
 class ConstraintsHistory(OptPostProcessor):
-    """Plot of the constraint function history with line charts.
+    """A matrix of constraint history plots.
 
-    Indicate the violation with color on the background.
+    A blue line represents the values of a constraint w.r.t. the iterations.
 
-    The plot method requires the constraint names to plot.
-    It is possible either to save the plot, to show the plot or both.
+    A background color indicates
+    whether the constraint is satisfied (green), active (white) or violated (red).
+
+    A vertical black line indicates the last iteration (or pseudo-iteration)
+    where the constraint is (or should be) active.
     """
 
     DEFAULT_FIG_SIZE = (11.0, 11.0)
@@ -60,7 +74,7 @@ class ConstraintsHistory(OptPostProcessor):
             constraint_names: The names of the constraints.
 
         Raises:
-            ValueError: If a given element of `constraint_names` is not a function.
+            ValueError: When an element of ``constraint_names`` is not a function name.
         """  # noqa: D205, D212, D415
         all_constraint_names = self.opt_problem.constraint_names.keys()
         for constraint_name in constraint_names:
@@ -78,7 +92,7 @@ class ConstraintsHistory(OptPostProcessor):
 
         # harmonization of tables format because constraints can be vectorial
         # or scalars. *vals.shape[0] = iteration, *vals.shape[1] = cstr values
-        constraint_history = np.atleast_3d(constraint_history)
+        constraint_history = atleast_3d(constraint_history)
         constraint_history = constraint_history.reshape(
             (
                 constraint_history.shape[0],
@@ -87,55 +101,59 @@ class ConstraintsHistory(OptPostProcessor):
         )
 
         # prepare the main window
-        n_iterations = len(constraint_history)
-
-        n_funcs = len(constraint_names)
-        n_rows = n_funcs // 2
-        if 2 * n_rows < n_funcs:
-            n_rows += 1
-
         fig, axes = pyplot.subplots(
-            nrows=n_rows, ncols=2, sharex=True, figsize=self.DEFAULT_FIG_SIZE
+            nrows=ceil(len(constraint_names) / 2),
+            ncols=2,
+            sharex=True,
+            figsize=self.DEFAULT_FIG_SIZE,
         )
 
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)
 
-        n_subplots = n_rows * 2
-
-        iterations = np.arange(n_iterations)
+        iterations = arange(len(constraint_history))
         # for each subplot
-        for history, name, i in zip(
-            constraint_history.T, constraint_names, np.arange(n_subplots)
+        for history, name, axe in zip(
+            constraint_history.T, constraint_names, axes.ravel()
         ):
             # prepare the graph
-            axe = axes.ravel()[i]
             axe.grid(True)
             axe.set_title(name)
-            axe.set_xlim([0, n_iterations])
+            axe.xaxis.set_major_locator(MaxNLocator(integer=True))
             axe.axhline(0.0, color="k", linewidth=2)
 
             # plot values in lines
             axe.plot(iterations, history)
 
             # Plot color bars
-            maximum = np.max(np.abs(history))
+            maximum = np_max(np_abs(history))
             axe.imshow(
-                np.atleast_2d(history),
+                atleast_2d(history),
                 cmap=self.ineq_cstr_cmap,
                 interpolation="nearest",
                 aspect="auto",
-                extent=[-0.5, n_iterations - 0.5, np.min(history), np.max(history)],
                 norm=SymLogNorm(linthresh=1.0, vmin=-maximum, vmax=maximum),
                 alpha=0.6,
             )
 
-            # plot vertical line the last time that g(x)=0
-            indices = np.where(np.diff(np.sign(history)))[0]
-            if indices.size != 0:
-                ind = indices[-1]
-                x_lim = np.interp(
-                    0.0, history[ind : ind + 2], iterations[ind : ind + 2]
+            # Plot a vertical line at the last iteration (or pseudo-iteration)
+            # where the constraint is (or should be) active.
+            indices_before_sign_change = where(diff(sign(history)))[0]
+            if indices_before_sign_change.size != 0:
+                index_before_last_sign_change = indices_before_sign_change[-1]
+                indices = [
+                    index_before_last_sign_change,
+                    index_before_last_sign_change + 1,
+                ]
+                constraint_values = history[indices]
+                iteration_values = iterations[indices]
+                if constraint_values[1] < constraint_values[0]:
+                    constraint_values = flip(constraint_values)
+                    iteration_values = flip(iteration_values)
+
+                axe.axvline(
+                    interp(0.0, constraint_values, iteration_values),
+                    color="k",
+                    linewidth=2,
                 )
-                axe.axvline(x_lim, color="k", linewidth=2)
 
         self._add_figure(fig)
