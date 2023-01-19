@@ -2171,7 +2171,7 @@ class OptimizationProblem:
         input_history = split_array_to_dict_of_arrays(
             input_history, names_to_sizes, input_names
         )
-        for input_name, input_value in sorted(input_history.items()):
+        for input_name, input_value in input_history.items():
             dataset.add_variable(input_name, input_value.real, input_group)
 
         # Add database outputs
