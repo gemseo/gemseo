@@ -120,6 +120,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
 )
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -314,6 +315,7 @@ class ParametricStatistics(Statistics):
         n_legend_cols: int = 4,
         directory: str | Path = ".",
         index: int = 0,
+        fig_size: tuple[float, float] = (6.4, 3.2),
     ) -> None:
         """Plot criteria for a given variable name.
 
@@ -325,6 +327,7 @@ class ParametricStatistics(Statistics):
             n_legend_cols: The number of text columns in the upper legend.
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
+            fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
 
         Raises:
             ValueError: If the variable is missing from the dataset.
@@ -345,20 +348,24 @@ class ParametricStatistics(Statistics):
             y_values.append(criterion)
             labels.append(distribution)
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.4, 3.2))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=fig_size)
         ax1.bar(x_values, y_values, tick_label=labels)
         if is_p_value:
-            plt.ylabel(f"p-value from {self.fitting_criterion} test")
-            plt.axhline(self.level, color="r", linewidth=2.0)
+            ax1.set_title(f"{self.fitting_criterion} (p-value)")
+            ax1.axhline(self.level, color="r", linewidth=2.0)
+        else:
+            ax1.set_title(self.fitting_criterion)
+
         ax1.grid(True, "both")
         ax1.set_box_aspect(1)
+        ax1.set_xlabel("Probability distributions")
+
         data = array(self.dataset[variable])
         data_min = min(data)
         data_max = max(data)
         x_values = linspace(data_min, data_max, 1000)
         distributions = self._all_distributions[variable][index]
         ax2.hist(data, density=True)
-
         for dist_name, dist_value in distributions.items():
             pdf = dist_value["fitted_distribution"].distribution.computePDF
             y_values = [pdf([x_value])[0] for x_value in x_values]
@@ -367,6 +374,8 @@ class ParametricStatistics(Statistics):
         ax2.set_box_aspect(1)
         ax2.legend()
         ax2.grid(True, "both")
+        ax2.set_title("Probability density function")
+        ax2.set_xlabel(repr_variable(variable, index, self.dataset.sizes[variable]))
         if title is not None:
             plt.suptitle(title)
 
