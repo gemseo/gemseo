@@ -23,6 +23,7 @@ import pytest
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 
 def test_message():
@@ -136,3 +137,14 @@ def test_add():
     expected = "\n".join(("123", "456"))
     assert str(msg + msg2) == expected
     assert str(msg + "456") == expected
+
+
+def test_repr_variable_default_settings():
+    """Check repr_variable() with default settings."""
+    assert repr_variable("x", 0) == "x[0]"
+
+
+@pytest.mark.parametrize("size,expected", [(0, "x[0]"), (1, "x"), (2, "x[0]")])
+def test_repr_variable_custom_settings(size, expected):
+    """Check repr_variable() with custom settings."""
+    assert repr_variable("x", 0, size=size) == expected

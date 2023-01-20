@@ -247,11 +247,24 @@ def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions):
     stats.plot_criteria("x_2", save=True, show=False)
 
 
-@pytest.mark.parametrize("baseline_images", [(["fitting.png"])])
+@pytest.mark.parametrize(
+    "baseline_images,fitting_criterion,title",
+    [
+        (["fitting_BIC.png"], "BIC", None),
+        (["fitting_Kolmogorov.png"], "Kolmogorov", None),
+        (["fitting_title.png"], "BIC", "My title"),
+    ],
+)
 @image_comparison(None)
-def test_plot_criteria_images(baseline_images, dataset, pyplot_close_all):
-    statistics = ParametricStatistics(dataset, ["Exponential", "Normal", "Uniform"])
-    statistics.plot_criteria("x_1", show=False)
+def test_plot_criteria_images(
+    baseline_images, dataset, pyplot_close_all, fitting_criterion, title
+):
+    statistics = ParametricStatistics(
+        dataset,
+        ["Exponential", "Normal", "Uniform"],
+        fitting_criterion=fitting_criterion,
+    )
+    statistics.plot_criteria("x_1", show=False, title=title)
 
 
 @pytest.mark.parametrize("coverage", [-0.5, 1.5])
