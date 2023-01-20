@@ -39,9 +39,10 @@ def save_show_figure(
     """
     save = file_path is not None
 
+    if fig_size is not None:
+        fig.set_size_inches(fig_size)
+
     if save:
-        if fig_size is not None:
-            fig.set_size_inches(fig_size)
         fig.savefig(str(file_path), bbox_inches="tight")
 
     if show:

@@ -1,0 +1,1 @@
+The attribute ``fig_size`` of :func:`save_show_figure` impacts the figure when ``show`` is ``True``.
