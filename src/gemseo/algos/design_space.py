@@ -459,7 +459,17 @@ class DesignSpace(collections.abc.MutableMapping):
                 self.__VARIABLE_TYPES_TO_DTYPES[self.variables_types[name][0]],
                 copy=False,
             )
-            self._check_current_value(name)
+            try:
+                self._check_current_value(name)
+            except ValueError:
+                # If a ValueError is raised,
+                # we must remove the variable from the design space.
+                # When using a python script, this has no interest.
+                # When using a notebook, a cell can raise a ValueError,
+                # but we can continue to the next cell,
+                # and use a design space which contains a variables that leads to error.
+                self.remove_variable(name)
+                raise
 
         self.__update_current_metadata()
 
