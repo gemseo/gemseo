@@ -85,7 +85,7 @@ from pandas import DataFrame
 from pandas import read_csv
 
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.cache import AbstractFullCache
+from gemseo.core.cache import AbstractCache
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.factory import DatasetPlotFactory
@@ -1186,18 +1186,23 @@ class Dataset:
         self,
         copy: bool = True,
         variable_names: Sequence[str] | None = None,
+        sort_names: bool = True,
     ) -> DataFrame:
-        """Export the dataset to a pandas Dataframe.
+        """Export the dataset, or a part of it, to a pandas DataFrame.
 
         Args:
-            copy: If True, copy data.
+            copy: If ``True``, copy data.
                 Otherwise, use reference.
+            variable_names: The variable names to export.
+                If ``None``, export all the variables.
+            sort_names: If ``True``, sort the columns by group and name.
+                If ``False``, sort only by group.
 
         Returns:
-            A pandas DataFrame containing the dataset.
+            A pandas DataFrame containing the dataset, or a part of it.
         """
         if variable_names is None:
-            variable_names = self.variables
+            variable_names = list(self._groups.keys())
 
         # The column of a DataFrame is defined by three labels:
         # the group at which the variable belongs,
@@ -1226,9 +1231,10 @@ class Dataset:
 
         columns = [group_labels, variable_labels, component_labels]
         data = self.get_data_by_names(variable_names, as_dict=False)
-        dataframe = DataFrame(data, columns=columns, copy=copy)
-        dataframe.index = self.row_names
-        return dataframe
+        dataframe = DataFrame(data, columns=columns, copy=copy, index=self.row_names)
+
+        # Sort the columns names by group, and then possibly by name.
+        return dataframe[sorted(dataframe.columns, key=lambda x: x[0 : 1 + sort_names])]
 
     def export_to_cache(
         self,
@@ -1238,7 +1244,7 @@ class Dataset:
         cache_hdf_file: str | None = None,
         cache_hdf_node_name: str | None = None,
         **options,
-    ) -> AbstractFullCache:
+    ) -> AbstractCache:
         """Export the dataset to a cache.
 
         Args:

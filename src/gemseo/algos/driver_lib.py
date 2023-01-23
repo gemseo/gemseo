@@ -108,7 +108,7 @@ class ProgressBar(tqdm.tqdm):
         if elapsed != 0.0:
             rate, unit = cls.__convert_rate(n, elapsed)
             lstr = meter.split(",")
-            lstr[1] = f"{rate:5.2f}{unit}"
+            lstr[1] = f" {rate:5.2f}{unit}"
             meter = ",".join(lstr)
         # remove the unit suffix that is hard coded in tqdm
         return meter.replace("/s,", ",").replace("/s]", "]")
