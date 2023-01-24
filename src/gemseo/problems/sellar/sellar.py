@@ -226,7 +226,7 @@ class Sellar1(MDODiscipline):
         x_local: ndarray,
         x_shared: ndarray,
         y_2: ndarray,
-    ) -> float:
+    ) -> complex:
         """Evaluate the first coupling equation in functional form.
 
         Args:
