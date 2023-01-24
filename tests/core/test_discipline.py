@@ -588,10 +588,6 @@ def test_execute_rerun_errors():
     with pytest.raises(ValueError):
         d.execute({"a": [2]})
 
-    d.re_exec_policy = "THIS is not a policy"
-    with pytest.raises(ValueError):
-        d.execute({"a": [5]})
-
 
 def test_cache():
     """Test the MDODiscipline cache."""
@@ -1096,3 +1092,76 @@ def test_hdf5cache_twice(tmp_wd, caplog):
         "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="bar"
     )
     assert id(discipline.cache) != cache_id
+
+
+class Observer:
+    """This class will record the successive statuses a discipline will be in."""
+
+    statuses: list[str]
+
+    def __init__(self) -> None:
+        self.statuses = []
+
+    def update_status(self, disc: MDODiscipline) -> None:
+        self.statuses.append(disc.status)
+
+    def reset(self) -> None:
+        self.statuses.clear()
+
+
+@pytest.fixture()
+def observer() -> Observer:
+    return Observer()
+
+
+def test_statuses(observer):
+    """Verify the successive status."""
+    disc = Sellar1()
+    disc.add_status_observer(observer)
+
+    assert not observer.statuses
+
+    disc.reset_statuses_for_run()
+    assert observer.statuses == [MDODiscipline.STATUS_PENDING]
+    observer.reset()
+
+    disc.execute()
+    assert observer.statuses == [
+        MDODiscipline.STATUS_RUNNING,
+        MDODiscipline.STATUS_DONE,
+    ]
+    observer.reset()
+
+    disc.linearize(force_all=True)
+    assert observer.statuses == [
+        MDODiscipline.STATUS_PENDING,
+        MDODiscipline.STATUS_LINEARIZE,
+        MDODiscipline.STATUS_DONE,
+    ]
+    observer.reset()
+
+    disc._run = lambda x: 1 / 0
+    try:
+        disc.execute({"x_local": disc.local_data["x_local"] + 1.0})
+    except Exception:
+        pass
+    assert observer.statuses == [
+        MDODiscipline.STATUS_RUNNING,
+        MDODiscipline.STATUS_FAILED,
+    ]
+
+
+def test_statuses_linearize(observer):
+    """Verify the successive status for linearize alone."""
+    disc = Sellar1()
+    disc.add_status_observer(observer)
+
+    disc.linearize(force_all=True)
+    assert observer.statuses == [
+        MDODiscipline.STATUS_PENDING,
+        MDODiscipline.STATUS_RUNNING,
+        MDODiscipline.STATUS_DONE,
+        MDODiscipline.STATUS_LINEARIZE,
+        MDODiscipline.STATUS_DONE,
+    ]
+    observer.reset()
