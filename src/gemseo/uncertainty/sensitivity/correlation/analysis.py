@@ -30,6 +30,7 @@ from typing import Mapping
 from typing import Sequence
 
 from numpy import array
+from numpy import newaxis
 from numpy import vstack
 from openturns import Sample
 
@@ -156,7 +157,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
             for output_name, value in outputs.items():
                 self.__correlation[algo_name][output_name] = []
                 for index in range(value.shape[1]):
-                    sub_outputs = Sample(value[:, index][:, None])
+                    sub_outputs = Sample(value[:, index][:, newaxis])
                     coefficient = array(algo_value(inputs, sub_outputs))
                     coefficient = split_array_to_dict_of_arrays(
                         coefficient, sizes, inputs_names

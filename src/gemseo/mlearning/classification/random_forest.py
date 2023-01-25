@@ -34,6 +34,7 @@ from typing import ClassVar
 from typing import Iterable
 
 from numpy import ndarray
+from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
@@ -87,7 +88,7 @@ class RandomForestClassifier(MLClassificationAlgo):
     ) -> ndarray:
         output_data = self.algo.predict(input_data).astype(int)
         if len(output_data.shape) == 1:
-            output_data = output_data[:, None]
+            output_data = output_data[:, newaxis]
         return output_data
 
     def _predict_proba_soft(
@@ -96,7 +97,7 @@ class RandomForestClassifier(MLClassificationAlgo):
     ) -> ndarray:
         probas = self.algo.predict_proba(input_data)
         if len(probas[0].shape) == 1:
-            probas = probas[..., None]
+            probas = probas[..., newaxis]
         else:
             probas = stack(probas, axis=-1)
         return probas

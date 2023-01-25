@@ -80,3 +80,17 @@ def test_inverse_transform(data):
     restored_data = kpca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
     assert restored_data.shape[1] == N_FEATURES
+
+
+def test_shape(data):
+    """Check the shapes of the data."""
+    kpca = KPCA(n_components=3)
+    kpca.fit(data)
+    n, p = data.shape
+    q = kpca.n_components
+    transformed_data = kpca.transform(data)
+    assert transformed_data.shape == (n, q)
+    assert kpca.inverse_transform(transformed_data).shape == (n, p)
+
+    assert kpca.transform(data[0]).shape == (q,)
+    assert kpca.inverse_transform(transformed_data[0]).shape == (p,)

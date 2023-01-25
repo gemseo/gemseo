@@ -133,9 +133,11 @@ class KLSVD(DimensionReduction):
             self.__HALKO2010 if self.parameters["use_halko2010"] else self.__HALKO2011,
         )
 
+    @DimensionReduction._use_2d_array
     def transform(self, data: ndarray) -> ndarray:
         return array(self.algo.project(self._get_process_sample(data)))
 
+    @DimensionReduction._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
         return array(
             [

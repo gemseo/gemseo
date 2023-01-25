@@ -69,8 +69,10 @@ class KPCA(DimensionReduction):
         self.algo.fit(data)
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
+    @DimensionReduction._use_2d_array
     def transform(self, data: ndarray) -> ndarray:
         return self.algo.transform(data)
 
+    @DimensionReduction._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
         return self.algo.inverse_transform(data)

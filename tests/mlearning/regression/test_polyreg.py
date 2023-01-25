@@ -32,6 +32,7 @@ from numpy import array
 from numpy import hstack
 from numpy import linspace
 from numpy import meshgrid
+from numpy import newaxis
 from numpy import sqrt
 from numpy import zeros
 from scipy.special import comb
@@ -64,7 +65,7 @@ def dataset():
     x_1 = linspace(-1, 2, root_learning_size)
     x_2 = linspace(-1, 2, root_learning_size)
     x_1, x_2 = meshgrid(x_1, x_2)
-    x_1, x_2 = x_1.flatten()[:, None], x_2.flatten()[:, None]
+    x_1, x_2 = x_1.flatten()[:, newaxis], x_2.flatten()[:, newaxis]
     y_1 = 1 + x_1 + x_2**2
     y_2 = 3 + 4 * x_1 * x_2 + 5 * x_1**3
     y_3 = 10 * x_1 * x_2**2 + 7 * x_2**5

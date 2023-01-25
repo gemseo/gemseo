@@ -83,6 +83,7 @@ from typing import Iterable
 
 from numpy import concatenate
 from numpy import ndarray
+from numpy import newaxis
 from numpy import where
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
@@ -186,7 +187,7 @@ class PolynomialRegressor(LinearRegressor):
         for index in range(n_inputs):
 
             # Coefficients of monomial derivatives
-            dcoefs = powers[None, :, index] * coefs
+            dcoefs = powers[newaxis, :, index] * coefs
 
             # Powers of monomial derivatives
             dpowers = powers.copy()
@@ -217,7 +218,7 @@ class PolynomialRegressor(LinearRegressor):
             jac_coefs[:, inds_keep, index] = dcoefs
 
         # Assemble polynomial (sum of weighted monomials)
-        contributions = jac_coefs[None] * vandermonde[:, None, :, None]
+        contributions = jac_coefs[None] * vandermonde[:, newaxis, :, newaxis]
         jacobians = jac_intercept + contributions.sum(axis=2)
 
         return jacobians

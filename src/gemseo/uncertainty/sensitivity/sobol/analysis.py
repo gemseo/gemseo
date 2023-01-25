@@ -109,6 +109,7 @@ from typing import Sequence
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
+from numpy import newaxis
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
@@ -292,7 +293,9 @@ class SobolAnalysis(SensitivityAnalysis):
             algos = self.__output_names_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
                 algos.append(
-                    algorithm(inputs, Sample(sub_output_data[:, None]), sub_sample_size)
+                    algorithm(
+                        inputs, Sample(sub_output_data[:, newaxis]), sub_sample_size
+                    )
                 )
                 algos[-1].setUseAsymptoticDistribution(
                     self.__use_asymptotic_distributions

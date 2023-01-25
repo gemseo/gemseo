@@ -106,6 +106,7 @@ from typing import Tuple
 import sklearn.gaussian_process
 from numpy import atleast_2d
 from numpy import ndarray
+from numpy import newaxis
 from numpy import repeat
 from sklearn.gaussian_process.kernels import Kernel
 
@@ -235,7 +236,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
     ) -> ndarray:
         output_data = self.algo.predict(input_data)
         if output_data.ndim == 1:
-            output_data = output_data[:, None]
+            output_data = output_data[:, newaxis]
         return output_data
 
     def predict_std(
@@ -277,5 +278,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
 
         output_data = self.algo.predict(input_data, return_std=True)[1]
         if output_data.ndim == 1:
-            output_data = repeat(output_data[:, None], self._reduced_dimensions[1], 1)
+            output_data = repeat(
+                output_data[:, newaxis], self._reduced_dimensions[1], 1
+            )
         return output_data

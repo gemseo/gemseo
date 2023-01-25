@@ -31,6 +31,7 @@ from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 from gemseo.utils.testing import compare_dict_of_arrays
 from numpy import array
 from numpy import linspace
+from numpy import newaxis
 
 
 @pytest.mark.parametrize(
@@ -49,7 +50,7 @@ def test_resampling_based_measure(method):
 @pytest.fixture(scope="module")
 def learning_dataset() -> Dataset:
     """A learning dataset with 20 points equispaced along the different features."""
-    data = linspace(0.0, 1.0, 20)[:, None]
+    data = linspace(0.0, 1.0, 20)[:, newaxis]
     dataset = Dataset()
     for name in ["x1", "x2"]:
         dataset.add_variable(name, data, group="inputs")
@@ -61,7 +62,7 @@ def learning_dataset() -> Dataset:
 @pytest.fixture(scope="module")
 def test_dataset() -> Dataset:
     """A test dataset with 5 points equispaced along the different features."""
-    data = linspace(0.0, 1.0, 5)[:, None]
+    data = linspace(0.0, 1.0, 5)[:, newaxis]
     dataset = Dataset()
     for name in ["x1", "x2"]:
         dataset.add_variable(name, data, group="inputs")

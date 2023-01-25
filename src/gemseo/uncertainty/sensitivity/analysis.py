@@ -49,6 +49,7 @@ from matplotlib.figure import Figure
 from numpy import array
 from numpy import linspace
 from numpy import ndarray
+from numpy import newaxis
 from numpy import vstack
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
@@ -774,7 +775,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             )
             dataset.add_variable(name, data)
         data = dataset.data[dataset.PARAMETER_GROUP]
-        dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, None]
+        dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, newaxis]
         dataset.row_names = [method.main_method for method in methods]
         if use_bar_plot:
             plot = BarPlot(dataset, n_digits=2)

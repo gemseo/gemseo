@@ -41,22 +41,22 @@ from numpy import std
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create dataset
 # --------------
-x = linspace(0, 1, 100)
+x = linspace(0, 1, 100)[:, None]
 data = (x < 0.3) * 5 * x + (x > 0.3) * sin(20 * x)
 
 
-###############################################################################
+# %%
 # Create transformers
-# ---------------------------
+# -------------------
 same_scaler = Scaler()
 scaler = Scaler(offset=-2, coefficient=0.5)
 min_max_scaler = MinMaxScaler()
 standard_scaler = StandardScaler()
 
-###############################################################################
+# %%
 # Transform data
 # --------------
 same_data = same_scaler.fit_transform(data)
@@ -64,7 +64,7 @@ scaled_data = scaler.fit_transform(data)
 min_max_scaled_data = min_max_scaler.fit_transform(data)
 standard_scaled_data = standard_scaler.fit_transform(data)
 
-###############################################################################
+# %%
 # Compute jacobian
 # ----------------
 jac_same = same_scaler.compute_jacobian(data)
@@ -74,7 +74,7 @@ jac_standard_scaled = standard_scaler.compute_jacobian(data)
 
 print(jac_standard_scaled)
 
-###############################################################################
+# %%
 # Print properties
 # ----------------
 # We may print the min, max, mean and standard deviation of the transformed
@@ -100,7 +100,7 @@ for name, y in zip(
         ),
     )
 
-###############################################################################
+# %%
 # Plot data
 # ---------
 plt.plot(x, data, label="Original")

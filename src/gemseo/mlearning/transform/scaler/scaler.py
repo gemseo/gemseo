@@ -49,6 +49,7 @@ from numpy import atleast_1d
 from numpy import diag
 from numpy import full
 from numpy import ndarray
+from numpy import tile
 
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
@@ -97,22 +98,16 @@ class Scaler(Transformer):
     def coefficient(self, value: float | ndarray) -> None:
         self.parameters[self.__COEFFICIENT] = atleast_1d(value)
 
-    def fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
-        if data.ndim == 1:
-            data = data[:, None]
-
-        super().fit(data, *args)
-
     def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
-        n_features = data.shape[1]
-        coefficient = self.parameters[self.__COEFFICIENT]
-        if coefficient.size == 1 and n_features > 1:
-            self.parameters[self.__COEFFICIENT] = full(n_features, coefficient[0])
+        if self.parameters[self.__COEFFICIENT].size == 1:
+            self.parameters[self.__COEFFICIENT] = full(
+                data.shape[-1], self.parameters[self.__COEFFICIENT][0]
+            )
 
-        offset = self.parameters[self.__OFFSET]
-        if offset.size == 1 and n_features > 1:
-            self.parameters[self.__OFFSET] = full(n_features, offset[0])
-
+        if self.parameters[self.__OFFSET].size == 1:
+            self.parameters[self.__OFFSET] = full(
+                data.shape[-1], self.parameters[self.__OFFSET][0]
+            )
         LOGGER.warning(
             (
                 "The %s.fit() function does nothing; "
@@ -123,14 +118,18 @@ class Scaler(Transformer):
             self.__class__.__name__,
         )
 
+    @Transformer._use_2d_array
     def transform(self, data: ndarray) -> ndarray:
-        return self.offset + self.coefficient * data
+        return data @ diag(self.coefficient) + self.offset
 
+    @Transformer._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
-        return (data - self.offset) / self.coefficient
+        return (data - self.offset) @ diag(1 / self.coefficient)
 
+    @Transformer._use_2d_array
     def compute_jacobian(self, data: ndarray) -> ndarray:
-        return diag(self.coefficient)
+        return tile(diag(self.coefficient), (len(data), 1, 1))
 
+    @Transformer._use_2d_array
     def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
-        return diag(1 / self.coefficient)
+        return tile(diag(1 / self.coefficient), (len(data), 1, 1))

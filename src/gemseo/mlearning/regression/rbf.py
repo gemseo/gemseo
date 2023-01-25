@@ -48,6 +48,7 @@ from numpy import exp
 from numpy import finfo
 from numpy import log
 from numpy import ndarray
+from numpy import newaxis
 from numpy import sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
@@ -354,7 +355,7 @@ class RBFRegressor(MLRegressionAlgo):
     ) -> ndarray:
         output_data = self.algo(*input_data.T)
         if len(output_data.shape) == 1:
-            output_data = output_data[:, None]  # n_outputs=1, rbf reduces
+            output_data = output_data[:, newaxis]  # n_outputs=1, rbf reduces
         return output_data + self.y_average
 
     def _predict_jacobian(
@@ -372,11 +373,11 @@ class RBFRegressor(MLRegressionAlgo):
         # nodes      : (           , n_outputs ,          , n_learn_samples )
         # jacobians  : ( n_samples , n_outputs , n_inputs ,                 )
         eps = self.algo.epsilon
-        ref_points = self.algo.xi[None, None]
-        nodes = self.algo.nodes.T[None, :, None]
-        input_data = input_data[:, None, :, None]
+        ref_points = self.algo.xi[newaxis, newaxis]
+        nodes = self.algo.nodes.T[newaxis, :, newaxis]
+        input_data = input_data[:, newaxis, :, newaxis]
         diffs = input_data - ref_points
-        dists = norm(diffs, axis=2)[:, :, None]
+        dists = norm(diffs, axis=2)[:, :, newaxis]
         contributions = nodes * der_func(diffs, dists, eps=eps)
         return contributions.sum(-1)
 

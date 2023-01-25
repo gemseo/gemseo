@@ -51,6 +51,7 @@ from __future__ import annotations
 from numpy import exp
 from numpy import hstack
 from numpy import linspace
+from numpy import newaxis
 from numpy import pi
 from numpy import square
 
@@ -90,8 +91,8 @@ class BurgersDataset(Dataset):
         """
         super().__init__(name, by_group)
 
-        time = linspace(0, 2, n_samples)[:, None]
-        space = linspace(0, 2 * pi, n_x)[None, :]
+        time = linspace(0, 2, n_samples)[:, newaxis]
+        space = linspace(0, 2 * pi, n_x)[newaxis, :]
         visc = fluid_viscosity
 
         alpha = space - 4 * time

@@ -26,6 +26,7 @@ from typing import Union
 from numpy import hstack
 from numpy import linspace
 from numpy import ndarray
+from numpy import newaxis
 
 from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
@@ -129,6 +130,6 @@ class DiagonalDOE(DOELibrary):
                 start = 0.0
                 end = 1.0
 
-            samples.append(linspace(start, end, n_samples)[:, None])
+            samples.append(linspace(start, end, n_samples)[:, newaxis])
 
         return hstack(samples)

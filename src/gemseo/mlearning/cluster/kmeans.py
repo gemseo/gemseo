@@ -75,6 +75,7 @@ from typing import Iterable
 
 from numpy import finfo
 from numpy import ndarray
+from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
@@ -135,7 +136,7 @@ class KMeans(MLPredictiveClusteringAlgo):
         data: ndarray,
     ) -> ndarray:
         centers = self.algo.cluster_centers_
-        distances = norm(data[:, None] - centers, axis=2)
+        distances = norm(data[:, newaxis] - centers, axis=2)
         inverse_distances = 1 / (distances + self.EPS)
-        probas = inverse_distances / inverse_distances.sum(axis=1)[:, None]
+        probas = inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]
         return probas

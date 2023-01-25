@@ -65,8 +65,10 @@ class Power(Transformer):
         self.__power_transformer.fit(data)
         self.lambdas_ = self.__power_transformer.lambdas_
 
+    @Transformer._use_2d_array
     def transform(self, data: ndarray) -> ndarray:
         return self.__power_transformer.transform(data)
 
+    @Transformer._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
         return self.__power_transformer.inverse_transform(data)
