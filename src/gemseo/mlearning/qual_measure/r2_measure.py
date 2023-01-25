@@ -45,6 +45,7 @@ from typing import NoReturn
 from numpy import delete as npdelete
 from numpy import mean
 from numpy import ndarray
+from numpy import newaxis
 from numpy import repeat
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
@@ -100,7 +101,7 @@ class R2Measure(MLErrorMeasure):
         algo = deepcopy(self.algo)
 
         sse = 0
-        ymean = repeat(mean(output_data, axis=0)[None, :], len(output_data), axis=0)
+        ymean = repeat(mean(output_data, axis=0)[newaxis, :], len(output_data), axis=0)
         var = mean_squared_error(output_data, ymean, multioutput=_multioutput)
         for n_fold in range(n_folds):
             fold = folds[n_fold]

@@ -38,14 +38,14 @@ from numpy import sin
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create dataset
 # --------------
-x = linspace(0, 1, 100)
+x = linspace(0, 1, 100)[:, None]
 data = sin(10 * x) - 3 * x
 
 
-###############################################################################
+# %%
 # Create transformer pipeline
 # ---------------------------
 # We create a pipeline of two transformers; the first performing a shift, the
@@ -56,19 +56,21 @@ shift = Scaler(offset=5)
 scale = Scaler(coefficient=0.5)
 pipeline = Pipeline(transformers=[shift, scale])
 
-###############################################################################
+# %%
 # Transform data
 # --------------
 # In order to use the transformer, we have to fit it to the data.
 pipeline.fit(data)
 
+# %%
 # Transform data using the pipeline
 transformed_data = pipeline.transform(data)
 
+# %%
 # Transform data using individual components of the pipeline
 only_shifted_data = shift.transform(data)
 
-###############################################################################
+# %%
 # Plot data
 # ---------
 plt.plot(x, data, label="Original data")
@@ -77,14 +79,14 @@ plt.plot(x, only_shifted_data, label="Shifted but not scaled data")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Compute jacobian
 # ----------------
 jac = pipeline.compute_jacobian(data)
 only_shift_jac = shift.compute_jacobian(data)
 only_scale_jac = scale.compute_jacobian(only_shifted_data)
 
-print(jac)
-print(only_shift_jac)
-print(only_scale_jac)
+print(jac.shape)
+print(only_shift_jac.shape)
+print(only_scale_jac.shape)
 print(allclose(jac, matmul(only_scale_jac, only_shift_jac)))

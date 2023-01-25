@@ -28,6 +28,7 @@ from numpy import abs as np_abs
 from numpy import concatenate
 from numpy import eye
 from numpy import ndarray
+from numpy import newaxis
 from numpy import ones_like
 from numpy import zeros
 
@@ -260,7 +261,7 @@ class IDF(MDOFormulation):
                 # outputs
                 x_jac = self.unmask_x_swap_order(output_couplings, ones_like(x_vec))
             if self.normalize_constraints:
-                return (coupl_jac - x_jac) / norm_fact[:, None]
+                return (coupl_jac - x_jac) / norm_fact[:, newaxis]
             return coupl_jac - x_jac
 
         expr = ""

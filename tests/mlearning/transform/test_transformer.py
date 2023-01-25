@@ -19,10 +19,14 @@
 """Test transformer module."""
 from __future__ import annotations
 
+from unittest import mock
+
 import pytest
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.python_compatibility import get_mock_method_call_args
 from numpy import arange
+from numpy import array
 from numpy import ndarray
 
 
@@ -52,7 +56,7 @@ def test_fit(data):
         transformer = Transformer()
 
     transformer._fit = lambda data, *args: None
-    transformer.fit("foo")
+    transformer.fit(array([1]))
     assert transformer.is_fitted
 
 
@@ -62,3 +66,14 @@ def test_str():
         transformer = Transformer()
 
     assert str(transformer) == "Transformer"
+
+
+@pytest.mark.parametrize("data", [array([1, 1, 1]), array([[1], [1], [1]])])
+def test_fit_shape(data):
+    """Check that fit() handles both 1D and 2D NumPy arrays."""
+    with concretize_classes(Transformer):
+        transformer = Transformer()
+        with mock.patch.object(transformer, "_fit") as mock_method:
+            transformer.fit(data)
+
+        assert get_mock_method_call_args(mock_method)[0].shape == (3, 1)

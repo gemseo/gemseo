@@ -55,6 +55,7 @@ class JamesonSensor(Transformer):
     def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         self.threshold *= amax(data)
 
+    @Transformer._use_2d_array
     def transform(
         self,
         data: ndarray,

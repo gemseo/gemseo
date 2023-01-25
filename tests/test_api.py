@@ -86,6 +86,7 @@ from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import cos
 from numpy import linspace
+from numpy import newaxis
 from numpy import pi as np_pi
 from numpy import sin
 
@@ -480,7 +481,7 @@ def test_create_scalable(tmp_wd):
         return sin(2 * np_pi * x_1) * cos(2 * np_pi * x_2) - x_3
 
     data = Dataset("sinus")
-    x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, None]
+    x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, newaxis]
     data.add_variable("x1", x1_val, data.INPUT_GROUP)
     data.add_variable("x2", x2_val, data.INPUT_GROUP)
     data.add_variable("x3", x2_val, data.INPUT_GROUP)

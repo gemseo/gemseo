@@ -34,6 +34,7 @@ from numpy import array
 from numpy import hstack
 from numpy import linspace
 from numpy import meshgrid
+from numpy import newaxis
 from numpy import ones_like
 
 ROOT_LEARNING_SIZE = 6
@@ -57,8 +58,8 @@ def dataset() -> Dataset:
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
     x_2 = linspace(0, 1, ROOT_LEARNING_SIZE)
     grid_x_1, grid_x_2 = meshgrid(x_1, x_2)
-    x_1 = grid_x_1.flatten()[:, None]
-    x_2 = grid_x_2.flatten()[:, None]
+    x_1 = grid_x_1.flatten()[:, newaxis]
+    x_2 = grid_x_2.flatten()[:, newaxis]
     y_1 = (1 - 2 * x_1 + 3 * x_2) - 4 * (1 - x_1 - x_2) * (1 - x_1 - x_2 < 0)
     z_1 = x_1 + x_2
     z_2 = ones_like(z_1)

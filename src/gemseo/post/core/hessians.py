@@ -54,6 +54,7 @@ from numpy import dot
 from numpy import eye
 from numpy import inf
 from numpy import ndarray
+from numpy import newaxis
 from numpy import sqrt
 from numpy import trace
 from numpy import zeros
@@ -175,7 +176,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
         grad_hist = array(grad_hist)
         if grad_hist.ndim == 1:
-            grad_hist = grad_hist[:, None]
+            grad_hist = grad_hist[:, newaxis]
 
         x_hist = array(x_hist)
         if x_hist.shape != (grad_hist.shape[0], grad_hist.shape[-1]):

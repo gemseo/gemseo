@@ -28,6 +28,7 @@ from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import array
 from numpy import concatenate
 from numpy import linspace
+from numpy import newaxis
 from numpy.testing import assert_allclose
 
 
@@ -35,7 +36,7 @@ from numpy.testing import assert_allclose
 def dataset():
     """A set of data."""
     data = Dataset()
-    column = linspace(1.0, 10.0, 10)[:, None]
+    column = linspace(1.0, 10.0, 10)[:, newaxis]
     data.add_variable("x_1", column)
     data.add_variable("x_2", concatenate((column, column), 1))
     return data

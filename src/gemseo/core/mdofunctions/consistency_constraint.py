@@ -27,6 +27,7 @@ from typing import Sequence
 from typing import TYPE_CHECKING
 
 from numpy import eye
+from numpy import newaxis
 from numpy import ones_like
 from numpy import zeros
 
@@ -141,5 +142,5 @@ class ConsistencyCstr(MDOFunction):
             )
 
         if self.__formulation.normalize_constraints:
-            return (coupl_jac - x_jac) / self.__norm_fact[:, None]
+            return (coupl_jac - x_jac) / self.__norm_fact[:, newaxis]
         return coupl_jac - x_jac

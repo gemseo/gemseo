@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -36,6 +35,7 @@ from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
+from gemseo.utils.python_compatibility import get_mock_method_call_args
 from gemseo.utils.testing import image_comparison
 from numpy import allclose
 from numpy import array
@@ -261,11 +261,7 @@ def test_plot_save(
             file_extension=file_extension,
         )
 
-        if sys.version_info[:2] == (3, 7):
-            args = mock_method.call_args[0]
-        else:
-            args = mock_method.call_args.args
-
+        args = get_mock_method_call_args(mock_method)
         if isinstance(expected, Path):
             assert args[2] == expected
         else:

@@ -31,6 +31,7 @@ from __future__ import annotations
 
 from numpy import ndarray
 from numpy import sqrt
+from numpy import tile
 from sklearn.decomposition import PCA as SKLPCA
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
@@ -59,17 +60,21 @@ class PCA(DimensionReduction):
         self.algo.fit(data)
         self.parameters["n_components"] = self.algo.n_components_
 
+    @DimensionReduction._use_2d_array
     def transform(self, data: ndarray) -> ndarray:
         return self.algo.transform(data)
 
+    @DimensionReduction._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
         return self.algo.inverse_transform(data)
 
+    @DimensionReduction._use_2d_array
     def compute_jacobian(self, data: ndarray) -> ndarray:
-        return self.algo.components_
+        return tile(self.algo.components_, (len(data), 1, 1))
 
+    @DimensionReduction._use_2d_array
     def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
-        return self.algo.components_.T
+        return tile(self.algo.components_.T, (len(data), 1, 1))
 
     @property
     def components(self) -> ndarray:
