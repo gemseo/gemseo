@@ -94,6 +94,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.python_compatibility import singledispatchmethod
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1047,7 +1048,7 @@ class Dataset:
                     else:
                         column_names.extend(
                             [
-                                f"{name}_{size + start}"
+                                repr_variable(name, size + start)
                                 for size in range(self.sizes[name])
                             ]
                         )
