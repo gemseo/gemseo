@@ -32,6 +32,7 @@ from typing import Sequence
 from numpy import array
 from numpy import newaxis
 from numpy import vstack
+from numpy.typing import NDArray
 from openturns import Sample
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
@@ -50,6 +51,8 @@ from gemseo.utils.compatibility.openturns import compute_spearman_correlation
 from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -132,10 +135,9 @@ class CorrelationAnalysis(SensitivityAnalysis):
         name: str,
     ) -> None:
         if name not in self._ALGORITHMS:
-            methods = self._ALGORITHMS.keys()
             raise NotImplementedError(
-                "{} is a bad method name. "
-                "Available ones are {}.".format(name, methods)
+                f"{name} is not an sensitivity method; "
+                f"available ones are {pretty_str(sorted(self._ALGORITHMS.keys()))}."
             )
         else:
             LOGGER.info("Use {} indices as main indices.")
@@ -167,7 +169,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def pcc(self) -> IndicesType:
-        """dict: The Partial Correlation Coefficients.
+        """The Partial Correlation Coefficients.
 
         With the following structure:
 
@@ -185,7 +187,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def prcc(self) -> IndicesType:
-        """dict: The Partial Rank Correlation Coefficients.
+        """The Partial Rank Correlation Coefficients.
 
         With the following structure:
 
@@ -203,7 +205,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def src(self) -> IndicesType:
-        """dict: The Standard Regression Coefficients.
+        """The Standard Regression Coefficients.
 
         With the following structure:
 
@@ -221,7 +223,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def srrc(self) -> IndicesType:
-        """dict: The Standard Rank Regression Coefficients.
+        """The Standard Rank Regression Coefficients.
 
         With the following structure:
 
@@ -257,7 +259,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def pearson(self) -> IndicesType:
-        """dict: The Pearson coefficients.
+        """The Pearson coefficients.
 
         With the following structure:
 
@@ -275,7 +277,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def spearman(self) -> IndicesType:
-        """dict: The Spearman coefficients.
+        """The Spearman coefficients.
 
          ith the following structure:
 
@@ -293,7 +295,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     @property
     def indices(self) -> dict[str, IndicesType]:
-        """dict: The sensitivity indices.
+        """The sensitivity indices.
 
         With the following structure:
 
@@ -327,23 +329,35 @@ class CorrelationAnalysis(SensitivityAnalysis):
         file_name: str | None = None,
         file_format: str | None = None,
     ) -> None:
-        if not isinstance(output, tuple):
-            output = (output, 0)
+        if isinstance(output, str):
+            output_name, output_index = output, 0
+        else:
+            output_name, output_index = output
+
+        all_indices = sorted(self._ALGORITHMS)
         dataset = Dataset()
-        inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
-        inputs_names = self._filter_names(inputs_names, inputs)
-        algorithms = sorted(self._ALGORITHMS)
-        data = {name: [] for name in inputs_names}
-        for method in algorithms:
-            indices = getattr(self, method)
-            for name in inputs_names:
-                data[name].append(indices[output[0]][output[1]][name])
-        for name in inputs_names:
-            dataset.add_variable(name, vstack(data[name]))
-        dataset.row_names = algorithms
+        for input_name in self._filter_names(
+            self.dataset.get_names(self.dataset.INPUT_GROUP), inputs
+        ):
+            # Store all the sensitivity indices
+            # related to the tuple (output_name, output_index, input_name)
+            # in a 2D NumPy array shaped as (n_indices, input_dimension).
+            dataset.add_variable(
+                input_name,
+                vstack(
+                    [
+                        getattr(self, indices)[output_name][output_index][input_name]
+                        for indices in all_indices
+                    ]
+                ),
+            )
+
+        dataset.row_names = all_indices
         plot = RadarChart(dataset)
-        output = f"{output[0]}({output[1]})"
-        plot.title = title or f"Correlation indices for the output {output}"
+        output_name = repr_variable(
+            output_name, output_index, size=self.dataset.sizes[output_name]
+        )
+        plot.title = title or f"Correlation indices for the output {output_name}"
         plot.rmin = -1.0
         plot.rmax = 1.0
         file_path = self._file_path_manager.create_file_path(
@@ -390,3 +404,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
             max_radius=max_radius,
             **options,
         )
+
+    @staticmethod
+    def _aggregate_sensitivity_indices(indices: NDArray[float]) -> float:  # noqa: D102
+        return abs(indices).sum()

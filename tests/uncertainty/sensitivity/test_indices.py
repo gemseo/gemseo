@@ -237,7 +237,7 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
     """
     dataset = mock_sensitivity_analysis.export_to_dataset()
     assert isinstance(dataset, Dataset)
-    assert dataset.row_names == ["x1(0)", "x2(0)", "x2(1)"]
+    assert dataset.row_names == ["x1", "x2[0]", "x2[1]"]
     assert dataset.variables == ["y1", "y2"]
     assert dataset.groups == ["m1", "m2"]
     assert_array_equal(dataset.data["y1"], array([[1], [1], [1]]))
