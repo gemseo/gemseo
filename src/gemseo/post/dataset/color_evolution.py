@@ -23,6 +23,7 @@ from typing import Iterable
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 
 from gemseo.core.dataset import Dataset
@@ -96,5 +97,9 @@ class ColorEvolution(DatasetPlot):
         axes.set_xlabel(self.xlabel)
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title)
-        fig.colorbar(img_, ax=axes)
+        fig.colorbar(
+            img_,
+            ax=axes,
+            format=LogFormatterSciNotation() if self._param.use_log else None,
+        )
         return [fig]

@@ -140,7 +140,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 f"available ones are {pretty_str(sorted(self._ALGORITHMS.keys()))}."
             )
         else:
-            LOGGER.info("Use {} indices as main indices.")
+            LOGGER.info("Use %s indices as main indices.", name)
             self._main_method = name
 
     def compute_indices(  # noqa: D102
