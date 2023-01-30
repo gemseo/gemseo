@@ -46,6 +46,6 @@ dataset.row_names = ["series_1", "series_2"]
 # Plot the two series on a radar chart
 # ------------------------------------
 # We can use the :class:`.BarPlot` plot
-plot = BarPlot(dataset)
+plot = BarPlot(dataset, n_digits=2)
 plot.colormap = "PiYG"
 plot.execute(save=False, show=True)
