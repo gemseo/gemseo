@@ -16,6 +16,10 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.lib_custom import CustomDOE
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.disciplines.linear_combination import LinearCombination
 from numpy import array
 
@@ -69,3 +73,33 @@ def test_check_gradient2points(linear_combination_for_tests):
         "gamma": array([1.0, 0.0]),
     }
     assert linear_combination_for_tests.check_jacobian(threshold=1e-3, step=1e-4)
+
+
+def test_parallel_doe_execution(linear_combination_for_tests):
+    """Test parallel execution."""
+    custom_doe = CustomDOE()
+    design_space = DesignSpace()
+    design_space.add_variable("alpha", l_b=-1.0, u_b=1.0, value=0.0)
+    design_space.add_variable("beta", l_b=-1.0, u_b=1.0, value=0.0)
+    design_space.add_variable("gamma", l_b=-1.0, u_b=1.0, value=0.0)
+    opt_problem = OptimizationProblem(design_space)
+    opt_problem.objective = MDOFunctionGenerator(
+        linear_combination_for_tests
+    ).get_function(
+        input_names=["alpha", "beta", "gamma"],
+        output_names=["delta"],
+        default_inputs={
+            "alpha": array([1.0]),
+            "beta": array([1.0]),
+            "gamma": array([1.0]),
+        },
+    )
+    custom_doe.execute(
+        problem=opt_problem,
+        samples=array([[1.0, 0.0], [1.0, -1.0], [1.0, 0.0]]).T,
+        eval_jac=True,
+        n_processes=2,
+    )
+    assert opt_problem.database.get_f_of_x(
+        fname="delta", x_vect=array([1.0, 1.0, 1.0])
+    ) == array([0.0])

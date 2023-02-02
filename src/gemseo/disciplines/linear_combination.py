@@ -50,6 +50,11 @@ class LinearCombination(MDODiscipline):
         >>> discipline.execute(input_data)
         >>> delta = discipline.local_data["delta"]  # delta = array([5.])
     """
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "_LinearCombination__offset",
+        "_LinearCombination__coefficients",
+        "_LinearCombination__output_name",
+    )
 
     def __init__(
         self,
