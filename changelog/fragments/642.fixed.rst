@@ -1,0 +1,1 @@
+Fix the parallel execution and the serialization of ConstraintAggregation discipline.
