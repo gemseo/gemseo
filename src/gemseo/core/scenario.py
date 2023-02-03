@@ -443,11 +443,14 @@ class Scenario(MDODiscipline):
             if erase:
                 LOGGER.warning(
                     "Erasing optimization history in %s",
-                    str(self._opt_hist_backup_path),
+                    self._opt_hist_backup_path,
                 )
                 remove(self._opt_hist_backup_path)
             elif pre_load:
                 opt_pb.database.import_hdf(self._opt_hist_backup_path)
+                max_iteration = opt_pb.database.get_max_iteration()
+                if max_iteration != 0:
+                    opt_pb.current_iter = max_iteration
 
         opt_pb.add_callback(
             self._execute_backup_callback,

@@ -9,7 +9,10 @@
 		},
         "use_database": {
 			"type": "boolean"
-		}
+		},
+        "reset_iteration_counters": {
+            "type": "boolean"
+        }
     },
     "$schema": "http://json-schema.org/draft-04/schema",
     "additionalProperties": false,

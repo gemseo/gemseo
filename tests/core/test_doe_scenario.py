@@ -164,13 +164,45 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario):
     )
 
 
-def test_warning_when_missing_option(caplog):
-    """Check that a warning is correctly logged when an option is unknown."""
-    discipline = AnalyticDiscipline({"y": "2*x"}, name="func")
+@pytest.fixture(scope="module")
+def unit_design_space():
+    """A unit design space with x as variable."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", design_space)
-    scenario.execute(
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    return design_space
+
+
+@pytest.fixture(scope="module")
+def double_discipline():
+    """An analytic discipline that doubles its input."""
+    return AnalyticDiscipline({"y": "2*x"}, name="func")
+
+
+@pytest.fixture
+def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
+    """A simple DOE scenario not yet executed.
+
+    Args:
+        unit_design_space: A unit design space with x as a variable.
+        double_discipline: An analytic discipline that doubles its input.
+
+    Minimize y=func(x)=2x over [0,1].
+    """
+    return DOEScenario(
+        [double_discipline],
+        "DisciplinaryOpt",
+        "y",
+        unit_design_space,
+    )
+
+
+def test_warning_when_missing_option(caplog, doe_scenario):
+    """Check that a warning is correctly logged when an option is unknown.
+
+    Args:
+        doe_scenario: A simple DOE scenario.
+    """
+    doe_scenario.execute(
         {
             "algo": "CustomDOE",
             "algo_options": {"samples": array([[1.0]]), "unknown_option": 1},
@@ -284,27 +316,24 @@ def test_export_to_dataset_normalized_integers():
     )
 
 
-def test_lib_serialization(tmp_wd):
+def test_lib_serialization(tmp_wd, doe_scenario):
     """Test the serialization of a DOEScenario with an instantiated DOELibrary.
 
     Args:
         tmp_wd: Fixture to move into a temporary work directory.
+        doe_scenario: A simple DOE scenario.
     """
-    discipline = AnalyticDiscipline({"y": "2*x"}, name="func")
-    design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", design_space)
-    scenario.execute(
+    doe_scenario.execute(
         {
             "algo": "CustomDOE",
             "algo_options": {"samples": array([[1.0]])},
         }
     )
 
-    scenario.formulation.opt_problem.reset(database=False, design_space=False)
+    doe_scenario.formulation.opt_problem.reset(database=False, design_space=False)
 
     with open("doe.pkl", "wb") as file:
-        pickle.dump(scenario, file)
+        pickle.dump(doe_scenario, file)
 
     with open("doe.pkl", "rb") as file:
         pickled_scenario = pickle.load(file)
@@ -325,3 +354,52 @@ def test_lib_serialization(tmp_wd):
     assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
         "y", array([1.0])
     ) == array([2.0])
+
+
+other_doe_scenario = doe_scenario
+
+
+@pytest.mark.parametrize(
+    "samples_1,samples_2,reset_iteration_counters,expected",
+    [
+        (array([[0.5]]), array([[0.25], [0.75]]), True, 3),
+        (array([[0.5]]), array([[0.25], [0.75]]), False, 2),
+        (array([[0.5]]), array([[0.25]]), True, 2),
+        (array([[0.5]]), array([[0.25]]), False, 1),
+        (array([[0.5], [0.75]]), array([[0.25]]), True, 3),
+        (array([[0.5], [0.75]]), array([[0.25]]), False, 2),
+    ],
+)
+def test_partial_execution_from_backup(
+    tmp_wd,
+    doe_scenario,
+    other_doe_scenario,
+    samples_1,
+    samples_2,
+    reset_iteration_counters,
+    expected,
+):
+    """Test the execution of a DOEScenario from a backup.
+
+    Args:
+        doe_scenario: A simple DOE scenario.
+        other_doe_scenario: A different instance of a simple DOE scenario.
+        samples_1: The samples for the first execution.
+        samples_2: The samples for the second execution.
+        reset_iteration_counters: Whether to reset the iteration counters from the
+            previous execution of the scenario to 0 before executing it again.
+        expected: The expected database length.
+    """
+    doe_scenario.set_optimization_history_backup("backup.h5")
+    doe_scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples_1}})
+    other_doe_scenario.set_optimization_history_backup("backup.h5", pre_load=True)
+    other_doe_scenario.execute(
+        {
+            "algo": "CustomDOE",
+            "algo_options": {
+                "samples": samples_2,
+                "reset_iteration_counters": reset_iteration_counters,
+            },
+        }
+    )
+    assert len(other_doe_scenario.formulation.opt_problem.database) == expected
