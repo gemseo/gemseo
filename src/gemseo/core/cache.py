@@ -49,9 +49,7 @@ from numpy import vstack
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.core.discipline_data import Data
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
@@ -122,6 +120,10 @@ class AbstractCache(ABCMapping):
         with the ordered fields *input*, *output* and *jacobian*
         accessible either by index, e.g. ``input_data = cache_entry[0]``,
         or by name, e.g. ``input_data = cache_entry.inputs``.
+
+    Note:
+        If an output name is also an input name,
+        the output name is suffixed with ``[out]``.
 
     One can also get the number of cache entries with ``size = len(cache)``
     and iterate over the cache,
@@ -309,6 +311,8 @@ class AbstractCache(ABCMapping):
                 If ``None``, use all the inputs.
             output_names: The names of the outputs to be exported.
                 If ``None``, use all the outputs.
+                If an output name is also an input name,
+                the output name is suffixed with ``[out]``.
 
         Returns:
             A dataset version of the cache.
@@ -328,32 +332,68 @@ class AbstractCache(ABCMapping):
             output_group = dataset.OUTPUT_GROUP
             cache_output_as_input = False
 
-        # Add cache inputs and outputs
-        inputs = vstack(
-            [
-                concatenate_dict_of_arrays_to_array(data.inputs, input_names)
-                for data in self
-                if data.outputs
-            ]
+        self.__fill_dataset_by_group(
+            dataset,
+            input_names,
+            input_group,
+            input_names,
+            cache_output_as_input,
+            is_output_group=False,
         )
-        data = split_array_to_dict_of_arrays(inputs, self.names_to_sizes, input_names)
-        for input_name, value in sorted(data.items()):
-            dataset.add_variable(input_name, value, input_group)
-
-        outputs = vstack(
-            [
-                concatenate_dict_of_arrays_to_array(data.outputs, output_names)
-                for data in self
-                if data.outputs
-            ]
+        self.__fill_dataset_by_group(
+            dataset,
+            output_names,
+            output_group,
+            input_names,
+            cache_output_as_input,
+            is_output_group=True,
         )
-        data = split_array_to_dict_of_arrays(outputs, self.names_to_sizes, output_names)
-        for output_name, value in sorted(data.items()):
-            dataset.add_variable(
-                output_name, value, output_group, cache_as_input=cache_output_as_input
-            )
 
         return dataset
+
+    def __fill_dataset_by_group(
+        self,
+        dataset: Dataset,
+        names: list[str],
+        group: str,
+        input_names: list[str],
+        cache_output_as_input: bool,
+        is_output_group: bool,
+    ) -> None:
+        """Fill a group of a dataset with cache variables.
+
+        If the same variable name occurs in the input and the output,
+        suffix the output name to make it unique.
+
+        Args:
+            dataset: The dataset to be filled.
+            names: The variable names of the group to be added to the dataset.
+            group: The group of variables to be added to the dataset.
+            input_names: The names of the cached input variables to be added to the
+                dataset.
+            cache_output_as_input: Whether the output variables are added as input ones.
+            is_output_group: Whether ``group`` is a group of output variables.
+        """
+        for name in names:
+            cache_entries = []
+            for cache_entry in self:
+                if cache_entry.outputs:
+                    if is_output_group:
+                        selected_cache_entry = cache_entry.outputs[name]
+                    else:
+                        selected_cache_entry = cache_entry.inputs[name]
+                    cache_entries.append(selected_cache_entry)
+            data = vstack(cache_entries)
+            if is_output_group:
+                if name in input_names:
+                    final_name = f"{name}[out]"
+                else:
+                    final_name = name
+                dataset.add_variable(
+                    final_name, data, group, cache_as_input=cache_output_as_input
+                )
+            else:
+                dataset.add_variable(name, data, group)
 
 
 class AbstractFullCache(AbstractCache):

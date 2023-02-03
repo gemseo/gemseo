@@ -33,6 +33,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.scenario import Scenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.mda import MDA
 from gemseo.problems.sellar.sellar import Sellar1
@@ -42,6 +43,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import allclose
 from numpy import array
 from numpy import complex128
 from numpy import ndarray
@@ -1165,3 +1167,28 @@ def test_statuses_linearize(observer):
         MDODiscipline.STATUS_DONE,
     ]
     observer.reset()
+
+
+@pytest.fixture(scope="module")
+def self_coupled_disc() -> MDODiscipline:
+    """A minimalist self-coupled discipline, where the self-coupled variable is
+    multiplied by two."""
+    disc = AnalyticDiscipline({"x": "2*x", "y": "x"})
+    disc.default_inputs["x"] = array([1])
+    return disc
+
+
+@pytest.mark.parametrize(
+    "name, group, value",
+    [
+        ("x", "inputs", array([1])),
+        ("x[out]", "outputs", array([2])),
+    ],
+)
+def test_self_coupled(self_coupled_disc, name, group, value):
+    """Check that the value of each variable is equal to the prescribed value, and that
+    each variable belongs to the prescribed group."""
+    self_coupled_disc.execute()
+    d = self_coupled_disc.cache.export_to_dataset()
+    assert allclose(d[name], value)
+    assert d._groups[name] == group

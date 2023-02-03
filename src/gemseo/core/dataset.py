@@ -477,7 +477,7 @@ class Dataset:
     ) -> None:
         """Check that a data array is consistent.
 
-        It must me a 2D numpy array with length equal to the dataset one.
+        It must be a 2D NumPy array with length equal to the dataset one.
 
         Raises:
             ValueError: If the data is not a 2D numpy array.
