@@ -117,7 +117,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
             internal_algorithm_name=algo_name,
             lhs_must_be_linear_operator=True,
             library_name="SciPy",
-            website=cls.__WEBSITE.format(algo_name),
+            website=cls.__WEBSITE.format(cls.__WEBPAGES[algo_name]),
         )
 
     def _get_options(

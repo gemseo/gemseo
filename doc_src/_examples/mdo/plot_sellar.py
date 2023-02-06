@@ -27,7 +27,7 @@ A from scratch example on the Sellar problem
 # ------------
 # In this example,
 # we will create an MDO scenario based on the Sellar's problem from scratch.
-# Contrary to the :ref:`GEMSEO in ten minutes tutorial <gemseo_10min>`,
+# Contrary to the :ref:`sphx_glr_examples_mdo_plot_gemseo_in_10_minutes.py`,
 # all the disciplines will be implemented from scratch
 # by sub-classing the :class:`.MDODiscipline` class
 # for each discipline of the Sellar problem.
