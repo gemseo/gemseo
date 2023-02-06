@@ -42,7 +42,8 @@ The post-processing features are illustrated on MDO results obtained on the :ref
 using different types of :code:`formulation` (:ref:`MDF formulation <mdf_formulation>`, :ref:`IDF formulation <idf_formulation>`, ...)
 
 The following code sets up and executes the problem. It is possible to try different types of MDO strategies by changing
-the :code:`formulation` value. For a detailed explanation on how to setup the case, please see :ref:`sobieski_mdo`.
+the :code:`formulation` value. For a detailed explanation on how to setup the case, please see
+:ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`.
 
 
 .. code::

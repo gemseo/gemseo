@@ -19,9 +19,8 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-|g| in 10 minutes
-=============================
-.. _gemseo_10min:
+GEMSEO in 10 minutes
+====================
 """
 # %%
 #

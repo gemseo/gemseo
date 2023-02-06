@@ -20,7 +20,7 @@ i.e. the computation and the convergence of the :term:`coupling variables` of co
 
 .. seealso::
 
-   Examples are given in :ref:`sobieski_mdo`.
+   `The examples about MDA algorithms. <../examples/mda/index.html>`__
 
 Creation of the MDAs
 --------------------

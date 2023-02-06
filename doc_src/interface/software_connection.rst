@@ -21,7 +21,7 @@ several options are available:
 
 - Your program is a Python function,
   you can use :class:`.AutoPyDiscipline`,
-  see :ref:`GEMSEO in ten minutes <gemseo_10min>`.
+  see :ref:`sphx_glr_examples_mdo_plot_gemseo_in_10_minutes.py`.
 
 - You have simple analytic expressions,
   use :ref:`AnalyticDiscipline<analyticdiscipline>`,
