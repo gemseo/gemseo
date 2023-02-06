@@ -40,15 +40,15 @@ def create_problem():
     return problem
 
 
-def test_external_penalty():
-    """Tests external penalty compared to no aggregation."""
+def test_exterior_penalty():
+    """Tests exterior penalty compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
     execute_algo(problem_ref, algo_name="SLSQP", algo_options=algo_options)
     ref_sol = problem_ref.solution
 
     problem = create_problem()
-    problem.apply_external_penalty(
+    problem.apply_exterior_penalty(
         objective_scale=10.0, scale_inequality=100.0, scale_equality=100.0
     )
     execute_algo(

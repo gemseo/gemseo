@@ -609,13 +609,13 @@ class OptimizationProblem:
             ecstr = self.constraints[constr_id:]
             self.constraints = icstr + cstrs + ecstr
 
-    def apply_external_penalty(
+    def apply_exterior_penalty(
         self,
         objective_scale: float = 1.0,
         scale_inequality: float | ndarray = 1.0,
         scale_equality: float | ndarray = 1.0,
     ):
-        r"""Reformulate the optimization problem using external penalty.
+        r"""Reformulate the optimization problem using exterior penalty.
 
         Given the optimization problem with equality and inequality constraints:
 
@@ -631,7 +631,7 @@ class OptimizationProblem:
 
             l_b\leq x\leq u_b
 
-        The external penalty approach consists in building a penalized objective
+        The exterior penalty approach consists in building a penalized objective
         function that takes into account constraints violations:
 
         .. math::
