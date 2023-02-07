@@ -268,7 +268,7 @@ def test_get_formulation_sub_options_schema(tmp_wd):
     for formulation in get_available_formulations():
         if formulation == "MDF":
             opts = {"main_mda_name": "MDAJacobi"}
-        elif formulation == "BiLevel":
+        elif formulation.endswith("BiLevel"):
             opts = {"main_mda_name": "MDAGaussSeidel"}
         elif formulation == "BLISS98B":
             opts = {"mda_name": "MDAGaussSeidel"}
