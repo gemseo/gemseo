@@ -312,7 +312,6 @@ class PostOptimalAnalysis:
 
         jac = {self.outvars[0]: dict(), self.MULT_DOT_CONSTR_JAC: dict()}
         for input_name in inputs:
-
             # Contribution of the objective
             jac_obj_arr = functions_jac[self.outvars[0]][input_name]
             jac_cstr_arr = zeros_like(jac_obj_arr)

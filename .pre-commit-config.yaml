@@ -18,14 +18,14 @@ repos:
     - id: check-symlinks
 
 - repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.9.0
+  rev: v1.10.0
   hooks:
     - id: rst-backticks
     - id: rst-directive-colons
     - id: rst-inline-touching-normal
 
 - repo: https://github.com/PyCQA/autoflake
-  rev: v2.0.0
+  rev: v2.0.1
   hooks:
     - id: autoflake
       args: [
@@ -78,7 +78,7 @@ repos:
       args: [--py37-plus]
 
 - repo: https://github.com/psf/black
-  rev: 22.12.0
+  rev: 23.1.0
   hooks:
     - id: black
 
@@ -94,13 +94,13 @@ repos:
         - pep8-naming==0.13.3
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.39.1
+  rev: v2.40.0
   hooks:
     - id: commitizen
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.3.1
+  rev: v1.4.2
   hooks:
     - id: insert-license
       name: insert LGPL license
@@ -111,7 +111,7 @@ repos:
         - LICENSES/headers/LGPL-3.0.txt
     - id: insert-license
       name: insert BSD license
-      files: ^doc_src/(examples|tutorials).*\.py$
+      files: ^doc_src/(_examples|tutorials).*\.py$
       args:
         - --license-filepath
         - LICENSES/headers/BSD-0-Clause.txt

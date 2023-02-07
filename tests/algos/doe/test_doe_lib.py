@@ -101,7 +101,6 @@ def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
 
 def test_evaluate_samples_multiproc_with_observables(doe):
     """Evaluate a DoE in // with multiprocessing and with observables."""
-
     disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
     disc.cache = None
     design_space = DesignSpace()
@@ -216,7 +215,7 @@ def test_pre_run_debug(doe, caplog):
         "in the input unit hypercube of dimension 3."
     )
     message_is_logged = False
-    for (_, log_level, log_message) in caplog.record_tuples:
+    for _, log_level, log_message in caplog.record_tuples:
         if message in log_message:
             message_is_logged = True
             assert log_level == logging.DEBUG

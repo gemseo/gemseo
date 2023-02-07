@@ -185,7 +185,6 @@ class PolynomialRegressor(LinearRegressor):
 
         # Compute partial derivatives with respect to each input separately
         for index in range(n_inputs):
-
             # Coefficients of monomial derivatives
             dcoefs = powers[newaxis, :, index] * coefs
 

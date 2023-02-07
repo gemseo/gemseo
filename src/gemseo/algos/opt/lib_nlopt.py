@@ -346,9 +346,7 @@ class Nlopt(OptimizationLibrary):
             if self.descriptions[self.algo_name].require_gradient:
                 if grad.size > 0:
                     cstr_jac = jac(xn_vect)
-                    grad[:] = atleast_2d(cstr_jac)[
-                        index_cstr,
-                    ]
+                    grad[:] = atleast_2d(cstr_jac)[index_cstr,]
             return atleast_1d(func(xn_vect).real)[index_cstr]
 
         return cstr_fun_grad

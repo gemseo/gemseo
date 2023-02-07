@@ -84,7 +84,6 @@ def test_inverse_transform(data):
 
 def test_compute_jacobian(data):
     """Test compute_jacobian method."""
-
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)

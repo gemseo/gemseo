@@ -53,7 +53,6 @@ def expected_links(n2_json):
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
-
     return [
         {
             "source": 3,

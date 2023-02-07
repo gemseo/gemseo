@@ -1842,7 +1842,7 @@ class OptimizationProblem:
         c_opt_grad = {}
         obj_name = self.objective.name
         constraints = self.get_ineq_constraints() + self.get_eq_constraints()
-        for (i, out_val) in enumerate(feas_f):
+        for i, out_val in enumerate(feas_f):
             obj_eval = out_val.get(obj_name)
             if obj_eval is None or isinstance(obj_eval, Number) or obj_eval.size == 1:
                 tmp_objeval = obj_eval

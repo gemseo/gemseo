@@ -844,7 +844,14 @@ class SobieskiStructure(SobieskiDiscipline):
 
         # Derivation of total weight = y_1[0] (requires derivation of wing weight)
         # Calculation of wingbox X-sectional thickness
-        (wing_w, ww_coeff, _, a_i, a_ij, s_shifted,) = self.__compute_wing_weight(
+        (
+            wing_w,
+            ww_coeff,
+            _,
+            a_i,
+            a_ij,
+            s_shifted,
+        ) = self.__compute_wing_weight(
             tc_ratio,
             aspect_ratio,
             sweep,

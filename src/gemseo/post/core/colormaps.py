@@ -1144,7 +1144,7 @@ RG_SEISMIC_DATA = (
 )
 
 CMAPS = {}
-for (name, data) in (
+for name, data in (
     ("magma", MAGMA_DATA),
     ("inferno", INFERNO_DATA),
     ("plasma", PLASMA_DATA),

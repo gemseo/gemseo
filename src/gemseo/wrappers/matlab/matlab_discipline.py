@@ -115,7 +115,6 @@ class MatlabDiscipline(MDODiscipline):
         cache_file_path: str | None = None,
         is_jac_returned_by_func: bool = False,
     ) -> None:
-
         """
         Args:
             matlab_fct: The path of the Matlab file or Name of the function.

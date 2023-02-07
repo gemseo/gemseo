@@ -425,7 +425,6 @@ class MDAQuasiNewton(MDARoot):
 
         jac = None
         if self.use_gradient:
-
             for discipline in self.disciplines:
                 # Tells the discipline what to linearize
                 outs = discipline.get_output_data_names()

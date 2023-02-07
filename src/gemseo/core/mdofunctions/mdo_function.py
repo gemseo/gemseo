@@ -402,7 +402,6 @@ class MDOFunction:
     def __setstate__(self, state: dict[str, Any]) -> None:
         self._init_shared_attrs()
         for attribute_name, attribute_value in state.items():
-
             # At this point, there are no Synchronized attributes in MDOFunction or its
             # child classes other than _n_calls, which is not serialized.
             # If a Synchronized attribute is added in the future, the following check

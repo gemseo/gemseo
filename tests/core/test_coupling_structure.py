@@ -159,7 +159,6 @@ def get_strong_couplings(analytic_expressions):
 
 def test_strong_couplings_basic():
     """Tests a particular coupling structure."""
-
     coupl = get_strong_couplings(
         (
             {"c1": "x+0.2*c2", "out1": "x"},
@@ -173,7 +172,6 @@ def test_strong_couplings_basic():
 
 def test_strong_couplings_self_coupled():
     """Tests a particular coupling structure with self couplings."""
-
     coupl = get_strong_couplings(
         (
             {"cs": "x+0.2*cs"},
