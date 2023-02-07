@@ -63,7 +63,6 @@ class SVMClassifier(MLClassificationAlgo):
         probability: bool = False,
         **parameters: int | float | bool | str | None,
     ) -> None:
-
         """
         Args:
             C: The inverse L2 regularization parameter.

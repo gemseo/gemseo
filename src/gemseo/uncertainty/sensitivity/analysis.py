@@ -93,7 +93,6 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     default_output: list[str]
     """The default outputs of interest."""
-
     dataset: Dataset
     """The dataset containing the discipline evaluations."""
 

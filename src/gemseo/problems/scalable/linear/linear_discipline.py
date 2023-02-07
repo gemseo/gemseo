@@ -42,7 +42,6 @@ class LinearDiscipline(MDODiscipline):
         outputs_size: int = 1,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
-
         """
         Args:
             name: The discipline name.

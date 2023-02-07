@@ -658,7 +658,6 @@ class MDA(MDODiscipline):
             * Whether the normed residual is lower than the tolerance.
             * Whether the maximum number of iterations is reached.
         """
-
         residual_is_small = self.normed_residual <= self.tolerance
         max_iter_is_reached = self.max_mda_iter <= self._current_iter
         if max_iter_is_reached and not residual_is_small:

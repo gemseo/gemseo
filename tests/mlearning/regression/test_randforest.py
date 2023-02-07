@@ -82,7 +82,6 @@ def test_learn(dataset):
 
 def test_prediction(model):
     """Test prediction."""
-
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
     assert isinstance(prediction, dict)

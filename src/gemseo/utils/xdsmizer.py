@@ -350,7 +350,6 @@ class XDSMizer:
                         atom.status
                         and atom.parent.status is MDODiscipline.STATUS_RUNNING
                     ):
-
                         node = None
                         for a_node in nodes:
                             if a_node["id"] == self.to_id[atom]:

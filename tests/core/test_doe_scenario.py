@@ -149,7 +149,6 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario):
     Args:
         mdf_variable_grammar_doe_scenario: The DOEScenario.
     """
-
     n_samples = 10
     input_data = {
         "n_samples": n_samples,

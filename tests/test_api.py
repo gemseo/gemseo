@@ -630,7 +630,6 @@ def test_get_default_sub_options_values(tmp_wd):
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-
     defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
 

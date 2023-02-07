@@ -144,7 +144,6 @@ class TestXDSMizer(unittest.TestCase):
 
     def test_xdsmize_bilevel(self):
         """Test xdsmization of Sobieski problem solved with bilevel."""
-
         design_space = SobieskiProblem().design_space
         # Disciplinary optimization
         propulsion = SobieskiPropulsion()

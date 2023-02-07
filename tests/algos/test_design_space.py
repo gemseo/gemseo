@@ -358,7 +358,6 @@ def test_extend():
 
 def test_active_bounds():
     """Check whether active bounds are correctly identified."""
-
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=2.0)
     design_space.add_variable("y", l_b=-2.0, u_b=2.0)

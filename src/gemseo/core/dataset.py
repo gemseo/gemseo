@@ -1213,7 +1213,7 @@ class Dataset:
         group_labels = []
         variable_labels = []
         component_labels = []
-        for (group, variable, component) in self.get_column_names(as_tuple=True):
+        for group, variable, component in self.get_column_names(as_tuple=True):
             if variable in variable_names:
                 group_labels.append(group)
                 variable_labels.append(variable)

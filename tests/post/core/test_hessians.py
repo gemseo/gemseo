@@ -170,14 +170,14 @@ def test_baseclass_methods():
 
     assert len(apprx.b_mat_history) > 1
 
-    with (pytest.raises(ValueError)):
+    with pytest.raises(ValueError):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=1)
     database.clear()
 
-    with (pytest.raises(ValueError)):
+    with pytest.raises(ValueError):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
-    with (pytest.raises(ValueError)):
+    with pytest.raises(ValueError):
         apprx.get_x_grad_history(
             problem.objective.name,
             at_most_niter=at_most_niter,
@@ -189,7 +189,7 @@ def test_get_x_grad_history_on_sobieski():
     """Test the gradient history on the Sobieski problem."""
     opt_pb = OptimizationProblem.import_hdf(MDF_HIST_PATH)
     apprx = HessianApproximation(opt_pb.database)
-    with (pytest.raises(ValueError)):
+    with pytest.raises(ValueError):
         apprx.get_x_grad_history("g_1")
     x_hist, x_grad_hist, n_iter, nparam = apprx.get_x_grad_history("g_1", func_index=1)
 
@@ -206,7 +206,7 @@ def test_get_x_grad_history_on_sobieski():
     with pytest.raises(ValueError):
         apprx.get_s_k_y_k(x_hist, x_grad_hist, 5)
 
-    with (pytest.raises(ValueError)):
+    with pytest.raises(ValueError):
         apprx.get_x_grad_history("g_1", func_index=7)
 
     # Create inconsistent optimization history by restricting g_2 gradient

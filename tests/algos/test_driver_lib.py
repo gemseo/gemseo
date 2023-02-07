@@ -82,7 +82,6 @@ def test_no_algo_fail(optimization_problem):
 
 def test_grammar_fail():
     """Check that a ValueError is raised when the grammar file is not found."""
-
     with pytest.raises(
         ValueError,
         match=(

@@ -331,7 +331,6 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
-
         super().__init__(
             algo_type,
             long_algo_type,

@@ -151,7 +151,7 @@ class OptimizationResult:
         dict_ = {
             k: v for k, v in self.__dict__.items() if k not in self.__NOT_DICT_KEYS
         }
-        for (mapping, prefix) in [
+        for mapping, prefix in [
             (self.constraints_values, self.__C_TAG),
             (self.constraints_grad, self.__CGRAD_TAG),
         ]:

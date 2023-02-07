@@ -375,7 +375,6 @@ def test_range_h35000(problem, dtype):
 
 def test_optimum_gs(problem):
     """MDA analysis of the optimum sample from Sobieski and check range value."""
-
     # Reference value from octave computation for blackbox_structure function
     #         y_4_reference = problem.get_sobieski_optimum_range()
 
@@ -386,7 +385,6 @@ def test_optimum_gs(problem):
 
 def test_constraints(problem):
     """MDA analysis of the optimum sample from Sobieski and check range value."""
-
     # Reference value from octave computation for blackbox_structure function
     #         y_4_reference = problem.get_sobieski_optimum_range()
 
@@ -430,7 +428,6 @@ def test_ineq_constraints(problem):
 
 def test_x0_gs(problem, dtype):
     """MDA analysis of the initial sample from Sobieski and check range value."""
-
     # Reference value from octave computation for MDA
     # function
     y_4_reference = array([535.79388428])
@@ -489,7 +486,6 @@ def test_h35000(problem, dtype):
 
 def test_x0_optimum(problem, dtype):
     """MDA analysis of the initial sample from Sobieski and check range value."""
-
     # Reference value from octave computation for blackbox_structure
     # function
     y_4_ref = 3963.19894068

@@ -824,7 +824,7 @@ class AbstractFullCache(AbstractCache):
         Args:
             other_cache: The cache to update the current one.
         """
-        for (input_data, output_data, jacobian_data) in other_cache:
+        for input_data, output_data, jacobian_data in other_cache:
             if output_data or jacobian_data:
                 self[input_data] = (output_data, jacobian_data)
 

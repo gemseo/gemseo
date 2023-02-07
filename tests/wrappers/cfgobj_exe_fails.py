@@ -47,7 +47,6 @@ def write_output(out1, out2, outfile, failure=None):
     out 2 = {:1.18g}"""
 
     if failure == "wrong_len":
-
         sout = """out 1 = {:1.18g}
 
 [ "section 1" ]
