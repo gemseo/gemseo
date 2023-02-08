@@ -33,4 +33,5 @@ build:
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_calibration
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_umdo
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_fmu
+      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_mma
       - sphinx-apidoc -e -M -o doc_src/_modules src/gemseo

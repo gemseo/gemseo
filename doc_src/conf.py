@@ -291,6 +291,7 @@ html_context["plugins"] = {
     "gemseo-scilab": "Interfacing Scilab functions",
     "gemseo-umdo": "Capability for MDO under uncertainty",
     "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
+    "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
 }
 
 ###############################################################################
