@@ -654,6 +654,7 @@ class OptimizationProblem:
             scale_inequality: The inequality constraint scaling constant.
         """
         penalized_objective = self.objective / objective_scale
+        self.add_observable(self.objective)
         for constr in self.constraints:
             if constr.f_type == MDOFunction.TYPE_INEQ:
                 penalized_objective += aggregate_positive_sum_square(
@@ -663,9 +664,10 @@ class OptimizationProblem:
                 penalized_objective += aggregate_sum_square(
                     constr, scale=scale_equality
                 )
+            self.add_observable(constr)
         self.objective = penalized_objective
         self.constraints = []
-        self.constraint_names = []
+        self.constraint_names = {}
 
     def add_observable(
         self,
