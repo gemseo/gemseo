@@ -6,3 +6,4 @@ git+https://gitlab.com/gemseo/dev/gemseo-calibration.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-mlearning.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-umdo.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-fmu.git@develop
+git+https://gitlab.com/gemseo/dev/gemseo-mma.git@develop
