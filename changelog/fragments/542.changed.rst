@@ -1,1 +1,0 @@
-:meth:`.Statistics.compute_probability` computes one probability per component of the variables.

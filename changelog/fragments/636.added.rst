@@ -1,3 +1,0 @@
-Users can now choose whether the :attr:`~.OptimizationProblem.current_iter` should be set to 0 before the execution of
-an :class:`.OptimizationProblem` passing the algo option ``reset_iteration_counters``. This is useful to complete
-the execution of a :class:`.Scenario` from a backup file without exceeding the requested ``max_iter`` or ``n_samples``.

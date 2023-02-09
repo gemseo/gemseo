@@ -1,1 +1,0 @@
-:meth:`.Statistics.compute_joint_probability` computes the joint probability of the components of random variables while :meth:`.Statistics.compute_probability` computes their marginal ones.

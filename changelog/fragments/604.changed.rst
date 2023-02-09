@@ -1,3 +1,0 @@
-:class:`.BarPlot` uses a grid for a better readability.
-:meth:`.SobolAnalysis.plot` uses a grid for a better readability.
-:meth:`.MorrisAnalysis.plot` uses a grid for a better readability.
