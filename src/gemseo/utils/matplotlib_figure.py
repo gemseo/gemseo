@@ -16,11 +16,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-FigSizeType = tuple[float, float]
+FigSizeType = Tuple[float, float]
 """The type of a figure size."""
 
 
