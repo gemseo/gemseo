@@ -71,7 +71,6 @@ class TestMonitoring(unittest.TestCase):
         self._assert_update_status(self.sc.disc1, MDODiscipline.STATUS_DONE)
 
     def test_remove_observer(self):
-
         self.monitor.remove_observer(self)
         self.sc.disc1.status = MDODiscipline.STATUS_RUNNING
         self.assertEqual(None, self._updated_uuid)  # no update received

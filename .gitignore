@@ -15,7 +15,6 @@ doc_src/algorithms/**/*.*
 !doc_src/algorithms/gen_opts/*.tmpl
 !doc_src/algorithms/mlearning_algos.rst
 !doc_src/algorithms/uncertainty_algos.rst
-doc_src/_examples
 doc_src/tutorials_sg
 doc_src/_examples/**/*.*
 !doc_src/_examples/**/*.py

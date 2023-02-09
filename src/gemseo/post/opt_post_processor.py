@@ -26,6 +26,7 @@ from os.path import exists
 from os.path import join
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -36,6 +37,7 @@ from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
+from matplotlib.gridspec import GridSpec
 
 from gemseo.algos.database import Database
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -76,6 +78,12 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
 
     _neg_obj_name: str
     """The name of the objective function starting with a '-'."""
+
+    _X_MARGIN: ClassVar[float] = 0.1
+    """The left and right margin for the x-axis."""
+
+    _Y_MARGIN: ClassVar[float] = 0.05
+    """The left and right margin for the y-axis."""
 
     def __init__(
         self,
@@ -358,3 +366,43 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
                 for k in range(dv_size):
                     x_names.append(f"{d_v}_{k}")
         return x_names
+
+    def _get_design_variable_names(
+        self, variable_names: Iterable[str] | None = None, simplify_names: bool = True
+    ) -> list[str]:
+        """Define the names of the design variables.
+
+        Args:
+            variable_names: The names of the design variables.
+                If ``None``, use all the design variables.
+            simplify_names: Whether to simplify the names of variables
+                with several components.
+
+        Returns:
+            The names of the design variables.
+        """
+        design_space = self.opt_problem.design_space
+        y_labels = []
+        if variable_names is None:
+            variable_names = design_space.variables_names
+        for variable_name in variable_names:
+            size = design_space.variables_sizes[variable_name]
+            name = variable_name
+            if size > 1:
+                name += " (0)"
+            y_labels.append(name)
+            for i in range(1, size):
+                if simplify_names:
+                    y_labels.append(f"({i})")
+                else:
+                    y_labels.append(f"{variable_name} ({i})")
+        return y_labels
+
+    @staticmethod
+    def _get_grid_layout() -> GridSpec:
+        """Return a grid layout to place subplots within a figure.
+
+        Returns:
+            A grid layout to place subplots within a figure.
+        """
+        return GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)

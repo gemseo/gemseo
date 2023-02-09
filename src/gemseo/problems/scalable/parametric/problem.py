@@ -52,7 +52,6 @@ OPTIM_DIR = "opthistoryview"
 
 
 class TMScalableProblem(TMProblem):
-
     """The scalable problem from Tedford and Martins, 2010, builds a list of strongly
     coupled scalable disciplines completed by a system discipline computing the objective
     function and the constraints.

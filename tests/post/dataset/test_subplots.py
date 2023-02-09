@@ -44,7 +44,7 @@ def dataset() -> Dataset:
 def test_plot(dataset, pyplot_close_all):
     """Check the creation of a plot with subplots."""
     fig, (ax1, ax2) = plt.subplots(ncols=2)
-    plot_1 = BarPlot(dataset)
+    plot_1 = BarPlot(dataset, n_digits=2)
     plot_1.colormap = "PiYG"
     plot_1.title = "Plot 1"
     plot_1.execute(save=False, fig=fig, axes=ax1)

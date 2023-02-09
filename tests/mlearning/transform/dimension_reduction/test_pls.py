@@ -24,6 +24,7 @@ from __future__ import annotations
 import pytest
 from gemseo.mlearning.transform.dimension_reduction.pls import PLS
 from numpy import ndarray
+from numpy import newaxis
 from numpy import sum as npsum
 from numpy.random import rand
 
@@ -35,7 +36,7 @@ N_FEATURES = 8
 def data() -> tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     input_data = rand(N_SAMPLES, N_FEATURES)
-    output_data = npsum(input_data, 1)[:, None]
+    output_data = npsum(input_data, 1)[:, newaxis]
     return input_data, output_data
 
 
@@ -86,3 +87,18 @@ def test_inverse_transform(data):
     restored_data = pca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
     assert restored_data.shape[1] == N_FEATURES
+
+
+def test_shape(data):
+    """Check the shapes of the data."""
+    input_data, output_data = data
+    pls = PLS(n_components=3)
+    pls.fit(input_data, output_data)
+    n, p = input_data.shape
+    q = pls.n_components
+    transformed_data = pls.transform(input_data)
+    assert transformed_data.shape == (n, q)
+    assert pls.inverse_transform(transformed_data).shape == (n, p)
+
+    assert pls.transform(input_data[0]).shape == (q,)
+    assert pls.inverse_transform(transformed_data[0]).shape == (p,)

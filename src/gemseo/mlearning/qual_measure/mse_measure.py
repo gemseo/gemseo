@@ -40,6 +40,7 @@ from numpy import ndarray
 from sklearn.metrics import mean_squared_error
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
@@ -62,6 +63,9 @@ class MSEMeasure(MLErrorMeasure):
         outputs: ndarray,
         predictions: ndarray,
         multioutput: bool = True,
-    ) -> float | ndarray:
-        multioutput = "raw_values" if multioutput else "uniform_average"
-        return mean_squared_error(outputs, predictions, multioutput=multioutput)
+    ) -> MeasureType:
+        return mean_squared_error(
+            outputs,
+            predictions,
+            multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[multioutput],
+        )

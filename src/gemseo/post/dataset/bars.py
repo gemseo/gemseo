@@ -104,4 +104,6 @@ class BarPlot(DatasetPlot):
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title, fontsize=self.font_size * 1.2)
         axes.legend(fontsize=self.font_size)
+        axes.set_axisbelow(True)
+        axes.grid()
         return [fig]

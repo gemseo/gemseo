@@ -78,7 +78,7 @@ class OpenTURNS(DOELibrary):
         OT_REVERSE_HALTON: ("Reverse Halton", "ReverseHaltonSequence"),
         OT_HALTON: ("Halton sequence", "HaltonSequence"),
         OT_FAURE: ("Faure sequence", "FaureSequence"),
-        OT_MC: ("Monte Carlo sequence", "RandomGenerator.html"),
+        OT_MC: ("Monte Carlo sequence", "RandomGenerator"),
         OT_FACTORIAL: ("Factorial design", "Factorial"),
         OT_COMPOSITE: ("Composite design", "Composite"),
         OT_AXIAL: ("Axial design", "Axial"),

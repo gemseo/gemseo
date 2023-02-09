@@ -21,17 +21,21 @@ from unittest.mock import patch
 import pytest
 from gemseo.utils.matplotlib_figure import save_show_figure
 from matplotlib import pyplot as plt
+from matplotlib import rcParams
 
 
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])
 @pytest.mark.parametrize("show", [True, False])
-@pytest.mark.parametrize("fig_size", [[10, 10], None])
+@pytest.mark.parametrize("fig_size", [(10, 10), None])
 def test_process(tmp_wd, pyplot_close_all, file_path, show, fig_size):
     """Verify that a Matplotlib figure is correctly saved."""
     fig, axes = plt.subplots()
 
     with patch("matplotlib.pyplot.savefig"), patch("matplotlib.pyplot.show"):
         save_show_figure(fig, show, file_path, fig_size)
+        if fig_size is None:
+            fig_size = rcParams["figure.figsize"]
+        assert (fig.get_size_inches() == fig_size).all()
 
     if file_path is not None:
         assert Path(file_path).exists()

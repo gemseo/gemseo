@@ -49,7 +49,6 @@ def test_compare_mda_jacobi_gs():
 
 def test_mda_jacobi_newton_hybrid(sellar_disciplines):
     """Compare Newton and Gauss-Seidel MDA."""
-
     mda_j = MDAJacobi(sellar_disciplines)
     out1 = mda_j.execute()
 

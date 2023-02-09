@@ -123,7 +123,6 @@ class MatlabEngine:
     """The matlab engine."""
 
     def __init__(self, engine_name: str) -> None:
-
         """
         Args:
             engine_name: The name identifying the engine.

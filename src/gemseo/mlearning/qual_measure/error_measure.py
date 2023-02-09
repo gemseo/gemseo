@@ -24,22 +24,35 @@ proposes different evaluation methods.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from copy import deepcopy
-from typing import NoReturn
 from typing import Sequence
 
 from numpy import arange
+from numpy import atleast_1d
 from numpy import delete as npdelete
 from numpy import ndarray
 from numpy import unique
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.python_compatibility import Final
 
 
 class MLErrorMeasure(MLQualityMeasure):
     """An abstract error measure for machine learning."""
+
+    __OUTPUT_NAME_SEPARATOR: Final[str] = "#"
+    """A string to join output names."""
+
+    _GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT: Final[dict[bool, str]] = {
+        True: "raw_values",
+        False: "uniform_average",
+    }
+    """Map from the argument "multioutput" of |g| to that of sklearn."""
 
     def __init__(
         self,
@@ -56,12 +69,22 @@ class MLErrorMeasure(MLQualityMeasure):
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
+        as_dict: bool = False,
+    ) -> MeasureType:
+        """
+        Args:
+            as_dict: Whether to express the measure as a dictionary
+                whose keys are the output names.
+        """
         self._train_algo(samples)
-        return self._compute_measure(
-            self.algo.output_data,
-            self.algo.predict(self.algo.input_data),
+        return self._post_process_measure(
+            self._compute_measure(
+                self.algo.output_data,
+                self.algo.predict(self.algo.input_data),
+                multioutput,
+            ),
             multioutput,
+            as_dict,
         )
 
     def evaluate_test(
@@ -69,14 +92,42 @@ class MLErrorMeasure(MLQualityMeasure):
         test_data: Dataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
+        as_dict: bool = False,
+    ) -> MeasureType:
+        """
+        Args:
+            as_dict: Whether to express the measure as a dictionary
+                whose keys are the output names.
+        """
         self._train_algo(samples)
-        return self._compute_measure(
-            test_data.get_data_by_names(self.algo.output_names, False),
-            self.algo.predict(
-                test_data.get_data_by_names(self.algo.input_names, False)
+        return self._post_process_measure(
+            self._compute_measure(
+                test_data.get_data_by_names(self.algo.output_names, False),
+                self.algo.predict(
+                    test_data.get_data_by_names(self.algo.input_names, False)
+                ),
+                multioutput,
             ),
             multioutput,
+            as_dict,
+        )
+
+    def evaluate_loo(
+        self,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        as_dict: bool = False,
+    ) -> MeasureType:
+        """
+        Args:
+            as_dict: Whether to express the measure as a dictionary
+                whose keys are the output names.
+        """
+        return self.evaluate_kfolds(
+            samples=samples,
+            n_folds=self.algo.learning_set.n_samples,
+            multioutput=multioutput,
+            as_dict=as_dict,
         )
 
     def evaluate_kfolds(
@@ -86,7 +137,13 @@ class MLErrorMeasure(MLQualityMeasure):
         multioutput: bool = True,
         randomize: bool = MLQualityMeasure._RANDOMIZE,
         seed: int | None = None,
-    ) -> float | ndarray:
+        as_dict: bool = False,
+    ) -> MeasureType:
+        """
+        Args:
+            as_dict: Whether to express the measure as a dictionary
+                whose keys are the output names.
+        """
         self._train_algo(samples)
         samples = self._assure_samples(samples)
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
@@ -106,7 +163,9 @@ class MLErrorMeasure(MLQualityMeasure):
             quality = self._compute_measure(expected, predicted, multioutput)
             qualities.append(quality)
 
-        return sum(qualities) / len(qualities)
+        return self._post_process_measure(
+            sum(qualities) / len(qualities), multioutput, as_dict
+        )
 
     def evaluate_bootstrap(
         self,
@@ -114,7 +173,13 @@ class MLErrorMeasure(MLQualityMeasure):
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: None | None = None,
-    ) -> float | ndarray:
+        as_dict: bool = False,
+    ) -> MeasureType:
+        """
+        Args:
+            as_dict: Whether to express the measure as a dictionary
+                whose keys are the output names.
+        """
         samples = self._assure_samples(samples)
         self._train_algo(samples)
         n_samples = samples.size
@@ -142,14 +207,17 @@ class MLErrorMeasure(MLQualityMeasure):
             )
             qualities.append(quality)
 
-        return sum(qualities) / len(qualities)
+        return self._post_process_measure(
+            sum(qualities) / len(qualities), multioutput, as_dict
+        )
 
+    @abstractmethod
     def _compute_measure(
         self,
         outputs: ndarray,
         predictions: ndarray,
         multioutput: bool = True,
-    ) -> NoReturn:
+    ) -> MeasureType:
         """Compute the quality measure.
 
         Args:
@@ -161,4 +229,28 @@ class MLErrorMeasure(MLQualityMeasure):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
+
+    def _post_process_measure(
+        self, measure: float | ndarray, multioutput: bool, as_dict: bool
+    ) -> MeasureType:
+        """Post-process a measure.
+
+        Args:
+            measure: The measure to post-process.
+            multioutput: If ``True``, return the quality measure for each
+                output component. Otherwise, average these measures.
+            as_dict: Whether to return the measure as is or as a dictionary
+                whose keys are the output names.
+
+        Returns:
+            The post-processed measure.
+        """
+        if not as_dict:
+            return measure
+
+        data = atleast_1d(measure)
+        names = self.algo.output_names
+        if not multioutput:
+            return {self.__OUTPUT_NAME_SEPARATOR.join(names): data}
+
+        return split_array_to_dict_of_arrays(data, self.algo.learning_set.sizes, names)

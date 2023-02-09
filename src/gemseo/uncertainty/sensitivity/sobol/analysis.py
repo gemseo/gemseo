@@ -89,7 +89,7 @@ while :attr:`.SobolAnalysis.main_indices` represents total-order Sobol'
 indices.
 Lastly, the :meth:`.SobolAnalysis.plot` method represents
 the estimations of both first-order and total-order Sobol' indices along with
-their 95% confidence interval.
+their confidence intervals whose default level is 95%.
 
 The user can select the algorithm to estimate the Sobol' indices.
 The computation relies on
@@ -109,6 +109,7 @@ from typing import Sequence
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
+from numpy import newaxis
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
@@ -199,9 +200,11 @@ class SobolAnalysis(SensitivityAnalysis):
         r"""..
         Args:
             compute_second_order: Whether to compute the second-order indices.
-            use_asymptotic_distributions: Whether to estimate the confidence intervals
+            use_asymptotic_distributions: Whether to estimate
+                the confidence intervals
                 of the first- and total-order Sobol' indices
-                with the asymptotic distributions.
+                with the asymptotic distributions;
+                otherwise, use bootstrap.
 
         Notes:
              The estimators of Sobol' indices rely on the same DOE algorithm.
@@ -252,10 +255,12 @@ class SobolAnalysis(SensitivityAnalysis):
         self,
         outputs: Sequence[str] | None = None,
         algo: Algorithm | str = Algorithm.Saltelli,
+        confidence_level: float = 0.95,
     ) -> dict[str, IndicesType]:
         """
         Args:
             algo: The name of the algorithm to estimate the Sobol' indices.
+            confidence_level: The level of the confidence intervals.
         """  # noqa:D205,D212,D415
         if algo not in self.Algorithm:
             raise ValueError(
@@ -288,11 +293,14 @@ class SobolAnalysis(SensitivityAnalysis):
             algos = self.__output_names_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
                 algos.append(
-                    algorithm(inputs, Sample(sub_output_data[:, None]), sub_sample_size)
+                    algorithm(
+                        inputs, Sample(sub_output_data[:, newaxis]), sub_sample_size
+                    )
                 )
                 algos[-1].setUseAsymptoticDistribution(
                     self.__use_asymptotic_distributions
                 )
+                algos[-1].setConfidenceLevel(confidence_level)
 
         return self.indices
 
@@ -395,7 +403,7 @@ class SobolAnalysis(SensitivityAnalysis):
         self,
         first_order: bool = True,
     ) -> IndicesType:
-        """Get the confidence interval for Sobol' indices.
+        """Get the confidence intervals for the Sobol' indices.
 
         Warnings:
             You must first call :meth:`.compute_indices`.
@@ -583,6 +591,8 @@ class SobolAnalysis(SensitivityAnalysis):
             output_name = f"{output_name}[{output_component}]"
 
         ax.set_title(title or f"Sobol indices for the output {output_name}")
+        ax.set_axisbelow(True)
+        ax.grid()
         self._save_show_plot(
             fig,
             save=save,

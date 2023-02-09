@@ -82,7 +82,6 @@ def test_no_algo_fail(optimization_problem):
 
 def test_grammar_fail():
     """Check that a ValueError is raised when the grammar file is not found."""
-
     with pytest.raises(
         ValueError,
         match=(
@@ -160,5 +159,6 @@ def test_common_options():
         DriverLib.ROUND_INTS_OPTION,
         DriverLib.NORMALIZE_DESIGN_SPACE_OPTION,
         DriverLib.USE_DATABASE_OPTION,
+        DriverLib._DriverLib__RESET_ITERATION_COUNTERS_OPTION,
     }
     assert not driver.opt_grammar.required_names

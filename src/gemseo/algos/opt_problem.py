@@ -96,6 +96,7 @@ from numpy.linalg import norm
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
 from gemseo.algos.aggregation.aggregation_func import aggregate_ks
 from gemseo.algos.aggregation.aggregation_func import aggregate_max
+from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
@@ -123,6 +124,7 @@ NAME_TO_METHOD = {
     "max": aggregate_max,
     "KS": aggregate_ks,
     "IKS": aggregate_iks,
+    "pos_sum": aggregate_positive_sum_square,
 }
 
 BestInfeasiblePointType = Tuple[
@@ -220,13 +222,10 @@ class OptimizationProblem:
     use_standardized_objective: bool
     """Whether to use standardized objective for logging and post-processing.
 
-    The standardized objective corresponds to the original one
-    expressed as a cost function to minimize.
-    A :class:`.DriverLib` works with this standardized objective
-    and the :class:`.Database` stores its values.
-    However, for convenience,
-    it may be more relevant to log the expression
-    and the values of the original objective.
+    The standardized objective corresponds to the original one expressed as a cost
+    function to minimize. A :class:`.DriverLib` works with this standardized objective
+    and the :class:`.Database` stores its values. However, for convenience, it may be
+    more relevant to log the expression and the values of the original objective.
     """
 
     constraint_names: dict[str, list[str]]
@@ -304,7 +303,8 @@ class OptimizationProblem:
             differentiation_method: The default differentiation method to be applied
                 to the functions of the optimization problem.
             fd_step: The step to be used by the step-based differentiation methods.
-            parallel_differentiation: Whether to approximate the derivatives in parallel.
+            parallel_differentiation: Whether to approximate the derivatives in
+            parallel.
             use_standardized_objective: Whether to use standardized objective
                 for logging and post-processing.
             **parallel_differentiation_options: The options
@@ -523,7 +523,9 @@ class OptimizationProblem:
         if not has_default_name:
             cstr_func.name = func_name
             if cstr_func.outvars:
-                cstr_repr = cstr_repr.replace(func_name, "#".join(cstr_func.outvars))
+                output_names = "#".join(cstr_func.outvars)
+                cstr_repr = cstr_repr.replace(func_name, output_names)
+                cstr_func.expr = cstr_func.expr.replace(func_name, output_names)
                 cstr_func.special_repr = f"{func_name}: {cstr_repr}"
 
         if func_name not in self.constraint_names:
@@ -606,6 +608,66 @@ class OptimizationProblem:
             icstr = self.constraints[:constr_id]
             ecstr = self.constraints[constr_id:]
             self.constraints = icstr + cstrs + ecstr
+
+    def apply_exterior_penalty(
+        self,
+        objective_scale: float = 1.0,
+        scale_inequality: float | ndarray = 1.0,
+        scale_equality: float | ndarray = 1.0,
+    ):
+        r"""Reformulate the optimization problem using exterior penalty.
+
+        Given the optimization problem with equality and inequality constraints:
+
+        .. math::
+
+            min_x f(x)
+
+            s.t.
+
+            g(x)\leq 0
+
+            h(x)=0
+
+            l_b\leq x\leq u_b
+
+        The exterior penalty approach consists in building a penalized objective
+        function that takes into account constraints violations:
+
+        .. math::
+
+            min_x \tilde{f}(x) = \frac{f(x)}{o_s} + s[\sum{H(g(x))g(x)^2}+\sum{h(x)^2}]
+
+            s.t.
+
+            l_b\leq x\leq u_b
+
+        Where :math:`H(x)` is the Heaviside function, :math:`o_s` is the ``objective_scale``
+        parameter and :math:`s` is the scale parameter.
+        The solution of the new problem approximate the one of the original problem.
+        Increasing the values of ``objective_scale`` and scale, the solutions are closer but
+        the optimization problem requires more and more iterations to be solved.
+
+        Args:
+            scale_equality: The equality constraint scaling constant.
+            objective_scale: The objective scaling constant.
+            scale_inequality: The inequality constraint scaling constant.
+        """
+        penalized_objective = self.objective / objective_scale
+        self.add_observable(self.objective)
+        for constr in self.constraints:
+            if constr.f_type == MDOFunction.TYPE_INEQ:
+                penalized_objective += aggregate_positive_sum_square(
+                    constr, scale=scale_inequality
+                )
+            else:
+                penalized_objective += aggregate_sum_square(
+                    constr, scale=scale_equality
+                )
+            self.add_observable(constr)
+        self.objective = penalized_objective
+        self.constraints = []
+        self.constraint_names = {}
 
     def add_observable(
         self,
@@ -1782,7 +1844,7 @@ class OptimizationProblem:
         c_opt_grad = {}
         obj_name = self.objective.name
         constraints = self.get_ineq_constraints() + self.get_eq_constraints()
-        for (i, out_val) in enumerate(feas_f):
+        for i, out_val in enumerate(feas_f):
             obj_eval = out_val.get(obj_name)
             if obj_eval is None or isinstance(obj_eval, Number) or obj_eval.size == 1:
                 tmp_objeval = obj_eval
@@ -2111,7 +2173,7 @@ class OptimizationProblem:
         input_history = split_array_to_dict_of_arrays(
             input_history, names_to_sizes, input_names
         )
-        for input_name, input_value in sorted(input_history.items()):
+        for input_name, input_value in input_history.items():
             dataset.add_variable(input_name, input_value.real, input_group)
 
         # Add database outputs

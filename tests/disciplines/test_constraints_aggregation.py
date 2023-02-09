@@ -100,7 +100,7 @@ def test_wrong_meth():
 
 
 @pytest.mark.parametrize("indices", (None, array([0]), array([1])))
-@pytest.mark.parametrize("method_name", ["KS", "IKS"])
+@pytest.mark.parametrize("method_name", ["KS", "IKS", "pos_sum", "sum"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
 def test_constr_jac(disc_constr, method_name, indices, input_val):
     """Checks the Jacobian of the AggregationDiscipline."""
@@ -115,7 +115,7 @@ def test_constr_jac(disc_constr, method_name, indices, input_val):
 
 
 @pytest.mark.parametrize("scale", (1.0, array([2.0, 3.0])))
-@pytest.mark.parametrize("method_name", ["KS", "IKS"])
+@pytest.mark.parametrize("method_name", ["KS", "IKS", "pos_sum", "sum"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
 def test_constr_jac_scale(disc_constr, method_name, scale, input_val):
     """Checks the Jacobian of the AggregationDiscipline with scale effect."""

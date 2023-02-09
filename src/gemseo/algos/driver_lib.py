@@ -69,6 +69,7 @@ from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
@@ -104,11 +105,12 @@ class ProgressBar(tqdm.tqdm):
 
     @classmethod
     def format_meter(cls, n, total, elapsed, **kwargs):  # noqa: D102
+        meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
         if elapsed != 0.0:
             rate, unit = cls.__convert_rate(n, elapsed)
-            kwargs["rate"] = rate
-            kwargs["unit"] = unit
-        meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
+            lstr = meter.split(",")
+            lstr[1] = f" {rate:5.2f}{unit}"
+            meter = ",".join(lstr)
         # remove the unit suffix that is hard coded in tqdm
         return meter.replace("/s,", ",").replace("/s]", "]")
 
@@ -211,6 +213,14 @@ class DriverLib(AlgoLib):
         schema_path=Path(__file__).parent / "driver_lib_options.json",
     )
 
+    __RESET_ITERATION_COUNTERS_OPTION: Final[str] = "reset_iteration_counters"
+    """The name of the option to reset the iteration counters of the OptimizationProblem
+    before each execution."""
+
+    __reset_iteration_counters: bool
+    """Whether to reset the iteration counters of the OptimizationProblem before each
+    execution."""
+
     def __init__(self):  # noqa:D107
         # Library settings and check
         super().__init__()
@@ -222,6 +232,7 @@ class DriverLib(AlgoLib):
         self._max_time = None
         self.__message = None
         self.__is_current_iteration_logged = True
+        self.__reset_iteration_counters = True
 
     @classmethod
     def _get_unsuitability_reason(
@@ -251,26 +262,28 @@ class DriverLib(AlgoLib):
             message: The message to display at the beginning.
 
         Raises:
-            ValueError: If the `max_iter` is not greater than or equal to one.
+            ValueError: If ``max_iter`` is lower than one.
         """
         if max_iter < 1:
             raise ValueError(f"max_iter must be >=1, got {max_iter}")
-        self.__max_iter = max_iter
-        self.__iter = 0
+        self.problem.max_iter = self.__max_iter = max_iter
+        self.problem.current_iter = self.__iter = (
+            0 if self.__reset_iteration_counters else self.problem.current_iter
+        )
         self.__message = message
         if self.__activate_progress_bar:
             self.__progress_bar = ProgressBar(
-                total=self.__max_iter,
-                desc=self.__message,
+                total=max_iter,
+                desc=message,
                 ascii=False,
                 bar_format="{desc} {percentage:3.0f}%|{bar}{r_bar}",
                 file=TqdmToLogger(),
             )
+            self.__progress_bar.n = self.__iter
         else:
             self.deactivate_progress_bar()
+
         self._start_time = time()
-        self.problem.max_iter = max_iter
-        self.problem.current_iter = 0
 
     def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
         """Set the objective value in the progress bar.
@@ -480,6 +493,10 @@ class DriverLib(AlgoLib):
         )
         if activate_progress_bar is not None:
             self.__activate_progress_bar = activate_progress_bar
+
+        self.__reset_iteration_counters = options.pop(
+            self.__RESET_ITERATION_COUNTERS_OPTION, True
+        )
 
         options = self._update_algorithm_options(**options)
         self.internal_algo_name = self.descriptions[

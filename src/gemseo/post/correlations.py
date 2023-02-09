@@ -25,11 +25,11 @@ from functools import partial
 from re import fullmatch
 from typing import Sequence
 
-import matplotlib.gridspec as gridspec
 import numpy as np
-import pylab
+from matplotlib import pyplot as plt
 from matplotlib import ticker
 from matplotlib.figure import Figure
+from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 from numpy import ndarray
 
@@ -105,7 +105,7 @@ class Correlations(OptPostProcessor):
         if i_corr.size <= 16:
             n_plots_x = n_plots_y = 4
 
-        spec = gridspec.GridSpec(n_plots_y, n_plots_x, wspace=0.3, hspace=0.75)
+        spec = GridSpec(n_plots_y, n_plots_x, wspace=0.3, hspace=0.75)
         spec.update(top=0.95, bottom=0.06, left=0.08, right=0.95)
         fig = None
         for plot_index, (i, j) in enumerate(zip(i_corr, j_corr)):
@@ -114,8 +114,8 @@ class Correlations(OptPostProcessor):
                 if fig is not None:
                     # Save previous plot
                     self._add_figure(fig)
-                fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-                mng = pylab.plt.get_current_fig_manager()
+                fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+                mng = plt.get_current_fig_manager()
                 mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)
 
@@ -140,7 +140,7 @@ class Correlations(OptPostProcessor):
         y_index: int,
         correlation_coefficients: ndarray,
         fig: Figure,
-        spec: gridspec,
+        spec: GridSpec,
         plot_index: int,
         n_y: int,
         n_x: int,

@@ -112,7 +112,6 @@ def test_jac_and_outputs_caching(
     assert len(simple_cache) == 1
 
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
-
         last_entry = cache.last_entry
         assert last_entry.inputs
         assert last_entry.outputs

@@ -84,13 +84,12 @@ def test_inverse_transform(data):
 
 def test_compute_jacobian(data):
     """Test compute_jacobian method."""
-
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
     jac = pca.compute_jacobian(data)
 
-    assert jac.shape == (n_components, data.shape[1])
+    assert jac.shape == (data.shape[0], n_components, data.shape[1])
     assert allclose(jac, pca.algo.components_)
 
 
@@ -101,7 +100,7 @@ def test_compute_jacobian_inverse(data):
     pca.fit(data)
     jac_inv = pca.compute_jacobian_inverse(data)
 
-    assert jac_inv.shape == (data.shape[1], n_components)
+    assert jac_inv.shape == (data.shape[0], data.shape[1], n_components)
     assert allclose(jac_inv, pca.algo.components_.T)
 
 
@@ -112,3 +111,23 @@ def test_components(data):
     pca.fit(data)
     assert pca.components.shape[0] == data.shape[1]
     assert pca.components.shape[1] == n_components
+
+
+def test_shape(data):
+    """Check the shapes of the data."""
+    pca = PCA(n_components=3)
+    pca.fit(data)
+    n, p = data.shape
+    q = pca.n_components
+    transformed_data = pca.transform(data)
+    assert transformed_data.shape == (n, q)
+    assert pca.inverse_transform(transformed_data).shape == (n, p)
+
+    assert pca.transform(data[0]).shape == (q,)
+    assert pca.inverse_transform(transformed_data[0]).shape == (p,)
+
+    assert pca.compute_jacobian(data).shape == (n, q, p)
+    assert pca.compute_jacobian_inverse(transformed_data).shape == (n, p, q)
+
+    assert pca.compute_jacobian(data[0]).shape == (q, p)
+    assert pca.compute_jacobian_inverse(transformed_data[0]).shape == (p, q)

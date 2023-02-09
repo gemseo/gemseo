@@ -162,7 +162,6 @@ class TestAerostructure(unittest.TestCase):
 
     def test_residual_form_jacs(self):
         """"""
-
         aerodynamics = Aerodynamics()
         structure = Structure()
         mission = Mission()

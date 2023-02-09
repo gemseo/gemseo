@@ -77,7 +77,7 @@ sphinx_gallery_conf = {
     "default_thumb_file": str(current_dir / "_static/icon.png"),
     "within_subsection_order": ExampleTitleSortKey,
     "filename_pattern": r"\.py$",
-    "ignore_pattern": r"run\.py",
+    "ignore_pattern": r"(run|post_process_|save_from_)\w*\.py$",
     "only_warn_on_example_error": True,
     "nested_sections": False,
     # directory where function/class granular galleries are stored
@@ -119,6 +119,7 @@ autodoc_mock_imports = [
     "jnius_config",
     "jep",
     "scilab2py",
+    "pyfmi",
 ]
 
 ################################################################################
@@ -289,6 +290,8 @@ html_context["plugins"] = {
     "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
     "gemseo-scilab": "Interfacing Scilab functions",
     "gemseo-umdo": "Capability for MDO under uncertainty",
+    "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
+    "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
 }
 
 ###############################################################################

@@ -76,7 +76,6 @@ def dataset(samples) -> Dataset:
 
     It consists of three clusters from normal distributions.
     """
-
     # Fix seed for consistency
     seed(12345)
 

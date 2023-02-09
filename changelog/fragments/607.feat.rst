@@ -1,0 +1,1 @@
+Scenario adapter subproblem databases can be exported in h5 files.

@@ -33,6 +33,7 @@ from typing import ClassVar
 from typing import Iterable
 
 from numpy import ndarray
+from numpy import newaxis
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
 from gemseo.core.dataset import Dataset
@@ -90,6 +91,6 @@ class RandomForestRegressor(MLRegressionAlgo):
 
         # n_outputs=1 => output_shape=(n_samples,). Convert to (n_samples, 1).
         if len(output_data.shape) == 1:
-            output_data = output_data[:, None]
+            output_data = output_data[:, newaxis]
 
         return output_data

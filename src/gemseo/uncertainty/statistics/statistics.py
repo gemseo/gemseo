@@ -93,24 +93,38 @@ for the different variables:
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from enum import Enum
 from typing import Iterable
+from typing import Mapping
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
+from numpy import array
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    Bounds,
+)
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Statistics(metaclass=GoogleDocstringInheritanceMeta):
-    """Abstract class to interface a statistics library."""
+class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
+    """A toolbox to compute statistics.
+
+    Unless otherwise stated, the statistics are computed *variable-wise* and *component-
+    wise*, i.e. variable-by-variable and component-by-component. So, for the sake of
+    readability, the methods named as :meth:`compute_statistic` return ``dict[str,
+    ndarray]`` objects whose values are the names of the variables and the values are the
+    statistic estimated for the different component.
+    """
 
     dataset: Dataset
     """The dataset."""
@@ -125,6 +139,9 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
     """The name of the object."""
 
     SYMBOLS = {}
+
+    __QUARTILE_LEVELS: Final[list[float]] = [0.25, 0.5, 0.75]
+    __QUARTILE_ORDERS: Final[list[int]] = [1, 2, 3]
 
     def __init__(
         self,
@@ -145,10 +162,10 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         self.name = name or default_name
         msg = f"Create {self.name}, a {class_name} library."
         LOGGER.info(msg)
-        self.dataset = dataset.get_all_data(by_group=False, as_dict=True)
+        self.dataset = dataset
         self.n_samples = dataset.n_samples
         self.names = variables_names or dataset.variables
-        self.n_variables = dataset.n_variables
+        self.n_variables = len(self.names)
 
     def __str__(self) -> str:
         msg = MultiLineString()
@@ -164,24 +181,38 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         coverage: float,
         confidence: float = 0.95,
         side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> dict[str, tuple[ndarray, ndarray]]:  # noqa: D102
-        r"""Compute a tolerance interval :math:`\text{TI}[X]`.
+    ) -> dict[str, list[Bounds]]:  # noqa: D102
+        r"""Compute a :math:`(p,1-\alpha)` tolerance interval :math:`\text{TI}[X]`.
 
-        This coverage level is the minimum percentage of belonging to the TI.
-        The tolerance interval is computed with a confidence level
-        and can be either lower-sided, upper-sided or both-sided.
+        The tolerance interval :math:`\text{TI}[X]` is defined
+        to contain at least a proportion :math:`p` of the values of :math:`X`
+        with a level of confidence :math:`1-\alpha`.
+        :math:`p` is also called the *coverage level* of the TI.
+
+        Typically, :math:`\alpha=0.05` or equivalently :math:`1-\alpha=0.95`.
+
+        The tolerance interval can be either
+
+        - lower-sided (``side="LOWER"``: :math:`[L, +\infty[`),
+        - upper-sided  (``side="UPPER"``: :math:`]-\infty, U]`) or
+        - both-sided (``side="BOTH"``: :math:`[L, U]`).
 
         Args:
-            coverage: A minimum percentage of belonging to the TI.
-            confidence: A level of confidence in [0,1].
-            side: The type of the tolerance interval
-                characterized by its *sides* of interest,
-                either a lower-sided tolerance interval :math:`[a, +\infty[`,
-                an upper-sided tolerance interval :math:`]-\infty, b]`,
-                or a two-sided tolerance interval :math:`[c, d]`.
+            coverage: A minimum proportion :math:`p\in[0,1]` of belonging to the TI.
+            confidence: A level of confidence :math:`1-\alpha\in[0,1]`.
+            side: The type of the tolerance interval.
 
         Returns:
-            The tolerance limits of the different variables.
+            The component-wise tolerance intervals of the different variables,
+            expressed as
+            ``{variable_name: [(lower_bound, upper_bound), ...], ... }``
+            where ``[(lower_bound, upper_bound), ...]``
+            are the lower and upper bounds of the tolerance interval
+            of the different components of ``variable_name``.
+
+        See Also:
+            :meth:`.compute_a_value`
+            :meth:`.compute_b_value`
         """
         raise NotImplementedError
 
@@ -190,80 +221,96 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
     def compute_a_value(self) -> dict[str, ndarray]:
         r"""Compute the A-value :math:`\text{Aval}[X]`.
 
+        The A-value is the lower bound of the left-sided tolerance interval
+        associated with a coverage level equal to 99%
+        and a confidence level equal to 95%.
+
         Returns:
-            The A-value of the different variables.
+            The component-wise A-value of the different variables.
+
+        See Also:
+            :meth:`.compute_tolerance_interval`
+            :meth:`.compute_b_value`
         """
-        result = self.compute_tolerance_interval(
-            1 - 0.1, 0.99, ToleranceIntervalSide.LOWER
-        )
-        result = {name: value[0] for name, value in result.items()}
-        return result
+        return {
+            name: array([t_i.lower for t_i in tolerance_intervals])
+            for name, tolerance_intervals in self.compute_tolerance_interval(
+                0.99, side=ToleranceIntervalSide.LOWER
+            ).items()
+        }
 
     SYMBOLS["a_value"] = "Aval"
 
     def compute_b_value(self) -> dict[str, ndarray]:
         r"""Compute the B-value :math:`\text{Bval}[X]`.
 
+        The B-value is the lower bound of the left-sided tolerance interval
+        associated with a coverage level equal to 90%
+        and a confidence level equal to 95%.
+
         Returns:
-            The B-value of the different variables.
+            The component-wise B-value of the different variables.
+
+        See Also:
+            :meth:`.compute_tolerance_interval`
+            :meth:`.compute_a_value`
         """
-        result = self.compute_tolerance_interval(
-            1 - 0.1, 0.95, ToleranceIntervalSide.LOWER
-        )
-        result = {name: value[0] for name, value in result.items()}
-        return result
+        return {
+            name: array([t_i.lower for t_i in tolerance_intervals])
+            for name, tolerance_intervals in self.compute_tolerance_interval(
+                0.9, side=ToleranceIntervalSide.LOWER
+            ).items()
+        }
 
     SYMBOLS["b_value"] = "Bval"
 
+    @abstractmethod
     def compute_maximum(self) -> dict[str, ndarray]:
         r"""Compute the maximum :math:`\text{Max}[X]`.
 
         Returns:
-            The maximum of the different variables.
+            The component-wise maximum of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["maximum"] = "Max"
 
+    @abstractmethod
     def compute_mean(self) -> dict[str, ndarray]:
         r"""Compute the mean :math:`\mathbb{E}[X]`.
 
         Returns:
-            The mean of the different variables.
+            The component-wise mean of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["mean"] = "E"
 
-    def compute_mean_std(
-        self,
-        std_factor: float,
-    ) -> dict[str, ndarray]:
+    def compute_margin(self, std_factor: float) -> dict[str, ndarray]:
         r"""Compute a margin :math:`\text{Margin}[X]=\mathbb{E}[X]+\kappa\mathbb{S}[X]`.
 
         Args:
             std_factor: The weight :math:`\kappa` of the standard deviation.
 
         Returns:
-            The margin for the different variables.
+            The component-wise margin for the different variables.
         """
-        result = self.compute_mean()
-        for name, value in self.compute_standard_deviation().items():
-            result[name] += std_factor * value
-        return result
+        mean = self.compute_mean()
+        return {
+            name: mean[name] + std_factor * standard_deviation
+            for name, standard_deviation in self.compute_standard_deviation().items()
+        }
 
-    compute_margin = compute_mean_std
+    compute_mean_std = compute_margin
 
     SYMBOLS["mean_std"] = "E_StD"
     SYMBOLS["margin"] = "Margin"
 
+    @abstractmethod
     def compute_minimum(self) -> dict[str, ndarray]:
         r"""Compute the :math:`\text{Min}[X]`.
 
         Returns:
-            The minimum of the different variables.
+            The component-wise minimum of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["minimum"] = "Min"
 
@@ -271,114 +318,123 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         r"""Compute the median :math:`\text{Med}[X]`.
 
         Returns:
-            The median of the different variables.
+            The component-wise median of the different variables.
         """
-        result = self.compute_quantile(0.5)
-        return result
+        return self.compute_quantile(0.5)
 
     SYMBOLS["median"] = "Med"
 
-    def compute_percentile(
-        self,
-        order: int,
-    ) -> dict[str, ndarray]:
+    def compute_percentile(self, order: int) -> dict[str, ndarray]:
         r"""Compute the n-th percentile :math:`\text{p}[X; n]`.
 
         Args:
-            order: The order :math:`n` of the percentile.
-                Either 0, 1, 2, ... or 100.
+            order: The order :math:`n\in\{0,1,2,...100\}` of the percentile.
 
         Returns:
-            The percentile of the different variables.
+            The component-wise percentile of the different variables.
+
+        Raises:
+            ValueError: When :math:`n\notin\{0,1,2,...100\}`.
         """
         if not isinstance(order, int) or order > 100 or order < 0:
-            raise TypeError(
-                "Percentile order must be an integer between 0 and 100 inclusive."
-            )
-        prob = order / 100.0
-        result = self.compute_quantile(prob)
-        return result
+            raise TypeError("Percentile order must be in {0, 1, 2, ..., 100}.")
+        return self.compute_quantile(order / 100.0)
 
     SYMBOLS["percentile"] = "p"
 
+    @abstractmethod
     def compute_probability(
-        self,
-        thresh: float,
-        greater: bool = True,
+        self, thresh: Mapping[str, float | ndarray], greater: bool = True
     ) -> dict[str, ndarray]:
         r"""Compute the probability related to a threshold.
 
         Either :math:`\mathbb{P}[X \geq x]` or :math:`\mathbb{P}[X \leq x]`.
 
         Args:
-            thresh: A threshold :math:`x`.
+            thresh: A threshold :math:`x` per variable.
             greater: The type of probability.
-                If True,
+                If ``True``,
                 compute the probability of exceeding the threshold.
                 Otherwise,
                 compute the opposite.
 
         Returns:
-            The probability of the different variables
+            The component-wise probability of the different variables.
         """
-        raise NotImplementedError
+
+    @abstractmethod
+    def compute_joint_probability(
+        self, thresh: Mapping[str, float | ndarray], greater: bool = True
+    ) -> dict[str, float]:
+        r"""Compute the joint probability related to a threshold.
+
+        Either :math:`\mathbb{P}[X \geq x]` or :math:`\mathbb{P}[X \leq x]`.
+
+        Args:
+            thresh: A threshold :math:`x` per variable.
+            greater: The type of probability.
+                If ``True``,
+                compute the probability of exceeding the threshold.
+                Otherwise,
+                compute the opposite.
+
+        Returns:
+            The joint probability of the different variables
+            (by definition of the joint probability,
+            this statistics is not computed component-wise).
+        """
 
     SYMBOLS["probability"] = "P"
 
-    def compute_quantile(
-        self,
-        prob: float,
-    ) -> dict[str, ndarray]:
+    @abstractmethod
+    def compute_quantile(self, prob: float) -> dict[str, ndarray]:
         r"""Compute the quantile :math:`\mathbb{Q}[X; \alpha]` related to a probability.
 
         Args:
             prob: A probability :math:`\alpha` between 0 and 1.
 
         Returns:
-            The quantile of the different variables.
+            The component-wise quantile of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["quantile"] = "Q"
 
-    def compute_quartile(
-        self,
-        order: int,
-    ) -> dict[str, ndarray]:
+    def compute_quartile(self, order: int) -> dict[str, ndarray]:
         r"""Compute the n-th quartile :math:`q[X; n]`.
 
         Args:
-            order: The order :math:`n` of the quartile. Either 1, 2 or 3.
+            order: The order :math:`n\in\{1,2,3\}` of the quartile.
 
         Returns:
-            The quartile of the different variables.
+            The component-wise quartile of the different variables.
+
+        Raises:
+            ValueError: When :math:`n\notin\{1,2,3\}`.
         """
-        quartiles = [0.25, 0.5, 0.75]
-        if order not in [1, 2, 3]:
-            raise ValueError("Quartile order must be in [1,2,3]")
-        prob = quartiles[order - 1]
-        result = self.compute_quantile(prob)
-        return result
+        if order not in self.__QUARTILE_ORDERS:
+            raise ValueError("Quartile order must be in {1, 2, 3}.")
+
+        return self.compute_quantile(self.__QUARTILE_LEVELS[order - 1])
 
     SYMBOLS["quartile"] = "q"
 
+    @abstractmethod
     def compute_range(self) -> dict[str, ndarray]:
         r"""Compute the range :math:`R[X]`.
 
         Returns:
-            The range of the different variables.
+            The component-wise range of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["range"] = "R"
 
+    @abstractmethod
     def compute_standard_deviation(self) -> dict[str, ndarray]:
         r"""Compute the standard deviation :math:`\mathbb{S}[X]`.
 
         Returns:
-            The standard deviation of the different variables.
+            The component-wise standard deviation of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["standard_deviation"] = "StD"
 
@@ -389,37 +445,34 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         :math:`CoV[X]=\mathbb{E}[S]/\mathbb{E}[X]`.
 
         Returns:
-            The coefficient of variation of the different variables.
+            The component-wise coefficient of variation of the different variables.
         """
         mean = self.compute_mean()
         standard_deviation = self.compute_standard_deviation()
-        return {k: standard_deviation[k] / mean[k] for k in mean}
+        return {name: standard_deviation[name] / mean[name] for name in mean}
 
     SYMBOLS["variation_coefficient"] = "CoV"
 
+    @abstractmethod
     def compute_variance(self) -> dict[str, ndarray]:
         r"""Compute the variance :math:`\mathbb{V}[X]`.
 
         Returns:
-            The variance of the different variables.
+            The component-wise variance of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["variance"] = "V"
 
-    def compute_moment(
-        self,
-        order: int,
-    ) -> dict[str, ndarray]:
+    @abstractmethod
+    def compute_moment(self, order: int) -> dict[str, ndarray]:
         r"""Compute the n-th moment :math:`M[X; n]`.
 
         Args:
             order: The order :math:`n` of the moment.
 
         Returns:
-            The moment of the different variables.
+            The component-wise moment of the different variables.
         """
-        raise NotImplementedError
 
     SYMBOLS["moment"] = "M"
 

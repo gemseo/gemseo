@@ -53,3 +53,5 @@ def test_transform(data):
     sensor.fit(data)
     sensored = sensor.transform(data)
     assert sensored.shape == (3, 97)
+    sensored = sensor.transform(data[0])
+    assert sensored.shape == (97,)

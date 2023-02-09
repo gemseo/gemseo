@@ -17,6 +17,14 @@ from __future__ import annotations
 import operator
 import sys
 
+if sys.version_info < (3, 10):  # pragma: >=3.10 no cover
+    from typing_extensions import ParamSpecArgs  # noqa: F401
+    from typing_extensions import ParamSpecKwargs  # noqa: F401
+else:  # pragma: <3.10 no cover
+    from typing import ParamSpecArgs  # noqa: F401
+    from typing import ParamSpecKwargs  # noqa: F401
+
+
 if sys.version_info < (3, 8):  # pragma: >=3.8 no cover
     from typing_extensions import Final  # noqa: F401
     from typing_extensions import Literal  # noqa: F401
@@ -56,9 +64,15 @@ if sys.version_info < (3, 8):  # pragma: >=3.8 no cover
 
     from singledispatchmethod import singledispatchmethod  # noqa: F401
 
+    def get_mock_method_call_args(method):
+        return method.call_args[0]
+
 else:  # pragma: <3.8 no cover
     from functools import singledispatchmethod  # noqa: F401
     from importlib import metadata as importlib_metadata  # noqa: F401
     from itertools import accumulate  # noqa: F401
     from typing import Final  # noqa: F401
     from typing import Literal  # noqa: F401
+
+    def get_mock_method_call_args(method):
+        return method.call_args.args

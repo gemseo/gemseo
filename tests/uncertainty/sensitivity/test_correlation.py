@@ -19,12 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from pathlib import Path
+import logging
+import re
+import sys
 
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from gemseo.utils.testing import image_comparison
 from numpy.testing import assert_equal
 
 
@@ -40,8 +43,7 @@ def correlation() -> CorrelationAnalysis:
     return CorrelationAnalysis([discipline], space, 100)
 
 
-def test_correlation(correlation, tmp_wd):
-    varnames = ["x1", "x2"]
+def test_correlation(correlation):
     correlation.compute_indices()
     indices = correlation.indices
     assert set(indices.keys()) == set(correlation._ALGORITHMS.keys())
@@ -51,16 +53,57 @@ def test_correlation(correlation, tmp_wd):
     assert set(pearson["y1"][0].keys()) == {"x1", "x2"}
     assert correlation.spearman == indices["spearman"]
     assert pearson == correlation.pearson
-    for name in varnames:
+    for name in ["x1", "x2"]:
         assert len(pearson["y1"][0][name]) == 1
     for algo in correlation._ALGORITHMS:
         assert hasattr(correlation, algo)
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(
+            "foo is not an sensitivity method; "
+            "available ones are pcc, pearson, prcc, spearman, src, srrc, ssrrc."
+        ),
+    ):
         correlation.main_method = "foo"
 
-    correlation.plot("y1", directory_path=tmp_wd)
-    assert Path("correlation_analysis.png").exists()
+
+def test_correlation_main_method(correlation, caplog):
+    """Check a logged message when changing main method."""
+    correlation.main_method = "prcc"
+    _, log_level, log_message = caplog.record_tuples[0]
+    assert log_level == logging.INFO
+    assert log_message == ("Use prcc indices as main indices.")
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
+@pytest.mark.parametrize("baseline_images", [["plot"]])
+@pytest.mark.parametrize("output", ["y1", ("y1", 0)])
+@image_comparison(None)
+def test_correlation_plot(correlation, baseline_images, output):
+    """Check CorrelationAnalysis.plot()."""
+    correlation.compute_indices()
+    correlation.plot(output, save=False, show=False)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
+@pytest.mark.parametrize("baseline_images", [(["plot_radar"])])
+@image_comparison(None)
+def test_correlation_plot_radar(correlation, baseline_images):
+    """Check CorrelationAnalysis.plot_radar()."""
+    correlation.compute_indices()
+    correlation.plot_radar("y1", save=False, show=False)
+
+
+def test_aggregate_sensitivity_indices(correlation):
+    """Check _aggregate_sensitivity_indices()."""
+    correlation.compute_indices()
+    assert correlation.sort_parameters("y2") == ["x2", "x1"]
+    indices = correlation.indices["spearman"]["y2"][0]
+    c1 = indices["x1"]
+    c2 = indices["x2"]
+    assert c2 < 0 < c1
+    assert abs(c2) > abs(c1)
 
 
 def test_correlation_outputs():

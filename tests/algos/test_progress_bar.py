@@ -35,6 +35,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import atleast_2d
 from numpy.core._multiarray_umath import array
 from numpy.core._multiarray_umath import zeros
+from tqdm import tqdm
 
 
 @pytest.fixture
@@ -100,6 +101,12 @@ def test_progress_bar(
                 if f"{(k + 1) * 10}%" in record.message:
                     count[k] += 1
                     assert str(int(f(5.0 + offsets[k] * 10))) in record.message
+                    if not constraints_before_obj and k >= 1:
+                        assert tqdm.format_interval(0.1 * (k + 1)) in record.message
+                        assert (
+                            tqdm.format_interval(0.1 * (len(offsets) - (k + 1)))
+                            in record.message
+                        )
         assert max(count) == 1
 
 
@@ -144,5 +151,5 @@ def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests):
 
 
 def dummy_sleep_function(x):
-    sleep(0.01)
+    sleep(0.1)
     return -x

@@ -144,7 +144,6 @@ class XDSMToPDFConverter:
 
     def __add_nodes(self, numbers, nodes):
         """Add the different nodes, called 'systems', in the XDSM."""
-
         for node in nodes:
             name = ",".join(
                 [str(current) for current in numbers[node["id"]]["current"]]
@@ -190,7 +189,6 @@ class XDSMToPDFConverter:
 
     def __add_edges(self, edges):
         """Add the edges called connections, inputs, outputs to the XDSM."""
-
         for edge in edges:
             old_names = edge["name"].split(",")
             names = []

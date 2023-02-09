@@ -52,7 +52,6 @@ def finite_element_analysis():
 @pytest.fixture(scope="module")
 def default_finite_element_analysis():
     """A finite element analysis."""
-
     return FininiteElementAnalysis()
 
 

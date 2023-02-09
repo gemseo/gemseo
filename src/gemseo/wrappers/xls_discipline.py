@@ -174,7 +174,6 @@ class XLSDiscipline(MDODiscipline):
                 named "Inputs" or if there is no sheet named
                 "Outputs".
         """
-
         try:
             self._xls_app = xlwings.App(visible=False)
             self._xls_app.interactive = False

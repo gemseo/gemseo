@@ -24,6 +24,7 @@ from gemseo.mlearning.transform.power.power import Power
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray
+from numpy import ones
 from sklearn.preprocessing import PowerTransformer
 
 
@@ -82,3 +83,29 @@ def test_inverse_transform(data):
     original_data = transformer.inverse_transform(transformed_data)
 
     assert allclose(original_data, data)
+
+
+@pytest.mark.parametrize("method", ["transform", "inverse_transform"])
+@pytest.mark.parametrize("fitting_size", [1, 2])
+@pytest.mark.parametrize("transformation_size", [1, 2])
+@pytest.mark.parametrize("dimension", [1, 3])
+@pytest.mark.parametrize("flatten_data_to_transform", [False, True])
+def test_transform_vs_shape(
+    method,
+    fitting_size,
+    transformation_size,
+    dimension,
+    flatten_data_to_transform,
+):
+    """Check the shape of data returned by compute{_inverse}_transform."""
+    scaler = Power()
+    scaler.fit(ones((fitting_size, dimension)))
+    data_to_transform = ones((transformation_size, dimension))
+    if flatten_data_to_transform and transformation_size == 1:
+        data_to_transform = data_to_transform[0]
+
+    result = getattr(scaler, method)(data_to_transform)
+    if flatten_data_to_transform and transformation_size == 1:
+        assert result.shape == (dimension,)
+    else:
+        assert result.shape == (transformation_size, dimension)

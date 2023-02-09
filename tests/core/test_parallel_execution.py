@@ -203,7 +203,6 @@ class TestParallelExecution(unittest.TestCase):
         )
 
     def test_async_call(self):
-
         disc = create_discipline("SobieskiMission")
         func = MDOFunctionGenerator(disc).get_function([X_SHARED], ["y_4"])
 

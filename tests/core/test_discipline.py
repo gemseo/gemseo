@@ -20,6 +20,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from pathlib import Path
@@ -32,6 +33,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.scenario import Scenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.mda import MDA
 from gemseo.problems.sellar.sellar import Sellar1
@@ -41,6 +43,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import allclose
 from numpy import array
 from numpy import complex128
 from numpy import ndarray
@@ -587,10 +590,6 @@ def test_execute_rerun_errors():
     with pytest.raises(ValueError):
         d.execute({"a": [2]})
 
-    d.re_exec_policy = "THIS is not a policy"
-    with pytest.raises(ValueError):
-        d.execute({"a": [5]})
-
 
 def test_cache():
     """Test the MDODiscipline cache."""
@@ -1069,3 +1068,127 @@ def test_add_differentiated_io_non_numeric(
     discipline.add_differentiated_outputs()
     assert discipline._differentiated_inputs == expected_diff_inputs
     assert discipline._differentiated_outputs == expected_diff_outputs
+
+
+def test_hdf5cache_twice(tmp_wd, caplog):
+    """Check what happens when the cache policy is set twice at HDF5Cache."""
+    discipline = MDODiscipline()
+    discipline.set_cache_policy(
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="foo"
+    )
+    cache_id = id(discipline.cache)
+
+    discipline.set_cache_policy(
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="foo"
+    )
+    assert id(discipline.cache) == cache_id
+    _, log_level, log_message = caplog.record_tuples[0]
+    assert log_level == logging.WARNING
+    assert log_message == (
+        "The cache policy is already set to HDF5Cache "
+        "with the file path 'cache.hdf' and node name 'foo'; "
+        "call discipline.cache.clear() to clear the cache."
+    )
+
+    discipline.set_cache_policy(
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="bar"
+    )
+    assert id(discipline.cache) != cache_id
+
+
+class Observer:
+    """This class will record the successive statuses a discipline will be in."""
+
+    statuses: list[str]
+
+    def __init__(self) -> None:
+        self.statuses = []
+
+    def update_status(self, disc: MDODiscipline) -> None:
+        self.statuses.append(disc.status)
+
+    def reset(self) -> None:
+        self.statuses.clear()
+
+
+@pytest.fixture()
+def observer() -> Observer:
+    return Observer()
+
+
+def test_statuses(observer):
+    """Verify the successive status."""
+    disc = Sellar1()
+    disc.add_status_observer(observer)
+
+    assert not observer.statuses
+
+    disc.reset_statuses_for_run()
+    assert observer.statuses == [MDODiscipline.STATUS_PENDING]
+    observer.reset()
+
+    disc.execute()
+    assert observer.statuses == [
+        MDODiscipline.STATUS_RUNNING,
+        MDODiscipline.STATUS_DONE,
+    ]
+    observer.reset()
+
+    disc.linearize(force_all=True)
+    assert observer.statuses == [
+        MDODiscipline.STATUS_PENDING,
+        MDODiscipline.STATUS_LINEARIZE,
+        MDODiscipline.STATUS_DONE,
+    ]
+    observer.reset()
+
+    disc._run = lambda x: 1 / 0
+    try:
+        disc.execute({"x_local": disc.local_data["x_local"] + 1.0})
+    except Exception:
+        pass
+    assert observer.statuses == [
+        MDODiscipline.STATUS_RUNNING,
+        MDODiscipline.STATUS_FAILED,
+    ]
+
+
+def test_statuses_linearize(observer):
+    """Verify the successive status for linearize alone."""
+    disc = Sellar1()
+    disc.add_status_observer(observer)
+
+    disc.linearize(force_all=True)
+    assert observer.statuses == [
+        MDODiscipline.STATUS_PENDING,
+        MDODiscipline.STATUS_RUNNING,
+        MDODiscipline.STATUS_DONE,
+        MDODiscipline.STATUS_LINEARIZE,
+        MDODiscipline.STATUS_DONE,
+    ]
+    observer.reset()
+
+
+@pytest.fixture(scope="module")
+def self_coupled_disc() -> MDODiscipline:
+    """A minimalist self-coupled discipline, where the self-coupled variable is
+    multiplied by two."""
+    disc = AnalyticDiscipline({"x": "2*x", "y": "x"})
+    disc.default_inputs["x"] = array([1])
+    return disc
+
+
+@pytest.mark.parametrize(
+    "name, group, value",
+    [
+        ("x", "inputs", array([1])),
+        ("x[out]", "outputs", array([2])),
+    ],
+)
+def test_self_coupled(self_coupled_disc, name, group, value):
+    """Check that the value of each variable is equal to the prescribed value, and that
+    each variable belongs to the prescribed group."""
+    self_coupled_disc.execute()
+    d = self_coupled_disc.cache.export_to_dataset()
+    assert allclose(d[name], value)
+    assert d._groups[name] == group

@@ -8,6 +8,12 @@
                 "minItems": 1
             },
             "type": "array"
+        },
+        "line_style": {
+            "type": "string"
+        },
+        "add_points": {
+            "type": "boolean"
         }
     },
     "additionalProperties": false,

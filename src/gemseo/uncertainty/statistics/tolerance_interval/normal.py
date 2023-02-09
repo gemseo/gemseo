@@ -23,8 +23,10 @@ from __future__ import annotations
 import openturns as ot
 from numpy import array
 from numpy import inf
-from numpy import ndarray
 
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    Bounds,
+)
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
@@ -64,7 +66,7 @@ class NormalToleranceInterval(ToleranceInterval):
         alpha: float,
         size: int,
         side: ToleranceIntervalSide,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> Bounds:
         if side in [
             ToleranceIntervalSide.UPPER,
             ToleranceIntervalSide.LOWER,
@@ -75,11 +77,13 @@ class NormalToleranceInterval(ToleranceInterval):
             tolerance_factor = student_quantile / size**0.5
 
             if side == ToleranceIntervalSide.UPPER:
-                upper = self.__mean + tolerance_factor * self.__std
-                return array([-inf]), array([upper])
+                return Bounds(
+                    array([-inf]), array([self.__mean + tolerance_factor * self.__std])
+                )
             else:
-                lower = self.__mean - tolerance_factor * self.__std
-                return array([lower]), array([inf])
+                return Bounds(
+                    array([self.__mean - tolerance_factor * self.__std]), array([inf])
+                )
 
         elif side == ToleranceIntervalSide.BOTH:
             z_p = ot.Normal().computeQuantile((1 + coverage) / 2.0)[0]
@@ -92,9 +96,10 @@ class NormalToleranceInterval(ToleranceInterval):
                 / (2 * (size + 1) ** 2)
             ) ** 0.05
             tolerance_factor = u_term * v_term * w_term
-            lower = self.__mean - tolerance_factor * self.__std
-            upper = self.__mean + tolerance_factor * self.__std
-            return array([lower]), array([upper])
+            return Bounds(
+                array([self.__mean - tolerance_factor * self.__std]),
+                array([self.__mean + tolerance_factor * self.__std]),
+            )
 
         else:
             raise ValueError("The type of tolerance interval is incorrect.")

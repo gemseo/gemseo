@@ -105,9 +105,11 @@ class Boxplot(DatasetPlot):
             for i, _ in enumerate(self.__names)
         ]
         if self._param.use_vertical_bars:
-            axes.set_xticks(positions, self.__names)
+            axes.set_xticks(positions)
+            axes.set_xticklabels(self.__names)
         else:
-            axes.set_yticks(positions, self.__names)
+            axes.set_yticks(positions)
+            axes.set_yticklabels(self.__names)
 
         axes.set_xlabel(self.xlabel)
         axes.set_ylabel(self.ylabel)

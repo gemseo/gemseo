@@ -39,6 +39,7 @@ from numpy import nan
 from numpy import ones
 from numpy import savetxt
 from numpy import zeros
+from numpy.random import rand
 from numpy.testing import assert_equal
 
 
@@ -54,6 +55,16 @@ def dataset(data):
     tmp = Dataset(name="my_dataset")
     tmp.set_from_array(data, variables, sizes)
     return tmp
+
+
+@pytest.fixture
+def dataset_for_export_checking() -> Dataset:
+    "A dataset to check export_to_dataframe()." ""
+    dataset = Dataset()
+    dataset.add_variable("z", rand(5, 12), group="inputs")
+    dataset.add_variable("y", rand(5, 1), group="outputs")
+    dataset.add_variable("x", rand(5, 1), group="inputs")
+    return dataset
 
 
 @pytest.fixture
@@ -350,7 +361,7 @@ def test_add_group(dataset, ungroup_dataset):
         ungroup_dataset.add_group("grp10", arange(5).reshape(5, 1))
 
 
-def test_export_to_dataframe(dataset):
+def test_export_to_dataframe():
     """Check the dataframe resulting from a dataset export."""
     variables = ["i1", "o2", "o1", "i2"]
     sizes = {"i1": 1, "i2": 2, "o1": 1, "o2": 2}
@@ -371,6 +382,85 @@ def test_export_to_dataframe(dataset):
         assert column == expected_column
 
     assert_equal(df.values, array([[0, 4, 5, 3, 1, 2], [6, 10, 11, 9, 7, 8]]))
+
+
+@pytest.mark.parametrize(
+    "sort_name,expected_columns",
+    [
+        (
+            False,
+            [
+                ("inputs", "z", "0"),
+                ("inputs", "z", "1"),
+                ("inputs", "z", "2"),
+                ("inputs", "z", "3"),
+                ("inputs", "z", "4"),
+                ("inputs", "z", "5"),
+                ("inputs", "z", "6"),
+                ("inputs", "z", "7"),
+                ("inputs", "z", "8"),
+                ("inputs", "z", "9"),
+                ("inputs", "z", "10"),
+                ("inputs", "z", "11"),
+                ("inputs", "x", "0"),
+                ("outputs", "y", "0"),
+            ],
+        ),
+        (
+            True,
+            [
+                ("inputs", "x", "0"),
+                ("inputs", "z", "0"),
+                ("inputs", "z", "1"),
+                ("inputs", "z", "2"),
+                ("inputs", "z", "3"),
+                ("inputs", "z", "4"),
+                ("inputs", "z", "5"),
+                ("inputs", "z", "6"),
+                ("inputs", "z", "7"),
+                ("inputs", "z", "8"),
+                ("inputs", "z", "9"),
+                ("inputs", "z", "10"),
+                ("inputs", "z", "11"),
+                ("outputs", "y", "0"),
+            ],
+        ),
+        (
+            None,
+            [
+                ("inputs", "x", "0"),
+                ("inputs", "z", "0"),
+                ("inputs", "z", "1"),
+                ("inputs", "z", "2"),
+                ("inputs", "z", "3"),
+                ("inputs", "z", "4"),
+                ("inputs", "z", "5"),
+                ("inputs", "z", "6"),
+                ("inputs", "z", "7"),
+                ("inputs", "z", "8"),
+                ("inputs", "z", "9"),
+                ("inputs", "z", "10"),
+                ("inputs", "z", "11"),
+                ("outputs", "y", "0"),
+            ],
+        ),
+    ],
+)
+@pytest.mark.parametrize("variable_names", [None, ["z", "y", "x"]])
+def test_export_to_dataframe_with_ordering(
+    dataset_for_export_checking, sort_name, expected_columns, variable_names
+):
+    if sort_name is None:
+        df = dataset_for_export_checking.export_to_dataframe(
+            variable_names=variable_names
+        )
+    else:
+        df = dataset_for_export_checking.export_to_dataframe(
+            sort_names=sort_name, variable_names=variable_names
+        )
+
+    for column, expected_column in zip(df.columns, expected_columns):
+        assert column == expected_column
 
 
 def test_get_columns_names():

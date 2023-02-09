@@ -41,10 +41,9 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from numpy import ndarray
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
@@ -66,18 +65,26 @@ class RMSEMeasure(MSEMeasure):
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
-        mse = super().evaluate_learn(samples=samples, multioutput=multioutput)
-        return mse**0.5
+        as_dict: bool = False,
+    ) -> MeasureType:
+        return self.__post_process_measure(
+            super().evaluate_learn(
+                samples=samples, multioutput=multioutput, as_dict=as_dict
+            )
+        )
 
     def evaluate_test(
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
-        mse = super().evaluate_test(test_data, samples=samples, multioutput=multioutput)
-        return mse**0.5
+        as_dict: bool = False,
+    ) -> MeasureType:
+        return self.__post_process_measure(
+            super().evaluate_test(
+                test_data, samples=samples, multioutput=multioutput, as_dict=as_dict
+            )
+        )
 
     def evaluate_kfolds(
         self,
@@ -86,15 +93,18 @@ class RMSEMeasure(MSEMeasure):
         multioutput: bool = True,
         randomize: bool = MSEMeasure._RANDOMIZE,
         seed: int | None = None,
-    ) -> float | ndarray:
-        mse = super().evaluate_kfolds(
-            n_folds=n_folds,
-            samples=samples,
-            multioutput=multioutput,
-            randomize=randomize,
-            seed=seed,
+        as_dict: bool = False,
+    ) -> MeasureType:
+        return self.__post_process_measure(
+            super().evaluate_kfolds(
+                n_folds=n_folds,
+                samples=samples,
+                multioutput=multioutput,
+                randomize=randomize,
+                seed=seed,
+                as_dict=as_dict,
+            )
         )
-        return mse**0.5
 
     def evaluate_bootstrap(
         self,
@@ -102,8 +112,28 @@ class RMSEMeasure(MSEMeasure):
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: int | None = None,
-    ) -> float | ndarray:
-        mse = super().evaluate_bootstrap(
-            n_replicates=n_replicates, samples=samples, multioutput=multioutput
+        as_dict: bool = False,
+    ) -> MeasureType:
+        return self.__post_process_measure(
+            super().evaluate_bootstrap(
+                n_replicates=n_replicates,
+                samples=samples,
+                multioutput=multioutput,
+                as_dict=as_dict,
+            ),
         )
-        return mse**0.5
+
+    @staticmethod
+    def __post_process_measure(measure: MeasureType) -> MeasureType:
+        """Post-process the measure.
+
+        Args:
+            measure: The measure to post-process.
+
+        Returns:
+            The post-processed measure.
+        """
+        if isinstance(measure, dict):
+            return {k: v**0.5 for k, v in measure.items()}
+        else:
+            return measure**0.5

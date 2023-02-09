@@ -179,8 +179,7 @@ class SimpleGrammar(BaseGrammar):
         if isinstance(grammar, BaseGrammar):
             self._update_namespaces_from_grammar(grammar)
 
-    def clear(self) -> None:
-        """"""  # noqa: D102
+    def clear(self) -> None:  # noqa: D102
         self.__names_to_types = {}
         self.__required_names = set()
 

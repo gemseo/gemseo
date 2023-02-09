@@ -25,5 +25,5 @@ block = Block(
         "and make them easy to handle for visualization, display and query purposes."
     ),
     examples="examples/cache/index.html",
-    info="saving_data.html",
+    info="data_persistence.html",
 )

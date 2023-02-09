@@ -23,6 +23,7 @@ from numpy import atleast_2d
 from numpy import ceil
 from numpy import maximum
 from numpy import minimum
+from numpy import newaxis
 from numpy import ones
 from numpy import tile
 from numpy import zeros
@@ -68,7 +69,7 @@ class DensityFilter(MDODiscipline):
         self.default_inputs = {"x": ones((n_x * n_y,))}
 
     def _run(self) -> None:
-        x = self.get_inputs_by_name("x")[:, None]
+        x = self.get_inputs_by_name("x")[:, newaxis]
         self.local_data["xPhys"] = array(self.filter_matrix * x).flatten()
         self._is_linearized = True
         self._init_jacobian(with_zeros=True)

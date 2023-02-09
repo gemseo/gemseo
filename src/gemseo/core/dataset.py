@@ -19,8 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A generic dataset to store data in memory.
 
-This module implements the concept of dataset
-which is a key element for machine learning, post-processing, data analysis, ...
+The concept of dataset
+is a key element for machine learning, post-processing, data analysis, ...
 
 A :class:`.Dataset` uses its attribute :attr:`.Dataset.data`
 to store :math:`N` series of data
@@ -85,7 +85,7 @@ from pandas import DataFrame
 from pandas import read_csv
 
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.cache import AbstractFullCache
+from gemseo.core.cache import AbstractCache
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.factory import DatasetPlotFactory
@@ -94,6 +94,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.python_compatibility import singledispatchmethod
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -128,8 +129,7 @@ class Dataset:
     data: dict[str, ndarray]
     """The data stored by variable names or group names.
 
-    The values are NumPy arrays
-    whose columns are features and rows are observations.
+    The values are NumPy arrays whose columns are features and rows are observations.
     """
 
     sizes: dict[str, int]
@@ -144,10 +144,8 @@ class Dataset:
     strings_encoding: dict[str, dict[int, int]]
     """The encoding structure mapping the values of the string variables with integers.
 
-    The keys are the names of the variables
-    and the values are dictionaries
-    whose keys are the components of the variables
-    and the values are the integer values.
+    The keys are the names of the variables and the values are dictionaries whose keys
+    are the components of the variables and the values are the integer values.
     """
 
     metadata: dict[str, Any]
@@ -479,7 +477,7 @@ class Dataset:
     ) -> None:
         """Check that a data array is consistent.
 
-        It must me a 2D numpy array with length equal to the dataset one.
+        It must be a 2D NumPy array with length equal to the dataset one.
 
         Raises:
             ValueError: If the data is not a 2D numpy array.
@@ -1050,7 +1048,7 @@ class Dataset:
                     else:
                         column_names.extend(
                             [
-                                f"{name}_{size + start}"
+                                repr_variable(name, size + start)
                                 for size in range(self.sizes[name])
                             ]
                         )
@@ -1189,18 +1187,23 @@ class Dataset:
         self,
         copy: bool = True,
         variable_names: Sequence[str] | None = None,
+        sort_names: bool = True,
     ) -> DataFrame:
-        """Export the dataset to a pandas Dataframe.
+        """Export the dataset, or a part of it, to a pandas DataFrame.
 
         Args:
-            copy: If True, copy data.
+            copy: If ``True``, copy data.
                 Otherwise, use reference.
+            variable_names: The variable names to export.
+                If ``None``, export all the variables.
+            sort_names: If ``True``, sort the columns by group and name.
+                If ``False``, sort only by group.
 
         Returns:
-            A pandas DataFrame containing the dataset.
+            A pandas DataFrame containing the dataset, or a part of it.
         """
         if variable_names is None:
-            variable_names = self.variables
+            variable_names = list(self._groups.keys())
 
         # The column of a DataFrame is defined by three labels:
         # the group at which the variable belongs,
@@ -1210,7 +1213,7 @@ class Dataset:
         group_labels = []
         variable_labels = []
         component_labels = []
-        for (group, variable, component) in self.get_column_names(as_tuple=True):
+        for group, variable, component in self.get_column_names(as_tuple=True):
             if variable in variable_names:
                 group_labels.append(group)
                 variable_labels.append(variable)
@@ -1229,9 +1232,10 @@ class Dataset:
 
         columns = [group_labels, variable_labels, component_labels]
         data = self.get_data_by_names(variable_names, as_dict=False)
-        dataframe = DataFrame(data, columns=columns, copy=copy)
-        dataframe.index = self.row_names
-        return dataframe
+        dataframe = DataFrame(data, columns=columns, copy=copy, index=self.row_names)
+
+        # Sort the columns names by group, and then possibly by name.
+        return dataframe[sorted(dataframe.columns, key=lambda x: x[0 : 1 + sort_names])]
 
     def export_to_cache(
         self,
@@ -1241,7 +1245,7 @@ class Dataset:
         cache_hdf_file: str | None = None,
         cache_hdf_node_name: str | None = None,
         **options,
-    ) -> AbstractFullCache:
+    ) -> AbstractCache:
         """Export the dataset to a cache.
 
         Args:
@@ -1375,10 +1379,7 @@ class Dataset:
             raise TypeError(self.__GETITEM_ERROR_MESSAGE)
         return item
 
-    def __getitem__(
-        self,
-        item: ItemType,
-    ) -> dict[str, ndarray] | ndarray:
+    def __getitem__(self, item: ItemType) -> dict[str, ndarray] | ndarray:
         entries, variables = self.__split_item(item)
         try:
             if isinstance(variables, str):

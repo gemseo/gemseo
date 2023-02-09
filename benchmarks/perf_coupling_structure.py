@@ -105,7 +105,6 @@ class ComputeGraphBenchmarkee(BaseBenchmarkee):
 
 
 if __name__ == "__main__":
-
     sys.setrecursionlimit(10000)
 
     # CLI parser to control the benchmark

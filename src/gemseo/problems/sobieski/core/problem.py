@@ -200,11 +200,8 @@ class SobieskiProblem:
     USE_ORIGINAL_DESIGN_VARIABLES_ORDER: ClassVar[bool] = False
     """Whether to sort the :attr:`.DesignSpace` as in :cite:`SobieskiBLISS98`.
 
-    If so,
-    the order of the design variables will be
-    ``"x_1"``, ``"x_2"``, ``"x_3"`` and ``"x_shared"``.
-    Otherwise,
-    ``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``.
+    If so, the order of the design variables will be ``"x_1"``, ``"x_2"``, ``"x_3"`` and
+    ``"x_shared"``. Otherwise, ``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``.
     """
 
     STRESS_LIMIT = SobieskiStructure.STRESS_LIMIT

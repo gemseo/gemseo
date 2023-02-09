@@ -72,8 +72,8 @@ class AutoPyDiscipline(MDODiscipline):
     """The Python function to compute the outputs from the inputs."""
 
     use_arrays: bool
-    """Whether the function is expected
-    to take arrays as inputs and give outputs as arrays."""
+    """Whether the function is expected to take arrays as inputs and give outputs as
+    arrays."""
 
     py_jac: Callable[[DataType, ..., DataType], ndarray] | None
     """The Python function to compute the Jacobian from the inputs."""

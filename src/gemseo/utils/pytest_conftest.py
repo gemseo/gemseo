@@ -16,10 +16,13 @@
 from __future__ import annotations
 
 import contextlib
+import faulthandler
 import os
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
+from typing import Generator
 
 import matplotlib.pyplot as plt
 import matplotlib.testing.decorators
@@ -119,7 +122,6 @@ def reset_factory():
 # Backup before we monkey patch.
 original_image_directories = matplotlib.testing.decorators._image_directories
 
-
 if "GEMSEO_KEEP_IMAGE_COMPARISONS" not in os.environ:
     # Context manager to change the current working directory to a temporary one.
     __ctx_tmp_wd = contextlib.contextmanager(__tmp_wd)
@@ -151,3 +153,59 @@ def concretize_classes(*classes: type) -> None:
     finally:
         for cls, __abstractmethods__ in classes_to___abstractmethods__.items():
             cls.__abstractmethods__ = __abstractmethods__
+
+
+# Fixtures to deal with the Excel disciplines.
+# Check the presence of xlwings, and skip accordingly.
+@pytest.fixture(scope="module")
+def disable_fault_handler() -> Generator[None, None, None]:
+    """Generator to temporarily disable the fault handler.
+
+    Return a call to disable the fault handler.
+    """
+    if faulthandler.is_enabled():
+        try:
+            faulthandler.disable()
+            yield
+        finally:
+            faulthandler.enable()
+
+
+@pytest.fixture(scope="module")
+def import_or_skip_xlwings() -> Any:
+    """Fixture to skip a test when xlwings cannot be imported."""
+    return pytest.importorskip("xlwings", reason="xlwings is not available")
+
+
+@pytest.fixture(scope="module")
+def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
+    """Check if xlwings is usable.
+
+    Args:
+        import_or_skip_xlwings: Fixture to import xlwings when available,
+            otherwise skip the test.
+        disable_fault_handler: Fixture to temporarily disable the fault handler.
+    """
+    xlwings = import_or_skip_xlwings
+
+    try:
+        # Launch xlwings from a context manager to ensure it closes immediately.
+        # See https://docs.xlwings.org/en/stable/whatsnew.html#v0-24-3-jul-15-2021
+        with xlwings.App(visible=False) as app:  # noqa: F841
+            pass
+    except:  # noqa: E722,B001
+        return False
+    else:
+        return True
+
+
+@pytest.fixture(scope="module")
+def skip_if_xlwings_is_not_usable(is_xlwings_usable) -> None:
+    if not is_xlwings_usable:
+        pytest.skip("This test requires excel.")
+
+
+@pytest.fixture(scope="module")
+def skip_if_xlwings_is_usable(is_xlwings_usable) -> None:
+    if is_xlwings_usable:
+        pytest.skip("This test is only required when excel is not available.")

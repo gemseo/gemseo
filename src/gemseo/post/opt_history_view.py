@@ -28,10 +28,9 @@ from typing import Iterable
 from typing import MutableSequence
 from typing import Sequence
 
-import matplotlib.gridspec as gridspec
-import pylab
+from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
 from numpy import append
@@ -62,6 +61,7 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,6 +85,12 @@ class OptHistoryView(OptPostProcessor):
 
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
+
+    __TICK_LABEL_SIZE: Final[int] = 9
+    """The font size of the tick labels."""
+
+    __AXIS_LABEL_SIZE: Final[int] = 12
+    """The font size of the axis labels."""
 
     def __init__(  # noqa:D107
         self,
@@ -271,8 +277,8 @@ class OptHistoryView(OptPostProcessor):
         n_variables = x_history.shape[1]
         norm_x_history = self._normalize_x_hist(x_history, variables_names)
 
-        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        grid = self._get_grid_layout()
 
         # design variables
         ax1 = fig.add_subplot(grid[0, 0])
@@ -284,22 +290,8 @@ class OptHistoryView(OptPostProcessor):
             vmax=1.0,
             aspect="auto",
         )
-        # y ticks: names of the variables
-        design_space = self.opt_problem.design_space
-        y_labels = []
-        if variables_names is None:
-            variables_names = design_space.variables_names
-        for variable_name in variables_names:
-            size = design_space.variables_sizes[variable_name]
-            name = variable_name
-            if size > 1:
-                name += " (0)"
-            y_labels.append(name)
-            for i in range(1, size):
-                y_labels.append(f"({i})")
-
         ax1.set_yticks(arange(n_variables))
-        ax1.set_yticklabels(y_labels)
+        ax1.set_yticklabels(self._get_design_variable_names(variables_names))
         ax1.set_xlabel(self.x_label)
         # ax1.invert_yaxis()
 
@@ -311,7 +303,7 @@ class OptHistoryView(OptPostProcessor):
         fig.colorbar(im1, cax=ax2)
 
         # Set window size
-        mng = pylab.plt.get_current_fig_manager()
+        mng = plt.get_current_fig_manager()
         mng.resize(700, 1000)
 
         self._add_figure(fig, "variables")
@@ -362,30 +354,32 @@ class OptHistoryView(OptPostProcessor):
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
 
-        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
-        pylab.plt.xlabel(self.x_label, fontsize=12)
-        pylab.plt.ylabel("Objective value", fontsize=12)
+        plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
 
-        pylab.plt.plot(x_absc, obj_history)
+        plt.plot(x_absc, obj_history)
 
         if idx_nan.size > 0:
             for x_i in x_absc_nan:
-                pylab.plt.axvline(x_i, color="purple")
+                plt.axvline(x_i, color="purple")
 
         if obj_min is not None and obj_min < fmin:
             fmin = obj_min
         if obj_max is not None and obj_max > fmax:
             fmax = obj_max
-        pylab.plt.ylim([fmin, fmax])
-        pylab.plt.xlim([0, n_iter])
+
+        margin = (fmax - fmin) * self._Y_MARGIN
+        plt.ylim([fmin - margin, fmax + margin])
+        plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
         ax1 = fig.gca()
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        pylab.plt.grid(True)
-        pylab.plt.title("Evolution of the objective value")
+        plt.grid(True)
+        plt.title("Evolution of the objective value")
 
         # Set window size
-        mng = pylab.plt.get_current_fig_manager()
+        mng = plt.get_current_fig_manager()
         mng.resize(700, 1000)
 
         self._add_figure(fig, "objective")
@@ -401,10 +395,10 @@ class OptHistoryView(OptPostProcessor):
             x_history: The history of the design variables.
             n_iter: The number of iterations.
         """
-        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
-        pylab.plt.xlabel(self.x_label, fontsize=12)
-        pylab.plt.ylabel("||x-x*||", fontsize=12)
+        plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
 
         n_i = x_history.shape[0]
         _, x_opt, _, _, _ = self.opt_problem.get_optimum()
@@ -416,23 +410,23 @@ class OptHistoryView(OptPostProcessor):
         ]
         # Draw a vertical line at the optimum
         ind_opt = argmin(x_xstar)
-        pylab.plt.axvline(x=ind_opt, color="r")
-        pylab.plt.semilogy(arange(len(x_xstar)), x_xstar)
+        plt.axvline(x=ind_opt, color="r")
+        plt.semilogy(arange(len(x_xstar)), x_xstar)
         # ======================================================================
         # try:
-        #     pylab.plt.semilogy(np.arange(len(x_xstar)), x_xstar)
+        #     plt.semilogy(np.arange(len(x_xstar)), x_xstar)
         # except ValueError:
         #     LOGGER.warning("Cannot use log scale for x_star plot since" +
         #                    "all values are not positive !")
         # ======================================================================
         ax1 = fig.gca()
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        pylab.plt.grid(True)
-        pylab.plt.title("Distance to the optimum")
-        pylab.plt.xlim([0, n_iter])
+        plt.grid(True)
+        plt.title("Distance to the optimum")
+        plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
 
         # Set window size
-        mng = pylab.plt.get_current_fig_manager()
+        mng = plt.get_current_fig_manager()
         mng.resize(700, 1000)
 
         self._add_figure(fig, "x_xstar")
@@ -487,7 +481,7 @@ class OptHistoryView(OptPostProcessor):
             if max_iter < history_i.shape[1]:
                 max_iter = history_i.shape[1]
 
-        for (i, cstr_history_i) in enumerate(cstr_history):
+        for i, cstr_history_i in enumerate(cstr_history):
             history_i = atleast_2d(cstr_history_i).T
             if history_i.shape[1] == 1:
                 history_i = history_i.T
@@ -500,10 +494,10 @@ class OptHistoryView(OptPostProcessor):
                     if component_j == 0:
                         cstr_name = cstr_names[i]
                         if nb_components >= 2:
-                            cstr_name += " (" + str(component_j) + ")"
+                            cstr_name += f" ({component_j})"
                         cstr_labels.append(cstr_name)
                     else:
-                        cstr_labels.append("(" + str(component_j) + ")")
+                        cstr_labels.append(f"({component_j})")
 
                     history_i_j = atleast_2d(history_i[component_j, :])
 
@@ -542,13 +536,12 @@ class OptHistoryView(OptPostProcessor):
         Returns:
             The constraints figure.
         """
-        # cmap of the constraints
-        fullname = "equality"
         if cstr_type == MDOFunction.TYPE_EQ:
             cmap = self.eq_cstr_cmap
+            constraint_type = "equality"
         else:
             cmap = self.ineq_cstr_cmap
-            fullname = "in" + fullname
+            constraint_type = "inequality"
 
         idx_nan = isnan(cstr_matrix)
         hasnan = idx_nan.any()
@@ -556,8 +549,8 @@ class OptHistoryView(OptPostProcessor):
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
-        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        grid = self._get_grid_layout()
         ax1 = fig.add_subplot(grid[0, 0])
         im1 = ax1.imshow(
             cstr_matrix,
@@ -569,14 +562,14 @@ class OptHistoryView(OptPostProcessor):
         if hasnan > 0:
             x_absc_nan = where(idx_nan.any(axis=0))[0]
             for x_i in x_absc_nan:
-                pylab.plt.axvline(x_i, color="purple")
+                plt.axvline(x_i, color="purple")
 
-        ax1.tick_params(labelsize=9)
+        ax1.tick_params(labelsize=self.__TICK_LABEL_SIZE)
         ax1.set_yticks(list(range(n_cstr)))
         ax1.set_yticklabels(cstr_labels)
 
         ax1.set_xlabel(self.x_label)
-        ax1.set_title(f"Evolution of the {fullname} constraints")
+        ax1.set_title(f"Evolution of the {constraint_type} constraints")
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         ax1.hlines(
@@ -604,10 +597,12 @@ class OptHistoryView(OptPostProcessor):
         levels_neg = np_sort(-levels_pos)
         levels_neg = append(levels_neg, 0)
         levels = concatenate((levels_neg, levels_pos))
-        col_bar = fig.colorbar(im1, cax=cax, ticks=levels)
-        col_bar.ax.tick_params(labelsize=9)
+        col_bar = fig.colorbar(
+            im1, cax=cax, ticks=levels, format=LogFormatterSciNotation()
+        )
+        col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
 
-        mng = pylab.plt.get_current_fig_manager()
+        mng = plt.get_current_fig_manager()
         # mng.full_screen_toggle()
         mng.resize(700, 1000)
         return fig
@@ -638,17 +633,18 @@ class OptHistoryView(OptPostProcessor):
             return
 
         # if max problem, plot -Hessian
-        if not self.opt_problem.minimize_objective:
+        if self._change_obj:
             diag = -diag
 
-        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        grid = self._get_grid_layout()
         # matrix
         axe = fig.add_subplot(grid[0, 0])
 
         axe.set_title("Hessian diagonal approximation")
-        axe.set_xlabel(self.x_label, fontsize=12)
-        axe.set_ylabel("Variable id", fontsize=12)
+        axe.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        axe.set_yticks(arange(self.opt_problem.dimension))
+        axe.set_yticklabels(self._get_design_variable_names())
         axe.xaxis.set_major_locator(MaxNLocator(integer=True))
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
         linthresh = 10 ** (np_log10(vmax) - 5.0)
@@ -659,7 +655,6 @@ class OptHistoryView(OptPostProcessor):
             aspect="auto",
             norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
         )
-        axe.invert_yaxis()
 
         # colorbar
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
@@ -672,12 +667,13 @@ class OptHistoryView(OptPostProcessor):
         levels_neg = append(levels_neg, 0)
         levels = concatenate((levels_neg, levels_pos))
 
-        l_f = LogFormatter(base=10)
         cax = fig.add_subplot(grid[0, 1])
-        cax.invert_yaxis()
-        fig.colorbar(img, cax=cax, ticks=levels, format=l_f)
+        col_bar = fig.colorbar(
+            img, cax=cax, ticks=levels, format=LogFormatterSciNotation()
+        )
+        col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
 
-        mng = pylab.plt.get_current_fig_manager()
+        mng = plt.get_current_fig_manager()
         # mng.full_screen_toggle()
         mng.resize(700, 1000)
         self._add_figure(fig, "hessian_approximation")

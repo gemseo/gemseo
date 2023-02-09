@@ -86,6 +86,7 @@ from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import cos
 from numpy import linspace
+from numpy import newaxis
 from numpy import pi as np_pi
 from numpy import sin
 
@@ -146,7 +147,7 @@ def test_get_algorithm_options_schema(tmp_wd):
     """
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 14
+    assert len(schema_dict["properties"]) == 15
 
     schema_json = get_algorithm_options_schema("SLSQP", output_json=True)
     out_dict = json.loads(schema_json)
@@ -267,7 +268,7 @@ def test_get_formulation_sub_options_schema(tmp_wd):
     for formulation in get_available_formulations():
         if formulation == "MDF":
             opts = {"main_mda_name": "MDAJacobi"}
-        elif formulation == "BiLevel":
+        elif formulation.endswith("BiLevel"):
             opts = {"main_mda_name": "MDAGaussSeidel"}
         elif formulation == "BLISS98B":
             opts = {"mda_name": "MDAGaussSeidel"}
@@ -480,7 +481,7 @@ def test_create_scalable(tmp_wd):
         return sin(2 * np_pi * x_1) * cos(2 * np_pi * x_2) - x_3
 
     data = Dataset("sinus")
-    x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, None]
+    x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, newaxis]
     data.add_variable("x1", x1_val, data.INPUT_GROUP)
     data.add_variable("x2", x2_val, data.INPUT_GROUP)
     data.add_variable("x3", x2_val, data.INPUT_GROUP)
@@ -629,7 +630,6 @@ def test_get_default_sub_options_values(tmp_wd):
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-
     defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
 

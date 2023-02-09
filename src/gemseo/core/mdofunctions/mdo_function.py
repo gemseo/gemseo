@@ -148,6 +148,9 @@ class MDOFunction:
     TYPE_OBS: str = "obs"
     """The type of function for observable."""
 
+    __CONSTRAINT_TYPES: Final[tuple[str]] = (TYPE_INEQ, TYPE_EQ)
+    """The different types of constraint."""
+
     AVAILABLE_TYPES: list[str] = [TYPE_OBJ, TYPE_EQ, TYPE_INEQ, TYPE_OBS]
     """The available types of function."""
 
@@ -223,9 +226,12 @@ class MDOFunction:
     """The names of the outputs of the function."""
 
     _ATTR_NOT_TO_SERIALIZE: tuple[str] = ("_n_calls",)
-    """The attributes that shall be skipped at serialization. Private attributes shall
-    be written following name mangling conventions: ``_ClassName__attribute_name``.
-    Subclasses must expand this class attribute if needed. """
+    """The attributes that shall be skipped at serialization.
+
+    Private attributes shall be written following name mangling conventions:
+    ``_ClassName__attribute_name``. Subclasses must expand this class attribute if
+    needed.
+    """
 
     __INPUT_NAME_PATTERN: Final[str] = "x"
     """The pattern to define a variable name, as ``"x!1"``."""
@@ -237,9 +243,9 @@ class MDOFunction:
         f_type: str = "",
         jac: WrappedJacobianType | None = None,
         expr: str = "",
-        args: Sequence[str] | None = None,
+        args: Iterable[str] | None = None,
         dim: int = 0,
-        outvars: Sequence[str] | None = None,
+        outvars: Iterable[str] | None = None,
         force_real: bool = False,
         special_repr: str = "",
     ) -> None:
@@ -396,7 +402,6 @@ class MDOFunction:
     def __setstate__(self, state: dict[str, Any]) -> None:
         self._init_shared_attrs()
         for attribute_name, attribute_value in state.items():
-
             # At this point, there are no Synchronized attributes in MDOFunction or its
             # child classes other than _n_calls, which is not serialized.
             # If a Synchronized attribute is added in the future, the following check
@@ -542,7 +547,7 @@ class MDOFunction:
         Returns:
             Whether the function is a constraint.
         """
-        return self.f_type in [self.TYPE_EQ, self.TYPE_INEQ]
+        return self.f_type in self.__CONSTRAINT_TYPES
 
     def __repr__(self) -> str:
         return self.special_repr or self.default_repr
@@ -550,6 +555,16 @@ class MDOFunction:
     @property
     def default_repr(self) -> str:
         """The default string representation of the function."""
+        if self.is_constraint():
+            if self.expr:
+                left = self.expr
+            else:
+                name = "#".join(self.outvars) or self.name
+                left = f"{name}({pretty_str(self.args, sort=False)})"
+
+            sign = "==" if self.f_type == self.TYPE_EQ else "<="
+            return f"{left} {sign} 0.0"
+
         strings = [self.name]
         if self.has_args():
             strings.append(f"({pretty_str(self.args, sort=False)})")
@@ -682,7 +697,7 @@ class MDOFunction:
             expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
             name = "-" + self.name.translate({ord("-"): "+", ord("+"): "-"})
         else:
-            expr = None
+            expr = f"-{self.name}({pretty_str(self.args, sort=False)})"
             name = f"-{self.name}"
 
         return MDOFunction(
@@ -761,11 +776,12 @@ class MDOFunction:
             second_operand = -value
 
         function = self + value
+        name = f"{self.name}({pretty_str(self.args, sort=False)})"
         function.name = self._compute_operation_expression(
             self.name, operator, second_operand
         )
         function.expr = self._compute_operation_expression(
-            self.expr or self.name, operator, second_operand
+            self.expr or name, operator, second_operand
         )
         return function
 

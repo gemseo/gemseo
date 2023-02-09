@@ -331,7 +331,6 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
-
         super().__init__(
             algo_type,
             long_algo_type,
@@ -343,11 +342,35 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         self.get_description = self.__default_description_getter(algo_factory)
         self.get_website = self.__default_website_getter(algo_factory)
         self.get_class = self.__default_class_getter(algo_factory)
-        self.get_options_schema = lambda algo: self.get_options_schema_from_method(
-            self.get_class(algo)._get_options
-        )
+        self.get_options_schema = self.__default_options_schema_getter(algo_factory)
         if algo_type == "opt":
             self.get_features = get_algorithm_features
+
+    def __default_options_schema_getter(
+        self,
+        algo_factory: DriverFactory,
+    ) -> Callable[[str], dict[dict[str, str]]]:
+        """Return the default algorithm description getter from a driver factory."""
+
+        def get_options_schema(algo: str) -> dict[dict[str, str]]:
+            """Return the options schema.
+
+            Args:
+                algo: The name of the algorithm.
+
+            Returns:
+                The options schema.
+            """
+            options_schema = self.get_options_schema_from_method(
+                self.get_class(algo)._get_options
+            )
+            algo_lib = algo_factory.create(algo)
+            options_grammar = algo_lib.init_options_grammar(algo)
+            return {
+                k: v for k, v in options_schema.items() if k in options_grammar.names
+            }
+
+        return get_options_schema
 
     @staticmethod
     def __default_description_getter(

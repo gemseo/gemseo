@@ -23,7 +23,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
 @pytest.fixture
-def common_problem():
+def __common_problem():
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, l_b=0, u_b=1, value=0.5)
@@ -53,10 +53,25 @@ def common_problem():
     func.has_default_name = True
     problem.add_constraint(func, cstr_type="ineq", value=0.5)
     problem.differentiation_method = problem.FINITE_DIFFERENCES
+    return problem
+
+
+@pytest.fixture
+def three_length_common_problem(__common_problem):
+    """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib.algo_name = "DiagonalDOE"
-    lib.execute(problem, n_samples=2, eval_jac=True)
-    return problem
+    lib.execute(__common_problem, n_samples=3, eval_jac=True)
+    return __common_problem
+
+
+@pytest.fixture
+def common_problem(__common_problem):
+    """The __common_problem sampled twice on a diagonal of its input space."""
+    lib = DiagonalDOE()
+    lib.algo_name = "DiagonalDOE"
+    lib.execute(__common_problem, n_samples=2, eval_jac=True)
+    return __common_problem
 
 
 @pytest.fixture

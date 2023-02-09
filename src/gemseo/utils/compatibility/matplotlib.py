@@ -21,7 +21,6 @@ from matplotlib.colors import SymLogNorm as _SymLogNorm
 from packaging import version
 
 if version.parse(matplotlib.__version__) < version.parse("3.2.0"):
-
     SymLogNorm = _SymLogNorm
 
 

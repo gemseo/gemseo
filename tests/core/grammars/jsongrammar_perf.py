@@ -186,7 +186,6 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
 
 
 if __name__ == "__main__":
-
     sys.setrecursionlimit(10000)
 
     class_ = MDAChain

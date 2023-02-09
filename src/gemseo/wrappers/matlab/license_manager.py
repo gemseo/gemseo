@@ -67,7 +67,6 @@ class LicenseManager:
     CURVE_FIT_TOOL = "Curve_Fitting_Toolbox"
 
     def __init__(self, engine: MatlabEngine) -> None:
-
         """
         Args:
             engine: The MatlabEngine instance.

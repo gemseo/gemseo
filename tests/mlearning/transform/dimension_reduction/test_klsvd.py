@@ -180,3 +180,17 @@ def test_use_halko2010(data, use_halko2010):
     assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant") == (
         "halko2010" if use_halko2010 else "halko2011"
     )
+
+
+def test_shape(data):
+    """Check the shapes of the data."""
+    klsvd = KLSVD(MESH)
+    klsvd.fit(data)
+    n, p = data.shape
+    q = klsvd.n_components
+    transformed_data = klsvd.transform(data)
+    assert transformed_data.shape == (n, q)
+    assert klsvd.inverse_transform(transformed_data).shape == (n, p)
+
+    assert klsvd.transform(data[0]).shape == (q,)
+    assert klsvd.inverse_transform(transformed_data[0]).shape == (p,)

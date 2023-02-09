@@ -151,14 +151,10 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     transformer: dict[str, Transformer]
     """The strategies to transform the variables, if any.
 
-    The values are instances of :class:`.Transformer`
-    while the keys are the names of
-    either the variables
-    or the groups of variables,
-    e.g. "inputs" or "outputs" in the case of the regression algorithms.
-    If a group is specified,
-    the :class:`.Transformer` will be applied
-    to all the variables of this group.
+    The values are instances of :class:`.Transformer` while the keys are the names of
+    either the variables or the groups of variables, e.g. "inputs" or "outputs" in the
+    case of the regression algorithms. If a group is specified, the :class:`.Transformer`
+    will be applied to all the variables of this group.
     """
 
     algo: Any
@@ -167,8 +163,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     SHORT_ALGO_NAME: ClassVar[str] = "MLAlgo"
     """The short name of the machine learning algorithm, often an acronym.
 
-    Typically used for composite names,
-    e.g. ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"``
+    Typically used for composite names, e.g. ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"``
     or ``f"{algo.SHORT_ALGO_NAME}_{discipline.name}"``.
     """
 

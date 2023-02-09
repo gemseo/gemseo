@@ -50,6 +50,10 @@ configure_logger()
 #     The :class:`.HDF5Cache` relies on some multiprocessing features. When working on
 #     Windows, the execution of scripts containing instances of :class:`.HDF5Cache`
 #     must be protected by an ``if __name__ == '__main__':`` statement.
+#     Currently, the use of an HDF5Cache is not supported in parallel on Windows
+#     platforms. This is due to the way subprocesses are forked in this architecture.
+#     The method :meth:`.DOEScenario.set_optimization_history_backup`
+#     is recommended as an alternative.
 
 cache = HDF5Cache("my_cache.hdf5", "node1")
 
