@@ -39,6 +39,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.mda import MDA
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
@@ -545,7 +546,7 @@ class MDAChain(MDA):
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
-        fig_size: tuple[float, float] = (50.0, 10.0),
+        fig_size: FigSizeType = (50.0, 10.0),
     ) -> None:
         for mda in self.inner_mdas:
             if filename is not None:

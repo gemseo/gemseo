@@ -194,7 +194,7 @@ class JSONGrammar(BaseGrammar):
         missing_names = self.required_names - set(data.keys())
         if missing_names:
             error_message.add(
-                "Missing required names: {}.".format(",".join(sorted(missing_names)))
+                "Missing required names: {}.", ",".join(sorted(missing_names))
             )
 
         if self.__validator is None:
@@ -206,7 +206,7 @@ class JSONGrammar(BaseGrammar):
             self.__validator(data_to_check)
         except JsonSchemaException as error:
             if not error.args[0].startswith("data must contain"):
-                error_message.add(f", error: {error.args[0]}")
+                error_message.add(", error: {}", error.args[0])
             LOGGER.error(error_message)
             if raise_exception:
                 raise InvalidDataException(str(error_message))

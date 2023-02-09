@@ -54,8 +54,6 @@ class ConstraintsHistory(OptPostProcessor):
     where the constraint is (or should be) active.
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 11.0)
-
     def __init__(self, opt_problem: OptimizationProblem) -> None:  # noqa:D107
         super().__init__(opt_problem)
         self.cmap = PARULA

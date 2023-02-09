@@ -118,6 +118,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -315,7 +316,7 @@ class ParametricStatistics(Statistics):
         n_legend_cols: int = 4,
         directory: str | Path = ".",
         index: int = 0,
-        fig_size: tuple[float, float] = (6.4, 3.2),
+        fig_size: FigSizeType = (6.4, 3.2),
     ) -> None:
         """Plot criteria for a given variable name.
 

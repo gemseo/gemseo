@@ -28,6 +28,7 @@ from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class KMeans(OptPostProcessor):
         directory_path: str | Path | None = None,
         file_name: str | None = None,
         file_extension: str | None = None,
-        fig_size: tuple[float, float] | None = None,
+        fig_size: FigSizeType | None = None,
         n_clusters: int = 5,
     ) -> None:
         """
