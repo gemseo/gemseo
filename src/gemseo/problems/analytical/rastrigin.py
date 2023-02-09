@@ -40,7 +40,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Rastrigin(OptimizationProblem):
-
     r"""**Rastrigin** :class:`.OptimizationProblem`
     uses the Rastrigin objective function
     with the :class:`.DesignSpace` :math:`[-0.1,0.1]^2`

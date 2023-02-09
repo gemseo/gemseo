@@ -46,9 +46,8 @@ class ScipyLinalgAlgos(LinearSolverLib):
     """Wrapper for scipy linalg sparse linear solvers."""
 
     save_fpath: str
-    """The path to the file to saved the problem when
-    it is not converged and the option save_when_fail
-    is active."""
+    """The path to the file to saved the problem when it is not converged and the option
+    save_when_fail is active."""
 
     methods_map: dict[str, Callable[[ndarray, ndarray, ...], tuple[ndarray, int]]]
     """The mapping between the solver names and the solvers methods in scipy.sparse."""
@@ -118,7 +117,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
             internal_algorithm_name=algo_name,
             lhs_must_be_linear_operator=True,
             library_name="SciPy",
-            website=cls.__WEBSITE.format(algo_name),
+            website=cls.__WEBSITE.format(cls.__WEBPAGES[algo_name]),
         )
 
     def _get_options(

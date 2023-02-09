@@ -16,7 +16,7 @@ Sobieski's SSBJ test case
 The Sobieski's SSBJ test case is considered in the different tutorials:
 
 - :ref:`sobieski_doe`
-- :ref:`sobieski_mdo`
+- :ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`
 
 .. start_description
 

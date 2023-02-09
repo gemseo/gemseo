@@ -11,17 +11,29 @@
           :author: Matthias De Lozzo
 
 :parenttoc: True
+.. _dataset:
 
 Dataset
--------
+=======
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
-.. toctree::
-   :maxdepth: 2
+Basics
+------
 
-   Introduction <dataset/dataset.rst>
-   Visualization <dataset/postprocessing.rst>
-   Built-in datasets <dataset/problems.rst>
-   Development <dataset/uml.rst>
-   Examples <examples/dataset/index.rst>
+.. automodule:: gemseo.core.dataset
+   :exclude-members: Dataset, ColumnName
+
+Visualization
+-------------
+
+.. automodule:: gemseo.post.dataset
+
+Use cases
+---------
+
+.. automodule:: gemseo.problems.dataset
+
+Examples
+--------
+
+.. include:: examples/dataset/index.rst
+   :start-line: 17

@@ -40,7 +40,6 @@ class TestScipyGlobalOpt(TestCase):
         return Rosenbrock()
 
     def test_init(self):
-
         factory = OptimizersFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)

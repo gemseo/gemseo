@@ -118,6 +118,21 @@ def pretty_str(
     return __stringify(obj, delimiter, key_value_separator, str, sort)
 
 
+def repr_variable(name: str, index: int, size: int = 0) -> str:
+    """Return the string representation of a variable.
+
+    Args:
+        name: The name of the variable.
+        index: The component of the variable.
+        size: The size of the variable if known.
+            Use ``0`` if unknown.
+
+    Returns:
+        The string representation of the variable.
+    """
+    return name if size == 1 else f"{name}[{index}]"
+
+
 class MultiLineString:
     """Multi-line string lazy evaluator.
 

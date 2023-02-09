@@ -114,7 +114,6 @@ class SelfCoupledDisc(MDODiscipline):
             self.coeff = -1.0
 
     def _run(self):
-
         self.local_data["y"] = (
             1.0 + self.coeff * 0.5 * self.local_data["y"] + self.local_data["x"]
         )

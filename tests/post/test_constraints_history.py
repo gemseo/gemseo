@@ -27,24 +27,29 @@ def test_function_error(common_problem):
     """Test a ValueError is raised for a non-existent function."""
     with pytest.raises(
         ValueError,
-        match="Cannot build constraints history plot, "
-        "function foo is not among the constraints names "
-        "or does not exist.",
+        match=(
+            r"Cannot build constraints history plot, foo is not a constraint name\."
+        ),
     ):
         ConstraintsHistory(common_problem).execute(save=False, constraint_names=["foo"])
 
 
-TEST_PARAMETERS = {"default": ["ConstraintsHistory_default"]}
+TEST_PARAMETERS = {
+    "default": (["ConstraintsHistory_default"], {}),
+    "no_line": (["ConstraintsHistory_no_line"], {"line_style": ""}),
+    "line_style": (["ConstraintsHistory_line_style"], {"line_style": "-"}),
+    "points": (["ConstraintsHistory_points"], {"add_points": False}),
+}
 
 
 @pytest.mark.parametrize(
-    "baseline_images",
+    "baseline_images,options",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
+def test_common_scenario(baseline_images, options, common_problem, pyplot_close_all):
     """Check ConstraintsHistory."""
-    opt = ConstraintsHistory(common_problem)
-    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)
+    post = ConstraintsHistory(common_problem)
+    post.execute(constraint_names=["eq", "neg", "pos"], save=False, **options)

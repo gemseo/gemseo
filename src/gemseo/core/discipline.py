@@ -114,16 +114,17 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """The policy to re-execute the same discipline."""
 
     residual_variables: Mapping[str, str]
-    """The output variables mapping to their inputs,
-    to be considered as residuals; they shall be equal to zero.
-    """
+    """The output variables mapping to their inputs, to be considered as residuals; they
+    shall be equal to zero."""
 
     run_solves_residuals: bool
     """If True, the run method shall solve the residuals."""
 
     jac: dict[str, dict[str, ndarray]]
-    """The Jacobians of the outputs wrt inputs
-    of the form ``{output: {input: matrix}}``."""
+    """The Jacobians of the outputs wrt inputs of the form ``{output: {input:
+
+    matrix}}``.
+    """
 
     exec_for_lin: bool
     """Whether the last execution was due to a linearization."""
@@ -132,20 +133,22 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """The name of the discipline."""
 
     cache: AbstractCache | None
-    """The cache containing one or several executions of the discipline
-    according to the cache policy."""
+    """The cache containing one or several executions of the discipline according to the
+    cache policy."""
 
     STATUS_VIRTUAL = "VIRTUAL"
     STATUS_PENDING = "PENDING"
     STATUS_DONE = "DONE"
     STATUS_RUNNING = "RUNNING"
     STATUS_FAILED = "FAILED"
+    STATUS_LINEARIZE = "LINEARIZE"
     AVAILABLE_STATUSES = [
         STATUS_DONE,
         STATUS_FAILED,
         STATUS_PENDING,
         STATUS_RUNNING,
         STATUS_VIRTUAL,
+        STATUS_LINEARIZE,
     ]
 
     JSON_GRAMMAR_TYPE = "JSONGrammar"
@@ -334,7 +337,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._local_data = None
         self.__set_local_data({})
 
-        # : The current status of execution
         self._status = self.STATUS_PENDING
         if self.activate_counters:
             self._init_shared_attrs()
@@ -446,7 +448,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._n_calls_linearize.value = value
 
     @property
-    def grammar_type(self) -> BaseGrammar:
+    def grammar_type(self) -> str:
         """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
@@ -674,7 +676,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if self.cache.__class__.__name__ != cache_type or not (
             cache_type == self.HDF5_CACHE
             and cache_hdf_file == self.cache.hdf_file.hdf_file_path
-            and cache_hdf_node_name == self.cache.node_path
+            and cache_hdf_node_name == self.cache.hdf_node_name
         ):
             self.cache = self.__create_new_cache(
                 cache_type,
@@ -685,8 +687,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
         else:
             LOGGER.warning(
-                "Cache policy is set to %s: call clear() to clear a discipline cache",
+                (
+                    "The cache policy is already set to %s "
+                    "with the file path %r and node name %r; "
+                    "call discipline.cache.clear() to clear the cache."
+                ),
                 cache_type,
+                cache_hdf_file,
+                cache_hdf_node_name,
             )
 
     def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
@@ -861,30 +869,19 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         Raises:
             ValueError:
-                When the re-execution policy is unknown.
-                When the discipline status and the re-execution policy
-                are no consistent.
+                When the discipline status and the re-execution policy are no consistent.
         """
-        status_ok = True
-        if self.status == self.STATUS_RUNNING:
-            status_ok = False
-        if self.re_exec_policy == self.RE_EXECUTE_NEVER_POLICY:
-            if self.status not in [self.STATUS_PENDING, self.STATUS_VIRTUAL]:
-                status_ok = False
-        elif self.re_exec_policy == self.RE_EXECUTE_DONE_POLICY:
-            if self.status == self.STATUS_DONE:
-                self.reset_statuses_for_run()
-                status_ok = True
-            elif self.status not in [self.STATUS_PENDING, self.STATUS_VIRTUAL]:
-                status_ok = False
-        else:
-            raise ValueError(f"Unknown re_exec_policy: {self.re_exec_policy}.")
-        if not status_ok:
+        if self.status not in [
+            self.STATUS_PENDING,
+            self.STATUS_VIRTUAL,
+            self.STATUS_DONE,
+        ] or (
+            self.status == self.STATUS_DONE
+            and self.re_exec_policy == self.RE_EXECUTE_NEVER_POLICY
+        ):
             raise ValueError(
-                "Trying to run a discipline {} with status: {} "
-                "while re_exec_policy is {}.".format(
-                    type(self), self.status, self.re_exec_policy
-                )
+                f"Trying to run a discipline {type(self)} with status: {self.status} "
+                f"while re_exec_policy is {self.re_exec_policy}."
             )
 
     def __get_input_data_for_cache(
@@ -949,7 +946,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         Raises:
             RuntimeError: When residual_variables are declared but
-                self.run_solves_residuals is False. This is not suported yet.
+                self.run_solves_residuals is False. This is not supported yet.
         """
         if self.residual_variables and not self.run_solves_residuals:
             raise RuntimeError(
@@ -973,8 +970,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             # Save the state of the inputs
             cached_inputs = self.__get_input_data_for_cache(input_data, in_names)
 
-        self._check_status_before_run()
-
         if self.activate_input_data_check:
             self.check_input_data(input_data)
 
@@ -984,12 +979,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             self.__set_local_data(input_data)
 
-        self.status = self.STATUS_RUNNING
         self._is_linearized = False
         if self.activate_counters:
             self.__increment_n_calls()
 
         t_0 = timer()
+
+        self._check_status_before_run()
+        self.status = self.STATUS_RUNNING
 
         try:
             # Effectively run the discipline, the _run method has to be
@@ -1001,10 +998,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             # raise the same exception
             raise
 
+        self.status = self.STATUS_DONE
+
         if self.activate_counters:
             self.__increment_exec_time(t_0)
-
-        self.status = self.STATUS_DONE
 
         # If the data processor is set, post process the data after _run
         # See gemseo.core.data_processor module
@@ -1131,7 +1128,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def linearize(
         self,
-        input_data: dict[str, Any] | None = None,
+        input_data: Mapping[str, Any] | None = None,
         force_all: bool = False,
         force_no_exec: bool = False,
     ) -> dict[str, dict[str, ndarray]]:
@@ -1194,6 +1191,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                     # triggered.
                     pass
 
+        self.status = self.STATUS_LINEARIZE
+
         t_0 = timer()
         if self._linearization_mode in self.APPROX_MODES:
             # Time already counted in execute()
@@ -1211,6 +1210,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if self.cache is not None:
             # Cache the Jacobian matrix
             self.cache.cache_jacobian(input_data, self.jac)
+
+        self.status = self.STATUS_DONE
 
         return self.jac
 
@@ -1745,7 +1746,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     @property
     def status(self) -> str:
-        """The status of the discipline."""
+        """The status of the discipline.
+
+        The status aims at monitoring the process and give the user a simplified view on
+        the state (the process state = execution or linearize or done) of the
+        disciplines. The core part of the execution is _run, the core part of linearize
+        is _compute_jacobian or approximate jacobian computation.
+        """
         return self._status
 
     def _check_status(
@@ -1757,13 +1764,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             ValueError: When the status is unknown.
         """
-        if status not in [
-            self.STATUS_PENDING,
-            self.STATUS_VIRTUAL,
-            self.STATUS_DONE,
-            self.STATUS_RUNNING,
-            self.STATUS_FAILED,
-        ]:
+        if status not in self.AVAILABLE_STATUSES:
             raise ValueError(f"Unknown status: {status}.")
 
     def set_disciplines_statuses(
@@ -1854,7 +1855,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether the discipline can be run again.
         """
-        return status not in [self.STATUS_RUNNING]
+        return status != self.STATUS_RUNNING
 
     def reset_statuses_for_run(self) -> None:
         """Set all the statuses to :attr:`.MDODiscipline.STATUS_PENDING`.

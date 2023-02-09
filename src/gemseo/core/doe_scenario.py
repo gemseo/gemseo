@@ -44,7 +44,11 @@ class DOEScenario(Scenario):
     """
 
     seed: int
-    """The seed used by the random number generators for replicability."""
+    """The seed used by the random number generators for reproducibility.
+
+    This seed is initialized at 0 and each call to :meth:`.execute` increments it before
+    using it.
+    """
 
     # Constants for input variables in json schema
     N_SAMPLES = "n_samples"

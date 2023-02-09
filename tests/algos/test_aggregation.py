@@ -22,6 +22,7 @@ import pytest
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
 from gemseo.algos.aggregation.aggregation_func import aggregate_ks
 from gemseo.algos.aggregation.aggregation_func import aggregate_max
+from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -74,7 +75,7 @@ def create_pb_alleq():
     return problem
 
 
-@pytest.mark.parametrize("method", ["KS", "IKS"])
+@pytest.mark.parametrize("method", ["KS", "IKS", "pos_sum"])
 def test_ks_aggreg(method):
     """Tests KS and IKS aggregation methods compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
@@ -83,7 +84,10 @@ def test_ks_aggreg(method):
     ref_sol = problem_ref.solution
 
     problem = create_problem()
-    problem.aggregate_constraint(0, method, rho=300.0, scale=1.0)
+    if method in ["KS", "IKS"]:
+        problem.aggregate_constraint(0, method, rho=300.0, scale=1.0)
+    else:
+        problem.aggregate_constraint(0, method, scale=1.0)
     execute_algo(
         problem,
         algo_name="SLSQP",
@@ -101,9 +105,15 @@ def test_wrong_method():
         problem.aggregate_constraint(0, "unknown")
 
 
-def test_groups(sellar_problem):
+@pytest.mark.parametrize("method", ["KS", "IKS", "pos_sum"])
+def test_groups(sellar_problem, method):
     """Test groups aggregation."""
-    sellar_problem.aggregate_constraint(0, "KS", rho=300.0, scale=1.0, groups=(0, 1))
+    if method in ["KS", "IKS"]:
+        sellar_problem.aggregate_constraint(
+            0, method, rho=300.0, scale=1.0, groups=(0, 1)
+        )
+    else:
+        sellar_problem.aggregate_constraint(0, method, scale=1.0, groups=(0, 1))
     assert len(sellar_problem.constraints) == 3
 
 
@@ -125,7 +135,8 @@ def test_unknown_method(sellar_problem):
 
 @pytest.mark.parametrize("indices", [None, [0], [0, 1]])
 @pytest.mark.parametrize(
-    "aggregation_meth", [aggregate_max, aggregate_ks, aggregate_iks]
+    "aggregation_meth",
+    [aggregate_max, aggregate_ks, aggregate_iks, aggregate_positive_sum_square],
 )
 def test_gradients_ineq(sellar_problem, aggregation_meth, indices):
     """Checks gradients of inequality aggregation methods by finite differences."""

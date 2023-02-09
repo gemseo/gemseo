@@ -146,7 +146,7 @@ def test_add_variable_with_nan_value(design_space, arg):
 
 @pytest.mark.parametrize("arg,side", [("l_b", "lower"), ("u_b", "upper")])
 def test_add_variable_with_inconsistent_bound_size(design_space, arg, side):
-    """Check that using bounds with inconsistent size raises an."""
+    """Check that using bounds with inconsistent size raises an error."""
     with pytest.raises(
         ValueError, match=f"The {side} bounds of 'varname' should be of size 3."
     ):
@@ -179,24 +179,33 @@ def test_add_variable_with_2d_object(design_space, arg):
 
 
 @pytest.mark.parametrize(
-    "size,var_type,l_b,u_b, value",
+    "l_b,u_b, value",
     [
-        (1, DesignVariableType.FLOAT, 1.0, 2.0, 3.0),
-        (1, DesignVariableType.FLOAT, 1.0, 2.0, 0.0),
+        (1.0, 2.0, 3.0),
+        (1.0, 2.0, 0.0),
     ],
 )
-def test_add_variable_with_value_out_of_bounds(
-    design_space, size, var_type, l_b, u_b, value
-):
-    """Check that setting a value out of bounds raises an error."""
+def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value):
+    """Check that setting a value out of bounds raises an error.
+
+    Check also that after this error is raised, the design space does not contain the
+    variable.
+    """
     expected = (
         "The current value of variable 'varname' ({}) is not "
         "between the lower bound {} and the upper bound {}.".format(value, l_b, u_b)
     )
     with pytest.raises(ValueError, match=re.escape(expected)):
         design_space.add_variable(
-            name="varname", size=size, var_type=var_type, l_b=l_b, u_b=u_b, value=value
+            name="varname",
+            size=1,
+            var_type=DesignVariableType.FLOAT,
+            l_b=l_b,
+            u_b=u_b,
+            value=value,
         )
+
+    assert "varname" not in design_space.variables_names
 
 
 def test_creation_4():
@@ -349,7 +358,6 @@ def test_extend():
 
 def test_active_bounds():
     """Check whether active bounds are correctly identified."""
-
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=2.0)
     design_space.add_variable("y", l_b=-2.0, u_b=2.0)

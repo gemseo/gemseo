@@ -494,7 +494,7 @@ class SnOpt(OptimizationLibrary):
 
         snopt_problem = SNOPT_solver(name="SNOPTB")
 
-        for (key, value) in options.items():
+        for key, value in options.items():
             try:
                 snopt_problem.setOption(key.replace("_", " "), value)
             except RuntimeError:

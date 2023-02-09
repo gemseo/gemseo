@@ -147,17 +147,10 @@ class OTDistribution(Distribution):
         msg.add("Transformation: {}", self.transformation)
         LOGGER.debug("%s", msg)
 
-    def compute_samples(  # noqa: D102
-        self,
-        n_samples: int = 1,
-    ) -> ndarray:
-        sample = array(self.distribution.getSample(n_samples))
-        return sample
+    def compute_samples(self, n_samples: int = 1) -> ndarray:  # noqa: D102
+        return array(self.distribution.getSample(n_samples))
 
-    def compute_cdf(  # noqa: D102
-        self,
-        vector: Iterable[float],
-    ) -> ndarray:
+    def compute_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
         return array(
             [
                 self.marginals[index].computeCDF(ots.Point([value]))
@@ -165,10 +158,7 @@ class OTDistribution(Distribution):
             ]
         )
 
-    def compute_inverse_cdf(  # noqa: D102
-        self,
-        vector: Iterable[float],
-    ) -> ndarray:
+    def compute_inverse_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
         return array(
             [
                 self.marginals[index].computeQuantile(value)[0]
@@ -176,13 +166,8 @@ class OTDistribution(Distribution):
             ]
         )
 
-    def _pdf(  # noqa: D102
-        self,
-        index: int,
-    ) -> Callable:
-        def pdf(
-            point: float,
-        ) -> float:
+    def _pdf(self, index: int) -> Callable:  # noqa: D102
+        def pdf(point: float) -> float:
             """Probability Density Function (PDF).
 
             Args:
@@ -195,13 +180,8 @@ class OTDistribution(Distribution):
 
         return pdf
 
-    def _cdf(
-        self,
-        index: int,
-    ) -> Callable:  # noqa: D102
-        def cdf(
-            level: float,
-        ) -> float:
+    def _cdf(self, index: int) -> Callable:  # noqa: D102
+        def cdf(level: float) -> float:
             """Cumulative Density Function (CDF).
 
             Args:

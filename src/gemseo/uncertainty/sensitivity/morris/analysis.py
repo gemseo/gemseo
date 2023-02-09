@@ -89,6 +89,7 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.utils.string_tools import repr_variable
 
 
 class MorrisAnalysis(SensitivityAnalysis):
@@ -407,14 +408,17 @@ class MorrisAnalysis(SensitivityAnalysis):
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
-        output = f"{output[0]}({output[1]})"
-        default_title = "Sampling: {}(size={}) - Relative step: {} - Output: {}"
-        default_title = default_title.format(
-            self._algo_name, self.__n_replicates, self.__step, output
+        default_title = "Sampling: {}(size={}) - Relative step: {} - Output: {}".format(
+            self._algo_name,
+            self.__n_replicates,
+            self.__step,
+            repr_variable(*output, size=len(self.sigma[output[0]])),
         )
         ax.set_xlim(left=lower_mu)
         ax.set_ylim(bottom=lower_sigma)
         ax.set_title(title or default_title)
+        ax.set_axisbelow(True)
+        ax.grid()
         x_offset = offset * (max(x_val) - min(x_val)) / 100.0
         y_offset = offset * (max(y_val) - min(y_val)) / 100.0
         for index, txt in enumerate(names):

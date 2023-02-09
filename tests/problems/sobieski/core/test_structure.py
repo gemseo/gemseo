@@ -93,7 +93,6 @@ def test_dfuelweightdsref(problem):
 
 def test_jac_structure(problem):
     """"""
-
     sr = SobieskiStructure("complex128")
     indata = problem.get_default_inputs(names=sr.get_input_data_names())
     assert sr.check_jacobian(

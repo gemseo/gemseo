@@ -719,9 +719,11 @@ def test_notify_newiter_store_listeners():
 
 @pytest.fixture
 def simple_database():
-    """A database with a single element: ([0.], {'y': 1.})."""
+    """A database with a single element."""
     database = Database()
-    database.store(array([0.0]), {"y": 1.0})
+    database.store(
+        array([0.0]), {"w": 1.0, "x": [2], "y": array([3.0]), "z": array([4.0, 5.0])}
+    )
     return database
 
 
@@ -737,4 +739,12 @@ def test_clear(simple_database, reset_iteration_counter, max_iteration):
 
 def test_last_item(simple_database):
     """Check that the property last_item is the last item stored in the database."""
-    assert simple_database.last_item["y"] == 1.0
+    assert simple_database.last_item["y"] == 3.0
+
+
+def test_get_history_array_with_simple_database(simple_database):
+    """Check get_history_array with a simple database."""
+    values_array, variables_names, functions = simple_database.get_history_array()
+    assert_almost_equal(values_array, array([[1.0, 1.0, 2.0, 3.0, 4.0, 5.0, 0.0]]))
+    assert variables_names == ["Iter", "w", "x", "y", "z (0)", "z (1)", "x_1"]
+    assert functions == ["Iter", "w", "x", "y", "z"]

@@ -42,7 +42,6 @@ pytest.importorskip("pdfo", reason="pdfo is not available")
 
 
 class TestPDFO(TestCase):
-
     OPT_LIB_NAME = "PDFOOpt"
 
     def test_init(self):
@@ -70,7 +69,6 @@ class TestPDFO(TestCase):
         this test, it is expected that the optimizer will encouter and by-pass the NaN
         bubble.
         """
-
         opt_problem = Rosenbrock()
 
         fun = copy(opt_problem.objective)
@@ -108,7 +106,6 @@ class TestPDFO(TestCase):
         In this test, all the values of x>0.7 are not realizable. The optimum is then
         expected for x[0] ~= 0.7
         """
-
         opt_problem = Rosenbrock()
 
         fun = copy(opt_problem.objective)

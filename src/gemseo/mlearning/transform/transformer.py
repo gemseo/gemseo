@@ -32,11 +32,16 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Callable
+from typing import Any
 from typing import ClassVar
 from typing import NoReturn
 from typing import Union
 
 from numpy import ndarray
+from numpy import newaxis
+from typing_extensions import ParamSpecArgs
+from typing_extensions import ParamSpecKwargs
 
 from gemseo.core.factory import Factory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -86,8 +91,12 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Fit the transformer to the data.
 
         Args:
-            data: The data to be fitted.
+            data: The data to be fitted,
+                shaped as ``(n_observations, n_features)`` or ``(n_observations, )``.
         """
+        if data.ndim == 1:
+            data = data[:, newaxis]
+
         self._fit(data, *args)
         self.__is_fitted = True
 
@@ -96,7 +105,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Fit the transformer to the data.
 
         Args:
-            data: The data to be fitted.
+            data: The data to be fitted, shaped as ``(n_observations, n_features)``.
         """
 
     @abstractmethod
@@ -104,20 +113,22 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Transform the data.
 
         Args:
-            data: The data to be transformed.
+            data: The data to be transformed,
+                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
 
         Returns:
-            The transformed data.
+            The transformed data, shaped as ``data``.
         """
 
     def inverse_transform(self, data: ndarray) -> NoReturn:
         """Perform an inverse transform on the data.
 
         Args:
-            data: The data to be inverse transformed.
+            data: The data to be inverse transformed,
+                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
 
         Returns:
-            The inverse transformed data.
+            The inverse transformed data, shaped as ``data``.
         """
         raise NotImplementedError
 
@@ -125,38 +136,76 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Fit the transformer to the data and transform the data.
 
         Args:
-            data: The data to be transformed.
+            data: The data to be transformed,
+                shaped as ``(n_observations, n_features)`` or ``(n_observations, )``.
 
         Returns:
-            The transformed data.
+            The transformed data, shaped as ``data``.
         """
+        if data.ndim == 1:
+            data = data[:, newaxis]
+
         self.fit(data, *args)
         return self.transform(data)
 
     def compute_jacobian(self, data: ndarray) -> NoReturn:
-        """Compute Jacobian of transformer.transform().
+        """Compute the Jacobian of :meth:`.transform`.
 
         Args:
-            data: The data where the Jacobian is to be computed.
+            data: The data where the Jacobian is to be computed,
+                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
 
         Returns:
-            The Jacobian matrix.
+            The Jacobian matrix, shaped according to ``data``.
         """
         raise NotImplementedError
 
     def compute_jacobian_inverse(self, data: ndarray) -> NoReturn:
-        """Compute Jacobian of the transformer.inverse_transform().
+        """Compute the Jacobian of the :meth:`.inverse_transform`.
 
         Args:
-            data: The data where the Jacobian is to be computed.
+            data: The data where the Jacobian is to be computed,
+                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
 
         Returns:
-            The Jacobian matrix.
+            The Jacobian matrix, shaped according to ``data``..
         """
         raise NotImplementedError
 
     def __str__(self) -> str:
         return self.__class__.__name__
+
+    @staticmethod
+    def _use_2d_array(
+        f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]
+    ) -> Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]:
+        """Force the NumPy array passed to a function as first argument to be a 2D one.
+
+        Args:
+            f: The function.
+        """
+
+        def g(self, data: ndarray, *args: Any, **kwargs: Any) -> Any:
+            """Force a NumPy array to be 2D and evaluate the function ``f`` with it.
+
+            Args:
+                data: A 1D or 2D NumPy array.
+
+            Returns:
+                Any kind of output;
+                if a NumPy array,
+                its dimension is made consistent with the shape of ``data``.
+            """
+            if data.ndim == 2:
+                return f(self, data, *args, **kwargs)
+            else:
+                out = f(self, data[newaxis, :], *args, **kwargs)
+                if isinstance(out, ndarray):
+                    out = out[0]
+
+                return out
+
+        return g
 
 
 class TransformerFactory(Factory):

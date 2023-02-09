@@ -23,12 +23,17 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
+from typing import Any
+from typing import ClassVar
+from typing import Iterable
+from typing import Mapping
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import atleast_2d
 from numpy import concatenate
 from numpy import empty
+from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
@@ -47,19 +52,19 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import MDOCouplingStructure
-    from typing import Sequence
+    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)
 
 
-def none_factory():
+def none_factory() -> None:
     """Returns None...
 
     To be used for defaultdict
     """
 
 
-def default_dict_factory():
+def default_dict_factory() -> dict[Any, None]:
     """Instantiates a defaultdict(None) object."""
     return defaultdict(none_factory)
 
@@ -70,22 +75,60 @@ class JacobianAssembly:
     Typically, assemble discipline's Jacobians into a system Jacobian.
     """
 
-    DIRECT_MODE = derivation_modes.DIRECT_MODE
-    ADJOINT_MODE = derivation_modes.ADJOINT_MODE
-    AUTO_MODE = derivation_modes.AUTO_MODE
-    REVERSE_MODE = derivation_modes.REVERSE_MODE
-    AVAILABLE_MODES = (DIRECT_MODE, ADJOINT_MODE, AUTO_MODE, REVERSE_MODE)
+    coupling_structure: MDOCouplingStructure
+    """The considered coupling structure."""
+
+    sizes: dict[str, int]
+    """The number of elements of a given str."""
+
+    disciplines: dict[str, MDODiscipline]
+    """The MDODisciplines, stored using their name."""
+
+    __last_diff_inouts: tuple[set[str], set[str]]
+    """The last diff in-outs stored."""
+
+    __minimal_couplings: list[str]
+    """The minimal couplings."""
+
+    coupled_system: CoupledSystem
+    """The coupled derivative system of residuals."""
+
+    n_newton_linear_resolutions: int
+    """The number of Newton linear resolutions."""
+
+    __linear_solver_factory: LinearSolversFactory
+    """The linear solver factory."""
+
+    AVAILABLE_MODES: ClassVar[tuple[str]] = derivation_modes.AVAILABLE_MODES
+    """The enumeration of the available modes."""
+
+    DIRECT_MODE: ClassVar[str] = derivation_modes.DIRECT_MODE
+    """The name of the direct mode."""
+
+    ADJOINT_MODE: ClassVar[str] = derivation_modes.ADJOINT_MODE
+    """The name of the adjoint mode."""
+
+    AUTO_MODE: ClassVar[str] = derivation_modes.AUTO_MODE
+    """The name of the auto-mode."""
+
+    REVERSE_MODE: ClassVar[str] = derivation_modes.REVERSE_MODE
+    """The name of the reverse mode."""
 
     # matrix types
-    SPARSE = "sparse"
-    LINEAR_OPERATOR = "linear_operator"
-    AVAILABLE_MAT_TYPES = [SPARSE, LINEAR_OPERATOR]
+    SPARSE: ClassVar[str] = "sparse"
+    """The name for sparse matrices."""
 
-    def __init__(self, coupling_structure):
+    LINEAR_OPERATOR: ClassVar[str] = "linear_operator"
+    """The name for linear operators."""
+
+    AVAILABLE_MAT_TYPES: ClassVar[tuple[str]] = (SPARSE, LINEAR_OPERATOR)
+    """The enumeration of the available matrix types."""
+
+    def __init__(self, coupling_structure: MDOCouplingStructure) -> None:
         """
         Args:
-            coupling_structure: The CouplingStructure associated disciplines that form
-                the coupled system.
+            coupling_structure: The MDOCouplingStructure associated disciplines that
+                form the coupled system.
         """  # noqa: D205, D212, D415
         self.coupling_structure = coupling_structure
         self.sizes = {}
@@ -96,7 +139,14 @@ class JacobianAssembly:
         self.n_newton_linear_resolutions = 0
         self.__linear_solver_factory = LinearSolversFactory()
 
-    def __check_inputs(self, functions, variables, couplings, matrix_type, use_lu_fact):
+    def __check_inputs(
+        self,
+        functions: Iterable[str],
+        variables: Iterable[str],
+        couplings: Iterable[str],
+        matrix_type: str,
+        use_lu_fact: bool,
+    ) -> None:
         """Check the inputs before differentiation.
 
         Args:
@@ -104,7 +154,8 @@ class JacobianAssembly:
             variables: The differentiation variables.
             couplings: The coupling variables.
             matrix_type: The type of matrix for linearization.
-            use_lu_fact: Whether to use the LU factorization once for all second members.
+            use_lu_fact: Whether to use the LU factorization once for all second
+                members.
 
         Raises:
             ValueError: When the inputs are inconsistent.
@@ -167,7 +218,13 @@ class JacobianAssembly:
                 + " instead"
             )
 
-    def compute_sizes(self, functions, variables, couplings, residual_variables=None):
+    def compute_sizes(
+        self,
+        functions: Iterable[str],
+        variables: Iterable[str],
+        couplings: Iterable[str],
+        residual_variables: Mapping[str, str] | None = None,
+    ) -> None:
         """Compute the number of scalar functions, variables and couplings.
 
         Args:
@@ -219,7 +276,7 @@ class JacobianAssembly:
                 )
 
     @staticmethod
-    def _check_mode(mode, n_variables, n_functions):
+    def _check_mode(mode: str, n_variables: int, n_functions: int) -> str:
         """Check the differentiation mode (direct or adjoint).
 
         Args:
@@ -237,7 +294,7 @@ class JacobianAssembly:
                 mode = JacobianAssembly.ADJOINT_MODE
         return mode
 
-    def compute_dimension(self, names):
+    def compute_dimension(self, names: Iterable[str]) -> int:
         """Compute the total number of functions/variables/couplings of the full system.
 
         Args:
@@ -251,7 +308,13 @@ class JacobianAssembly:
             number += self.sizes[name]
         return number
 
-    def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
+    def _dres_dvar_sparse(
+        self,
+        residuals: Iterable[str],
+        variables: Iterable[str],
+        n_residuals: int,
+        n_variables: int,
+    ) -> dok_matrix:
         """Form the matrix of partial derivatives of residuals.
 
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -309,7 +372,13 @@ class JacobianAssembly:
 
         return dres_dvar.real
 
-    def _dres_dvar_linop(self, residuals, variables, n_residuals, n_variables):
+    def _dres_dvar_linop(
+        self,
+        residuals: Iterable[str],
+        variables: Iterable[str],
+        n_residuals: int,
+        n_variables: int,
+    ) -> LinearOperator:
         """Form the linear operator of partial derivatives of residuals.
 
         Args:
@@ -321,8 +390,8 @@ class JacobianAssembly:
         Returns:
             The operator dres_dvar.
         """
-        # define the linear function
-        def dres_dvar(x_array):
+
+        def dres_dvar(x_array: ndarray) -> ndarray:
             """The linear operator that represents the square matrix dR/dy.
 
             Args:
@@ -366,7 +435,13 @@ class JacobianAssembly:
 
         return LinearOperator((n_residuals, n_variables), matvec=dres_dvar)
 
-    def _dres_dvar_t_linop(self, residuals, variables, n_residuals, n_variables):
+    def _dres_dvar_t_linop(
+        self,
+        residuals: Iterable[str],
+        variables: Iterable[str],
+        n_residuals: int,
+        n_variables: int,
+    ) -> LinearOperator:
         """Form the transposed linear operator of partial derivatives of residuals.
 
         Args:
@@ -378,8 +453,8 @@ class JacobianAssembly:
         Returns:
             The transpose of the operator dres_dvar.
         """
-        # define the linear function
-        def dres_t_dvar(x_array):
+
+        def dres_t_dvar(x_array: ndarray) -> ndarray:
             """The transposed linear operator that represents the square matrix dR/dy.
 
             Args:
@@ -427,13 +502,13 @@ class JacobianAssembly:
 
     def dres_dvar(
         self,
-        residuals,
-        variables,
-        n_residuals,
-        n_variables,
-        matrix_type=SPARSE,
-        transpose=False,
-    ):
+        residuals: Iterable[str],
+        variables: Iterable[str],
+        n_residuals: int,
+        n_variables: int,
+        matrix_type: str = SPARSE,
+        transpose: bool = False,
+    ) -> dok_matrix | LinearOperator:
         """Form the matrix of partial derivatives of residuals.
 
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -476,7 +551,9 @@ class JacobianAssembly:
 
         raise TypeError("cannot handle the matrix type")
 
-    def dfun_dvar(self, function, variables, n_variables):
+    def dfun_dvar(
+        self, function: str, variables: Iterable[str], n_variables: int
+    ) -> dok_matrix:
         """Forms the matrix of partial derivatives of a function.
 
         Given disciplinary Jacobians dJi(v0...vn)/dvj,
@@ -516,11 +593,11 @@ class JacobianAssembly:
 
     def _compute_diff_ios_and_couplings(
         self,
-        variables: Sequence[str],
-        functions: Sequence[str],
-        states: Sequence[str],
+        variables: Iterable[str],
+        functions: Iterable[str],
+        states: Iterable[str],
         coupling_structure: MDOCouplingStructure,
-    ):
+    ) -> list[str]:
         """Compute the minimal differentiated inputs, outputs and couplings.
 
         This is done form the
@@ -556,7 +633,7 @@ class JacobianAssembly:
             minimal_couplings = set(couplings).intersection(
                 coupling_structure.all_couplings
             )
-            # The state variables are not coupling variables although they are inputs
+            # The state variables are not coupling variables, although they are inputs
             # and outputs of the disciplines with residuals.
             minimal_couplings = sorted(minimal_couplings.difference(states))
 
@@ -566,18 +643,18 @@ class JacobianAssembly:
     def total_derivatives(
         self,
         in_data,
-        functions,
-        variables,
-        couplings,
-        linear_solver="DEFAULT",
-        mode=AUTO_MODE,
-        matrix_type=SPARSE,
-        use_lu_fact=False,
-        exec_cache_tol=None,
-        force_no_exec=False,
-        residual_variables=None,
-        **linear_solver_options,
-    ):
+        functions: Iterable[str],
+        variables: Iterable[str],
+        couplings: Iterable[str],
+        linear_solver: str = "DEFAULT",
+        mode: str = AUTO_MODE,
+        matrix_type: str = SPARSE,
+        use_lu_fact: bool = False,
+        exec_cache_tol: float | None = None,
+        force_no_exec: bool = False,
+        residual_variables: Mapping[str, str] | None = None,
+        **linear_solver_options: Any,
+    ) -> dict[str, dict[str, ndarray]] | dict[Any, dict[Any, None]]:
         """Compute the Jacobian of total derivatives of the coupled system.
 
         Args:
@@ -709,7 +786,11 @@ class JacobianAssembly:
 
         return self.split_jac(total_derivatives, variables)
 
-    def split_jac(self, coupled_system, variables):
+    def split_jac(
+        self,
+        coupled_system: Mapping[str, ndarray | dok_matrix],
+        variables: Iterable[str],
+    ) -> dict[str, ndarray | dok_matrix]:
         """Split a Jacobian dict into a dict of dict.
 
         Args:
@@ -730,15 +811,16 @@ class JacobianAssembly:
             j_split[function] = sub_jac
         return j_split
 
+    # Newton step computation
     def compute_newton_step(
         self,
-        in_data,
-        couplings,
-        relax_factor,
-        linear_solver="DEFAULT",
-        matrix_type=SPARSE,
-        **linear_solver_options,
-    ):
+        in_data: Mapping[str, Any],
+        couplings: Iterable[str],
+        relax_factor: float | int,
+        linear_solver: str = "DEFAULT",
+        matrix_type: str = SPARSE,
+        **linear_solver_options: Any,
+    ) -> dict[str, ndarray]:
         """Compute the Newton step for the coupled system of disciplines residuals.
 
         Args:
@@ -805,7 +887,9 @@ class JacobianAssembly:
 
         return couplings_to_steps
 
-    def residuals(self, in_data, var_names):
+    def residuals(
+        self, in_data: Mapping[str, Any], var_names: Iterable[str]
+    ) -> ndarray:
         """Form the matrix of residuals wrt coupling variables.
 
         Given disciplinary explicit calculations Yi(Y0_t,...Yn_t),
@@ -835,15 +919,16 @@ class JacobianAssembly:
 
         return concatenate(residuals, axis=1)[0, :]
 
+    # plot method
     def plot_dependency_jacobian(
         self,
-        functions,
-        variables,
-        save=True,
-        show=False,
-        filepath=None,
-        markersize=None,
-    ):
+        functions: Iterable[str],
+        variables: Iterable[str],
+        save: bool = True,
+        show: bool = False,
+        filepath: str | None = None,
+        markersize: float | None = None,
+    ) -> str:
         """Plot the Jacobian matrix.
 
         Nonzero elements of the sparse matrix are represented by blue squares.
@@ -851,11 +936,12 @@ class JacobianAssembly:
         Args:
             functions: The functions to plot.
             variables: The variables.
-            show: WHether the plot is displayed.
-            save: WHether the plot is saved in a PDF file.
+            show: Whether the plot is displayed.
+            save: Whether the plot is saved in a PDF file.
             filepath: The file name to save to.
                 If None, ``coupled_jacobian.pdf`` is used, otherwise
                 ``coupled_jacobian_ + filepath + .pdf``.
+            markersize: size of the markers
 
         Returns:
             The file name.
@@ -918,7 +1004,28 @@ class CoupledSystem:
         - factorized for multiple RHS
     """
 
-    def __init__(self):  # noqa:D107
+    n_linear_resolutions: int
+    """The number of linear resolutions."""
+
+    n_direct_modes: int
+    """The number of direct mode calls."""
+
+    n_adjoint_modes: int
+    """The number of adjoint mode calls."""
+
+    lu_fact: int
+    """The number of LU mode calls (adjoint or direct)."""
+
+    __linear_solver_factory: LinearSolversFactory
+    """The linear solver factory."""
+
+    linear_problem: LinearProblem | None
+    """The considered linear problem."""
+
+    DEFAULT_LINEAR_SOLVER: ClassVar[str] = "DEFAULT"
+    """The default linear solver."""
+
+    def __init__(self) -> None:  # noqa:D107
         self.n_linear_resolutions = 0
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0
@@ -928,17 +1035,17 @@ class CoupledSystem:
 
     def direct_mode(
         self,
-        functions,
-        n_variables,
-        n_couplings,
-        dres_dx,
-        dres_dy,
-        dfun_dx,
-        dfun_dy,
-        linear_solver="DEFAULT",
-        use_lu_fact=False,
-        **linear_solver_options,
-    ):
+        functions: Iterable[str],
+        n_variables: int,
+        n_couplings: int,
+        dres_dx: dok_matrix | LinearOperator,
+        dres_dy: dok_matrix | LinearOperator,
+        dfun_dx: Mapping[str, dok_matrix],
+        dfun_dy: Mapping[str, dok_matrix],
+        linear_solver: str = DEFAULT_LINEAR_SOLVER,
+        use_lu_fact: bool = False,
+        **linear_solver_options: Any,
+    ) -> dict[str, dok_matrix]:
         """Compute the total derivative Jacobian in direct mode.
 
         Args:
@@ -977,15 +1084,15 @@ class CoupledSystem:
 
     def adjoint_mode(
         self,
-        functions,
-        dres_dx,
-        dres_dy_t,
-        dfun_dx,
-        dfun_dy,
-        linear_solver="DEFAULT",
-        use_lu_fact=False,
-        **linear_solver_options,
-    ):
+        functions: Iterable[str],
+        dres_dx: dok_matrix | LinearOperator,
+        dres_dy_t: dok_matrix | LinearOperator,
+        dfun_dx: Mapping[str, dok_matrix],
+        dfun_dy: Mapping[str, dok_matrix],
+        linear_solver: str = DEFAULT_LINEAR_SOLVER,
+        use_lu_fact: bool = False,
+        **linear_solver_options: Any,
+    ) -> dict[str, ndarray]:
         """Compute the total derivative Jacobian in adjoint mode.
 
         Args:
@@ -1018,16 +1125,16 @@ class CoupledSystem:
 
     def _direct_mode(
         self,
-        functions,
-        n_variables,
-        n_couplings,
-        dres_dx,
-        dres_dy,
-        dfun_dx,
-        dfun_dy,
-        linear_solver="DEFAULT",
-        **linear_solver_options,
-    ):
+        functions: Iterable[str],
+        n_variables: int,
+        n_couplings: int,
+        dres_dx: dok_matrix | LinearOperator,
+        dres_dy: dok_matrix | LinearOperator,
+        dfun_dx: Mapping[str, dok_matrix],
+        dfun_dy: Mapping[str, dok_matrix],
+        linear_solver: str = DEFAULT_LINEAR_SOLVER,
+        **linear_solver_options: Any,
+    ) -> dict[str, dok_matrix]:
         """Compute the total derivative Jacobian in direct mode.
 
         Args:
@@ -1066,14 +1173,14 @@ class CoupledSystem:
 
     def _adjoint_mode(
         self,
-        functions,
-        dres_dx,
-        dres_dy_t,
-        dfun_dx,
-        dfun_dy,
-        linear_solver="DEFAULT",
-        **linear_solver_options,
-    ):
+        functions: Iterable[str],
+        dres_dx: dok_matrix | LinearOperator,
+        dres_dy_t: dok_matrix | LinearOperator,
+        dfun_dx: Mapping[str, dok_matrix],
+        dfun_dy: Mapping[str, dok_matrix],
+        linear_solver: str = DEFAULT_LINEAR_SOLVER,
+        **linear_solver_options: Any,
+    ) -> dict[str, ndarray]:
         """Compute the total derivative Jacobian in adjoint mode.
 
         Args:
@@ -1117,15 +1224,15 @@ class CoupledSystem:
 
     def _direct_mode_lu(
         self,
-        functions,
-        n_variables,
-        n_couplings,
-        dres_dx,
-        dres_dy,
-        dfun_dx,
-        dfun_dy,
-        tol=1e-10,
-    ):
+        functions: Iterable[str],
+        n_variables: int,
+        n_couplings: int,
+        dres_dx: dok_matrix | LinearOperator,
+        dres_dy: dok_matrix | LinearOperator,
+        dfun_dx: Mapping[str, dok_matrix],
+        dfun_dy: Mapping[str, dok_matrix],
+        tol: float = 1e-10,
+    ) -> dict[str, dok_matrix]:
         """Compute the total derivative Jacobian in direct mode.
 
         Args:
@@ -1171,8 +1278,14 @@ class CoupledSystem:
         return jac
 
     def _adjoint_mode_lu(
-        self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, tol=1e-10
-    ):
+        self,
+        functions: Iterable[str],
+        dres_dx: dok_matrix | LinearOperator,
+        dres_dy_t: dok_matrix | LinearOperator,
+        dfun_dx: Mapping[str, dok_matrix],
+        dfun_dy: Mapping[str, dok_matrix],
+        tol: float = 1e-10,
+    ) -> dict[str, ndarray]:
         """Compute the total derivative Jacobian in adjoint mode.
 
         Args:

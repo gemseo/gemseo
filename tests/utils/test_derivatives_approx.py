@@ -153,7 +153,6 @@ def test_opt_step():
     for func, jac in zip(funcs, jacs):
         for mult in [1.0, 1e2, 1e-2]:
             for x in [0.0, 1.0, 3.0]:
-
                 f_p = func(mult * (x + step))
                 f_x = func(mult * x)
                 f_m = func(mult * (x - step))

@@ -49,7 +49,9 @@ from matplotlib.figure import Figure
 from numpy import array
 from numpy import linspace
 from numpy import ndarray
+from numpy import newaxis
 from numpy import vstack
+from numpy.typing import NDArray
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
@@ -65,6 +67,7 @@ from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.string_tools import repr_variable
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
 IndicesType = Dict[str, List[Dict[str, ndarray]]]
@@ -90,7 +93,6 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     default_output: list[str]
     """The default outputs of interest."""
-
     dataset: Dataset
     """The dataset containing the discipline evaluations."""
 
@@ -356,26 +358,40 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         """Return the parameters sorted in descending order.
 
         Args:
-            output: An output of the form :code:`(name, component)`,
-                where name is the output name and component is the output component.
-                If a string is passed,
-                the tuple :code:`(name, 0)` will be considered
-                corresponding to the first component of the output :code:`name`.
+            output: Either a tuple as ``(output_name, output_component)``
+                or an output name; in the second case, use the first output component.
 
         Returns:
-            The input parameters sorted in descending order.
+            The input parameters sorted by decreasing order of sensitivity;
+            in case of a multivariate input,
+            aggregate the sensitivity indices
+            associated to the different input components by adding them up typically.
         """
-        if not isinstance(output, tuple):
-            output = (output, 0)
-        output_name, output_component = output
-        indices = self.main_indices[output_name][output_component]
-        names = [
-            name
-            for name, _ in sorted(
-                list(indices.items()), key=lambda item: item[1].sum(), reverse=True
+        if isinstance(output, str):
+            output_name, output_index = output, 0
+        else:
+            output_name, output_index = output
+
+        return [
+            input_name
+            for input_name, _ in sorted(
+                self.main_indices[output_name][output_index].items(),
+                key=lambda item: self._aggregate_sensitivity_indices(item[1]),
+                reverse=True,
             )
         ]
-        return names
+
+    @staticmethod
+    def _aggregate_sensitivity_indices(indices: NDArray[float]) -> float:
+        """Aggregate sensitivity indices.
+
+        Args:
+            indices: The sensitivity indices to be aggregated.
+
+        Returns:
+            The aggregated index.
+        """
+        return indices.sum()
 
     def plot(
         self,
@@ -571,8 +587,11 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         for name in inputs_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [f"{output[0]}({output[1]})" for output in outputs]
-        plot = BarPlot(dataset)
+        dataset.row_names = [
+            repr_variable(*output, size=self.dataset.sizes[output[0]])
+            for output in outputs
+        ]
+        plot = BarPlot(dataset, n_digits=2)
         plot.title = title
         plot.execute(
             save=save,
@@ -659,7 +678,10 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         for name in inputs_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [f"{output[0]}({output[1]})" for output in outputs]
+        dataset.row_names = [
+            repr_variable(*output, size=self.dataset.sizes[output[0]])
+            for output in outputs
+        ]
         plot = RadarChart(dataset)
         plot.title = title
         plot.rmin = min_radius
@@ -694,9 +716,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         return names
 
     def _sort_and_filter_input_parameters(
-        self,
-        output: tuple[str, int],
-        inputs_to_keep: Iterable[str],
+        self, output: tuple[str, int], inputs_to_keep: Iterable[str]
     ) -> list[str]:
         """Sort and filter the input parameters.
 
@@ -707,8 +727,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The filtered names.
         """
-        inputs = self.sort_parameters((output[0], output[1]))
-        return self._filter_names(inputs, inputs_to_keep)
+        return self._filter_names(self.sort_parameters(output), inputs_to_keep)
 
     def plot_comparison(
         self,
@@ -774,10 +793,10 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             )
             dataset.add_variable(name, data)
         data = dataset.data[dataset.PARAMETER_GROUP]
-        dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, None]
+        dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, newaxis]
         dataset.row_names = [method.main_method for method in methods]
         if use_bar_plot:
-            plot = BarPlot(dataset)
+            plot = BarPlot(dataset, n_digits=2)
         else:
             plot = RadarChart(dataset)
             plot.rmin = 0.0
@@ -842,7 +861,11 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         rows_names = []
         for input_name in self.inputs_names:
             for input_component in range(sizes[input_name]):
-                rows_names.append(f"{input_name}({input_component})")
+                rows_names.append(
+                    repr_variable(
+                        input_name, input_component, size=self.dataset.sizes[input_name]
+                    )
+                )
 
         dataset = Dataset(by_group=False)
         for method, indices in self.indices.items():

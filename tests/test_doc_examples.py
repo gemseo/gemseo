@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import runpy
 from pathlib import Path
+from re import findall
 from shutil import copytree
 
 import pytest
@@ -25,7 +26,8 @@ EXAMPLE_PATHS = [
     for path in Path(__file__, "..", "..", "doc_src", "_examples")
     .resolve()
     .rglob("*.py")
-    if (path.parent / "README.rst").is_file() and path.name != "run.py"
+    if (path.parent / "README.rst").is_file()
+    and not findall(r"(run|post_process_|save_from_)\w*\.py$", path.name)
 ]
 
 

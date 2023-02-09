@@ -48,6 +48,7 @@ from sklearn.metrics import silhouette_score
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClusteringMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 
 
 class SilhouetteMeasure(MLPredictiveClusteringMeasure):
@@ -71,7 +72,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         test_data: Dataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         raise NotImplementedError
 
     def evaluate_kfolds(
@@ -81,7 +82,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         multioutput: bool = True,
         randomize: bool = MLPredictiveClusteringMeasure._RANDOMIZE,
         seed: int | None = None,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         raise NotImplementedError
 
     def evaluate_bootstrap(
@@ -90,7 +91,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: int | None = None,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         raise NotImplementedError
 
     def _compute_measure(
@@ -98,7 +99,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         data: ndarray,
         labels: ndarray,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         if multioutput:
             raise NotImplementedError(
                 f"The {self.__class__.__name__} does not support the multioutput case."

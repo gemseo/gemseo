@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 from pathlib import Path
 from unittest import mock
 
@@ -33,6 +32,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.utils.python_compatibility import get_mock_method_call_args
 from numpy import ndarray
 from numpy import random
 from scipy.sparse import csr_matrix
@@ -227,12 +227,7 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
             == expected
         )
 
-        if sys.version_info[:2] == (3, 7):
-            args = mock_method.call_args[0]
-        else:
-            args = mock_method.call_args.args
-
-        assert args[2] == expected
+        assert get_mock_method_call_args(mock_method)[2] == expected
 
 
 def test_lu_convergence_warning(assembly, caplog):

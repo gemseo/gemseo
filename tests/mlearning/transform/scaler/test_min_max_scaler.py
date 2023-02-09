@@ -91,12 +91,10 @@ def test_inverse_transform(data):
         ),
         (array([[2.0], [4.0]]), array([[0.0], [1.0]])),
         (array([[1.0], [1.0]]), array([[0.5], [0.5]])),
-        (array([1.0, 1.0]), array([0.5, 0.5])),
-        (array([2.0, 1.0]), array([1.0, 0.0])),
     ],
 )
 def test_constant(data, transformed_data):
     """Check scaling with a constant feature."""
-    transformer = MinMaxScaler(data)
+    transformer = MinMaxScaler()
     assert_almost_equal(transformer.fit_transform(data), transformed_data)
     assert_almost_equal(transformer.inverse_transform(transformed_data), data)

@@ -82,7 +82,7 @@ class MDA(MDODiscipline):
     activate_cache = True
 
     tolerance: float
-    """The tolerance of the iterative direct coupling solver"""
+    """The tolerance of the iterative direct coupling solver."""
 
     linear_solver: str
     """The name of the linear solver."""
@@ -658,7 +658,6 @@ class MDA(MDODiscipline):
             * Whether the normed residual is lower than the tolerance.
             * Whether the maximum number of iterations is reached.
         """
-
         residual_is_small = self.normed_residual <= self.tolerance
         max_iter_is_reached = self.max_mda_iter <= self._current_iter
         if max_iter_is_reached and not residual_is_small:
@@ -718,7 +717,7 @@ class MDA(MDODiscipline):
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
-        fig_size: tuple[float, float] = (50.0, 10.0),
+        fig_size: tuple[float, float] | None = None,
     ) -> Figure:
         """Generate a plot of the residual history.
 
@@ -781,6 +780,6 @@ class MDA(MDODiscipline):
         if save and filename is None:
             filename = f"{self.name}_residual_history.pdf"
 
-        save_show_figure(fig, show, filename, fig_size)
+        save_show_figure(fig, show, filename, fig_size=fig_size)
 
         return fig

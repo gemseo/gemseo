@@ -106,7 +106,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
     """
 
     xmax: float | None
-    """The maximum value on the x-axis."
+    """The maximum value on the x-axis.".
 
     If ``None``, compute it from data.
     """

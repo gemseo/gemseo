@@ -23,15 +23,16 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from numpy import array
+from numpy import newaxis
 
 
 @pytest.fixture
 def dataset():
     data = Dataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
-    data.add_variable("x", (val * 2)[:, None], data.INPUT_GROUP)
-    data.add_variable("y", val[:, None], data.INPUT_GROUP)
-    data.add_variable("z", val[:, None], data.OUTPUT_GROUP, False)
+    data.add_variable("x", (val * 2)[:, newaxis], data.INPUT_GROUP)
+    data.add_variable("y", val[:, newaxis], data.INPUT_GROUP)
+    data.add_variable("z", val[:, newaxis], data.OUTPUT_GROUP, False)
     return data
 
 

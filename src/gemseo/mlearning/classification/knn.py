@@ -94,6 +94,7 @@ from typing import ClassVar
 from typing import Iterable
 
 from numpy import ndarray
+from numpy import newaxis
 from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -147,7 +148,7 @@ class KNNClassifier(MLClassificationAlgo):
     ) -> ndarray:
         output_data = self.algo.predict(input_data).astype(int)
         if len(output_data.shape) == 1:
-            output_data = output_data[:, None]
+            output_data = output_data[:, newaxis]
         return output_data
 
     def _predict_proba_soft(

@@ -110,8 +110,8 @@ class DisciplineData(abc.MutableMapping):
     """
 
     SEPARATOR = "~"
-    """The character used to separate the shared dict key from the column of a
-    pandas DataFrame."""
+    """The character used to separate the shared dict key from the column of a pandas
+    DataFrame."""
 
     def __init__(
         self,

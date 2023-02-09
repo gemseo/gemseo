@@ -27,6 +27,7 @@ from numpy import array
 from numpy import diag
 from numpy import eye
 from numpy import ndarray
+from numpy import ones
 
 
 @pytest.fixture
@@ -69,17 +70,19 @@ def test_fit(data):
 def test_transform(data):
     """Test transform method."""
     scaler = Scaler()
+    scaler.fit(data)
+    scaled = scaler.transform(data)
+
     another_scaler = Scaler(offset=3, coefficient=2)
+    another_scaler.fit(data)
+    another_scaled = another_scaler.transform(data)
+
     yet_another_scaler = Scaler(
         offset=array([5, 10, 30]), coefficient=array([1, -1, 100])
     )
-    scaler.fit(data)
-    another_scaler.fit(data)
     yet_another_scaler.fit(data)
-
-    scaled = scaler.transform(data)
-    another_scaled = another_scaler.transform(data)
     yet_another_scaled = yet_another_scaler.transform(data)
+
     assert allclose(scaled, data)
     assert allclose(another_scaled, 3 + 2 * data)
     assert allclose(yet_another_scaled, array([5, 10, 30]) + array([1, -1, 100]) * data)
@@ -148,3 +151,55 @@ def test_compute_jacobian_inverse(data):
     assert allclose(jac_inv, iden)
     assert allclose(another_jac_inv, 1 / 2 * iden)
     assert allclose(yet_another_jac_inv, diag(1 / array([1, -1, 100])))
+
+
+@pytest.mark.parametrize("method", ["compute_jacobian", "compute_jacobian_inverse"])
+@pytest.mark.parametrize("fitting_size", [1, 2])
+@pytest.mark.parametrize("transformation_size", [1, 2])
+@pytest.mark.parametrize("dimension", [1, 3])
+@pytest.mark.parametrize("flatten_data_to_derive", [False, True])
+def test_jacobian_vs_shape(
+    method,
+    fitting_size,
+    transformation_size,
+    dimension,
+    flatten_data_to_derive,
+):
+    """Check the shape of data returned by compute_jacobian{_inverse}."""
+    scaler = Scaler()
+    scaler.fit(ones((fitting_size, dimension)))
+    data_to_transform = ones((transformation_size, dimension))
+    if flatten_data_to_derive and transformation_size == 1:
+        data_to_transform = data_to_transform[0]
+
+    result = getattr(scaler, method)(data_to_transform)
+    if flatten_data_to_derive and transformation_size == 1:
+        assert result.shape == (dimension, dimension)
+    else:
+        assert result.shape == (transformation_size, dimension, dimension)
+
+
+@pytest.mark.parametrize("method", ["transform", "inverse_transform"])
+@pytest.mark.parametrize("fitting_size", [1, 2])
+@pytest.mark.parametrize("transformation_size", [1, 2])
+@pytest.mark.parametrize("dimension", [1, 3])
+@pytest.mark.parametrize("flatten_data_to_transform", [False, True])
+def test_transform_vs_shape(
+    method,
+    fitting_size,
+    transformation_size,
+    dimension,
+    flatten_data_to_transform,
+):
+    """Check the shape of data returned by compute{_inverse}_transform."""
+    scaler = Scaler()
+    scaler.fit(ones((fitting_size, dimension)))
+    data_to_transform = ones((transformation_size, dimension))
+    if flatten_data_to_transform and transformation_size == 1:
+        data_to_transform = data_to_transform[0]
+
+    result = getattr(scaler, method)(data_to_transform)
+    if flatten_data_to_transform and transformation_size == 1:
+        assert result.shape == (dimension,)
+    else:
+        assert result.shape == (transformation_size, dimension)

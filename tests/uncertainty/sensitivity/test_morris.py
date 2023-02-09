@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -28,6 +26,7 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.utils.testing import image_comparison
 from numpy import allclose
 from numpy import array
 from numpy import pi
@@ -144,11 +143,21 @@ def test_morris_relative_sigma(morris, output, variable):
     assert relative_sigma == sigma / mu_star
 
 
-@pytest.mark.parametrize("output", ["y1", "y2"])
-def test_morris_plot(morris, tmp_wd, output):
-    """Verify that the plot is correctly created."""
-    morris.plot(output, directory_path=tmp_wd)
-    assert Path("morris_analysis.png").exists()
+@pytest.mark.parametrize(
+    "output_name,,kwargs,baseline_images",
+    [
+        ("y1", {}, ["plot_y1"]),
+        ("y2", {}, ["plot_y2"]),
+        ("y1", {"inputs": ["x1", "x3"]}, ["plot_inputs"]),
+        ("y1", {"offset": 5}, ["plot_offset"]),
+        ("y1", {"lower_mu": 1}, ["plot_lower_mu"]),
+        ("y1", {"lower_sigma": 0.1}, ["plot_lower_sigma"]),
+    ],
+)
+@image_comparison(None)
+def test_plot(morris, output_name, kwargs, baseline_images, pyplot_close_all):
+    """Check the main visualization method."""
+    morris.plot(output_name, save=False, **kwargs)
 
 
 @pytest.mark.parametrize(

@@ -118,7 +118,7 @@ the input samples can be accessed with :attr:`~.DOELibrary.samples`.
    or their lower and upper bounds.
 
 If we do not want to evaluate the functions but only obtain the input samples,
-we can use the method :meth:`~.DOELibrary.compute_doe` which returns the samples as a two-dimensional NumPy array.
+we can use the method :meth:`~gemseo.api.compute_doe` which returns the samples as a two-dimensional NumPy array.
 
 The quality of the input samples can be assessed with a :class:`.DOEQuality`
 computing the :math:`\varphi_p`, minimum-distance and discrepancy criteria.
@@ -132,8 +132,8 @@ with ``DOEQuality(doe_1) > DOEQuality(doe_2)`` meaning that ``doe_1`` is better 
    graphical indicators (e.g. :class:`.ScatterMatrix`) could be considered.
 
 Lastly,
-a :class:`.DOELibrary` has a :attr:`~.DOELibrary.seed`
-and each call to :meth:`~.DOELibrary.execute` increments it.
+a :class:`.DOELibrary` has a :attr:`~.DOELibrary.seed` initialized at 0
+and each call to :meth:`~.DOELibrary.execute` increments it before using it.
 Thus,
 two executions generate two distinct set of input-output samples.
 For the sake of reproducibility,

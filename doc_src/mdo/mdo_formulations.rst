@@ -42,7 +42,8 @@ These implement the classical formulations:
 
 In the following, general concepts about the formulations are given. The :ref:`mdf_formulation` and :ref:`idf_formulation` text is integrally taken from the paper :cite:`Vanaret2017`.
 
-To see how to setup practical test cases with such formulations, please see :ref:`sellar_mdo` and :ref:`sobieski_mdo`.
+To see how to setup practical test cases with such formulations, please see :ref:`sellar_mdo` and
+:ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`.
 
 .. seealso::
 

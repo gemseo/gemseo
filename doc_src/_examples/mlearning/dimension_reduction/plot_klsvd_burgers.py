@@ -59,7 +59,6 @@ def lines_gen():
 color = "red"
 lines = lines_gen()
 for i in range(dataset.n_samples):
-
     # Switch mode if discontinuity is gone
     if color == "red" and t[i] > t_split:
         color = "blue"
@@ -88,7 +87,6 @@ print(f"Dimension of the reduced space: {klsvd.output_dimension}")
 color = "red"
 lines = lines_gen()
 for i in range(dataset.n_samples):
-
     # Switch mode if discontinuity is gone
     if color == "red" and t[i] > t_split:
         color = "blue"

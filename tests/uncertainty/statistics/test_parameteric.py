@@ -19,7 +19,9 @@
 from __future__ import annotations
 
 import numbers
+import re
 
+import openturns as ot
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
@@ -36,10 +38,12 @@ from numpy.random import normal
 from numpy.random import rand
 from numpy.random import seed
 from numpy.random import weibull
+from numpy.testing import assert_allclose
+from numpy.testing import assert_equal
 
 
 @pytest.fixture(scope="module")
-def random_sample():
+def dataset() -> Dataset:
     """This fixture is a random sample of four random variables distributed according to
     the uniform, normal, weibull and exponential probability distributions."""
     seed(0)
@@ -48,233 +52,296 @@ def random_sample():
     normal_rand = normal(size=n_samples)
     weibull_rand = weibull(1.5, size=n_samples)
     exponential_rand = exponential(size=n_samples)
-    data = vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T
-    dataset = Dataset()
-    dataset.set_from_array(data, ["X_0", "X_1", "X_2", "X_3"])
-    theoretical_distributions = {
-        "X_0": "Uniform",
-        "X_1": "Normal",
-        "X_2": "WeibullMin",
-        "X_3": "Exponential",
-    }
-    tested_distributions = ["Exponential", "Normal", "Uniform"]
-    return dataset, tested_distributions, theoretical_distributions
+    data = Dataset()
+    data.set_from_array(
+        vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T,
+        ["x_1", "x_2", "x_3"],
+        {"x_1": 1, "x_2": 1, "x_3": 2},
+    )
+    return data
 
 
-def test_distfitstats_constructor(random_sample):
-    """Test constructor."""
-    dataset, tested_distributions, _ = random_sample
-    ParametricStatistics(dataset, tested_distributions)
-    with pytest.raises(ValueError):
+@pytest.fixture(scope="module")
+def tested_distributions() -> list[str]:
+    """The tested distributions."""
+    return ["Exponential", "Normal", "Uniform"]
+
+
+@pytest.fixture(scope="module")
+def statistics(dataset, tested_distributions) -> ParametricStatistics:
+    """The statistics associated with the dataset and tested distributions."""
+    return ParametricStatistics(dataset, tested_distributions)
+
+
+def test_wrong_fitting_criterion(dataset, tested_distributions):
+    """Check that an ValueError is raised when using a wrong fitting criterion."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"dummy is not a name of fitting test; "
+            r"available ones are: BIC, Kolmogorov, ChiSquared."
+        ),
+    ):
         ParametricStatistics(dataset, tested_distributions, fitting_criterion="dummy")
 
 
-def test_distfitstats_str(random_sample):
-    """Test constructor."""
-    dataset, tested_distributions, _ = random_sample
-    stat = ParametricStatistics(dataset, tested_distributions)
-    assert "ParametricStatistics" in str(stat)
+def test_str(statistics):
+    """Check __str__."""
+    assert str(statistics) == (
+        "ParametricStatistics_Dataset\n"
+        "   n_samples: 100\n"
+        "   n_variables: 3\n"
+        "   variables: x_1, x_2, x_3"
+    )
 
 
-def test_distfitstats_properties(random_sample):
-    """Test standard properties."""
-    dataset, tested_distributions, _ = random_sample
-    stats = ParametricStatistics(dataset, tested_distributions)
-    assert stats.n_samples == dataset.n_samples
-    assert stats.n_variables == dataset.n_variables
+def test_n_samples(dataset, statistics):
+    """Check n_samples."""
+    assert statistics.n_samples == dataset.n_samples
 
 
-def test_distfitstats_getcrit(random_sample):
-    """Test methods relative to criteria."""
-    dataset, tested_distributions, _ = random_sample
-    stats = ParametricStatistics(dataset, tested_distributions)
-    criteria, is_pvalue = stats.get_criteria("X_0")
-    assert not is_pvalue
+def test_n_variables(dataset, statistics):
+    """Check n_variables."""
+    assert statistics.n_variables == dataset.n_variables
+
+
+@pytest.mark.parametrize(
+    "kwargs,expected_is_pvalue",
+    [({}, False), ({"fitting_criterion": "Kolmogorov"}, True)],
+)
+def test_get_criteria(
+    dataset, statistics, tested_distributions, expected_is_pvalue, kwargs
+):
+    """Check get_criteria()."""
+    statistics = ParametricStatistics(dataset, tested_distributions, **kwargs)
+    criteria, is_pvalue = statistics.get_criteria("x_1")
+    assert is_pvalue == expected_is_pvalue
     for distribution, criterion in criteria.items():
         assert distribution in tested_distributions
         assert isinstance(criterion, numbers.Number)
+
+
+def test_get_criteria_wrong_fitting_criterion(dataset, tested_distributions):
+    """Check get_criteria() with with wrong fitting criterion."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"foo is not a name of distribution available for fitting\; "
+            r"available ones are: Arcsine, Beta,*"
+        ),
+    ):
+        ParametricStatistics(dataset, ["foo"])
+
+
+@pytest.mark.parametrize(
+    [
+        "statistic_estimation",
+        "statistic_estimator",
+        "statistic_estimator_args",
+        "statistic_estimator_kwargs",
+    ],
+    [
+        ([-0.004948, -1.58328, 0.050429, 0.011991], "compute_minimum", (), {}),
+        ([0.998018, 2.421654, inf, inf], "compute_maximum", (), {}),
+        ([1.002966, 4.004934, inf, inf], "compute_range", (), {}),
+        ([0.496535, 0.419187, 0.873166, 0.98483], "compute_mean", (), {}),
+        (
+            [0.289531, 1.156125, 0.822737, 0.972839],
+            "compute_standard_deviation",
+            (),
+            {},
+        ),
+        ([0.083828, 1.336625, 0.676896, 0.946416], "compute_variance", (), {}),
+        (
+            [0.496545, 0.479822, 0.579011, 0.60554],
+            "compute_probability",
+            (
+                # thresh
+                {
+                    "x_1": array([0.5]),
+                    "x_2": 0.5,
+                    "x_3": array([0.5, 0.5]),
+                },
+            ),
+            {},
+        ),
+        (
+            [0.503455, 0.520178, 0.420989, 0.39446],
+            "compute_probability",
+            (
+                # thresh
+                {
+                    "x_1": array([0.5]),
+                    "x_2": 0.5,
+                    "x_3": array([0.5, 0.5]),
+                },
+            ),
+            {"greater": False},
+        ),
+        (
+            [0.496545, 0.479822, 0.579011, 0.60554],
+            "compute_probability",
+            (
+                # thresh
+                {
+                    "x_1": array([0.5]),
+                    "x_2": 0.5,
+                    "x_3": array([0.5, 0.5]),
+                },
+            ),
+            {"greater": True},
+        ),
+        ([0.496535, 0.419187, 0.620707, 0.686311], "compute_quantile", (0.5,), {}),
+        ([0.496535, 0.419187, 0.620707, 0.686311], "compute_quartile", (2,), {}),
+        ([0.496535, 0.419187, 0.620707, 0.686311], "compute_percentile", (50,), {}),
+        ([0.496535, 0.419187, 0.620707, 0.686311], "compute_median", (), {}),
+        ([0.496535, 0.419187, 0.873166, 0.98483], "compute_moment", (1,), {}),
+    ],
+)
+def test_statistics(
+    statistics,
+    statistic_estimation,
+    statistic_estimator,
+    statistic_estimator_args,
+    statistic_estimator_kwargs,
+):
+    """Check the computation of the different statistics."""
+    result = getattr(statistics, statistic_estimator)(
+        *statistic_estimator_args, **statistic_estimator_kwargs
+    )
+    result_1 = result["x_1"]
+    result_2 = result["x_2"]
+    result_3 = result["x_3"]
+    assert_allclose(result_1, statistic_estimation[0:1], atol=1e-6)
+    assert_allclose(result_2, statistic_estimation[1:2], atol=1e-6)
+    assert_allclose(result_3, statistic_estimation[2:4], atol=1e-6)
+    assert result_1.shape == (1,)
+    assert result_2.shape == (1,)
+    assert result_3.shape == (2,)
+
+
+def test_compute_margin(statistics):
+    """Check compute_margin()."""
+    margin = statistics.compute_margin(3.0)
+    mean_std = statistics.compute_mean_std(3.0)
+    for name, value in margin.items():
+        assert_equal(value, mean_std[name])
+
+
+def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions):
+    """Check plot_criteria()."""
+    statistics.plot_criteria("x_2", save=True, show=False)
+    statistics.plot_criteria("x_2", title="title", save=True, show=False)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The variable 'dummy' is missing from the dataset; "
+            "available ones are: x_1, x_2, x_3."
+        ),
+    ):
+        statistics.plot_criteria("dummy", save=True, show=False)
+
     stats = ParametricStatistics(
         dataset, tested_distributions, fitting_criterion="Kolmogorov"
     )
-    criteria, is_pvalue = stats.get_criteria("X_0")
-    assert is_pvalue
-    for distribution, criterion in criteria.items():
-        assert distribution in tested_distributions
-        assert isinstance(criterion, numbers.Number)
-    with pytest.raises(ValueError):
-        stats = ParametricStatistics(dataset, ["dummy"])
-    stats = ParametricStatistics(dataset, ["Normal"], fitting_criterion="Kolmogorov")
-    stats = ParametricStatistics(
-        dataset, ["Normal"], fitting_criterion="Kolmogorov", selection_criterion="first"
-    )
+    stats.plot_criteria("x_2", save=True, show=False)
 
 
-def test_distfitstats_statistics(random_sample):
-    """Test standard statistics."""
-    dataset, tested_distributions, _ = random_sample
-    stats = ParametricStatistics(dataset, tested_distributions)
-    stats.compute_maximum()
-    stats.compute_mean()
-    stats.compute_minimum()
-    stats.compute_range()
-    thresh = {name: array([0.0]) for name in ["X_0", "X_1", "X_2", "X_3"]}
-    stats.compute_probability(thresh)
-    stats.compute_probability(thresh, greater=False)
-    stats.compute_moment(1)
-    stats.compute_variance()
-    stats.compute_standard_deviation()
-    stats.compute_quantile(0.5)
-    assert stats.compute_margin(3.0) == stats.compute_mean_std(3.0)
-
-
-def test_distfitstats_plot(random_sample, tmp_wd):
-    """Test plot methods."""
-    array, tested_distributions, _ = random_sample
-    stats = ParametricStatistics(array, tested_distributions)
-    stats.plot_criteria("X_1", save=True, show=False)
-    stats.plot_criteria("X_1", title="title", save=True, show=False)
-    with pytest.raises(ValueError):
-        stats.plot_criteria("dummy", save=True, show=False)
-    stats = ParametricStatistics(
-        array, tested_distributions, fitting_criterion="Kolmogorov"
-    )
-    stats.plot_criteria("X_1", save=True, show=False)
-
-
-@pytest.mark.parametrize("baseline_images", [(["fitting.png"])])
+@pytest.mark.parametrize(
+    "baseline_images,fitting_criterion,title",
+    [
+        (["fitting_BIC.png"], "BIC", None),
+        (["fitting_Kolmogorov.png"], "Kolmogorov", None),
+        (["fitting_title.png"], "BIC", "My title"),
+    ],
+)
 @image_comparison(None)
-def test_plot_criteria(baseline_images, random_sample, pyplot_close_all):
-    dataset, tested_distributions, _ = random_sample
-    stats = ParametricStatistics(dataset, ["Exponential", "Normal", "Uniform"])
-    stats.plot_criteria("X_0", show=False)
+def test_plot_criteria_images(
+    baseline_images, dataset, pyplot_close_all, fitting_criterion, title
+):
+    statistics = ParametricStatistics(
+        dataset,
+        ["Exponential", "Normal", "Uniform"],
+        fitting_criterion=fitting_criterion,
+    )
+    statistics.plot_criteria("x_1", show=False, title=title)
 
 
-def test_distfitstats_tolint(random_sample):
-    """Test tolerance_interval() method."""
-    dataset, tested_distributions, _ = random_sample
-    stats = ParametricStatistics(dataset, tested_distributions)
-    with pytest.raises(ValueError):
-        stats.compute_tolerance_interval(1.5)
-    with pytest.raises(ValueError):
-        stats.compute_tolerance_interval(0.1, confidence=-1.6)
-    for dist in ["Normal", "Uniform", "LogNormal", "WeibullMin", "Exponential"]:
-        stats = ParametricStatistics(dataset, [dist])
-        stats.compute_tolerance_interval(0.1)
-        stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
-        stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
-        stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
+@pytest.mark.parametrize("coverage", [-0.5, 1.5])
+def test_tolerance_interval_wrong_coverage(statistics, dataset, coverage):
+    """Check tolerance_interval() with a wrong coverage."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The argument 'coverage' must be a number in [0,1]."),
+    ):
+        statistics.compute_tolerance_interval(coverage)
 
 
-def test_distfitstats_tolint_normal():
-    """Test returned values by tolerance_interval() method for Normal distribution."""
+@pytest.mark.parametrize("confidence", [-0.5, 1.5])
+def test_tolerance_interval_wrong_confidence(statistics, dataset, confidence):
+    """Check tolerance_interval() with a wrong confidence."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The argument 'confidence' must be a number in [0,1]."),
+    ):
+        statistics.compute_tolerance_interval(0.1, confidence=confidence)
+
+
+@pytest.mark.parametrize(
+    "distribution,generate_samples",
+    [
+        ("Exponential", lambda n: exponential(size=n)),
+        ("WeibullMin", lambda n: array(ot.WeibullMin().getSample(n))),
+        ("LogNormal", lambda n: lognormal(size=n)),
+        ("Uniform", lambda n: rand(n)),
+        ("Normal", lambda n: normal(size=n)),
+    ],
+)
+def test_tolerance_interval(generate_samples, distribution):
+    """Check compute_tolerance_intervals() with different distributions."""
     seed(0)
-    n_samples = 100
-    normal_rand = normal(size=n_samples).reshape((-1, 1))
     dataset = Dataset()
-    dataset.set_from_array(normal_rand)
-    stats = ParametricStatistics(dataset, ["Normal"])
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    assert limits["x_0"][1][0] == inf
+    dataset.set_from_array(generate_samples(100).reshape((-1, 1)))
+    statistics = ParametricStatistics(dataset, [distribution])
+    tolerance_interval = statistics.compute_tolerance_interval(
+        0.1, side=ToleranceIntervalSide.BOTH
+    )
+    assert tolerance_interval["x_0"][0].lower.shape == (1,)
+    assert tolerance_interval["x_0"][0].upper.shape == (1,)
+    assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
+    tolerance_interval = statistics.compute_tolerance_interval(
+        0.1, side=ToleranceIntervalSide.UPPER
+    )
+    assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
+    tolerance_interval = statistics.compute_tolerance_interval(
+        0.1, side=ToleranceIntervalSide.LOWER
+    )
+    assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
+    assert tolerance_interval["x_0"][0].upper == inf
+
+    b_value = statistics.compute_tolerance_interval(
+        0.9, side=ToleranceIntervalSide.LOWER
+    )
+    a_value = statistics.compute_tolerance_interval(
+        0.95, side=ToleranceIntervalSide.LOWER
+    )
+    assert b_value["x_0"][0].lower >= a_value["x_0"][0].lower
 
 
-def test_distfitstats_tolint_uniform():
-    """Test returned values by tolerance_interval() method for Uniform distribution."""
+def test_abvalue_normal():
+    """Check that A-value is lower than B-value."""
     seed(0)
-    n_samples = 100
-    uniform_rand = rand(n_samples).reshape((-1, 1))
     dataset = Dataset()
-    dataset.set_from_array(uniform_rand)
-    stats = ParametricStatistics(dataset, ["Uniform"])
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    assert limits["x_0"][1][0] == inf
-
-
-def test_distfitstats_tolint_lognormal():
-    """Test returned values by tolerance_interval() method for Lognormal distribution."""
-    seed(0)
-    n_samples = 100
-    lognormal_rand = lognormal(size=n_samples).reshape((-1, 1))
-    dataset = Dataset()
-    dataset.set_from_array(lognormal_rand)
-    stats = ParametricStatistics(dataset, ["LogNormal"])
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    assert limits["x_0"][1][0] == inf
-
-
-def test_distfitstats_tolint_weibull(random_sample):
-    """Test returned values by tolerance_interval() method for Weibull distribution."""
-    seed(0)
-    n_samples = 100
-    import openturns as ot
-
-    weibull_rand = array(ot.WeibullMin().getSample(n_samples)).reshape((-1, 1))
-    dataset = Dataset()
-    dataset.set_from_array(weibull_rand)
-    stats = ParametricStatistics(dataset, ["WeibullMin"])
-    limits = stats.compute_tolerance_interval(0.3, side=ToleranceIntervalSide.BOTH)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    assert limits["x_0"][1][0] == inf
-
-    b_value = stats.compute_tolerance_interval(0.9, side=ToleranceIntervalSide.LOWER)
-    a_value = stats.compute_tolerance_interval(0.95, side=ToleranceIntervalSide.LOWER)
-    assert b_value["x_0"][0][0] >= a_value["x_0"][0][0]
-
-
-def test_distfitstats_tolint_exponential(random_sample):
-    """Test returned values by tolerance_interval() method for Exponential
-    distribution."""
-    seed(0)
-    n_samples = 100
-    exp_rand = exponential(size=n_samples).reshape((-1, 1))
-    dataset = Dataset()
-    dataset.set_from_array(exp_rand)
-    stats = ParametricStatistics(dataset, ["Exponential"])
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
-    assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    assert limits["x_0"][1][0] == inf
-
-
-def test_distfitstats_abvalue_normal():
-    """Test."""
-    seed(0)
-    n_samples = 100
-    normal_rand = normal(size=n_samples).reshape((-1, 1))
-    dataset = Dataset()
-    dataset.set_from_array(normal_rand)
+    dataset.set_from_array(normal(size=100).reshape((-1, 1)))
     stats = ParametricStatistics(dataset, ["Normal"])
     assert stats.compute_a_value()["x_0"][0] <= stats.compute_b_value()["x_0"][0]
 
 
-def test_distfitstats_available(random_sample):
-    dataset, tested_distributions, _ = random_sample
-    stat = ParametricStatistics(dataset, tested_distributions)
+def test_available(statistics):
     assert "Normal" in ParametricStatistics.AVAILABLE_DISTRIBUTIONS
     assert "BIC" in ParametricStatistics.AVAILABLE_CRITERIA
     assert "Kolmogorov" in ParametricStatistics.AVAILABLE_SIGNIFICANCE_TESTS
-    assert "Normal" in stat.get_fitting_matrix()
+    assert "Normal" in statistics.get_fitting_matrix()
 
 
 @pytest.mark.parametrize(

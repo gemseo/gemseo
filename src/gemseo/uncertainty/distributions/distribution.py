@@ -124,7 +124,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """
 
     math_lower_bound: ndarray
-    """The mathematical lower bound of the random variable. """
+    """The mathematical lower bound of the random variable."""
 
     math_upper_bound: ndarray
     """The mathematical upper bound of the random variable."""
@@ -157,8 +157,8 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The parameters of the probability distribution."""
 
     standard_parameters: dict[str, str] | None
-    """The standard representation of the parameters of the distribution,
-    used for its string representation."""
+    """The standard representation of the parameters of the distribution, used for its
+    string representation."""
 
     _MU = "mu"
     _SIGMA = "sigma"

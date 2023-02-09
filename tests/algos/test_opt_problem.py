@@ -1544,6 +1544,24 @@ def test_export_to_dataset(input_values, expected):
     )
 
 
+@pytest.mark.parametrize("name", ["a", "c"])
+def test_export_to_dataset_input_names_order(name):
+    """Check that the order of the input names is not changed in the dataset."""
+    design_space = DesignSpace()
+    design_space.add_variable("b")
+    design_space.add_variable(name)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x[0] + x[1], "obj")
+
+    algo = CustomDOE()
+    algo.algo_name = "CustomDOE"
+    algo.execute(problem, samples=array([[1.0, 1.0], [2.0, 2.0]]))
+
+    dataset = problem.export_to_dataset()
+    assert dataset.get_names("design_parameters") == ["b", name]
+
+
 @pytest.fixture(scope="module")
 def problem_with_complex_value() -> OptimizationProblem:
     """A problem using a design space with a float variable whose value is complex."""

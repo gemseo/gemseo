@@ -24,8 +24,8 @@ The concept of clustering quality measure is implemented with the
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from copy import deepcopy
-from typing import NoReturn
 from typing import Sequence
 
 from numpy import arange
@@ -36,6 +36,7 @@ from numpy import unique
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
+from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
 
@@ -57,19 +58,20 @@ class MLClusteringMeasure(MLQualityMeasure):
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         self._train_algo(samples)
         samples = self._assure_samples(samples)
         return self._compute_measure(
             self._get_data()[samples], self.algo.labels, multioutput
         )
 
+    @abstractmethod
     def _compute_measure(
         self,
         data: ndarray,
         labels: ndarray,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         """Compute the quality measure.
 
         Args:
@@ -81,7 +83,6 @@ class MLClusteringMeasure(MLQualityMeasure):
         Returns:
             The value of the quality measure.
         """
-        raise NotImplementedError
 
     def _get_data(self) -> dict[str, ndarray]:
         """Get data.
@@ -111,7 +112,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         test_data: Dataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         self._train_algo(samples)
         data = test_data.get_data_by_names(self.algo.var_names, False)
         return self._compute_measure(data, self.algo.predict(data), multioutput)
@@ -123,7 +124,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         multioutput: bool = True,
         randomize: bool = MLClusteringMeasure._RANDOMIZE,
         seed: int | None = None,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         self._train_algo(samples)
         data = self._get_data()
         algo = deepcopy(self.algo)
@@ -147,7 +148,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: int | None = None,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         self._train_algo(samples)
         samples = self._assure_samples(samples)
         n_samples = samples.size
@@ -173,30 +174,3 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
             qualities.append(quality)
 
         return sum(qualities) / len(qualities)
-
-    def _compute_measure(
-        self,
-        data: ndarray,
-        labels: ndarray,
-        multioutput: bool = True,
-    ) -> NoReturn:
-        """Compute the quality measure.
-
-        Args:
-            data: The reference data.
-            labels: The predicted labels.
-            multioutput: Whether to return the quality measure
-                for each output component. If not, average these measures.
-
-        Returns:
-            The value of the quality measure.
-        """
-        raise NotImplementedError
-
-    def _get_data(self) -> dict[str, ndarray]:
-        """Get data.
-
-        Returns:
-            The learning data indexed by the names of the variables.
-        """
-        return self.algo.learning_set.get_data_by_names(self.algo.var_names, False)

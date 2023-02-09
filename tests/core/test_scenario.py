@@ -696,6 +696,146 @@ def test_check_disciplines():
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
 
 
+@pytest.fixture
+def identity_scenario() -> MDOScenario:
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    return MDOScenario(
+        [AnalyticDiscipline({"y": "x"})], "DisciplinaryOpt", "y", design_space
+    )
+
+
+@pytest.mark.parametrize(
+    "constraint_type,constraint_name,value,positive,expected",
+    [
+        ("eq", None, None, False, ["y", "", "y(x) == 0.0", "y(x) == 0.0"]),
+        (
+            "eq",
+            "cstr",
+            None,
+            False,
+            ["cstr", "", "y(x) == 0.0", "cstr: y(x) == 0.0"],
+        ),
+        (
+            "eq",
+            None,
+            1.0,
+            False,
+            ["y - 1.0", "y(x) - 1.0", "y(x) - 1.0 == 0.0", "y(x) == 1.0"],
+        ),
+        (
+            "eq",
+            None,
+            -1.0,
+            False,
+            ["y + 1.0", "y(x) + 1.0", "y(x) + 1.0 == 0.0", "y(x) == -1.0"],
+        ),
+        (
+            "eq",
+            "cstr",
+            1.0,
+            False,
+            ["cstr", "y(x) - 1.0", "y(x) - 1.0 == 0.0", "cstr: y(x) == 1.0"],
+        ),
+        (
+            "eq",
+            "cstr",
+            -1.0,
+            False,
+            ["cstr", "y(x) + 1.0", "y(x) + 1.0 == 0.0", "cstr: y(x) == -1.0"],
+        ),
+        ("ineq", None, None, False, ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"]),
+        (
+            "ineq",
+            "cstr",
+            None,
+            False,
+            ["cstr", "", "y(x) <= 0.0", "cstr: y(x) <= 0.0"],
+        ),
+        (
+            "ineq",
+            None,
+            1.0,
+            False,
+            ["y - 1.0", "y(x) - 1.0", "y(x) - 1.0 <= 0.0", "y(x) <= 1.0"],
+        ),
+        (
+            "ineq",
+            None,
+            -1.0,
+            False,
+            ["y + 1.0", "y(x) + 1.0", "y(x) + 1.0 <= 0.0", "y(x) <= -1.0"],
+        ),
+        (
+            "ineq",
+            "cstr",
+            1.0,
+            False,
+            ["cstr", "y(x) - 1.0", "y(x) - 1.0 <= 0.0", "cstr: y(x) <= 1.0"],
+        ),
+        (
+            "ineq",
+            "cstr",
+            -1.0,
+            False,
+            ["cstr", "y(x) + 1.0", "y(x) + 1.0 <= 0.0", "cstr: y(x) <= -1.0"],
+        ),
+        ("ineq", None, None, True, ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"]),
+        (
+            "ineq",
+            "cstr",
+            None,
+            True,
+            ["cstr", "-y(x)", "-y(x) <= 0.0", "cstr: y(x) >= 0.0"],
+        ),
+        (
+            "ineq",
+            None,
+            1.0,
+            True,
+            ["-y + 1.0", "-y(x) + 1.0", "-y(x) + 1.0 <= 0.0", "y(x) >= 1.0"],
+        ),
+        (
+            "ineq",
+            None,
+            -1.0,
+            True,
+            ["-y - 1.0", "-y(x) - 1.0", "-y(x) - 1.0 <= 0.0", "y(x) >= -1.0"],
+        ),
+        (
+            "ineq",
+            "cstr",
+            1.0,
+            True,
+            ["cstr", "-y(x) + 1.0", "-y(x) + 1.0 <= 0.0", "cstr: y(x) >= 1.0"],
+        ),
+        (
+            "ineq",
+            "cstr",
+            -1.0,
+            True,
+            ["cstr", "-y(x) - 1.0", "-y(x) - 1.0 <= 0.0", "cstr: y(x) >= -1.0"],
+        ),
+    ],
+)
+def test_constraint_representation(
+    identity_scenario, constraint_type, constraint_name, value, positive, expected
+):
+    """"""
+    identity_scenario.add_constraint(
+        "y",
+        constraint_type=constraint_type,
+        constraint_name=constraint_name,
+        value=value,
+        positive=positive,
+    )
+    constraints = identity_scenario.formulation.opt_problem.constraints[-1]
+    assert constraints.name == expected[0]
+    assert constraints.expr == expected[1]
+    assert constraints.default_repr == expected[2]
+    assert constraints.special_repr == expected[3]
+
+
 def test_lib_serialization(tmp_wd, mdf_scenario):
     """Test the serialization of an MDOScenario with an instantiated opt_lib.
 

@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import ClassVar
-from typing import NoReturn
+from typing import Dict
 from typing import Optional
 from typing import Sequence
 from typing import Union
@@ -39,10 +39,10 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
+MeasureType = Union[float, ndarray, Dict[str, ndarray]]
 
 
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
-
     """An abstract quality measure to assess a machine learning algorithm.
 
     This measure can be minimized (e.g. :class:`.MSEMeasure`)
@@ -91,8 +91,8 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     _FIT_TRANSFORMERS: ClassVar[bool] = True
     """Whether to re-fit the transformers when using resampling techniques.
 
-    If ``False``,
-    use the transformers of the algorithm fitted from the whole learning dataset.
+    If ``False``, use the transformers of the algorithm fitted from the whole learning
+    dataset.
     """
 
     _RANDOMIZE: ClassVar[bool] = True
@@ -116,18 +116,22 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._fit_transformers = fit_transformers
         self.__default_seed = 0
 
+    # TODO: API: remove this method.
     def evaluate(
         self,
         method: str = LEARN,
         samples: Sequence[int] | None = None,
+        multioutput: bool = True,
         **options: OptionType | None,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         """Evaluate the quality measure.
 
         Args:
             method: The name of the method to evaluate the quality measure.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
+            multioutput: If ``True``, return the quality measure for each
+                output component. Otherwise, average these measures.
             **options: The options of the estimation method
                 (e.g. ``test_data`` for the *test* method,
                 ``n_replicates`` for the *bootstrap* one, ...).
@@ -139,8 +143,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: When the name of the method is unknown.
         """
         try:
-            evaluate = getattr(self, f"evaluate_{method.lower()}")
-            return evaluate(samples=samples, **options)
+            return getattr(self, f"evaluate_{method.lower()}")(
+                samples=samples, multioutput=multioutput, **options
+            )
         except AttributeError:
             raise ValueError(f"The method '{method}' is not available.")
 
@@ -149,14 +154,14 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> NoReturn:
+    ) -> MeasureType:
         """Evaluate the quality measure from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: Whether to return the quality measure
-                for each output component. If not, average these measures.
+            multioutput: If ``True``, return the quality measure for each
+                output component. Otherwise, average these measures.
 
         Returns:
             The value of the quality measure.
@@ -168,7 +173,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         test_data: Dataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> NoReturn:
+    ) -> MeasureType:
         """Evaluate the quality measure using a test dataset.
 
         Args:
@@ -186,7 +191,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-    ) -> float | ndarray:
+    ) -> MeasureType:
         """Evaluate the quality measure using the leave-one-out technique.
 
         Args:
@@ -212,7 +217,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         multioutput: bool = True,
         randomize: bool = _RANDOMIZE,
         seed: int | None = None,
-    ) -> NoReturn:
+    ) -> MeasureType:
         """Evaluate the quality measure using the k-folds technique.
 
         Args:
@@ -237,7 +242,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: int | None = None,
-    ) -> NoReturn:
+    ) -> MeasureType:
         """Evaluate the quality measure using the bootstrap technique.
 
         Args:

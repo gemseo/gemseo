@@ -149,7 +149,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Update discipline to uuids mapping from uuids to discipline mapping.
 
         Note:
-            A discipline might correspond to several AtomicExecutionSeuqence hence
+            A discipline might correspond to several AtomicExecutionSequence hence
             might correspond to several uuids.
         """
         self.disc_to_uuids = {}

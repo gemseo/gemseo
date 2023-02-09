@@ -35,7 +35,6 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Axes
 from matplotlib.figure import Figure
 from matplotlib.text import Text
-from pylab import gca
 
 from gemseo.core.dependency_graph import DependencyGraph
 
@@ -338,7 +337,7 @@ class MDOCouplingStructure:
         """
         fig = plt.figure(figsize=fig_size)
         plt.grid(True)
-        axe = gca()
+        axe = plt.gca()
         axe.grid(True, linestyle="-", color="black", lw=1)
         n_disciplines = len(self.disciplines)
         ax_ticks = list(range(n_disciplines + 1))

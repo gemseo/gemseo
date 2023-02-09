@@ -156,7 +156,6 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
@@ -201,7 +200,6 @@ def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()

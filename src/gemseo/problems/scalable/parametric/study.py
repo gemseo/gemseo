@@ -76,7 +76,6 @@ OPTIM_DIR = "opthistoryview"
 
 
 class TMParamSS:
-
     """This scalable parametric study realizes scalable studies with different scaling
     strategies.
 
@@ -119,7 +118,7 @@ class TMParamSS:
             ie each TMDiscipline depends on each other. Default: True.
         :param float active_probability: active probability
         :param float feasibility_level: level of feasibility
-        :param int seed: seed for replicability.
+        :param int seed: seed for reproducibility.
         :param str directory: directory to store results
 
         See also
@@ -307,7 +306,6 @@ class TMParamSS:
 
 
 class TMParamSSPost:
-
     """This class is dedicated to the post-treatment of TMParamSS results."""
 
     def __init__(self, file_path):
@@ -368,7 +366,6 @@ class TMParamSSPost:
 
 
 class TMScalableStudy:
-
     """This scalable study creates a scalable MDO problem from Tedford and Martins, 2010
     and compares its resolution according to different MDO formulations."""
 
@@ -402,7 +399,7 @@ class TMScalableStudy:
         :param float active_probability: active probability
         :param float feasibility_level: level of feasibility
         :param str directory: directory to store results
-        :param int seed: seed for replicability.
+        :param int seed: seed for reproducibility.
 
         See also
         --------
@@ -659,7 +656,8 @@ class TMScalableStudy:
             factor += 1
         ax.set_xlabel("Disciplines")
         ax.set_ylabel("Execution time")
-        ax.set_xticks(indices + bar_width, self.disc_names)
+        ax.set_xticks(indices + bar_width)
+        ax.set_xticklabels(self.disc_names)
         ax.legend()
         save_show_figure(fig, show, file_path if save else None)
 

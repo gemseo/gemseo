@@ -21,8 +21,10 @@
 from __future__ import annotations
 
 from numpy import exp
-from numpy import ndarray
 
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    Bounds,
+)
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
@@ -64,6 +66,6 @@ class LogNormalToleranceInterval(NormalToleranceInterval):
         coverage: float,
         confidence: float = 0.95,
         side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> Bounds:
         lower, upper = super().compute(coverage, confidence, side)
-        return exp(lower) + self.__location, exp(upper) + self.__location
+        return Bounds(exp(lower) + self.__location, exp(upper) + self.__location)

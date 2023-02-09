@@ -67,6 +67,7 @@ from typing import Optional
 from typing import Union
 
 from numpy import ndarray
+from numpy import newaxis
 from numpy import nonzero
 from numpy import unique
 from numpy import where
@@ -550,7 +551,7 @@ class MOERegressor(MLRegressionAlgo):
             with MultiLineString.offset():
                 LOGGER.info("%s", self.clusterer)
 
-        labels = self.clusterer.labels[:, None]
+        labels = self.clusterer.labels[:, newaxis]
         dataset.add_variable(self.LABELS, labels, self.LABELS, False)
 
     def _fit_classifier(

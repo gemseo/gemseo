@@ -53,12 +53,12 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     """The name of the grammar."""
 
     to_namespaced: NamespacesMapping
-    """The mapping from element names without namespace prefix to element
-    names with namespace prefix."""
+    """The mapping from element names without namespace prefix to element names with
+    namespace prefix."""
 
     from_namespaced: NamespacesMapping
-    """The mapping from element names with namespace prefix to element names
-    without namespace prefix."""
+    """The mapping from element names with namespace prefix to element names without
+    namespace prefix."""
 
     def __init__(
         self,

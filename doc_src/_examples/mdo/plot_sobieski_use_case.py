@@ -20,7 +20,6 @@
 """
 Application: Sobieski's Super-Sonic Business Jet (MDO)
 ======================================================
-.. _sobieski_mdo:
 """
 ##############################################################################
 # This section describes how to setup and solve the MDO problem relative to the

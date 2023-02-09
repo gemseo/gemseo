@@ -27,6 +27,7 @@ import sys
 from ast import literal_eval
 from itertools import chain
 from itertools import islice
+from numbers import Number
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -43,13 +44,15 @@ from xml.etree.ElementTree import parse as parse_element
 import h5py
 from numpy import array
 from numpy import array_equal
+from numpy import atleast_1d
 from numpy import atleast_2d
-from numpy import concatenate
 from numpy import float64
+from numpy import hstack
 from numpy import ndarray
 from numpy import string_
 from numpy import uint8
 from numpy.linalg import norm
+from numpy.typing import NDArray
 from xxhash._xxhash import xxh3_64_hexdigest
 
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
@@ -65,22 +68,42 @@ ReturnedHdfMissingOutputType = Tuple[
 
 
 class Database:
-    """Class to store evaluations of functions, such as DOE or optimization histories.
+    """Storage of :class:`.MDOFunction` evaluations.
 
-    Avoid multiple calls of the same functions,
-    useful when simulations are costly.
+    A :class:`.Database` is typically attached to an :class:`.OptimizationProblem`
+    to store the evaluations of its objective, constraints and observables.
 
-    It is also used to store inputs and retrieve them
-    for optimization graphical post-processing and plots
-    generation.
+    Then,
+    a :class:`.Database` can be an optimization history
+    or a collection of samples in the case of a DOE.
 
-    Can be serialized to HDF5 for portability and cold post-processing.
+    It is useful when simulations are costly
+    because it avoids re-evaluating functions
+    at points where they have already been evaluated
+
+    .. seealso:: :class:`.NormDBFunction`
+
+    It can also be post-processed by an :class:`.OptPostProcessor`
+    to visualize its content,
+    e.g. :class:`.OptHistoryView` generating a series of graphs
+    to visualize the histories of the objective, constraints and design variables.
+
+    A :class:`.Database` can be serialized to HDF5
+    for portability and cold post-processing.
+
+    .. note::
+        Serializing an :class:`.OptimizationProblem`
+        using its method :class:`~.OptimizationProblem.export_hdf`
+        also serializes its :class:`.Database`.
 
     The database is based on a two-levels dictionary-like mapping such as
     ``{key_level_1: {key_level_2: value_level_2}}`` with:
 
         * ``key_level_1``: the values of the input design variables that have been used
-          during the evaluations;
+          during the evaluations,
+          if the types of the design variables are different,
+          then they are promoted to the unique type that can represent all them,
+          for instance integer would be promoted to float;
         * ``key_level_2``: the name of the output functions that have been returned,
           the name of the gradient
           (the gradient of a function called ``func`` is typically denoted as ``@func``),
@@ -102,6 +125,9 @@ class Database:
     KEYSSEPARATOR = "__KEYSSEPARATOR__"
     GRAD_TAG = "@"
     ITER_TAG = "Iter"
+
+    __component_names_to_names: dict[str, str]
+    """The variable names associated with variable component names."""
 
     def __init__(
         self,
@@ -133,6 +159,8 @@ class Database:
 
         if input_hdf_file is not None:
             self.import_hdf(input_hdf_file)
+
+        self.__component_names_to_names = {}
 
     @property
     def last_item(self) -> DatabaseValueType:
@@ -798,8 +826,8 @@ class Database:
                 trust region radii).
 
         Returns:
-            The history of the output values.
-            The history of the input values.
+            The history of the output values,
+            then the history of the input values.
         """
         functions, stacked_data = self._format_history_names(functions, stacked_data)
         f_history = []
@@ -1261,6 +1289,35 @@ class Database:
             )
         return design_variables_names
 
+    def __set_variable_component_name(
+        self, name: str, component: int, size: int
+    ) -> str:
+        """Define the name of the component of a variable.
+
+        Args:
+            name: The name of the variable.
+            component: The component of the variable.
+            size: The size of the variable.
+
+        Returns:
+            The name of the component of a variable.
+        """
+        component_name = name if size == 1 else f"{name} ({component})"
+        self.__component_names_to_names[component_name] = name
+        return component_name
+
+    def retrieve_variable_name(self, name: str) -> str:
+        """Retrieve a variable name from a name.
+
+        Args:
+            name: A name.
+
+        Returns:
+            The name of the variable for which ``name`` is the name of a component,
+            or ``name`` otherwise.
+        """
+        return self.__component_names_to_names.get(name, name)
+
     def get_history_array(
         self,
         functions: Iterable[str] | None = None,
@@ -1270,87 +1327,88 @@ class Database:
         add_dv: bool = True,
         all_iterations: bool = False,
         stacked_data: Iterable[str] | None = None,
-    ) -> tuple[ndarray, list[str], Iterable[str]]:
-        """Return the history of the optimization process.
+    ) -> tuple[NDArray[Number | str], list[str], Iterable[str]]:
+        """Return the database as a 2D array shaped as ``(n_iterations, n_features)``.
+
+        The features are the outputs of interest and possibly the design variables.
 
         Args:
-            functions: The names of output functions that must be returned.
-            design_variables_names: The names of the input design variables.
-            add_missing_tag: If True, add the tag specified in ``missing_tag`` for
-                data that are not available.
+            functions: The names of the outputs that must be returned.
+            design_variables_names: The names of the design variables.
+            add_missing_tag: If ``True``,
+                add the tag specified in ``missing_tag``
+                for data that are not available.
             missing_tag: The tag that is added for data that are not available.
-            add_dv: If True, the input design variables are returned in the history.
-            all_iterations: If True, the points which are called at several
-                iterations will be duplicated in the history (each duplicate
-                corresponding to a different calling index); otherwise each point
-                will appear only once (with the latest calling index).
-            stacked_data: The names of outputs corresponding to data stored as
-                ``iterable`` (e.g. iterations, penalization parameters or
-                trust region radii).
+            add_dv: If ``True``,
+                the input design variables are returned in the history.
+            all_iterations: If ``True``,
+                the points which are called at several iterations will be duplicated
+                in the history
+                (each duplicate corresponding to a different calling index);
+                otherwise each point will appear only once
+                (with the latest calling index).
+            stacked_data: The names of outputs
+                corresponding to data stored as ``Iterable``
+                (e.g. iterations, penalization parameters or trust region radii).
 
         Returns:
-            The values of the history.
-            The names of the columns corresponding to the values of the history.
-            The names of the output functions.
+            The history as an 2D array
+            whose rows are observations and columns are the variables,
+            the names of these columns
+            and the names of the output functions.
         """
-        if functions is None:
-            functions = self.get_all_data_names()
+        f_names = functions
+        if f_names is None:
+            f_names = self.get_all_data_names()
+
         f_history, x_history = self.get_complete_history(
-            functions, add_missing_tag, missing_tag, all_iterations, stacked_data
+            f_names, add_missing_tag, missing_tag, all_iterations, stacked_data
         )
-        design_variables_names = self._format_design_variables_names(
-            design_variables_names, len(x_history[0])
-        )
-        flat_vals = []
-        fdict = {}
-        for f_val_i in f_history:
-            flat_vals_i = []
-            for f_val, f_name in zip(f_val_i, functions):
-                if isinstance(f_val, list):
-                    f_val = array(f_val)
-                if isinstance(f_val, ndarray) and len(f_val) > 1:
-                    flat_vals_i = flat_vals_i + f_val.tolist()
-                    fdict[f_name] = [f"{f_name} ({i})" for i in range(len(f_val))]
-                else:
-                    flat_vals_i.append(f_val)
-                    if f_name not in fdict:
-                        fdict[f_name] = [f_name]
-            flat_vals.append(flat_vals_i)
-        flat_names = list(chain(*fdict.values()))
-
-        x_flat_vals = []
-        xdict = {}
-        for x_val_i in x_history:
-            x_flat_vals_i = []
-            for x_val, x_name in zip(x_val_i, design_variables_names):
-                if isinstance(x_val, ndarray) and len(x_val) > 1:
-                    x_flat_vals_i = x_flat_vals_i + x_val.tolist()
-                    xdict[x_name] = [f"{x_name} ({i})" for i in range(len(x_val))]
-                else:
-                    x_flat_vals_i.append(x_val)
-                    if x_name not in xdict:
-                        xdict[x_name] = [x_name]
-            x_flat_vals.append(x_flat_vals_i)
-
-        x_flat_names = list(chain(*xdict.values()))
+        f_flat_names, f_flat_values = self.__split_history(f_history, f_names)
+        variables_flat_names = f_flat_names
+        f_history = array(f_flat_values).real
         if add_dv:
-            variables_names = flat_names + x_flat_names
+            x_names = self._format_design_variables_names(
+                design_variables_names, len(x_history[0])
+            )
+            x_flat_names, x_flat_values = self.__split_history(x_history, x_names)
+            variables_flat_names = f_flat_names + x_flat_names
+            x_history = array(x_flat_values).real
+            variables_history = hstack((f_history, x_history))
         else:
-            variables_names = flat_names
+            variables_history = f_history
 
-        f_history = array(flat_vals).real
-        x_history = array(x_flat_vals).real
-        if add_dv:
-            f2d = atleast_2d(f_history)
-            x2d = atleast_2d(x_history)
-            if f2d.shape[0] == 1:
-                f2d = f2d.T
-            if x2d.shape[0] == 1:
-                x2d = x2d.T
-            values_array = concatenate((f2d, x2d), axis=1)
-        else:
-            values_array = f_history
-        return values_array, variables_names, functions
+        return atleast_2d(variables_history), variables_flat_names, f_names
+
+    def __split_history(
+        self, history: list[list[float | ndarray]] | list[ndarray], names: Iterable[str]
+    ) -> tuple[list[str], list[float]]:
+        """Split a history.
+
+        Args:
+            history: A history of values.
+            names: The names of the variables.
+
+        Returns:
+            The history as an array whose lines are observations,
+            the names of the columns of the array.
+        """
+        flat_values = []
+        names_to_flat_names = {}
+        for values in history:
+            flat_value = []
+            for value, name in zip(values, names):
+                value = atleast_1d(value)
+                size = value.size
+                flat_value.extend(value)
+                names_to_flat_names[name] = [
+                    self.__set_variable_component_name(name, i, size)
+                    for i in range(size)
+                ]
+
+            flat_values.append(flat_value)
+
+        return list(chain(*names_to_flat_names.values())), flat_values
 
     def export_to_ggobi(
         self,
