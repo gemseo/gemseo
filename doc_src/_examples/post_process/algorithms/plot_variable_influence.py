@@ -95,7 +95,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 ###############################################################################
 # Post-process scenario
 # ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.BasicHistory`
+# Lastly, we post-process the scenario by means of the :class:`.VariableInfluence`
 # plot.
 
 ###############################################################################
@@ -108,4 +108,4 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 
-scenario.post_process("VariableInfluence", fig_size=(15, 12), save=False, show=True)
+scenario.post_process("VariableInfluence", fig_size=(20, 20), save=False, show=True)

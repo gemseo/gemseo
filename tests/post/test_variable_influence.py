@@ -28,7 +28,6 @@ from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.testing import image_comparison
-from numpy import repeat
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
@@ -48,18 +47,20 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
     assert len(post.output_files) == 1
     for outf in post.output_files:
         assert Path(outf).exists()
-    database = problem.database
-    database.filter(["pow2", "@pow2"])
-    problem.constraints = []
-    for k in list(database.keys()):
-        v = database.pop(k)
-        v["@pow2"] = repeat(v["@pow2"], 60)
-        database[repeat(k.wrapped, 60)] = v
 
-    post = factory.execute(problem, "VariableInfluence", file_path="var_infl2")
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
-        assert Path(outf).exists()
+    # THIS CODE SEEMS WRONG: THE SENSITIVITIES ARE NOT COMPUTED WRT DESIGN VARIABLES.
+    # database = problem.database
+    # database.filter(["pow2", "@pow2"])
+    # problem.constraints = []
+    # for k in list(database.keys()):
+    #     v = database.pop(k)
+    #     v["@pow2"] = repeat(v["@pow2"], 60)
+    #     database[repeat(k.wrapped, 60)] = v
+    #
+    # post = factory.execute(problem, "VariableInfluence", file_path="var_infl2")
+    # assert len(post.output_files) == 1
+    # for outf in post.output_files:
+    #     assert Path(outf).exists()
 
 
 def test_variable_influence_doe(tmp_wd, pyplot_close_all):

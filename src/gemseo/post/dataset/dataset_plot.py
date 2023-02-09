@@ -44,6 +44,7 @@ from numpy import linspace
 
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -72,7 +73,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
     dataset: Dataset
     """The dataset to be plotted."""
 
-    fig_size: tuple[float, float]
+    fig_size: FigSizeType
     """The figure size."""
 
     font_size: int
@@ -470,7 +471,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self,
         fig: Figure | None,
         axes: Axes | None,
-        fig_size: tuple[float, float] | None = None,
+        fig_size: FigSizeType | None = None,
     ) -> tuple[Figure, Axes]:
         """Return the figure and axes to plot the data.
 

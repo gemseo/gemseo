@@ -37,6 +37,7 @@ from matplotlib.figure import Figure
 from matplotlib.text import Text
 
 from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
@@ -321,7 +322,7 @@ class MDOCouplingStructure:
         show_data_names: True,
         save: bool,
         show: bool,
-        fig_size: tuple[float, float],
+        fig_size: FigSizeType,
     ) -> None:
         """Draw the N2 chart for the disciplines.
 
@@ -398,7 +399,7 @@ class MDOCouplingStructure:
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
-        fig_size: tuple[float, float] = (15.0, 10.0),
+        fig_size: FigSizeType = (15.0, 10.0),
         open_browser: bool = False,
     ) -> None:
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.

@@ -158,6 +158,8 @@ from typing import TYPE_CHECKING
 
 from numpy import ndarray
 
+from gemseo.utils.matplotlib_figure import FigSizeType
+
 if TYPE_CHECKING:
     from logging import Logger
     from matplotlib.figure import Figure
@@ -199,7 +201,7 @@ def generate_n2_plot(
     show_data_names: bool = True,
     save: bool = True,
     show: bool = False,
-    fig_size: tuple[float, float] = (15.0, 10.0),
+    fig_size: FigSizeType = (15.0, 10.0),
     open_browser: bool = False,
 ) -> None:
     """Generate a N2 plot from disciplines.

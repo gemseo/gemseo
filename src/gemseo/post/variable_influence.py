@@ -35,6 +35,8 @@ from numpy import savetxt
 from numpy import stack
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -104,7 +106,9 @@ class VariableInfluence(OptPostProcessor):
                     sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)
-                    names_to_sensitivities[f"{function_name}_{i}"] = sensitivity
+                    names_to_sensitivities[
+                        repr_variable(function_name, i)
+                    ] = sensitivity
 
         self._add_figure(
             self.__generate_subplots(
@@ -145,13 +149,12 @@ class VariableInfluence(OptPostProcessor):
             n_variables += 1
 
         influential_variables = absolute_sensitivity_indices[:n_variables]
-        LOGGER.info("VariableInfluence for function %s", func)
+        x_names = self._generate_x_names()
         LOGGER.info(
-            "Most influential variables indices to explain "
-            "%% of the function variation: %s",
-            int(level * 100),
+            "   %s; %s",
+            func,
+            pretty_str([x_names[i] for i in influential_variables]),
         )
-        LOGGER.info(influential_variables)
         if save:
             names = [
                 [f"{name}${i}" for i in range(size)]
@@ -217,6 +220,11 @@ class VariableInfluence(OptPostProcessor):
         font_size = 12
         rotation = 90
         i = j = 0
+        LOGGER.info(
+            "Output name; "
+            "most influential variables to explain %s%% of the output variation ",
+            level,
+        )
         for name, sensitivity in sorted(names_to_sensitivities.items()):
             axe = axes[i][j]
             axe.bar(abscissas, sensitivity, color="blue", align="center")

@@ -37,6 +37,7 @@ from gemseo.api import get_available_formulations
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -516,7 +517,7 @@ class StudyAnalysis:
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
-        fig_size: tuple[float, float] = (15, 10),
+        fig_size: FigSizeType = (15, 10),
     ) -> None:
         """Generate a N2 plot for the disciplines list.
 

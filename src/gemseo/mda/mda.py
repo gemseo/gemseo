@@ -42,6 +42,7 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 LOGGER = logging.getLogger(__name__)
@@ -717,7 +718,7 @@ class MDA(MDODiscipline):
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
-        fig_size: tuple[float, float] | None = None,
+        fig_size: FigSizeType | None = None,
     ) -> Figure:
         """Generate a plot of the residual history.
 
