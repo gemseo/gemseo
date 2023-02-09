@@ -369,7 +369,6 @@ Initial setup
 
   * from your account on gitlab.com,
   * go to **Settings > CI/CD** and expand the **General pipelines** section,
-  * under **Test coverage parsing**, set the regex field to ``^TOTAL.+?(\d+\%)$``.
 
 Working on a new feature
 ************************
