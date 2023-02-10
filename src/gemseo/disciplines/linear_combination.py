@@ -45,10 +45,11 @@ class LinearCombination(MDODiscipline):
 
     Example:
         >>> discipline = LinearCombination(["alpha", "beta", "gamma"], "delta",
-        input_coefficients={"beta": 2.})
-        >>> input_data = {"alpha": array([1.0]), "beta": array([2.0])}
+                input_coefficients={"alpha": 1.,"beta": 2.,"gamma": 3.})
+        >>> input_data = {"alpha": array([1.0]), "beta": array([1.0]),
+                "gamma": array([1.0])}
         >>> discipline.execute(input_data)
-        >>> delta = discipline.local_data["delta"]  # delta = array([5.])
+        >>> delta = discipline.local_data["delta"]  # delta = array([6.])
     """
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
         "_LinearCombination__offset",
