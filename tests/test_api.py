@@ -253,29 +253,76 @@ def test_create_doe_scenario(tmp_wd):
     )
 
 
-def test_get_formulation_sub_options_schema(tmp_wd):
+@pytest.mark.parametrize(
+    "formulation_name, opts, expected",
+    [
+        (
+            "MDF",
+            {"main_mda_name": "MDAJacobi"},
+            {"acceleration", "n_processes", "use_threading"},
+        ),
+        (
+            "BiLevel",
+            {"main_mda_name": "MDAGaussSeidel"},
+            {"over_relax_factor"},
+        ),
+        ("DisciplinaryOpt", {}, None),
+        ("IDF", {}, None),
+    ],
+)
+def test_get_formulation_sub_options_schema(formulation_name, opts, expected):
     """Check that the sub options schema is recovered for different formulations.
 
     Args:
-        tmp_wd: Fixture to move into a temporary directory.
+        formulation_name: The name of the formulation to test.
+        opts: The options for the formulation.
+        expected: The expected result.
     """
-    sub_opts_schema = get_formulation_sub_options_schema(
-        "MDF", main_mda_name="MDAJacobi"
-    )
-    props = sub_opts_schema["properties"]
-    assert "acceleration" in props
+    sub_opts_schema = get_formulation_sub_options_schema(formulation_name, **opts)
 
-    for formulation in get_available_formulations():
-        if formulation == "MDF":
-            opts = {"main_mda_name": "MDAJacobi"}
-        elif formulation.endswith("BiLevel"):
-            opts = {"main_mda_name": "MDAGaussSeidel"}
-        elif formulation == "BLISS98B":
-            opts = {"mda_name": "MDAGaussSeidel"}
-        else:
-            opts = {}
-        get_formulation_sub_options_schema(formulation, **opts)
-        get_formulation_sub_options_schema(formulation, pretty_print=True, **opts)
+    if formulation_name in ("BiLevel", "MDF"):
+        props = sub_opts_schema["properties"]
+        assert expected.issubset(set(props))
+    else:
+        assert sub_opts_schema is None
+
+
+@pytest.mark.parametrize(
+    "formulation_name, opts",
+    [
+        (
+            "MDF",
+            {"main_mda_name": "MDAJacobi"},
+        ),
+        (
+            "BiLevel",
+            {"main_mda_name": "MDAGaussSeidel"},
+        ),
+        ("DisciplinaryOpt", {}),
+        ("IDF", {}),
+    ],
+)
+def test_get_formulation_sub_options_schema_print(capfd, formulation_name, opts):
+    """Check that the sub options schema is printed for different formulations.
+
+    Args:
+        capfd: Fixture capture outputs sent to ``stdout`` and
+            ``stderr``.
+        formulation_name: The name of the formulation to test.
+        opts: The options for the formulation.
+    """
+    # A pattern for table headers.
+    expected = re.compile(
+        r"\+-+\+-+\+-+\+$\n\|\s+Name\s+\|\s+Description\s+\|\s+Type\s+\|$\n",
+        re.MULTILINE,
+    )
+    schema = get_formulation_sub_options_schema(
+        formulation_name, pretty_print=True, **opts
+    )
+    out, err = capfd.readouterr()
+    assert not err
+    if schema is not None:
+        assert bool(re.search(expected, out))
 
 
 def test_get_scenario_inputs_schema(tmp_wd):

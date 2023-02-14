@@ -87,23 +87,21 @@ def test_parse_docstrings(reset_factory, tmp_wd):
 
     assert len(formulations) > 3
 
-    for form in formulations:
-        doc = factory.get_options_doc(form)
+    for formulation_name in ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]:
+        doc = factory.get_options_doc(formulation_name)
         assert "disciplines" in doc
         assert "maximize_objective" in doc
 
-        opt_vals = factory.get_default_options_values(form)
+        opt_vals = factory.get_default_options_values(formulation_name)
         assert len(opt_vals) >= 1
 
-        grammar = factory.get_options_grammar(form, write_schema=True)
+        grammar = factory.get_options_grammar(formulation_name, write_schema=True)
         file_name = f"{grammar.name}.json"
-        ref_grammar_path = Path(DATA / file_name)
-        if ref_grammar_path.exists():
-            assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
+        assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
 
         grammar.validate(opt_vals)
 
-        opt_doc = factory.get_options_doc(form)
+        opt_doc = factory.get_options_doc(formulation_name)
         data_names = grammar.keys()
         assert "name" not in data_names
         assert "design_space" not in data_names
