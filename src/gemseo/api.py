@@ -647,7 +647,7 @@ def get_formulation_sub_options_schema(
     output_json: bool = False,
     pretty_print: bool = False,
     **formulation_options: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Return the schema of the sub-options of a formulation.
 
     Args:
@@ -658,7 +658,7 @@ def get_formulation_sub_options_schema(
             required for its instantiation.
 
     Returns:
-        The schema of the sub-options of the formulation.
+        The schema of the sub-options of the formulation, if any, ``None`` otherwise.
 
     Examples
     --------
