@@ -1,0 +1,1 @@
+The subplots of :class:`.ConstraintsHistory` use their own y-limits.

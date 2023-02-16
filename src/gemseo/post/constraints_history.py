@@ -110,6 +110,7 @@ class ConstraintsHistory(OptPostProcessor):
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)
 
         iterations = arange(len(constraint_histories))
+        n_iterations = len(iterations)
         eq_constraint_names = [f.name for f in self.opt_problem.get_eq_constraints()]
         # for each subplot
         for constraint_history, constraint_name, axe in zip(
@@ -136,12 +137,14 @@ class ConstraintsHistory(OptPostProcessor):
 
             # Plot color bars
             maximum = np_max(np_abs(constraint_history))
+            margin = 2 * maximum * 0.05
             axe.imshow(
                 atleast_2d(constraint_history),
                 cmap=cmap,
                 interpolation="nearest",
                 aspect="auto",
                 norm=SymLogNorm(linthresh=1.0, vmin=-maximum, vmax=maximum),
+                extent=[-0.5, n_iterations - 0.5, -maximum - margin, maximum + margin],
                 alpha=0.6,
             )
 
