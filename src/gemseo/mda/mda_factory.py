@@ -38,7 +38,7 @@ MDAOptionType = Optional[
 class MDAFactory:
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         self.factory = Factory(MDA, ("gemseo.mda",))
 
     def create(
@@ -54,7 +54,6 @@ class MDAFactory:
             disciplines: The disciplines.
             **options: The options of the MDA.
         """
-
         return self.factory.create(mda_name, disciplines=disciplines, **options)
 
     @property

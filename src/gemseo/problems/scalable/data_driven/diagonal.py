@@ -43,6 +43,7 @@ from __future__ import annotations
 
 from numbers import Number
 from pathlib import Path
+from typing import Iterable
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -83,11 +84,11 @@ class ScalableDiagonalModel(ScalableModel):
         fill_factor=-1,
         comp_dep=None,
         inpt_dep=None,
-        force_input_dependency=False,
-        allow_unused_inputs=True,
-        seed=1,
+        force_input_dependency: bool = False,
+        allow_unused_inputs: bool = True,
+        seed: int = 1,
         group_dep=None,
-    ):
+    ) -> None:
         """Constructor.
 
         :param Dataset data: learning dataset.
@@ -174,7 +175,7 @@ class ScalableDiagonalModel(ScalableModel):
         scal_der = self.model.get_scalable_derivative
         return {fname: scal_der(fname)(input_value) for fname in self.outputs_names}
 
-    def build_model(self):
+    def build_model(self) -> ScalableDiagonalApproximation:
         """Build model with original sizes for input and output variables.
 
         :return: scalable approximation.
@@ -230,8 +231,13 @@ class ScalableDiagonalModel(ScalableModel):
         return matrix.T
 
     def plot_dependency(
-        self, add_levels=True, save=True, show=False, directory=".", png=False
-    ):
+        self,
+        add_levels: bool = True,
+        save: bool = True,
+        show: bool = False,
+        directory: str = ".",
+        png: bool = False,
+    ) -> str:
         """This method plots the dependency matrix of a discipline in the form of a
         chessboard, where rows represent inputs, columns represent output and gray scale
         represent the dependency level between inputs and outputs.
@@ -286,8 +292,14 @@ class ScalableDiagonalModel(ScalableModel):
         return str(file_path)
 
     def plot_1d_interpolations(
-        self, save=False, show=False, step=0.01, varnames=None, directory=".", png=False
-    ):
+        self,
+        save: bool = False,
+        show: bool = False,
+        step: float = 0.01,
+        varnames=None,
+        directory: str = ".",
+        png: bool = False,
+    ) -> list[str]:
         r"""Plot the scaled 1D interpolations, a.k.a. the basis functions.
 
         A basis function is a mono dimensional function
@@ -494,7 +506,7 @@ class ScalableDiagonalApproximation:
     all inputs and outputs have the same names; only their dimensions vary.
     """
 
-    def __init__(self, sizes, output_dependency, io_dependency, seed=0):
+    def __init__(self, sizes, output_dependency, io_dependency, seed: int = 0) -> None:
         """
         Constructor:
 
@@ -519,7 +531,9 @@ class ScalableDiagonalApproximation:
         # seed for random generator
         npseed(seed)
 
-    def build_scalable_function(self, function_name, dataset, input_names, degree=3):
+    def build_scalable_function(
+        self, function_name, dataset, input_names: Iterable[str], degree: int = 3
+    ):
         """Build interpolation from a 1D input and output function. Add the model to the
         local dictionary.
 
@@ -584,7 +598,7 @@ class ScalableDiagonalApproximation:
         scaled_samples /= scaling
         return scaled_samples
 
-    def _interpolate(self, function_name, t_scaled, f_scaled, degree=3):
+    def _interpolate(self, function_name, t_scaled, f_scaled, degree: int = 3) -> None:
         """Interpolate a set of samples (t, y(t)) with a polynomial spline.
 
         :param str function_name: name of the interpolated function
@@ -620,7 +634,9 @@ class ScalableDiagonalApproximation:
         output_size = self.sizes.get(function_name, 1)  # default 1
         return input_size, output_size
 
-    def _extrapolate(self, function_name, input_names, input_size, output_size):
+    def _extrapolate(
+        self, function_name, input_names: Iterable[str], input_size, output_size
+    ) -> None:
         """Extrapolate a 1D function to arbitrary input and output dimensions. Generate a
         function that produces an output with a given size from an input with a given
         size, and its derivative.

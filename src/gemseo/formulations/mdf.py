@@ -53,7 +53,7 @@ class MDF(MDOFormulation):
         main_mda_name: str = "MDAChain",
         inner_mda_name: str = "MDAJacobi",
         **main_mda_options: Any,
-    ):
+    ) -> None:
         """
         Args:
             main_mda_name: The name of the class used for the main MDA,

@@ -48,12 +48,12 @@ class TMDesignSpace:
 
     def __init__(
         self,
-        n_shared=1,
-        n_local=None,
-        n_coupling=None,
+        n_shared: int = 1,
+        n_local: list[int] | None = None,
+        n_coupling: list[int] | None = None,
         default_inputs=None,
-        dtype="float64",
-    ):
+        dtype: str = "float64",
+    ) -> None:
         """The construction of the design space requires the number of shared design
         parameters, the number of local design parameters per discipline and the number
         of coupling variables per discipline. The two latter arguments must be list of

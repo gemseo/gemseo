@@ -32,7 +32,7 @@ RESULTS_DIRECTORY = Path("results")
 class ScalabilityResult:
     """Scalability Result."""
 
-    def __init__(self, name, id_scaling, id_sample):
+    def __init__(self, name, id_scaling, id_sample) -> None:
         """Constructor.
 
         :param str name: name of the scalability result.
@@ -78,7 +78,7 @@ class ScalabilityResult:
         output_names,
         old_varsizes,
         new_varsizes,
-    ):
+    ) -> None:
         """Get a scalability result for a given optimization strategy and a given scaling
         strategy.
 
@@ -118,7 +118,7 @@ class ScalabilityResult:
         self.old_varsizes = old_varsizes
         self.new_varsizes = new_varsizes
 
-    def get_file_path(self, study_directory):
+    def get_file_path(self, study_directory) -> Path:
         """Get file path.
 
         :param str study_directory: study directory name.
@@ -127,7 +127,7 @@ class ScalabilityResult:
         fpath = Path(study_directory) / RESULTS_DIRECTORY / fname
         return fpath
 
-    def save(self, study_directory):
+    def save(self, study_directory) -> Path:
         """Save a scalability result into a pickle file whose name is the name of the
         ScalabilityResult instance.
 
@@ -156,7 +156,7 @@ class ScalabilityResult:
             pickle.dump(result, fout)
         return fpath
 
-    def load(self, study_directory):
+    def load(self, study_directory) -> None:
         """Load a scalability result from a pickle file whose name is the name of the
         ScalabilityResult instance."""
         fname = self.name + ".pkl"

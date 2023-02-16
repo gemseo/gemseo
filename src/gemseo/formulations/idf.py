@@ -141,7 +141,7 @@ class IDF(MDOFormulation):
             )
             self.design_space.set_current_variable(name, value)
 
-    def _update_design_space(self):
+    def _update_design_space(self) -> None:
         """Update the design space with the required variables."""
         strong_couplings = set(self.all_couplings)
         variables_names = set(self.opt_problem.design_space.variables_names)

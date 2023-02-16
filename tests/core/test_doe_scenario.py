@@ -267,7 +267,7 @@ def test_other_exceptions_caught(caplog):
     scenario = DOEScenario(
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         scenario.execute(
             {
                 "algo": "CustomDOE",

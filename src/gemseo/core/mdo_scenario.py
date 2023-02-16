@@ -108,7 +108,7 @@ class MDOScenario(Scenario):
         )
         return self.optimization_result
 
-    def _init_algo_factory(self):
+    def _init_algo_factory(self) -> None:
         self._algo_factory = OptimizersFactory()
 
     def _update_grammar_input(self) -> None:

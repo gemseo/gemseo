@@ -57,7 +57,7 @@ class ComplexStep(GradientApproximator):
 
     ALIAS = COMPLEX_STEP
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         f_pointer: Callable[[ndarray], ndarray],
         step: complex = 1e-20,
@@ -78,13 +78,13 @@ class ComplexStep(GradientApproximator):
         )
 
     @GradientApproximator.step.setter
-    def step(self, value):
+    def step(self, value) -> None:  # noqa:D102
         if value.imag != 0:
             self._step = value.imag
         else:
             self._step = value
 
-    def f_gradient(
+    def f_gradient(  # noqa:D102
         self,
         x_vect: ndarray,
         step: complex | None = None,

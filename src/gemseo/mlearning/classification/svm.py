@@ -58,7 +58,7 @@ class SVMClassifier(MLClassificationAlgo):
         transformer: TransformerType = MLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
-        C=1.0,  # noqa: N803
+        C: float = 1.0,  # noqa: N803
         kernel: str | Callable | None = "rbf",
         probability: bool = False,
         **parameters: int | float | bool | str | None,

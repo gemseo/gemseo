@@ -154,6 +154,10 @@ class MultiLineString:
         self,
         lines: Iterable[MessageLine] | None = None,
     ) -> None:
+        """
+        Args:
+            lines: The lines from which to create the multi-line string.
+        """  # noqa:D205 D212 D415
         if lines is None:
             self.__lines = []
         else:
@@ -232,6 +236,7 @@ class MultiLineString:
     @classmethod
     @contextmanager
     def offset(cls) -> None:
+        """Create a temporary offset with a context manager."""
         cls.DEFAULT_LEVEL += 1
         try:
             yield

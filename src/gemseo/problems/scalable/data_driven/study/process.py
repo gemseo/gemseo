@@ -51,6 +51,7 @@ import logging
 import numbers
 from copy import deepcopy
 from pathlib import Path
+from typing import Sized
 
 from numpy import inf
 
@@ -75,18 +76,18 @@ class ScalabilityStudy:
         self,
         objective,
         design_variables,
-        directory="study",
-        prefix="",
+        directory: str = "study",
+        prefix: str = "",
         eq_constraints=None,
         ineq_constraints=None,
-        maximize_objective=False,
-        fill_factor=0.7,
-        active_probability=0.1,
+        maximize_objective: bool = False,
+        fill_factor: float = 0.7,
+        active_probability: float = 0.1,
         feasibility_level=0.8,
-        start_at_equilibrium=True,
-        early_stopping=True,
+        start_at_equilibrium: bool = True,
+        early_stopping: bool = True,
         coupling_variables=None,
-    ):
+    ) -> None:
         """
         The constructor of the ScalabilityStudy class requires two mandatory
         arguments:
@@ -222,7 +223,7 @@ class ScalabilityStudy:
         msg.add("Results: {}", results)
         LOGGER.info("%s", msg)
 
-    def add_discipline(self, data):
+    def add_discipline(self, data: Sized) -> None:
         """This method adds a disciplinary dataset from a dataset.
 
         :param Dataset data: dataset provided as a dataset.
@@ -260,7 +261,7 @@ class ScalabilityStudy:
         disc_names = [discipline.name for discipline in self.datasets]
         return disc_names
 
-    def set_input_output_dependency(self, discipline, output, inputs):
+    def set_input_output_dependency(self, discipline, output, inputs) -> None:
         """Set the dependency between an output and a set of inputs for a given
         discipline.
 
@@ -273,7 +274,7 @@ class ScalabilityStudy:
         self.__check_inputs(discipline, inputs)
         self._group_dep[discipline][output] = inputs
 
-    def set_fill_factor(self, discipline, output, fill_factor):
+    def set_fill_factor(self, discipline, output, fill_factor) -> None:
         """
         :param str discipline: name of the discipline
         :param str output: name of the output function
@@ -367,11 +368,11 @@ class ScalabilityStudy:
         self,
         algo,
         max_iter,
-        formulation="DisciplinaryOpt",
+        formulation: str = "DisciplinaryOpt",
         algo_options=None,
-        formulation_options=None,
-        top_level_diff="auto",
-    ):
+        formulation_options: str | None = None,
+        top_level_diff: str = "auto",
+    ) -> None:
         """Add both optimization algorithm and MDO formulation, as well as their options.
 
         :param str algo: name of the optimization algorithm.
@@ -418,8 +419,8 @@ class ScalabilityStudy:
         coupling_size=None,
         eq_cstr_size=None,
         ineq_cstr_size=None,
-        variables=None,
-    ):
+        variables: list[None] | None = None,
+    ) -> None:
         """Add different scaling strategies.
 
         :param design_size: size of the design variables. Default: None.
@@ -557,7 +558,7 @@ class ScalabilityStudy:
                 length = 1
         return length
 
-    def execute(self, n_replicates=1):
+    def execute(self, n_replicates: int = 1):
         """Execute the scalability study, one or several times to take into account the
         random features of the scalable problems.
 

@@ -28,6 +28,6 @@ from gemseo.algos.opt.opt_lib import OptimizationLibrary
 class OptimizersFactory(DriverFactory):
     """Optimization  libraries factory, see DriverFactory."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Test and import optimization library if it is available."""
         super().__init__(OptimizationLibrary, "gemseo.algos.opt")

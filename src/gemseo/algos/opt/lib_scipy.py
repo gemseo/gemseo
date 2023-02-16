@@ -59,7 +59,7 @@ class ScipyOpt(OptimizationLibrary):
 
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dict, contains the list

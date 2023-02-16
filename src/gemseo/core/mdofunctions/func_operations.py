@@ -99,7 +99,7 @@ class LinearComposition(MDOFunction):
         self,
         orig_function: MDOFunction,
         interp_operator: ndarray,
-    ):
+    ) -> None:
         """
         Args:
             orig_function: The original function to be restricted.

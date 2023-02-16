@@ -17,10 +17,7 @@
 #                           documentation
 #        :author: Antoine Dechaume
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Logging tools
-=============
-"""
+"""Logging tools."""
 from __future__ import annotations
 
 import logging
@@ -35,7 +32,7 @@ class MultiLineHandlerMixin:
         """Return the raw message of a log record."""
         return record.msg
 
-    def emit(self, record):
+    def emit(self, record) -> None:
         """Emit one logging message per input record line."""
         # compute the message without the logging prefixes (timestamp, level, ...)
         message = record.getMessage()
@@ -93,7 +90,7 @@ class LoggingContext:
             level: The level of the logger to be used on block entry.
             handler: An additional handler to be used on block entry.
             close: Whether to close the handler on block exit.
-        """
+        """  # noqa:D205 D212 D415
         self.logger = logger
         self.level = level
         self.handler = handler

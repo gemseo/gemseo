@@ -23,6 +23,8 @@ The Rosenbrock analytic problem
 """
 from __future__ import annotations
 
+from typing import Iterable
+
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
@@ -128,7 +130,9 @@ class RosenMF(MDODiscipline):
         x_val = self.local_data["x"]
         self.local_data["rosen"] = fidelity * rosen(x_val)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         x_val = self.local_data["x"]
         fidelity = self.local_data["fidelity"]
         self.jac = {

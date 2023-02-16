@@ -97,7 +97,7 @@ class HDF5Cache(AbstractFullCache):
         msg.add("HDF node name: {}", self.__hdf_node_name)
         return str(msg)
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, float | str]:
         # Pickle __init__ arguments so to call it when unpickling.
         return dict(
             tolerance=self.tolerance,
@@ -106,7 +106,7 @@ class HDF5Cache(AbstractFullCache):
             name=self.name,
         )
 
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         self.__init__(**state)
 
     def _copy_empty_cache(self) -> HDF5Cache:

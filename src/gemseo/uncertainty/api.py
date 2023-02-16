@@ -91,7 +91,7 @@ def create_statistics(
     variables_names: Iterable[str] | None = None,
     tested_distributions: Sequence[str] | None = None,
     fitting_criterion: str = "BIC",
-    selection_criterion="best",
+    selection_criterion: str = "best",
     level: float = 0.05,
     name: str | None = None,
 ) -> Statistics:

@@ -24,6 +24,7 @@ Scalable disciplines from Tedford and Martins (2010)
 from __future__ import annotations
 
 import logging
+from typing import Iterable
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.parametric.core.models import TMMainModel
@@ -82,7 +83,7 @@ class TMMainDiscipline(TMDiscipline):
 
     """
 
-    def __init__(self, c_constraint, default_inputs):
+    def __init__(self, c_constraint, default_inputs) -> None:
         """Constructor.
 
         :param list(array) c_constraint: constraint coefficients
@@ -100,7 +101,7 @@ class TMMainDiscipline(TMDiscipline):
         """Return the number of disciplines; alias for self.models.n_submodels."""
         return self.model.n_submodels
 
-    def _run(self):
+    def _run(self) -> None:
         x_shared = self.get_inputs_by_name(X_SHARED_NAME)
         coupling = {
             get_coupling_name(index): self.get_inputs_by_name(get_coupling_name(index))
@@ -108,7 +109,9 @@ class TMMainDiscipline(TMDiscipline):
         }
         self.store_local_data(**self.model(x_shared, coupling))
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         """Computes the jacobian.
 
         :param inputs: linearization should be performed with respect
@@ -150,7 +153,7 @@ class TMSubDiscipline(TMDiscipline):
         \sum_{j=1 \atop j \neq i}^N C_{y_j,i}.y_j
     """
 
-    def __init__(self, index, c_shared, c_local, c_coupling, default_inputs):
+    def __init__(self, index, c_shared, c_local, c_coupling, default_inputs) -> None:
         """Constructor.
 
         :param int index: discipline index for naming.
@@ -166,7 +169,7 @@ class TMSubDiscipline(TMDiscipline):
         self.default_inputs = default_inputs
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):
+    def _run(self) -> None:
         x_shared = self.get_inputs_by_name(X_SHARED_NAME)
         x_local = self.get_inputs_by_name(get_x_local_name(self.model.index))
         u_local_name = get_u_local_name(self.model.index)
@@ -180,7 +183,9 @@ class TMSubDiscipline(TMDiscipline):
         }
         self.store_local_data(**self.model(x_shared, x_local, coupling, u_local))
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         """Computes the jacobian.
 
         :param inputs: linearization should be performed with respect

@@ -38,7 +38,7 @@ class Splitter(MDODiscipline):
         self,
         input_name: str,
         output_names_to_input_indices: dict[str, Iterable[int] | int],
-    ):
+    ) -> None:
         """
         Args:
             input_name: The name of the input to split.

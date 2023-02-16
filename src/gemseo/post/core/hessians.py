@@ -697,7 +697,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         b_factor: ndarray | None = None,
         factorize: bool = False,
         scaling: bool = False,
-    ):
+    ) -> None:
         r"""Update :math:`H` and :math:`B` from step :math:`k` to step :math:`k+1`.
 
         Use an iteration of the BFGS algorithm:
@@ -831,7 +831,7 @@ class SR1Approx(HessianApproximation):
         s_k: ndarray,
         y_k: ndarray,
         scaling: bool = False,
-    ):
+    ) -> None:
         residuals = y_k - multi_dot((b_mat, s_k))
         denominator = multi_dot((residuals.T, s_k))
         if abs(denominator) > SR1Approx.EPSILON * norm(s_k) * norm(residuals):

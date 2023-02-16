@@ -67,7 +67,7 @@ def module_tmp_wd(tmp_path_factory):
 tmp_wd = pytest.fixture()(__tmp_wd)
 
 
-def pytest_sessionstart(session):
+def pytest_sessionstart(session) -> None:
     """Bypass console pollution from fortran code."""
     # Prevent fortran code (like lbfgs from scipy) from writing to the console
     # by setting its stdout and stderr units to the standard file descriptors.
@@ -77,7 +77,7 @@ def pytest_sessionstart(session):
     os.environ["GFORTRAN_STDERR_UNIT"] = "2"
 
 
-def pytest_sessionfinish(session):
+def pytest_sessionfinish(session) -> None:
     """Remove file pollution from fortran code."""
     # take care of pytest_sessionstart side effects
     for file_ in Path(".").glob("fort.*"):
@@ -85,7 +85,7 @@ def pytest_sessionfinish(session):
 
 
 @pytest.fixture(autouse=True)
-def skip_under_windows(request):
+def skip_under_windows(request) -> None:
     """Fixture that add a marker to skip under windows.
 
     Use it like a usual skip marker.
@@ -105,7 +105,7 @@ def baseline_images(request):
 
 
 @pytest.fixture
-def pyplot_close_all():
+def pyplot_close_all() -> None:
     """Fixture that prevents figures aggregation with matplotlib pyplot."""
     if version.parse(matplotlib.__version__) < version.parse("3.6.0"):
         plt.close("all")
@@ -201,11 +201,13 @@ def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
 
 @pytest.fixture(scope="module")
 def skip_if_xlwings_is_not_usable(is_xlwings_usable) -> None:
+    """Fixture to skip a test when xlwings is not usable."""
     if not is_xlwings_usable:
         pytest.skip("This test requires excel.")
 
 
 @pytest.fixture(scope="module")
 def skip_if_xlwings_is_usable(is_xlwings_usable) -> None:
+    """Fixture to skip a test when xlwings is usable."""
     if is_xlwings_usable:
         pytest.skip("This test is only required when excel is not available.")

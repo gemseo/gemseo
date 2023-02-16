@@ -26,5 +26,5 @@ if version.parse(matplotlib.__version__) < version.parse("3.2.0"):
 
 else:
 
-    def SymLogNorm(linthresh, vmin, vmax):  # noqa: N802
+    def SymLogNorm(linthresh, vmin, vmax):  # noqa: N802, D103
         return _SymLogNorm(linthresh=linthresh, vmin=vmin, vmax=vmax, base=np.e)

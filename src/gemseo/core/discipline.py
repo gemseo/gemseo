@@ -1478,7 +1478,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             disc_data = DisciplineData(data)
         self._default_inputs = disc_data
 
-    def add_namespace_to_input(self, name: str, namespace: str):
+    def add_namespace_to_input(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing input grammar element.
 
         The updated input grammar element name will be
@@ -1494,7 +1494,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             del self.default_inputs[name]
             self.default_inputs[self.input_grammar.to_namespaced[name]] = default_value
 
-    def add_namespace_to_output(self, name: str, namespace: str):
+    def add_namespace_to_output(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing output grammar element.
 
         The updated output grammar element name will be
@@ -1632,7 +1632,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         reference_jacobian_path: str | Path | None = None,
         save_reference_jacobian: bool = False,
         indices: Iterable[int] | None = None,
-    ):
+    ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
         If `reference_jacobian_path` is not `None`
@@ -2031,7 +2031,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         except KeyError as err:
             raise ValueError(f"Discipline {self.name} has no output named {err}.")
 
-    def get_input_data_names(self, with_namespaces=True) -> list[str]:
+    def get_input_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input variables.
 
         Args:
@@ -2046,7 +2046,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             return remove_prefix_from_list(self.input_grammar.keys())
 
-    def get_output_data_names(self, with_namespaces=True) -> list[str]:
+    def get_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the output variables.
 
         Args:
@@ -2061,7 +2061,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             return remove_prefix_from_list(self.output_grammar.keys())
 
-    def get_input_output_data_names(self, with_namespaces=True) -> list[str]:
+    def get_input_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input and output variables.
 
          Args:
@@ -2097,7 +2097,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.get_outputs_by_name(self.get_output_data_names())
 
-    def get_output_data(self, with_namespaces=True) -> dict[str, Any]:
+    def get_output_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local output data as a dictionary.
 
         Args:
@@ -2113,7 +2113,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             return remove_prefix_from_dict(self.get_output_data())
 
-    def get_input_data(self, with_namespaces=True) -> dict[str, Any]:
+    def get_input_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
 
         Args:

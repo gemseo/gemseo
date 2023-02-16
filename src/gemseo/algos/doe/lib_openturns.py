@@ -127,7 +127,7 @@ class OpenTURNS(DOELibrary):
 
     LIBRARY_NAME = "OpenTURNS"
 
-    def __init__(self):  # noqa:D107
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():

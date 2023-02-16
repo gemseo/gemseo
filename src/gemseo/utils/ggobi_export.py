@@ -16,12 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-GGOBI : interactive data visualization software
-***********************************************
-
-Export data to the XML file format needed by GGOBI
-"""
+"""Export data to the XML file format needed by GGOBI."""
 from __future__ import annotations
 
 import os
@@ -60,7 +55,6 @@ def save_data_arrays_to_xml(
             of the form *(number of variables, number of iterations)*.
         file_path: The file path of the generated xml file.
     """
-
     if os.path.exists(file_path):
         os.remove(file_path)
     nb_records = values_array.shape[0]

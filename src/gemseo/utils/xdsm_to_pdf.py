@@ -27,10 +27,12 @@ from pyxdsm.XDSM import XDSM
 class XDSMToPDFConverter:
     """Convert an XDSM to a PDF file with tikz and latex."""
 
-    def __init__(self):  # noqa: D107
+    def __init__(self) -> None:  # noqa: D107
         self.__xdsm = XDSM()
 
-    def convert(self, xdsm_data, directory_path, filename_without_ext, scenario):
+    def convert(
+        self, xdsm_data, directory_path, filename_without_ext, scenario
+    ) -> None:
         """Convert a dictionary representation of a XDSM into a pdf.
 
         Args:
@@ -230,8 +232,11 @@ class XDSMToPDFConverter:
 
 
 def xdsm_data_to_pdf(
-    xdsm_data, directory_path, filename_without_ext="xdsm", scenario="root"
-):
+    xdsm_data,
+    directory_path,
+    filename_without_ext: str = "xdsm",
+    scenario: str = "root",
+) -> None:
     """Convert a dictionary representation of a XDSM to a pdf.
 
     Args:

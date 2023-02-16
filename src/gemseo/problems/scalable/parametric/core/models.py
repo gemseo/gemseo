@@ -24,6 +24,8 @@ Scalable problem - Models
 from __future__ import annotations
 
 import logging
+from typing import Any
+from typing import Sized
 
 from numpy import array
 from numpy import atleast_2d
@@ -41,7 +43,7 @@ from .variables import get_x_local_name
 from .variables import OBJECTIVE_NAME
 from .variables import X_SHARED_NAME
 
-LOGGER = logging.getLogger(__name__)
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class TMMainModel:
@@ -66,7 +68,7 @@ class TMMainModel:
 
     """
 
-    def __init__(self, c_constraint, default_inputs):
+    def __init__(self, c_constraint: Sized, default_inputs) -> None:
         """Constructor.
 
         :param list(ndarray) c_constraint: constraint coefficients
@@ -85,7 +87,7 @@ class TMMainModel:
         self.coefficients = c_constraint
         self.n_submodels = len(c_constraint)
 
-    def __call__(self, x_shared=None, coupling=None, jacobian=False):
+    def __call__(self, x_shared=None, coupling=None, jacobian: bool = False):
         """Compute the discipline output or derivatives for new values of shared design
         parameters and coupling variables.
 
@@ -129,7 +131,7 @@ class TMMainModel:
             output[constraint] = 1 - tmp
         return output
 
-    def _compute_jacobian(self, x_shared, coupling):
+    def _compute_jacobian(self, x_shared: int, coupling):
         """Computes the discipline jacobian.
 
         :param ndarray x_shared: shared design parameters.
@@ -171,7 +173,7 @@ class TMSubModel:
         \sum_{j=1 \atop j \neq i}^N C_{y_j,i}.y_j
     """
 
-    def __init__(self, index, c_shared, c_local, c_coupling, default_inputs):
+    def __init__(self, index, c_shared, c_local, c_coupling, default_inputs) -> None:
         """Constructor.
 
         :param int index: discipline index for naming.
@@ -193,7 +195,7 @@ class TMSubModel:
         self.outputs_sizes = {output: len(c_local)}
         self.outputs_names = sorted(self.outputs_sizes.keys())
 
-    def _check_consistency(self):
+    def _check_consistency(self) -> None:
         """Check consistency of model and default inputs."""
         assert isinstance(self.c_shared, ndarray)
         assert len(self.c_shared.shape) == 2
@@ -212,7 +214,12 @@ class TMSubModel:
             assert val.shape[1] == len(self.default_inputs[key])
 
     def __call__(
-        self, x_shared=None, x_local=None, coupling=None, noise=None, jacobian=False
+        self,
+        x_shared=None,
+        x_local=None,
+        coupling=None,
+        noise=None,
+        jacobian: bool = False,
     ):
         """Compute the discipline output or derivatives for new values of shared design
         parameters and coupling variables.
@@ -237,7 +244,7 @@ class TMSubModel:
             result = self._compute_output(x_shared, x_local, coupling, noise)
         return result
 
-    def _compute_output(self, x_shared, x_local, coupling, noise):
+    def _compute_output(self, x_shared, x_local, coupling, noise) -> dict[str, Any]:
         """Compute the discipline output for new values of shared design parameters and
         coupling variables.
 

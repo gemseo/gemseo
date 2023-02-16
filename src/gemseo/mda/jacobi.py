@@ -107,7 +107,7 @@ class MDAJacobi(MDA):
                 This is important to note
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
-        """
+        """  # noqa:D205 D212 D415
         self.n_processes = n_processes
         super().__init__(
             disciplines,
@@ -174,7 +174,7 @@ class MDAJacobi(MDA):
         for discipline in self.disciplines:
             self.local_data.update(discipline.get_output_data())
 
-    def get_expected_workflow(self) -> LoopExecSequence:
+    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
         sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)
         if self.n_processes > 1:
             sub_workflow = ExecutionSequenceFactory.parallel(self.disciplines)
@@ -242,7 +242,6 @@ class MDAJacobi(MDA):
         Returns:
             The next iterate.
         """
-
         self._dx_n.append(new_couplings - current_couplings)
         self._g_x_n.append(new_couplings)
         coupl_names = self._input_couplings

@@ -42,7 +42,7 @@ class ScalableModelFactory:
     provided to the constructor.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the factory: scans the directories to search for subclasses of
         ScalableModel.
 
@@ -50,7 +50,7 @@ class ScalableModelFactory:
         """
         self.factory = Factory(ScalableModel, ("gemseo.problems.scalable",))
 
-    def create(self, model_name, data, sizes=None, **parameters):
+    def create(self, model_name: str, data, sizes=None, **parameters):
         """Create a scalable model.
 
         :param str model_name: name of the scalable model (its class name)
@@ -64,7 +64,7 @@ class ScalableModelFactory:
         return self.factory.create(model_name, data=data, sizes=sizes, **parameters)
 
     @property
-    def scalable_models(self):
+    def scalable_models(self) -> list[str]:
         """Lists the available classes for scalable models.
 
         :returns: the list of classes names.
@@ -72,7 +72,7 @@ class ScalableModelFactory:
         """
         return self.factory.classes
 
-    def is_available(self, model_name):
+    def is_available(self, model_name: str) -> bool:
         """Checks the availability of a scalable model.
 
         :param str model_name:  model_name of the scalable model.

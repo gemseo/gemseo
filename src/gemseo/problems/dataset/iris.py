@@ -58,7 +58,9 @@ from gemseo.core.dataset import Dataset
 class IrisDataset(Dataset):
     """Iris dataset parametrization."""
 
-    def __init__(self, name="Iris", by_group=True, as_io=False):
+    def __init__(
+        self, name: str = "Iris", by_group: bool = True, as_io: bool = False
+    ) -> None:
         """Constructor."""
         super().__init__(name, by_group)
         file_path = Path(__file__).parent / "iris.data"

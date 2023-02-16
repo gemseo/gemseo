@@ -483,15 +483,15 @@ class MatlabDiscipline(MDODiscipline):
             )
         )
 
-    def check_input_data(
+    def check_input_data(  # noqa: D102
         self,
         input_data: Mapping[str, np.ndarray],
         raise_exception: bool = True,
-    ) -> None:  # noqa: D102
+    ) -> None:
         if self.__check_opt_data:
             super().check_input_data(input_data, raise_exception=raise_exception)
 
-    def check_output_data(self, raise_exception: bool = True) -> None:
+    def check_output_data(self, raise_exception: bool = True) -> None:  # noqa: D102
         if self.__check_opt_data:
             super().check_output_data(raise_exception=raise_exception)
 

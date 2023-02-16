@@ -27,6 +27,6 @@ from gemseo.algos.driver_factory import DriverFactory
 class DOEFactory(DriverFactory):
     """DOE factory to create DOE libraries, see DriverFactory."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Test and import optimization library if it is available."""
         super().__init__(DOELibrary, "gemseo.algos.doe")

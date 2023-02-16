@@ -128,7 +128,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise RuntimeError(f"parent {parent} does not include child {self}")
         self._parent = parent
 
-    def enabled(self):
+    def enabled(self) -> bool:
         """Get activation state.
 
         Returns:
@@ -136,16 +136,16 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         return self._enabled
 
-    def enable(self):
+    def enable(self) -> None:
         """Set the execution sequence as activated (enabled)."""
         self.status = STATUS_PENDING
         self._enabled = True
 
-    def disable(self):
+    def disable(self) -> None:
         """Set the execution sequence as deactivated (disabled)."""
         self._enabled = False
 
-    def _compute_disc_to_uuids(self):
+    def _compute_disc_to_uuids(self) -> None:
         """Update discipline to uuids mapping from uuids to discipline mapping.
 
         Note:
@@ -186,7 +186,7 @@ class AtomicExecSequence(ExecutionSequence):
             self.discipline.name + "(" + str(self.status) + ", " + str(self.uuid) + ")"
         )
 
-    def accept(self, visitor):
+    def accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).
 
         Args:
@@ -194,7 +194,7 @@ class AtomicExecSequence(ExecutionSequence):
         """
         visitor.visit_atomic(self)
 
-    def set_observer(self, obs):
+    def set_observer(self, obs) -> None:
         """Register a given observer to be notified when discipline status changes.
 
         Args:
@@ -202,7 +202,7 @@ class AtomicExecSequence(ExecutionSequence):
         """
         self._observer = obs
 
-    def enable(self):
+    def enable(self) -> None:
         """Subscribe to status changes of the discipline.
 
         Notified via the :meth:`update_status` method.
@@ -210,7 +210,7 @@ class AtomicExecSequence(ExecutionSequence):
         super().enable()
         self.discipline.add_status_observer(self)
 
-    def disable(self):
+    def disable(self) -> None:
         """Unsubscribe from receiving status changes of the discipline."""
         super().disable()
         self.discipline.remove_status_observer(self)
@@ -223,7 +223,7 @@ class AtomicExecSequence(ExecutionSequence):
         """
         return {self.uuid: self.status}
 
-    def update_status(self, discipline):
+    def update_status(self, discipline) -> None:
         """Update status from given discipline.
 
         Reflect the status then notifies the parent and the observer if any.
@@ -242,7 +242,7 @@ class AtomicExecSequence(ExecutionSequence):
             if self._observer:
                 self._observer.update(self)
 
-    def force_statuses(self, status):
+    def force_statuses(self, status) -> None:
         """Force the self status and the status of subsequences.
 
         This is done without notifying the
@@ -379,7 +379,7 @@ class ExtendableExecSequence(CompositeExecSequence):
     Intended to be subclassed.
     """
 
-    def __init__(self, sequence=None):  # noqa:D107
+    def __init__(self, sequence=None) -> None:  # noqa:D107
         super().__init__()
         if sequence is not None:
             self.extend(sequence)
@@ -432,7 +432,7 @@ class ExtendableExecSequence(CompositeExecSequence):
             {sequence.uuid: sequence.discipline for sequence in sequences}
         )
 
-    def _extend_with_atomic_sequence(self, sequence):
+    def _extend_with_atomic_sequence(self, sequence: ExecutionSequence) -> None:
         """Extend by a list of AtomicExecutionSequence.
 
         Args:
@@ -441,7 +441,7 @@ class ExtendableExecSequence(CompositeExecSequence):
         self.sequences.append(sequence)
         self.uuid_to_disc[sequence.uuid] = sequence
 
-    def _extend_with_same_sequence_kind(self, sequence):
+    def _extend_with_same_sequence_kind(self, sequence) -> None:
         """Extend by another ExecutionSequence of same type.
 
         Args:
@@ -450,7 +450,7 @@ class ExtendableExecSequence(CompositeExecSequence):
         self.sequences.extend(sequence.sequences)
         self.uuid_to_disc.update(sequence.uuid_to_disc)
 
-    def _extend_with_diff_sequence_kind(self, sequence):
+    def _extend_with_diff_sequence_kind(self, sequence: ExecutionSequence) -> None:
         """Extend by another ExecutionSequence of different type.
 
         Args:
@@ -459,7 +459,7 @@ class ExtendableExecSequence(CompositeExecSequence):
         self.sequences.append(sequence)
         self.uuid_to_disc.update(sequence.uuid_to_disc)
 
-    def _update_child_status(self, child):
+    def _update_child_status(self, child) -> None:
         """Manage status change of child execution sequences.
 
         Done status management is handled in subclasses.
@@ -493,11 +493,11 @@ class SerialExecSequence(ExtendableExecSequence):
     START_STR = "["
     END_STR = "]"
 
-    def __init__(self, sequence=None):  # noqa:D107
+    def __init__(self, sequence=None) -> None:  # noqa:D107
         super().__init__(sequence)
         self.exec_index = None
 
-    def _accept(self, visitor):
+    def _accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).
 
         Args:
@@ -505,7 +505,7 @@ class SerialExecSequence(ExtendableExecSequence):
         """
         visitor.visit_serial(self)
 
-    def enable(self):
+    def enable(self) -> None:
         """Activate first child execution sequence."""
         super().enable()
         self.exec_index = 0
@@ -514,7 +514,7 @@ class SerialExecSequence(ExtendableExecSequence):
         else:
             raise Exception("Serial execution is empty")
 
-    def _update_child_done_status(self, child):
+    def _update_child_done_status(self, child) -> None:
         """Activate next child to given child execution sequence.
 
         Disable itself when all children done.
@@ -538,7 +538,7 @@ class ParallelExecSequence(ExtendableExecSequence):
     START_STR = "("
     END_STR = ")"
 
-    def _accept(self, visitor):
+    def _accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).
 
         Args:
@@ -546,13 +546,15 @@ class ParallelExecSequence(ExtendableExecSequence):
         """
         visitor.visit_parallel(self)
 
-    def enable(self):
+    def enable(self) -> None:
         """Activate all child execution sequences."""
         super().enable()
         for sequence in self.sequences:
             sequence.enable()
 
-    def _update_child_done_status(self, child):  # pylint: disable=unused-argument
+    def _update_child_done_status(
+        self, child
+    ) -> None:  # pylint: disable=unused-argument
         """Disable itself when all children done.
 
         Args:
@@ -572,7 +574,11 @@ class LoopExecSequence(CompositeExecSequence):
     START_STR = "{"
     END_STR = "}"
 
-    def __init__(self, controller, sequence):
+    def __init__(
+        self,
+        controller: MDODiscipline | AtomicExecSequence,
+        sequence: CompositeExecSequence,
+    ) -> None:
         """
         Args:
             controller: A controller.
@@ -603,7 +609,7 @@ class LoopExecSequence(CompositeExecSequence):
         self._compute_disc_to_uuids()
         self.iteration_count = 0
 
-    def _accept(self, visitor):
+    def _accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).
 
         Args:
@@ -611,13 +617,13 @@ class LoopExecSequence(CompositeExecSequence):
         """
         visitor.visit_loop(self)
 
-    def enable(self):
+    def enable(self) -> None:
         """Active controller execution sequence."""
         super().enable()
         self.atom_controller.enable()
         self.iteration_count = 0
 
-    def _update_child_status(self, child):
+    def _update_child_status(self, child) -> None:
         """Activate iteration successively regarding controller status.
 
         Count iterations regarding iteration_sequence status.
@@ -650,7 +656,7 @@ class ExecutionSequenceFactory:
     """
 
     @staticmethod
-    def atom(discipline):
+    def atom(discipline) -> AtomicExecSequence:
         """Return a structure representing the execution of a discipline.
 
         This function
@@ -665,7 +671,7 @@ class ExecutionSequenceFactory:
         return AtomicExecSequence(discipline)
 
     @staticmethod
-    def serial(sequence=None):
+    def serial(sequence=None) -> SerialExecSequence:
         """Return a structure representing the serial execution of disciplines.
 
         This function is intended to be called by MDOFormulation.get_expected_workflow
@@ -681,7 +687,7 @@ class ExecutionSequenceFactory:
         return SerialExecSequence(sequence)
 
     @staticmethod
-    def parallel(sequence=None):
+    def parallel(sequence=None) -> ParallelExecSequence:
         """Return a structure representing the parallel execution of disciplines.
 
         This function is intended to be called by MDOFormulation.get_expected_workflow
@@ -697,7 +703,7 @@ class ExecutionSequenceFactory:
         return ParallelExecSequence(sequence)
 
     @staticmethod
-    def loop(control, composite_sequence):
+    def loop(control, composite_sequence) -> LoopExecSequence:
         """Return a structure representing a loop execution of a function.
 
         It is intended to be called by MDOFormulation.get_expected_workflow methods.

@@ -109,7 +109,7 @@ class TMScalableProblem(TMProblem):
         """
         return self.models[1:]
 
-    def get_design_space(self):
+    def get_design_space(self) -> ParameterSpace:
         """Get the TM design space.
 
         :return: instance of the design space
@@ -131,7 +131,7 @@ class TMScalableProblem(TMProblem):
                 design_space.add_random_variable(name, distribution, size[index])
         return design_space
 
-    def reset_disciplines(self):
+    def reset_disciplines(self) -> None:
         """Reset the disciplines, setting n_calls=0, n_calls_linearize=0, exec_time=0 and
         local_data={}."""
         for discipline in self.disciplines:

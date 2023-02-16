@@ -16,16 +16,14 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Decorators to lock and protect critical code sections
-*****************************************************
-"""
+"""Decorators to lock and protect critical code sections."""
 from __future__ import annotations
 
 import functools
+from typing import Callable
 
 
-def synchronized(wrapped):
+def synchronized(wrapped: Callable[..., object]):
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
@@ -44,7 +42,7 @@ def synchronized(wrapped):
     return _wrapper
 
 
-def synchronized_hashes(wrapped):
+def synchronized_hashes(wrapped: Callable[..., object]):
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object

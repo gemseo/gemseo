@@ -44,7 +44,7 @@ class N2JSON:
         Args:
             graph: The dependency graph.
             self_coupled_disciplines: The names of the self-coupled disciplines, if any.
-        """
+        """  # noqa:D205 D212 D415
         self._graph = graph
         self.__disciplines = list(graph.disciplines)
 
@@ -311,7 +311,6 @@ class N2JSON:
             a value quantifying the degree of this relationship,
             and an HTML representation.
         """
-
         links = []
         for link in couplings:
             source, target, variables = link

@@ -484,7 +484,7 @@ class SobolAnalysis(SensitivityAnalysis):
         file_format: str | None = None,
         sort: bool = True,
         sort_by_total: bool = True,
-    ):
+    ) -> None:
         r"""Plot the first- and total-order Sobol' indices.
 
         For :math:`i\in\{1,\ldots,d\}`, plot :math:`S_i^{1}` and :math:`S_T^{1}`

@@ -27,9 +27,10 @@ from six import with_metaclass
 
 
 class SingleInstancePerAttributeId(type):
-    """A Singleton-like design pattern so that subclasses are only instantiated when the
-    discipline instance passed as input of the constructor is different from already
-    created instances.
+    """A multiton that depends on the id of a passed object.
+
+    Subclasses are only instantiated when the discipline instance passed as input of
+    the constructor is different from already created instances.
 
     The test if the instances are equal is made with the id(obj1)==id(obj2) operator
     """
@@ -39,7 +40,7 @@ class SingleInstancePerAttributeId(type):
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
     # function.MDOFunctionGenerator should have self as first parameter"
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):  # noqa:D102
         # id = memory address of the object, which is unique
         if not args:
             raise ValueError(
@@ -97,9 +98,10 @@ Multiton = with_metaclass(_Multiton, object)
 
 
 class SingleInstancePerFileAttribute(type):
-    """A Singleton-like design pattern so that subclasses are only instantiated when the
-    discipline instance passed as input of the constructor is different from already
-    created instances.
+    """A multiton that depends on the file passed.
+
+    Subclasses are only instantiated when the discipline instance passed as
+    input of the constructor is different from already created instances.
 
     The test if the instances are equal is made with the obj1 == obj2 operator
     """
@@ -108,7 +110,7 @@ class SingleInstancePerFileAttribute(type):
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):  # noqa:D102
         if not args:
             raise ValueError(
                 "SingleInstancePerAttribute subclasses need at"

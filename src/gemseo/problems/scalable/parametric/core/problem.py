@@ -58,13 +58,13 @@ class TMProblem:
 
     def __init__(
         self,
-        n_shared=1,
-        n_local=None,
-        n_coupling=None,
-        full_coupling=True,
-        noised_coupling=False,
-        seed=1,
-    ):
+        n_shared: int = 1,
+        n_local: list[int] | None = None,
+        n_coupling: list[int] | None = None,
+        full_coupling: bool = True,
+        noised_coupling: bool = False,
+        seed: int = 1,
+    ) -> None:
         """Constructor.
 
         :param int n_shared: size of the shared design parameters.
@@ -129,7 +129,7 @@ class TMProblem:
         self.design_space = self.get_design_space()
 
     @classmethod
-    def _create_main_model(cls, c_constraint, default_inputs):
+    def _create_main_model(cls, c_constraint, default_inputs) -> TMMainModel:
         """Create main model.
 
         :param ndarray c_constraint: coefficients for constraint.
@@ -140,7 +140,9 @@ class TMProblem:
         return TMMainModel(c_constraint, default_inputs)
 
     @classmethod
-    def _create_sub_model(cls, index, c_shared, c_local, c_cpl, default_inputs):
+    def _create_sub_model(
+        cls, index, c_shared, c_local, c_cpl, default_inputs
+    ) -> TMSubModel:
         """Create sub model.
 
         :param int index: model index
@@ -153,7 +155,7 @@ class TMProblem:
         """
         return TMSubModel(index, c_shared, c_local, c_cpl, default_inputs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation."""
         msg = ["Scalable problem"]
         for model in self.models:
@@ -185,7 +187,7 @@ class TMProblem:
             inputs = {name: inputs[name] for name in names}
         return inputs
 
-    def get_design_space(self):
+    def get_design_space(self) -> TMDesignSpace:
         """Get the TM design space.
 
         :return: instance of the design space
@@ -193,7 +195,7 @@ class TMProblem:
         """
         return TMDesignSpace(self.n_shared, self.n_local, self.n_coupling)
 
-    def reset_design_space(self):
+    def reset_design_space(self) -> None:
         """Reset the TM design space."""
         self.design_space = self.get_design_space()
 

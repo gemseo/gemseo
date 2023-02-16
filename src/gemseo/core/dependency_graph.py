@@ -282,7 +282,7 @@ class DependencyGraph:
         # 4. Write the dot and target files.
         graph_view.visualize(show=False, file_path=file_path, clean_up=False)
 
-    def write_full_graph(self, file_path):
+    def write_full_graph(self, file_path: str) -> None:
         """Write a representation of the full graph.
 
         Args:
@@ -292,7 +292,7 @@ class DependencyGraph:
 
     export_initial_graph = write_full_graph
 
-    def write_condensed_graph(self, file_path):
+    def write_condensed_graph(self, file_path: str) -> None:
         """Write a representation of the condensed graph.
 
         Args:

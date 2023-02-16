@@ -38,7 +38,7 @@ from gemseo.algos.opt_result import OptimizationResult
 # workaround to prevent dll error with xlwings from pypi with anaconda python:
 # backup the state of the environment variable CONDA_DLL_SEARCH_MODIFICATION_ENABLE
 # which could be modified by pdfo
-conda_dll_search_modification_enable = os.environ.get(
+conda_dll_search_modification_enable: str | None = os.environ.get(
     "CONDA_DLL_SEARCH_MODIFICATION_ENABLE"
 )
 
@@ -78,7 +78,7 @@ class PDFOOpt(OptimizationLibrary):
 
     LIBRARY_NAME = "PDFO"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dict, contains the list

@@ -123,9 +123,9 @@ def create_disciplines_from_sizes(
     inputs_size: int = 1,
     outputs_size: int = 1,
     grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
-    unique_disc_per_output=False,
-    no_self_coupled=False,
-    no_strong_couplings=False,
+    unique_disc_per_output: bool = False,
+    no_self_coupled: bool = False,
+    no_strong_couplings: bool = False,
 ) -> list[LinearDiscipline]:
     """Generate a :class:`.LinearDiscipline` according to a specification.
 

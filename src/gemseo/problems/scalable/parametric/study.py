@@ -31,6 +31,7 @@ from matplotlib import pyplot as plt
 from numpy import arange
 from numpy import where
 from numpy.random import rand
+from typing_extensions import SupportsIndex
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.mdo_scenario import MDOScenario
@@ -52,7 +53,7 @@ ALGO_OPTIONS = {
 }
 
 
-def save_matrix_plot(matrix, disc, name, directory="."):
+def save_matrix_plot(matrix, disc, name, directory: str = ".") -> None:
     """Save the graphical representation of a matrix.
 
     :param ndarray matrix: matrix.
@@ -85,16 +86,16 @@ class TMParamSS:
 
     def __init__(
         self,
-        n_disciplines,
+        n_disciplines: int,
         n_shared,
         n_local,
         n_coupling,
-        full_coupling=True,
-        active_probability=0.1,
-        feasibility_level=0.8,
-        seed=1,
-        directory="results",
-    ):
+        full_coupling: bool = True,
+        active_probability: float = 0.1,
+        feasibility_level: float = 0.8,
+        seed: int = 1,
+        directory: str = "results",
+    ) -> None:
         """The TMParamSS constructor depends on:
 
         - the number of disciplines,
@@ -211,7 +212,7 @@ class TMParamSS:
                 )
             ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         msg = "Parametric scalable study\n"
         msg += "> " + str(self.n_disciplines) + " disciplines\n"
         if hasattr(self.n_shared, "__len__"):
@@ -245,13 +246,13 @@ class TMParamSS:
     def run_formulation(
         self,
         formulation,
-        max_iter=100,
-        post_coupling=True,
-        post_optim=True,
-        post_coeff=True,
-        algo="NLOPT_SLSQP",
-        algo_options=None,
-    ):
+        max_iter: int = 100,
+        post_coupling: bool = True,
+        post_optim: bool = True,
+        post_coeff: bool = True,
+        algo: str = "NLOPT_SLSQP",
+        algo_options: dict[str, float] | None = None,
+    ) -> None:
         """This method solves the scalable problems with a particular MDO formulation.
 
         :param str formulation: MDO formulation name
@@ -276,7 +277,7 @@ class TMParamSS:
                 algo_options,
             )
 
-    def save(self, file_path):
+    def save(self, file_path) -> None:
         """This method saves the results into a pickle file.
 
         :param str file_path: pickle file path to store the results.
@@ -308,7 +309,7 @@ class TMParamSS:
 class TMParamSSPost:
     """This class is dedicated to the post-treatment of TMParamSS results."""
 
-    def __init__(self, file_path):
+    def __init__(self, file_path) -> None:
         """The constructor reads data stored in a pickle file.
 
         :param str file_path: file path where data are stored.
@@ -322,11 +323,11 @@ class TMParamSSPost:
 
     def plot(
         self,
-        title="A scalable comparison of MDO formulations",
-        save=False,
-        show=True,
-        file_path="comparison.pdf",
-    ):
+        title: str = "A scalable comparison of MDO formulations",
+        save: bool = False,
+        show: bool = True,
+        file_path: str = "comparison.pdf",
+    ) -> None:
         """Plot one line per MDO formulation where the y-axis represents the execution
         time and the x-axis the scaling strategies.
 
@@ -371,16 +372,16 @@ class TMScalableStudy:
 
     def __init__(
         self,
-        n_disciplines,
+        n_disciplines: SupportsIndex,
         n_shared,
         n_local,
         n_coupling,
-        full_coupling=True,
-        active_probability=0.1,
-        feasibility_level=0.8,
-        seed=1,
-        directory="results",
-    ):
+        full_coupling: bool = True,
+        active_probability: float = 0.1,
+        feasibility_level: float = 0.8,
+        seed: int = 1,
+        directory: str = "results",
+    ) -> None:
         """The TMScalableStudy constructor depends on:
 
         - the number of disciplines,
@@ -479,13 +480,13 @@ class TMScalableStudy:
     def run_formulation(
         self,
         formulation,
-        max_iter=100,
-        post_coupling=True,
-        post_optim=True,
-        post_coeff=True,
-        algo="NLOPT_SLSQP",
-        algo_options=None,
-        xdsm_pdf=False,
+        max_iter: int = 100,
+        post_coupling: bool = True,
+        post_optim: bool = True,
+        post_coeff: bool = True,
+        algo: str = "NLOPT_SLSQP",
+        algo_options: dict[str, float] | None = None,
+        xdsm_pdf: bool = False,
     ):
         """Solve the scalable problem with a particular MDO formulation.
 
@@ -575,7 +576,7 @@ class TMScalableStudy:
         """
         return list(self.n_calls.keys())
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation of the results (number of calls, number of
         linearizations and execution time) for each discipline.
 
@@ -619,7 +620,9 @@ class TMScalableStudy:
         msg = "........ {} = {} calls / {} linearizations / {} seconds"
         return msg.format(discipline, n_calls, n_lin, exec_time)
 
-    def plot_exec_time(self, show=True, save=False, file_path="exec_time.pdf"):
+    def plot_exec_time(
+        self, show: bool = True, save: bool = False, file_path: str = "exec_time.pdf"
+    ) -> None:
         """Barplot of the execution time of the different disciplines for the different
         formulations. When the formulation is based on a MDA, the MDO scenario is
         detailed in terms of MDA, MDO chain and sub-MDA.

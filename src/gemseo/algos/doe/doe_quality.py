@@ -90,7 +90,7 @@ class DOEQuality:
             compute_phip_criterion(samples, power),
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self.measures)
 
     def __eq__(self, other_doe_quality: DOEQuality) -> bool:

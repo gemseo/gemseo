@@ -17,8 +17,7 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Generate a N2 and XDSM into files (and/or web page) from an Excel description of the
-MDO problem."""
+"""Generate N2 and XDSM into files (and/or web page) from an Excel of the MDO problem."""
 from __future__ import annotations
 
 import logging

@@ -43,7 +43,7 @@ class AerostructureDesignSpace(DesignSpace):
     - reserve_fact belongs to [1000., 1000.], with initial value equal to 0.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor."""
         super().__init__()
 

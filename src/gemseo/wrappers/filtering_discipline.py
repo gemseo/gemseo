@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Filtering wrapper."""
 from __future__ import annotations
 
 from typing import Any
@@ -27,8 +28,7 @@ from gemseo.core.discipline import MDODiscipline
 
 
 class FilteringDiscipline(MDODiscipline):
-    """The FilteringDiscipline is a MDODiscipline wrapping another MDODiscipline, for a
-    subset of inputs and outputs."""
+    """A class to wrap another MDODiscipline for a subset of inputs and outputs."""
 
     def __init__(
         self,
@@ -49,7 +49,7 @@ class FilteringDiscipline(MDODiscipline):
                 Otherwise, remove them.
             keep_out: Whether to the outputs of interest.
                 Otherwise, remove them.
-        """
+        """  # noqa:D205 D212 D415
         self.discipline = discipline
         super().__init__(name=discipline.name)
         original_inputs_names = discipline.get_input_data_names()

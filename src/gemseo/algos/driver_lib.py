@@ -41,6 +41,7 @@ import string
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
+from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import List
@@ -59,6 +60,7 @@ from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
+from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -79,7 +81,7 @@ LOGGER = logging.getLogger(__name__)
 class TqdmToLogger(io.StringIO):
     """Redirect tqdm output to the gemseo logger."""
 
-    def write(self, buf):
+    def write(self, buf: str) -> None:
         """Write buffer."""
         buf = buf.strip(string.whitespace)
         if buf:
@@ -104,7 +106,9 @@ class ProgressBar(tqdm.tqdm):
     """
 
     @classmethod
-    def format_meter(cls, n, total, elapsed, **kwargs):  # noqa: D102
+    def format_meter(  # noqa: D102
+        cls, n: float, total: float, elapsed: float, **kwargs: Any
+    ) -> str:
         meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
         if elapsed != 0.0:
             rate, unit = cls.__convert_rate(n, elapsed)
@@ -152,7 +156,7 @@ class ProgressBar(tqdm.tqdm):
         self._last_len = [0]
         return self._print_status
 
-    def _print_status(self, s):
+    def _print_status(self, s: str) -> None:
         len_s = disp_len(s)
         self.fp.write(
             _unicode("\r{}{}".format(s, (" " * max(self._last_len[0] - len_s, 0))))
@@ -160,13 +164,13 @@ class ProgressBar(tqdm.tqdm):
         self.fp.flush()
         self._last_len[0] = len_s
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
         # A file-like stream cannot be pickled.
         del state["fp"]
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         self.__dict__.update(state)
         # Set back the file-like stream to its state as done in tqdm.__init__.
         self.fp = tqdm.utils.DisableOnWriteError(TqdmToLogger(), tqdm_instance=self)
@@ -221,7 +225,7 @@ class DriverLib(AlgoLib):
     """Whether to reset the iteration counters of the OptimizationProblem before each
     execution."""
 
-    def __init__(self):  # noqa:D107
+    def __init__(self) -> None:  # noqa:D107
         # Library settings and check
         super().__init__()
         self.__progress_bar = None
@@ -384,7 +388,9 @@ class DriverLib(AlgoLib):
             LOGGER.info("%s", log)
         LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
 
-    def _post_run(self, problem, algo_name, result, **options):
+    def _post_run(
+        self, problem: LinearProblem, algo_name: str, result, **options: Any
+    ) -> None:
         """To be overridden by subclasses.
 
         Args:
@@ -524,7 +530,7 @@ class DriverLib(AlgoLib):
         self._post_run(problem, algo_name, result, **options)
         return result
 
-    def _process_specific_option(self, options, option_key):
+    def _process_specific_option(self, options, option_key: str) -> None:
         """Process one option as a special treatment.
 
         Args:
@@ -538,7 +544,9 @@ class DriverLib(AlgoLib):
             self.problem.eq_tolerance = options[option_key]
             del options[option_key]
 
-    def _termination_criterion_raised(self, error):  # pylint: disable=W0613
+    def _termination_criterion_raised(
+        self, error: TerminationCriterion
+    ) -> OptimizationResult:  # pylint: disable=W0613
         """Retrieve the best known iterate when max iter has been reached.
 
         Args:
@@ -573,7 +581,9 @@ class DriverLib(AlgoLib):
         result = self.get_optimum_from_database(message)
         return result
 
-    def get_optimum_from_database(self, message=None, status=None):
+    def get_optimum_from_database(
+        self, message=None, status=None
+    ) -> OptimizationResult:
         """Retrieve the optimum from the database and build an optimization."""
         problem = self.problem
         if len(problem.database) == 0:
@@ -613,7 +623,7 @@ class DriverLib(AlgoLib):
         )
 
     # TODO: API: rename to requires_gradient?
-    def is_algo_requires_grad(self, algo_name):
+    def is_algo_requires_grad(self, algo_name: str):
         """Returns True if the algorithm requires a gradient evaluation.
 
         Args:
@@ -652,7 +662,7 @@ class DriverLib(AlgoLib):
 
         return current_x, l_b, u_b
 
-    def ensure_bounds(self, orig_func, normalize=True):
+    def ensure_bounds(self, orig_func, normalize: bool = True):
         """Project the design vector onto the design space before execution.
 
         Args:

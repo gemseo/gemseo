@@ -60,7 +60,7 @@ from gemseo.core.discipline import MDODiscipline
 
 
 class BurgersDiscipline(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.initialize_from_data_names(["x", "z"])
         self.output_grammar.initialize_from_data_names(["f", "g"])
