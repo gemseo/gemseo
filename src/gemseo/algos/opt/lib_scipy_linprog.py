@@ -64,7 +64,7 @@ class ScipyLinprog(OptimizationLibrary):
 
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dictionary that contains the list of algorithms with their

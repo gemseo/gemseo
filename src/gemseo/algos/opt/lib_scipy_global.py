@@ -54,7 +54,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
     LIB_COMPUTE_GRAD = True
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dict, contains the list

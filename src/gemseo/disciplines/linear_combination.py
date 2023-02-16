@@ -63,7 +63,7 @@ class LinearCombination(MDODiscipline):
         output_name: str,
         input_coefficients: dict[str, float] = None,
         offset: float = 0.0,
-    ):
+    ) -> None:
         """
         Args:
             input_names: The names of input variables.

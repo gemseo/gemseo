@@ -136,7 +136,7 @@ def test_check_format():
 
 def test_func_error(sinus):
     """Check func() with a string argument."""
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         sinus.func("toto")
 
 

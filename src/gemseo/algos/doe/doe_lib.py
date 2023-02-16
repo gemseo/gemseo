@@ -105,7 +105,7 @@ class DOELibrary(DriverLib):
         "integer": int32,
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor Abstract class."""
         super().__init__()
         self.unit_samples = array([])
@@ -350,7 +350,7 @@ class DOELibrary(DriverLib):
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
-    ):
+    ) -> None:
         """Evaluate all the functions of the optimization problem at the samples.
 
         Args:

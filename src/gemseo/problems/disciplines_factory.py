@@ -43,7 +43,7 @@ class DisciplinesFactory:
       benchmark test cases,
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """The constructor initializes the factory by scanning the directories to search
         for subclasses of :class:`.MDODiscipline` objects.
 
@@ -64,7 +64,7 @@ class DisciplinesFactory:
         self.__base_grammar.update_from_file(base_gram_path)
         self.__base_grammar_names = self.__base_grammar.keys()
 
-    def create(self, discipline_name, **options):
+    def create(self, discipline_name: str, **options):
         """Create a :class:`.MDODiscipline` from its name.
 
         Args:
@@ -125,7 +125,7 @@ class DisciplinesFactory:
         specific_options = {k: v for k, v in options.items() if k not in common_options}
         return common_options, specific_options
 
-    def update(self):
+    def update(self) -> None:
         """Update the paths, to be used if GEMSEO_PATH was changed."""
         self.factory.update()
 
@@ -134,7 +134,9 @@ class DisciplinesFactory:
         """The names of the available disciplines."""
         return self.factory.classes
 
-    def get_options_grammar(self, name, write_schema=False, schema_path=None):
+    def get_options_grammar(
+        self, name: str, write_schema: bool = False, schema_path: str | None = None
+    ) -> JSONGrammar:
         """Get the options default values for the given class name.
 
         Args:

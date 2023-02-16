@@ -37,11 +37,11 @@ def test_update_dict_from_val_arr():
     assert (out_d["x"] == x).all()
 
     args = [d, ["x"], np.ones(4)]
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         update_dict_of_arrays_from_array(*args)
 
     args = [d, ["x"], np.ones(1)]
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         update_dict_of_arrays_from_array(*args)
 
 
@@ -65,10 +65,10 @@ def test_get_function():
     args = ["x_shared", "y_4"]
     gen.get_function(*args)
     args = [["toto"], ["y_4"]]
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         gen.get_function(*args)
     args = [["x_shared"], ["toto"]]
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         gen.get_function(*args)
 
 
@@ -97,7 +97,7 @@ def test_grad_ko():
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     x_shared = sr.default_inputs["x_shared"]
     range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-4)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-20)
     with pytest.raises(ValueError):
         range_f_z.check_grad(x_shared, method="toto")

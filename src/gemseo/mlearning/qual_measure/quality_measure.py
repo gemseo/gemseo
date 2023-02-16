@@ -364,5 +364,5 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 class MLQualityMeasureFactory(Factory):
     """A factory of :class:`.MLQualityMeasure`."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(MLQualityMeasure, ("gemseo.mlearning.qual_measure",))

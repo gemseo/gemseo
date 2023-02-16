@@ -160,7 +160,7 @@ class AutoPyDiscipline(MDODiscipline):
         n_defaults = len(defaults)
         return {args[-n_defaults:][i]: defaults[i] for i in range(n_defaults)}
 
-    def _run(self):
+    def _run(self) -> None:
         output_values = self.py_func(**self.get_input_data(with_namespaces=False))
         if len(self.out_names) == 1:
             output_values = {self.out_names[0]: output_values}

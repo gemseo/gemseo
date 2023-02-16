@@ -407,5 +407,5 @@ class MatlabEngine:
                 "current {} workspace.".format(item, self.__engine_name)
             )
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close_session()

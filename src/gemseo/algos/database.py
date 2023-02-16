@@ -410,7 +410,7 @@ class Database:
         key = next(islice(iter(self.__dict), iteration, iteration + 1))
         return key.wrapped
 
-    def clear(self, reset_iteration_counter=False) -> None:
+    def clear(self, reset_iteration_counter: bool = False) -> None:
         """Clear the database.
 
         Args:
@@ -995,7 +995,7 @@ class Database:
         index_dataset: int,
         keys_group: h5py.Group,
         keys: list[str],
-    ):
+    ) -> None:
         """Add new output names to the hdf5 group of output names.
 
         Create a dataset in the group of output names
@@ -1128,7 +1128,7 @@ class Database:
         values_group: h5py.Group,
         input_values: HashableNdarray,
         output_values: Mapping[str, float | ndarray | list[int]],
-    ):
+    ) -> None:
         """Create the new hdf5 datasets for the given inputs and outputs.
 
         Useful when exporting the database to a hdf5 file.

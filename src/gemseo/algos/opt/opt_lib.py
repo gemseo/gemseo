@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from numpy import ndarray
 
@@ -91,7 +92,7 @@ class OptimizationLibrary(DriverLib):
     PG_TOL = "pg_tol"
     VERBOSE = "verbose"
 
-    def __init__(self):  # noqa:D107
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self._ftol_rel = 0.0
         self._ftol_abs = 0.0
@@ -154,7 +155,9 @@ class OptimizationLibrary(DriverLib):
         """
         return self.descriptions[algo_name].positive_constraints
 
-    def _check_constraints_handling(self, algo_name, problem):
+    def _check_constraints_handling(
+        self, algo_name: str, problem: OptimizationProblem
+    ) -> None:
         """Check if problem and algorithm are consistent for constraints handling."""
         if problem.has_eq_constraints() and not self.algorithm_handles_eqcstr(
             algo_name
@@ -182,7 +185,9 @@ class OptimizationLibrary(DriverLib):
             return [-cstr for cstr in self.problem.constraints]
         return self.problem.constraints
 
-    def _pre_run(self, problem, algo_name, **options):
+    def _pre_run(
+        self, problem: OptimizationProblem, algo_name: str, **options: Any
+    ) -> None:
         """To be overridden by subclasses.
 
         Specific method to be executed just before _run method call.

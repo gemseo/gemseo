@@ -115,7 +115,7 @@ class SnOpt(OptimizationLibrary):
 
     LIBRARY_NAME = "SNOPT"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dict, contains the list

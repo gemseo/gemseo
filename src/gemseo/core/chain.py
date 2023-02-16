@@ -191,7 +191,9 @@ class MDOChain(MDODiscipline):
                 # Initialize. Make a copy !
                 self.jac[output_name] = MDOChain.copy_jacs(discipline.jac[output_name])
 
-    def _compute_diff_in_outs(self, inputs, outputs):
+    def _compute_diff_in_outs(
+        self, inputs: Iterable[str], outputs: Iterable[str]
+    ) -> None:
         if self._coupling_structure is None:
             self._coupling_structure = MDOCouplingStructure(self.disciplines)
 

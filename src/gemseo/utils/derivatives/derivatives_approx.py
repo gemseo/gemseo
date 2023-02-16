@@ -76,7 +76,7 @@ class DisciplineJacApprox:
         n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0,
-    ):
+    ) -> None:
         """
         Args:
             discipline: The discipline
@@ -99,7 +99,7 @@ class DisciplineJacApprox:
                 you shall use multiprocessing.
             wait_time_between_fork: The time waited between two forks
                 of the process / thread.
-        """
+        """  # noqa:D205 D212 D415
         from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 
         self.discipline = discipline
@@ -120,7 +120,7 @@ class DisciplineJacApprox:
         self,
         outputs: Sequence[str],
         inputs: Sequence[str],
-    ):
+    ) -> None:
         """Create the Jacobian approximation class.
 
         Args:

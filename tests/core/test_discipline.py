@@ -126,14 +126,14 @@ def test_execute_status_error(sobieski_chain):
     """Test the execution with a failed status."""
     chain, indata = sobieski_chain
     chain.set_disciplines_statuses("FAILED")
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         chain.execute(indata)
 
 
 def test_check_status_error(sobieski_chain):
     """Test the execution with a None status."""
     chain, _ = sobieski_chain
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         chain._check_status("None")
 
 
@@ -184,14 +184,14 @@ def test_get_outputs_by_name_exception(sobieski_chain):
     """Test get_input_by_name with incorrect output var."""
     chain, indata = sobieski_chain
     chain.execute(indata)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         chain.get_outputs_by_name("toto")
 
 
 def test_get_inputs_by_name_exception(sobieski_chain):
     """Test get_input_by_name with incorrect input var."""
     chain, _ = sobieski_chain
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         chain.get_inputs_by_name("toto")
 
 
@@ -207,7 +207,7 @@ def test_get_local_data_by_name_exception(sobieski_chain):
     """Test that an exception is raised when the var is not in the grammar."""
     chain, indata = sobieski_chain
     chain.execute(indata)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         chain.get_local_data_by_name("toto")
 
 
@@ -230,7 +230,7 @@ def test_check_lin_error():
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
     indata = problem.get_default_inputs(names=aero.get_input_data_names())
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         aero.check_jacobian(indata, derr_approx="bidon")
 
 
@@ -410,13 +410,8 @@ def test_load_default_inputs():
     d = MDODiscipline()
     with pytest.raises(TypeError):
         d._filter_inputs(["toto"])
-    notfailed = True
-    try:
+    with pytest.raises(TypeError):
         d.default_inputs = ["toto"]
-    except TypeError:
-        notfailed = False
-    if notfailed:
-        raise Exception()
 
 
 def test_linearize_errors():
@@ -580,7 +575,7 @@ def test_execute_rerun_errors():
     d.status = d.STATUS_RUNNING
     with pytest.raises(ValueError):
         d.execute({"a": [2]})
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         d.reset_statuses_for_run()
 
     d.status = d.STATUS_DONE

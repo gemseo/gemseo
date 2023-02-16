@@ -571,7 +571,7 @@ class OptimizationProblem:
         method: str | Callable[[Callable], Callable] = "max",
         groups: tuple[ndarray] | None = None,
         **options: Any,
-    ):
+    ) -> None:
         """Aggregates a constraint to generate a reduced dimension constraint.
 
         Args:
@@ -614,7 +614,7 @@ class OptimizationProblem:
         objective_scale: float = 1.0,
         scale_inequality: float | ndarray = 1.0,
         scale_equality: float | ndarray = 1.0,
-    ):
+    ) -> None:
         r"""Reformulate the optimization problem using exterior penalty.
 
         Given the optimization problem with equality and inequality constraints:
@@ -906,7 +906,7 @@ class OptimizationProblem:
         """
         return len(self.constraints) > 0
 
-    def has_constraints(self):
+    def has_constraints(self) -> bool:
         """Check if the problem has equality or inequality constraints.
 
         Returns:

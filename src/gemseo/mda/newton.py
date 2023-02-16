@@ -54,7 +54,7 @@ class MDARoot(MDA):
 
     _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("strong_couplings", "all_couplings")
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
@@ -103,12 +103,13 @@ class MDARoot(MDA):
         self._add_residuals_norm_to_output_grammar()
 
     def execute_all_disciplines(
-        self, input_local_data: Mapping[str, ndarray], update_local_data=True
+        self, input_local_data: Mapping[str, ndarray], update_local_data: bool = True
     ) -> None:
         """Execute all self.disciplines.
 
         Args:
             input_local_data: The input data of the disciplines.
+            update_local_data: Whether to update the local data from the disciplines.
         """
         # Set status of sub disciplines
         # if self.parallel_execution is not None:
@@ -165,11 +166,11 @@ class MDANewtonRaphson(MDARoot):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver_options: Mapping[str, Any] = None,
-    ):
+    ) -> None:
         """
         Args:
             relax_factor: The relaxation factor in the Newton step.
-        """
+        """  # noqa:D205 D212 D415
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -250,7 +251,7 @@ class MDANewtonRaphson(MDARoot):
 
 
 class MDAQuasiNewton(MDARoot):
-    """Quasi-Newton solver for MDA.
+    r"""Quasi-Newton solver for MDA.
 
     `Quasi-Newton methods
     <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
@@ -322,7 +323,7 @@ class MDAQuasiNewton(MDARoot):
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
         linear_solver_options: Mapping[str, Any] = None,
-    ):
+    ) -> None:
         """
         Args:
             method: The name of the method in scipy root finding,
@@ -331,7 +332,7 @@ class MDAQuasiNewton(MDARoot):
 
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
-        """
+        """  # noqa:D205 D212 D415
         self.method = method
         super().__init__(
             disciplines,
@@ -486,7 +487,6 @@ class MDAQuasiNewton(MDARoot):
                     y_k: The coupling variables.
                     _: ignored
                 """
-
                 self.last_outputs = y_k
                 self.normed_residual = norm((y_k - self.last_outputs).real) / norm_0
                 self.residual_history.append(self.normed_residual)

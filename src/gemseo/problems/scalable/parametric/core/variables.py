@@ -27,7 +27,7 @@ X_LOCAL_NAME_BASIS = "x_local"
 U_LOCAL_NAME_BASIS = "u_local"
 
 
-def get_u_local_name(index):
+def get_u_local_name(index) -> str:
     """Returns the name of the local uncertain parameter associated with an index.
 
     :param int index: index.
@@ -35,7 +35,7 @@ def get_u_local_name(index):
     return f"{U_LOCAL_NAME_BASIS}_{index}"
 
 
-def get_x_local_name(index):
+def get_x_local_name(index) -> str:
     """Returns the name of the local design parameter associated with an index.
 
     :param int index: index.
@@ -46,7 +46,7 @@ def get_x_local_name(index):
 X_SHARED_NAME = "x_shared"
 
 
-def get_coupling_name(index):
+def get_coupling_name(index) -> str:
     """Returns the name of the coupling variable associated with an index.
 
     :param int index: index.
@@ -54,7 +54,7 @@ def get_coupling_name(index):
     return f"y_{index}"
 
 
-def get_constraint_name(index):
+def get_constraint_name(index) -> str:
     """Returns the name of the constraint associated with an index.
 
     :param int index: index.
@@ -65,7 +65,7 @@ def get_constraint_name(index):
 OBJECTIVE_NAME = "obj"
 
 
-def check_consistency(n_shared, n_local, n_coupling):
+def check_consistency(n_shared: int, n_local, n_coupling) -> None:
     """Check if n_shared is an integer and if n_local and n_coupling are list of integers
     with the same length."""
     if not isinstance(n_shared, int) or n_shared < 1:

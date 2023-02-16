@@ -52,11 +52,15 @@ OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
 
 
 class FoldersIter(BaseEnum):
+    """Folders iteration type."""
+
     NUMBERED = 0
     UUID = 1
 
 
 class Parsers(BaseEnum):
+    """Parser types."""
+
     KEY_VALUE_PARSER = 0
     TEMPLATE_PARSER = 1
     CUSTOM_CALLABLE = 2
@@ -197,7 +201,7 @@ class DiscFromExe(MDODiscipline):
 
         Raises:
             TypeError: If the provided ``write_input_file_method`` is not callable.
-        """
+        """  # noqa:D205 D212 D415
         super().__init__(name=name)
         self.input_template = input_template
         self.output_template = output_template

@@ -77,7 +77,7 @@ class MDAGaussSeidel(MDA):
                 used to make the method more robust,
                 if ``0<over_relax_factor<1`` or faster if ``1<over_relax_factor<=2``.
                 If ``over_relax_factor =1.``, it is deactivated.
-        """
+        """  # noqa:D205 D212 D415
         self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         super().__init__(
             disciplines,
@@ -99,12 +99,12 @@ class MDAGaussSeidel(MDA):
         self._set_default_inputs()
         self._compute_input_couplings()
 
-    def _initialize_grammars(self):
+    def _initialize_grammars(self) -> None:
         self.input_grammar.update(self.chain.input_grammar)
         self.output_grammar.update(self.chain.output_grammar)
         self._add_residuals_norm_to_output_grammar()
 
-    def _run(self):
+    def _run(self) -> None:
         # Run the disciplines in a sequential way
         # until the difference between outputs is under tolerance.
         if self.warm_start:

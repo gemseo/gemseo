@@ -59,7 +59,7 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
             normalize: If True, then the functions are normalized.
             **parallel_args: The parallel execution options,
                 see :mod:`gemseo.core.parallel_execution`.
-        """
+        """  # noqa:D205 D212 D415
         self.f_pointer = f_pointer
         self.__par_args = parallel_args
         self.__parallel = parallel
@@ -233,7 +233,7 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
 class GradientApproximationFactory:
     """A factory to create gradient approximators."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa:D107
         self.factory = Factory(GradientApproximator, ("gemseo.utils.derivatives",))
         self.__aliases = {
             self.factory.get_class(class_name).ALIAS: class_name
@@ -280,7 +280,7 @@ class GradientApproximationFactory:
         """The gradient approximators."""
         return self.factory.classes
 
-    def is_available(self, class_name) -> bool:
+    def is_available(self, class_name: str) -> bool:
         """Whether a gradient approximator is available.
 
         Args:

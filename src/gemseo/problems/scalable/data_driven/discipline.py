@@ -52,6 +52,8 @@ otherwise the model uses default values.
 """
 from __future__ import annotations
 
+from typing import Iterable
+
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -60,7 +62,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 class ScalableDiscipline(MDODiscipline):
     """Scalable discipline."""
 
-    def __init__(self, name, data, sizes=None, **parameters):
+    def __init__(self, name: str | None, data, sizes=None, **parameters) -> None:
         """Constructor.
 
         :param str name: scalable model class name.
@@ -79,7 +81,7 @@ class ScalableDiscipline(MDODiscipline):
         self.add_differentiated_inputs(self.get_input_data_names())
         self.add_differentiated_outputs(self.get_output_data_names())
 
-    def initialize_grammars(self, data):
+    def initialize_grammars(self, data) -> None:
         """Initialize input and output grammars from data names.
 
         :param Dataset data: learning dataset.
@@ -87,12 +89,14 @@ class ScalableDiscipline(MDODiscipline):
         self.input_grammar.update(data.get_names(data.INPUT_GROUP))
         self.output_grammar.update(data.get_names(data.OUTPUT_GROUP))
 
-    def _run(self):
+    def _run(self) -> None:
         """Runs the scalable discipline and stores the output values."""
         output_value = self.scalable_model.scalable_function(self.local_data)
         self.local_data.update(output_value)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         """Compute the Jacobian of outputs wrt inputs and store the values.
 
         :param inputs: list of input variables. Default value: None.

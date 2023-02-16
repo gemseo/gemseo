@@ -19,16 +19,17 @@ import openturns
 from numpy import ndarray
 from packaging import version
 
+
 if version.parse(openturns.__version__) < version.parse("1.18"):
 
-    def get_eigenvalues(
+    def get_eigenvalues(  # noqa:D103
         result: openturns.KarhunenLoeveResult,
     ) -> openturns.Point:
         return result.getEigenValues()
 
 else:
 
-    def get_eigenvalues(
+    def get_eigenvalues(  # noqa:D103
         result: openturns.KarhunenLoeveResult,
     ) -> openturns.Point:
         return result.getEigenvalues()
@@ -36,69 +37,81 @@ else:
 
 if version.parse(openturns.__version__) < version.parse("1.19"):
 
-    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis_PCC(x, y)
 
-    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis_PRCC(x, y)
 
-    def compute_pearson_correlation(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_pearson_correlation(  # noqa:D103
+        x: ndarray, y: ndarray
+    ) -> openturns.Point:
         return openturns.CorrelationAnalysis_PearsonCorrelation(x, y)
 
-    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis_SignedSRC(x, y)
 
-    def compute_spearman_correlation(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_spearman_correlation(  # noqa:D103
+        x: ndarray, y: ndarray
+    ) -> openturns.Point:
         return openturns.CorrelationAnalysis_SpearmanCorrelation(x, y)
 
-    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis_SRC(x, y)
 
-    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis_SRRC(x, y)
 
 elif version.parse(openturns.__version__) < version.parse("1.20"):
 
-    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis.PCC(x, y)
 
-    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis.PRCC(x, y)
 
-    def compute_pearson_correlation(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_pearson_correlation(  # noqa:D103
+        x: ndarray, y: ndarray
+    ) -> openturns.Point:
         return openturns.CorrelationAnalysis.PearsonCorrelation(x, y)
 
-    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis.SignedSRC(x, y)
 
-    def compute_spearman_correlation(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_spearman_correlation(  # noqa:D103
+        x: ndarray, y: ndarray
+    ) -> openturns.Point:
         return openturns.CorrelationAnalysis.SpearmanCorrelation(x, y)
 
-    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis.SRC(x, y)
 
-    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis.SRRC(x, y)
 
 else:
 
-    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis(x, y).computePCC()
 
-    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis(x, y).computePRCC()
 
-    def compute_pearson_correlation(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_pearson_correlation(  # noqa:D103
+        x: ndarray, y: ndarray
+    ) -> openturns.Point:
         return openturns.CorrelationAnalysis(x, y).computePearsonCorrelation()
 
-    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis(x, y).computeSRC()
 
-    def compute_spearman_correlation(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_spearman_correlation(  # noqa:D103
+        x: ndarray, y: ndarray
+    ) -> openturns.Point:
         return openturns.CorrelationAnalysis(x, y).computeSpearmanCorrelation()
 
-    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis(x, y).computeSRC()
 
-    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:
+    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis(x, y).computeSRRC()

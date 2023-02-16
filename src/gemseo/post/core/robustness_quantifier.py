@@ -20,6 +20,8 @@
 """Quantification of robustness of the optimum to variables perturbations."""
 from __future__ import annotations
 
+from typing import Sized
+
 import numpy as np
 from numpy.random import multivariate_normal
 
@@ -33,7 +35,7 @@ class RobustnessQuantifier:
 
     AVAILABLE_APPROXIMATIONS = ["BFGS", "SR1", "LEAST_SQUARES"]
 
-    def __init__(self, history, approximation_method="SR1"):
+    def __init__(self, history, approximation_method: str = "SR1") -> None:
         """
         Args:
             history: An approximation history.
@@ -60,10 +62,10 @@ class RobustnessQuantifier:
     def compute_approximation(
         self,
         funcname,
-        first_iter=0,
-        last_iter=0,
+        first_iter: int = 0,
+        last_iter: int = 0,
         b0_mat=None,
-        at_most_niter=-1,
+        at_most_niter: int = -1,
         func_index=None,
     ):
         """Build the BFGS approximation for the Hessian.
@@ -93,7 +95,7 @@ class RobustnessQuantifier:
         self.fgrad_ref = grad_ref
         return self.b_mat
 
-    def compute_expected_value(self, expect, cov):
+    def compute_expected_value(self, expect: Sized, cov):
         r"""Compute the expected value of the output.
 
         Equal to :math:`0.5\mathbb{E}[e^TBe]`
@@ -125,7 +127,7 @@ class RobustnessQuantifier:
         )
         return exp_val
 
-    def compute_variance(self, expect, cov):
+    def compute_variance(self, expect: Sized, cov):
         r"""Compute the variance of the output.
 
         Equal to :math:`0.5\mathbb{E}[e^TBe]`
@@ -154,7 +156,7 @@ class RobustnessQuantifier:
         v_mat += 4 * np.linalg.multi_dot((mu_cent.T, b_approx, cov, b_approx, mu_cent))
         return 2 * np.trace(v_mat)
 
-    def compute_function_approximation(self, x_vars):
+    def compute_function_approximation(self, x_vars) -> float:
         """Compute a second order approximation of the function.
 
         Args:
@@ -187,7 +189,9 @@ class RobustnessQuantifier:
         x_l = x_vars - self.x_ref
         return np.dot(self.b_mat, x_l) + self.fgrad_ref
 
-    def montecarlo_average_var(self, mean, cov, n_samples=100000, func=None):
+    def montecarlo_average_var(
+        self, mean: Sized, cov, n_samples: int = 100000, func=None
+    ):
         """Computes the variance and expected value using Monte Carlo approach.
 
         Args:

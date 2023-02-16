@@ -17,10 +17,9 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""GUI for edition of templates for inputs and outputs files To be used by
-:class:`.DiscFromExe`
+"""GUI for edition of templates for inputs and outputs files.
 
-Run this file with no argument to open the GUI
+To be used by :class:`.DiscFromExe` Run this file with no argument to open the GUI
 """
 from __future__ import annotations
 
@@ -85,12 +84,14 @@ class QtTemplateEditor(QMainWindow):
     Same for outputs.
     """
 
-    def __init__(self, in_sep="GEMSEO_INPUT", out_sep="GEMSEO_OUTPUT"):
+    def __init__(
+        self, in_sep: str = "GEMSEO_INPUT", out_sep: str = "GEMSEO_OUTPUT"
+    ) -> None:
         """
         Args:
             in_sep: The separator name for the input tag.
             out_sep: The separator name for the output tag.
-        """
+        """  # noqa:D205 D212 D415
         self.in_sep = in_sep
         self.out_sep = out_sep
 
@@ -107,7 +108,7 @@ class QtTemplateEditor(QMainWindow):
 
         self.setGeometry(100, 100, 600, 800)
 
-    def _setup_toolbars(self):
+    def _setup_toolbars(self) -> None:
         """Set up the toolbars, the icons and shortcuts."""
         self.toolbar = self.addToolBar("Actions")
 
@@ -165,7 +166,7 @@ class QtTemplateEditor(QMainWindow):
             return filename, True
         return "", False
 
-    def add_action(self, name, status_tip, shortcut, connect):
+    def add_action(self, name, status_tip, shortcut, connect) -> QAction:
         """Add an action with a button and icon.
 
         Args:
@@ -186,7 +187,7 @@ class QtTemplateEditor(QMainWindow):
         self.toolbar.addAction(action)
         return action
 
-    def open_doc(self):
+    def open_doc(self) -> None:
         """Open the document for edition of the template."""
         filename, is_ok = self.__get_open_filename("Open File")
         if is_ok:
@@ -196,7 +197,7 @@ class QtTemplateEditor(QMainWindow):
             self.highlight(self.in_sep, "green")
             self.highlight(self.out_sep)
 
-    def save_doc(self):
+    def save_doc(self) -> None:
         """Save the template to a file."""
         filename, is_ok = self.__get_save_filename("Save File")
         if is_ok:
@@ -204,7 +205,7 @@ class QtTemplateEditor(QMainWindow):
             f_handler.write(self.q_text_e.toPlainText())
             f_handler.close()
 
-    def make_input(self):
+    def make_input(self) -> None:
         """Make an input from the selected data."""
         name, is_ok = QInputDialog.getText(self, "Input name", "Enter the input name:")
         if is_ok:
@@ -217,7 +218,7 @@ class QtTemplateEditor(QMainWindow):
             cursor.insertText(tag)
             self.highlight(self.in_sep, "green")
 
-    def make_output(self):
+    def make_output(self) -> None:
         """Make an output from the selected data."""
         name, is_ok = QInputDialog.getText(
             self, "Output name", "Enter the output name:"
@@ -230,7 +231,7 @@ class QtTemplateEditor(QMainWindow):
             cursor.insertText(tag)
             self.highlight(self.out_sep)
 
-    def highlight(self, sep, color="red"):
+    def highlight(self, sep, color: QColor | str = "red") -> None:
         """Highlight some text.
 
         Args:
@@ -283,7 +284,7 @@ class QtTemplateEditor(QMainWindow):
                 index = regex.indexIn(self.q_text_e.toPlainText(), pos)
 
 
-def main():
+def main() -> None:
     """Entry point."""
     app = QApplication(sys.argv)
     editor = QtTemplateEditor()

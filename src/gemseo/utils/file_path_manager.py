@@ -56,7 +56,7 @@ class FilePathManager:
                 If None, use the current working directory.
             default_extension: The default extension.
                 If None, use the default extension related to the given type of file.
-        """
+        """  # noqa:D205 D212 D415
         if default_name is None:
             self.__default_name = file_type.value.name
         else:

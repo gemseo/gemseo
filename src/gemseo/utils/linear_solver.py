@@ -16,13 +16,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Linear solvers wrapper
-**********************
-"""
+"""Linear solvers wrapper."""
 from __future__ import annotations
 
 import logging
+from typing import Sized
 
 import numpy as np
 import scipy.sparse.linalg as scipy_linalg
@@ -39,7 +37,7 @@ class LinearSolver:
     LGMRES = "lgmres"
     AVAILABLE_SOLVERS = {LGMRES: scipy_linalg.lgmres}
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor."""
         self.outer_v = []  # Used to store (v,Av) pairs for restart and multiple RHS
 
@@ -84,7 +82,7 @@ class LinearSolver:
             b_vec = b_vec.toarray()
         return b_vec.real
 
-    def solve(self, a_mat, b_vec, linear_solver="lgmres", **options):
+    def solve(self, a_mat, b_vec: Sized, linear_solver: str = "lgmres", **options):
         """Solve the linear system :math:`Ax=b`.
 
         Args:

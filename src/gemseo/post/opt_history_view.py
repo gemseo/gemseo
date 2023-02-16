@@ -388,7 +388,7 @@ class OptHistoryView(OptPostProcessor):
         self,
         x_history: ndarray,
         n_iter: int,
-    ):
+    ) -> None:
         """Create the design variables plot.
 
         Args:

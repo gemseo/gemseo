@@ -112,7 +112,7 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
         show: bool = True,
         file_path: str | Path = "",
         clean_up: bool = True,
-    ):
+    ) -> None:
         """Create the visualization and save it on the disk.
 
         Args:

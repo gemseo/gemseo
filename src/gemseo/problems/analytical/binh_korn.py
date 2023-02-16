@@ -57,7 +57,7 @@ class BinhKorn(OptimizationProblem):
     the :class:`.DesignSpace`, the objective function and the constraints.
     """
 
-    def __init__(self, initial_values: FigSizeType = (1.0, 1.0)):
+    def __init__(self, initial_values: FigSizeType = (1.0, 1.0)) -> None:
         """
         Args:
             initial_values: Initial value of the design variables.

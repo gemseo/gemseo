@@ -107,7 +107,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 
 
-def get_design_space(to_complex=True):
+def get_design_space(to_complex: bool = True) -> DesignSpace:
     """Read the design space file.
 
     Args:
@@ -185,7 +185,7 @@ class PropaneReaction(MDODiscipline):
         )
 
     @classmethod
-    def f_6(cls, x_shared, y_1, y_3):
+    def f_6(cls, x_shared, y_1, y_3) -> complex:
         """Compute the second term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -201,7 +201,7 @@ class PropaneReaction(MDODiscipline):
         return sqrt(y_1[0] * y_1[1]) - sqrt(40.0 * x_shared[0] / y_3[2]) * x_shared[2]
 
     @classmethod
-    def f_7(cls, x_shared, y_1, y_3):
+    def f_7(cls, x_shared, y_1, y_3) -> complex:
         """Compute the third term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -264,7 +264,7 @@ class PropaneComb1(MDODiscipline):
         return -x_shared[0] * (x_shared[2] + x_shared[3] - 8.0) / 6.0
 
     @classmethod
-    def compute_y1(cls, x_shared):
+    def compute_y1(cls, x_shared) -> float:
         """Solve the second coupling equation in functional form.
 
         Args:
@@ -342,7 +342,7 @@ class PropaneComb3(MDODiscipline):
         self.store_local_data(y_3=y_3_out)
 
     @classmethod
-    def compute_y4(cls, x_shared):
+    def compute_y4(cls, x_shared) -> float:
         """Solve the fifth coupling equation in functional form.
 
         Args:
@@ -369,7 +369,7 @@ class PropaneComb3(MDODiscipline):
         return y_5
 
     @classmethod
-    def compute_y6(cls, x_shared):
+    def compute_y6(cls, x_shared) -> float:
         """Solve the seventh coupling equation in functional form.
 
         Args:

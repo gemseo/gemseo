@@ -39,7 +39,7 @@ class N2HTML:
         Args:
             file_path: The file path of the HTML file.
             open_browser: If True, open the browser and display the HTML file.
-        """
+        """  # noqa:D205 D212 D415
         self.__file_path = Path(file_path)
         self.__open_browser = open_browser
 
@@ -92,7 +92,6 @@ class N2HTML:
         Returns:
             The HTML content.
         """
-
         css_files = ["style.css", "modal.css", "button.css", "materialize.min.css"]
         js_files = [
             "d3.v3.js",

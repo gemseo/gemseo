@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 from typing import Iterable
 from typing import Mapping
 
@@ -253,7 +254,7 @@ class AnalyticDiscipline(MDODiscipline):
                         dtype=float64,
                     )
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
         super().__setstate__(state)
         self._sympy_funcs = {}
         self._sympy_jac_funcs = {}

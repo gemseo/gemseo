@@ -316,7 +316,7 @@ class ParallelExecution:
         """
         return ordered_outputs
 
-    def _update_local_objects(self, ordered_outputs):
+    def _update_local_objects(self, ordered_outputs) -> None:
         """Update the local objects from parallel results.
 
         The ordered_outputs contains the stacked outputs of the function

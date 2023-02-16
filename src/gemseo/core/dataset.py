@@ -1113,7 +1113,7 @@ class Dataset:
             data = concatenate_dict_of_arrays_to_array(data, names)
         return data
 
-    def get_all_data(self, by_group=True, as_dict=False) -> AllDataType:
+    def get_all_data(self, by_group: bool = True, as_dict: bool = False) -> AllDataType:
         """Get all the data stored in the dataset.
 
         The data can be returned

@@ -97,7 +97,7 @@ class MDOInitializationChain(MDOChain):
     ensure consistency.
     """
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         disciplines: list[MDODiscipline],
         name: str | None = None,

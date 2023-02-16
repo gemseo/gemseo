@@ -175,7 +175,7 @@ class MDA(MDODiscipline):
                 expressed in terms of normed residuals.
             linear_solver: The name of the linear solver.
             linear_solver_options: The options passed to the linear solver factory.
-        """
+        """  # noqa:D205 D212 D415
         super().__init__(name, grammar_type=grammar_type)
         self.tolerance = tolerance
         self.linear_solver = linear_solver
@@ -405,15 +405,15 @@ class MDA(MDODiscipline):
         for discipline in self.disciplines:
             discipline.reset_statuses_for_run()
 
-    def reset_statuses_for_run(self) -> None:
+    def reset_statuses_for_run(self) -> None:  # noqa:D102
         MDODiscipline.reset_statuses_for_run(self)
         self.reset_disciplines_statuses()
 
-    def get_expected_workflow(self) -> LoopExecSequence:
+    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
         disc_exec_seq = ExecutionSequenceFactory.serial(self.disciplines)
         return ExecutionSequenceFactory.loop(self, disc_exec_seq)
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         all_disc = [self]
@@ -536,9 +536,9 @@ class MDA(MDODiscipline):
         show: bool = False,
         fig_size_x: float = 10,
         fig_size_y: float = 10,
-        reference_jacobian_path=None,
-        save_reference_jacobian=False,
-        indices=None,
+        reference_jacobian_path: None | Path | str = None,
+        save_reference_jacobian: bool = False,
+        indices: Iterable[int] | None = None,
     ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
@@ -648,7 +648,9 @@ class MDA(MDODiscipline):
             indices=indices,
         )
 
-    def execute(self, input_data: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    def execute(  # noqa:D102
+        self, input_data: Mapping[str, Any] | None = None
+    ) -> dict[str, Any]:
         self._current_iter = 0
         return super().execute(input_data=input_data)
 

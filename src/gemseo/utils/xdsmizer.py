@@ -86,7 +86,6 @@ class XDSMizer:
         expected_workflow: CompositeExecSequence | None = None,
     ) -> None:
         """
-
         Args:
             scenario: The scenario to be represented as an XDSM diagram.
             hashref: The keyword used in the JSON structure
@@ -96,7 +95,7 @@ class XDSMizer:
             expected_workflow: The expected workflow,
                 describing the sequence of execution of the different disciplines
                 (:class:`.MDODiscipline`, :class:`.Scenario`, :class:`.MDA`, etc.)
-        """
+        """  # noqa:D205 D212 D415
         self.scenario = scenario
         self.level = level
         self.hashref = hashref
@@ -156,8 +155,7 @@ class XDSMizer:
         print_statuses: bool = False,
         latex_output: bool = False,
     ) -> None:
-        """Monitor the discipline execution by generating XDSM json file on discipline
-        status update.
+        """Generate XDSM json file on discipline status update.
 
         Args:
             outdir: The name of the directory to store the different files.

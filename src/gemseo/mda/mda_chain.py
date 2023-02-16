@@ -89,7 +89,7 @@ class MDAChain(MDA):
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
         **inner_mda_options: float | int | bool | str | None,
-    ):
+    ) -> None:
         """
         Args:
             inner_mda_name: The class name of the inner-MDA.
@@ -108,7 +108,7 @@ class MDAChain(MDA):
             mdachain_parallel_options: The options of the MDOParallelChain
                 instances, if any.
             **inner_mda_options: The options of the inner-MDAs.
-        """
+        """  # noqa:D205 D212 D415
         self.n_processes = n_processes
         self.mdo_chain = None
         self._chain_linearize = chain_linearize
@@ -153,7 +153,7 @@ class MDAChain(MDA):
             mda.tolerance = self.tolerance
 
     @MDA.log_convergence.setter
-    def log_convergence(
+    def log_convergence(  # noqa: D102
         self,
         value: bool,
     ) -> None:
@@ -169,7 +169,7 @@ class MDAChain(MDA):
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool | None] = None,
         **inner_mda_options: float | int | bool | str | None,
-    ):
+    ) -> None:
         """Create an MDO chain from the execution sequence of the disciplines.
 
         Args:
@@ -363,15 +363,14 @@ class MDAChain(MDA):
     def __is_one_discipline_self_coupled(
         self, disciplines: Sequence[MDODiscipline]
     ) -> bool:
-        """Whether the disciplines contain only one self-coupled discipline which is also
-        not a MDA.
+        """Return whether only one self-coupled discipline which is also not an MDA.
 
         Args:
             disciplines: The disciplines.
 
         Returns:
             True if the sole discipline of coupled_disciplines is self-coupled
-            and not a MDA.
+            and not an MDA.
         """
         first_discipline = disciplines[0]
         is_one_discipline_self_coupled = (
@@ -453,7 +452,7 @@ class MDAChain(MDA):
         self.output_grammar.update(self.mdo_chain.output_grammar)
         self._add_residuals_norm_to_output_grammar()
 
-    def _check_consistency(self):
+    def _check_consistency(self) -> None:
         """Check if there is no more than 1 equation per variable.
 
         For instance if a strong coupling is not also a self coupling.
@@ -489,7 +488,7 @@ class MDAChain(MDA):
         else:
             super()._compute_jacobian(inputs, outputs)
 
-    def add_differentiated_inputs(
+    def add_differentiated_inputs(  # noqa:D102
         self,
         inputs: Iterable[str] | None = None,
     ) -> None:
@@ -497,10 +496,10 @@ class MDAChain(MDA):
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
 
-    def add_differentiated_outputs(
+    def add_differentiated_outputs(  # noqa: D102
         self,
         outputs: Iterable[str] | None = None,
-    ) -> None:  # noqa: D102
+    ) -> None:
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
@@ -524,22 +523,22 @@ class MDAChain(MDA):
         Here for compatibility with mother class.
         """
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.mdo_chain.get_expected_dataflow()
 
-    def get_expected_workflow(self) -> SerialExecSequence:
+    def get_expected_workflow(self) -> SerialExecSequence:  # noqa:D102
         exec_s = SerialExecSequence(self)
         workflow = self.mdo_chain.get_expected_workflow()
         exec_s.extend(workflow)
         return exec_s
 
-    def reset_statuses_for_run(self) -> None:
+    def reset_statuses_for_run(self) -> None:  # noqa:D102
         super().reset_statuses_for_run()
         self.mdo_chain.reset_statuses_for_run()
 
-    def plot_residual_history(
+    def plot_residual_history(  # noqa: D102
         self,
         show: bool = False,
         save: bool = True,

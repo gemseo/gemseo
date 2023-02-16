@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Python versions compatibility layer."""
 from __future__ import annotations
 
 import operator
@@ -64,7 +65,7 @@ if sys.version_info < (3, 8):  # pragma: >=3.8 no cover
 
     from singledispatchmethod import singledispatchmethod  # noqa: F401
 
-    def get_mock_method_call_args(method):
+    def get_mock_method_call_args(method):  # noqa:D103
         return method.call_args[0]
 
 else:  # pragma: <3.8 no cover
@@ -74,5 +75,5 @@ else:  # pragma: <3.8 no cover
     from typing import Final  # noqa: F401
     from typing import Literal  # noqa: F401
 
-    def get_mock_method_call_args(method):
+    def get_mock_method_call_args(method):  # noqa:D103
         return method.call_args.args

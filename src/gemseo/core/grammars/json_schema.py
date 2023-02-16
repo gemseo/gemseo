@@ -91,7 +91,7 @@ class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_Multipl
     def __len__(self) -> int:
         return len(self.properties)
 
-    def __delitem__(self, key) -> None:
+    def __delitem__(self, key: str) -> None:
         del self.properties[key]
         if key in self.required:
             self.required.remove(key)

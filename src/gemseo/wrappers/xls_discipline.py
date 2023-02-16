@@ -201,7 +201,7 @@ class XLSDiscipline(MDODiscipline):
                 "that define the outputs of the discipline"
             )
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.__reset_xls_objects()
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:

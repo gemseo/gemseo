@@ -722,13 +722,13 @@ def test_hdf5_export(tmp_wd):
 
 def test_import_error_with_missing_file():
     """Check that a missing HDF file cannot be imported."""
-    with pytest.raises(Exception):
+    with pytest.raises(FileNotFoundError):
         DesignSpace(hdf_file="dummy.h5")
 
 
 def test_fail_import():
     """Check that a malformed HDF file cannot be imported."""
-    with pytest.raises(Exception):
+    with pytest.raises(KeyError):
         DesignSpace().import_hdf(FAIL_HDF)
 
 

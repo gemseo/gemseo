@@ -42,7 +42,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class FirstOrderFD(GradientApproximator):
-    """First-order finite differences approximator.
+    r"""First-order finite differences approximator.
 
     .. math::
 
@@ -51,7 +51,7 @@ class FirstOrderFD(GradientApproximator):
 
     ALIAS = FINITE_DIFFERENCES
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         f_pointer: Callable[[ndarray], ndarray],
         step: float | ndarray = 1e-6,
@@ -69,7 +69,7 @@ class FirstOrderFD(GradientApproximator):
             **parallel_args,
         )
 
-    def f_gradient(
+    def f_gradient(  # noqa:D102
         self,
         x_vect: ndarray,
         step: float | ndarray | None = None,

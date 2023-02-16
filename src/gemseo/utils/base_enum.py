@@ -131,5 +131,5 @@ class CamelCaseEnum(Enum):
 class CallableEnum(BaseEnum):
     """Enum whose value is callable."""
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:  # noqa:D102
         return self.value(*args, **kwargs)

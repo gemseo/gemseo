@@ -246,7 +246,7 @@ class PostOptimalAnalysis:
         functions_jac: dict[str, dict[str, ndarray]],
         func_names: Iterable[str],
         inputs: Iterable[str],
-    ):
+    ) -> None:
         """Check the consistency of the Jacobians with the required inputs.
 
         Args:

@@ -89,7 +89,7 @@ class JSONGrammar(BaseGrammar):
         schema_path: str | Path | None = None,
         descriptions: Mapping[str, str] | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Args:
             schema_path: The path to a JSON schema file.

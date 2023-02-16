@@ -29,7 +29,7 @@ from os.path import join
 from gemseo.utils.study_analysis import StudyAnalysis
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
     descr = (
         "A tool to generate a N2 and XDSM diagrams " + "from an excel description file."
@@ -64,7 +64,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """Entry point."""
     args = parse_args()
 

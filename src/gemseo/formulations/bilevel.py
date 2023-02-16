@@ -216,7 +216,7 @@ class BiLevel(MDOFormulation):
         self,
         scenario: Scenario,
         use_non_shared_vars: bool,
-    ):
+    ) -> list[str]:
         """Compute the scenario adapter inputs.
 
         Args:

@@ -69,7 +69,7 @@ class Rastrigin(OptimizationProblem):
         Parallel Computing, 17, pages 619–632, 1991.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
         design_space.set_current_value(full(2, 0.01))
@@ -84,7 +84,7 @@ class Rastrigin(OptimizationProblem):
         )
 
     @staticmethod
-    def rastrigin(x_dv):
+    def rastrigin(x_dv) -> float:
         """Evaluate the 2nd order Rastrigin function.
 
         Args:

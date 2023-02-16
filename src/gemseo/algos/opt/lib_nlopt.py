@@ -410,7 +410,7 @@ class Nlopt(OptimizationLibrary):
         problem: OptimizationProblem,
         algo_name: str,
         **options: NLoptOptionsType,
-    ):
+    ) -> None:
         """Set :attr:`.STOP_CRIT_NX` depending on the algorithm.
 
         The COBYLA and BOBYQA algorithms create sets of interpolation points

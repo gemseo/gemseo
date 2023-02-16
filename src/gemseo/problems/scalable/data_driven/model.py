@@ -57,7 +57,7 @@ class ScalableModel:
 
     ABBR = "sm"
 
-    def __init__(self, data, sizes=None, **parameters):
+    def __init__(self, data, sizes=None, **parameters) -> None:
         """Constructor.
 
         :param Dataset data: learning dataset.
@@ -120,7 +120,7 @@ class ScalableModel:
 
         return lower_bounds, upper_bounds
 
-    def normalize_data(self):
+    def normalize_data(self) -> None:
         """Normalize dataset from lower and upper bounds."""
         normalized_data = Dataset()
         inputs = self.data.get_data_by_group(self.data.INPUT_GROUP, True)
