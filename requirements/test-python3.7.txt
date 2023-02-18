@@ -164,5 +164,5 @@ xdsmjs==1.0.1
     # via gemseo (setup.py)
 xxhash==3.1.0
     # via gemseo (setup.py)
-zipp==3.13.0
+zipp==3.14.0
     # via importlib-metadata
