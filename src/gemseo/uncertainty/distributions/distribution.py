@@ -183,7 +183,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
-                such as 'Normal' for OpenTURNS or 'norm' for SciPy.
+                such as ``"Normal"`` for OpenTURNS or ``"norm"`` for SciPy.
             parameters: The parameters of the class
                 related to distribution.
             dimension: The dimension of the random variable.

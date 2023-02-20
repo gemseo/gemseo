@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from unittest.mock import patch
 
@@ -43,6 +44,7 @@ from numpy import inf
 from numpy import ndarray
 from numpy.random import randn
 from numpy.random import seed
+from numpy.testing import assert_equal
 from openturns import RandomGenerator
 
 
@@ -155,35 +157,40 @@ def test_range():
         assert allclose(element, expectation, 1e-3)
 
 
-def test_truncation():
-    distribution = OTDistribution(
-        "x", "Normal", (0, 2), 2, lower_bound=0.0, upper_bound=1.0
-    )
-    expectation = array([0.0, 1.0])
+@pytest.mark.parametrize(
+    "kwargs,expected",
+    [
+        ({"lower_bound": 0.5, "upper_bound": 0.6}, array([0.5, 0.6])),
+        ({"lower_bound": 0.5}, array([0.5, 2.0])),
+        ({"upper_bound": 0.5}, array([0.0, 0.5])),
+    ],
+)
+def test_truncation(kwargs, expected):
+    """Check the support after truncation."""
+    distribution = OTDistribution("x", "Uniform", (0.0, 2.0), 2, **kwargs)
     for element in distribution.support:
-        assert allclose(element, expectation, 1e-3)
+        assert_equal(element, expected)
 
-    distribution = OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=0.5)
-    expectation = array([0.5, 1.0])
-    for element in distribution.support:
-        assert allclose(element, expectation, 1e-3)
 
-    distribution = OTDistribution("x", "Uniform", (0, 1), 2, upper_bound=0.5)
-    expectation = array([0.0, 0.5])
-    for element in distribution.support:
-        assert allclose(element, expectation, 1e-3)
-
-    with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, upper_bound=1.5)
-
-    with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=-0.5)
-
-    with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=-0.5, upper_bound=1.0)
-
-    with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=0.0, upper_bound=1.5)
+@pytest.mark.parametrize(
+    "kwargs,expected",
+    [
+        ({"upper_bound": 1.5}, "u_b is greater than the current upper bound."),
+        ({"lower_bound": -0.5}, "l_b is less than the current lower bound."),
+        (
+            {"lower_bound": -0.5, "upper_bound": 1.0},
+            "l_b is less than the current lower bound.",
+        ),
+        (
+            {"lower_bound": 0.0, "upper_bound": 1.5},
+            "u_b is greater than the current upper bound.",
+        ),
+    ],
+)
+def test_truncate_exception(kwargs, expected):
+    """Check that exceptions are raised when mistruncating a distribution."""
+    with pytest.raises(ValueError, match=re.escape(expected)):
+        OTDistribution("x", "Uniform", (0, 1), 2, **kwargs)
 
 
 def test_transformation():
