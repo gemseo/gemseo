@@ -126,6 +126,8 @@ def create_disciplines_from_sizes(
     unique_disc_per_output: bool = False,
     no_self_coupled: bool = False,
     no_strong_couplings: bool = False,
+    matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
+    matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
 ) -> list[LinearDiscipline]:
     """Generate a :class:`.LinearDiscipline` according to a specification.
 
@@ -152,6 +154,8 @@ def create_disciplines_from_sizes(
             also an input.
         no_strong_couplings: Whether to ensure that there is no strong couplings in
             the problem.
+        matrix_format: The format of the Jacobian matrix.
+        matrix_density: The percentage of non-zero elements when the matrix is sparse.
 
     Returns:
         The :class:`.LinearDiscipline`.
@@ -229,6 +233,8 @@ def create_disciplines_from_sizes(
         inputs_size=inputs_size,
         outputs_size=outputs_size,
         grammar_type=grammar_type,
+        matrix_format=matrix_format,
+        matrix_density=matrix_density,
     )
 
 
@@ -237,6 +243,8 @@ def create_disciplines_from_desc(
     inputs_size: int = 1,
     outputs_size: int = 1,
     grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
+    matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
 ) -> list[LinearDiscipline]:
     """Generate :class:`.LinearDiscipline` classes according to a specification.
 
@@ -263,13 +271,22 @@ def create_disciplines_from_desc(
         outputs_size: The size of the output vectors,
             each output data is of shape (outputs_size,).
         grammar_type: The type of grammars used by the disciplines.
+        matrix_format: The format of the Jacobian matrix.
+        matrix_density: The percentage of non-zero elements when the matrix is sparse.
 
     Returns:
         The :class:`.LinearDiscipline`.
     """
     return [
         LinearDiscipline(
-            name, input_names, output_names, inputs_size, outputs_size, grammar_type
+            name,
+            input_names,
+            output_names,
+            inputs_size,
+            outputs_size,
+            grammar_type,
+            matrix_format,
+            matrix_density,
         )
         for name, input_names, output_names in disc_descriptions
     ]
