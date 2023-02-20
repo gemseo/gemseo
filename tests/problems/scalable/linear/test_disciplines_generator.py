@@ -16,6 +16,7 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: François Gallard
+#        :author: Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
@@ -33,6 +34,8 @@ from gemseo.problems.scalable.linear.disciplines_generator import DESC_16_DISC
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
 from gemseo.problems.scalable.linear.disciplines_generator import DESC_DISC_REPEATED
+from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
+from numpy import ndarray
 
 DESCRIPTIONS = [
     DESC_3_DISC_WEAK,
@@ -43,7 +46,7 @@ DESCRIPTIONS = [
 
 
 def test_fail_no_output():
-    """Tests that the LinearDiscipline fails when there are no inputs or outputs in the
+    """Test that the LinearDiscipline fails when there are no inputs or outputs in the
     description."""
     with pytest.raises(ValueError, match="output_names must not be empty."):
         create_disciplines_from_desc([("A", ["x"], [])])
@@ -53,7 +56,7 @@ def test_fail_no_output():
 
 @pytest.mark.parametrize("descriptions", DESCRIPTIONS)
 def test_creation(descriptions):
-    """Tests that the disciplines are well generated according to spec."""
+    """Test that the disciplines are well generated according to spec."""
     disciplines = create_disciplines_from_desc(descriptions)
     assert len(disciplines) == len(descriptions)
     for disc, description in zip(disciplines, descriptions):
@@ -66,7 +69,7 @@ def test_creation(descriptions):
 
 @pytest.mark.parametrize("desc", DESCRIPTIONS[:-1])
 def test_mda_convergence(desc):
-    """Tests that the generated disciplines have an equilibrium point."""
+    """Test that the generated disciplines have an equilibrium point."""
     disciplines = create_disciplines_from_desc(desc)
     tolerance = 1e-12
     mda = create_mda(
@@ -78,7 +81,7 @@ def test_mda_convergence(desc):
 
 
 def test_lin_disc_jac():
-    """Tests _compute_jacobian."""
+    """Test _compute_jacobian."""
     desc = [("A", ["x"], ["a"]), ("B", ["a", "x"], ["b", "c"])]
     disciplines = create_disciplines_from_desc(desc)
     for disc in disciplines:
@@ -89,7 +92,7 @@ def test_lin_disc_jac():
     "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
 )
 def test_create_disciplines_from_sizes(grammar_type):
-    """Tests that the disciplines are well created according to the specifications."""
+    """Test that the disciplines are well created according to the specifications."""
     nb_of_disc = 2
     nb_of_total_disc_io = 10
     nb_of_disc_inputs = 4
@@ -140,6 +143,29 @@ def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind):
 
 @pytest.mark.parametrize("nb_of_names", [1, 27])
 def test_get_disc_names(nb_of_names):
-    """Tests names generator."""
+    """Test names generator."""
     names = _get_disc_names(nb_of_names)
     assert len(set(names)) == nb_of_names
+
+
+@pytest.mark.parametrize(
+    "matrix_format",
+    LinearDiscipline.MatrixFormat,
+)
+def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat):
+    """Test that the Jacobian matrices have the specified format."""
+    disciplines = create_disciplines_from_desc(
+        DESC_16_DISC,
+        inputs_size=10,
+        outputs_size=20,
+        matrix_format=matrix_format,
+        matrix_density=0.1,
+    )
+
+    for discipline in disciplines:
+        if matrix_format == LinearDiscipline.MatrixFormat.DENSE:
+            assert isinstance(discipline.mat, ndarray)
+        else:
+            assert discipline.mat.format == matrix_format
+
+        assert discipline.mat.shape == (discipline.size_out, discipline.size_in)
