@@ -43,18 +43,9 @@ class DOEScenario(Scenario):
     This DOE must be implemented in a :class:`.DOELibrary`.
     """
 
-    seed: int
-    """The seed used by the random number generators for reproducibility.
-
-    This seed is initialized at 0 and each call to :meth:`.execute` increments it before
-    using it.
-    """
-
     # Constants for input variables in json schema
     N_SAMPLES = "n_samples"
     EVAL_JAC = "eval_jac"
-    SEED = "seed"
-    _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + ("seed",)
 
     def __init__(  # noqa: D107
         self,
@@ -78,7 +69,6 @@ class DOEScenario(Scenario):
             maximize_objective=maximize_objective,
             **formulation_options,
         )
-        self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
         self.__samples = None
 
@@ -86,8 +76,6 @@ class DOEScenario(Scenario):
         self._algo_factory = DOEFactory()
 
     def _run_algorithm(self) -> None:
-        self.seed += 1
-
         algo_name = self.local_data[self.ALGO]
         options = self.local_data.get(self.ALGO_OPTIONS)
         if options is None:
@@ -104,9 +92,6 @@ class DOEScenario(Scenario):
             lib.init_options_grammar(algo_name)
             self._lib = lib
             self._algo_name = algo_name
-
-        if self.SEED in lib.opt_grammar and self.SEED not in options:
-            options[self.SEED] = self.seed
 
         if self.N_SAMPLES in lib.opt_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)

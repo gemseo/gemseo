@@ -77,18 +77,12 @@ scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
 print(scenario.formulation.opt_problem.database.get_last_n_x(2))
 
 # %%
-# You can get the value of the random :attr:`.DOEScenario.seed` that has been used:
-print(scenario.seed)
+# You can get the value of the random seed that has been used:
+print(scenario._lib.seed)
 
 # %%
-#
-# Note:
-#     This :attr:`~.DOEScenario.seed` is initialized at 0.
-#
-# Each call to :meth:`~.DOEScenario.execute` increments this :attr:`~.DOEScenario.seed`
-# and then passes this value to the underlying :meth:`~.DOELibrary.execute`
-# (or a custom seed value if any).
-#
+# When using the same DOE algorithm,
+# a new call to :meth:`.DOEScenario.execute` increments the :attr:`.DOELibrary.seed`.
 # Then,
 # solving again this problem with the same configuration leads to a new result:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
@@ -96,7 +90,7 @@ print(scenario.formulation.opt_problem.database.get_last_n_x(2))
 
 # %%
 # and we can check that the value of the seed was incremented:
-print(scenario.seed)
+print(scenario._lib.seed)
 
 # %%
 # You can also pass a custom ``"seed"`` to the DOE algorithm
@@ -106,19 +100,9 @@ scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2, "algo_options": {"seed":
 print(scenario.formulation.opt_problem.database.get_last_n_x(2))
 
 # %%
-# You can verify that
-# the :attr:`.DOEScenario.seed` has not been replaced by the custom value
+# You can verify that :attr:`.DOELibrary.seed` has not been replaced by the custom value
 # but incremented:
-print(scenario.seed)
-
-# %%
-# Lastly,
-# you can change the value of the :attr:`~.DOEScenario.seed`
-# attached to the :class:`.DOEScenario`:
-scenario.seed = 123
-scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
-print(scenario.seed)
-print(scenario.formulation.opt_problem.database.get_last_n_x(2))
+print(scenario._lib.seed)
 
 # %%
 # At the problem level
@@ -177,16 +161,16 @@ print(problem.database.get_last_n_x(2))
 library = OpenTURNS()
 library.algo_name = "OT_OPT_LHS"
 library.execute(problem, n_samples=2)
-print(scenario.seed)
+print(library.seed)
 print(problem.database.get_last_n_x(2))
 # %%
 # Solving again the problem will give different samples:
 library.execute(problem, n_samples=2)
-print(scenario.seed)
+print(library.seed)
 print(problem.database.get_last_n_x(2))
 # %%
 # You can also change the seed:
 library.seed = 123
 library.execute(problem, n_samples=2)
-print(scenario.seed)
+print(library.seed)
 print(problem.database.get_last_n_x(2))
