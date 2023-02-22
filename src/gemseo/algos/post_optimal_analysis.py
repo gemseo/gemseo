@@ -24,7 +24,6 @@ from typing import Iterable
 from typing import Mapping
 
 from numpy import atleast_1d
-from numpy import dot
 from numpy import hstack
 from numpy import ndarray
 from numpy import vstack
@@ -195,8 +194,8 @@ class PostOptimalAnalysis:
             total_jac_block = total_jac.get(input_name)
             partial_jac_block = partial_jac.get(input_name)
             if total_jac_block is not None and partial_jac_block is not None:
-                total_prod_blocks.append(dot(multipliers, total_jac_block))
-                partial_prod_blocks.append(dot(multipliers, partial_jac_block))
+                total_prod_blocks.append(multipliers @ total_jac_block)
+                partial_prod_blocks.append(multipliers @ partial_jac_block)
                 corrections[input_name] = -total_prod_blocks[-1]
                 if not self.opt_problem.minimize_objective:
                     corrections[input_name] *= -1.0
@@ -319,12 +318,12 @@ class PostOptimalAnalysis:
             # Contributions of the inequality constraints
             jac_ineq_arr = act_ineq_jac.get(input_name)
             if jac_ineq_arr is not None:
-                jac_cstr_arr += dot(mul_ineq, jac_ineq_arr)
+                jac_cstr_arr += mul_ineq.T @ jac_ineq_arr
 
             # Contributions of the equality constraints
             jac_eq_arr = eq_jac.get(input_name)
             if jac_eq_arr is not None:
-                jac_cstr_arr += dot(mul_eq, jac_eq_arr)
+                jac_cstr_arr += mul_eq.T @ jac_eq_arr
 
             # Assemble the Jacobian of the Lagrangian
             if not self.opt_problem.minimize_objective:

@@ -21,7 +21,6 @@ from __future__ import annotations
 
 from numpy import arange
 from numpy import concatenate
-from numpy import dot
 from numpy import fix
 from numpy import full
 from numpy import kron
@@ -100,32 +99,26 @@ def initialize_design_space_and_discipline_to(
         fullelts = []  # Mandatory full elements
     elif "Short_Cantilever" == problem:
         excitation_node = where(
-            logical_and(
-                (xx == max(xx)), (yy == fix(dot(0.5, min(yy)) + dot(0.5, max(yy))))
-            )
+            logical_and((xx == max(xx)), (yy == fix(0.5 * min(yy) + 0.5 * max(yy))))
         )[0][
             0
         ]  # Nodes where the force is applied
         excitation_direction = 1  # 0 for x and 1 for y
         amplitude = -1  # Amplitude of the force
         fixednodes = kron([1, 1], where(xx == min(xx))[0])  # Fixed nodes
-        fixed_dir = (
-            concatenate([[ones(n_y + 1)], [dot(2, ones(n_y + 1))]]).flatten() - 1
-        )
+        fixed_dir = concatenate([[ones(n_y + 1)], [2 * ones(n_y + 1)]]).flatten() - 1
         emptyelts = []  # Mandatory empty elements
         fullelts = []  # Mandatory full elements
     elif "L-Shape" == problem:
         excitation_node = where(
-            logical_and(
-                (xx == max(xx)), (yy == fix(dot(0.5, min(yy)) + dot(0.5, max(yy))))
-            )
+            logical_and((xx == max(xx)), (yy == fix(0.5 * min(yy) + 0.5 * max(yy))))
         )[0][
             0
         ]  # Nodes where the force is applied
         excitation_direction = 1  # 0 for x and 1 for y
         amplitude = -1  # Amplitude of the force
         fixednodes = kron([1, 1], where(yy == max(yy))[0])  # Fixed nodes
-        fixed_dir = concatenate([[ones(n_x + 1)], [dot(2, ones(n_x + 1))]]).flatten()
+        fixed_dir = concatenate([[ones(n_x + 1)], [2 * ones(n_x + 1)]]).flatten()
         emptyelts = where(
             logical_and(xc >= (max(xx) + min(xx)) / 2, yc >= ((max(yy) + min(yy)) / 2))
         )[

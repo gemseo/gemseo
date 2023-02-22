@@ -1000,7 +1000,7 @@ def chunk_based_bmu_find(self, x, y, y_2):
         High = min(dlen, i0 + blen)
         i0 += blen
         ddata = x[Low : High + 1]
-        d = np.dot(y, ddata.T)
+        d = y @ ddata.T
         d *= -2
         d += y_2.reshape(nnodes, 1)
         bmu[Low : High + 1, 0] = np.argmin(d, axis=0)

@@ -121,10 +121,9 @@ class RobustnessQuantifier:
                 "Build Hessian approximation before computing expected_value_offset"
             )
         b_approx = 0.5 * self.b_mat
-        exp_val = np.trace(np.dot(b_approx, cov))
-        exp_val += np.linalg.multi_dot(
-            ((expect - self.x_ref).T, b_approx, (expect - self.x_ref))
-        )
+        exp_val = np.trace(b_approx @ cov)
+        delta = expect - self.x_ref
+        exp_val += delta.T @ (b_approx @ delta)
         return exp_val
 
     def compute_variance(self, expect: Sized, cov):
@@ -152,8 +151,10 @@ class RobustnessQuantifier:
             raise ValueError("Inconsistent expect and covariance matrices shapes")
         b_approx = 0.5 * self.b_mat
         mu_cent = expect - self.x_ref
-        v_mat = np.linalg.multi_dot((b_approx, cov, b_approx, cov))
-        v_mat += 4 * np.linalg.multi_dot((mu_cent.T, b_approx, cov, b_approx, mu_cent))
+        b_approx_cov = b_approx @ cov
+        v_mat = b_approx_cov @ b_approx_cov
+        b_approx_mu_cent = b_approx @ mu_cent
+        v_mat += 4 * b_approx_mu_cent.T @ (cov @ b_approx_mu_cent)
         return 2 * np.trace(v_mat)
 
     def compute_function_approximation(self, x_vars) -> float:
@@ -170,11 +171,7 @@ class RobustnessQuantifier:
                 "Build Hessian approximation before computing function approximation"
             )
         x_l = x_vars - self.x_ref
-        return (
-            0.5 * np.linalg.multi_dot((x_l.T, self.b_mat, x_l))
-            + np.dot(self.fgrad_ref.T, x_l)
-            + self.f_ref
-        )
+        return 0.5 * x_l.T @ (self.b_mat @ x_l) + self.fgrad_ref.T @ x_l + self.f_ref
 
     def compute_gradient_approximation(self, x_vars):
         """Computes a first order approximation of the gradient based on the hessian.
@@ -187,7 +184,7 @@ class RobustnessQuantifier:
                 "Build Hessian approximation before computing function approximation"
             )
         x_l = x_vars - self.x_ref
-        return np.dot(self.b_mat, x_l) + self.fgrad_ref
+        return self.b_mat @ x_l + self.fgrad_ref
 
     def montecarlo_average_var(
         self, mean: Sized, cov, n_samples: int = 100000, func=None

@@ -30,7 +30,6 @@ from typing import Sized
 from numpy import array
 from numpy import atleast_2d
 from numpy import diag
-from numpy import dot
 from numpy import eye
 from numpy import mean as npmean
 from numpy import ndarray
@@ -254,11 +253,11 @@ class TMSubModel:
             (one element per sub-discipline).
         :param ndarray noise: random noise applied to the vectorial output.
         """
-        output = -dot(self.c_shared, x_shared.reshape((-1, 1)))
-        output -= dot(self.c_local, x_local.reshape((-1, 1)))
+        output = -(self.c_shared @ x_shared.reshape((-1, 1)))
+        output -= self.c_local @ x_local.reshape((-1, 1))
         cpl_sum = 0
         for name, coeff in self.c_coupling.items():
-            output += dot(coeff, coupling[name].reshape((-1, 1)))
+            output += coeff @ coupling[name].reshape((-1, 1))
             cpl_sum += npsum(coeff, 1)
         output += npsum(self.c_shared, 1).reshape((-1, 1))
         output += npsum(self.c_local, 1).reshape((-1, 1))

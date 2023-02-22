@@ -22,7 +22,6 @@ from numpy import matmul
 from numpy import ndarray
 from numpy import zeros
 from numpy import zeros_like
-from numpy.linalg import multi_dot
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -105,7 +104,7 @@ class MDOQuadraticFunction(MDOFunction):
             The value of the quadratic function.
         """
         return (
-            multi_dot((x_vect.T, self._quad_coeffs, x_vect))
+            x_vect.T @ (self._quad_coeffs @ x_vect)
             + self._linear_part(x_vect)
             + self._value_at_zero
         )
