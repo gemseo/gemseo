@@ -28,7 +28,6 @@ from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
-from numpy import dot
 from numpy import ndarray
 from numpy import zeros
 
@@ -166,7 +165,7 @@ class MDOChain(MDODiscipline):
                     for new_in, new_jac in discipline.jac[input_name].items():
                         # Chain rule the derivatives
                         # TODO: sum BEFORE dot
-                        loc_dot = dot(curr_jac, new_jac)
+                        loc_dot = curr_jac @ new_jac
                         # when input_name==new_in, we are in the case of an
                         # input being also an output
                         # in this case we must only compose the derivatives

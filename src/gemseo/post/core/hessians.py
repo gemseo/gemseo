@@ -50,7 +50,6 @@ from numpy import atleast_2d
 from numpy import concatenate
 from numpy import cumsum
 from numpy import diag as np_diag
-from numpy import dot
 from numpy import eye
 from numpy import inf
 from numpy import ndarray
@@ -61,7 +60,6 @@ from numpy import zeros
 from numpy.linalg import cholesky
 from numpy.linalg import inv
 from numpy.linalg import LinAlgError
-from numpy.linalg import multi_dot
 from numpy.linalg import norm
 from numpy.matlib import repmat
 from scipy.optimize import leastsq
@@ -391,7 +389,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         if b_mat0 is None:
             last_n_grad = grad_hist.shape[0] - 2
             input_diff, grad_diff = self.get_s_k_y_k(x_hist, grad_hist, last_n_grad)
-            alpha = dot(grad_diff.T, input_diff) / dot(grad_diff.T, grad_diff)
+            alpha = (grad_diff.T @ input_diff) / (grad_diff.T @ grad_diff)
             hessian = (1.0 / alpha) * eye(grad_hist.shape[1])
         elif b_mat0.size == 0:
             hessian = zeros((x_hist.shape[1],) * 2)
@@ -482,12 +480,13 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             dyk: The variation :math:`\Delta g_k` of the gradient.
             scaling: Whether to use a scaling stage.
         """
-        dyt_dsk = dot(dyk.T, dsk)
-        hessk_dsk = dot(hessk, dsk)
-        dskt_hessk_dsk = multi_dot((dsk.T, hessk, dsk))
+        dyt_dsk = dyk.T @ dsk
+        hessk_dsk = hessk @ dsk
+        dskt_hessk_dsk = dsk.T @ hessk_dsk
         # Build the next approximation:
-        b_first_term = hessk - multi_dot((hessk, dsk, dsk.T, hessk)) / dskt_hessk_dsk
-        b_second_term = dot(dyk, dyk.T) / dyt_dsk
+
+        b_first_term = hessk - (hessk_dsk / dskt_hessk_dsk) @ hessk_dsk.T
+        b_second_term = (dyk @ dyk.T) / dyt_dsk
         if not scaling:
             hessk[:, :] = b_first_term + b_second_term
         else:
@@ -575,7 +574,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         if h_mat0 is None:
             last_n_grad = grad_hist.shape[0] - 2
             s_k, y_k = self.get_s_k_y_k(x_hist, grad_hist, last_n_grad)
-            alpha = dot(y_k.T, s_k) / dot(y_k.T, y_k)
+            alpha = (y_k.T @ s_k) / (y_k.T @ y_k)
             n_x = len(grad_hist[0])
             h_mat = alpha * eye(n_x)
             b_mat = 1.0 / alpha * eye(n_x)
@@ -612,7 +611,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         k = 0
         for s_k, y_k in self.iterate_s_k_y_k(x_hist, grad_hist):
             k += 1
-            if dot(s_k.T, y_k) > angle_tol and norm(y_k, inf) < step_tol:
+            if (s_k.T @ y_k) > angle_tol and norm(y_k, inf) < step_tol:
                 count += 1
                 self.iterate_inverse_approximation(
                     h_mat,
@@ -747,12 +746,12 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             scaling: do scaling step
         """
         # Compute the two terms of the non-scaled updated matrix:
-        yts = dot(y_k.T, s_k)
-        proj = eye(len(s_k)) - dot(s_k, y_k.T) / yts
-        h_first_term = multi_dot((proj, h_mat, proj.T))
-        h_second_term = dot(s_k, s_k.T) / yts
-        b_s = dot(b_mat, s_k)
-        st_b_s = dot(s_k.T, b_s)
+        yts = y_k.T @ s_k
+        proj = eye(len(s_k)) - (s_k / yts) @ y_k.T
+        h_first_term = proj @ (h_mat @ proj.T)
+        h_second_term = (s_k / yts) @ s_k.T
+        b_s = b_mat @ s_k
+        st_b_s = s_k.T @ b_s
         # Compute the scaling coefficients:
         if scaling:
             coeff1, coeff2 = HessianApproximation.compute_scaling(
@@ -764,20 +763,20 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         # Update the inverse approximation H and, optionally, the factor G:
         h_mat[:, :] = h_first_term / coeff1 + h_second_term / coeff2
         if factorize:
-            sst_b = dot(s_k, b_s.T)
+            sst_b = s_k @ b_s.T
             left = proj / sqrt(coeff1) + sst_b / sqrt(coeff2 * yts * st_b_s)
-            h_factor[:, :] = dot(left, h_factor)
+            h_factor[:, :] = left @ h_factor
             # b_factor[:, :] = dot(eye(len(s_k)) - sstB.T / stBs / sqrt(coeff1)
             #                      + dot(y_k, s_k.T)
             #                      / sqrt(coeff2 * stBs * yts),
             #                      b_factor)
             right = sqrt(coeff1) * (eye(len(s_k)) - sst_b / st_b_s)
-            right += sqrt(coeff2) * dot(s_k, y_k.T) / sqrt(st_b_s * yts)
-            b_factor[:, :] = dot(b_factor, right)
+            right += sqrt(coeff2) * (s_k @ y_k.T) / sqrt(st_b_s * yts)
+            b_factor[:, :] = b_factor @ right
 
         # Update the Hessian approximation:
-        b_first_term = b_mat - multi_dot((b_s, b_s.T)) / st_b_s
-        b_second_term = dot(y_k, y_k.T) / yts
+        b_first_term = b_mat - (b_s / st_b_s) @ b_s.T
+        b_second_term = (y_k @ y_k.T) / yts
         b_mat[:, :] = coeff1 * b_first_term + coeff2 * b_second_term
 
 
@@ -799,7 +798,7 @@ class BFGSApprox(HessianApproximation):
             )
             # All pairs curvatures shall be positive
             # if dot(s_k.T, y_k) > 0.:
-            if dot(input_diff.T, grad_diff) > 1e-16 * dot(grad_diff.T, grad_diff):
+            if (input_diff.T @ grad_diff) > 1e-16 * (grad_diff.T @ grad_diff):
                 yield input_diff, grad_diff
 
 
@@ -832,10 +831,10 @@ class SR1Approx(HessianApproximation):
         y_k: ndarray,
         scaling: bool = False,
     ) -> None:
-        residuals = y_k - multi_dot((b_mat, s_k))
-        denominator = multi_dot((residuals.T, s_k))
+        residuals = y_k - b_mat @ s_k
+        denominator = residuals.T @ s_k
         if abs(denominator) > SR1Approx.EPSILON * norm(s_k) * norm(residuals):
-            b_mat[:, :] = b_mat + multi_dot((residuals, residuals.T)) / denominator
+            b_mat[:, :] = b_mat + (residuals / denominator) @ residuals.T
         else:
             LOGGER.debug(
                 "Denominator of SR1 update is too small, update skipped %s.",
@@ -902,7 +901,7 @@ class LSTSQApprox(HessianApproximation):
             hessian = y_to_b(y_vars)
             err = zeros((input_dimension, sec_dim))
             for item, x_current in enumerate(x_hist):
-                err[:, item] = dot(hessian, x_current - self.x_ref) - grad_hist[item]
+                err[:, item] = hessian @ (x_current - self.x_ref) - grad_hist[item]
 
             err = err.reshape(-1)
             if n_iterations < input_dimension:

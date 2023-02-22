@@ -27,7 +27,6 @@ from typing import Sequence
 
 from numpy import atleast_2d
 from numpy import concatenate
-from numpy import dot
 from numpy import ndarray
 from numpy.linalg import lstsq
 
@@ -321,7 +320,7 @@ class MDAJacobi(MDA):
             The next iterate.
         """
         d_dxn = dxn - dxn_1
-        acc = (cgn - cgn_1) * dot(d_dxn, dxn) / dot(d_dxn, d_dxn)
+        acc = (cgn - cgn_1) * (d_dxn.T @ dxn) / (d_dxn.T @ d_dxn)
         return cgn - acc
 
     def _compute_m2d_acc(

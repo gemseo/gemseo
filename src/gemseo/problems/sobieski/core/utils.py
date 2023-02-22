@@ -35,7 +35,6 @@ from numpy import atleast_2d
 from numpy import clip
 from numpy import complex128
 from numpy import concatenate
-from numpy import dot
 from numpy import float64
 from numpy import ndarray
 
@@ -375,8 +374,8 @@ class SobieskiBase:
 
         poly_value = (
             a0_coeff
-            + dot(ai_coeff, s_shifted)
-            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), s_shifted)
+            + ai_coeff @ s_shifted
+            + 0.5 * s_shifted.T @ (aij_coeff[:imax, :imax] @ s_shifted)
         )
         return poly_value[0], ai_coeff, aij_coeff[:imax, :imax], s_shifted
 
@@ -431,8 +430,8 @@ class SobieskiBase:
 
         poly_value = (
             a0_coeff
-            + dot(ai_coeff, s_shifted)
-            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), s_shifted)
+            + ai_coeff @ s_shifted
+            + 0.5 * s_shifted.T @ (aij_coeff[:imax, :imax] @ s_shifted)
         )
         return poly_value[0]
 
