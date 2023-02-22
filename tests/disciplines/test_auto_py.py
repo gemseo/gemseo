@@ -131,7 +131,7 @@ def test_fail_wrongly_formatted_function():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Inconsistent definition of return statements in function: ('y', 'x') != ('y',)."
+            "Two return statements use different variable names; ['y', 'x'] and ['y']."
         ),
     ):
         AutoPyDiscipline(f4)
@@ -223,8 +223,27 @@ def test_jacobian_shape_mismatch():
 
     disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
     msg = (
-        "The jacobian provided by the py_jac function is of wrong shape. "
-        r"Expected \(1, 3\), got \(3, 1\)."
+        "The jacobian provided by the py_jac function is of wrong shape; "
+        r"expected \(1, 3\), got \(3, 1\)."
     )
     with pytest.raises(ValueError, match=msg):
         disc_wrong.linearize(force_all=True)
+
+
+def test_multiline_return():
+    """Check that AutoPyDiscipline can wrap a function with a multiline return."""
+
+    def f(x):
+        yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy = x
+        zzzzzzzzzzzzzzzzz = x
+        return (
+            yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy,
+            zzzzzzzzzzzzzzzzz,
+        )
+
+    discipline = AutoPyDiscipline(f)
+    assert discipline.input_names == ["x"]
+    assert discipline.output_names == [
+        "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+        "zzzzzzzzzzzzzzzzz",
+    ]
