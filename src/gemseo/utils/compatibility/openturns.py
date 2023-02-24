@@ -19,8 +19,9 @@ import openturns
 from numpy import ndarray
 from packaging import version
 
+OT_VERSION = version.parse(openturns.__version__)
 
-if version.parse(openturns.__version__) < version.parse("1.18"):
+if OT_VERSION < version.parse("1.18"):
 
     def get_eigenvalues(  # noqa:D103
         result: openturns.KarhunenLoeveResult,
@@ -35,34 +36,34 @@ else:
         return result.getEigenvalues()
 
 
-if version.parse(openturns.__version__) < version.parse("1.19"):
+if OT_VERSION >= version.parse("1.20"):
 
     def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis_PCC(x, y)
+        return openturns.CorrelationAnalysis(x, y).computePCC()
 
     def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis_PRCC(x, y)
+        return openturns.CorrelationAnalysis(x, y).computePRCC()
 
     def compute_pearson_correlation(  # noqa:D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
-        return openturns.CorrelationAnalysis_PearsonCorrelation(x, y)
+        return openturns.CorrelationAnalysis(x, y).computePearsonCorrelation()
 
     def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis_SignedSRC(x, y)
+        return openturns.CorrelationAnalysis(x, y).computeSRC()
 
     def compute_spearman_correlation(  # noqa:D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
-        return openturns.CorrelationAnalysis_SpearmanCorrelation(x, y)
+        return openturns.CorrelationAnalysis(x, y).computeSpearmanCorrelation()
 
     def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis_SRC(x, y)
+        return openturns.CorrelationAnalysis(x, y).computeSRC()
 
     def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis_SRRC(x, y)
+        return openturns.CorrelationAnalysis(x, y).computeSRRC()
 
-elif version.parse(openturns.__version__) < version.parse("1.20"):
+elif OT_VERSION >= version.parse("1.19"):
 
     def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
         return openturns.CorrelationAnalysis.PCC(x, y)
@@ -92,26 +93,26 @@ elif version.parse(openturns.__version__) < version.parse("1.20"):
 else:
 
     def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis(x, y).computePCC()
+        return openturns.CorrelationAnalysis_PCC(x, y)
 
     def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis(x, y).computePRCC()
+        return openturns.CorrelationAnalysis_PRCC(x, y)
 
     def compute_pearson_correlation(  # noqa:D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
-        return openturns.CorrelationAnalysis(x, y).computePearsonCorrelation()
+        return openturns.CorrelationAnalysis_PearsonCorrelation(x, y)
 
     def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis(x, y).computeSRC()
+        return openturns.CorrelationAnalysis_SignedSRC(x, y)
 
     def compute_spearman_correlation(  # noqa:D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
-        return openturns.CorrelationAnalysis(x, y).computeSpearmanCorrelation()
+        return openturns.CorrelationAnalysis_SpearmanCorrelation(x, y)
 
     def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis(x, y).computeSRC()
+        return openturns.CorrelationAnalysis_SRC(x, y)
 
     def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis(x, y).computeSRRC()
+        return openturns.CorrelationAnalysis_SRRC(x, y)
