@@ -1,0 +1,8 @@
+API changes:
+
+- ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
+- :class:`.PCERegressor` has new arguments:
+- ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
+- ``use_lars`` to get a sparse PCE with the LARS algorithm in the case of the least-squares regression.
+- ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
+- ``hyperbolic_parameter`` to truncate the PCE before training.
