@@ -114,11 +114,12 @@ for c_name in ["g_1", "g_2", "g_3"]:
 # %%
 # XDSMIZE the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-# Generate the XDSM file on the fly, setting ``print_statuses=True``
-# will print the status in the console
-# ``html_output`` (default ``True``), will generate a self-contained
-# HTML file, that can be automatically open using ``open_browser=True``
-scenario.xdsmize()
+# Generate the XDSM file on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+scenario.xdsmize(save_html=False)
 
 # %%
 # Define the algorithm inputs

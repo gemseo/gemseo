@@ -182,7 +182,7 @@ def test_basic_idf(tmp_wd, idf_scenario):
         assert post in posts
 
     # Monitor in the console
-    idf_scenario.xdsmize(json_output=True)
+    idf_scenario.xdsmize(save_json=True)
     assert Path("xdsm.json").exists()
     assert Path("xdsm.html").exists()
 
@@ -317,9 +317,7 @@ def test_get_optimization_results_empty(mdf_scenario):
 def test_adapter(tmp_wd, idf_scenario):
     """Test the adapter."""
     # Monitor in the console
-    idf_scenario.xdsmize(
-        True, print_statuses=True, outdir=str(tmp_wd), json_output=True
-    )
+    idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
 
     idf_scenario.default_inputs = {
         "max_iter": 1,
@@ -373,9 +371,9 @@ def test_repr_str(idf_scenario):
 
 def test_xdsm_filename(tmp_wd, idf_scenario):
     """Tests the export path dir for xdsm."""
-    outfilename = "my_xdsm.html"
-    idf_scenario.xdsmize(outfilename=outfilename)
-    assert Path(outfilename).is_file()
+    file_name = "my_xdsm.html"
+    idf_scenario.xdsmize(file_name=file_name)
+    assert Path(file_name).is_file()
 
 
 @pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])

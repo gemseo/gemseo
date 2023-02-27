@@ -139,7 +139,19 @@ system_scenario = create_scenario(
 )
 system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
 
-# system_scenario.xdsmize(open_browser=True)
+# %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+system_scenario.xdsmize(save_html=False)
+
+# %%
+# Execute the main scenario
+# ^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.execute(
     {"max_iter": 50, "algo": "NLOPT_COBYLA", "algo_options": algo_options}
 )

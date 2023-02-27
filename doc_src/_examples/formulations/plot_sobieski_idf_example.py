@@ -90,6 +90,16 @@ for c_name in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(c_name, "ineq")
 
 # %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM file on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+scenario.xdsmize(save_html=False)
+
+# %%
 # Define the algorithm inputs
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer

@@ -512,7 +512,7 @@ class StudyAnalysis:
 
     def generate_n2(
         self,
-        file_path: str = "n2.pdf",
+        file_path: str | Path = "n2.pdf",
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
@@ -650,26 +650,24 @@ class StudyAnalysis:
 
     def generate_xdsm(
         self,
-        output_dir: str,
-        latex_output: bool = False,
-        open_browser: bool = False,
+        directory_path: str | Path,
+        save_pdf: bool = False,
+        show_html: bool = False,
     ) -> MDOScenario:
-        """Create a xdsm.json file from the current scenario.
+        """Create a XDSM diagram of the :attr:`.main_scenario`.
 
         Args:
-            output_dir: The directory where the XDSM html files are generated.
-            latex_output: If True, build the .tex, .tikz and .pdf files.
-            open_browser: If True, open in a web browser.
+            directory_path: The path of the directory to save the files.
+            save_pdf: Whether to save the XDSM as a PDF file.
+            show_html: Whether to open the web browser and display the XDSM.
 
         Returns:
-            The MDOScenario that contains the DesignSpace, the
-            formulation, but the disciplines have only correct
-            input and output grammars but no _run methods so that can't be executed
+            The scenario with non-executable disciplines.
         """
         LOGGER.info("Generated the following Scenario:")
         LOGGER.info("%s", self.main_scenario)
         LOGGER.info("%s", self.main_scenario.formulation.opt_problem)
         self.main_scenario.xdsmize(
-            outdir=output_dir, latex_output=latex_output, open_browser=open_browser
+            directory_path=directory_path, save_pdf=save_pdf, show_html=show_html
         )
         return self.main_scenario

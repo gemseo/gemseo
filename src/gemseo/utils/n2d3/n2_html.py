@@ -33,15 +33,15 @@ class N2HTML:
     def __init__(
         self,
         file_path: str | Path = "n2.html",
-        open_browser: bool = False,
+        show_html: bool = False,
     ) -> None:
         """
         Args:
             file_path: The file path of the HTML file.
-            open_browser: If True, open the browser and display the HTML file.
+            show_html: Whether open the browser and display the HTML file.
         """  # noqa:D205 D212 D415
         self.__file_path = Path(file_path)
-        self.__open_browser = open_browser
+        self.__show_html = show_html
 
     def __create_html_file(self, json_structure: str) -> None:
         """Build the HTML file from the JSON structure of the N2 chart.
@@ -52,7 +52,7 @@ class N2HTML:
         with Path(self.__file_path).open("w", encoding="utf-8", newline="") as stream:
             stream.write(self.__create_html_contents(json_structure))
 
-        if self.__open_browser:
+        if self.__show_html:
             webbrowser.open_new_tab(str(self.__file_path))
 
     def from_graph(

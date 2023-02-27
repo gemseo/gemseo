@@ -150,6 +150,16 @@ for sub_sc in sub_disciplines[0:3]:
     sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
 
 # %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+system_scenario.xdsmize(save_html=False)
+
+# %%
 # Multiprocessing
 # ^^^^^^^^^^^^^^^
 # It is possible to run a DOE in parallel using multiprocessing, in order to do

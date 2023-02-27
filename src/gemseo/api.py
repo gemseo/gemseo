@@ -202,7 +202,7 @@ def generate_n2_plot(
     save: bool = True,
     show: bool = False,
     fig_size: FigSizeType = (15.0, 10.0),
-    open_browser: bool = False,
+    show_html: bool = False,
 ) -> None:
     """Generate a N2 plot from disciplines.
 
@@ -228,7 +228,7 @@ def generate_n2_plot(
         save: Whether to save the static N2 chart.
         show: Whether to show the static N2 chart.
         fig_size: The width and height of the static N2 chart.
-        open_browser: Whether to display the interactive N2 chart in a browser.
+        show_html: Whether to display the interactive N2 chart in a web browser.
 
     Examples:
         >>> from gemseo.api import create_discipline, generate_n2_plot
@@ -242,7 +242,7 @@ def generate_n2_plot(
 
     coupling_structure = MDOCouplingStructure(disciplines)
     coupling_structure.plot_n2_chart(
-        file_path, show_data_names, save, show, fig_size, open_browser
+        file_path, show_data_names, save, show, fig_size, show_html
     )
 
 
