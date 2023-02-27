@@ -1,0 +1,1 @@
+:meth:`.Scenario.xdsmize` returns a :class:`.XDSM`; its :meth:`~.XDSM.visualize` method displays the XDSM in a web browser; this object has also a HTML view.

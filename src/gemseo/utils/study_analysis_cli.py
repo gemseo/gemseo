@@ -22,44 +22,46 @@ from __future__ import annotations
 import argparse
 from ast import literal_eval
 from os import getcwd
-from os import mkdir
-from os.path import exists
-from os.path import join
+from pathlib import Path
 
 from gemseo.utils.study_analysis import StudyAnalysis
 
 
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
-    descr = (
-        "A tool to generate a N2 and XDSM diagrams " + "from an excel description file."
+    parser = argparse.ArgumentParser(
+        description=(
+            "A tool to generate a N2 chart and an XDSM diagram "
+            "from an Excel description file."
+        )
     )
-    parser = argparse.ArgumentParser(description=descr)
     parser.add_argument(
-        "study_file", help="XLS file that describes the study", type=str
+        "study_file",
+        help="The path of the XLS file that describes the study.",
+        type=str,
     )
 
     parser.add_argument(
         "-o",
         "--out_dir",
-        help="Output directory for the generated files",
+        help="The path of the directory to save the files.",
         type=str,
         default=getcwd(),
     )
 
     parser.add_argument(
-        "-x", "--xdsm", help="If True, generates the XDSM file", action="store_true"
+        "-x", "--xdsm", help="Whether to generate a XDSM.", action="store_true"
     )
 
     parser.add_argument(
-        "-l",
-        "--latex_output",
-        help="If True, generates the XDSM in PDF" + "and Latex",
+        "-p",
+        "--save_pdf",
+        help="Whether to save the XDSM as a PDF file.",
         action="store_true",
     )
 
     parser.add_argument(
-        "-s", "--fig_size", help="Size of the N2 figure, tuple (x,y)", type=str
+        "-s", "--fig_size", help="The size of the N2 figure, as a tuple (x,y)", type=str
     )
     return parser.parse_args()
 
@@ -67,21 +69,15 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Entry point."""
     args = parse_args()
-
-    out_dir = args.out_dir
-    study_file = args.study_file
-
-    latex_output = args.latex_output
-    study = StudyAnalysis(study_file)
-
-    if not exists(out_dir):
-        mkdir(out_dir)
-
-    if args.fig_size is not None:
-        fig_size = literal_eval(args.fig_size)
-        study.generate_n2(join(out_dir, "n2.pdf"), fig_size=fig_size)
+    directory_path = Path(args.out_dir)
+    directory_path.mkdir(exist_ok=True)
+    study = StudyAnalysis(args.study_file)
+    if args.fig_size is None:
+        study.generate_n2(directory_path / "n2.pdf")
     else:
-        study.generate_n2(join(out_dir, "n2.pdf"))
+        study.generate_n2(
+            directory_path / "n2.pdf", fig_size=literal_eval(args.fig_size)
+        )
 
     if args.xdsm:
-        study.generate_xdsm(out_dir, latex_output=latex_output, open_browser=True)
+        study.generate_xdsm(directory_path, save_pdf=args.save_pdf, show_html=True)

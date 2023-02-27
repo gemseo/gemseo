@@ -187,6 +187,9 @@ html_static_path = ["_static"]
 def setup(app):
     app.add_css_file("css/gemseo.css")
     app.add_css_file("css/all.css")
+    app.add_css_file("xdsm/fontello.css")
+    app.add_css_file("xdsm/xdsmjs.css")
+    app.add_js_file("xdsm/xdsmjs.js")
 
 
 # Additional templates that should be rendered to pages, maps page names to
@@ -293,7 +296,7 @@ html_context["plugins"] = {
     "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
     "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
 }
-
+html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
 ###############################################################################
 # Settings for inheritance_diagram
 

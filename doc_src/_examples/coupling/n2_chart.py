@@ -64,7 +64,7 @@ for discipline_name, (inputs, outputs) in descriptions.items():
 # ---------------------
 # We do not want to save the N2 chart as a PNG or a PDF file,
 # but open a browser, display it and handle it.
-generate_n2_plot(disciplines, save=False, open_browser=True)
+generate_n2_plot(disciplines, save=False, show_html=True)
 
 #######################################################################################
 # `Click here <../../_static/n2.html>`_ to see the rendering.

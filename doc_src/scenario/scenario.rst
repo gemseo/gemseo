@@ -238,14 +238,13 @@ is to log them in the console or in a file using |g|'s logger.
 The method :meth:`.Scenario.xdsmize` of the :class:`.Scenario`
 can be used to this aim (:code:`monitor=True`).
 
-If html_output (default True), will generate a self contained html file, that can be automatically open using the option open_browser=True.
-If json_output is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`,
-
-and print the statuses in the logs (:code:`print_statuses=True`):
+If ``save_html`` (default True), will generate a self contained HTML file, that can be automatically open using the option ``show_html=True``.
+If ``save_json`` is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
+It will log the status of the workflow if ``log_workflow_status=True``:
 
 .. code::
 
-    scenario.xdsmize(monitor=True, print_statuses=True, open_browser=False)
+    scenario.xdsmize(monitor=True, log_workflow_status=True, show_html=False)
 
 which yields:
 
@@ -267,14 +266,14 @@ and
    :scale: 65 %
 
 Moreover, you can export a static version of the XDSM in both TIKZ, LaTeX and PDF files
-by means of the :code:`latex_output` boolean argument of the
+by means of the :code:`save_pdf` boolean argument of the
 :meth:`.Scenario.xdsmize` method:
 
 .. code::
 
-    scenario.xdsmize(latex_output=True)
+    scenario.xdsmize(save_pdf=True)
 
-eventually specifying the output directory :code:`outdir='SOME_PATH'`.
+eventually specifying the output directory :code:`directory_path='SOME_PATH'`.
 
 3. How to execute a scenario?
 *****************************

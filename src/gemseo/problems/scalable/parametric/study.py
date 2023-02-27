@@ -542,9 +542,9 @@ class TMScalableStudy:
         if post_coupling:
             path = mkdir(self.directory, COUPLING_DIR)
             scenario.xdsmize(
-                latex_output=xdsm_pdf,
-                outdir=path,
-                outfilename=formulation + "_xdsm",
+                save_pdf=xdsm_pdf,
+                directory_path=path,
+                file_name=f"{formulation}_xdsm",
             )
             coupling_structure = MDOCouplingStructure(scenario.disciplines)
             coupling_structure.plot_n2_chart(file_path=os.path.join(path, "n2.pdf"))

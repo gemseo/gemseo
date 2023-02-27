@@ -52,6 +52,7 @@ from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
@@ -565,45 +566,49 @@ class Scenario(MDODiscipline):
     def xdsmize(
         self,
         monitor: bool = False,
-        outdir: str | None = ".",
-        print_statuses: bool = False,
-        outfilename: str = "xdsm.html",
-        latex_output: bool = False,
-        open_browser: bool = False,
-        html_output: bool = True,
-        json_output: bool = False,
-    ) -> None:
-        """Create a JSON file defining the XDSM related to the current scenario.
+        directory_path: str | Path = ".",
+        log_workflow_status: bool = False,
+        file_name: str = "xdsm",
+        show_html: bool = False,
+        save_html: bool = True,
+        save_json: bool = False,
+        save_pdf: bool = False,
+    ) -> XDSM | None:
+        """Create a XDSM diagram of the scenario.
 
         Args:
-            monitor: If ``True``, update the generated file
+            monitor: Whether to update the generated file
                 at each discipline status change.
-            outdir: The directory where the JSON file is generated.
-                If ``None``, the current working directory is used.
-            print_statuses: If ``True``, print the statuses in the console at each update.
-            outfilename: The name of the file of the output.
-                The basename is used and the extension is adapted
-                for the HTML / JSON / PDF outputs.
-            latex_output: If ``True``, build TEX, TIKZ and PDF files.
-            open_browser: If ``True``, open the web browser and display the XDSM.
-            html_output: If ``True``, output a self-contained HTML file.
-            json_output: If ``True``, output a JSON file for XDSMjs.
+            log_workflow_status: Whether to log the evolution of the workflow's status.
+            directory_path: The path of the directory to save the files.
+                If ``show_html=True`` and ``output_directory_path=None``,
+                the HTML file is stored in a temporary directory.
+            file_name: The file name without the file extension.
+            show_html: Whether to open the web browser and display the XDSM.
+            save_html: Whether to save the XDSM as a HTML file.
+            save_json: Whether to save the XDSM as a JSON file.
+            save_pdf: Whether to save the XDSM as a PDF file.
+
+        Returns:
+            A view of the XDSM if ``monitor`` is ``False``.
         """
         from gemseo.utils.xdsmizer import XDSMizer
 
-        if print_statuses:
+        if log_workflow_status:
             monitor = True
 
         if monitor:
-            XDSMizer(self).monitor(outdir=outdir, print_statuses=print_statuses)
+            XDSMizer(self).monitor(
+                directory_path=directory_path, log_workflow_status=log_workflow_status
+            )
         else:
-            XDSMizer(self).run(
-                output_directory_path=outdir,
-                latex_output=latex_output,
-                open_browser=open_browser,
-                html_output=html_output,
-                json_output=json_output,
-                outfilename=outfilename,
+            return XDSMizer(self).run(
+                directory_path=directory_path,
+                save_pdf=save_pdf,
+                show_html=show_html,
+                save_html=save_html,
+                save_json=save_json,
+                file_name=file_name,
             )
 
     def get_expected_dataflow(  # noqa:D102

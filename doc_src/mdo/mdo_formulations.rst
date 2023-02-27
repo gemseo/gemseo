@@ -222,12 +222,11 @@ with the following code:
 
 .. code:: python
 
-    scenario.xdsmize(open_browser=True)
+    scenario.xdsmize(show_html=True)
 
 
-If html_output (default True), will generate a self contained html file, that can be automatically open using the option open_browser=True.
-If outdir is set to Non (default '.'), a temporary file is generated.
-If json_output is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm` (legacy behavior).
-If latex_output is set to True (default False), a Latex PDF is generated.
+If ``save_html`` (default ``True``), will generate a self contained HTML file, that can be automatically open using the option ``show_html=True``.
+If ``save_json`` is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm` (legacy behavior).
+If ``save_pdf=True`` (default ``False``), a LaTex PDF is generated.
 
 You should observe the XDSM diagram related to your MDO scenario.

@@ -34,11 +34,8 @@ Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
 from __future__ import annotations
 
 import logging
-import webbrowser
 from json import dumps
 from multiprocessing import RLock
-from os.path import basename
-from os.path import splitext
 from pathlib import Path
 from tempfile import mkdtemp
 from typing import Any
@@ -61,6 +58,7 @@ from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda import MDA
 from gemseo.utils.locks import synchronized
 from gemseo.utils.show_utils import generate_xdsm_html
+from gemseo.utils.xdsm import XDSM
 from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 
 LOGGER = logging.getLogger(__name__)
@@ -71,8 +69,6 @@ USER_NAME = USER_ID = "_U_"
 EdgeType = Dict[str, Union[MDODiscipline, List[str]]]
 NodeType = Dict[str, str]
 IdsType = Any
-
-XdsmType = Dict[str, Any]
 
 
 class XDSMizer:
@@ -101,13 +97,13 @@ class XDSMizer:
         self.hashref = hashref
         self.lock = RLock()
         self._monitor = None
-        self.outdir = "."
-        self.outfilename = "xdsm.json"
+        self.directory_path = "."
+        self.json_file_name = "xdsm.json"
         self.to_hashref = {}
         self.to_id = {}  # dictionary to map AtomicExecSequence to XDSM id
         self.initialize(expected_workflow)
-        self.print_statuses = False  # Prints the statuses in the console
-        self.latex_output = False
+        self.log_workflow_status = False
+        self.save_pdf = False
 
     def initialize(
         self,
@@ -150,28 +146,27 @@ class XDSMizer:
 
     def monitor(
         self,
-        outdir: str | None = ".",
-        outfilename: str = "xdsm.json",
-        print_statuses: bool = False,
-        latex_output: bool = False,
+        directory_path: str | Path = ".",
+        file_name: str = "xdsm",
+        log_workflow_status: bool = False,
+        save_pdf: bool = False,
     ) -> None:
         """Generate XDSM json file on discipline status update.
 
         Args:
-            outdir: The name of the directory to store the different files.
-                If None, the current working directory is used.
-            outfilename: The name of the JSON file.
-            print_statuses: If True, print the statuses in the console at each update.
-            latex_output: If True, save the XDSM to tikz, tex and pdf files.
+            directory_path: The path of the directory to save the files.
+            file_name: The file name to be suffixed by a file extension.
+            log_workflow_status: Whether to log the evolution of the workflow's status.
+            save_pdf: Whether to save the XDSM as a PDF file.
         """
         self._monitor = Monitoring(self.scenario)
         self._monitor.add_observer(self)
         # have to reinitialize with monitored workflow
         self.initialize(self._monitor.workflow)
-        self.outdir = outdir
-        self.outfilename = outfilename
-        self.print_statuses = print_statuses
-        self.latex_output = latex_output
+        self.directory_path = directory_path
+        self.json_file_name = f"{file_name}.json"
+        self.log_workflow_status = log_workflow_status
+        self.save_pdf = save_pdf
 
     def update(
         self,
@@ -183,76 +178,63 @@ class XDSMizer:
             atom: The discipline which status is monitored.
         """
         self.run(
-            output_directory_path=self.outdir,
-            outfilename=self.outfilename,
-            latex_output=self.latex_output,
+            directory_path=self.directory_path,
+            file_name=self.json_file_name,
+            save_pdf=self.save_pdf,
         )
-        if self.print_statuses:
+        if self.log_workflow_status:
             LOGGER.info(str(self._monitor))
 
     def run(
         self,
-        output_directory_path: str | None = None,
-        latex_output: bool = False,
-        outfilename: str = "xdsm.html",
-        html_output: bool = True,
-        json_output: bool = False,
-        open_browser: bool = False,
-    ) -> XdsmType:
-        """Generate a XDSM diagram from the process.
+        directory_path: str | Path = ".",
+        file_name: str = "xdsm",
+        show_html: bool = False,
+        save_html: bool = True,
+        save_json: bool = False,
+        save_pdf: bool = False,
+    ) -> XDSM:
+        """Generate a XDSM diagram of the :attr:`.scenario`.
 
         By default,
         a self-contained HTML file is generated,
         that can be viewed in a browser.
 
         Args:
-            output_directory_path: The name of the directory to store the JSON file.
-                If None, the current working directory is used.
-                If open_browser is True and outdir is None,
-                the file is stored in a temporary directory.
-            outfilename: The name of the JSON file.
-            latex_output: If True, save the XDSM to tikz, tex and pdf files.
-            open_browser: If True, open the web browser and display the XDSM.
-            html_output: If True, save the XDSM in a self-contained HTML file
-            json_output: If True, save the JSON file.
+            directory_path: The path of the directory to save the files.
+            file_name: The file name to be suffixed by a file extension.
+            show_html: Whether to open the web browser and display the XDSM.
+            save_html: Whether to save the XDSM as a HTML file.
+            save_json: Whether to save the XDSM as a JSON file.
+            save_pdf: Whether to save the XDSM as a PDF file.
 
         Returns:
-            The XDSM structure expressed as a dictionary
-            whose keys are "nodes", "edges", "workflow" and "optpb".
+            A XDSM diagram.
         """
         xdsm = self.xdsmize()
         xdsm_json = dumps(xdsm, indent=2, ensure_ascii=False)
-        base = basename(outfilename)
-        outfile_basename = splitext(base)[0]
 
-        no_html_loc = False
-
-        if output_directory_path is None:
-            output_directory_path = Path.cwd()
-            no_html_loc = True
-        else:
-            output_directory_path = Path(output_directory_path)
-
-        if json_output:
-            json_path = output_directory_path / f"{outfile_basename}.json"
-            with json_path.open("w") as file_stream:
+        directory_path = Path(directory_path)
+        if save_json:
+            with (directory_path / f"{file_name}.json").open("w") as file_stream:
                 file_stream.write(xdsm_json)
 
-        if latex_output:
-            xdsm_data_to_pdf(xdsm, output_directory_path, outfile_basename)
+        if save_pdf:
+            xdsm_data_to_pdf(xdsm, directory_path, file_name)
 
-        if html_output or open_browser:
-            if no_html_loc:
-                output_directory_path = Path(mkdtemp(suffix="", prefix="tmp"))
-            out_file_path = (output_directory_path / outfile_basename).with_suffix(
-                ".html"
-            )
-            LOGGER.info("Generating HTML XDSM file in : %s", out_file_path)
-            generate_xdsm_html(xdsm, out_file_path)
-            if open_browser:
-                url = f"file://{out_file_path}"
-                webbrowser.open(url, new=2)  # open in new tab
-            return out_file_path
+        html_file_path = None
+        if save_html or show_html:
+            if save_html:
+                html_directory_path = directory_path
+            else:
+                html_directory_path = Path(mkdtemp(suffix="", prefix="tmp"))
+
+            html_file_path = (html_directory_path / file_name).with_suffix(".html")
+            generate_xdsm_html(xdsm, html_file_path)
+
+        xdsm = XDSM(xdsm_json, html_file_path)
+        if show_html:
+            xdsm.visualize()
 
         return xdsm
 

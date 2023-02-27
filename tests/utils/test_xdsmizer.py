@@ -33,6 +33,7 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.mdo_scenario import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
@@ -43,7 +44,6 @@ from gemseo.utils.xdsmizer import EdgeType
 from gemseo.utils.xdsmizer import expand
 from gemseo.utils.xdsmizer import NodeType
 from gemseo.utils.xdsmizer import XDSMizer
-from gemseo.utils.xdsmizer import XdsmType
 
 from ..mda.test_mda import analytic_disciplines_from_desc
 
@@ -102,42 +102,42 @@ class TestXDSMizer(unittest.TestCase):
         constraint."""
         scenario = self.build_mdo_scenario(inner_mda_name="MDAGaussSeidel")
         options = {
-            "output_directory_path": ".",
-            "html_output": False,
-            "json_output": True,
-            "outfilename": "xdsmized_sobieski_mdf.json",
+            "directory_path": ".",
+            "save_html": False,
+            "save_json": True,
+            "file_name": "xdsmized_sobieski_mdf",
         }
         assert_xdsm(scenario, **options)
 
         # with constraints
-        options["outfilename"] = "xdsmized_sobieski_cstr_mdf.json"
+        options["file_name"] = "xdsmized_sobieski_cstr_mdf"
         scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
         assert_xdsm(scenario, **options)
 
-        # without outdir
+        # without directory_path
         xdsmizer = XDSMizer(scenario)
-        xdsmizer.run(json_output=True, outfilename="xdsmized_sobieski_mdf.json")
+        xdsmizer.run(save_json=True, file_name="xdsmized_sobieski_mdf")
 
         self.assertRaises(ValueError, xdsmizer._find_atom, Sellar1())
 
-        xdsmizer.run(outfilename="xdsmized_sobieski_mdf.html")
+        xdsmizer.run(file_name="xdsmized_sobieski_mdf")
 
     def test_xdsmize_idf(self):
         """Test xdsmization of Sobieski problem solved with IDF with and without
         constraint."""
         formulation = "IDF"
         scenario = self.build_mdo_scenario(formulation)
-        scenario.xdsmize(html_output=False, json_output=True)
+        scenario.xdsmize(save_html=False, save_json=True)
         options = {
-            "output_directory_path": ".",
-            "html_output": False,
-            "json_output": True,
-            "outfilename": "xdsmized_sobieski_idf.json",
+            "directory_path": ".",
+            "save_html": False,
+            "save_json": True,
+            "file_name": "xdsmized_sobieski_idf",
         }
         assert_xdsm(scenario, **options)
 
         # with constraints
-        options["outfilename"] = "xdsmized_sobieski_cstr_idf.json"
+        options["file_name"] = "xdsmized_sobieski_cstr_idf"
         for c_name in ["g_1", "g_2", "g_3"]:
             scenario.add_constraint(c_name, "ineq")
         assert_xdsm(scenario, **options)
@@ -212,13 +212,13 @@ class TestXDSMizer(unittest.TestCase):
             n_processes=5,
         )
         system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
-        system_scenario.xdsmize(json_output=True)
+        system_scenario.xdsmize(save_json=True)
         options = {
-            "output_directory_path": ".",
-            "latex_output": False,
-            "html_output": False,
-            "json_output": True,
-            "outfilename": "xdsmized_sobieski_bilevel.json",
+            "directory_path": ".",
+            "save_pdf": False,
+            "save_html": False,
+            "save_json": True,
+            "file_name": "xdsmized_sobieski_bilevel",
         }
         assert_xdsm(system_scenario, **options)
 
@@ -285,9 +285,9 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
     )
 
     options = {
-        "html_output": False,
-        "json_output": True,
-        "outfilename": "xdsmized_nested_chains.json",
+        "save_html": False,
+        "save_json": True,
+        "file_name": "xdsmized_nested_chains",
     }
 
     assert_xdsm(nested_chains, **options)
@@ -326,9 +326,9 @@ def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
     )
 
     options = {
-        "html_output": False,
-        "json_output": True,
-        "outfilename": "xdsmized_nested_parallel_chains.json",
+        "save_html": False,
+        "save_json": True,
+        "file_name": "xdsmized_nested_parallel_chains",
     }
 
     assert_xdsm(nested_chains, **options)
@@ -341,7 +341,7 @@ def assert_xdsm(scenario: MDOScenario, **options: Mapping[str, Any]) -> None:
         scenario: The scenario from which the XDSM is generated.
         **options: The options for the XDSMizer.
     """
-    fname = options["outfilename"]
+    fname = options["file_name"]
     xdsmizer = XDSMizer(scenario)
     xdsmizer.run(**options)
     assert_xdsm_file_ok(fname, fname)
@@ -356,7 +356,7 @@ def assert_xdsm_file_ok(generated_file: str, ref_file: str) -> None:
             This reference file must be located into the ``data`` directory.
     """
     current_dir = Path(__file__).parent
-    ref_filepath = current_dir / "data" / ref_file
+    ref_filepath = (current_dir / "data" / ref_file).with_suffix(".json")
 
     assert ref_filepath.exists(), (
         f"Reference {str(ref_filepath)} not found in data " f"directory."
@@ -366,7 +366,7 @@ def assert_xdsm_file_ok(generated_file: str, ref_file: str) -> None:
         xdsm_str = ref_file.read()
     expected = json.loads(xdsm_str)
 
-    new_filepath = Path(generated_file)
+    new_filepath = Path(generated_file).with_suffix(".json")
     assert new_filepath.exists(), f"Generated {str(new_filepath)} not found."
 
     with open(new_filepath) as new_file:
@@ -376,7 +376,7 @@ def assert_xdsm_file_ok(generated_file: str, ref_file: str) -> None:
     assert_xdsm_equal(expected, xdsm_json)
 
 
-def assert_xdsm_equal(expected: XdsmType, generated: XdsmType) -> None:
+def assert_xdsm_equal(expected: dict[str, Any], generated: dict[str, Any]) -> None:
     """Check the equality of two XDSM structures.
 
     Args:
@@ -453,9 +453,50 @@ def test_xdsmize_mdf_mdoparallelchain(tmp_wd):
     )
 
     options = {
-        "html_output": False,
-        "json_output": True,
-        "outfilename": "xdsmized_mdf_mdoparallelchain.json",
+        "save_html": False,
+        "save_json": True,
+        "file_name": "xdsmized_mdf_mdoparallelchain",
     }
 
     assert_xdsm(scenario, **options)
+
+
+@pytest.mark.parametrize("directory_path", [".", Path("bar")])
+@pytest.mark.parametrize("file_name", [None, "foo"])
+@pytest.mark.parametrize("save_html", [False, True])
+def test_run_return(tmp_wd, directory_path, file_name, save_html):
+    """Check the object returned by XDSMizer.run()."""
+    if directory_path != ".":
+        (tmp_wd / directory_path).mkdir()
+
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    discipline = AnalyticDiscipline({"y": "x"})
+    scenario = MDOScenario([discipline], "DisciplinaryOpt", "y", design_space)
+
+    file_name = file_name or "xdsm"
+    xdsm = XDSMizer(scenario).run(
+        directory_path=directory_path,
+        file_name=file_name,
+        save_json=True,
+        save_html=save_html,
+    )
+    if directory_path == ".":
+        json_path = Path(f"{file_name}.json")
+    else:
+        json_path = directory_path / f"{file_name}.json"
+
+    with json_path.open("r") as f:
+        assert xdsm.json_schema == f.read()
+
+    html_file_name = f"{file_name}.html"
+    if not save_html:
+        assert xdsm.html_file_path is None
+    elif directory_path != ".":
+        # The output directory containing the HTML is given by the user.
+        assert xdsm.html_file_path == directory_path / html_file_name
+    else:
+        # The output directory is temporary.
+        html_file_path = xdsm.html_file_path
+        assert html_file_path.exists()
+        assert html_file_path.name == html_file_name

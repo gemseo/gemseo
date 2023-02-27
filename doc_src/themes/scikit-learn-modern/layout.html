@@ -36,13 +36,15 @@
   {% endif %}
 
   <link rel="stylesheet" href="{{ pathto('_static/css/vendor/bootstrap.min.css', 1) }}" type="text/css" />
-  {%- for css in css_files %}
-  <link rel="stylesheet" href="{{ pathto(css, 1) }}" type="text/css" />
+  {%- for css_file in css_files %}
+  <link rel="stylesheet" href="{{ pathto(css_file, 1) }}" type="text/css" />
   {%- endfor %}
 
   <script defer src="{{ pathto('_static/js/all.js', 1) }}"></script>
   <script id="documentation_options" data-url_root="{{ pathto('', 1) }}" src="{{ pathto('_static/documentation_options.js', 1) }}"></script>
-  <script src="{{ pathto('_static/jquery.js', 1) }}"></script>
+  {%- for js_file in js_files %}
+  <script src="{{ pathto(js_file, 1) }}"></script>
+  {%- endfor %}
   {%- block extrahead %} {% endblock %}
 </head>
 

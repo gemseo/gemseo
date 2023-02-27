@@ -400,7 +400,7 @@ class MDOCouplingStructure:
         save: bool = True,
         show: bool = False,
         fig_size: FigSizeType = (15.0, 10.0),
-        open_browser: bool = False,
+        show_html: bool = False,
     ) -> None:
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
 
@@ -433,7 +433,7 @@ class MDOCouplingStructure:
             save: Whether to save the static N2 chart.
             show: Whether to display the static N2 chart on screen.
             fig_size: The width and height of the static N2 chart in inches.
-            open_browser: Whether to display the interactive N2 chart in a browser.
+            show_html: Whether to display the interactive N2 chart in a browser.
 
         Raises:
             ValueError: When there is less than two disciplines.
@@ -447,7 +447,7 @@ class MDOCouplingStructure:
             for discipline in self.disciplines
             if self.is_self_coupled(discipline)
         ]
-        N2HTML(html_file_path, open_browser).from_graph(
+        N2HTML(html_file_path, show_html).from_graph(
             self.graph, self_coupled_discipline
         )
 

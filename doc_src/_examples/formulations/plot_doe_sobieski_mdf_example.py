@@ -96,6 +96,16 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 
 # %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+scenario.xdsmize(save_html=False)
+
+# %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 # Use provided analytic derivatives

@@ -52,13 +52,13 @@ Use :mod:`~gemseo.api.configure_logger` to configure the logger to log in a file
 
 The method :meth:`~gemseo.core.scenario.Scenario.xdsmize` of the :class:`~gemseo.core.scenario.Scenario`
 can be used to this aim (:code:`monitor=True`).
-If the option ``html_output`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``open_browser=True``.
-If ``json_output`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`,
-and print the statuses in the logs (:code:`print_statuses=True`):
+If the option ``save_html`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``show_html=True``.
+If ``save_pdf`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
+If will log the status of the workflow if ``log_workflow_status=True``:
 
 .. code::
 
-    scenario.xdsmize(monitor=True, print_statuses=True, open_browser=False)
+    scenario.xdsmize(monitor=True, log_workflow_status=True, show_html=False)
 
 This generates outputs such as the following, where the process' hierarchy is represented by a flatten :term:`JSON` structure.
 
@@ -88,7 +88,7 @@ The path to the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ library must be s
 
 .. code::
 
-    scenario.xdsmize(monitor=True, outdir="path_to_xdsmjs")
+    scenario.xdsmize(monitor=True, directory_path="results_path")
 
 The following images shows the typical outputs of the process statuses
 
