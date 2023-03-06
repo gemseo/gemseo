@@ -273,7 +273,6 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 func=self.real_part_obj_fun,
                 bounds=bounds,
                 maxiter=self.max_func_calls,
-                local_search_options={},
                 initial_temp=5230.0,
                 restart_temp_ratio=2e-05,
                 maxfun=self.max_func_calls,
