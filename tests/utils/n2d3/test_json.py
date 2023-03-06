@@ -24,7 +24,7 @@ from gemseo.utils.n2d3.n2_json import N2JSON
 from numpy import ones
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def n2_json() -> N2JSON:
     """The N2JSON related to two strongly coupled disciplines and a weakly one."""
     description_list = [
@@ -45,7 +45,7 @@ def n2_json() -> N2JSON:
     return N2JSON(DependencyGraph(disciplines))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def expected_links(n2_json):
     """The expected links computed by the N2JSON.
 
@@ -94,7 +94,7 @@ def expected_links(n2_json):
     ]
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def expected_nodes(n2_json):
     """The expected nodes computed by the N2JSON.
 
@@ -379,7 +379,8 @@ def test_create_nodes(n2_json, expected_nodes):
         n2_json._DEFAULT_WEAKLY_COUPLED_DISCIPLINES,
         n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
     ]
-    assert nodes == [expected_nodes[index] for index in [0, 1, 4, 2, 3]]
+
+    assert nodes == expected_nodes
 
 
 @pytest.mark.parametrize("name", [1, "foo"])
