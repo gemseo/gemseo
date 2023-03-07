@@ -88,8 +88,5 @@ From this :code:`scenario`, we can apply any kind of post-processing dedicated t
     If you want to be able to plot state variables, you must add them as observables before the problem is executed.
     Use the :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
 
-Examples
-~~~~~~~~
-
 .. include:: ../examples/post_process/index.rst
-   :start-line: 37
+   :start-line: 127
