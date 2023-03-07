@@ -55,13 +55,13 @@ from numpy import inf
 from numpy import ndarray
 from numpy import newaxis
 from numpy import sqrt
+from numpy import tile
 from numpy import trace
 from numpy import zeros
 from numpy.linalg import cholesky
 from numpy.linalg import inv
 from numpy.linalg import LinAlgError
 from numpy.linalg import norm
-from numpy.matlib import repmat
 from scipy.optimize import leastsq
 
 from gemseo.algos.database import Database
@@ -679,10 +679,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             * The history of the gradient.
         """
         # Rebuild the argument history:
-        x_hist = repmat(x_0, x_corr.shape[1], 1) + cumsum(x_corr.T, axis=0)
+        x_hist = tile(x_0, (x_corr.shape[1], 1)) + cumsum(x_corr.T, axis=0)
         x_hist = concatenate((atleast_2d(x_0), x_hist), axis=0)
         # Rebuild the gradient history
-        x_grad_hist = repmat(g_0, grad_corr.shape[1], 1) + cumsum(grad_corr.T, axis=0)
+        x_grad_hist = tile(g_0, (grad_corr.shape[1], 1)) + cumsum(grad_corr.T, axis=0)
         x_grad_hist = concatenate((atleast_2d(g_0), x_grad_hist), axis=0)
         return x_hist, x_grad_hist
 
