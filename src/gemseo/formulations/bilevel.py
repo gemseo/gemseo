@@ -21,15 +21,13 @@ from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Callable
 from typing import Iterable
 from typing import Mapping
-
-from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
+from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
@@ -385,31 +383,31 @@ class BiLevel(MDOFormulation):
         if self._mda2:
             chain_dis += [self._mda2]
 
-        self.chain = MDOChain(
-            chain_dis, name="bilevel_chain", grammar_type=self._grammar_type
-        )
-
         if not self.reset_x0_before_opt and self._mda1 is not None:
-            run_mda1_orig = self._mda1._run
+            self.chain = MDOWarmStartedChain(
+                chain_dis,
+                name="bilevel_chain",
+                grammar_type=self._grammar_type,
+                variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
+            )
+        else:
+            self.chain = MDOChain(
+                chain_dis, name="bilevel_chain", grammar_type=self._grammar_type
+            )
 
-            def _run_mda() -> Callable[[Mapping[str, ndarray]], None]:
-                """Set mda1 execution to warm start the chain with previous x_local opt.
+    def _get_variable_names_to_warm_start(self) -> list[str]:
+        """Retrieve the names of the variables to warm start.
 
-                Returns:
-                     A reference to the MDA1 _run method.
-                """
-                # TODO : Define a pre run method to be overloaded in MDA maybe
-                # Or use observers at the system driver level to pass the local
-                # vars
-                for scenario in self.get_sub_scenarios():
-                    x_loc_d = scenario.design_space.get_current_value(as_dict=True)
-                    for indata, x_loc in x_loc_d.items():
-                        if self._mda1.is_input_existing(indata):
-                            if x_loc is not None:
-                                self._mda1.local_data[indata] = x_loc
-                return run_mda1_orig()
+        The outputs of all the sub scenarios that shall be warm started.
 
-            self.mda1._run = _run_mda
+        Returns:
+            The names of the variables to warm start.
+        """
+        return [
+            name
+            for adapter in self.scenario_adapters
+            for name in adapter.get_output_data_names()
+        ]
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""

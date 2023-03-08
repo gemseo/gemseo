@@ -300,3 +300,26 @@ def test_get_sub_disciplines(sobieski_bilevel_scenario):
         SobieskiAerodynamics().__class__,
         SobieskiStructure().__class__,
     }
+
+
+def test_bilevel_warm_start(sobieski_bilevel_scenario):
+    """Test the warm start of the BiLevel chain.
+
+    Args:
+        sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
+    """
+    scenario = sobieski_bilevel_scenario()
+    scenario.formulation.chain.set_cache_policy(scenario.MEMORY_FULL_CACHE)
+    bilevel_chain_cache = scenario.formulation.chain.cache
+    scenario.formulation.chain.disciplines[0].set_cache_policy(
+        scenario.MEMORY_FULL_CACHE
+    )
+    mda1_cache = scenario.formulation.chain.disciplines[0].cache
+    scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 3})
+    mda1_inputs = [entry.inputs for entry in mda1_cache]
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache]
+
+    assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]
+    assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
+    assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
+    assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()
