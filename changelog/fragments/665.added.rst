@@ -1,0 +1,2 @@
+A new :class:`.MDOWarmStartedChain` allows users to warm start some inputs of the chain with the output values of the
+previous run.

@@ -61,7 +61,7 @@ class MDOChain(MDODiscipline):
 
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
@@ -571,3 +571,72 @@ class MDOAdditiveChain(MDOParallelChain):
 
                 assert disciplinary_jacobians
                 self.jac[output_name][input_name] = sum(disciplinary_jacobians)
+
+
+class MDOWarmStartedChain(MDOChain):
+    """Chain capable of warm starting a given list of variables.
+
+    The values of the variables to warm start are stored after each run and used to
+    initialize the next one.
+
+    This Chain cannot be linearized.
+    """
+
+    _ATTR_TO_SERIALIZE = MDOChain._ATTR_TO_SERIALIZE + (
+        "_variable_names_to_warm_start",
+        "_warm_start_variable_names_to_values",
+    )
+
+    def __init__(
+        self,
+        disciplines: Sequence[MDODiscipline],
+        variable_names_to_warm_start: Sequence[str],
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    ) -> None:
+        """
+        Args:
+            disciplines: The disciplines.
+            variable_names_to_warm_start: The names of the variables to be warm started.
+                These names must be outputs of the disciplines in the chain.
+                If the list is empty, no variables are warm started.
+            name: The name of the discipline.
+                If None, use the class name.
+            grammar_type: The type of grammar to use for inputs and outputs declaration,
+                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+
+        Raises:
+            ValueError: If the variable names to warm start are not outputs of the
+                chain.
+        """  # noqa: D205, D212, D415
+        super().__init__(disciplines=disciplines, name=name, grammar_type=grammar_type)
+        self._variable_names_to_warm_start = variable_names_to_warm_start
+        self._warm_start_variable_names_to_values = {}
+        if variable_names_to_warm_start:
+            if not self.is_all_outputs_existing(variable_names_to_warm_start):
+                all_output_names = self.get_output_data_names()
+                missing_output_names = set(variable_names_to_warm_start).difference(
+                    all_output_names
+                )
+                raise ValueError(
+                    "The following variable names are not "
+                    f"outputs of the chain: {missing_output_names}."
+                    f" Available outputs are: {all_output_names}."
+                )
+
+    def _compute_jacobian(
+        self,
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__} cannot be linearized.")
+
+    def _run(self) -> None:
+        if self._warm_start_variable_names_to_values:
+            self.local_data.update(self._warm_start_variable_names_to_values)
+        super()._run()
+        if self._variable_names_to_warm_start:
+            self._warm_start_variable_names_to_values = {
+                name: self.local_data[name]
+                for name in self._variable_names_to_warm_start
+            }
