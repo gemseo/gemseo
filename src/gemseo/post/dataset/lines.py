@@ -27,6 +27,7 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.string_tools import repr_variable
 
 
 class Lines(DatasetPlot):
@@ -76,26 +77,32 @@ class Lines(DatasetPlot):
         else:
             y_data = self.dataset[variables]
 
-        self._set_color(len(variables))
-        self._set_linestyle(len(variables), "-")
-        self._set_marker(len(variables), "o")
+        n_lines = sum(self.dataset.sizes[name] for name in variables)
+        self._set_color(n_lines)
+        self._set_linestyle(n_lines, "-")
+        self._set_marker(n_lines, "o")
 
         fig, axes = self._get_figure_and_axes(fig, axes)
-        for index, (name, value) in enumerate(y_data.items()):
-            axes.plot(
-                x_data,
-                value,
-                linestyle=self.linestyle[index],
-                color=self.color[index],
-                label=name,
-            )
-            if self._param.add_markers:
-                for sub_value in value.T:
+        line_index = -1
+        for variable_name, variable_values in y_data.items():
+            variable_size = self.dataset.sizes[variable_name]
+            for variable_component, variable_value in enumerate(variable_values.T):
+                line_index += 1
+                axes.plot(
+                    x_data,
+                    variable_value,
+                    linestyle=self.linestyle[line_index],
+                    color=self.color[line_index],
+                    label=repr_variable(
+                        variable_name, variable_component, variable_size
+                    ),
+                )
+                if self._param.add_markers:
                     axes.scatter(
                         x_data,
-                        sub_value,
-                        color=self.color[index],
-                        marker=self.marker[index],
+                        variable_value,
+                        color=self.color[line_index],
+                        marker=self.marker[line_index],
                     )
 
         axes.set_xlabel(self.xlabel or abscissa_variable)
