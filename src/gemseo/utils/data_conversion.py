@@ -31,6 +31,8 @@ from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 
+from gemseo.core.discipline_data import Data
+
 STRING_SEPARATOR = "#&#"
 
 
@@ -242,7 +244,7 @@ def update_dict_of_arrays_from_array(
 def deepcopy_dict_of_arrays(
     dict_of_arrays: Mapping[str, ndarray],
     names: Iterable[str] | None = None,
-) -> dict[str, ndarray]:
+) -> Data:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially

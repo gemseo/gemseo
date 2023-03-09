@@ -24,7 +24,6 @@ import abc
 import itertools
 import logging
 import sys
-from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
 from multiprocessing import RLock
@@ -33,6 +32,7 @@ from typing import ClassVar
 from typing import Generator
 from typing import Iterable
 from typing import Mapping
+from typing import NamedTuple
 from typing import TYPE_CHECKING
 
 from numpy import append
@@ -64,11 +64,18 @@ LOGGER = logging.getLogger(__name__)
 
 JacobianData = Mapping[str, Mapping[str, ndarray]]
 
-CacheEntry = namedtuple("CacheEntry", "inputs,outputs,jacobian", defaults=[None, None])
-CacheEntry.__doc__ = "The entry of a cache."
-CacheEntry.inputs.__doc__ = "The input data as ``dict[str, ndarray]``."
-CacheEntry.outputs.__doc__ = "The output data as ``dict[str, ndarray]``."
-CacheEntry.jacobian.__doc__ = "The Jacobian data as ``dict[str, dict[str, ndarray]]``."
+
+class CacheEntry(NamedTuple):
+    """An entry of a cache."""
+
+    inputs: Mapping[str, ndarray]
+    """The input data."""
+
+    outputs: Mapping[str, ndarray]
+    """The output data."""
+
+    jacobian: Mapping[str, Mapping[str, ndarray]]
+    """The Jacobian data."""
 
 
 class AbstractCache(ABCMapping):
@@ -689,7 +696,7 @@ class AbstractFullCache(AbstractCache):
                 jacobian_data = self._read_data(index, self._JACOBIAN_GROUP)
                 return CacheEntry(input_data, output_data, jacobian_data)
 
-        return CacheEntry(input_data)
+        return CacheEntry(input_data, {}, {})
 
     @synchronized
     def __getitem__(
@@ -700,7 +707,7 @@ class AbstractFullCache(AbstractCache):
             data_hash = hash_data_dict(input_data)
             indices = self.__has_hash(data_hash)
             if indices is None:
-                return CacheEntry(input_data)
+                return CacheEntry(input_data, {}, {})
 
             return self._read_input_output_data(indices, input_data)
 
@@ -714,7 +721,7 @@ class AbstractFullCache(AbstractCache):
                     jacobian_data = self._read_data(index, self._JACOBIAN_GROUP)
                     return CacheEntry(input_data, output_data, jacobian_data)
 
-        return CacheEntry(input_data)
+        return CacheEntry(input_data, {}, {})
 
     @property
     def _all_groups(self) -> list[int]:
