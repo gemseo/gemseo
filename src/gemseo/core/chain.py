@@ -38,8 +38,10 @@ from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import SerialExecSequence
-from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution import DiscParallelLinearization
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_linearization import (
+    DiscParallelLinearization,
+)
 
 LOGGER = logging.getLogger(__name__)
 

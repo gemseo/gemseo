@@ -1,1 +1,0 @@
-:class:`.SobolAnalysis` no longer depends on the order of the variables in the :class:`.ParameterSpace`.

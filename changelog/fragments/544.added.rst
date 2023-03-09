@@ -1,1 +1,0 @@
-:class:`.MLErrorMeasure` can split the multi-output measures according to the output names.

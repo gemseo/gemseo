@@ -1,1 +1,0 @@
-The cache of a self-coupled discipline cannot be exported to a dataset.

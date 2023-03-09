@@ -35,7 +35,9 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
-from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 
 OutputValues = list[Optional[float]]
 OutputMask = list[bool]
@@ -296,12 +298,12 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
         # Create the workers for parallel evaluations
         if self.__use_threading:
-            workers = [
+            workers = (
                 Worker(self.__problem, self.__use_gradient)
                 for _ in range(number_of_processes)
-            ]
+            )
         else:
-            workers = Worker(self.__problem, self.__use_gradient)
+            workers = (Worker(self.__problem, self.__use_gradient),)
 
         # Create a callback to fill the database on-the-fly
         def storing_callback(index: int, outputs: Outputs) -> None:
@@ -323,7 +325,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
         # Evaluate the samples in parallel
         functions_batch, output_masks_batch, _, _ = zip(
-            *ParallelExecution(
+            *CallableParallelExecution(
                 workers, number_of_processes, self.__use_threading
             ).execute(list(zip(queryx, querymask)), exec_callback=storing_callback)
         )

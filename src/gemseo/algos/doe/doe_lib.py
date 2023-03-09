@@ -45,8 +45,10 @@ from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.parallel_execution import ParallelExecution
-from gemseo.core.parallel_execution import SUBPROCESS_NAME
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
+from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
@@ -369,7 +371,9 @@ class DOELibrary(DriverLib):
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
             # Create a list of tasks: execute functions
-            parallel = ParallelExecution(self._worker, n_processes=n_processes)
+            parallel = CallableParallelExecution(
+                [self._worker], n_processes=n_processes
+            )
             parallel.wait_time_between_fork = wait_time_between_samples
             # Define a callback function to store the samples on the fly
             # during the parallel execution

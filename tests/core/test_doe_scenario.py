@@ -25,6 +25,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
@@ -267,7 +268,7 @@ def test_other_exceptions_caught(caplog):
     scenario = DOEScenario(
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
-    with pytest.raises(TypeError):
+    with pytest.raises(InvalidDataException):
         scenario.execute(
             {
                 "algo": "CustomDOE",

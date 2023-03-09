@@ -1,1 +1,0 @@
-:class:`.Transformer` handles both 1D and 2D arrays.

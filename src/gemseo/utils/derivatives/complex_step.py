@@ -32,7 +32,9 @@ from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
-from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 EPSILON = finfo(float).eps
@@ -120,7 +122,7 @@ class ComplexStep(GradientApproximator):
             return self.f_pointer(f_input_values, **kwargs)
 
         functions = [func_noargs] * n_perturbations
-        parallel_execution = ParallelExecution(functions, **self._par_args)
+        parallel_execution = CallableParallelExecution(functions, **self._par_args)
 
         perturbated_inputs = [
             input_values + input_perturbations[:, perturbation_index]

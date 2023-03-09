@@ -1,1 +1,0 @@
-:attr:`.HDF5Cache.hdf_node_name` returns the name of the node of the HDF file in which the data are cached.
