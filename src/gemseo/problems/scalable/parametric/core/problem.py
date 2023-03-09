@@ -24,6 +24,7 @@ Scalable problem - Problem
 from __future__ import annotations
 
 import logging
+from typing import Sequence
 
 from numpy import zeros
 from numpy.random import rand
@@ -170,7 +171,7 @@ class TMProblem:
                 msg.append(f"............ {name} ({size})")
         return "\n".join(msg)
 
-    def get_default_inputs(self, names=None):
+    def get_default_inputs(self, names: Sequence[str] | None = None):
         """Get default input values.
 
         :param list(str) names: names of the inputs.

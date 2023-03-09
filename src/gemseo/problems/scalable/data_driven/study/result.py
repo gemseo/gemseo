@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import Sequence
 
 RESULTS_DIRECTORY = Path("results")
 
@@ -32,7 +33,7 @@ RESULTS_DIRECTORY = Path("results")
 class ScalabilityResult:
     """Scalability Result."""
 
-    def __init__(self, name, id_scaling, id_sample) -> None:
+    def __init__(self, name: str, id_scaling, id_sample) -> None:
         """Constructor.
 
         :param str name: name of the scalability result.
@@ -67,15 +68,15 @@ class ScalabilityResult:
         formulation,
         formulation_options,
         scaling,
-        n_calls,
+        n_calls: int,
         n_calls_linearize,
         n_calls_top_level,
         n_calls_linearize_top_level,
         exec_time,
         status,
-        is_feasible,
-        disc_names,
-        output_names,
+        is_feasible: bool,
+        disc_names: Sequence[str],
+        output_names: Sequence[str],
         old_varsizes,
         new_varsizes,
     ) -> None:

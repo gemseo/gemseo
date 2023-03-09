@@ -253,7 +253,7 @@ class DesignSpace(collections.abc.MutableMapping):
         if self.__has_current_value:
             self.__clear_dependent_data()
 
-    def __clear_dependent_data(self):
+    def __clear_dependent_data(self) -> None:
         """Reset the data that depends on the current value."""
         self.__current_value_array = array([])
         self.__norm_current_value = {}

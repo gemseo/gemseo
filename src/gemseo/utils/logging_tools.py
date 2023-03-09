@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import types
+from types import TracebackType
 
 
 class MultiLineHandlerMixin:
@@ -103,7 +104,12 @@ class LoggingContext:
         if self.handler:
             self.logger.addHandler(self.handler)
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if self.level is not None:
             self.logger.setLevel(self.old_level)
         if self.handler:

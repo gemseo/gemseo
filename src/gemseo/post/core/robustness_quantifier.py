@@ -61,7 +61,7 @@ class RobustnessQuantifier:
 
     def compute_approximation(
         self,
-        funcname,
+        funcname: str,
         first_iter: int = 0,
         last_iter: int = 0,
         b0_mat=None,

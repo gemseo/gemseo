@@ -521,7 +521,7 @@ class Dataset:
         """
         type_error = TypeError("sizes must be a dictionary of positive integers.")
 
-        def is_size(size):
+        def is_size(size: Any):
             return isinstance(size, int) and size > 0
 
         if not isinstance(sizes, dict):

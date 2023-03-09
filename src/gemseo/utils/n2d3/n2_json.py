@@ -83,7 +83,7 @@ class N2JSON:
         data["self_coupled_disciplines"] = self_coupled_disciplines or []
         self.__json = json.dumps(data, sort_keys=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__json
 
     @staticmethod

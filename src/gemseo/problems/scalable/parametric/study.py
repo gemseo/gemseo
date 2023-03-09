@@ -53,7 +53,7 @@ ALGO_OPTIONS = {
 }
 
 
-def save_matrix_plot(matrix, disc, name, directory: str = ".") -> None:
+def save_matrix_plot(matrix, disc, name: str, directory: str = ".") -> None:
     """Save the graphical representation of a matrix.
 
     :param ndarray matrix: matrix.
@@ -428,7 +428,7 @@ class TMScalableStudy:
         self.feasibility_level = feasibility_level
         self.directory = directory
 
-    def __store_statistics(self, formulation, scenario):
+    def __store_statistics(self, formulation, scenario) -> None:
         """Store statistics in dictionaries.
 
         :param str formulation: MDO formulation.
@@ -665,7 +665,7 @@ class TMScalableStudy:
         save_show_figure(fig, show, file_path if save else None)
 
 
-def mkdir(dirname, subdirname=None):
+def mkdir(dirname, subdirname: str | None = None):
     """Create a directory if not exists.
 
     :param str dirname: name of the directory.

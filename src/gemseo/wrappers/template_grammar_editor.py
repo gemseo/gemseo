@@ -136,7 +136,7 @@ class QtTemplateEditor(QMainWindow):
 
         self.addToolBarBreak()
 
-    def __get_open_filename(self, name):
+    def __get_open_filename(self, name: str):
         """Open a dialog to select a file to open.
 
         Args:
@@ -151,7 +151,7 @@ class QtTemplateEditor(QMainWindow):
             return filename, True
         return "", False
 
-    def __get_save_filename(self, name):
+    def __get_save_filename(self, name: str):
         """Open a dialog to select a file to save.
 
         Args:
@@ -166,7 +166,7 @@ class QtTemplateEditor(QMainWindow):
             return filename, True
         return "", False
 
-    def add_action(self, name, status_tip, shortcut, connect) -> QAction:
+    def add_action(self, name: str, status_tip, shortcut, connect) -> QAction:
         """Add an action with a button and icon.
 
         Args:
@@ -231,7 +231,7 @@ class QtTemplateEditor(QMainWindow):
             cursor.insertText(tag)
             self.highlight(self.out_sep)
 
-    def highlight(self, sep, color: QColor | str = "red") -> None:
+    def highlight(self, sep: str, color: QColor | str = "red") -> None:
         """Highlight some text.
 
         Args:

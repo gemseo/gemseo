@@ -81,7 +81,7 @@ from numpy import ones
 from gemseo.core.discipline import MDODiscipline
 
 
-def get_inputs(*names):
+def get_inputs(*names: str):
     """Generate initial solution.
 
     Args:

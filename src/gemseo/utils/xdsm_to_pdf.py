@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Sequence
 
 from pyxdsm.XDSM import XDSM
 
@@ -73,7 +74,7 @@ class XDSMToPDFConverter:
                     scenario=subscenario,
                 )
 
-    def __add_processes(self, workflow, prev=None):
+    def __add_processes(self, workflow, prev=None) -> None:
         """Create the pyXDSM processes from a given workflow in a recursive way.
 
         Args:
@@ -104,7 +105,14 @@ class XDSMToPDFConverter:
             systems.append(prev)
         self.__xdsm.add_process(systems)
 
-    def __get_numbers(self, numbers, nodes, current=0, end=0, following=1):
+    def __get_numbers(
+        self,
+        numbers: Sequence[int],
+        nodes,
+        current: int = 0,
+        end: int = 0,
+        following: int = 1,
+    ):
         """Give number to the different nodes in a recursive way.
 
         Args:
@@ -144,7 +152,7 @@ class XDSMToPDFConverter:
                         )
         return following
 
-    def __add_nodes(self, numbers, nodes):
+    def __add_nodes(self, numbers: Sequence[int], nodes) -> None:
         """Add the different nodes, called 'systems', in the XDSM."""
         for node in nodes:
             name = ",".join(
@@ -189,7 +197,7 @@ class XDSMToPDFConverter:
 
             self.__xdsm.add_system(node["id"], node_type, r"\text{" + name + "}")
 
-    def __add_edges(self, edges):
+    def __add_edges(self, edges) -> None:
         """Add the edges called connections, inputs, outputs to the XDSM."""
         for edge in edges:
             old_names = edge["name"].split(",")

@@ -200,14 +200,14 @@ def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
 
 
 @pytest.fixture(scope="module")
-def skip_if_xlwings_is_not_usable(is_xlwings_usable) -> None:
+def skip_if_xlwings_is_not_usable(is_xlwings_usable: bool) -> None:
     """Fixture to skip a test when xlwings is not usable."""
     if not is_xlwings_usable:
         pytest.skip("This test requires excel.")
 
 
 @pytest.fixture(scope="module")
-def skip_if_xlwings_is_usable(is_xlwings_usable) -> None:
+def skip_if_xlwings_is_usable(is_xlwings_usable: bool) -> None:
     """Fixture to skip a test when xlwings is usable."""
     if is_xlwings_usable:
         pytest.skip("This test is only required when excel is not available.")

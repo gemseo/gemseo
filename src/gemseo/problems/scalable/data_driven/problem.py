@@ -50,6 +50,7 @@ import logging
 import os
 from copy import deepcopy
 from typing import Iterable
+from typing import Sequence
 
 from numpy import array
 from numpy import full
@@ -169,7 +170,7 @@ class ScalableProblem:
         save: bool = True,
         show: bool = False,
         step: float = 0.01,
-        varnames=None,
+        varnames: Sequence[str] | None = None,
         directory: os.PathLike[bytes] | os.PathLike[str] | bytes | str = ".",
         png: bool = False,
     ):
@@ -384,7 +385,7 @@ class ScalableProblem:
 
         return design_space
 
-    def __get_equilibrium(self, mda_name="MDAJacobi", **options):
+    def __get_equilibrium(self, mda_name: str = "MDAJacobi", **options):
         """Get the equilibrium point from a MDA method.
 
         :param str mda_name: MDA name (default: 'MDAJacobi')
@@ -400,7 +401,7 @@ class ScalableProblem:
 
     def __add_ineq_constraints(
         self, active_probability, feasibility_level, equilibrium
-    ):
+    ) -> None:
         """Add inequality constraints.
 
         :param float active_probability: probability to set the inequality
@@ -424,7 +425,7 @@ class ScalableProblem:
                 taui = 0.0
             self.scenario.add_constraint(constraint, "ineq", value=taui)
 
-    def __add_eq_constraints(self, equilibrium):
+    def __add_eq_constraints(self, equilibrium) -> None:
         """Add equality constraints.
 
         :param dict equilibrium: starting point at equilibrium
