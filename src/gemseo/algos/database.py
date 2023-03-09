@@ -271,7 +271,7 @@ class Database:
         """
         if not isinstance(key, (ndarray, HashableNdarray)):
             raise TypeError("Database keys must have ndarray type.")
-        if not isinstance(default, dict):
+        if not isinstance(default, Mapping):
             raise TypeError("Database values must have dictionary type")
 
         if isinstance(key, ndarray):

@@ -111,9 +111,11 @@ class MDOScenario(Scenario):
     def _init_algo_factory(self) -> None:
         self._algo_factory = OptimizersFactory()
 
-    def _update_grammar_input(self) -> None:
-        self.input_grammar.update(dict(algo=str, max_iter=int, algo_options=dict))
-        self.input_grammar.required_names.remove("algo_options")
+    def _update_input_grammar(self) -> None:
+        super()._update_input_grammar()
+        if self.grammar_type == self.SIMPLE_GRAMMAR_TYPE:
+            self.input_grammar.update({"max_iter": int, "algo_options": dict})
+            self.input_grammar.required_names.remove("algo_options")
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
         super().__setstate__(state)

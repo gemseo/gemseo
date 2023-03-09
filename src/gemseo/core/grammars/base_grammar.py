@@ -20,20 +20,24 @@
 """Base class for validating data structures."""
 from __future__ import annotations
 
-import abc
 import collections
 import logging
+from abc import abstractmethod
+from copy import copy
+from typing import Any
 from typing import Container
 from typing import Iterable
 from typing import KeysView
-from typing import Sequence
+from typing import MutableMapping
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline_data import Data
+from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import update_namespaces
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -60,6 +64,9 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     """The mapping from element names with namespace prefix to element names without
     namespace prefix."""
 
+    _defaults: Defaults
+    """The mapping from the names to the default values, if any."""
+
     def __init__(
         self,
         name: str,
@@ -74,27 +81,94 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         if not name:
             raise ValueError("The grammar name cannot be empty.")
         self.name = name
-        self.to_namespaced = {}
-        self.from_namespaced = {}
         self.clear()
 
     def __str__(self) -> str:
         return f"Grammar name: {self.name}"
+
+    def __repr__(self) -> str:
+        text = MultiLineString()
+        text.add(str(self))
+        text.indent()
+        text.add("Required elements:")
+        text.indent()
+        self._repr_required_elements(text)
+        text.dedent()
+        text.add("Optional elements:")
+        text.indent()
+        self._repr_optional_elements(text)
+        return str(text)
+
+    @abstractmethod
+    def _repr_required_elements(self, text: MultiLineString) -> None:
+        """Represent the required elements for `__repr__`.
+
+        Args:
+            text: The text to be updated.
+        """
+
+    @abstractmethod
+    def _repr_optional_elements(self, text: MultiLineString) -> None:
+        """Represent the optional elements for `__repr__`.
+
+        Args:
+            text: The text to be updated.
+        """
+
+    def __delitem__(
+        self,
+        name: str,
+    ) -> None:
+        self._defaults.pop(name, None)
+
+    def _copy_base(self) -> BaseGrammar:
+        """Create a shallow copy with the attributes of the base class.
+
+        This method is intended to be called from the method that performs a shallow copy
+        of a derived class.
+
+        Returns:
+            The shallow copy.
+        """
+        grammar = self.__class__(self.name)
+        grammar.to_namespaced = copy(self.to_namespaced)
+        grammar.from_namespaced = copy(self.from_namespaced)
+        grammar._defaults = self._defaults.copy()
+        return grammar
+
+    @abstractmethod
+    def __copy__(self) -> BaseGrammar:
+        """Create a shallow copy.
+
+        Returns:
+            The shallow copy.
+        """
 
     @property
     def names(self) -> KeysView[str]:
         """The names of the elements."""
         return self.keys()
 
-    @abc.abstractmethod
+    @property
+    def defaults(self) -> Defaults:
+        """The mapping from the names to the default values, if any."""
+        return self._defaults
+
+    @defaults.setter
+    def defaults(self, data: MutableMapping[str, Any]) -> None:
+        self._defaults = Defaults(self, data)
+
     def clear(self) -> None:
         """Empty the grammar."""
+        self.to_namespaced = {}
+        self.from_namespaced = {}
+        self._defaults = Defaults(self, {})
 
-    @abc.abstractmethod
+    @abstractmethod
     def update(
         self,
         grammar: BaseGrammar | Iterable[str],
-        exclude_names: Container[str] | None = None,
+        exclude_names: Container[str] = (),
     ) -> None:
         """Update the grammar.
 
@@ -103,7 +177,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             exclude_names: The names of the elements that shall not be updated.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def validate(
         self,
         data: Data,
@@ -121,7 +195,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
                 ``True``.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def is_array(
         self,
         name: str,
@@ -141,7 +215,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             KeyError: If the element is not in the grammar.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def convert_to_simple_grammar(self) -> SimpleGrammar:
         """Convert the grammar to a :class:`.SimpleGrammar`.
 
@@ -149,7 +223,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             A :class:`.SimpleGrammar` version of the current grammar.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def update_from_data(
         self,
         data: Data,
@@ -164,10 +238,9 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             TypeError: If a value has a bad type.
         """
 
-    @abc.abstractmethod
     def restrict_to(
         self,
-        names: Sequence[str],
+        names: Iterable[str],
     ) -> None:
         """Restrict the grammar to the given names.
 
@@ -177,19 +250,31 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         Raises:
             KeyError: If a name is not in the grammar.
         """
+        self._defaults.restrict(*names)
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def required_names(self) -> set[str]:
         """The names of the required elements."""
 
-    @abc.abstractmethod
     def rename_element(self, current_name: str, new_name: str) -> None:
         """Rename an element.
 
         Args:
             current_name: The current name of the element.
             new_name: The new name of the element.
+        """
+        self._defaults.rename(current_name, new_name)
+
+    @abstractmethod
+    def _check_name(self, *names: str) -> None:
+        """Check that the names of elements are valid.
+
+        Args:
+            *names: The names to be checked.
+
+        Raises:
+            KeyError: If a name is not valid.
         """
 
     def _update_namespaces_from_grammar(self, grammar: BaseGrammar) -> None:
@@ -222,14 +307,3 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         self.rename_element(name, new_name)
         self.to_namespaced[name] = new_name
         self.from_namespaced[new_name] = name
-
-    @abc.abstractmethod
-    def _check_name(self, *names: str) -> None:
-        """Check that the names of elements are valid.
-
-        Args:
-            *names: The names to be checked.
-
-        Raises:
-            KeyError: If a name is not valid.
-        """

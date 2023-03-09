@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Benchmark for coupling structure."""
+"""Performance benchmark for the coupling structure."""
 from __future__ import annotations
 
 import argparse
@@ -22,8 +22,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from base_benchmarkee import BaseBenchmarkee
 from pyperf import Runner
+
+from benchmarks.base_benchmark import BaseBenchmark
 
 
 def _compute_graph(nodes):
@@ -83,21 +84,18 @@ def _compute_graph(nodes):
 #     return graph, edges
 
 
-class ComputeGraphBenchmarkee(BaseBenchmarkee):
+class ComputeGraphBenchmark(BaseBenchmark):
     """To benchmark many disciplines classes."""
 
-    def __init__(self, file_path):
-        """Constructor."""
+    def __init__(self, file_path: str | Path) -> None:  # noqa: D107
         self.file_path = Path(file_path)
         self.nodes = None
         super().__init__()
 
-    def setup(self):
-        """Set up the benchmark."""
+    def setup(self):  # noqa: D102
         self.nodes = pickle.load(open(self.file_path, "rb"))
 
-    def run(self):
-        """Run the benchmark."""
+    def run(self):  # noqa: D102
         _compute_graph(self.nodes)
 
     def __str__(self):
@@ -116,7 +114,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    bench = ComputeGraphBenchmarkee(args.nodes)
+    bench = ComputeGraphBenchmark(args.nodes)
 
     bench_name = str(bench)
 

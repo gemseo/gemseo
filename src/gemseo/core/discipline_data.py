@@ -17,21 +17,26 @@
 """Provide a dict-like class for storing disciplines data."""
 from __future__ import annotations
 
-from collections import abc
+from copy import copy
 from typing import Any
 from typing import Generator
+from typing import Iterable
 from typing import Mapping
 from typing import MutableMapping
 
-import pandas as pd
+from pandas import DataFrame
 
+from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 Data = Mapping[str, Any]
 MutableData = MutableMapping[str, Any]
 
 
-class DisciplineData(abc.MutableMapping):
+class DisciplineData(
+    MutableMapping[str, Any], metaclass=ABCGoogleDocstringInheritanceMeta
+):
     """A dict-like class for handling disciplines data.
 
     This class replaces a standard dictionary that was previously used for storing
@@ -44,7 +49,7 @@ class DisciplineData(abc.MutableMapping):
 
     As compared to a standard dictionary,
     the methods of this class may hide the values bound to :class:`pandas.DataFrame`
-    and instead expose the items of those latter as if they belonged
+    and instead expose the items of those later as if they belonged
     to the dictionary.
 
     If a dict-like object is provided when creating a :class:`.DisciplineData` object,
@@ -113,41 +118,52 @@ class DisciplineData(abc.MutableMapping):
     """The character used to separate the shared dict key from the column of a pandas
     DataFrame."""
 
+    __data: MutableData
+    """The internal dict-like object."""
+
+    __input_to_namespaced: NamespacesMapping
+    """The namespace mapping for the inputs."""
+
+    __output_to_namespaced: NamespacesMapping
+    """The namespace mapping for the outputs."""
+
     def __init__(
         self,
-        data: MutableData,
-        input_to_namespaced: NamespacesMapping = None,
-        output_to_namespaced: NamespacesMapping = None,
+        data: MutableData | None = None,
+        input_to_namespaced: NamespacesMapping | None = None,
+        output_to_namespaced: NamespacesMapping | None = None,
     ) -> None:
         """
         Args:
             data: A dict-like object or a :class:`.DisciplineData` object.
+                If ``None``, an empty dictionary is used.
             input_to_namespaced: The mapping from input data names to their prefixed names.
             output_to_namespaced: The mapping from output data names to their prefixed names.
         """  # noqa: D205, D212, D415
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
-            self.__data = getattr(data, f"_{self.__class__.__name__}__data")
+            # We demangle __data to keep it private because this is an implementation
+            # detail.
+            self.__data = getattr(data, "_DisciplineData__data")  # noqa:B009
         else:
-            self.__data = data
-            self.__check_keys(*data)
+            if data is None:
+                self.__data = {}
+            else:
+                self.__check_keys(*data)
+                self.__data = data
 
-        self.__input_to_namespaced = input_to_namespaced
-        self.__output_to_namespaced = output_to_namespaced
+        self.__input_to_namespaced = (
+            input_to_namespaced if input_to_namespaced is not None else {}
+        )
+        self.__output_to_namespaced = (
+            output_to_namespaced if output_to_namespaced is not None else {}
+        )
 
-    def __getitem_with_ns(self, key: str) -> Any:
-        """Return an item whose key contains a namespace prefix.
-
-        Args:
-            key: The required key.
-
-        Returns:
-            The item value, or None if the key is not present.
-        """
+    def __getitem__(self, key: str) -> Any:
         if key in self.__data:
             value = self.__data[key]
             if isinstance(value, MutableMapping):
-                return self.__class__(value)
+                return DisciplineData(value)
             else:
                 return value
 
@@ -155,20 +171,15 @@ class DisciplineData(abc.MutableMapping):
             df_key, column = key.split(self.SEPARATOR)
             return self.__data[df_key][column].to_numpy()
 
-    def __getitem__(self, key: str) -> Any:
-        value = self.__getitem_with_ns(key)
-        if value is not None:
-            return value
-
-        if self.__input_to_namespaced is not None:
+        if self.__input_to_namespaced:
             key_with_ns = self.__input_to_namespaced.get(key)
             if key_with_ns is not None:
-                return self.__getitem_with_ns(key_with_ns)
+                return self[key_with_ns]
 
-        if self.__output_to_namespaced is not None:
+        if self.__output_to_namespaced:
             key_with_ns = self.__output_to_namespaced.get(key)
             if key_with_ns is not None:
-                return self.__getitem_with_ns(key_with_ns)
+                return self[key_with_ns]
 
         raise KeyError(key)
 
@@ -184,12 +195,12 @@ class DisciplineData(abc.MutableMapping):
         df_key, column = key.split(self.SEPARATOR)
 
         if df_key not in self.__data:
-            self.__data[df_key] = pd.DataFrame(data={column: value})
+            self.__data[df_key] = DataFrame(data={column: value})
             return
 
         df = self.__data[df_key]
 
-        if not isinstance(df, pd.DataFrame):
+        if not isinstance(df, DataFrame):
             raise KeyError(
                 f"Cannot set {key} because {df_key} is not bound to a "
                 "pandas DataFrame."
@@ -198,17 +209,21 @@ class DisciplineData(abc.MutableMapping):
         self.__data[df_key][column] = value
 
     def __delitem__(self, key: str) -> None:
-        if key in self.__data:
-            del self.__data[key]
+        __data = self.__data
+        if key in __data:
+            del __data[key]
         elif self.SEPARATOR in key:
             df_key, column = key.split(self.SEPARATOR)
-            del self.__data[df_key][column]
+            del __data[df_key][column]
+            # Remove the empty DataFrame.
+            if __data[df_key].size == 0:
+                del __data[df_key]
         else:
             raise KeyError(key)
 
     def __iter__(self) -> Generator[str, None, None]:
         for key, value in self.__data.items():
-            if isinstance(value, pd.DataFrame):
+            if isinstance(value, DataFrame):
                 prefix = key + self.SEPARATOR
                 for name in value.keys():
                     yield prefix + name
@@ -218,7 +233,7 @@ class DisciplineData(abc.MutableMapping):
     def __len__(self) -> int:
         length = 0
         for value in self.__data.values():
-            if isinstance(value, pd.DataFrame):
+            if isinstance(value, DataFrame):
                 length += len(value.columns)
             else:
                 length += 1
@@ -227,13 +242,65 @@ class DisciplineData(abc.MutableMapping):
     def __repr__(self) -> str:
         return repr(self.__data)
 
-    def copy(self) -> DisciplineData:
+    def __copy__(self) -> DisciplineData:
+        copy_ = DisciplineData({})
+        data = copy(self.__data)
+        # Shallow copy the DataFrames such that only their data are shared.
+        for k, v in data.items():
+            if isinstance(v, DataFrame):
+                data[k] = v.copy(deep=False)
+        copy_.__data = data
+        copy_.input_to_namespaced = copy(self.__input_to_namespaced)
+        copy_.output_to_namespaced = copy(self.__output_to_namespaced)
+        return copy_
+
+    def copy(
+        self,
+        keys: Iterable[str] = (),
+        with_namespace: bool = True,
+    ) -> DisciplineData:
         """Create a shallow copy.
+
+        Args:
+            keys: The names of the items to keep, if empty then keep them all.
+            with_namespace: Whether to the keys are prefixed with the namespace.
 
         Returns:
             The shallow copy.
         """
-        return self.__class__(self.__data.copy())
+        copy_ = self.__copy__()
+        if keys:
+            copy_.restrict(*keys)
+        if not with_namespace:
+            for k in tuple(copy_.keys()):
+                copy_[k.rsplit(namespaces_separator, 1)[-1]] = copy_.pop(k)
+        return copy_
+
+    def update(
+        self,
+        other: Mapping[str, Any],
+        exclude: Iterable[str] = (),
+    ) -> None:
+        """Update from another mapping but for some keys.
+
+        Args:
+            other: The data to update from.
+            exclude: The keys that shall not be updated.
+        """
+        for key in other.keys() - exclude:
+            self[key] = other[key]
+
+    def restrict(
+        self,
+        *keys: str,
+    ) -> None:
+        """Remove all but the given keys.
+
+        Args:
+            *keys: The keys of the elements to keep.
+        """
+        for name in self.keys() - keys:
+            del self[name]
 
     def __check_keys(self, *keys: str) -> None:
         """Verify that keys do not contain the separator.
@@ -246,5 +313,5 @@ class DisciplineData(abc.MutableMapping):
         """
         for key in keys:
             if self.SEPARATOR in key:
-                msg = f"{key} shall not contain {self.SEPARATOR}"
+                msg = f"The key {key} shall not contain {self.SEPARATOR}."
                 raise KeyError(msg)

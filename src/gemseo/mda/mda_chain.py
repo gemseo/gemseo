@@ -145,7 +145,6 @@ class MDAChain(MDA):
 
         self._initialize_grammars()
         self._check_consistency()
-        self._set_default_inputs()
         self._compute_input_couplings()
 
         # cascade the tolerance
@@ -313,15 +312,14 @@ class MDAChain(MDA):
         Returns:
             A GEMSEO process instance.
         """
-        if len(parallel_disciplines) > 1:
-            process = self.__create_sequential_or_parallel_chain(
-                parallel_disciplines,
-                mdachain_parallelize_tasks,
-                mdachain_parallel_options,
-            )
-        else:
-            process = parallel_disciplines[0]
-        return process
+        if len(parallel_disciplines) == 1:
+            return parallel_disciplines[0]
+
+        return self.__create_sequential_or_parallel_chain(
+            parallel_disciplines,
+            mdachain_parallelize_tasks,
+            mdachain_parallel_options,
+        )
 
     def __create_inner_mda(
         self,
@@ -414,13 +412,11 @@ class MDAChain(MDA):
             Either a :class:`.MDOChain` or :class:`.MDOParallelChain instance.
         """
         if mdachain_parallelize_tasks:
-            process = self.__create_mdo_parallel_chain(
+            return self.__create_mdo_parallel_chain(
                 parallel_disciplines,
                 mdachain_parallel_options,
             )
-        else:
-            process = MDOChain(parallel_disciplines, grammar_type=self.grammar_type)
-        return process
+        return MDOChain(parallel_disciplines, grammar_type=self.grammar_type)
 
     def __create_mdo_parallel_chain(
         self,
@@ -448,8 +444,8 @@ class MDAChain(MDA):
         """Define all inputs and outputs of the chain."""
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
-        self.input_grammar.update(self.mdo_chain.input_grammar)
-        self.output_grammar.update(self.mdo_chain.output_grammar)
+        self.input_grammar = self.mdo_chain.input_grammar.copy()
+        self.output_grammar = self.mdo_chain.output_grammar.copy()
         self._add_residuals_norm_to_output_grammar()
 
     def _check_consistency(self) -> None:
@@ -472,7 +468,6 @@ class MDAChain(MDA):
             if res_local is not None:
                 res_sum += res_local[-1] ** 2
         self.local_data[self.RESIDUALS_NORM] = array([res_sum**0.5])
-        return self.local_data
 
     def _compute_jacobian(
         self,

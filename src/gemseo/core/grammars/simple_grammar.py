@@ -18,7 +18,6 @@ from __future__ import annotations
 import collections
 import logging
 from typing import Any
-from typing import Container
 from typing import Iterable
 from typing import Iterator
 from typing import Mapping
@@ -44,7 +43,7 @@ class SimpleGrammar(BaseGrammar):
     valid.
     """
 
-    __names_to_types: dict[str, type]
+    __names_to_types: dict[str, type | None]
     """The binding from element names to element types."""
 
     __required_names: set[str]
@@ -63,7 +62,7 @@ class SimpleGrammar(BaseGrammar):
                 and data types as values.
                 If ``None``, the grammar is empty.
             required_names: The names of the required elements.
-                If ``None``, all elements are required.
+                If ``None``, all the elements are required.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
@@ -77,6 +76,7 @@ class SimpleGrammar(BaseGrammar):
         self,
         name: str,
     ) -> None:
+        super().__delitem__(name)
         del self.__names_to_types[name]
         if name in self.__required_names:
             self.__required_names.remove(name)
@@ -90,57 +90,64 @@ class SimpleGrammar(BaseGrammar):
     def __iter__(self) -> Iterator[str]:
         return iter(self.__names_to_types)
 
-    def __repr__(self) -> str:
-        text = MultiLineString()
-        text.add(f"Grammar '{self.name}'")
-        text.indent()
-        text.add("Required elements:")
-        text.indent()
+    def _repr_required_elements(self, text: MultiLineString) -> None:
         for name, type_ in self.items():
             if name in self.__required_names:
                 text.add(f"{name}: {type_.__name__}")
-        text.dedent()
-        text.add("Optional elements:")
-        text.indent()
+
+    def _repr_optional_elements(self, text: MultiLineString) -> None:
         for name, type_ in self.items():
             if name not in self.__required_names:
                 text.add(f"{name}: {type_.__name__}")
-        return str(text)
+                if name in self._defaults:
+                    text.indent()
+                    text.add(f"default: {self._defaults[name]}")
+                    text.dedent()
+
+    def __copy__(self) -> SimpleGrammar:
+        grammar = self._copy_base()
+        grammar.__names_to_types = self.__names_to_types.copy()
+        grammar.__required_names = self.__required_names.copy()
+        return grammar
+
+    copy = __copy__
 
     def update(
         self,
         grammar: BaseGrammar | Iterable[str] | NamesToTypes,
-        exclude_names: Container[str] | None = None,
+        exclude_names: Iterable[str] = (),
     ) -> None:
         """Update the elements from another grammar or elements or names.
 
         When elements are not provided with a :class:`.BaseGrammar`,
-        for consistency with :class:`.__init__` behavior
+        for consistency with :class:`.__init__` behavior,
         it is assumed that all of them are required.
 
         Raises:
-            TypeError: If ``grammar`` type is not supported.
-            ValueError: If the elements types are bad.
+            TypeError: If the type of ``grammar`` is not supported.
+            ValueError: If the element types are bad.
         """
         if isinstance(grammar, BaseGrammar):
             grammar = grammar.convert_to_simple_grammar()
             self.__update(grammar, grammar.__required_names, exclude_names)
+            self._update_namespaces_from_grammar(grammar)
+            self._defaults.update(grammar._defaults, exclude=exclude_names)
         elif isinstance(grammar, Mapping):
             self.__update(grammar, grammar.keys(), exclude_names)
-        elif isinstance(grammar, Iterable):
+        elif isinstance(grammar, Iterable) and not isinstance(grammar, str):
             self.__update(
                 dict.fromkeys(grammar, ndarray),
                 grammar,
                 exclude_names,
             )
         else:
-            raise TypeError(f"Cannot update from a {type(grammar)}")
+            raise TypeError(f"Cannot update from a {type(grammar)}.")
 
     def __update(
         self,
-        grammar: SimpleGrammar | NamesToTypes,
-        required_names: Container[str],
-        exclude_names: Container[str],
+        grammar: SimpleGrammar | Mapping[str, Any],
+        required_names: Iterable[str],
+        exclude_names: Iterable[str],
     ) -> None:
         """Update the elements from another grammar or elements.
 
@@ -176,10 +183,8 @@ class SimpleGrammar(BaseGrammar):
             elif element_name in self.__required_names:
                 self.__required_names.remove(element_name)
 
-        if isinstance(grammar, BaseGrammar):
-            self._update_namespaces_from_grammar(grammar)
-
     def clear(self) -> None:  # noqa: D102
+        super().clear()
         self.__names_to_types = {}
         self.__required_names = set()
 
@@ -190,7 +195,7 @@ class SimpleGrammar(BaseGrammar):
     ) -> None:
         error_message = MultiLineString()
 
-        missing_names = self.required_names - set(data.keys())
+        missing_names = self.required_names - data.keys()
 
         if missing_names:
             error_message.add(
@@ -224,7 +229,6 @@ class SimpleGrammar(BaseGrammar):
         name: str,
         numeric_only: bool = False,
     ) -> bool:
-        self._check_name(name)
         element_type = self.__names_to_types[name]
         if element_type is None:
             return False
@@ -235,12 +239,11 @@ class SimpleGrammar(BaseGrammar):
         self,
         names: Iterable[str],
     ) -> None:
-        self._check_name(*names)
-        for element_name in tuple(self.__names_to_types):
-            if element_name not in names:
-                del self.__names_to_types[element_name]
-                if element_name in self.__required_names:
-                    self.__required_names.remove(element_name)
+        super().restrict_to(names)
+        for element_name in self.__names_to_types.keys() - names:
+            del self.__names_to_types[element_name]
+            if element_name in self.__required_names:
+                self.__required_names.remove(element_name)
 
     def convert_to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         return self
@@ -266,7 +269,7 @@ class SimpleGrammar(BaseGrammar):
 
     def rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)
-
         if current_name in self.__required_names:
             self.__required_names.remove(current_name)
             self.__required_names.add(new_name)
+        super().rename_element(current_name, new_name)

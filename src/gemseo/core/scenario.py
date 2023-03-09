@@ -113,7 +113,7 @@ class Scenario(MDODiscipline):
 
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
@@ -632,14 +632,18 @@ class Scenario(MDODiscipline):
         """Update the input grammar from the names of available drivers."""
         if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
             self.input_grammar.update(
-                {"algo": {"type": "string", "enum": self.get_available_driver_names()}}
+                {
+                    "properties": {
+                        "algo": {
+                            "type": "string",
+                            "enum": self.get_available_driver_names(),
+                        }
+                    }
+                }
             )
         else:
-            self._update_grammar_input()
-
-    def _update_grammar_input(self) -> None:
-        """Update the inputs of a Grammar."""
-        raise NotImplementedError()
+            self.input_grammar.update({"algo": str})
+        self.input_grammar.required_names.add("algo")
 
     @staticmethod
     def is_scenario() -> bool:

@@ -81,11 +81,11 @@ from numpy import ones
 from gemseo.core.discipline import MDODiscipline
 
 
-def get_inputs(names=None):
+def get_inputs(*names):
     """Generate initial solution.
 
     Args:
-        names: The names of the design and coupling variables.
+        *names: The names of the variables.
 
     Returns:
         An initial design solution.
@@ -101,7 +101,7 @@ def get_inputs(names=None):
         "thick_panels": ones(1, dtype=complex128),
         "reserve_fact": ones(1, dtype=complex128),
     }
-    if names is None:
+    if not names:
         return inputs
     return {name: inputs.get(name) for name in names}
 
@@ -119,7 +119,7 @@ class Mission(MDODiscipline):
             lift_val: The threshold to compute the lift constraint.
         """
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs()
+        self.default_inputs = get_inputs("lift", "mass", "drag", "reserve_fact")
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         self.r_val = r_val
         self.lift_val = lift_val
@@ -198,7 +198,7 @@ class Aerodynamics(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs()
+        self.default_inputs = get_inputs("sweep", "thick_airfoils", "displ")
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self) -> None:
@@ -291,7 +291,7 @@ class Structure(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs()
+        self.default_inputs = get_inputs("sweep", "forces", "thick_panels")
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self) -> None:

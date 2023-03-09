@@ -26,6 +26,7 @@ from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from numpy import array
 from numpy import ndarray
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -62,6 +63,7 @@ def test_init_with_name():
     g = JSONGrammar("g")
     assert g.name == "g"
     assert not g
+    assert not g.defaults
 
 
 def test_init_with_file():
@@ -163,8 +165,7 @@ def test_names(schema_path, names):
 exclude_names = pytest.mark.parametrize(
     "exclude_names",
     [
-        None,
-        [],
+        (),
         ["name1"],
         ["name2"],
     ],
@@ -199,6 +200,8 @@ def test_update_and_update_from_file(
     g2 = new_grammar(schema_path2)
 
     if method_is_update:
+        for name in g2.names:
+            g2.defaults[name] = array([0.0])
         g1.update(g2, exclude_names=exclude_names)
     elif schema_path2 is None:
         # Nothing to be done
@@ -206,10 +209,12 @@ def test_update_and_update_from_file(
     else:
         g1.update_from_file(schema_path2)
 
-    if exclude_names is None or not method_is_update:
+    if not method_is_update:
         exclude_names = set()
     else:
         exclude_names = set(exclude_names)
+
+    assert set(g1.defaults.keys()) == set(g2.defaults.keys()) - exclude_names
 
     assert set(g1) == g1_names_before | (set(g2) - exclude_names)
     assert set(g1.required_names) == g1_required_names_before | (
@@ -240,33 +245,20 @@ def test_clear(schema_path):
         (
             None,
             """
-Grammar name: g, schema: {
-  "$schema": "http://json-schema.org/schema#"
-}
+Grammar name: g
+   Required elements:
+   Optional elements:
 """,
         ),
         (
             DATA_PATH / "grammar_2.json",
             """
-Grammar name: g, schema: {
-  "$schema": "http://json-schema.org/draft-04/schema",
-  "additionalProperties": false,
-  "type": "object",
-  "properties": {
-    "name1": {
-      "type": "integer"
-    },
-    "name2": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      }
-    }
-  },
-  "required": [
-    "name1"
-  ]
-}
+Grammar name: g
+   Required elements:
+      name1: {'type': 'integer'}
+   Optional elements:
+      name2: {'type': 'array', 'items': {'type': 'number'}}
+         default: foo
 """,
         ),
     ],
@@ -274,6 +266,8 @@ Grammar name: g, schema: {
 def test_repr(schema_path, repr_):
     """Verify repr."""
     g = new_grammar(schema_path)
+    if g:
+        g.defaults["name2"] = "foo"
     assert repr(g) == repr_.strip()
 
 
@@ -348,10 +342,7 @@ def test_update(schema_path, names, exclude_names):
 
     g.update(names, exclude_names=exclude_names)
 
-    if exclude_names is None:
-        exclude_names = set()
-    else:
-        exclude_names = set(exclude_names)
+    exclude_names = set(exclude_names)
 
     assert_reset_dependencies(g)
     assert set(g) == names_before | (set(names) - exclude_names)
@@ -443,6 +434,15 @@ def _test_update_from_data(schema_path: Path | None, data: Data):
     return g
 
 
+def test_update_error():
+    """Verify update error."""
+    g1 = JSONGrammar("g1")
+
+    msg = r"Cannot update from a <class 'str'>\."
+    with pytest.raises(TypeError, match=msg):
+        g1.update("name")
+
+
 def test_is_array_error():
     """Verify that is_array error."""
     g = JSONGrammar("g")
@@ -477,11 +477,20 @@ def test_restrict_to_error():
 def test_restrict_to(names):
     """Verify restrict_to."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
+
+    for name in g.names:
+        g.defaults[name] = array([2.0])
+
     required_names_before = set(g.required_names)
     g.restrict_to(names)
     assert set(g) == set(names)
     assert g.required_names == required_names_before & set(names)
     assert_reset_dependencies(g)
+
+    for name in names:
+        assert g.defaults[name] == 2.0
+
+    assert len(g.defaults) == len(names)
 
 
 @pytest.mark.parametrize(
@@ -628,13 +637,17 @@ def test_rename():
     """Verify rename."""
     g = JSONGrammar("g")
     g.update(["name1", "name2"])
+    g.defaults["name1"] = 1.0
+    g.required_names.remove("name2")
 
-    g.rename_element("name1", "n:name1")
-    g.rename_element("name2", "n:name2")
+    g.rename_element("name1", "new_name1")
+    g.rename_element("name2", "new_name2")
 
-    assert sorted(g.required_names) == ["n:name1", "n:name2"]
+    assert sorted(g.required_names) == ["new_name1"]
     assert "name1" not in g
-    assert sorted(g.names) == ["n:name1", "n:name2"]
+    assert sorted(g.names) == ["new_name1", "new_name2"]
+
+    assert g.defaults == {"new_name1": 1.0}
 
 
 def test_update_from_error():
@@ -670,3 +683,15 @@ def test_is_type_array_errors(var, check_is_numeric_array, expected):
     fpath = DATA_PATH / "grammar_test6.json"
     gram = JSONGrammar(name="toto", schema_path=fpath)
     assert gram.is_array(var, check_is_numeric_array) == expected
+
+
+def test_copy():
+    """Verify copy."""
+    g = JSONGrammar("g")
+    g.update(["name"])
+    g.defaults["name"] = 1.0
+    g_copy = g.copy()
+    # Contrary to the simple grammar, the items values are not shared because the
+    # schema builder is deeply copied.
+    assert g_copy.defaults["name"] is g.defaults["name"]
+    assert list(g_copy.required_names)[0] is list(g.required_names)[0]

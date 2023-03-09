@@ -232,7 +232,9 @@ class MultiLineString:
         lines = []
         for line in self.__lines:
             str_format = self.INDENTATION * line.level + line.str_format
-            lines.append(str_format.format(*line.args, **line.kwargs))
+            if line.args or line.kwargs:
+                str_format = str_format.format(*line.args, **line.kwargs)
+            lines.append(str_format)
         return "\n".join(lines)
 
     def __add__(self, other: Any) -> MultiLineString:

@@ -62,6 +62,7 @@ from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Mapping
 from typing import NoReturn
 from typing import Optional
 from typing import Union
@@ -258,7 +259,7 @@ class MOERegressor(MLRegressionAlgo):
                 Returns:
                     The output data with the same type as the input one.
                 """
-                as_dict = isinstance(input_data, dict)
+                as_dict = isinstance(input_data, Mapping)
                 if as_dict:
                     input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names

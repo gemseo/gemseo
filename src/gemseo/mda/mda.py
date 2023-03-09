@@ -313,14 +313,14 @@ class MDA(MDODiscipline):
 
     def _current_input_couplings(self) -> ndarray:
         """Return the current values of the input coupling variables."""
-        input_couplings = list(iter(self.get_outputs_by_name(self._input_couplings)))
+        input_couplings = list(self.get_outputs_by_name(self._input_couplings))
         if not input_couplings:
             return array([])
         return concatenate(input_couplings)
 
     def _current_strong_couplings(self) -> ndarray:
         """Return the current values of the strong coupling variables."""
-        couplings = list(iter(self.get_outputs_by_name(self.strong_couplings)))
+        couplings = list(self.get_outputs_by_name(self.strong_couplings))
         if not couplings:
             return array([])
         return concatenate(couplings)
@@ -368,16 +368,14 @@ class MDA(MDODiscipline):
             if input_value is not None:
                 self.local_data[input_name] = input_value
 
+    # TODO: API: remove since it is done when updating the grammar.
     def _set_default_inputs(self) -> None:
-        """Set the default input values of the MDA from the disciplines ones."""
-        self.default_inputs = {}
-        mda_input_names = self.get_input_data_names()
+        """Compute the default inputs from the disciplines' ones."""
+        self_inputs = self.get_input_data_names()
         for discipline in self.disciplines:
-            for input_name in discipline.default_inputs:
-                if input_name in mda_input_names:
-                    self.default_inputs[input_name] = discipline.default_inputs[
-                        input_name
-                    ]
+            for input_name, input_value in discipline.default_inputs.items():
+                if input_name in self_inputs:
+                    self.default_inputs[input_name] = input_value
 
     def _check_couplings_types(self) -> None:
         """Check that the coupling variables are of type array in the grammars.

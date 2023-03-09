@@ -24,10 +24,8 @@ The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` a
 """
 from __future__ import annotations
 
-from typing import Any
 from typing import Iterable
 from typing import List
-from typing import Mapping
 from typing import MutableMapping
 from typing import Union
 
@@ -36,11 +34,11 @@ NamespacesMapping = MutableMapping[str, Union[str, List[str]]]
 namespaces_separator = ":"
 
 
-def split_namespace(data_name: str) -> list[str, str]:
+def split_namespace(name: str) -> list[str, str]:
     """Return the (namespace, name) pair from a data name.
 
-    For instance if data_name = ``my:namesp:ace:a`` and the separator is ``:``,
-    returns (``my:namesp:ace``,``a``).
+    For instance if data_name = ``my:namespace:a`` and the separator is ``:``,
+    returns (``my:namespace``,``a``).
 
     If there is no namespace prefix in ``data_name``, returns ``data_name``.
 
@@ -49,36 +47,24 @@ def split_namespace(data_name: str) -> list[str, str]:
     returns the (namespace, name) pair, containing eventually empty strings.
 
     Args:
-        data_name: The data name containing the namespace name.
+        name: The data name containing the namespace name.
 
     Returns:
         The namespace name and the data name.
     """
-    return data_name.rsplit(namespaces_separator, -1)
+    return name.rsplit(namespaces_separator, -1)
 
 
 def remove_prefix_from_name(name: str) -> str:
     """Remove namespace prefix from the name.
 
     Args:
-        data: The container of data names, or a single data name.
+        name: The container of data names, or a single data name.
 
     Returns:
         The data names without prefixes.
     """
     return name.rsplit(namespaces_separator, 1)[-1]
-
-
-def remove_prefix_from_dict(data: Mapping[str, Any]) -> dict[str, Any]:
-    """Remove namespaces prefixes from mapping keys if any.
-
-    Args:
-        data: The mapping which names may contain namespaces.
-
-    Returns:
-        The mapping without prefixes in its keys.
-    """
-    return {k.rsplit(namespaces_separator, 1)[-1]: v for k, v in data.items()}
 
 
 def remove_prefix_from_list(names: Iterable[str]) -> list[str]:

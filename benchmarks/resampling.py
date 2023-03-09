@@ -12,22 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Benchmark for resampling."""
+"""Performance benchmark for resampling."""
 from __future__ import annotations
 
 import argparse
 import cProfile  # noqa: F401
 import sys
 
-from base_benchmarkee import BaseBenchmarkee
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from pyperf import Runner
 
+from benchmarks.base_benchmark import BaseBenchmark
+
 
 def _execute_doe_scenario(scenario: DOEScenario) -> None:
-    """Execute a DOE scenario several times.
+    """Execute a DOE scenario.
 
     Args:
         scenario: The scenario to be executed.
@@ -41,11 +42,10 @@ def _execute_doe_scenario(scenario: DOEScenario) -> None:
     )
 
 
-class ResamplingBenchmarkee(BaseBenchmarkee):
-    """To benchmark many disciplines classes."""
+class ResamplingBenchmark(BaseBenchmark):
+    """To benchmark scenario-based sampling."""
 
-    def __init__(self, use_configure: bool):
-        """Constructor."""
+    def __init__(self, use_configure: bool):  # noqa: D107
         if use_configure:
             from gemseo.api import configure
 
@@ -54,15 +54,13 @@ class ResamplingBenchmarkee(BaseBenchmarkee):
         self.scenario = None
         super().__init__()
 
-    def setup(self):
-        """Set up the benchmark."""
+    def setup(self):  # noqa: D102
         discipline = AnalyticDiscipline({"y": "u"}, "func")
         space = DesignSpace()
         space.add_variable("u", l_b=0.0, u_b=1.0, value=0.5)
         self.scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", space)
 
-    def run(self):
-        """Run the benchmark."""
+    def run(self):  # noqa: D102
         _execute_doe_scenario(self.scenario)
 
 
@@ -79,6 +77,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.copy_env = True
 
-    bench = ResamplingBenchmarkee(args.configure)
+    bench = ResamplingBenchmark(args.configure)
     runner._set_args(args)
     runner.bench_func("sampling_doe_scenario", bench.run)

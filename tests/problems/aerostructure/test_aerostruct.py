@@ -172,8 +172,8 @@ class TestAerostructure(unittest.TestCase):
 
     def test_get_inputs(self):
         get_inputs()
-        get_inputs(["drag", "forces"])
-        get_inputs(["bad_inputs"])
+        get_inputs("drag", "forces")
+        get_inputs("bad_inputs")
 
 
 class TestAerostructureScenarios(unittest.TestCase):

@@ -85,7 +85,6 @@ class MDARoot(MDA):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self._set_default_inputs()
         self._compute_input_couplings()
         # parallel execution
         # ==================================================================

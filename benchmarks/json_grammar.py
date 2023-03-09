@@ -17,6 +17,7 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Performance benchmark for JSON grammar."""
 from __future__ import annotations
 
 import argparse
@@ -35,6 +36,8 @@ from numpy import ones
 from numpy.random import choice
 from numpy.random import seed
 from pyperf import Runner
+
+from benchmarks.base_benchmark import BaseBenchmark
 
 seed(1)
 
@@ -60,6 +63,7 @@ def generate_bench_many_io() -> JSONGrammar:
 
 
 def test_bench_many_io():
+    """XXX."""
     grammar = generate_bench_many_io()
 
     ref_check_times = {}
@@ -67,7 +71,7 @@ def test_bench_many_io():
         data_dict = {"t": ones(n_t)}
 
         def run_check():
-            return grammar.validate(data_dict)  # noqa: B023
+            return grammar.load_data(data_dict)  # noqa: B023
 
         tref = timeit.timeit(stmt=run_check, number=100)
         ref_check_times[n_t] = tref
@@ -83,7 +87,7 @@ def test_large_data_validation(sizes=(10, 1000, 100000), n_repeats=5):
         inputs = {"t": ones(n_t)}
 
         def create_chain():
-            grammar.validate(inputs)  # noqa: B023
+            grammar.load_data(inputs)  # noqa: B023
 
         tref = timeit.timeit(stmt=create_chain, number=n_repeats)
         ref_check_times[n_t] = tref / n_repeats
@@ -92,23 +96,7 @@ def test_large_data_validation(sizes=(10, 1000, 100000), n_repeats=5):
     return ref_check_times
 
 
-class BaseBenchmarkee:
-    """Abstract base class for benchmarked code."""
-
-    def __init__(self):
-        self.setup()
-
-    def setup(self):
-        """Prepare data for the benchmarked run method."""
-
-    def run(self):
-        """Run the code to be benchmarked."""
-
-    def __str__(self):
-        return ""
-
-
-class ManyDisciplinesBenchmark(BaseBenchmarkee):
+class ManyDisciplinesBenchmark(BaseBenchmark):
     """To benchmark many disciplines classes."""
 
     ALPHABET = np.array(list(string.ascii_uppercase))
@@ -116,7 +104,8 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
     def __init__(
         self, class_, nb_of_disc, nb_of_total_disc_io, nb_of_disc_io, data_size
     ):
-        """
+        """Constructor.
+
         Args:
             class_: The discipline class to benchmark.
             nb_of_disc: The number of disciplines.
@@ -134,7 +123,7 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
         super().__init__()
 
     @classmethod
-    def __get_disc_names(cls, total_len):
+    def __get_disc_names(cls, total_len: int) -> list[str]:
         """Return the names of the disciplines."""
         n_letters = 1
 
@@ -146,13 +135,16 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
         ]
 
     @staticmethod
-    def __disc_run(disc):
-        """Set the local data of a discipline."""
+    def __disc_run(disc: MDODiscipline) -> None:
+        """Set the local data of a discipline.
+
+        Args:
+            disc: The discipline.
+        """
         data = ones(1)
         disc.local_data = {key: data for key in disc.get_output_data_names()}
 
-    def setup(self):
-        """Prepare the data for running the benchmark."""
+    def setup(self):  # noqa: D102
         disc_names = self.__get_disc_names(self.nb_of_disc)
         input_data = ones(self.data_size)
         disciplines = {}
@@ -175,11 +167,8 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
 
         self.disciplines = disciplines
 
-    def run(self):
-        """Run the benchmark payload."""
+    def run(self):  # noqa: D102
         self.class_(list(self.disciplines.values()))
-        # inst = self.class_(list(self.disciplines.values()))
-        # inst.input_grammar.validate(inst.default_inputs)
 
     def __str__(self):
         return f"{self.class_.__name__}-{self.nb_of_disc}"
