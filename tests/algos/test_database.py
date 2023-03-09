@@ -20,6 +20,7 @@
 #        :author: Benoit Pauwels - stacked data ; docstrings
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import h5py
@@ -484,6 +485,27 @@ def test_get_history_array(problem):
     database = Database()
     database.store(array([1.0, 1.0]), {"Rosenbrock": 0.0})
     database.get_history_array()
+
+
+def test_get_history_array_wrong_f_name(problem):
+    """Check that get_history_array raises an error with an unknown function name."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "'foo' is not an output name; "
+            "available ones are '@rosen', 'Iter' and 'rosen'."
+        ),
+    ):
+        problem.database.get_history_array(["foo"])
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "'bar' and 'foo' are not output names; "
+            "available ones are '@rosen', 'Iter' and 'rosen'."
+        ),
+    ):
+        problem.database.get_history_array(["foo", "bar"])
 
 
 def test_ggobi_export(tmp_wd, problem):

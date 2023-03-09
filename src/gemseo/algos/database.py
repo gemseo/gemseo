@@ -57,6 +57,7 @@ from xxhash._xxhash import xxh3_64_hexdigest
 
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -829,6 +830,9 @@ class Database:
             The history of the output values,
             then the history of the input values.
         """
+        if functions is not None:
+            self.__check_function_names(functions)
+
         functions, stacked_data = self._format_history_names(functions, stacked_data)
         f_history = []
         x_history = []
@@ -1317,6 +1321,28 @@ class Database:
             or ``name`` otherwise.
         """
         return self.__component_names_to_names.get(name, name)
+
+    def __check_function_names(self, names: Iterable[str]) -> None:
+        """Check that names are function names.
+
+        Args:
+            names: The names to be checked.
+
+        Raises:
+            ValueError: When an element of ``functions`` is not an output name.
+        """
+        all_f_names = set(self.get_all_data_names(skip_grad=False))
+        not_f_names = set(names) - all_f_names
+        if not_f_names:
+            suffix = (
+                "is not an output name"
+                if len(not_f_names) == 1
+                else "are not output names"
+            )
+            raise ValueError(
+                f"{pretty_repr(not_f_names, use_and=True)} {suffix}; "
+                f"available ones are {pretty_repr(all_f_names, use_and=True)}."
+            )
 
     def get_history_array(
         self,

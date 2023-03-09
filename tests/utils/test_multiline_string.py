@@ -114,6 +114,14 @@ def test_pretty_str(obj, delimiter, key_value_separator, sort, expected):
     assert pretty_str(obj, **kwargs) == expected
 
 
+def test_use_and():
+    """Check the option use_and of pretty_repr and pretty_str."""
+    assert pretty_str(["b", "c", "a"]) == "a, b, c"
+    assert pretty_str(["a", "c", "b"], use_and=True) == "a, b and c"
+    assert pretty_repr(["b", "c", "a"]) == "'a', 'b', 'c'"
+    assert pretty_repr(["a", "c", "b"], use_and=True) == "'a', 'b' and 'c'"
+
+
 def test_replace():
     msg = MultiLineString()
     msg.add("123")

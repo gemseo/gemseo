@@ -45,6 +45,7 @@ def __stringify(
     key_value_separator: str,
     function: Callable[[Any], str],
     sort: bool,
+    use_and: bool,
 ) -> str:
     """Represent an object with a string.
 
@@ -55,6 +56,7 @@ def __stringify(
         function: A function to represent an object with a string,
             e.g. :func:`str` or :func:`repr`.
         sort: Whether to sort the elements when the object if a collection.
+        use_and: Whether to replace the last delimiter occurrence by ``"and"``.
 
     Returns:
         A string representing the object.
@@ -73,7 +75,10 @@ def __stringify(
     if sort:
         obj = sorted(obj)
 
-    return delimiter.join(obj)
+    if use_and and len(obj) > 1:
+        return f"{delimiter.join(obj[:-1])} and {obj[-1]}"
+    else:
+        return delimiter.join(obj)
 
 
 def pretty_repr(
@@ -81,6 +86,7 @@ def pretty_repr(
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
     sort: bool = True,
+    use_and: bool = False,
 ) -> str:
     """Return an unambiguous string representation of an object based on :func:`repr`.
 
@@ -90,11 +96,12 @@ def pretty_repr(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         sort: Whether to sort the elements when the object if a collection.
+        use_and: Whether to replace the last delimiter occurrence by ``" and "``.
 
     Returns:
          An unambiguous string representation of the object.
     """
-    return __stringify(obj, delimiter, key_value_separator, repr, sort)
+    return __stringify(obj, delimiter, key_value_separator, repr, sort, use_and)
 
 
 def pretty_str(
@@ -102,6 +109,7 @@ def pretty_str(
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
     sort: bool = True,
+    use_and: bool = False,
 ) -> str:
     """Return a readable string representation of an object based on :func:`str`.
 
@@ -111,11 +119,12 @@ def pretty_str(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         sort: Whether to sort the elements when the object if a collection.
+        use_and: Whether to replace the last delimiter occurrence by ``"and"``.
 
     Returns:
          A readable string representation of the object.
     """
-    return __stringify(obj, delimiter, key_value_separator, str, sort)
+    return __stringify(obj, delimiter, key_value_separator, str, sort, use_and)
 
 
 def repr_variable(name: str, index: int, size: int = 0) -> str:
