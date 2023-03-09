@@ -60,7 +60,7 @@ class _MergeRequiredStrategy(Object):
             # Backup the current required before updating it with the new ones.
             required = set(self._required)
             super().add_object(obj)
-            self._required = required | set(obj.keys())
+            self._required = required | obj.keys()
 
 
 class _MultipleMeta(type(abc.Mapping), type(SchemaBuilder)):
@@ -79,11 +79,8 @@ class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_Multipl
     EXTRA_STRATEGIES = (_MergeRequiredStrategy,)
 
     def __getitem__(self, key: str) -> dict[str, Any]:
-        # Immutable workaround because self.properties is a defaultdict.
-        if key in self.properties:
-            return self.properties[key]
-        else:
-            raise KeyError(key)
+        self.check_property_names(key)
+        return self.properties[key]
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.properties)
@@ -122,3 +119,16 @@ class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_Multipl
         if required is None:
             return set()
         return required
+
+    def check_property_names(self, *names: str) -> None:
+        """Check that the names are existing properties.
+
+        Args:
+            *names: The names to be checked.
+
+        Raises:
+            KeyError: If a name is not an existing property.
+        """
+        for name in names:
+            if name not in self.properties:
+                raise KeyError(f"The name {name} is not in the grammar.")

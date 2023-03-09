@@ -12,19 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Base class for creating benchmarks."""
+"""Benchmark for compare_dict_of_arrays."""
 from __future__ import annotations
 
+from base_benchmark import BaseBenchmark
+from data_factory import DataFactory
+from gemseo.utils.testing import compare_dict_of_arrays
 
-class BaseBenchmarkee:
-    """Abstract base class for benchmarked code."""
 
-    def __init__(self):
-        """Constructor."""
-        self.setup()
+class Benchmark(BaseBenchmark):
+    """Benchmark for compare_dict_of_arrays."""
 
-    def setup(self):
-        """Prepare data for the benchmarked run method."""
+    DATA_CLASS = DataFactory
 
-    def run(self):
-        """Run the code to be benchmarked."""
+    def _benchmark(self) -> None:
+        compare_dict_of_arrays(self._data.data, self._data.data, self._data.tolerance)
+
+    def __str__(self) -> str:
+        return (
+            f"{self._data.items_nb}-{self._data.keys_nb}-{self._data.depth}-"
+            f"{self._data.tolerance}"
+        )
+
+
+if __name__ == "__main__":
+    Benchmark().run()

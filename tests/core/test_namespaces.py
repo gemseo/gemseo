@@ -43,7 +43,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.namespaces import namespaces_separator
-from gemseo.core.namespaces import remove_prefix_from_dict
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.namespaces import remove_prefix_from_name
 from gemseo.core.namespaces import split_namespace
@@ -81,7 +80,6 @@ def test_remove_ns_prefix():
     assert remove_prefix_from_name("ac") == "ac"
 
     data_dict = {"ac": 1, "a:b": 2}
-    assert remove_prefix_from_dict(data_dict) == {"ac": 1, "b": 2}
     assert remove_prefix_from_list(data_dict.keys()) == ["ac", "b"]
 
 

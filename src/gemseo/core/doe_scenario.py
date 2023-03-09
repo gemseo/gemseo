@@ -107,10 +107,18 @@ class DOEScenario(Scenario):
 
         return self.optimization_result
 
-    def _update_grammar_input(self) -> None:
-        self.input_grammar.update(dict(algo=str, n_samples=int, algo_options=dict))
-        for name in ("n_samples", "algo_options"):
-            self.input_grammar.required_names.remove(name)
+    def _update_input_grammar(self) -> None:  # noqa: D102
+        super()._update_input_grammar()
+        if self.grammar_type == self.SIMPLE_GRAMMAR_TYPE:
+            self.input_grammar.update(
+                {
+                    self.EVAL_JAC: bool,
+                    "n_samples": int,
+                    "algo_options": dict,
+                }
+            )
+            for name in ("n_samples", "algo_options"):
+                self.input_grammar.required_names.remove(name)
 
     def export_to_dataset(  # noqa: D102
         self,

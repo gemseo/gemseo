@@ -36,6 +36,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
@@ -78,8 +79,6 @@ class MDOChain(MDODiscipline):
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
         self.initialize_grammars()
-        self.default_inputs = {}
-        self._update_default_inputs()
         self._coupling_structure = None
         self._last_diff_inouts = None
 
@@ -106,6 +105,7 @@ class MDOChain(MDODiscipline):
             )
             self.output_grammar.update(discipline.output_grammar)
 
+    # TODO: API: remove since it is done when updating the grammar.
     def _update_default_inputs(self) -> None:
         """Compute the default inputs from the disciplines' ones."""
         self_inputs = self.get_input_data_names()
@@ -351,8 +351,6 @@ class MDOParallelChain(MDODiscipline):
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
         self.initialize_grammars()
-        self.default_inputs = {}
-        self._update_default_inputs()
         if n_processes is None:
             n_processes = len(self.disciplines)
 
@@ -373,6 +371,7 @@ class MDOParallelChain(MDODiscipline):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
+    # TODO: API: remove since it is done when updating the grammar.
     def _update_default_inputs(self) -> None:
         """Compute the default inputs from the disciplines' ones."""
         input_names = self.get_input_data_names()
@@ -381,7 +380,7 @@ class MDOParallelChain(MDODiscipline):
                 if disc_input_name in input_names:
                     self.default_inputs[disc_input_name] = disc_input_value
 
-    def _get_input_data_copies(self) -> list[dict[str, ndarray]]:
+    def _get_input_data_copies(self) -> list[DisciplineData]:
         """Return copies of the input data, one per discipline.
 
         Returns:

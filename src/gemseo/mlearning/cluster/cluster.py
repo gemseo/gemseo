@@ -37,6 +37,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import Iterable
+from typing import Mapping
 from typing import NoReturn
 from typing import Sequence
 from typing import Union
@@ -135,7 +136,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         Returns:
             The predicted cluster for each input data sample.
         """
-        as_dict = isinstance(data, dict)
+        as_dict = isinstance(data, Mapping)
         if as_dict:
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
         single_sample = len(data.shape) == 1
@@ -190,7 +191,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             The probability of belonging to each cluster,
             with shape (n_samples, n_clusters) or (n_clusters,).
         """
-        as_dict = isinstance(data, dict)
+        as_dict = isinstance(data, Mapping)
         if as_dict:
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
         single_sample = len(data.shape) == 1

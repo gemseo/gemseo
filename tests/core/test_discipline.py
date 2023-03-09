@@ -410,8 +410,6 @@ def test_load_default_inputs():
     d = MDODiscipline()
     with pytest.raises(TypeError):
         d._filter_inputs(["toto"])
-    with pytest.raises(TypeError):
-        d.default_inputs = ["toto"]
 
 
 def test_linearize_errors():

@@ -52,11 +52,10 @@ from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.derivatives import derivation_modes
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
-from gemseo.core.namespaces import remove_prefix_from_dict
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
@@ -192,7 +191,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     _ATTR_TO_SERIALIZE = (
         "_cache_was_loaded",
-        "_default_inputs",
         "_differentiated_inputs",
         "_differentiated_outputs",
         "_in_data_hash_dict",
@@ -268,10 +266,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
         """  # noqa: D205, D212, D415
         self.data_processor = None
-        self._default_inputs = None
         self.input_grammar = None
         self.output_grammar = None
-        self.__set_default_inputs({})
+
         # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
@@ -806,7 +803,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     def _filter_inputs(
         self,
         input_data: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    ) -> MutableMapping[str, Any]:
         """Filter data with the discipline inputs and use the default values if missing.
 
         Args:
@@ -833,7 +830,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             if val is not None:
                 full_input_data[key] = val
             else:
-                val = self._default_inputs.get(key)
+                val = self.input_grammar.defaults.get(key)
                 if val is not None:
                     full_input_data[key] = val
 
@@ -844,11 +841,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         This method removes data that are neither inputs nor outputs.
         """
-        all_data_names = self.get_input_output_data_names()
-
-        for key in tuple(self._local_data.keys()):
-            if key not in all_data_names:
-                del self._local_data[key]
+        for key in self._local_data.keys() - self.get_input_output_data_names():
+            del self._local_data[key]
 
     def _check_status_before_run(self) -> None:
         """Check the status of the discipline.
@@ -1018,9 +1012,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             # Caches output data in case the discipline is called twice in a row
             # with the same inputs
             out_names = self.get_output_data_names()
-            self.cache.cache_outputs(
-                cached_inputs, {name: self._local_data[name] for name in out_names}
-            )
+            if out_names:
+                self.cache.cache_outputs(
+                    cached_inputs, self._local_data.copy(keys=out_names)
+                )
             # Some disciplines are always linearized during execution, cache the
             # jac in this case
             if self._is_linearized:
@@ -1354,7 +1349,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             raise ValueError(f"The discipline {self.name} was not linearized.")
         out_set = set(outputs)
         in_set = set(inputs)
-        out_jac_set = set(self.jac.keys())
+        out_jac_set = self.jac.keys()
 
         if not out_set.issubset(out_jac_set):
             msg = "Missing outputs in Jacobian of discipline {}: {}."
@@ -1363,7 +1358,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         for j_o in outputs:
             j_out = self.jac[j_o]
-            out_dv_set = set(j_out.keys())
+            out_dv_set = j_out.keys()
             output_vals = self._local_data.get(j_o)
             n_out_j = self.__get_len(output_vals)
 
@@ -1438,45 +1433,22 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.cache.tolerance = cache_tol or 0.0
 
     @property
-    def default_inputs(self) -> dict[str, Any]:
-        """The default inputs.
-
-        Raises:
-            TypeError: When the default inputs are not passed as a dictionary.
-        """
-        return self._default_inputs
+    def default_inputs(self) -> Defaults:
+        """The default inputs."""
+        return self.input_grammar.defaults
 
     @default_inputs.setter
-    def default_inputs(self, default_inputs: dict[str, Any]) -> None:
-        if not isinstance(default_inputs, collections.abc.Mapping):
-            raise TypeError(
-                "MDODiscipline default_inputs must be of dict-like type, "
-                "got {} instead.".format(type(default_inputs))
-            )
-        self.__set_default_inputs(default_inputs, with_namespace=True)
+    def default_inputs(self, data: Mapping[str, Any]) -> None:
+        self.input_grammar.defaults = data
 
-    def __set_default_inputs(self, data: MutableData, with_namespace=False) -> None:
-        """Set the default inputs.
+    @property
+    def default_outputs(self) -> Defaults:
+        """The default outputs."""
+        return self.output_grammar.defaults
 
-        Args:
-            data: The mapping containing default values.
-            with_namespace: Whether to add the input grammar namespaces prefixes
-                to the keys of the default inputs.
-        """
-        if with_namespace:
-            to_ns = self.input_grammar.to_namespaced
-            in_names = self.input_grammar.keys()
-            data = {
-                (to_ns[k] if (k not in in_names and k in to_ns) else k): v
-                for k, v in data.items()
-            }
-        if self.input_grammar is not None:
-            disc_data = DisciplineData(
-                data, input_to_namespaced=self.input_grammar.to_namespaced
-            )
-        else:
-            disc_data = DisciplineData(data)
-        self._default_inputs = disc_data
+    @default_outputs.setter
+    def default_outputs(self, data: Mapping[str, Any]) -> None:
+        self.output_grammar.defaults = data
 
     def add_namespace_to_input(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing input grammar element.
@@ -1489,10 +1461,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             namespace: The name of the namespace.
         """
         self.input_grammar.add_namespace(name, namespace)
-        default_value = self.default_inputs.get(name)
-        if default_value is not None:
-            del self.default_inputs[name]
-            self.default_inputs[self.input_grammar.to_namespaced[name]] = default_value
 
     def add_namespace_to_output(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing output grammar element.
@@ -2071,7 +2039,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The name of the input and output variables.
         """
-        in_outs = set(self.output_grammar.keys()).union(self.input_grammar.keys())
+        in_outs = self.output_grammar.keys() | self.input_grammar.keys()
         if with_namespaces:
             return list(in_outs)
         else:
@@ -2107,11 +2075,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The local output data.
         """
-        if with_namespaces or not self.output_grammar.to_namespaced:
-            output_names = self.output_grammar.keys()
-            return {k: v for k, v in self._local_data.items() if k in output_names}
-        else:
-            return remove_prefix_from_dict(self.get_output_data())
+        return self._local_data.copy(
+            keys=self.output_grammar.keys(),
+            with_namespace=with_namespaces or not self.output_grammar.to_namespaced,
+        )
 
     def get_input_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
@@ -2123,11 +2090,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The local input data.
         """
-        if with_namespaces or not self.input_grammar.to_namespaced:
-            input_names = self.input_grammar.keys()
-            return {k: v for k, v in self._local_data.items() if k in input_names}
-        else:
-            return remove_prefix_from_dict(self.get_input_data())
+        return self._local_data.copy(
+            keys=self.input_grammar.keys(),
+            with_namespace=with_namespaces or not self.input_grammar.to_namespaced,
+        )
 
     def serialize(
         self,
