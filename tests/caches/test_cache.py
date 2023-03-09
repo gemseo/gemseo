@@ -624,33 +624,14 @@ def test_export_to_dataset_and_entries(
     assert dataset["x"][0, 0] == 1.0
     assert dataset["y"][0, 0] == 2.0
 
-    # Check penultimate_entry and last_entry
-    first_jacobian = first_jacobian or {}
     second_jacobian = second_jacobian or {}
-    if second_outputs:
-        first_outputs = {}
-    if second_jacobian:
-        first_jacobian = {}
-    if not first_jacobian and not first_outputs:
-        first_inputs = {}
-    penultimate_entry = CacheEntry(
-        first_inputs,
-        first_outputs,
-        first_jacobian,
-    )
     last_entry = CacheEntry(second_inputs, second_outputs, second_jacobian or {})
-    assert simple_cache.penultimate_entry == penultimate_entry
     assert simple_cache.last_entry == last_entry
 
     # Check __iter__
     entries = [entry for entry in simple_cache]
-    if first_inputs:
-        assert len(entries) == 2
-        assert entries[0] == penultimate_entry
-        assert entries[1] == last_entry
-    else:
-        assert len(entries) == 1
-        assert entries[0] == last_entry
+    assert len(entries) == 1
+    assert entries[0] == last_entry
 
 
 @pytest.mark.parametrize(

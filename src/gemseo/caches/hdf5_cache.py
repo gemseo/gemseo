@@ -43,6 +43,7 @@ LOGGER = logging.getLogger(__name__)
 class HDF5Cache(AbstractFullCache):
     """Cache using disk HDF5 file to store the data."""
 
+    # TODO: API: all signatures shall start with tolerance and name.
     def __init__(
         self,
         hdf_file_path: str | Path = "cache.hdf5",
@@ -73,10 +74,7 @@ class HDF5Cache(AbstractFullCache):
         """  # noqa: D205, D212, D415
         self.__hdf_node_name = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
-        if not name:
-            name = hdf_node_path
-
-        super().__init__(tolerance, name)
+        super().__init__(tolerance, name or hdf_node_path)
         self._read_hashes()
 
     @property
