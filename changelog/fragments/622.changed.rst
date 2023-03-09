@@ -1,1 +1,0 @@
-:meth:`.Dataset.export_to_dataframe` can either sort the columns by group, name and component, or only by group and component.

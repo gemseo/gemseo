@@ -1,1 +1,0 @@
-:meth:`.CorrelationAnalysis.sort_parameters` uses the rule "The higher the absolute correlation coefficient the better".

@@ -28,7 +28,7 @@ from gemseo.api import create_mda
 from gemseo.api import create_scenario
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
 from numpy import array

@@ -1,1 +1,0 @@
-:class:`.MDOInitializationChain` can compute the input data for a MDA from incomplete default_inputs of the disciplines.

@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegressor

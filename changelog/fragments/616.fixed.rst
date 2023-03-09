@@ -1,1 +1,0 @@
-The :class:`.ConstraintsHistory` draws the vertical line at the right position when the constraint is satisfied at the final iteration.

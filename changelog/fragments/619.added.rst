@@ -1,6 +1,0 @@
-:class:`.ConstraintsHistory`:
-
-- One can add one point per iteration on the blue line (default behavior).
-- The line style can be changed (dashed line by default).
-- The types of the constraint are displayed.
-- The equality constraints are plotted with the :attr:`~.OptPostProcessor.eq_cstr_cmap`.

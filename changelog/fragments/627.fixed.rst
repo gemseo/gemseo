@@ -1,1 +1,0 @@
-:meth:`.ParametricStatistics.plot_criteria` plots the confidence level on the right subplot when the fitting criterion is a statistical test.

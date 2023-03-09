@@ -34,7 +34,9 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
-from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 EPSILON = finfo(float).eps
@@ -106,7 +108,7 @@ class FirstOrderFD(GradientApproximator):
             return self.f_pointer(f_input_values, **kwargs)
 
         functions = [func_noargs] * (n_perturbations + 1)
-        parallel_execution = ParallelExecution(functions, **self._par_args)
+        parallel_execution = CallableParallelExecution(functions, **self._par_args)
 
         perturbated_inputs = [
             input_perturbations[:, perturbation_index]
@@ -241,7 +243,7 @@ class FirstOrderFD(GradientApproximator):
                 return self.f_pointer(xval, **kwargs)
 
             functions = [func_noargs] * (n_dim + 1)
-            parallel_execution = ParallelExecution(functions, **self._par_args)
+            parallel_execution = CallableParallelExecution(functions, **self._par_args)
 
             all_x = [x_vect] + [x_p_arr[:, i] for i in range(n_dim)]
             all_x += [x_m_arr[:, i] for i in range(n_dim)]

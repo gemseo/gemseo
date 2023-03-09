@@ -1,1 +1,0 @@
-Add a new execution status for disciplines: "STATUS_LINEARIZE" when the discipline is performing the linearization.
