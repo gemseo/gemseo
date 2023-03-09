@@ -88,7 +88,7 @@ class LicenseManager:
         return self.__licenses
 
     @licenses.setter
-    def licenses(self, licenses):
+    def licenses(self, licenses) -> None:
         self.__licenses = licenses
 
     def check_licenses(

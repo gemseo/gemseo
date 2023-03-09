@@ -44,6 +44,7 @@ from __future__ import annotations
 from numbers import Number
 from pathlib import Path
 from typing import Iterable
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -80,7 +81,7 @@ class ScalableDiagonalModel(ScalableModel):
     def __init__(
         self,
         data,
-        sizes=None,
+        sizes: Sequence[int] | None = None,
         fill_factor=-1,
         comp_dep=None,
         inpt_dep=None,
@@ -200,7 +201,7 @@ class ScalableDiagonalModel(ScalableModel):
             f_scaled[function_name] = f_sc
         return t_scaled, f_scaled
 
-    def __get_variables_locations(self, names):
+    def __get_variables_locations(self, names: Sequence[str]):
         """Get the locations of first component of each variable.
 
         :param names: list of variables names.
@@ -296,7 +297,7 @@ class ScalableDiagonalModel(ScalableModel):
         save: bool = False,
         show: bool = False,
         step: float = 0.01,
-        varnames=None,
+        varnames: Sequence[str] | None = None,
         directory: str = ".",
         png: bool = False,
     ) -> list[str]:
@@ -460,7 +461,7 @@ class ScalableDiagonalModel(ScalableModel):
             out_map[function_name] = randint(original_function_size, size=function_size)
         return out_map
 
-    def __complete_random_dep(self, r_io_dep, dataname, index, io_dep):
+    def __complete_random_dep(self, r_io_dep, dataname: str, index, io_dep) -> None:
         """Complete random dependency if row (input name) or column (function name) of
         the random dependency matrix is empty.
 
@@ -532,7 +533,7 @@ class ScalableDiagonalApproximation:
         npseed(seed)
 
     def build_scalable_function(
-        self, function_name, dataset, input_names: Iterable[str], degree: int = 3
+        self, function_name: str, dataset, input_names: Iterable[str], degree: int = 3
     ):
         """Build interpolation from a 1D input and output function. Add the model to the
         local dictionary.
@@ -598,7 +599,9 @@ class ScalableDiagonalApproximation:
         scaled_samples /= scaling
         return scaled_samples
 
-    def _interpolate(self, function_name, t_scaled, f_scaled, degree: int = 3) -> None:
+    def _interpolate(
+        self, function_name: str, t_scaled, f_scaled, degree: int = 3
+    ) -> None:
         """Interpolate a set of samples (t, y(t)) with a polynomial spline.
 
         :param str function_name: name of the interpolated function
@@ -622,7 +625,7 @@ class ScalableDiagonalApproximation:
         self.interpolation_dict[function_name] = list_interpolations
         self.d_interpolation_dict[function_name] = list_derivatives
 
-    def _compute_sizes(self, function_name, input_names):
+    def _compute_sizes(self, function_name: str, input_names: Sequence[str]):
         """Determine the size of the vector input and output.
 
         :param str function_name: function name
@@ -635,7 +638,11 @@ class ScalableDiagonalApproximation:
         return input_size, output_size
 
     def _extrapolate(
-        self, function_name, input_names: Iterable[str], input_size, output_size
+        self,
+        function_name: str,
+        input_names: Iterable[str],
+        input_size: int,
+        output_size: int,
     ) -> None:
         """Extrapolate a 1D function to arbitrary input and output dimensions. Generate a
         function that produces an output with a given size from an input with a given

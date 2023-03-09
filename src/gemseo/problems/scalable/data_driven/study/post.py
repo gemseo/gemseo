@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -214,7 +215,7 @@ class PostScalabilityStudy:
         self,
         legend_loc: str = "upper left",
         xticks=None,
-        xticks_labels=None,
+        xticks_labels: Sequence[str] | None = None,
         xmargin: float = 0.0,
         **options,
     ) -> None:
@@ -243,7 +244,7 @@ class PostScalabilityStudy:
             self._plot_lines(legend_loc, xticks, xticks_labels, xmargin, **options)
         LOGGER.info("%s", msg)
 
-    def __has_scaling_dimension(self, value):
+    def __has_scaling_dimension(self, value) -> None:
         """Assert if a value has the scaling dimension.
 
         :param ndarray value: value.
@@ -255,7 +256,7 @@ class PostScalabilityStudy:
         self,
         legend_loc: str = "upper left",
         xticks=None,
-        xticks_labels=None,
+        xticks_labels: Sequence[str] | None = None,
         xmargin: float = 0.0,
     ) -> None:
         """Deterministic plot.
@@ -282,7 +283,9 @@ class PostScalabilityStudy:
             fpath = self.study_directory / POSTSTUDY_DIRECTORY / fname
             plt.savefig(str(fpath))
 
-    def __draw(self, name, value, xticks, labels, scales, color, xmargin):
+    def __draw(
+        self, name: str, value, xticks, labels: Sequence[str], scales, color, xmargin
+    ) -> None:
         """Create plot for specific criterion when r=1 replicate.
 
         :param str name: criterion name.
@@ -327,11 +330,11 @@ class PostScalabilityStudy:
         self,
         legend_loc: str = "upper left",
         xticks=None,
-        xticks_labels=None,
+        xticks_labels: Sequence[str] | None = None,
         xmargin: float = 0.0,
         minbox: int = 2,
         notch: bool = False,
-        widths=0.25,
+        widths: float = 0.25,
         whis: float = 1.5,
     ) -> None:
         """Probabilistic plot.
@@ -388,18 +391,18 @@ class PostScalabilityStudy:
 
     def __drawb(
         self,
-        name,
+        name: str,
         index,
         value,
         xticks,
-        labels,
+        labels: Sequence[str],
         scales,
-        widths,
+        widths: Sequence[int],
         color,
         notch,
         whis,
         xmargin,
-    ):
+    ) -> None:
         """Create plot for specific criterion when r=1 replicate.
 
         :param str name: criterion name.
@@ -440,7 +443,9 @@ class PostScalabilityStudy:
         plt.grid(True, "both")
 
     @staticmethod
-    def __draw_boxplot(data, xticks, edge_color, fill_color, notch, widths, whis):
+    def __draw_boxplot(
+        data, xticks, edge_color, fill_color, notch, widths: Sequence[int], whis
+    ):
         """Draw boxplot from a dataset.
 
         :param array data: dataset array of dimension 2 or 3

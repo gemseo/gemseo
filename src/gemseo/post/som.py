@@ -242,7 +242,7 @@ class SOM(OptPostProcessor):
         self,
         som_grid_nx: int = 5,
         som_grid_ny: int = 5,
-    ):
+    ) -> None:
         """Build the SOM from optimization history.
 
         Args:

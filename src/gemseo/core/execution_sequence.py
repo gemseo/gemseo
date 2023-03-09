@@ -94,7 +94,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._status
 
     @status.setter
-    def status(self, status):
+    def status(self, status) -> None:
         """Set the value of the status.
 
         One of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
@@ -178,10 +178,10 @@ class AtomicExecSequence(ExecutionSequence):
         self.disc_to_uuids = {discipline: [self.uuid]}
         self._observer = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.discipline.name + "(" + str(self.status) + ")"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             self.discipline.name + "(" + str(self.status) + ", " + str(self.uuid) + ")"
         )

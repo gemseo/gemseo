@@ -51,6 +51,7 @@ import logging
 import numbers
 from copy import deepcopy
 from pathlib import Path
+from typing import Sequence
 from typing import Sized
 
 from numpy import inf
@@ -83,7 +84,7 @@ class ScalabilityStudy:
         maximize_objective: bool = False,
         fill_factor: float = 0.7,
         active_probability: float = 0.1,
-        feasibility_level=0.8,
+        feasibility_level: float = 0.8,
         start_at_equilibrium: bool = True,
         early_stopping: bool = True,
         coupling_variables=None,
@@ -198,7 +199,7 @@ class ScalabilityStudy:
         msg.add("Early stopping: {}", self.early_stopping)
         LOGGER.info("%s", msg)
 
-    def __create_directories(self):
+    def __create_directories(self) -> None:
         """Create the different directories to store results, post-processings, ..."""
         self.directory.mkdir(exist_ok=True)
         post = self.directory / POST_DIRECTORY
@@ -298,7 +299,7 @@ class ScalabilityStudy:
                 disciplines_names,
             )
 
-    def __check_output(self, discipline, varname):
+    def __check_output(self, discipline, varname: str):
         """Check if a variable is an output of a given discipline."""
         self.__check_discipline(discipline)
         if not isinstance(varname, str):
@@ -497,7 +498,7 @@ class ScalabilityStudy:
         LOGGER.info("%s", msg)
 
     @staticmethod
-    def __format_scaling(size, n_scaling):
+    def __format_scaling(size: int, n_scaling):
         """Convert a scaling size in a list of integers whose length is equal to the
         number of scalings.
 
@@ -514,7 +515,7 @@ class ScalabilityStudy:
         return formatted_sizes
 
     @staticmethod
-    def __update_var_scaling(scaling, size, varnames):
+    def __update_var_scaling(scaling, size: int, varnames: Sequence[str]) -> None:
         """Update a scaling dictionary for a given list of variables and a given size.
 
         :param dict scaling: scaling dictionary whose keys are variable names
@@ -527,7 +528,7 @@ class ScalabilityStudy:
             scaling.update({varname: size for varname in varnames})
 
     @staticmethod
-    def __check_scaling_consistency(n_var_scaling, n_scaling):
+    def __check_scaling_consistency(n_var_scaling, n_scaling) -> None:
         """Check that for the different types of variables, the number of scalings is the
         same or equal to 1.
 
@@ -537,7 +538,7 @@ class ScalabilityStudy:
         assert n_var_scaling in (n_scaling, 1)
 
     @staticmethod
-    def __check_varsizes_type(varsizes):
+    def __check_varsizes_type(varsizes: Sequence[int]):
         """Check the type of scaling sizes. Integer, list of integers or None is
         expected. Return the number of scalings.
 
@@ -706,7 +707,7 @@ class ScalabilityStudy:
         path.mkdir(exist_ok=True, parents=True)
         return path
 
-    def __create_scalable_problem(self, scaling, seed):
+    def __create_scalable_problem(self, scaling, seed: int):
         """Create a scalable problem.
 
         :param dict scaling: scaling.
@@ -728,7 +729,7 @@ class ScalabilityStudy:
         )
         return problem
 
-    def __create_scenario(self, problem, formulation, opt_index):
+    def __create_scenario(self, problem, formulation, opt_index) -> None:
         """Create scenario for a given formulation.
 
         :param ScalableProblem problem: scalable problem.
