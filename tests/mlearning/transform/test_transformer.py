@@ -23,8 +23,8 @@ from unittest import mock
 
 import pytest
 from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.utils.compatibility.python import get_mock_method_call_args
 from gemseo.utils.pytest_conftest import concretize_classes
-from gemseo.utils.python_compatibility import get_mock_method_call_args
 from numpy import arange
 from numpy import array
 from numpy import ndarray

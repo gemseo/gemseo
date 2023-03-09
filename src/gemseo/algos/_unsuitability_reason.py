@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 _LINEAR_SOLVER_TEMPLATE: Final[str] = "the left-hand side of the problem is not {}"
 """The template of the reason why an algorithm is unsuited for a problem."""

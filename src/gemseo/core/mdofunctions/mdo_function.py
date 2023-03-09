@@ -47,9 +47,9 @@ from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:

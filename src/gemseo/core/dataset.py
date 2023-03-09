@@ -89,9 +89,9 @@ from gemseo.core.cache import AbstractCache
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.factory import DatasetPlotFactory
+from gemseo.utils.compatibility.python import singledispatchmethod
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.python_compatibility import singledispatchmethod
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable

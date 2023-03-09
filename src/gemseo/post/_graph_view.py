@@ -22,8 +22,8 @@ from pathlib import Path
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from graphviz import Digraph
 
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.python_compatibility import Final
 
 
 class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):

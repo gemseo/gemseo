@@ -34,8 +34,8 @@ from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.multiprocessing import get_multi_processing_manager
-from gemseo.utils.python_compatibility import Final
 
 IS_WIN: Final[bool] = os.name == "nt"
 

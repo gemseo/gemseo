@@ -61,7 +61,7 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

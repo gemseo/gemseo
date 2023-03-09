@@ -57,7 +57,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 SavedObjectType = Union[SavedObjectType, float, Callable]
 

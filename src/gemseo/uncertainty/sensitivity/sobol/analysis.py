@@ -124,8 +124,8 @@ from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.base_enum import get_names
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)

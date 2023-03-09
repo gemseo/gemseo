@@ -31,7 +31,7 @@ from typing import Iterable
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.python_compatibility import importlib_metadata
+from gemseo.utils.compatibility.python import importlib_metadata
 from gemseo.utils.singleton import _Multiton
 from gemseo.utils.singleton import Multiton
 from gemseo.utils.source_parsing import get_default_options_values
