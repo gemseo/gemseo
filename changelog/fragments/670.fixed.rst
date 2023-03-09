@@ -1,0 +1,1 @@
+:meth:`.Database.get_complete_history` raises a ``ValueError`` when asking for a non-existent function.
