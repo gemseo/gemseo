@@ -364,3 +364,8 @@ def test_save_load(morris, tmp_wd):
     assert new_morris.default_output == morris.default_output
     assert new_morris.n_replicates == morris.n_replicates
     assert new_morris.outputs_bounds == morris.outputs_bounds
+
+
+def test_compute_indices_output_names(morris):
+    """Check compute_indices with different types for output_names."""
+    assert morris.compute_indices(["y1"]).keys() == morris.compute_indices("y1").keys()

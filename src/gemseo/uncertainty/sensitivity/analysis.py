@@ -31,6 +31,7 @@ inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 from __future__ import annotations
 
 import pickle
+from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -44,7 +45,6 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import array
 from numpy import linspace
@@ -67,13 +67,14 @@ from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
 IndicesType = Dict[str, List[Dict[str, ndarray]]]
 
 
-class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
+class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Sensitivity analysis.
 
     The :class:`.SensitivityAnalysis` class provides both
@@ -240,15 +241,17 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         """The names of the inputs."""
         return self.dataset.get_names(self.dataset.INPUT_GROUP)
 
+    @abstractmethod
     def compute_indices(
-        self, outputs: Sequence[str] | None = None
+        self, outputs: str | Sequence[str] | None = None
     ) -> dict[str, IndicesType]:
         """Compute the sensitivity indices.
 
         Args:
-            outputs: The outputs
-                for which to display sensitivity indices.
-                If None, use the default outputs, that are all the discipline outputs.
+            outputs: The output(s)
+                for which to display the sensitivity indices.
+                If ``None``,
+                use the default outputs set at instantiation.
 
         Returns:
             The sensitivity indices.
@@ -267,9 +270,9 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                     }
                 }
         """
-        raise NotImplementedError
 
     @property
+    @abstractmethod
     def indices(self) -> dict[str, IndicesType]:
         """The sensitivity indices.
 
@@ -287,7 +290,6 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 }
             }
         """
-        raise NotImplementedError
 
     @property
     def main_method(self) -> str:
@@ -302,6 +304,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         raise NotImplementedError("You cannot change the main method.")
 
     @property
+    @abstractmethod
     def main_indices(self) -> IndicesType:
         """The main sensitivity indices.
 
@@ -317,7 +320,6 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 ]
             }
         """
-        raise NotImplementedError
 
     def _outputs_to_tuples(
         self,

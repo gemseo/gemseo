@@ -27,6 +27,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.utils.base_enum import get_names
 from gemseo.utils.testing import compare_dict_of_arrays
 from gemseo.utils.testing import image_comparison
 from numpy import array
@@ -90,7 +91,7 @@ def total_intervals(sobol: SobolAnalysis) -> IndicesType:
 
 def test_algorithms():
     """Check the available algorithms to estimate the Sobol' indices."""
-    assert SobolAnalysis.AVAILABLE_ALGOS == [
+    assert get_names(SobolAnalysis.Algorithm) == [
         "Jansen",
         "Martinez",
         "MauntzKucherenko",
@@ -273,3 +274,8 @@ def test_confidence_level_custom(discipline, uncertain_space):
     analysis.compute_indices(confidence_level=0.90)
     algos = analysis._SobolAnalysis__output_names_to_sobol_algos
     assert algos["y"][0].getConfidenceLevel() == 0.90
+
+
+def test_compute_indices_output_names(sobol):
+    """Check compute_indices with different types for output_names."""
+    assert sobol.compute_indices(["y"]).keys() == sobol.compute_indices("y").keys()

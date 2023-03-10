@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import logging
+from functools import partial
 from pathlib import Path
 from typing import Any
 from typing import Collection
@@ -43,13 +44,17 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.base_enum import get_names
+from gemseo.utils.compatibility.openturns import compute_kendall_tau
 from gemseo.utils.compatibility.openturns import compute_pcc
 from gemseo.utils.compatibility.openturns import compute_pearson_correlation
 from gemseo.utils.compatibility.openturns import compute_prcc
-from gemseo.utils.compatibility.openturns import compute_signed_src
 from gemseo.utils.compatibility.openturns import compute_spearman_correlation
+from gemseo.utils.compatibility.openturns import compute_squared_src
 from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
+from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -87,22 +92,18 @@ class CorrelationAnalysis(SensitivityAnalysis):
         >>> indices = analysis.compute_indices()
     """
 
-    _PEARSON = "pearson"
-    _SPEARMAN = "spearman"
-    _PCC = "pcc"
-    _PRCC = "prcc"
-    _SRC = "src"
-    _SRRC = "srrc"
-    _SSRRC = "ssrrc"
-    _ALGORITHMS = {
-        _PEARSON: compute_pearson_correlation,
-        _SPEARMAN: compute_spearman_correlation,
-        _PCC: compute_pcc,
-        _PRCC: compute_prcc,
-        _SRC: compute_src,
-        _SRRC: compute_srrc,
-        _SSRRC: compute_signed_src,
-    }
+    class Method(BaseEnum):
+        """The sensitivity methods."""
+
+        KENDALL = partial(compute_kendall_tau)
+        PCC = partial(compute_pcc)
+        PEARSON = partial(compute_pearson_correlation)
+        PRCC = partial(compute_prcc)
+        SPEARMAN = partial(compute_spearman_correlation)
+        SRC = partial(compute_src)
+        SRRC = partial(compute_srrc)
+        SSRC = partial(compute_squared_src)
+
     DEFAULT_DRIVER = "OT_MONTE_CARLO"
 
     def __init__(  # noqa: D107
@@ -127,44 +128,62 @@ class CorrelationAnalysis(SensitivityAnalysis):
             formulation=formulation,
             **formulation_options,
         )
-        self.main_method = self._SPEARMAN
+        self.main_method = self.Method.SPEARMAN.name
 
     @SensitivityAnalysis.main_method.setter
     def main_method(  # noqa: D102
         self,
         name: str,
     ) -> None:
-        if name not in self._ALGORITHMS:
+        if name not in self.Method:
             raise NotImplementedError(
                 f"{name} is not an sensitivity method; "
-                f"available ones are {pretty_str(sorted(self._ALGORITHMS.keys()))}."
+                f"available ones are {pretty_str(get_names(self.Method))}."
             )
         else:
             LOGGER.info("Use %s indices as main indices.", name)
             self._main_method = name
 
     def compute_indices(  # noqa: D102
-        self, outputs: Sequence[str] | None = None
+        self, outputs: str | Sequence[str] | None = None
     ) -> dict[str, IndicesType]:
         output_names = outputs or self.default_output
-        if not isinstance(output_names, list):
+        if isinstance(output_names, str):
             output_names = [output_names]
-        inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
-        outputs = self.dataset.get_data_by_names(output_names)
+
+        input_samples = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
+        output_names_to_output_samples = self.dataset.get_data_by_names(output_names)
         self.__correlation = {}
-        for algo_name, algo_value in self._ALGORITHMS.items():
-            inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
+        # For each correlation method
+        new_methods = [self.Method.KENDALL, self.Method.SSRC]
+        for method in self.Method:
+            algo_name = method.name
+            if IS_OT_LOWER_THAN_1_20 and method in new_methods:
+                continue
+
+            # The version of OpenTURNS offers this correlation method.
+            get_indices = method.value
+            input_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
             sizes = self.dataset.sizes
-            self.__correlation[algo_name] = {}
-            for output_name, value in outputs.items():
-                self.__correlation[algo_name][output_name] = []
-                for index in range(value.shape[1]):
-                    sub_outputs = Sample(value[:, index][:, newaxis])
-                    coefficient = array(algo_value(inputs, sub_outputs))
-                    coefficient = split_array_to_dict_of_arrays(
-                        coefficient, sizes, inputs_names
+            self.__correlation[algo_name] = {
+                output_name: [
+                    split_array_to_dict_of_arrays(
+                        array(
+                            get_indices(
+                                input_samples,
+                                Sample(output_component_samples[:, newaxis]),
+                            )
+                        ),
+                        sizes,
+                        input_names,
                     )
-                    self.__correlation[algo_name][output_name].append(coefficient)
+                    # For each component of the output variable
+                    for output_component_samples in output_samples.T
+                ]
+                # For each output variable
+                for output_name, output_samples in output_names_to_output_samples.items()
+            }
+
         return self.indices
 
     @property
@@ -183,7 +202,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self._PCC]
+        return self.__correlation[self.Method.PCC.name]
 
     @property
     def prcc(self) -> IndicesType:
@@ -201,7 +220,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self._PRCC]
+        return self.__correlation[self.Method.PRCC.name]
 
     @property
     def src(self) -> IndicesType:
@@ -219,7 +238,43 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self._SRC]
+        return self.__correlation[self.Method.SRC.name]
+
+    @property
+    def ssrc(self) -> IndicesType:
+        """The Squared Standard Regression Coefficients.
+
+        With the following structure:
+
+        .. code-block:: python
+
+            {
+                "output_name": [
+                    {
+                        "input_name": data_array,
+                    }
+                ]
+            }
+        """
+        return self.__correlation.get(self.Method.SSRC.name, {})
+
+    @property
+    def kendall(self) -> IndicesType:
+        """The Kendall rank correlation coefficients.
+
+        With the following structure:
+
+        .. code-block:: python
+
+            {
+                "output_name": [
+                    {
+                        "input_name": data_array,
+                    }
+                ]
+            }
+        """
+        return self.__correlation.get(self.Method.KENDALL.name, {})
 
     @property
     def srrc(self) -> IndicesType:
@@ -237,25 +292,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self._SRRC]
-
-    @property
-    def ssrrc(self) -> IndicesType:
-        """The Signed Standard Rank Regression Coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self.__correlation[self._SSRRC]
+        return self.__correlation[self.Method.SRRC.name]
 
     @property
     def pearson(self) -> IndicesType:
@@ -273,7 +310,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self._PEARSON]
+        return self.__correlation[self.Method.PEARSON.name]
 
     @property
     def spearman(self) -> IndicesType:
@@ -291,7 +328,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self._SPEARMAN]
+        return self.__correlation[self.Method.SPEARMAN.name]
 
     @property
     def indices(self) -> dict[str, IndicesType]:
@@ -334,7 +371,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         else:
             output_name, output_index = output
 
-        all_indices = sorted(self._ALGORITHMS)
+        all_indices = get_names(self.Method)
         dataset = Dataset()
         for input_name in self._filter_names(
             self.dataset.get_names(self.dataset.INPUT_GROUP), inputs
@@ -346,7 +383,9 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 input_name,
                 vstack(
                     [
-                        getattr(self, indices)[output_name][output_index][input_name]
+                        getattr(self, indices.lower())[output_name][output_index][
+                            input_name
+                        ]
                         for indices in all_indices
                     ]
                 ),

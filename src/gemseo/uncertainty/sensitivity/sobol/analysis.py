@@ -123,7 +123,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.base_enum import get_names
 from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import pretty_repr
@@ -168,7 +167,7 @@ class SobolAnalysis(SensitivityAnalysis):
         Martinez = MartinezSensitivityAlgorithm
 
     class Method(BaseEnum):
-        """The names of the sensitivity methods."""
+        """The sensitivity methods."""
 
         first = "Sobol(first)"
         total = "Sobol(total)"
@@ -177,10 +176,6 @@ class SobolAnalysis(SensitivityAnalysis):
     __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
-
-    # TODO: API: remove this attribute in the next major release.
-    AVAILABLE_ALGOS: ClassVar[list[str]] = get_names(Algorithm)
-    """The names of the available algorithms to estimate the Sobol' indices."""
 
     DEFAULT_DRIVER: ClassVar[str] = OpenTURNS.OT_SOBOL_INDICES
 
@@ -253,7 +248,7 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: Sequence[str] | None = None,
+        outputs: str | Sequence[str] | None = None,
         algo: Algorithm | str = Algorithm.Saltelli,
         confidence_level: float = 0.95,
     ) -> dict[str, IndicesType]:
@@ -269,7 +264,7 @@ class SobolAnalysis(SensitivityAnalysis):
 
         algorithm = self.Algorithm[algo].value
         output_names = outputs or self.default_output
-        if not isinstance(output_names, list):
+        if isinstance(output_names, str):
             output_names = [output_names]
 
         inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
