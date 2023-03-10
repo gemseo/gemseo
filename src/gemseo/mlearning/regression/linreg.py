@@ -70,8 +70,8 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.python_compatibility import Final
 
 
 class LinearRegressor(MLRegressionAlgo):

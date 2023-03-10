@@ -35,7 +35,7 @@ from sklearn.cross_decomposition import PLSRegression
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 
 class PLS(DimensionReduction):

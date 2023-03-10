@@ -118,7 +118,7 @@ from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)

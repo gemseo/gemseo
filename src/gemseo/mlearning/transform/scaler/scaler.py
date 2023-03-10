@@ -53,7 +53,7 @@ from numpy import tile
 
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

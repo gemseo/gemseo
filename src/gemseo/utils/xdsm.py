@@ -19,7 +19,7 @@ import webbrowser
 from pathlib import Path
 from typing import Any
 
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 
 class XDSM:

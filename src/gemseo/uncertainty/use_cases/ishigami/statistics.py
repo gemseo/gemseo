@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from numpy import pi
 
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 __A: Final[float] = 7
 __B: Final[float] = 0.1

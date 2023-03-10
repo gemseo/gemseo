@@ -22,7 +22,7 @@ from typing import ClassVar
 from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 MODULE_LEVEL_VARIABLE: Final[int] = 98765
 """Module level constant variable documented inline.

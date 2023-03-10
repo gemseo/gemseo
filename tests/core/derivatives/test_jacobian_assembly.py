@@ -32,7 +32,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.utils.python_compatibility import get_mock_method_call_args
+from gemseo.utils.compatibility.python import get_mock_method_call_args
 from numpy import ndarray
 from numpy import random
 from scipy.sparse import csr_matrix

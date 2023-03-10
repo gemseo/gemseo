@@ -30,7 +30,7 @@ import pytest
 from packaging import version
 
 from gemseo.core.factory import Factory
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 __ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 

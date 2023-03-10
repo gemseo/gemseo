@@ -29,7 +29,7 @@ import pytest
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.utils.python_compatibility import importlib_metadata
+from gemseo.utils.compatibility.python import importlib_metadata
 
 # test data
 DATA = Path(__file__).parent / "data/factory"

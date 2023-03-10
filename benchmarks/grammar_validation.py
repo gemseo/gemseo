@@ -23,7 +23,7 @@ from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 
 class Benchmark(BaseBenchmark):

@@ -18,7 +18,7 @@ from __future__ import annotations
 from numpy import pi
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 _DISTRIBUTION_NAME: Final[str] = "SPUniformDistribution"
 """The probability distribution for the different random variables."""

@@ -29,8 +29,8 @@ from numpy import ndarray
 from scipy.spatial import distance
 from scipy.stats import qmc
 
-from gemseo.utils.python_compatibility import Final
-from gemseo.utils.python_compatibility import Literal
+from gemseo.utils.compatibility.python import Final
+from gemseo.utils.compatibility.python import Literal
 
 LOGGER = logging.getLogger(__name__)
 

@@ -49,7 +49,7 @@ from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

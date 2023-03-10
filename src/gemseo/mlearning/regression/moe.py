@@ -92,8 +92,8 @@ from gemseo.mlearning.qual_measure.quality_measure import OptionType as EvalOpti
 from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)

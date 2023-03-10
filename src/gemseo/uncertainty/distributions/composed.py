@@ -92,7 +92,7 @@ from numpy import ndarray
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.base_enum import get_names
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)

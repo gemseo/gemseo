@@ -26,7 +26,7 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 from numpy.random import seed
 
 

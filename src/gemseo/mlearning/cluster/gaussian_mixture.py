@@ -79,7 +79,7 @@ from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 
 
 class GaussianMixture(MLPredictiveClusteringAlgo):

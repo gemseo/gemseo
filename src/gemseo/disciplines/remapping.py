@@ -26,7 +26,7 @@ from numpy import empty
 from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.python_compatibility import singledispatchmethod
+from gemseo.utils.compatibility.python import singledispatchmethod
 
 Data = Dict[str, ndarray]
 Indices = Tuple[str, Union[int, Iterable[int]]]

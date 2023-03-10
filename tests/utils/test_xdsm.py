@@ -21,7 +21,7 @@ from unittest import mock
 
 import gemseo.utils.xdsm as xdsm_module
 import pytest
-from gemseo.utils.python_compatibility import get_mock_method_call_args
+from gemseo.utils.compatibility.python import get_mock_method_call_args
 from gemseo.utils.xdsm import XDSM
 
 

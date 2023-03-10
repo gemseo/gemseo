@@ -71,7 +71,7 @@ from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]

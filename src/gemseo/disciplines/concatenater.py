@@ -26,7 +26,7 @@ from numpy import eye
 from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.python_compatibility import accumulate
+from gemseo.utils.compatibility.python import accumulate
 
 
 class Concatenater(MDODiscipline):
