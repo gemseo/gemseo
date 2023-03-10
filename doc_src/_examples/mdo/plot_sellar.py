@@ -122,7 +122,6 @@ class Sellar1(MDODiscipline):
         self.default_inputs = {
             "x": ones(1),
             "z": array([4.0, 3.0]),
-            "y_1": ones(1),
             "y_2": ones(1),
         }
 
@@ -144,10 +143,8 @@ class Sellar2(MDODiscipline):
         self.input_grammar.update(["z", "y_1"])
         self.output_grammar.update(["y_2"])
         self.default_inputs = {
-            "x": ones(1),
             "z": array([4.0, 3.0]),
             "y_1": ones(1),
-            "y_2": ones(1),
         }
 
     def _run(self):
