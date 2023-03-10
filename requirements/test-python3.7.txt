@@ -100,14 +100,6 @@ pyparsing==3.0.9
     # via
     #   matplotlib
     #   packaging
-pyside6==6.3.1
-    # via gemseo (setup.py)
-pyside6-addons==6.3.1
-    # via pyside6
-pyside6-essentials==6.3.1
-    # via
-    #   pyside6
-    #   pyside6-addons
 pytest==7.2.2
     # via
     #   gemseo (setup.py)
@@ -134,11 +126,6 @@ scipy==1.7.3
     #   gemseo (setup.py)
     #   pydoe2
     #   scikit-learn
-shiboken6==6.3.1
-    # via
-    #   pyside6
-    #   pyside6-addons
-    #   pyside6-essentials
 singledispatchmethod==1.0 ; python_version == "3.7"
     # via gemseo (setup.py)
 six==1.16.0

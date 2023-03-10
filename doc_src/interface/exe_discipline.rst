@@ -31,11 +31,8 @@ Inputs and outputs files template edition GUI
 
 .. _template_editor_gui:
 
-.. currentmodule:: gemseo.wrappers.template_grammar_editor
-.. autoclass:: QtTemplateEditor
-   :noindex:
-   :no-inherited-members:
-
+.. warning::
+    This feature requires the GEMSEO template editor GUI plugin.
 
 The following screenshots detail the steps to create the templates from the reference input file.
 
