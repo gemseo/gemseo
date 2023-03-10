@@ -67,9 +67,9 @@ configure_logger()
 class DataFrameDiscipline(MDODiscipline):
     def __init__(self):
         super().__init__(grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE)
-        self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
         self.input_grammar.update({"df~x": ndarray})
         self.output_grammar.update({"df~y": ndarray})
+        self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
 
     def _run(self):
         df = self.local_data["df"]
