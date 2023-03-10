@@ -1,0 +1,2 @@
+:class:`.CorrelationAnalysis` no longer proposes the signed standard regression coefficients (SSRC), as it has been removed from ``openturns``.
+API change: The names of the algorithms proposed by :class:`.CorrelationAnalysis` must be written in capital letters; see :class:`.CorrelationAnalysis.Method`.

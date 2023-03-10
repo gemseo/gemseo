@@ -29,6 +29,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.utils.pytest_conftest import concretize_classes
 from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import linspace
@@ -120,7 +121,8 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
 @pytest.fixture
 def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
-    return MockSensitivityAnalysis()
+    with concretize_classes(MockSensitivityAnalysis):
+        return MockSensitivityAnalysis()
 
 
 @pytest.fixture
@@ -200,7 +202,7 @@ def test_plot_comparison(
     spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
     pearson = CorrelationAnalysis([discipline], parameter_space, 10)
-    pearson.main_method = pearson._PEARSON
+    pearson.main_method = pearson.Method.PEARSON.name
     pearson.compute_indices()
     plot = pearson.plot_comparison(
         spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot
@@ -353,7 +355,8 @@ def test_multiple_disciplines(parameter_space):
     d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
     d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
 
-    sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+    with concretize_classes(SensitivityAnalysis):
+        sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
 
     assert sensitivity_analysis.dataset.get_names("inputs") == ["x1", "x2", "x3"]
     assert sensitivity_analysis.dataset.get_names("outputs") == ["f", "y1", "y2"]

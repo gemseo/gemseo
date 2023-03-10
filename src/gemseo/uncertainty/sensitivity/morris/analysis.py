@@ -293,7 +293,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: Sequence[str] | None = None,
+        outputs: str | Sequence[str] | None = None,
         normalize: bool = False,
     ) -> dict[str, IndicesType]:
         """
@@ -303,7 +303,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         """  # noqa: D205 D212 D415
         fd_data = self.dataset.get_data_by_group(self.dataset.OUTPUT_GROUP, True)
         output_names = outputs or self.default_output
-        if not isinstance(output_names, list):
+        if isinstance(output_names, str):
             output_names = [output_names]
         self.mu_ = {name: {} for name in output_names}
         self.mu_star = {name: {} for name in output_names}

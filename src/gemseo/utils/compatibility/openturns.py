@@ -19,7 +19,11 @@ import openturns
 from numpy import ndarray
 from packaging import version
 
-OT_VERSION = version.parse(openturns.__version__)
+from gemseo.utils.compatibility.python import Final
+
+OT_VERSION: Final[version.Version] = version.parse(openturns.__version__)
+
+IS_OT_LOWER_THAN_1_20: Final[bool] = OT_VERSION < version.parse("1.20")
 
 if OT_VERSION < version.parse("1.18"):
 
@@ -36,83 +40,92 @@ else:
         return result.getEigenvalues()
 
 
-if OT_VERSION >= version.parse("1.20"):
+if version.parse(openturns.__version__) >= version.parse("1.20"):
 
-    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computePCC()
 
-    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computePRCC()
 
-    def compute_pearson_correlation(  # noqa:D103
+    def compute_pearson_correlation(  # noqa: D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
         return openturns.CorrelationAnalysis(x, y).computePearsonCorrelation()
 
-    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis(x, y).computeSRC()
-
-    def compute_spearman_correlation(  # noqa:D103
+    def compute_spearman_correlation(  # noqa: D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
         return openturns.CorrelationAnalysis(x, y).computeSpearmanCorrelation()
 
-    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computeSRC()
 
-    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computeSRRC()
 
-elif OT_VERSION >= version.parse("1.19"):
+    def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
+        return openturns.CorrelationAnalysis(x, y).computeKendallTau()
 
-    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
+        return openturns.CorrelationAnalysis(x, y).computeSquaredSRC()
+
+elif version.parse(openturns.__version__) >= version.parse("1.19"):
+
+    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis.PCC(x, y)
 
-    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis.PRCC(x, y)
 
-    def compute_pearson_correlation(  # noqa:D103
+    def compute_pearson_correlation(  # noqa: D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
         return openturns.CorrelationAnalysis.PearsonCorrelation(x, y)
 
-    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis.SignedSRC(x, y)
-
-    def compute_spearman_correlation(  # noqa:D103
+    def compute_spearman_correlation(  # noqa: D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
         return openturns.CorrelationAnalysis.SpearmanCorrelation(x, y)
 
-    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis.SRC(x, y)
 
-    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis.SRRC(x, y)
+
+    def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
+        raise NotImplementedError("Requires openturns>=1.20")
+
+    def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
+        raise NotImplementedError("Requires openturns>=1.20")
 
 else:
 
-    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis_PCC(x, y)
 
-    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis_PRCC(x, y)
 
-    def compute_pearson_correlation(  # noqa:D103
+    def compute_pearson_correlation(  # noqa: D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
         return openturns.CorrelationAnalysis_PearsonCorrelation(x, y)
 
-    def compute_signed_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
-        return openturns.CorrelationAnalysis_SignedSRC(x, y)
-
-    def compute_spearman_correlation(  # noqa:D103
+    def compute_spearman_correlation(  # noqa: D103
         x: ndarray, y: ndarray
     ) -> openturns.Point:
         return openturns.CorrelationAnalysis_SpearmanCorrelation(x, y)
 
-    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis_SRC(x, y)
 
-    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa:D103
+    def compute_srrc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis_SRRC(x, y)
+
+    def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
+        raise NotImplementedError("Requires openturns>=1.20")
+
+    def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
+        raise NotImplementedError("Requires openturns>=1.20")
