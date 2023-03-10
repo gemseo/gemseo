@@ -39,6 +39,7 @@ class Lines(DatasetPlot):
         variables: Sequence[str] | None = None,
         abscissa_variable: str | None = None,
         add_markers: bool = False,
+        set_xticks_from_data: bool = False,
     ) -> None:
         """
         Args:
@@ -51,12 +52,15 @@ class Lines(DatasetPlot):
                 the observations of the ``variables`` are plotted
                 in function of the indices of the observations.
             add_markers: Whether to mark the observations with dots.
+            set_xticks_from_data: Whether to use the values of ``abscissa_variable``
+                as locations of abscissa ticks.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             variables=variables,
             abscissa_variable=abscissa_variable,
             add_markers=add_markers,
+            set_xticks_from_data=set_xticks_from_data,
         )
 
     def _plot(
@@ -68,7 +72,7 @@ class Lines(DatasetPlot):
         if abscissa_variable is None:
             x_data = range(len(self.dataset))
         else:
-            x_data = self.dataset[abscissa_variable].ravel()
+            x_data = self.dataset[abscissa_variable].ravel().tolist()
 
         variables = self._param.variables
         if variables is None:
@@ -109,4 +113,6 @@ class Lines(DatasetPlot):
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title)
         axes.legend(loc=self.legend_location)
+        if self._param.set_xticks_from_data:
+            axes.set_xticks(x_data)
         return [fig]

@@ -23,7 +23,6 @@ from math import ceil
 from typing import Sequence
 
 from matplotlib import pyplot
-from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
 from numpy import arange
 from numpy import atleast_2d
@@ -113,10 +112,11 @@ class ConstraintsHistory(OptPostProcessor):
         n_iterations = len(iterations)
         eq_constraint_names = [f.name for f in self.opt_problem.get_eq_constraints()]
         # for each subplot
+        database = self.opt_problem.database
         for constraint_history, constraint_name, axe in zip(
             constraint_histories.T, constraint_names, axes.ravel()
         ):
-            f_name = self.opt_problem.database.retrieve_variable_name(constraint_name)
+            f_name = database.retrieve_variable_name(constraint_name)
             if f_name in eq_constraint_names:
                 cmap = self.eq_cstr_cmap
                 constraint_type = "equality"
@@ -127,7 +127,8 @@ class ConstraintsHistory(OptPostProcessor):
             # prepare the graph
             axe.grid(True)
             axe.set_title(f"{constraint_name} ({constraint_type})")
-            axe.xaxis.set_major_locator(MaxNLocator(integer=True))
+            axe.set_xticks([i for i in range(n_iterations)])
+            axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
             axe.axhline(0.0, color="k", linewidth=2)
 
             # Add line and points

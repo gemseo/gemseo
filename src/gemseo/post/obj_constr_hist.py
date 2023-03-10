@@ -25,7 +25,6 @@ from typing import Sequence
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import LogFormatterSciNotation
-from matplotlib.ticker import MaxNLocator
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -71,7 +70,9 @@ class ObjConstrHist(OptPostProcessor):
         grid = self._get_grid_layout()
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         ax1 = fig.add_subplot(grid[0, 0])
-        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        n_iterations = len(self.database)
+        ax1.set_xticks([i for i in range(n_iterations)])
+        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
         mng = plt.get_current_fig_manager()
         mng.resize(700, 1000)
 
@@ -117,13 +118,12 @@ class ObjConstrHist(OptPostProcessor):
             axis=1,
         )
         c_max = abs(constraint_history).max()
-        n_iter = len(x_history)
         im1 = ax1.imshow(
             np.atleast_2d(np.amax(constraint_history, axis=1)),
             cmap=RG_SEISMIC,
             interpolation="nearest",
             aspect="auto",
-            extent=[-0.5, n_iter - 0.5, obj_min - margin, obj_max + margin],
+            extent=[-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin],
             norm=SymLogNorm(linthresh=1.0, vmin=-c_max, vmax=c_max),
         )
         # 2.c. Add vertical labels with constraint violation information.
