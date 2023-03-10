@@ -47,23 +47,36 @@ def test_get_constraints():
 
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
-@image_comparison(
+@pytest.mark.parametrize(
+    "obj_relative,baseline_images",
     [
-        "power2_2_variables",
-        "power2_2_objective",
-        "power2_2_x_xstar",
-        "power2_2_hessian_approximation",
-        "power2_2_ineq_constraints",
-        "power2_2_eq_constraints",
-    ]
+        (
+            False,
+            [
+                "power2_2_variables",
+                "power2_2_objective",
+                "power2_2_x_xstar",
+                "power2_2_hessian_approximation",
+                "power2_2_ineq_constraints",
+                "power2_2_eq_constraints",
+            ],
+        ),
+        (
+            True,
+            [
+                "power2_2_variables",
+                "power2_2_objective_relative",
+                "power2_2_x_xstar",
+                "power2_2_hessian_approximation",
+                "power2_2_ineq_constraints",
+                "power2_2_eq_constraints",
+            ],
+        ),
+    ],
 )
-def test_opt_hist_const(pyplot_close_all):
-    """Test that a problem with constraints is properly rendered.
-
-    Args:
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
-    """
+@image_comparison(None)
+def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
+    """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.import_hdf(POWER2_PATH)
     post = execute_post(
         problem,
@@ -74,6 +87,7 @@ def test_opt_hist_const(pyplot_close_all):
         file_path="power2_2",
         obj_min=0.0,
         obj_max=5.0,
+        obj_relative=obj_relative,
     )
     post.figures
 

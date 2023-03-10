@@ -58,6 +58,7 @@ from xxhash._xxhash import xxh3_64_hexdigest
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.string_tools import pretty_repr
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1306,7 +1307,7 @@ class Database:
         Returns:
             The name of the component of a variable.
         """
-        component_name = name if size == 1 else f"{name} ({component})"
+        component_name = repr_variable(name, component, size)
         self.__component_names_to_names[component_name] = name
         return component_name
 

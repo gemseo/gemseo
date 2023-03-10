@@ -31,7 +31,6 @@ from typing import Sequence
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
-from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
 from numpy import append
 from numpy import arange
@@ -62,6 +61,7 @@ from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
 from gemseo.utils.compatibility.python import Final
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -272,7 +272,8 @@ class OptHistoryView(OptPostProcessor):
              x_history: The history for the design variables.
              variables_names: The names of the variables to display.
         """
-        if len(x_history) < 2:
+        n_iterations = len(x_history)
+        if n_iterations < 2:
             return
         n_variables = x_history.shape[1]
         norm_x_history = self._normalize_x_hist(x_history, variables_names)
@@ -296,7 +297,8 @@ class OptHistoryView(OptPostProcessor):
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
-        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax1.set_xticks([i for i in range(n_iterations)])
+        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
 
         # colorbar
         ax2 = fig.add_subplot(grid[0, 1])
@@ -341,15 +343,15 @@ class OptHistoryView(OptPostProcessor):
             obj_history -= obj_history[0]
 
         # Remove nans
-        n_x = len(obj_history)
-        x_absc = arange(n_x)
+        n_iterations = len(obj_history)
+        x_absc = arange(n_iterations)
         x_absc_nan = None
         idx_nan = isnan(obj_history)
 
         if idx_nan.size > 0:
             obj_history = obj_history[~idx_nan]
             x_absc_nan = x_absc[idx_nan]
-            x_absc = x_absc[~idx_nan]
+            x_absc_not_nan = x_absc[~idx_nan]
 
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
@@ -359,7 +361,7 @@ class OptHistoryView(OptPostProcessor):
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
 
-        plt.plot(x_absc, obj_history)
+        plt.plot(x_absc_not_nan, obj_history)
 
         if idx_nan.size > 0:
             for x_i in x_absc_nan:
@@ -374,7 +376,8 @@ class OptHistoryView(OptPostProcessor):
         plt.ylim([fmin - margin, fmax + margin])
         plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
         ax1 = fig.gca()
-        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax1.set_xticks(x_absc)
+        ax1.set_xticklabels((x_absc + 1).tolist())
         plt.grid(True)
         plt.title("Evolution of the objective value")
 
@@ -396,22 +399,17 @@ class OptHistoryView(OptPostProcessor):
             n_iter: The number of iterations.
         """
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        # objective function
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
-
-        n_i = x_history.shape[0]
-        _, x_opt, _, _, _ = self.opt_problem.get_optimum()
-
         normalize = self.opt_problem.design_space.normalize_vect
+        x_xstar = norm(
+            normalize(x_history) - normalize(self.opt_problem.get_optimum()[1]), axis=1
+        )
 
-        x_xstar = [
-            norm(normalize(x_history[i, :]) - normalize(x_opt)) for i in range(n_i)
-        ]
         # Draw a vertical line at the optimum
-        ind_opt = argmin(x_xstar)
-        plt.axvline(x=ind_opt, color="r")
-        plt.semilogy(arange(len(x_xstar)), x_xstar)
+        n_iterations = len(x_history)
+        plt.axvline(x=argmin(x_xstar), color="r")
+        plt.semilogy(arange(n_iterations), x_xstar)
         # ======================================================================
         # try:
         #     plt.semilogy(np.arange(len(x_xstar)), x_xstar)
@@ -420,7 +418,8 @@ class OptHistoryView(OptPostProcessor):
         #                    "all values are not positive !")
         # ======================================================================
         ax1 = fig.gca()
-        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax1.set_xticks([i for i in range(n_iterations)])
+        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
         plt.grid(True)
         plt.title("Distance to the optimum")
         plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
@@ -492,13 +491,13 @@ class OptHistoryView(OptPostProcessor):
                 for component_j in range(nb_components):
                     # compute the label of the constraint
                     if component_j == 0:
-                        cstr_name = cstr_names[i]
-                        if nb_components >= 2:
-                            cstr_name += f" ({component_j})"
-                        cstr_labels.append(cstr_name)
+                        cstr_label = repr_variable(
+                            cstr_names[i], component_j, nb_components
+                        )
                     else:
-                        cstr_labels.append(f"({component_j})")
+                        cstr_label = repr_variable("", component_j)
 
+                    cstr_labels.append(cstr_label)
                     history_i_j = atleast_2d(history_i[component_j, :])
 
                     # max value
@@ -570,7 +569,9 @@ class OptHistoryView(OptPostProcessor):
 
         ax1.set_xlabel(self.x_label)
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
-        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        n_iterations = len(self.database)
+        ax1.set_xticks([i for i in range(n_iterations)])
+        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
 
         ax1.hlines(
             list(range(len(cstr_matrix))),
@@ -619,8 +620,7 @@ class OptHistoryView(OptPostProcessor):
             obj_name: The objective function name.
         """
         try:
-            approximator = SR1Approx(history)
-            _, diag, _, _ = approximator.build_approximation(
+            _, diag, _, _ = SR1Approx(history).build_approximation(
                 funcname=obj_name, save_diag=True
             )
             if isnan(diag).any():
@@ -638,14 +638,17 @@ class OptHistoryView(OptPostProcessor):
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = self._get_grid_layout()
-        # matrix
-        axe = fig.add_subplot(grid[0, 0])
 
+        axe = fig.add_subplot(grid[0, 0])
         axe.set_title("Hessian diagonal approximation")
         axe.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         axe.set_yticks(arange(self.opt_problem.dimension))
         axe.set_yticklabels(self._get_design_variable_names())
-        axe.xaxis.set_major_locator(MaxNLocator(integer=True))
+        n_iterations = len(self.database)
+        axe.set_xticks([i for i in range(n_iterations)])
+        axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
+
+        # matrix
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
         linthresh = 10 ** (np_log10(vmax) - 5.0)
         img = axe.imshow(
