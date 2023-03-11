@@ -86,7 +86,7 @@ from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.string_tools import repr_variable
@@ -295,7 +295,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         self,
         outputs: str | Sequence[str] | None = None,
         normalize: bool = False,
-    ) -> dict[str, IndicesType]:
+    ) -> dict[str, FirstOrderIndicesType]:
         """
         Args:
             normalize: Whether to normalize the indices
@@ -354,7 +354,7 @@ class MorrisAnalysis(SensitivityAnalysis):
     @property
     def indices(  # noqa: D102
         self,
-    ) -> dict[str, IndicesType]:
+    ) -> dict[str, FirstOrderIndicesType]:
         return {
             "mu": self.mu_,
             "mu_star": self.mu_star,
@@ -367,7 +367,7 @@ class MorrisAnalysis(SensitivityAnalysis):
     @property
     def main_indices(  # noqa: D102
         self,
-    ) -> IndicesType:
+    ) -> FirstOrderIndicesType:
         return self.mu_star
 
     def plot(

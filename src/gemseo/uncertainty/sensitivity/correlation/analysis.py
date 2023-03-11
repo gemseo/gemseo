@@ -41,7 +41,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.dataset.radar_chart import RadarChart
-from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.base_enum import BaseEnum
@@ -146,7 +146,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     def compute_indices(  # noqa: D102
         self, outputs: str | Sequence[str] | None = None
-    ) -> dict[str, IndicesType]:
+    ) -> dict[str, FirstOrderIndicesType]:
         output_names = outputs or self.default_output
         if isinstance(output_names, str):
             output_names = [output_names]
@@ -187,7 +187,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.indices
 
     @property
-    def pcc(self) -> IndicesType:
+    def pcc(self) -> FirstOrderIndicesType:
         """The Partial Correlation Coefficients.
 
         With the following structure:
@@ -205,7 +205,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation[self.Method.PCC.name]
 
     @property
-    def prcc(self) -> IndicesType:
+    def prcc(self) -> FirstOrderIndicesType:
         """The Partial Rank Correlation Coefficients.
 
         With the following structure:
@@ -223,7 +223,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation[self.Method.PRCC.name]
 
     @property
-    def src(self) -> IndicesType:
+    def src(self) -> FirstOrderIndicesType:
         """The Standard Regression Coefficients.
 
         With the following structure:
@@ -241,7 +241,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation[self.Method.SRC.name]
 
     @property
-    def ssrc(self) -> IndicesType:
+    def ssrc(self) -> FirstOrderIndicesType:
         """The Squared Standard Regression Coefficients.
 
         With the following structure:
@@ -259,7 +259,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation.get(self.Method.SSRC.name, {})
 
     @property
-    def kendall(self) -> IndicesType:
+    def kendall(self) -> FirstOrderIndicesType:
         """The Kendall rank correlation coefficients.
 
         With the following structure:
@@ -277,7 +277,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation.get(self.Method.KENDALL.name, {})
 
     @property
-    def srrc(self) -> IndicesType:
+    def srrc(self) -> FirstOrderIndicesType:
         """The Standard Rank Regression Coefficients.
 
         With the following structure:
@@ -295,7 +295,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation[self.Method.SRRC.name]
 
     @property
-    def pearson(self) -> IndicesType:
+    def pearson(self) -> FirstOrderIndicesType:
         """The Pearson coefficients.
 
         With the following structure:
@@ -313,7 +313,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation[self.Method.PEARSON.name]
 
     @property
-    def spearman(self) -> IndicesType:
+    def spearman(self) -> FirstOrderIndicesType:
         """The Spearman coefficients.
 
          ith the following structure:
@@ -331,7 +331,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation[self.Method.SPEARMAN.name]
 
     @property
-    def indices(self) -> dict[str, IndicesType]:
+    def indices(self) -> dict[str, FirstOrderIndicesType]:
         """The sensitivity indices.
 
         With the following structure:
@@ -351,7 +351,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         return self.__correlation
 
     @property
-    def main_indices(self) -> IndicesType:  # noqa: D102
+    def main_indices(self) -> FirstOrderIndicesType:  # noqa: D102
         return self.__correlation[self.main_method]
 
     def plot(  # noqa: D102
