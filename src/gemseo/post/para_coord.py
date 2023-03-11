@@ -32,6 +32,7 @@ from numpy import ndarray
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+from gemseo.utils.string_tools import repr_variable
 
 
 class ParallelCoordinates(OptPostProcessor):
@@ -88,13 +89,17 @@ class ParallelCoordinates(OptPostProcessor):
         variable_history, variable_names, _ = self.database.get_history_array(
             problem.get_all_functions_names()
         )
-        n_x = len(self.database.get_x_by_iter(0))
-        design_names = variable_names[len(variable_names) - n_x :]
-        design_history = variable_history[:, len(variable_names) - n_x :]
-        design_history = problem.design_space.normalize_vect(design_history)
-        function_names = variable_names[: len(variable_names) - n_x]
-        function_history = variable_history[:, : len(variable_names) - n_x]
-
+        names_to_sizes = self.opt_problem.design_space.variables_sizes
+        design_names = [
+            repr_variable(name, i, names_to_sizes[name])
+            for name in self.opt_problem.get_design_variable_names()
+            for i in range(names_to_sizes[name])
+        ]
+        output_dimension = variable_history.shape[1] - len(design_names)
+        design_history = problem.design_space.normalize_vect(
+            variable_history[:, output_dimension:]
+        )
+        function_names = variable_names[:output_dimension]
         objective_index = variable_names.index(self._standardized_obj_name)
         objective_history = variable_history[:, objective_index]
         if self._change_obj:
@@ -111,7 +116,7 @@ class ParallelCoordinates(OptPostProcessor):
         self._add_figure(fig, "para_coord_des_vars")
 
         fig = self.parallel_coordinates(
-            function_history, function_names, objective_history
+            variable_history[:, :output_dimension], function_names, objective_history
         )
         fig.suptitle(
             f"Objective function and constraints history "
