@@ -1,0 +1,3 @@
+:class:`.SobolAnalysis` provides the :attr:`~.SobolAnalysis.output_variances` and :attr:`~.SobolAnalysis.output_standard_deviations`.
+:meth:`.SobolAnalysis.unscale_indices` allows to unscale the Sobol' indices using :attr:`~.SobolAnalysis.output_variances` or :attr:`~.SobolAnalysis.output_standard_deviations`.
+:meth:`.SobolAnalysis.plot` now displays the variance of the output variable in the title of the graph.

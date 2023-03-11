@@ -71,7 +71,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
-IndicesType = Dict[str, List[Dict[str, ndarray]]]
+FirstOrderIndicesType = Dict[str, List[Dict[str, ndarray]]]
+SecondOrderIndicesType = Dict[str, List[Dict[str, Dict[str, ndarray]]]]
 
 
 class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -244,7 +245,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def compute_indices(
         self, outputs: str | Sequence[str] | None = None
-    ) -> dict[str, IndicesType]:
+    ) -> dict[str, FirstOrderIndicesType]:
         """Compute the sensitivity indices.
 
         Args:
@@ -273,7 +274,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     @abstractmethod
-    def indices(self) -> dict[str, IndicesType]:
+    def indices(self) -> dict[str, FirstOrderIndicesType]:
         """The sensitivity indices.
 
         With the following structure:
@@ -305,7 +306,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     @abstractmethod
-    def main_indices(self) -> IndicesType:
+    def main_indices(self) -> FirstOrderIndicesType:
         """The main sensitivity indices.
 
         With the following structure:
@@ -889,8 +890,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @staticmethod
     def standardize_indices(
-        indices: IndicesType,
-    ) -> IndicesType:
+        indices: FirstOrderIndicesType,
+    ) -> FirstOrderIndicesType:
         """Standardize the sensitivity indices for each output component.
 
         Each index is replaced by its absolute value divided by the largest index.
