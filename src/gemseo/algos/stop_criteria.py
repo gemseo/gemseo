@@ -129,7 +129,7 @@ def is_f_tol_reached(
         for f_value in [database.get_f_of_x(obj_name, x_val) for x_val in x_values]
         if f_value is not None
     ]
-    if not f_values:
+    if len(f_values) < n_x:
         return False
 
     f_average = average(f_values)
