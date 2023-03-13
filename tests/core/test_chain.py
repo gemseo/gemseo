@@ -81,16 +81,19 @@ class Testmdochain(unittest.TestCase):
 
     def test_parallel_chain_combinatorial_thread(self):
         for perm in permutations(range(4)):
-            disciplines = self.get_disciplines_list(perm)
-            chain = MDOParallelChain(disciplines)
-            chain.linearize(force_all=True)
-            ok = chain.check_jacobian(
-                chain.default_inputs,
-                derr_approx="complex_step",
-                step=1e-30,
-                threshold=1e-6,
-            )
-            assert ok
+            for use_deep_copy in [True, False]:
+                disciplines = self.get_disciplines_list(perm)
+                chain = MDOParallelChain(
+                    disciplines, use_threading=True, use_deep_copy=use_deep_copy
+                )
+                chain.linearize(force_all=True)
+                ok = chain.check_jacobian(
+                    chain.default_inputs,
+                    derr_approx="complex_step",
+                    step=1e-30,
+                    threshold=1e-6,
+                )
+                assert ok
 
     @pytest.mark.skip_under_windows
     def test_parallel_chain_combinatorial_mprocess(self):

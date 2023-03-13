@@ -23,7 +23,6 @@ Can be both sequential or parallel execution processes.
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
@@ -43,6 +42,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
+from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
@@ -322,6 +322,7 @@ class MDOParallelChain(MDODiscipline):
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
         use_threading: bool = True,
         n_processes: int | None = None,
+        use_deep_copy: bool = False,
     ) -> None:
         """
         Args:
@@ -341,6 +342,7 @@ class MDOParallelChain(MDODiscipline):
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
                 If None, uses the number of disciplines.
+            use_deep_copy: Whether to deepcopy the discipline input data.
 
         Note:
             The actual number of processes could be lower than ``n_processes``
@@ -350,6 +352,7 @@ class MDOParallelChain(MDODiscipline):
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
+        self._use_deep_copy = use_deep_copy
         self.initialize_grammars()
         if n_processes is None:
             n_processes = len(self.disciplines)
@@ -390,7 +393,15 @@ class MDOParallelChain(MDODiscipline):
         # The outputs of a discipline may be a coupling, and shall therefore
         # not be passed as input of another since the execution are assumed
         # to be independent here
-        return [deepcopy(self.local_data) for _ in range(len(self.disciplines))]
+        if self._use_deep_copy:
+            return [
+                DisciplineData(deepcopy_dict_of_arrays(self.local_data))
+                for _ in range(len(self._disciplines))
+            ]
+        else:
+            for value in self.local_data.values():
+                value.flags.writeable = False
+            return [self.local_data] * len(self._disciplines)
 
     def _run(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
