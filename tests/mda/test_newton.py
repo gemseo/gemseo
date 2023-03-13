@@ -59,7 +59,7 @@ def test_raphson_sobieski(coupl_scaling):
     ]
     mda = MDANewtonRaphson(disciplines)
     mda.set_residuals_scaling_options(scale_residuals_with_coupling_size=coupl_scaling)
-    mda.matrix_type = JacobianAssembly.SPARSE
+    mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
     mda.reset_history_each_run = True
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
@@ -98,7 +98,7 @@ def test_raphson_sobieski_sparse():
         SobieskiMission(),
     ]
     mda = MDANewtonRaphson(disciplines)
-    mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
+    mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
@@ -124,7 +124,7 @@ def test_wrong_name():
 def test_raphson_sellar_sparse_complex():
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
-    mda.matrix_type = JacobianAssembly.SPARSE
+    mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
     mda.execute()
 
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
@@ -170,7 +170,7 @@ def test_raphson_sellar():
 def test_raphson_sellar_linop():
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
-    mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
+    mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 

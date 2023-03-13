@@ -458,8 +458,8 @@ class MDAQuasiNewton(MDARoot):
                     size = list(discipline.jac[coupling].values())[0].shape[0]
                     n_couplings += size
                 self.assembly.compute_sizes(couplings, couplings, couplings)
-                dresiduals = self.assembly.dres_dvar(
-                    couplings, couplings, n_couplings, n_couplings
+                dresiduals = self.assembly.assemble_jacobian(
+                    couplings, couplings, n_couplings, n_couplings, is_residual=True
                 ).todense()
                 return dresiduals
 

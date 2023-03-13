@@ -204,7 +204,7 @@ def test_residuals_mda(res_disciplines):
 )
 @pytest.mark.parametrize(
     "matrix_type",
-    [JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR],
+    JacobianAssembly.JacobianType,
 )
 def test_adjoint(res_disciplines, mode, matrix_type):
     """Test the coupled adjoint with residual variables in disciplines."""

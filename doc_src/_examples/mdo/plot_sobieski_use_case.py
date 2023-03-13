@@ -249,21 +249,21 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # These modes are automatically selected by |g| to minimize the CPU time. Yet, they
 # can be forced on demand in each :ref:`mda`:
 scenario.formulation.mda.linearization_mode = JacobianAssembly.DIRECT_MODE
-scenario.formulation.mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
+scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
 ##############################################################################
 # The method used to solve the adjoint or direct linear problem may also be selected.
 # |g| can either assemble a sparse residual Jacobian matrix of the :ref:`mda` from the
 # disciplines matrices. This has the advantage that LU factorizations may be stored to
 # solve multiple right hand sides problems in a cheap way. But this requires
 # extra memory.
-scenario.formulation.mda.matrix_type = JacobianAssembly.SPARSE
+scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
 scenario.formulation.mda.use_lu_fact = True
 ##############################################################################
 # Altenatively, |g| can implicitly create a matrix-vector product operator,
 # which is sufficient for GMRES-like solvers. It avoids to create an additional
 # data structure. This can also be mandatory if the disciplines do not provide
 # full Jacobian matrices but only matrix-vector product operators.
-scenario.formulation.mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
+scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
 ##############################################################################
 # The next table shows the performance of each method for solving the Sobieski use case
 # with :ref:`MDF <mdf_formulation>` and :ref:`IDF <idf_formulation>` formulations.

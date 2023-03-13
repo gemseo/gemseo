@@ -123,7 +123,7 @@ class MDA(MDODiscipline):
     all_couplings: list[str]
     """The names of the coupling variables."""
 
-    matrix_type: str
+    matrix_type: JacobianAssembly.JacobianType
     """The type of the matrix."""
 
     use_lu_fact: bool
@@ -204,7 +204,7 @@ class MDA(MDODiscipline):
         self.strong_couplings = self.coupling_structure.strong_couplings
         self.all_couplings = self.coupling_structure.all_couplings
         self._input_couplings = []
-        self.matrix_type = JacobianAssembly.SPARSE
+        self.matrix_type = JacobianAssembly.JacobianType.MATRIX
         self.use_lu_fact = use_lu_fact
         # By default don't use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0

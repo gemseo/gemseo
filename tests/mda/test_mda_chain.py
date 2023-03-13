@@ -228,9 +228,7 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
     assert out_1["obj"] == out_2["obj"]
 
 
-@pytest.mark.parametrize(
-    "matrix_type", [JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR]
-)
+@pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
 @pytest.mark.parametrize(
     "linearization_mode",
     [
