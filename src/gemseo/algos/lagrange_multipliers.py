@@ -101,6 +101,7 @@ class LagrangeMultipliers:
                 on which Lagrange multipliers shall be computed.
         """  # noqa: D205, D212, D415
         self.opt_problem = opt_problem
+        self.opt_problem.reset(database=False, design_space=False, preprocessing=False)
         self.active_lb_names = []
         self.active_ub_names = []
         self.active_ineq_names = []

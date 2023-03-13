@@ -1,0 +1,1 @@
+The stopping criteria for the objective function variation are only activated if the objective value is stored in the database in the last iterations.
