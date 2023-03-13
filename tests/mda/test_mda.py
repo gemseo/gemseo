@@ -78,7 +78,7 @@ def test_input_couplings():
 def test_jacobian(sellar_mda, sellar_inputs):
     """Check the Jacobian computation."""
     sellar_mda.use_lu_fact = True
-    sellar_mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
+    sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     with pytest.raises(
         ValueError, match="Unsupported LU factorization for LinearOperators"
     ):
