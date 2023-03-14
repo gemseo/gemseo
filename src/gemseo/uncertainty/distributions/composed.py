@@ -82,6 +82,7 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Sequence
 
@@ -92,7 +93,6 @@ from numpy import ndarray
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.base_enum import get_names
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)

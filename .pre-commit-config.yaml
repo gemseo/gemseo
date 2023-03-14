@@ -42,21 +42,17 @@ repos:
       args: [
         --application-directories,
         src,
-        --py37-plus,
+        --py38-plus,
         --add-import,
         "from __future__ import annotations",
-        --replace-import,
-        "typing=gemseo.utils.python_compatibility:Final"
       ]
     - id: reorder-python-imports
       name: reorder python imports out of src
       exclude: ^src
       args: [
-        --py37-plus,
+        --py38-plus,
         --add-import,
         "from __future__ import annotations",
-        --replace-import,
-        "typing=gemseo.utils.python_compatibility:Final"
       ]
 
 - repo: https://github.com/myint/docformatter
@@ -75,7 +71,7 @@ repos:
   rev: v3.3.1
   hooks:
     - id: pyupgrade
-      args: [--py37-plus]
+      args: [--py38-plus]
 
 - repo: https://github.com/psf/black
   rev: 23.1.0

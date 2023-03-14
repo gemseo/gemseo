@@ -36,7 +36,6 @@ from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
-from gemseo.utils.compatibility.python import get_mock_method_call_args
 from gemseo.utils.testing import image_comparison
 from numpy import allclose
 from numpy import array
@@ -268,7 +267,7 @@ def test_plot_save(
             file_extension=file_extension,
         )
 
-        args = get_mock_method_call_args(mock_method)
+        args = mock_method.call_args.args
         if isinstance(expected, Path):
             assert args[2] == expected
         else:

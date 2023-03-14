@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import logging
 import re
-import sys
 from unittest import mock
 
 import pytest
@@ -100,7 +99,6 @@ def test_correlation_main_method(correlation, caplog):
     assert log_message == ("Use PRCC indices as main indices.")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize("baseline_images", [["plot"]])
 @pytest.mark.parametrize("output", ["y1", ("y1", 0)])
 @image_comparison(None)
@@ -110,7 +108,6 @@ def test_correlation_plot(correlation, baseline_images, output):
     correlation.plot(output, save=False, show=False)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize("baseline_images", [(["plot_radar"])])
 @image_comparison(None)
 def test_correlation_plot_radar(correlation, baseline_images):

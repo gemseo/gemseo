@@ -27,13 +27,13 @@ from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import Final
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.utils.compatibility.python import Final
 
 
 class MLAlgoFactory:

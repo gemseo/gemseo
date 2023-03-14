@@ -1,1 +1,4 @@
-:attr:`.SobolAnalysis.AVAILABLE_ALGOS` no longer exists; use the ``enum`` :attr:`.SobolAnalysis.Algorithm` instead.
+Removed python 3.7 support.
+
+API changes:
+- :attr:`.SobolAnalysis.AVAILABLE_ALGOS` no longer exists; use the ``enum`` :attr:`.SobolAnalysis.Algorithm` instead.

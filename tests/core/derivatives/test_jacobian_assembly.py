@@ -36,7 +36,6 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.utils.compatibility.python import get_mock_method_call_args
 from numpy import ndarray
 from numpy import random
 from numpy.random import randn
@@ -230,7 +229,7 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
             == expected
         )
 
-        assert get_mock_method_call_args(mock_method)[2] == expected
+        assert mock_method.call_args.args[2] == expected
 
 
 def test_lu_convergence_warning(assembly, caplog):

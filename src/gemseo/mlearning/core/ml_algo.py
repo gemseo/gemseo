@@ -104,6 +104,7 @@ from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Mapping
 from typing import MutableMapping
 from typing import Optional
@@ -116,7 +117,6 @@ from numpy import ndarray
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFactory
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString

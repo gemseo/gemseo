@@ -18,8 +18,7 @@ from __future__ import annotations
 import webbrowser
 from pathlib import Path
 from typing import Any
-
-from gemseo.utils.compatibility.python import Final
+from typing import Final
 
 
 class XDSM:

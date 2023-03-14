@@ -723,9 +723,7 @@ Documentation and examples
 Software improvements
 ~~~~~~~~~~~~~~~~~~~~~
 
-- It is now possible to execute DOEScenarios in parallel on Windows. For Python versions < 3.7 and
-  Numpy < 1.20.0, there is a known issue where one of the processes gets hung randomly, updating your
-  environment is strongly recommended.
+- It is now possible to execute DOEScenarios in parallel on Windows.
   This feature does not support the use of MemoryFullCache or HDF5Cache on Windows.
   The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
   it may also print the conclusion of an iteration ahead of another one that was concluded first. This

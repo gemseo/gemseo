@@ -15,11 +15,11 @@
 """Compatibility between different versions of openturns."""
 from __future__ import annotations
 
+from typing import Final
+
 import openturns
 from numpy import ndarray
 from packaging import version
-
-from gemseo.utils.compatibility.python import Final
 
 OT_VERSION: Final[version.Version] = version.parse(openturns.__version__)
 

@@ -21,7 +21,6 @@ from unittest import mock
 
 import gemseo.utils.xdsm as xdsm_module
 import pytest
-from gemseo.utils.compatibility.python import get_mock_method_call_args
 from gemseo.utils.xdsm import XDSM
 
 
@@ -56,7 +55,7 @@ def test_visualize(xdsm):
     """Check the visualization of a XDSM."""
     with mock.patch.object(xdsm_module, "webbrowser") as mock_object:
         xdsm.visualize()
-        assert get_mock_method_call_args(mock_object.open) == ("file://xdsm_path",)
+        assert mock_object.open.call_args.args == ("file://xdsm_path",)
 
 
 def test_visualize_without_html_file(xdsm_without_html_file):

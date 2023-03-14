@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Final
 from typing import Sequence
 
 from numpy import arange
@@ -27,7 +28,6 @@ from numpy import newaxis
 
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

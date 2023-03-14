@@ -15,8 +15,9 @@
 """A Enum handling the reasons why an algorithm is unsuited for a problem."""
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.compatibility.python import Final
 
 _LINEAR_SOLVER_TEMPLATE: Final[str] = "the left-hand side of the problem is not {}"
 """The template of the reason why an algorithm is unsuited for a problem."""

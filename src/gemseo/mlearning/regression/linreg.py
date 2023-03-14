@@ -52,6 +52,7 @@ linear_model.html>`_.
 from __future__ import annotations
 
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 
 from numpy import array
@@ -70,7 +71,6 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 

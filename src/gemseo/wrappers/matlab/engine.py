@@ -69,7 +69,7 @@ class ParallelType(Enum):
     CLOUD = "MATLAB Parallel Cloud"
 
 
-@lru_cache()
+@lru_cache
 def get_matlab_engine(
     workspace_name: str = "matlab",
 ) -> MatlabEngine:

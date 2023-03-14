@@ -26,12 +26,12 @@ from __future__ import annotations
 import logging
 import os
 import pickle
+from typing import SupportsIndex
 
 from matplotlib import pyplot as plt
 from numpy import arange
 from numpy import where
 from numpy.random import rand
-from typing_extensions import SupportsIndex
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.mdo_scenario import MDOScenario

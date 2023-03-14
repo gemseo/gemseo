@@ -22,6 +22,7 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any
+from typing import Final
 from typing import Generator
 
 import matplotlib.pyplot as plt
@@ -30,7 +31,6 @@ import pytest
 from packaging import version
 
 from gemseo.core.factory import Factory
-from gemseo.utils.compatibility.python import Final
 
 __ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 

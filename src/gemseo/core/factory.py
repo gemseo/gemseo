@@ -25,13 +25,13 @@ import logging
 import os
 import pkgutil
 import sys
+from importlib import metadata
 from inspect import isabstract
 from typing import Any
 from typing import Iterable
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.compatibility.python import importlib_metadata
 from gemseo.utils.singleton import _Multiton
 from gemseo.utils.singleton import Multiton
 from gemseo.utils.source_parsing import get_default_options_values
@@ -126,9 +126,7 @@ class Factory(Multiton):
         sys_path.pop(0)
 
         # Import from the setuptools entry points.
-        for entry_point in importlib_metadata.entry_points().get(
-            self.PLUGIN_ENTRY_POINT, []
-        ):
+        for entry_point in metadata.entry_points().get(self.PLUGIN_ENTRY_POINT, []):
             module_name = entry_point.value
             self.__import_modules_from(module_name)
             module_names += [module_name]

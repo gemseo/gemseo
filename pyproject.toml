@@ -21,7 +21,7 @@ markers = [
     "doc_examples: marks docs examples tests"
 ]
 [tool.black]
-target-version = ['py37']
+target-version = ['py38']
 
 [tool.towncrier]
 package = "gemseo"

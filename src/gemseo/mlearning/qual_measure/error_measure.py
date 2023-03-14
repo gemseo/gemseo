@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from copy import deepcopy
+from typing import Final
 from typing import Sequence
 
 from numpy import arange
@@ -38,7 +39,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.qual_measure.quality_measure import MeasureType
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 

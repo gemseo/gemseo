@@ -102,6 +102,7 @@ from pathlib import Path
 from typing import Any
 from typing import ClassVar
 from typing import Collection
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -125,7 +126,6 @@ from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable

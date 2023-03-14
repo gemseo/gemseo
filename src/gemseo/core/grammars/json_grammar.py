@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import Iterator
 from typing import List
@@ -48,7 +49,6 @@ from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.core.grammars.simple_grammar import NamesToTypes
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)

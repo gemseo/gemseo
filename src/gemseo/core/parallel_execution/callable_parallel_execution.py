@@ -29,12 +29,12 @@ import time
 import traceback
 from typing import Any
 from typing import Callable
+from typing import Final
 from typing import Sequence
 from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 
 IS_WIN: Final[bool] = os.name == "nt"

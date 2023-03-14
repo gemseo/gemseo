@@ -29,13 +29,14 @@ generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
 from __future__ import annotations
 
+from typing import Final
+
 from numpy import ndarray
 from sklearn.cross_decomposition import PLSRegression
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.utils.compatibility.python import Final
 
 
 class PLS(DimensionReduction):

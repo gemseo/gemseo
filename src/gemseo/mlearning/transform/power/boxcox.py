@@ -35,8 +35,9 @@ sklearn.preprocessing.PowerTransformer.html>`_.
 """
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.mlearning.transform.power.power import Power
-from gemseo.utils.compatibility.python import Final
 
 
 class BoxCox(Power):

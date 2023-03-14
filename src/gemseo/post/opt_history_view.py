@@ -24,6 +24,7 @@ from __future__ import annotations
 import logging
 import sys
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import MutableSequence
 from typing import Sequence
@@ -60,7 +61,6 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)

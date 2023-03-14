@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import MutableMapping
@@ -39,7 +40,6 @@ from packaging import version
 
 from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import MultiLineString
 
 OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]

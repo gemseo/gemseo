@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Sequence
 from typing import Sized
@@ -47,7 +48,6 @@ from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.string_tools import pretty_str

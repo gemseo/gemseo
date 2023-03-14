@@ -60,6 +60,7 @@ from __future__ import annotations
 import logging
 import operator
 from collections import namedtuple
+from functools import singledispatchmethod
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -89,7 +90,6 @@ from gemseo.core.cache import AbstractCache
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.factory import DatasetPlotFactory
-from gemseo.utils.compatibility.python import singledispatchmethod
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import MultiLineString

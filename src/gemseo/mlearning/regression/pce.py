@@ -86,6 +86,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 
 from numpy import array
@@ -118,7 +119,6 @@ from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
