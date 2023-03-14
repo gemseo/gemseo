@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
@@ -46,7 +45,6 @@ def test_get_constraints():
     assert len(cstr) == 1
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "obj_relative,baseline_images",
     [
@@ -92,7 +90,6 @@ def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
     post.figures
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "problem_path,baseline_images",
     [
@@ -195,7 +192,6 @@ def test_common_scenario(
     opt.execute(save=False)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "case,baseline_images",
     [

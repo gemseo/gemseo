@@ -167,10 +167,7 @@ class Database:
     @property
     def last_item(self) -> DatabaseValueType:
         """The last item stored in the database."""
-        if sys.version_info < (3, 8, 0):
-            return next(reversed(list(self.__dict.values())))
-        else:
-            return next(reversed(self.__dict.values()))
+        return next(reversed(self.__dict.values()))
 
     def __setitem__(
         self,

@@ -44,20 +44,7 @@ from gemseo.utils.compatibility.openturns import get_eigenvalues
 
 
 class KLSVD(DimensionReduction):
-    """The Karhunen-Loève SVD algorithm.
-
-    Based on OpenTURNS.
-
-    Warnings:
-        Under Python 3.7,
-        |g| requires openturns 1.19 which removes the non-significant components,
-        whatever the value of ``n_components`` passed at instantiation.
-        Under Python 3.8 and above,
-        the number of components is equal to ``n_components`` if not ``None``,
-        otherwise to the mesh size.
-    """
-
-    # Remove the Warnings block once python 3.7 removed.
+    """The Karhunen-Loève SVD algorithm based on OpenTURNS."""
 
     __HALKO2010 = "halko2010"
     __HALKO2011 = "halko2011"

@@ -44,6 +44,7 @@ from time import time
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import List
 from typing import Union
 
@@ -71,7 +72,6 @@ from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]

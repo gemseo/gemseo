@@ -23,13 +23,13 @@ import re
 import shutil
 import subprocess
 import sys
+from importlib import metadata
 from pathlib import Path
 
 import pytest
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.utils.compatibility.python import importlib_metadata
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
@@ -115,12 +115,7 @@ def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
     # This test requires to use subprocess such that python can
     # be called from a temporary directory that will be automatically
     # inserted first in sys.path.
-    if sys.version_info < (3, 8):
-        # dirs_exist_ok appeared in python 3.8
-        tmp_path.rmdir()
-        shutil.copytree(DATA, tmp_path)
-    else:
-        shutil.copytree(DATA, tmp_path, dirs_exist_ok=True)
+    shutil.copytree(DATA, tmp_path, dirs_exist_ok=True)
 
     # Create a module that shall fail to load the plugin.
     code = """
@@ -172,7 +167,7 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
     def entry_points():
         return {Factory.PLUGIN_ENTRY_POINT: [DummyEntryPoint]}
 
-    monkeypatch.setattr(importlib_metadata, "entry_points", entry_points)
+    monkeypatch.setattr(metadata, "entry_points", entry_points)
     monkeypatch.syspath_prepend(DATA / "gemseo_dummy_plugins")
 
     # There could be more classes available with the plugins

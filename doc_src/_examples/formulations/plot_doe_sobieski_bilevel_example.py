@@ -170,9 +170,6 @@ system_scenario.xdsmize(save_html=False)
 # .. warning::
 #    The multiprocessing option has some limitations on Windows.
 #    Due to problems with sphinx, we disable it in this example.
-#    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
-#    randomly during execution. It is strongly recommended to update your
-#    environment to avoid this problem.
 #    The features :class:`.MemoryFullCache` and :class:`.HDF5Cache` are not
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method

@@ -23,6 +23,7 @@ from __future__ import annotations
 import logging
 from ast import literal_eval
 from pathlib import Path
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -36,7 +37,6 @@ from gemseo.api import get_available_formulations
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str

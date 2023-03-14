@@ -31,6 +31,7 @@ generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 from __future__ import annotations
 
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 
 from numpy import ndarray
@@ -41,7 +42,6 @@ from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.utils.compatibility.python import Final
 
 
 class RandomForestClassifier(MLClassificationAlgo):

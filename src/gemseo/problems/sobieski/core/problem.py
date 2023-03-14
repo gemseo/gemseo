@@ -33,6 +33,7 @@ from collections import namedtuple
 from pathlib import Path
 from random import uniform
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Sequence
 
@@ -49,7 +50,6 @@ from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
-from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

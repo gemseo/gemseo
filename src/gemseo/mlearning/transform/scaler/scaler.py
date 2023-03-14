@@ -44,6 +44,7 @@ This method has to be overloaded.
 from __future__ import annotations
 
 import logging
+from typing import Final
 
 from numpy import atleast_1d
 from numpy import diag
@@ -53,7 +54,6 @@ from numpy import tile
 
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
-from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

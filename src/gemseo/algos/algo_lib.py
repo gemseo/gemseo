@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from typing import ClassVar
+from typing import Final
 from typing import Mapping
 from typing import MutableMapping
 
@@ -36,7 +37,6 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_str
 

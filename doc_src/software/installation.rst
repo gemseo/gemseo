@@ -74,7 +74,7 @@ in an anaconda environment named *gemseo* for Python 3.9 with
 
     conda create -c conda-forge -n gemseo python=3.9 gemseo
 
-You can change the Python version to 3.7, 3.8 or 3.10.
+You can change the Python version to 3.8 or 3.10.
 
 Install without internet access
 *******************************

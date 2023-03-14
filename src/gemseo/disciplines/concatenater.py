@@ -19,6 +19,7 @@
 """The concatenation of several input variables into a single one."""
 from __future__ import annotations
 
+from itertools import accumulate
 from typing import Sequence
 
 from numpy import concatenate
@@ -26,7 +27,6 @@ from numpy import eye
 from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.compatibility.python import accumulate
 
 
 class Concatenater(MDODiscipline):

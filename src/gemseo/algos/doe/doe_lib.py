@@ -27,6 +27,7 @@ from multiprocessing import current_process
 from pathlib import Path
 from typing import Any
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import List
 from typing import MutableMapping
@@ -49,7 +50,6 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
-from gemseo.utils.compatibility.python import Final
 
 LOGGER = logging.getLogger(__name__)
 

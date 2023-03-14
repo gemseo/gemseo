@@ -95,6 +95,7 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from enum import Enum
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -108,7 +109,6 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
-from gemseo.utils.compatibility.python import Final
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str

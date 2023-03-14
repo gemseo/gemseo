@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from argparse import ArgumentParser
+from typing import Final
 
 from base_benchmark import BaseBenchmark
 from data_factory import DataFactory
@@ -26,7 +27,6 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
-from gemseo.utils.compatibility.python import Final
 from numpy.random import seed
 
 
