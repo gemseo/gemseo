@@ -622,6 +622,7 @@ class JacobianAssembly:
 
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
+        # Retrieve states variables and local residuals if provided
         if residual_variables:
             states = list(residual_variables.values())
         else:
@@ -644,6 +645,7 @@ class JacobianAssembly:
         for disc in self.coupling_structure.disciplines:
             if disc.cache is not None and exec_cache_tol is not None:
                 disc.cache_tol = exec_cache_tol
+
             disc.linearize(in_data, force_no_exec=force_no_exec)
 
         # compute the sizes from the Jacobians
@@ -653,7 +655,6 @@ class JacobianAssembly:
         n_residuals = self.compute_dimension(couplings_minimal)
         if residual_variables:
             n_residuals += self.compute_dimension(residual_variables.keys())
-            n_variables += self.compute_dimension(residual_variables.values())
         # compute the partial derivatives of the residuals
         dres_dx = self.assemble_jacobian(
             couplings_and_res, variables, n_residuals, n_variables, is_residual=True
@@ -668,7 +669,7 @@ class JacobianAssembly:
                 [fun], variables, function_size, n_variables
             )
             dfun_dy[fun] = self.assemble_jacobian(
-                [fun], couplings_minimal, function_size, n_residuals
+                [fun], couplings_and_res, function_size, n_residuals
             )
 
         mode = self._check_mode(mode, n_variables, n_functions)
