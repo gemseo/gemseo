@@ -41,6 +41,5 @@ extended-test:
     matrix:
       - TAG: !reference [.tags]
         TOX_ENV_NAME:
-          - py37-coverage
           - py38-coverage
           - py310-coverage
