@@ -1379,13 +1379,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                     continue
 
                 if j_mat.shape != expected_shape:
-                    msg = (
-                        "Jacobian matrix of discipline {} d{}/d{}"
-                        "is not of the right shape.\n "
-                        "Expected: ({},{}), got: {}"
+                    raise ValueError(
+                        f"The shape {j_mat.shape} "
+                        f"of the Jacobian matrix d{j_o}/d{j_i} "
+                        f"of the discipline {self.name} "
+                        "does not match "
+                        f"(output_size, input_size)=({n_out_j}, {n_in_j})."
                     )
-                    data = [self.name, j_o, j_i, n_out_j, n_in_j, j_mat.shape]
-                    raise ValueError(msg.format(*data))
 
         # Discard imaginary part of Jacobian
         for output_jacobian in self.jac.values():
