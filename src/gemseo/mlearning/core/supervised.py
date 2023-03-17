@@ -90,11 +90,11 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSaveObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
+from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 

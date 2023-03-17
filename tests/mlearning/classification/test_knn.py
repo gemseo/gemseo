@@ -24,7 +24,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model
 from gemseo.mlearning.classification.knn import KNNClassifier
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy import array_equal

@@ -26,9 +26,9 @@ from __future__ import annotations
 
 from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.qual_measure.f1_measure import F1Measure
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
+from gemseo.mlearning.quality_measures.f1_measure import F1Measure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 
 # %%
 # In this example,

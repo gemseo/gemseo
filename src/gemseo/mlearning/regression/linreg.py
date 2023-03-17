@@ -68,7 +68,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
+from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays

@@ -55,9 +55,9 @@ from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
-from gemseo.mlearning.qual_measure.quality_measure import (
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
+from gemseo.mlearning.quality_measures.quality_measure import (
     OptionType as MeasureOptionType,
 )
 

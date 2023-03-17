@@ -28,9 +28,9 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.mlearning.transform.scaler.scaler import Scaler
-from gemseo.mlearning.transform.scaler.standard_scaler import StandardScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 from numpy import linspace
 from numpy import max as npmax
 from numpy import mean

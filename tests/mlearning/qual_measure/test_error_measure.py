@@ -22,9 +22,9 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.qual_measure.r2_measure import R2Measure
-from gemseo.mlearning.qual_measure.rmse_measure import RMSEMeasure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.r2_measure import R2Measure
+from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset

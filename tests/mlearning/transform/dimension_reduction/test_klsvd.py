@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
+from gemseo.mlearning.transformers.dimension_reduction.klsvd import KLSVD
 from numpy import array
 from numpy import linspace
 from numpy import pi

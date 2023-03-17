@@ -37,8 +37,8 @@ from gemseo.core.factory import Factory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.cluster.factory import ClusteringModelFactory
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
+from gemseo.mlearning.clustering.factory import ClusteringModelFactory
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory

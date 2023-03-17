@@ -48,7 +48,7 @@ from gemseo.mlearning.api import import_mlearning_model
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import arange
 from numpy import array
 from numpy import atleast_2d

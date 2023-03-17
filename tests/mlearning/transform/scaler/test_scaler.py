@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from numpy import allclose
 from numpy import arange
 from numpy import array

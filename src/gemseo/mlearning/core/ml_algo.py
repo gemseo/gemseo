@@ -34,7 +34,7 @@ dedicated to the detection of patterns in unlabeled data.
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.unsupervised`,
-   :mod:`~gemseo.mlearning.cluster.cluster`
+   :mod:`~gemseo.mlearning.clustering.clustering`
 
 When data can be separated into at least two categories by a human,
 supervised learning can start with classification
@@ -81,8 +81,8 @@ in such a way that the data properties have the same order of magnitude.
 
 .. seealso::
 
-   :mod:`~gemseo.mlearning.qual_measure.quality_measure`,
-   :mod:`~gemseo.mlearning.transform.transformer`
+   :mod:`~gemseo.mlearning.quality_measures.quality_measure`,
+   :mod:`~gemseo.mlearning.transformers.transformer`
 
 Lastly,
 a machine learning algorithm often depends on hyperparameters
@@ -115,8 +115,8 @@ from typing import Union
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.transform.transformer import Transformer
-from gemseo.mlearning.transform.transformer import TransformerFactory
+from gemseo.mlearning.transformers.transformer import Transformer
+from gemseo.mlearning.transformers.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString

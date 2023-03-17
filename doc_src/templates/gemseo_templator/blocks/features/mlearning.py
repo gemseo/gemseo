@@ -32,7 +32,7 @@ block = Block(
         WebLink("regression", url="machine_learning/regression/regression_models.html"),
         WebLink(
             "quality measures",
-            url="machine_learning/qual_measure/quality_measures.html",
+            url="machine_learning/quality_measures/quality_measures.html",
         ),
         WebLink(
             "data transformation", url="machine_learning/transform/transformer.html"

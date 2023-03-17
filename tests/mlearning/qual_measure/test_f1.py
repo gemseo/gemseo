@@ -24,7 +24,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.knn import KNNClassifier
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.f1_measure import F1Measure
+from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 from numpy import array

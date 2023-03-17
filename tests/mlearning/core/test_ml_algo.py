@@ -25,10 +25,10 @@ from pathlib import Path
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.kmeans import KMeans
+from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 from numpy import array

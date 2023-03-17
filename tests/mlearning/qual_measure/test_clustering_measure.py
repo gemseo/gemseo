@@ -17,10 +17,12 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
-from gemseo.mlearning.qual_measure.cluster_measure import MLClusteringMeasure
-from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClusteringMeasure
+from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
+from gemseo.mlearning.quality_measures.cluster_measure import (
+    MLPredictiveClusteringMeasure,
+)
 from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import array
 

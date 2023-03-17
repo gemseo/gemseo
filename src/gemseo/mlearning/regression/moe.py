@@ -79,18 +79,20 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.core.supervised import SavedObjectType
-from gemseo.mlearning.qual_measure.f1_measure import F1Measure
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
-from gemseo.mlearning.qual_measure.quality_measure import OptionType as EvalOptionType
-from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
+from gemseo.mlearning.quality_measures.f1_measure import F1Measure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import (
+    OptionType as EvalOptionType,
+)
+from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array

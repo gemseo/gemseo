@@ -19,7 +19,7 @@
 """Test dimension reduction transformer module."""
 from __future__ import annotations
 
-from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
+from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.pytest_conftest import concretize_classes

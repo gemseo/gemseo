@@ -25,8 +25,8 @@ from unittest.mock import Mock
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import array
 from numpy import array_equal

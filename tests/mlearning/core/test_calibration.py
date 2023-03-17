@@ -24,7 +24,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 from numpy import allclose
 from numpy import array

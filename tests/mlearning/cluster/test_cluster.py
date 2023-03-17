@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
+from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from numpy import arange
 
 

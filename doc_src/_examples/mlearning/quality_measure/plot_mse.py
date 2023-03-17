@@ -34,7 +34,7 @@ from gemseo.api import configure_logger
 from gemseo.api import create_dataset
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from numpy import arange
 from numpy import argmin
 from numpy import hstack
