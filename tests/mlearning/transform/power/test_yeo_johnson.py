@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.power.yeo_johnson import YeoJohnson
+from gemseo.mlearning.transformers.power.yeo_johnson import YeoJohnson
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray

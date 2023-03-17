@@ -24,11 +24,11 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
-from gemseo.mlearning.cluster.kmeans import KMeans
+from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.moe import MOERegressor
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from numpy import allclose
 from numpy import array
 from numpy import hstack

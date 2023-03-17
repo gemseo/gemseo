@@ -28,8 +28,8 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
-from gemseo.mlearning.transform.pipeline import Pipeline
-from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.pipeline import Pipeline
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from numpy import allclose
 from numpy import linspace
 from numpy import matmul

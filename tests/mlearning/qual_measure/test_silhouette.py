@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.kmeans import KMeans
-from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
+from gemseo.mlearning.clustering.kmeans import KMeans
+from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from numpy import arange
 
 

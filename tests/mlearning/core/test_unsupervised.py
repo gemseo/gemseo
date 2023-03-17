@@ -23,7 +23,7 @@ from __future__ import annotations
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import arange
 

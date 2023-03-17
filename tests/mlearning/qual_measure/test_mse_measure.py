@@ -26,10 +26,10 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.qual_measure.rmse_measure import RMSEMeasure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import allclose
 

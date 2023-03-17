@@ -27,9 +27,9 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.transform.dimension_reduction.pca import PCA
-from gemseo.mlearning.transform.dimension_reduction.pls import PLS
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
+from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from sklearn.linear_model import ElasticNet

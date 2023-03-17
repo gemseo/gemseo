@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.dimension_reduction.pca import PCA
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray

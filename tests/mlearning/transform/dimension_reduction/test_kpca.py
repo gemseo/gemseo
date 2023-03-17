@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.dimension_reduction.kpca import KPCA
+from gemseo.mlearning.transformers.dimension_reduction.kpca import KPCA
 from numpy import linspace
 from numpy import ndarray
 

@@ -25,7 +25,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.rbf import RBFRegressor

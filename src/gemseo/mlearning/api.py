@@ -31,12 +31,12 @@ from pathlib import Path
 from gemseo.api import _get_schema
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
-from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
+from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 LOGGER = logging.getLogger(__name__)
 
@@ -107,7 +107,7 @@ def get_clustering_models() -> list[str]:
     get_clustering_options
     import_clustering_model
     """
-    from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
     return ClusteringModelFactory().models
 
@@ -248,7 +248,7 @@ def create_clustering_model(
     get_clustering_options
     import_clustering_model
     """
-    from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
     return ClusteringModelFactory().create(
         name, data=data, transformer=transformer, **parameters
@@ -330,7 +330,7 @@ def import_clustering_model(directory: str | Path) -> MLClusteringAlgo:
     get_clustering_models
     get_clustering_options
     """
-    from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
     return ClusteringModelFactory().load(directory)
 
@@ -438,7 +438,7 @@ def get_clustering_options(
     get_clustering_models
     import_clustering_model
     """
-    from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
     return _get_schema(
         ClusteringModelFactory().factory.get_options_grammar(model_name),

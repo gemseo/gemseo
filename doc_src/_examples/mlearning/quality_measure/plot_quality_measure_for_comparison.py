@@ -37,8 +37,8 @@ from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import hstack
 from numpy import linspace
 from numpy import meshgrid

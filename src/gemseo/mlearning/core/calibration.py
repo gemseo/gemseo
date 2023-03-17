@@ -71,7 +71,7 @@ from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 
 MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
 

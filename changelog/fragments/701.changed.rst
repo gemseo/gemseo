@@ -1,0 +1,7 @@
+API changes:
+
+- Rename :mod:`gemseo.mlearning.qual_measure` to :mod:`gemseo.mlearning.quality_measures`.
+- Rename :mod:`gemseo.mlearning.qual_measure.silhouette` to :mod:`gemseo.mlearning.quality_measures.silhouette_measure`.
+- Rename :mod:`gemseo.mlearning.cluster` to :mod:`gemseo.mlearning.clustering`.
+- Rename :mod:`gemseo.mlearning.cluster.cluster` to :mod:`gemseo.mlearning.clustering.clustering`.
+- Rename :mod:`gemseo.mlearning.transform` to :mod:`gemseo.mlearning.transformers`.
