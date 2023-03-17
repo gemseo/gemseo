@@ -188,7 +188,7 @@ The figure below shows an example of such visualization.
    An XDSM visualization generated with |g|
 
 The rendering is handled by the visualization library `XDSMjs <https://github.com/OneraHub/XDSMjs>`_.
-|g| provides a utility class :class:`~gemseo.utils.xdsmizer.XDSMizer` to export the given MDO scenario as a suitable
+|g| provides a utility class :class:`.XDSMizer` to export the given MDO scenario as a suitable
 input json file for this visualization library.
 
 Features

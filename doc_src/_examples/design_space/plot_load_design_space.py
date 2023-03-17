@@ -34,7 +34,7 @@ from gemseo.api import read_design_space
 configure_logger()
 
 
-###############################################################################
+# %%
 # Read a design space from a file
 # -------------------------------
 #
@@ -46,7 +46,7 @@ design_space = read_design_space("design_space.txt")
 print(design_space)
 
 
-###############################################################################
+# %%
 # Filtering the design space
 # --------------------------
 #
@@ -56,7 +56,7 @@ print(design_space)
 design_space.filter(["x1", "x2"])
 print(design_space)
 
-###############################################################################
+# %%
 # Export the design space
 # -----------------------
 #

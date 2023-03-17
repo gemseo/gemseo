@@ -62,7 +62,7 @@ from numpy.random import choice
 configure_logger()
 
 
-##############################################################################
+# %%
 # Load Iris dataset
 # -----------------
 # We can easily load this dataset by means of the
@@ -70,46 +70,46 @@ configure_logger()
 
 iris = load_dataset("IrisDataset")
 
-##############################################################################
+# %%
 # and get some information about it
 print(iris)
 
-##############################################################################
+# %%
 # Manipulate the dataset
 # ----------------------
 # We randomly select 10 samples to display.
 
 shown_samples = choice(iris.length, size=10, replace=False)
 
-##############################################################################
+# %%
 # If the pandas library is installed, we can export the iris dataset to a
 # dataframe and print(it.
 dataframe = iris.export_to_dataframe()
 print(dataframe)
 
-##############################################################################
+# %%
 # We can also easily access the 10 samples previously selected,
 # either globally
 data = iris.get_all_data(False)
 print(data[0][shown_samples, :])
 
-##############################################################################
+# %%
 # or only the parameters:
 parameters = iris.get_data_by_group("parameters")
 print(parameters[shown_samples, :])
 
-##############################################################################
+# %%
 # or only the labels:
 labels = iris.get_data_by_group("labels")
 print(labels[shown_samples, :])
 
-##############################################################################
+# %%
 # Plot the dataset
 # ----------------
 # Lastly, we can plot the dataset in various ways. We will note that the
 # samples are colored according to their labels.
 
-##############################################################################
+# %%
 # Plot scatter matrix
 # ~~~~~~~~~~~~~~~~~~~
 # We can use the :class:`.ScatterMatrix` plot where each non-diagonal block
@@ -118,7 +118,7 @@ print(labels[shown_samples, :])
 # variables, using either an histogram or a kernel-density estimator.
 ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False, show=True)
 
-##############################################################################
+# %%
 # Plot parallel coordinates
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # We can use the
@@ -128,7 +128,7 @@ ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False, show=True)
 # indexed by the variables names and measure the variables values.
 ParallelCoordinates(iris, "specy").execute(save=False, show=True)
 
-##############################################################################
+# %%
 # Plot Andrews curves
 # ~~~~~~~~~~~~~~~~~~~
 # We can use the :class:`.AndrewsCurves` plot
@@ -137,7 +137,7 @@ ParallelCoordinates(iris, "specy").execute(save=False, show=True)
 # and if there is structure in data, it may be visible in the plot.
 AndrewsCurves(iris, "specy").execute(save=False, show=True)
 
-##############################################################################
+# %%
 # Plot Radar
 # ~~~~~~~~~~
 # We can use the :class:`.Radar` plot

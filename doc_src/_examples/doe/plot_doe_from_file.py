@@ -27,30 +27,30 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 
-#######################################################################################
+# %%
 # Let us consider a discipline implementing the function :math:`y=a*b`
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "a*b"})
 
-#######################################################################################
+# %%
 # where :math:`a,b\in\{1,2,\ldots,10\}`:
 design_space = create_design_space()
 design_space.add_variable("a", 1, design_space.INTEGER, 1, 10)
 design_space.add_variable("b", 1, design_space.INTEGER, 1, 10)
 
-#######################################################################################
+# %%
 # We want to evaluate this discipline over this design space
 # by using the input samples defined in the file "doe.txt":
 f = open("doe.txt")
 print(f.read())
 
-#######################################################################################
+# %%
 # In this file,
 # rows are points and columns are variables
 # whose order must be consistent with that of the design space.
 # In this example,
 # we can see that the first input value is defined by :math:`a=1` and :math:`b=2`.
 
-#######################################################################################
+# %%
 # For that, we can create a scenario and execute it with a :class:`.CustomDOE`,
 # with the option "doe_file".
 # We could also change the delimiter (default: ',')  or skip the first rows in the file.
@@ -59,7 +59,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "CustomDOE", "algo_options": {"doe_file": "doe.txt"}})
 
-#######################################################################################
+# %%
 # We can display the content of the database as a dataframe
 # and check the values of the output,
 # which should be the product of :math:`a` and :math:`b`.

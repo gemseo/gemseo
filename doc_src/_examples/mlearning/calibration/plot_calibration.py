@@ -31,19 +31,19 @@ from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 from matplotlib.tri import Triangulation
 
-###############################################################################
+# %%
 # Load the dataset
 # ----------------
 dataset = RosenbrockDataset(opt_naming=False, n_samples=25)
 
-###############################################################################
+# %%
 # Define the measure
 # ------------------
 configure_logger()
 test_dataset = RosenbrockDataset(opt_naming=False)
 measure_options = {"method": "test", "test_data": test_dataset}
 
-###############################################################################
+# %%
 # Calibrate the degree of the polynomial regression
 # -------------------------------------------------
 # Define and execute the calibration
@@ -64,12 +64,12 @@ f_opt = calibration.optimal_criterion
 print("optimal degree:", x_opt["degree"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
 print(calibration.dataset.export_to_dataframe())
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^
 degree = calibration.get_history("degree")
@@ -84,7 +84,7 @@ plt.axvline(x_opt["degree"], color="red", ls="--")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Calibrate the ridge penalty of the polynomial regression
 # --------------------------------------------------------
 # Define and execute the calibration
@@ -106,12 +106,12 @@ f_opt = calibration.optimal_criterion
 print("optimal penalty_level:", x_opt["penalty_level"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
 print(calibration.dataset.export_to_dataframe())
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^^
 penalty_level = calibration.get_history("penalty_level")
@@ -126,7 +126,7 @@ plt.ylabel("quality")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Calibrate the lasso penalty of the polynomial regression
 # --------------------------------------------------------
 # Define and execute the calibration
@@ -149,12 +149,12 @@ f_opt = calibration.optimal_criterion
 print("optimal penalty_level:", x_opt["penalty_level"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
 print(calibration.dataset.export_to_dataframe())
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^^
 penalty_level = calibration.get_history("penalty_level")
@@ -169,7 +169,7 @@ plt.ylabel("quality")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Calibrate the elasticnet penalty of the polynomial regression
 # -------------------------------------------------------------
 # Define and execute the calibration
@@ -193,12 +193,12 @@ print("optimal penalty_level:", x_opt["penalty_level"][0])
 print("optimal l2_penalty_ratio:", x_opt["l2_penalty_ratio"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
 print(calibration.dataset.export_to_dataframe())
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^
 penalty_level = calibration.get_history("penalty_level").flatten()
@@ -224,7 +224,7 @@ ax.set_title("Learning measure")
 
 plt.show()
 
-###############################################################################
+# %%
 # Add an optimization stage
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 calibration_space = DesignSpace()

@@ -38,7 +38,7 @@ from gemseo.api import create_scenario
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create the discipline
 # ---------------------
 # First, we create an :class:`.AnalyticDiscipline`
@@ -49,7 +49,7 @@ discipline = create_discipline(
     "AnalyticDiscipline", expressions={"z": "2*x-3*sin(2*pi*y)"}
 )
 
-###############################################################################
+# %%
 # Create the design space
 # -----------------------
 # Then, we create a :class:`.DesignSpace`
@@ -58,7 +58,7 @@ design_space = create_design_space()
 design_space.add_variable("x", l_b=0.0, u_b=1.0)
 design_space.add_variable("y", l_b=0.0, u_b=1.0)
 
-###############################################################################
+# %%
 # Sample with the default mode
 # ----------------------------
 # Lastly, we create a :class:`.DOEScenario`
@@ -75,7 +75,7 @@ scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
 dataset = scenario.export_to_dataset(opt_naming=False)
 dataset.plot("ScatterMatrix", save=False, show=True)
 
-###############################################################################
+# %%
 # Sample with reverse mode for :math:`y`
 # --------------------------------------
 # We can also change the configuration

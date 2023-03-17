@@ -30,12 +30,12 @@ from gemseo.mlearning.qual_measure.f1_measure import F1Measure
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
 
-##############################################################################
+# %%
 # In this example,
 # we seek to estimate the Rosenbrock function from the :class:`.RosenbrockDataset`.
 dataset = load_dataset("RosenbrockDataset", opt_naming=False)
 
-##############################################################################
+# %%
 # For that purpose,
 # we will use a :class:`.MOERegressor` in an advanced way:
 # we will not set the clustering, classification and regression algorithms
@@ -51,11 +51,10 @@ dataset = load_dataset("RosenbrockDataset", opt_naming=False)
 # --------------
 # First,
 # we initialize a :class:`.MOERegressor` with soft classification
-# by means of the machine learning API function
-# :meth:`~gemseo.mlearning.api.create_regression_model`.
+# by means of the machine learning API function :func:`.create_regression_model`.
 model = create_regression_model("MOERegressor", dataset, hard=False)
 
-##############################################################################
+# %%
 # Clustering
 # ----------
 # Then,
@@ -71,7 +70,7 @@ model.set_clustering_measure(SilhouetteMeasure)
 model.add_clusterer_candidate("KMeans", n_clusters=[2, 3, 4])
 model.add_clusterer_candidate("GaussianMixture", n_components=[3, 4, 5])
 
-##############################################################################
+# %%
 # Classification
 # --------------
 # We also add classification algorithms
@@ -85,7 +84,7 @@ model.set_classification_measure(F1Measure)
 model.add_classifier_candidate("KNNClassifier", n_neighbors=[3, 4, 5])
 model.add_classifier_candidate("RandomForestClassifier", n_estimators=[100])
 
-##############################################################################
+# %%
 # Regression
 # ----------
 # We also add regression algorithms
@@ -97,7 +96,7 @@ model.set_regression_measure(MSEMeasure)
 model.add_regressor_candidate("LinearRegressor")
 model.add_regressor_candidate("RBFRegressor")
 
-##############################################################################
+# %%
 # .. note::
 #
 #    We could also add candidates for some learning stages,
@@ -113,7 +112,7 @@ model.add_regressor_candidate("RBFRegressor")
 # for both clustering, classification and regression steps.
 model.learn()
 
-##############################################################################
+# %%
 # Result
 # ------
 # We can get information on this model,
@@ -125,7 +124,7 @@ model.learn()
 # and a :class:`.RBFRegressor` for each cluster.
 print(model)
 
-##############################################################################
+# %%
 # .. note::
 #
 #    By adding candidates,

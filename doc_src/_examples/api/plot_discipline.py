@@ -41,7 +41,7 @@ from numpy import array
 configure_logger()
 
 
-##########################################################################
+# %%
 # In this example, we will discover the different functions of the API
 # related to disciplines, which are the |g|' objects
 # dedicated to the representation of an input-output process. All classes
@@ -56,7 +56,7 @@ configure_logger()
 
 get_available_disciplines()
 
-##########################################################################
+# %%
 # Create a discipline
 # -------------------
 # The :meth:`~gemseo.api.create_discipline` function can create a
@@ -74,14 +74,14 @@ disciplines = create_discipline(
 print(type(disciplines))
 print(type(disciplines[0]))
 print(isinstance(disciplines[0], MDODiscipline))
-##########################################################################
+# %%
 # This function can also be used to create a particular :class:`.MDODiscipline`
 # from scratch, such as :class:`.AnalyticDiscipline`
 # or :class:`.AutoPyDiscipline`. E.g.
 addition = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
 print(addition.execute({"x1": array([1.0]), "x2": array([2.0])}))
 
-##########################################################################
+# %%
 # Get all inputs/outputs
 # ----------------------
 # The :func:`~gemseo.disciplines.utils.get_all_inputs` function can list all the inputs
@@ -90,14 +90,14 @@ print(addition.execute({"x1": array([1.0]), "x2": array([2.0])}))
 # merging the input data from the discipline grammars. E.g.
 print(get_all_inputs(disciplines))
 
-##########################################################################
+# %%
 # The :func:`~gemseo.disciplines.utils.get_all_outputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
 # argument :code:`recursive` (default: :code:`False`) is :code:`True`,
 # merging the input data from the discipline grammars. E.g.
 print(get_all_outputs(disciplines))
 
-##########################################################################
+# %%
 # Get discipline schemas for inputs, outputs and options
 # ------------------------------------------------------
 #
@@ -105,22 +105,22 @@ print(get_all_outputs(disciplines))
 #   the inputs of a discipline. E.g.
 print(get_discipline_inputs_schema(disciplines[0]))
 
-##########################################################################
+# %%
 # - The function :meth:`~gemseo.api.get_discipline_outputs_schema` returns
 #   the outputs of a discipline. E.g.
 print(get_discipline_outputs_schema(disciplines[0]))
 
-##########################################################################
+# %%
 # - The function :meth:`~gemseo.api.get_discipline_options_schema` returns
 #   the options of a discipline. E.g.
 print(get_discipline_options_schema("SobieskiMission"))
 
-##########################################################################
+# %%
 # - The function :meth:`~gemseo.api.get_discipline_options_defaults`
 #   can get the default option values of a discipline. E.g.
 print(get_discipline_options_defaults("SobieskiMission"))
 
-##########################################################################
+# %%
 # Plot coupling structure
 # -----------------------
 # The :meth:`~gemseo.api.generate_coupling_graph` function plots the
@@ -130,7 +130,7 @@ generate_coupling_graph(
     disciplines, file_path="condensed_coupling_graph.pdf", full=False
 )
 
-##########################################################################
+# %%
 # The :meth:`~gemseo.api.generate_n2_plot` function plots the N2 diagram of
 # a set of :class:`.MDODiscipline`:
 generate_n2_plot(disciplines, save=False, show=True)

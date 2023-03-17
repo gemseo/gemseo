@@ -26,7 +26,7 @@ In this example,
 we illustrate the computation of a Pareto front plot for the Binh and Korn problem.
 We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 """
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API,
@@ -43,7 +43,7 @@ from numpy import array
 configure_logger()
 
 
-###############################################################################
+# %%
 # Definition of the disciplines
 # -----------------------------
 #
@@ -58,12 +58,12 @@ expr_binh_korn = {
     "cstr2": "-(x1-8.)**2 - (x2+3)**2 + 7.7",
 }
 
-################################################################################
+# %%
 # This constraint will be used to set `obj1` to a target value for the lower-level scenario.
 
 expr_cstr_obj1_target = {"cstr3": "obj1 - obj1_target"}
 
-###############################################################################
+# %%
 # Instantiation of the disciplines
 # --------------------------------
 #
@@ -76,7 +76,7 @@ discipline_cstr_obj1 = create_discipline(
     "AnalyticDiscipline", expressions=expr_cstr_obj1_target
 )
 
-###############################################################################
+# %%
 # Definition of the lower-level design space
 # ------------------------------------------
 
@@ -89,7 +89,7 @@ disciplines = [
     discipline_cstr_obj1,
 ]
 
-###############################################################################
+# %%
 # Creation of the lower-level scenario
 # ------------------------------------
 # This scenario aims at finding the `obj2` optimal value for a specific value of `obj1`.
@@ -103,16 +103,16 @@ scenario = create_scenario(
 
 scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
 
-###############################################################################
+# %%
 # We add the Binh and Korn problem constraints.
 scenario.add_constraint("cstr1", "ineq")
 scenario.add_constraint("cstr2", "ineq")
 
-###############################################################################
+# %%
 # We add a constraint to force the value of `obj1` to `obj1_target`.
 scenario.add_constraint("cstr3", "eq")
 
-###############################################################################
+# %%
 # Creation of an MDOScenarioAdapter
 # ---------------------------------
 #
@@ -130,7 +130,7 @@ design_space_doe.add_variable(
     "obj1_target", l_b=array([0.1]), u_b=array([100.0]), value=array([1.0])
 )
 
-###############################################################################
+# %%
 # Creation of a DOEScenario
 # -------------------------
 # Create a DOE Scenario, which will take as input the scenario adapter.
@@ -148,7 +148,7 @@ scenario_doe = create_scenario(
 scenario_doe.add_constraint("cstr3", "eq")
 scenario_doe.add_observable("obj2")
 
-###############################################################################
+# %%
 # Run the scenario
 # ----------------
 # Finally, we run a full-factorial DOE using 100 samples and we run the post-processing.

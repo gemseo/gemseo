@@ -37,7 +37,7 @@ from gemseo.api import monitor_scenario
 configure_logger()
 
 
-##########################################################################
+# %%
 # In this example, we will discover the different functions of the API to
 # related to scenarios, which are the |g|' objects
 # dedicated to the resolution of a problem, e.g. optimization or trade-off,
@@ -54,14 +54,14 @@ configure_logger()
 # :class:`.DOEScenario`).
 print(get_available_scenario_types())
 
-##########################################################################
+# %%
 # Get scenario options schema
 # ---------------------------
 # The :meth:`~gemseo.api.get_scenario_options_schema` function can be used
 # to get the options of a given scenario type:
 print(get_scenario_options_schema("MDO"))
 
-##########################################################################
+# %%
 # Create a scenario
 # -----------------
 # The API function :meth:`~gemseo.api.create_scenario` can be used
@@ -103,19 +103,19 @@ scenario.post_process(
     show=True,
 )
 
-##########################################################################
+# %%
 # - The :meth:`~gemseo.api.get_scenario_inputs_schema` function can be used
 #   to get the inputs of a scenario:
 print(get_scenario_inputs_schema(scenario))
 
-##########################################################################
+# %%
 # Get scenario differentiation modes
 # ----------------------------------
 # The :meth:`~gemseo.api.get_scenario_differentiation_modes` can be used to
 # get the available differentiation modes of a scenario:
 print(get_scenario_differentiation_modes())
 
-##########################################################################
+# %%
 # Monitor a scenario
 # ------------------
 # To monitor a scenario execution programmatically,

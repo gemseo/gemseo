@@ -38,17 +38,17 @@ from gemseo.mlearning.api import get_regression_options
 configure_logger()
 
 
-###############################################################################
+# %%
 # Get available regression models
 # -------------------------------
 print(get_regression_models())
 
-###############################################################################
+# %%
 # Get regression model options
 # ----------------------------
 print(get_regression_options("GaussianProcessRegressor"))
 
-###############################################################################
+# %%
 # Create regression model
 # -----------------------
 expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}

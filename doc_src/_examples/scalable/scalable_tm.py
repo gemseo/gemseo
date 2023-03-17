@@ -40,7 +40,7 @@ from numpy.random import rand
 configure_logger()
 
 
-##########################################################################
+# %%
 # Disciplines
 # -----------
 # We define two strongly coupled disciplines and a weakly coupled discipline,
@@ -54,7 +54,7 @@ configure_logger()
 sizes = {"x_shared": 2, "x_local_0": 2, "x_local_1": 3, "y_0": 3, "y_1": 2}
 
 
-##########################################################################
+# %%
 # We use any values for the coefficients and the default values of the design
 # parameters and coupling variables.
 #
@@ -76,7 +76,7 @@ print(disc0.name)
 print(disc0.get_input_data_names())
 print(disc0.get_output_data_names())
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    TM_Discipline_0
@@ -84,7 +84,7 @@ print(disc0.get_output_data_names())
 #    dict_keys(['y_0'])
 
 
-##########################################################################
+# %%
 # Here is the second one, strongly coupled with the first one.
 default_inputs = {
     "x_shared": rand(sizes["x_shared"]),
@@ -101,14 +101,14 @@ print(disc1.name)
 print(disc1.get_input_data_names())
 print(disc1.get_output_data_names())
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    TM_Discipline_1
 #    dict_keys(['x_shared', 'x_local_1', 'y_0'])
 #    dict_keys(['y_1'])
 
-##########################################################################
+# %%
 # Weakly coupled discipline
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 # Here is the discipline weakly coupled to the previous ones.
@@ -124,23 +124,23 @@ print(system.name)
 print(system.get_input_data_names())
 print(system.get_output_data_names())
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    TM_System
 #    dict_keys(['x_shared', 'y_0', 'y_1'])
 #    dict_keys(['obj', 'cstr_0', 'cstr_1'])
 
-##########################################################################
+# %%
 # Coupling chart
 # ^^^^^^^^^^^^^^
 # We can represent these three disciplines by means of an N2 chart.
 generate_n2_plot([disc0, disc1, system], save=False, show=True)
 
-##########################################################################
+# %%
 # .. image:: /_images/scalable_tm/N2chart.png
 
-##########################################################################
+# %%
 # Design space
 # ------------
 # We define the design space from the sizes of the shared design parameters,
@@ -152,7 +152,7 @@ design_space = TMDesignSpace(n_shared, n_local, n_coupling)
 
 print(design_space)
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    Design Space:
@@ -173,7 +173,7 @@ print(design_space)
 #    | y_1       |      0      |  0.5  |      1      | float |
 #    +-----------+-------------+-------+-------------+-------+
 
-##########################################################################
+# %%
 # Scalable problem
 # ----------------
 # We define a scalable problem based on two strongly coupled disciplines
@@ -192,7 +192,7 @@ print(problem.get_design_space())
 
 print(problem.get_default_inputs())
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #     Scalable problem
@@ -244,7 +244,7 @@ print(problem.get_default_inputs())
 #     array([0.5, 0.5, 0.5, 0.5]), 'y_1': array([0.5, 0.5, 0.5]), 'cstr_1':
 #     array([0.5])}
 
-##########################################################################
+# %%
 # Scalable study
 # --------------
 # We define a scalable study based on two strongly coupled disciplines
@@ -256,7 +256,7 @@ print(problem.get_default_inputs())
 study = TMScalableStudy(n_disciplines=2, n_shared=3, n_local=2, n_coupling=3)
 print(study)
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    Scalable study
@@ -265,16 +265,16 @@ print(study)
 #    > 2 local design parameters per discipline
 #    > 3 coupling variables per discipline
 
-##########################################################################
+# %%
 # Then, we run MDF and IDF formulations:
 study.run_formulation("MDF")
 study.run_formulation("IDF")
 
-##########################################################################
+# %%
 # We can look at the result in the console:
 print(study)
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    Scalable study
@@ -301,14 +301,14 @@ print(study)
 #       >> sub_mda = 0 calls / 0 linearizations / 0.00e+00 seconds
 #       >> scenario = 1 calls / 0 linearizations / 7.60e-02 seconds
 
-##########################################################################
+# %%
 # or plot the execution time:
 study.plot_exec_time()
 
-##########################################################################
+# %%
 # .. image:: /_images/scalable_tm/exec_time.png
 
-##########################################################################
+# %%
 # Parametric scalability study
 # ----------------------------
 # We define a parametric scalability study
@@ -321,7 +321,7 @@ study.plot_exec_time()
 study = TMParamSS(n_disciplines=2, n_shared=3, n_local=[1, 5, 25], n_coupling=2)
 print(study)
 
-##########################################################################
+# %%
 # .. code-block:: console
 #
 #    Parametric scalable study
@@ -330,20 +330,20 @@ print(study)
 #    > 1, 5 or 25 local design parameters per discipline
 #    > 2 coupling variables per discipline
 
-##########################################################################
+# %%
 # Then, we run MDF and IDF formulations:
 study.run_formulation("MDF")
 study.run_formulation("IDF")
 
-##########################################################################
+# %%
 # and save the results in a pickle file:
 study.save("results.pkl")
 
-##########################################################################
+# %%
 # We can plot these results and compare MDF and IDF formulations in terms
 # of execution time for different number of local design variables.
 results = TMParamSSPost("results.pkl")
 results.plot("Comparison of MDF and IDF formulations")
 
-##########################################################################
+# %%
 # .. image:: /_images/scalable_tm/mdf_idf.png

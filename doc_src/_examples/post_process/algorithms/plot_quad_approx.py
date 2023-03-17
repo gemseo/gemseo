@@ -32,7 +32,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -40,16 +40,16 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
-# The :class:`~gemseo.post.quad_approx.QuadApprox` post-processing
+# The :class:`.QuadApprox` post-processing
 # performs a quadratic approximation of a given function
 # from an optimization history
 # and plot the results as cuts of the approximation.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
@@ -63,13 +63,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -89,7 +89,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.QuadApprox`
@@ -97,17 +97,17 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # from an optimization history and plot the results as cuts of the
 # approximation.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 
-###############################################################################
+# %%
 # The first plot shows an approximation of the Hessian matrix
 # :math:`\frac{\partial^2 f}{\partial x_i \partial x_j}` based on the
 # *Symmetric Rank 1* method (SR1) :cite:`Nocedal2006`. The
@@ -123,7 +123,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
 scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
 
-###############################################################################
+# %%
 # The second plot represents the quadratic approximation of the objective around the
 # optimal solution : :math:`a_{i}(t)=0.5 (t-x^*_i)^2
 # \frac{\partial^2 f}{\partial x_i^2} + (t-x^*_i) \frac{\partial

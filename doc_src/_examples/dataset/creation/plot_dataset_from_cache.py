@@ -35,7 +35,7 @@ from numpy import array
 configure_logger()
 
 
-##############################################################################
+# %%
 # Synthetic data
 # --------------
 # Let us consider a :class:`.MemoryFullCache` storing two parameters:
@@ -47,73 +47,73 @@ cache = MemoryFullCache()
 cache[{"x": array([1.0])}] = ({"y": array([2.0, 3.0])}, None)
 cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 
-##############################################################################
+# %%
 # Create a dataset
 # ----------------
 # We can easily build a dataset from this :class:`.MemoryFullCache`,
 # either by separating the inputs from the outputs (default option):
 dataset = cache.export_to_dataset("toy_cache")
 print(dataset)
-##############################################################################
+# %%
 # or by considering all features as default parameters:
 dataset = cache.export_to_dataset("toy_cache", categorize=False)
 print(dataset)
 
-##############################################################################
+# %%
 # Access properties
 # -----------------
 dataset = cache.export_to_dataset("toy_cache")
-##############################################################################
+# %%
 # Variables names
 # ~~~~~~~~~~~~~~~
 # We can access the variables names:
 print(dataset.variables)
 
-##############################################################################
+# %%
 # Variables sizes
 # ~~~~~~~~~~~~~~~
 # We can access the variables sizes:
 print(dataset.sizes)
 
-##############################################################################
+# %%
 # Variables groups
 # ~~~~~~~~~~~~~~~~
 # We can access the variables groups:
 print(dataset.groups)
 
-##############################################################################
+# %%
 # Access data
 # -----------
 # Access by group
 # ~~~~~~~~~~~~~~~
 # We can get the data by group, either as an array (default option):
 print(dataset.get_data_by_group("inputs"))
-##############################################################################
+# %%
 # or as a dictionary indexed by the variables names:
 print(dataset.get_data_by_group("inputs", True))
 
-##############################################################################
+# %%
 # Access by variable name
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the data by variables names,
 # either as a dictionary indexed by the variables names (default option):
 print(dataset.get_data_by_names(["x"]))
-##############################################################################
+# %%
 # or as an array:
 print(dataset.get_data_by_names(["x", "y"], False))
 
-##############################################################################
+# %%
 # Access all data
 # ~~~~~~~~~~~~~~~
 # We can get all the data, either as a large array:
 print(dataset.get_all_data())
-##############################################################################
+# %%
 # or as a dictionary indexed by variables names:
 print(dataset.get_all_data(as_dict=True))
-##############################################################################
+# %%
 # We can get these data sorted by category, either with a large array for each
 # category:
 print(dataset.get_all_data(by_group=False))
-##############################################################################
+# %%
 # or with a dictionary of variables names:
 print(dataset.get_all_data(by_group=False, as_dict=True))

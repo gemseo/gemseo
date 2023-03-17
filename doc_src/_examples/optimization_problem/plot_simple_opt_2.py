@@ -19,7 +19,7 @@
 Analytical test case # 2
 ========================
 """
-#############################################################################
+# %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and optimization libraries integration.
 #
@@ -42,7 +42,7 @@ from numpy import sin
 configure_logger()
 
 
-#############################################################################
+# %%
 # Define the objective function
 # -----------------------------
 # We define the objective function :math:`f(x)=\sin(x)-\exp(x)`
@@ -51,7 +51,7 @@ f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
 f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 objective = f_1 - f_2
 
-#############################################################################
+# %%
 # .. seealso::
 #
 #    The following operators are implemented: addition, subtraction and multiplication.
@@ -63,14 +63,14 @@ objective = f_1 - f_2
 design_space = DesignSpace()
 design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 
-#############################################################################
+# %%
 # Define the optimization problem
 # -------------------------------
 # Then, we define the :class:`.OptimizationProblem` with |g|.
 problem = OptimizationProblem(design_space)
 problem.objective = objective
 
-#############################################################################
+# %%
 # Solve the optimization problem using an optimization algorithm
 # --------------------------------------------------------------
 # Finally, we solve the optimization problems with |g| interface.
@@ -81,29 +81,29 @@ opt = OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=Tr
 
 print("Optimum = ", opt)
 
-#############################################################################
+# %%
 # Note that you can get all the optimization algorithms names:
 algo_list = OptimizersFactory().algorithms
 print("Available algorithms ", algo_list)
 
-#############################################################################
+# %%
 # Save the optimization results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We can serialize the results for further exploitation.
 problem.export_hdf("my_optim.hdf5")
 
-#############################################################################
+# %%
 # Post-process the results
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 execute_post(problem, "OptHistoryView", show=True, save=False)
 
-#############################################################################
+# %%
 # .. note::
 #
 #    We can also save this plot using the arguments :code:`save=False`
 #    and :code:`file_path='file_path'`.
 
-#############################################################################
+# %%
 # Solve the optimization problem using a DOE algorithm
 # ----------------------------------------------------
 # We can also see this optimization problem as a trade-off

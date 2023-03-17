@@ -21,7 +21,7 @@
 Analytical test case # 3
 ========================
 """
-#############################################################################
+# %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and DOE libraries integration.
 # Integer variables are used
@@ -41,28 +41,28 @@ from numpy import sum as np_sum
 LOGGER = configure_logger()
 
 
-#############################################################################
+# %%
 # Define the objective function
 # -----------------------------
 # We define the objective function :math:`f(x)=\sum_{i=1}^dx_i`
 # using a :class:`.MDOFunction`.
 objective = MDOFunction(np_sum, name="f", expr="sum(x)")
 
-#############################################################################
+# %%
 # Define the design space
 # -----------------------
 # Then, we define the :class:`.DesignSpace` with |g|.
 design_space = DesignSpace()
 design_space.add_variable("x", 2, l_b=-5, u_b=5, var_type="integer")
 
-#############################################################################
+# %%
 # Define the optimization problem
 # -------------------------------
 # Then, we define the :class:`.OptimizationProblem` with |g|.
 problem = OptimizationProblem(design_space)
 problem.objective = objective
 
-#############################################################################
+# %%
 # Solve the optimization problem using a DOE algorithm
 # ----------------------------------------------------
 # We can see this optimization problem as a trade-off
@@ -70,7 +70,7 @@ problem.objective = objective
 # e.g. full factorial design
 DOEFactory().execute(problem, "fullfact", n_samples=11**2)
 
-#############################################################################
+# %%
 # Post-process the results
 # ------------------------
 execute_post(
@@ -81,7 +81,7 @@ execute_post(
     show=True,
 )
 
-#############################################################################
+# %%
 # Note that you can get all the optimization algorithms names:
 algo_list = DOEFactory().algorithms
 print("Available algorithms ", algo_list)

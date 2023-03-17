@@ -32,7 +32,7 @@ from gemseo.mda.mda_chain import MDAChain
 
 configure_logger()
 
-################################################
+# %%
 # Introduction
 # ----------------------------------------------
 #
@@ -86,7 +86,7 @@ disciplines_expressions = [
 # where for instance race conditions may occur,
 # multiprocessing can be employed.
 
-####################################################
+# %%
 # Example of :class:`.MDAChain` with parallelization
 # --------------------------------------------------
 #

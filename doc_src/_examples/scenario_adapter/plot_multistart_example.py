@@ -37,7 +37,7 @@ from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 configure_logger()
 
 
-##############################################################################
+# %%
 # Create the disciplines
 # ----------------------
 objective = create_discipline("AnalyticDiscipline", expressions={"obj": "x**3-x+1"})
@@ -45,13 +45,13 @@ constraint = create_discipline(
     "AnalyticDiscipline", expressions={"cstr": "x**2+obj**2-1.5"}
 )
 
-##############################################################################
+# %%
 # Create the design space
 # -----------------------
 design_space = create_design_space()
 design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=1.5)
 
-##############################################################################
+# %%
 # Create the MDO scenario
 # -----------------------
 scenario = create_scenario(
@@ -63,7 +63,7 @@ scenario = create_scenario(
 scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
 scenario.add_constraint("cstr", "ineq")
 
-##############################################################################
+# %%
 # Create the scenario adapter
 # ---------------------------
 dv_names = scenario.formulation.opt_problem.design_space.variables_names
@@ -71,7 +71,7 @@ adapter = MDOScenarioAdapter(
     scenario, dv_names, ["obj", "cstr"], set_x0_before_opt=True
 )
 
-##############################################################################
+# %%
 # Create the DOE scenario
 # -----------------------
 scenario_doe = create_scenario(
@@ -85,7 +85,7 @@ scenario_doe.add_constraint("cstr", "ineq")
 run_inputs = {"n_samples": 10, "algo": "fullfact"}
 scenario_doe.execute(run_inputs)
 
-##############################################################################
+# %%
 # Plot the optimum objective for different x0
 # -------------------------------------------
 scenario_doe.post_process("BasicHistory", variable_names=["obj"], save=False, show=True)

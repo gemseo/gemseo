@@ -34,7 +34,7 @@ from gemseo.problems.dataset.burgers import BurgersDataset
 configure_logger()
 
 
-###############################################################################
+# %%
 # Load dataset
 # ~~~~~~~~~~~~
 dataset = BurgersDataset(n_samples=20)
@@ -44,7 +44,7 @@ t = dataset.get_data_by_group(dataset.INPUT_GROUP)[:, 0]
 u_t = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
 t_split = 0.87
 
-###############################################################################
+# %%
 # Plot dataset
 # ~~~~~~~~~~~~
 
@@ -70,7 +70,7 @@ plt.legend()
 plt.title("Solutions to Burgers equation")
 plt.show()
 
-###############################################################################
+# %%
 # Create KLSVD
 # ~~~~~~~~~~~~
 n_modes = 7
@@ -81,7 +81,7 @@ u_t_restored = klsvd.inverse_transform(u_t_reduced)
 
 print(f"Dimension of the reduced space: {klsvd.output_dimension}")
 
-###############################################################################
+# %%
 # Plot restored data
 # ~~~~~~~~~~~~~~~~~~
 color = "red"

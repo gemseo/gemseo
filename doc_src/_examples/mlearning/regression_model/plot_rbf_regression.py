@@ -41,17 +41,17 @@ from numpy import array
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create the discipline to learn
 # ------------------------------
 # We can implement this analytic discipline by means of the
-# :class:`~gemseo.disciplines.analytic.AnalyticDiscipline` class.
+# :class:`.AnalyticDiscipline` class.
 expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
 discipline = create_discipline(
     "AnalyticDiscipline", name="func", expressions=expressions
 )
 
-###############################################################################
+# %%
 # Create the input sampling space
 # -------------------------------
 # We create the input sampling space by adding the variables one by one.
@@ -59,18 +59,18 @@ design_space = create_design_space()
 design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
 design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
 
-###############################################################################
+# %%
 # Create the learning set
 # -----------------------
 # We can build a learning set by means of a
-# :class:`~gemseo.core.doe_scenario.DOEScenario` with a full factorial design of
+# :class:`.DOEScenario` with a full factorial design of
 # experiments. The number of samples can be equal to 9 for example.
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
 )
 scenario.execute({"algo": "fullfact", "n_samples": 9})
 
-###############################################################################
+# %%
 # Create the regression model
 # ---------------------------
 # Then, we build the linear regression model from the database and
@@ -80,7 +80,7 @@ model = create_regression_model("RBFRegressor", data=dataset)
 model.learn()
 print(model)
 
-###############################################################################
+# %%
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction.

@@ -36,7 +36,7 @@ from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 configure_logger()
 
 
-##############################################################################
+# %%
 # Synthetic data
 # --------------
 # We can sample the :class:`.Sellar1` discipline and use the
@@ -51,7 +51,7 @@ scenario = create_scenario(
 scenario.execute({"algo": "lhs", "n_samples": 5})
 opt_problem = scenario.formulation.opt_problem
 
-##############################################################################
+# %%
 # Create a dataset
 # ----------------
 # We can easily build a dataset from this :class:`.OptimizationProblem`:
@@ -59,76 +59,76 @@ opt_problem = scenario.formulation.opt_problem
 # (default option):
 dataset = opt_problem.export_to_dataset("sellar1_doe")
 print(dataset)
-##############################################################################
+# %%
 # or by considering all features as default parameters:
 dataset = opt_problem.export_to_dataset("sellar1_doe", categorize=False)
 print(dataset)
-##############################################################################
+# %%
 # or by using an input-output naming rather than an optimization naming:
 dataset = opt_problem.export_to_dataset("sellar1_doe", opt_naming=False)
 print(dataset)
-##############################################################################
+# %%
 # .. note::
 #     Only design variables and functions (objective function, constraints) are
 #     stored in the database. If you want to store state variables, you must add
 #     them as observables before the problem is executed. Use the
 #     :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
 
-##############################################################################
+# %%
 # Access properties
 # -----------------
 dataset = opt_problem.export_to_dataset("sellar1_doe")
-##############################################################################
+# %%
 # Variables names
 # ~~~~~~~~~~~~~~~
 # We can access the variables names:
 print(dataset.variables)
 
-##############################################################################
+# %%
 # Variables sizes
 # ~~~~~~~~~~~~~~~
 # We can access the variables sizes:
 print(dataset.sizes)
 
-##############################################################################
+# %%
 # Variables groups
 # ~~~~~~~~~~~~~~~~
 # We can access the variables groups:
 print(dataset.groups)
 
-##############################################################################
+# %%
 # Access data
 # -----------
 # Access by group
 # ~~~~~~~~~~~~~~~
 # We can get the data by group, either as an array (default option):
 print(dataset.get_data_by_group("design_parameters"))
-##############################################################################
+# %%
 # or as a dictionary indexed by the variables names:
 print(dataset.get_data_by_group("design_parameters", True))
 
-##############################################################################
+# %%
 # Access by variable name
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the data by variables names,
 # either as a dictionary indexed by the variables names (default option):
 print(dataset.get_data_by_names(["x_shared", "y_2"]))
-##############################################################################
+# %%
 # or as an array:
 print(dataset.get_data_by_names(["x_shared", "y_2"], False))
 
-##############################################################################
+# %%
 # Access all data
 # ~~~~~~~~~~~~~~~
 # We can get all the data, either as a large array:
 print(dataset.get_all_data())
-##############################################################################
+# %%
 # or as a dictionary indexed by variables names:
 print(dataset.get_all_data(as_dict=True))
-##############################################################################
+# %%
 # We can get these data sorted by category, either with a large array for each
 # category:
 print(dataset.get_all_data(by_group=False))
-##############################################################################
+# %%
 # or with a dictionary of variables names:
 print(dataset.get_all_data(by_group=False, as_dict=True))

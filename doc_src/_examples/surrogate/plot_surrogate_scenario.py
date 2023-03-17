@@ -62,7 +62,7 @@ from numpy import vstack
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create a surrogate discipline
 # -----------------------------
 #
@@ -87,7 +87,7 @@ data = vstack(
 synthetic_dataset = Dataset()
 synthetic_dataset.set_from_array(data, variables, sizes, groups)
 
-#############################################################################
+# %%
 # If you do not have available data,the following paragraphs of Step 1 concern you.
 #
 # Here, we illustrate the generation of the training data using a :class:`.DOEScenario`,
@@ -110,7 +110,7 @@ synthetic_dataset.set_from_array(data, variables, sizes, groups)
 
 discipline = create_discipline("SobieskiMission")
 
-##############################################################################
+# %%
 #
 # .. _surrogates_design_space:
 #
@@ -122,7 +122,7 @@ discipline = create_discipline("SobieskiMission")
 design_space = SobieskiProblem().design_space
 design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 
-##############################################################################
+# %%
 #
 # From this :class:`.MDODiscipline` and this :class:`.DesignSpace`,
 # we build a :class:`.DOEScenario`
@@ -136,12 +136,12 @@ scenario = create_scenario(
     scenario_type="DOE",
 )
 
-##############################################################################
+# %%
 # Lastly, we execute the process with the :term:`LHS` algorithm and 30 samples.
 scenario.execute({"n_samples": 30, "algo": "lhs"})
 mission_dataset = scenario.export_to_dataset(opt_naming=False)
 
-##############################################################################
+# %%
 # .. seealso::
 #
 #    In this tutorial, the :term:`DOE` is based on `pyDOE
@@ -152,7 +152,7 @@ mission_dataset = scenario.export_to_dataset(opt_naming=False)
 #    current |g| configuration, use
 #    :meth:`gemseo.api.get_available_doe_algorithms`.
 
-##############################################################################
+# %%
 # Create the :class:`.SurrogateDiscipline`
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
@@ -170,7 +170,7 @@ mission_dataset = scenario.export_to_dataset(opt_naming=False)
 
 synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
 
-##############################################################################
+# %%
 # .. seealso::
 #
 #    Note that a subset of the inputs and outputs to be used to build the
@@ -182,13 +182,13 @@ input_data = {"x": array([2.0])}
 out = synthetic_surrogate.execute(input_data)
 print(out["y"])
 
-##############################################################################
+# %%
 # In our study case, from the :term:`DOE` built at Step 1,
 # we build a :class:`.RBFRegressor`  of :math:`y_4`
 # representing the range in function of L/D:
 range_surrogate = create_surrogate("RBFRegressor", mission_dataset)
 
-##############################################################################
+# %%
 # Use the :class:`.SurrogateDiscipline` in MDO
 # --------------------------------------------
 #
@@ -202,7 +202,7 @@ for i in range(5):
     y_4_pred = range_surrogate.execute({"y_24": array([lod])})["y_4"]
     print(f"Surrogate range (L/D = {lod}) = {y_4_pred}")
 
-##############################################################################
+# %%
 # And we can build and execute an optimization scenario from it.
 # The design variables are "y_24". The Jacobian matrix is computed by finite
 # differences by default for surrogates, except for the
@@ -218,7 +218,7 @@ scenario = create_scenario(
 )
 scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
 
-##############################################################################
+# %%
 # Available surrogate models
 # --------------------------
 #

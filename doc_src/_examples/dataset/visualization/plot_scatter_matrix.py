@@ -32,12 +32,12 @@ from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 configure_logger()
 
 
-############################################################################
+# %%
 # Load a dataset
 # --------------
 iris = load_dataset("IrisDataset")
 
-############################################################################
+# %%
 # Plot scatter matrix
 # -------------------
 # We can use the :class:`.ScatterMatrix` plot where each non-diagonal block

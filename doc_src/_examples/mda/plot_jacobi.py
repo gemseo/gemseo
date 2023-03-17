@@ -37,7 +37,7 @@ IS_NT = os_name == "nt"
 configure_logger()
 
 
-#############################################################################
+# %%
 # Define a way to display results
 # -------------------------------
 def display_result(res, mda_name):
@@ -73,7 +73,7 @@ def display_result(res, mda_name):
         )
 
 
-#############################################################################
+# %%
 # Create, execute and post-process MDA
 # ------------------------------------
 # We do not need to specify the inputs, the default inputs

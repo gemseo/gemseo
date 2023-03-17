@@ -33,7 +33,7 @@ from gemseo.api import create_mda
 configure_logger()
 
 
-#############################################################################
+# %%
 # Define a way to display results
 # -------------------------------
 def display_result(res, mda_name):
@@ -69,7 +69,7 @@ def display_result(res, mda_name):
         )
 
 
-#############################################################################
+# %%
 # Create, execute and post-process MDA
 # ------------------------------------
 # We do not need to specify the inputs, the default inputs

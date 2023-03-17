@@ -31,14 +31,14 @@ from numpy import array
 
 configure_logger()
 
-###############################################################################
+# %%
 # Import
 # ------
 #
 # First, we import the `array` and the :class:`MemoryError` classes.
 
 
-###############################################################################
+# %%
 # Create
 # ------
 #
@@ -54,7 +54,7 @@ configure_logger()
 cache = MemoryFullCache()
 print(cache)
 
-###############################################################################
+# %%
 # Cache
 # -----
 #
@@ -66,7 +66,7 @@ cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
 print(cache)
 
-###############################################################################
+# %%
 # Get all data
 # ------------
 #
@@ -76,7 +76,7 @@ print(len(cache))
 for data in cache:
     print(data)
 
-###############################################################################
+# %%
 # Get last cached data
 # --------------------
 #
@@ -87,7 +87,7 @@ last_entry = cache.last_entry
 print(last_entry.inputs)
 print(last_entry.outputs)
 
-###############################################################################
+# %%
 # Clear
 # -----
 # The user can clear an cache of all its entries by using the

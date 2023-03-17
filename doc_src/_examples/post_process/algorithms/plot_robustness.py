@@ -32,7 +32,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -40,11 +40,11 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
-# In the :class:`~gemseo.post.robustness.Robustness` post-processing,
+# In the :class:`.Robustness` post-processing,
 # the robustness of the optimum is represented by a box plot. Using the
 # quadratic approximations of all the output functions, we
 # propagate analytically a normal distribution with 1% standard deviation
@@ -57,7 +57,7 @@ configure_logger()
 # bars). Then, 95% of the values are within the blue boxes. The average is
 # given by the red bar.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
@@ -71,13 +71,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -97,19 +97,19 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.Robustness`
 # which plots any of the constraint or
 # objective functions w.r.t. the optimization iterations or sampling snapshots.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

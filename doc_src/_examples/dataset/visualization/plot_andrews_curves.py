@@ -32,12 +32,12 @@ from gemseo.post.dataset.andrews_curves import AndrewsCurves
 configure_logger()
 
 
-############################################################################
+# %%
 # Load a dataset
 # --------------
 iris = load_dataset("IrisDataset")
 
-############################################################################
+# %%
 # Plot Andrews Curves
 # -------------------
 # We can use the :class:`.AndrewsCurves` plot

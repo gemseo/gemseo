@@ -38,7 +38,7 @@ from gemseo.api import get_mda_options_schema
 configure_logger()
 
 
-##########################################################################
+# %%
 # Get available MDA
 # -----------------
 #
@@ -46,14 +46,14 @@ configure_logger()
 # of MDAs available in |g| or in external modules
 print(get_available_mdas())
 
-##########################################################################
+# %%
 # Get MDA options schema
 # ----------------------
 # For a given MDA algorithm, e.g. :code:`"MDAGaussSeidel"`,
 # we can get the options; e.g.
 print(get_mda_options_schema("MDAGaussSeidel"))
 
-##########################################################################
+# %%
 # Create an MDA
 # -------------
 # The API function :meth:`~gemseo.api.create_mda` can be used

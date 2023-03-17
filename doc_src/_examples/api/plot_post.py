@@ -39,7 +39,7 @@ from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 configure_logger()
 
 
-##############################################################################
+# %%
 # Get available DOE algorithms
 # ----------------------------
 #
@@ -47,14 +47,14 @@ configure_logger()
 # of post-processing algorithms available in |g| or in external modules
 print(get_available_post_processings())
 
-##########################################################################
+# %%
 # Get options schema
 # ------------------
 # For a given post-processing algorithm, e.g. :code:`"RadarChart"`,
 # we can get the options; e.g.
 print(get_post_processing_options_schema("RadarChart"))
 
-##########################################################################
+# %%
 # Post-process a scenario
 # -----------------------
 # The API function :meth:`~gemseo.api.execute_post` can generate visualizations

@@ -21,7 +21,7 @@
 Application: Sobieski's Super-Sonic Business Jet (MDO)
 ======================================================
 """
-##############################################################################
+# %%
 # This section describes how to setup and solve the MDO problem relative to the
 # :ref:`Sobieski test case <sobieski_problem>` with |g|.
 #
@@ -68,7 +68,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-##############################################################################
+# %%
 # Step 1: Creation of :class:`.MDODiscipline`
 # -------------------------------------------
 #
@@ -85,7 +85,7 @@ disciplines = create_discipline(
     ]
 )
 
-##############################################################################
+# %%
 # .. tip::
 #
 #    For the disciplines that are not interfaced with |g|, the |g|'s
@@ -94,7 +94,7 @@ disciplines = create_discipline(
 #
 #    See :ref:`api`.
 
-##############################################################################
+# %%
 # Step 2: Creation of :class:`.Scenario`
 # --------------------------------------
 #
@@ -112,7 +112,7 @@ disciplines = create_discipline(
 #   :meth:`~gemseo.algos.design_space.DesignSpace.add_variable`. In this case,
 #   we will create it directly from the API.
 design_space = SobieskiProblem().design_space
-##############################################################################
+# %%
 #     .. code::
 #
 #           vi design_space.txt
@@ -147,14 +147,14 @@ design_space = SobieskiProblem().design_space
 # - The list of available formulations can be obtained by using
 #   :meth:`~gemseo.api.get_available_formulations`.
 get_available_formulations()
-##############################################################################
+# %%
 # - :math:`y\_4` corresponds to the :code:`objective_name`. This name must be one
 #   of the disciplines outputs, here the "SobieskiMission" discipline. The list of
 #   all outputs of the disciplines can be obtained by using
 #   :meth:`~gemseo.disciplines.utils.get_all_outputs`:
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
-##############################################################################
+# %%
 # From these :class:`~gemseo.core.discipline.MDODiscipline`, design space filename,
 # :ref:`MDO formulation <mdo_formulations>` name and objective function name,
 # we build the scenario:
@@ -165,7 +165,7 @@ scenario = create_scenario(
     objective_name="y_4",
     design_space=design_space,
 )
-##############################################################################
+# %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
 # minimize functions by default. Which is why, when creating the scenario, the argument
 # :code:`maximize_objective` shall be set to :code:`True`.
@@ -181,7 +181,7 @@ scenario = create_scenario(
 # the derivatives with finite-differences or with the complex-step method.
 # The easiest way to set a method is to let the optimizer determine it:
 scenario.set_differentiation_method()
-##############################################################################
+# %%
 #
 # The default behavior of the optimizer triggers :term:`finite differences`.
 # It corresponds to:
@@ -210,14 +210,14 @@ scenario.set_differentiation_method()
 # :meth:`~gemseo.core.scenario.Scenario.add_constraint`:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
-##############################################################################
+# %%
 # Step 3: Execution and visualization of the results
 # --------------------------------------------------
 #
 # The algorithm arguments are provided as a dictionary to the execution
 # method of the scenario:
 algo_args = {"max_iter": 10, "algo": "SLSQP"}
-##############################################################################
+# %%
 # .. warning::
 #
 #    The mandatory arguments are the maximum number of iterations and the algorithm name.
@@ -229,7 +229,7 @@ algo_args = {"max_iter": 10, "algo": "SLSQP"}
 #
 # The scenario is executed by means of the line:
 scenario.execute(algo_args)
-##############################################################################
+# %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # A whole variety of visualizations may be displayed for both MDO and DOE
@@ -239,7 +239,7 @@ scenario.execute(algo_args)
 # To visualize the optimization history:
 scenario.post_process("OptHistoryView", save=False, show=True)
 
-##############################################################################
+# %%
 # Influence of gradient computation method on performance
 # -------------------------------------------------------
 #
@@ -250,7 +250,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # can be forced on demand in each :ref:`mda`:
 scenario.formulation.mda.linearization_mode = JacobianAssembly.DIRECT_MODE
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
-##############################################################################
+# %%
 # The method used to solve the adjoint or direct linear problem may also be selected.
 # |g| can either assemble a sparse residual Jacobian matrix of the :ref:`mda` from the
 # disciplines matrices. This has the advantage that LU factorizations may be stored to
@@ -258,13 +258,13 @@ scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPER
 # extra memory.
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
 scenario.formulation.mda.use_lu_fact = True
-##############################################################################
+# %%
 # Altenatively, |g| can implicitly create a matrix-vector product operator,
 # which is sufficient for GMRES-like solvers. It avoids to create an additional
 # data structure. This can also be mandatory if the disciplines do not provide
 # full Jacobian matrices but only matrix-vector product operators.
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
-##############################################################################
+# %%
 # The next table shows the performance of each method for solving the Sobieski use case
 # with :ref:`MDF <mdf_formulation>` and :ref:`IDF <idf_formulation>` formulations.
 # Efficiency of linearization is clearly visible has it takes from 10 to 20 times
