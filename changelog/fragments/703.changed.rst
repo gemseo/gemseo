@@ -1,0 +1,1 @@
+API change: rename :class:`.GSNewtonMDA` to :class:`.MDAGSNewton`.
