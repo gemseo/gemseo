@@ -53,25 +53,25 @@ uncertain_space = IshigamiSpace()
 sensitivity_analysis = MorrisAnalysis([discipline], uncertain_space, 10)
 sensitivity_analysis.compute_indices()
 
-#######################################################################################
+# %%
 # The resulting indices are the empirical means and the standard deviations
 # of the absolute output variations due to input changes.
 pprint.pprint(sensitivity_analysis.indices)
 
-#######################################################################################
+# %%
 # The main indices corresponds to these empirical means
 # (this main method can be changed with :attr:`.MorrisAnalysis.main_method`):
 pprint.pprint(sensitivity_analysis.main_indices)
 
-#######################################################################################
+# %%
 # and can be interpreted with respect to the empirical bounds of the outputs:
 pprint.pprint(sensitivity_analysis.outputs_bounds)
 
-#######################################################################################
+# %%
 # We can also sort the input parameters by decreasing order of influence:
 print(sensitivity_analysis.sort_parameters("y"))
 
-#######################################################################################
+# %%
 # Lastly,
 # we can use the method :meth:`.MorrisAnalysis.plot`
 # to visualize the different series of indices:

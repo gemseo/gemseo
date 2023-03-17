@@ -64,7 +64,7 @@ and couplings are links represented by arrows labeled by their coupling variable
 API
 ~~~
 
-The API function :meth:`~gemseo.api.generate_coupling_graph` allows
+The API function :func:`.generate_coupling_graph` allows
 to create these visualizations and save them, from:
 
 - the :class:`.MDODiscipline` instances defining the disciplines of interest,
@@ -125,7 +125,7 @@ or as an interactive visualization of both full and condensed graphs:
 API
 ~~~
 
-The API function :meth:`~gemseo.api.generate_n2_plot` allows
+The API function :func:`.generate_n2_plot` allows
 to create these visualizations and save them, from:
 
 - the :class:`.MDODiscipline` instances defining the disciplines of interest,

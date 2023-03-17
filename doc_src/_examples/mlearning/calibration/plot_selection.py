@@ -31,7 +31,7 @@ from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 
 np.random.seed(54321)
 
-###############################################################################
+# %%
 # Build dataset
 # -------------
 # The data are generated from the function :math:`f(x)=x^2`.
@@ -49,7 +49,7 @@ dataset = Dataset()
 dataset.add_variable("x", x[:, None], Dataset.INPUT_GROUP)
 dataset.add_variable("y", y[:, None], Dataset.OUTPUT_GROUP, cache_as_input=False)
 
-###############################################################################
+# %%
 # Build selector
 # --------------
 # We consider three regression models, with different possible hyperparameters.
@@ -78,13 +78,13 @@ selector.add_candidate(
     smooth=[0, 0.01, 0.1, 1, 10, 100],
 )
 
-###############################################################################
+# %%
 # Select best candidate
 # ---------------------
 best_algo = selector.select()
 print(best_algo)
 
-###############################################################################
+# %%
 # Plot results
 # ------------
 # Plot the best models from each candidate algorithm

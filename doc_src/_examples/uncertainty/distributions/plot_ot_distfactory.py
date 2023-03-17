@@ -31,7 +31,7 @@ from numpy.random import seed
 
 configure_logger()
 
-######################################################################################
+# %%
 # In this example,
 # we will see how to fit a distribution from data.
 # For a purely pedagogical reason,
@@ -42,38 +42,38 @@ seed(1)
 data = randn(100)
 variable_name = "X"
 
-###############################################################################
+# %%
 # Create a distribution fitter
 # ----------------------------
 # Then,
 # we create an :class:`.OTDistributionFitter` from these data and this variable name:
 fitter = OTDistributionFitter(variable_name, data)
 
-###############################################################################
+# %%
 # Fit a distribution
 # ------------------
 # From this distribution fitter,
 # we can easily fit any distribution available in the OpenTURNS library:
 print(fitter.available_distributions)
 
-###############################################################################
+# %%
 # For example,
 # we can fit a normal distribution:
 norm_dist = fitter.fit("Normal")
 print(norm_dist)
 
-###############################################################################
+# %%
 # or an exponential one:
 exp_dist = fitter.fit("Exponential")
 print(exp_dist)
 
-###############################################################################
+# %%
 # The returned object is an :class:`.OTDistribution`
 # that we can represent graphically
 # in terms of probability and cumulative density functions:
 norm_dist.plot()
 
-###############################################################################
+# %%
 # Measure the goodness-of-fit
 # ---------------------------
 # We can also measure the goodness-of-fit of a distribution
@@ -84,7 +84,7 @@ norm_dist.plot()
 print(fitter.available_criteria)
 print(fitter.available_significance_tests)
 
-###############################################################################
+# %%
 # For example,
 # we can measure the goodness-of-fit of the previous distributions
 # by considering the `Bayesian information criterion (BIC)
@@ -95,7 +95,7 @@ print("Normal: ", quality_measure)
 quality_measure = fitter.compute_measure(exp_dist, "BIC")
 print("Exponential: ", quality_measure)
 
-###############################################################################
+# %%
 # Here,
 # the fitted normal distribution is better than the fitted exponential one
 # in terms of BIC.
@@ -106,7 +106,7 @@ print("Normal: ", acceptable, details)
 acceptable, details = fitter.compute_measure(exp_dist, "Kolmogorov")
 print("Exponential: ", acceptable, details)
 
-###############################################################################
+# %%
 # In this case,
 # the :meth:`.OTDistributionFitter.measure` method returns a tuple with two values:
 #
@@ -120,7 +120,7 @@ print("Exponential: ", acceptable, details)
 #     whose default value is 0.05.
 #     For that, use the :code:`level` argument.
 
-###############################################################################
+# %%
 # Select an optimal distribution
 # ------------------------------
 # Lastly,

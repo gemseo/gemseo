@@ -26,7 +26,7 @@ In this demo, we apply a mixture of experts regression model to the Burgers
 dataset. In order to reduce the output dimension, we apply a PCA to the
 outputs.
 """
-###############################################################################
+# %%
 # Imports
 # -------
 # Import from standard libraries and |g|.
@@ -42,7 +42,7 @@ from numpy import nonzero
 configure_logger()
 
 
-###############################################################################
+# %%
 # Load dataset (Burgers)
 # ----------------------
 n_samples = 50
@@ -50,13 +50,13 @@ dataset = load_dataset("BurgersDataset", n_samples=n_samples)
 inputs = dataset.get_data_by_group(dataset.INPUT_GROUP)
 outputs = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
 
-###############################################################################
+# %%
 # Mixture of experts (MoE)
 # ------------------------
 # In this section we load a mixture of experts regression model through the
 # machine learning API, using clustering, classification and regression models.
 
-###############################################################################
+# %%
 # Mixture of experts model
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # We construct the MoE model using the predefined parameters, and fit the model
@@ -70,14 +70,14 @@ model.set_regressor(
 
 model.learn()
 
-###############################################################################
+# %%
 # Make predictions
 # ~~~~~~~~~~~~~~~~
 predictions = model.predict(inputs)
 local_pred_0 = model.predict_local_model(inputs, 0)
 local_pred_1 = model.predict_local_model(inputs, 1)
 
-###############################################################################
+# %%
 # Plot clusters
 # ~~~~~~~~~~~~~
 for i in nonzero(model.clusterer.labels == 0)[0]:
@@ -90,7 +90,7 @@ plt.legend(
 )
 plt.show()
 
-###############################################################################
+# %%
 # Plot predictions
 # ~~~~~~~~~~~~~~~~
 
@@ -106,7 +106,7 @@ for i, pred in enumerate(predictions):
     plt.plot(pred, color=color, linestyle=lines(i))
 plt.show()
 
-###############################################################################
+# %%
 # Plot local models
 # ~~~~~~~~~~~~~~~~~
 plt.subplot(121)
@@ -117,7 +117,7 @@ for i, pred in enumerate(local_pred_1):
     plt.plot(pred, color="b", linestyle=lines(i))
 plt.show()
 
-###############################################################################
+# %%
 # Plot selected predictions and exact curves
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for i in [
@@ -131,7 +131,7 @@ for i in [
     plt.plot(predictions[i], color="b", linestyle=":")
 plt.show()
 
-###############################################################################
+# %%
 # Plot components
 # ~~~~~~~~~~~~~~~
 local_models = model.regress_models

@@ -34,7 +34,7 @@ from numpy import array
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create a design space
 # ---------------------
 #
@@ -45,7 +45,7 @@ configure_logger()
 design_space = create_design_space()
 
 
-###############################################################################
+# %%
 # Add design variables
 # --------------------
 #
@@ -59,7 +59,7 @@ design_space.add_variable("x", l_b=array([-2.0]), u_b=array([2.0]), value=array(
 
 print(design_space)
 
-###############################################################################
+# %%
 # The user can also add design variables with dimension greater than one. To do
 # that, the user can use the `size` keyword:
 
@@ -68,7 +68,7 @@ design_space.add_variable(
 )
 print(design_space)
 
-###############################################################################
+# %%
 # By default, each variable infers its type from the given values. One may also
 # specify it with the `var_type` keyword
 design_space.add_variable(
@@ -89,7 +89,7 @@ design_space.add_variable(
 )
 print(design_space)
 
-###############################################################################
+# %%
 # .. note::
 #
 #    Some optimization algorithms may not handle integer variables properly.
@@ -99,7 +99,7 @@ print(design_space)
 #    For additional information on how |g| handles integer variables, refer to
 #    :ref:`nutshell_design_space`.
 
-###############################################################################
+# %%
 # Remove design variables
 # -----------------------
 #

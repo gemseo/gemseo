@@ -24,7 +24,7 @@ Random forest classification
 
 We want to classify the Iris dataset using a Random Forest classifier.
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
@@ -37,12 +37,12 @@ from numpy import array
 configure_logger()
 
 
-###############################################################################
+# %%
 # Load Iris dataset
 # -----------------
 iris = load_dataset("IrisDataset", as_io=True)
 
-###############################################################################
+# %%
 # Create the classification model
 # -------------------------------
 # Then, we build the linear regression model from the discipline cache and
@@ -51,7 +51,7 @@ model = create_classification_model("RandomForestClassifier", data=iris)
 model.learn()
 print(model)
 
-###############################################################################
+# %%
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction.

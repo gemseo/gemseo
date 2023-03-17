@@ -32,12 +32,12 @@ from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 configure_logger()
 
 
-############################################################################
+# %%
 # Load a dataset
 # --------------
 iris = load_dataset("IrisDataset")
 
-##############################################################################
+# %%
 # Plot parallel coordinates
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # We can use the

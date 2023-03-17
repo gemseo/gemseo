@@ -33,7 +33,7 @@ from numpy import array
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 dataset = Dataset()
@@ -42,7 +42,7 @@ dataset.add_variable("x2", array([[0.6], [0.5]]))
 dataset.add_variable("x3", array([[0.8], [0.7]]))
 dataset.row_names = ["series_1", "series_2"]
 
-############################################################################
+# %%
 # Plot the two series on a radar chart
 # ------------------------------------
 # We can use the :class:`~gemseo.post.dataset.radar_chart.RadarChart` plot:

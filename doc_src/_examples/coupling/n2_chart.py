@@ -28,7 +28,7 @@ from gemseo.api import generate_n2_plot
 from gemseo.core.discipline import MDODiscipline
 from numpy import ones
 
-#######################################################################################
+# %%
 # Create the disciplines
 # ----------------------
 descriptions = {
@@ -59,12 +59,12 @@ for discipline_name, (inputs, outputs) in descriptions.items():
     discipline.output_grammar.update_from_data({name: data for name in outputs})
     disciplines.append(discipline)
 
-#######################################################################################
+# %%
 # Generate the N2 chart
 # ---------------------
 # We do not want to save the N2 chart as a PNG or a PDF file,
 # but open a browser, display it and handle it.
 generate_n2_plot(disciplines, save=False, show_html=True)
 
-#######################################################################################
+# %%
 # `Click here <../../_static/n2.html>`_ to see the rendering.

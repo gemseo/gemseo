@@ -33,19 +33,19 @@ from gemseo.uncertainty.api import get_available_distributions
 
 configure_logger()
 
-###############################################################################
+# %%
 # First of all,
 # we can access the names of the available probability distributions from the API:
 all_distributions = get_available_distributions()
 print(all_distributions)
 
-###############################################################################
+# %%
 # and filter the ones based on the OpenTURNS library
 # (their names start with the acronym 'OT'):
 ot_distributions = [dist for dist in all_distributions if dist.startswith("OT")]
 print(ot_distributions)
 
-###############################################################################
+# %%
 # Create a distribution
 # ---------------------
 # Then,
@@ -55,7 +55,7 @@ print(ot_distributions)
 distribution_0_1 = create_distribution("x", "OTNormalDistribution", 2)
 print(distribution_0_1)
 
-###############################################################################
+# %%
 # or create another distribution with mean = 1 and standard deviation = 2
 # for the marginal distributions:
 distribution_1_2 = create_distribution(
@@ -63,7 +63,7 @@ distribution_1_2 = create_distribution(
 )
 print(distribution_1_2)
 
-###############################################################################
+# %%
 # We could also use the generic :class:`.OTDistribution`
 # which allows access to all the OpenTURNS distributions
 # but this requires to know the signature of the methods of this library:
@@ -72,14 +72,14 @@ distribution_1_2 = create_distribution(
 )
 print(distribution_1_2)
 
-###############################################################################
+# %%
 # Plot the distribution
 # ---------------------
 # We can plot both cumulative and probability density functions
 # for the first marginal:
 distribution_0_1.plot()
 
-###############################################################################
+# %%
 # .. note::
 #
 #    We can provide a marginal index
@@ -87,39 +87,39 @@ distribution_0_1.plot()
 #    but in the current version of |g|,
 #    all components have the same distributions and so the plot will be the same.
 
-###############################################################################
+# %%
 # Get mean
 # --------
 # We can access the mean of the distribution:
 print(distribution_0_1.mean)
 
-###############################################################################
+# %%
 # Get standard deviation
 # ----------------------
 # We can access the standard deviation of the distribution:
 print(distribution_0_1.standard_deviation)
 
-###############################################################################
+# %%
 # Get numerical range
 # -------------------
 # We can access the range, ie. the difference between the numerical minimum and maximum,
 # of the distribution:
 print(distribution_0_1.range)
 
-###############################################################################
+# %%
 # Get mathematical support
 # ------------------------
 # We can access the range, ie. the difference between the minimum and maximum,
 # of the distribution:
 print(distribution_0_1.support)
 
-###############################################################################
+# %%
 # Generate samples
 # ----------------
 # We can generate 10 samples of the distribution:
 print(distribution_0_1.compute_samples(10))
 
-###############################################################################
+# %%
 # Compute CDF
 # -----------
 # We can compute the cumulative density function component per component
@@ -127,7 +127,7 @@ print(distribution_0_1.compute_samples(10))
 # and that the second one is lower than 1.)::
 print(distribution_0_1.compute_cdf([0.0, 1.0]))
 
-###############################################################################
+# %%
 # Compute inverse CDF
 # -------------------
 # We can compute the inverse cumulative density function

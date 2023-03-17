@@ -32,7 +32,7 @@ from gemseo.post.dataset.curves import Curves
 
 configure_logger()
 
-##############################################################################
+# %%
 # Load Burgers' dataset
 # -----------------------
 # We can easily load this dataset by means of the
@@ -42,20 +42,20 @@ configure_logger()
 dataset = load_dataset("BurgersDataset")
 print(dataset)
 
-##############################################################################
+# %%
 # Show the input and output data
 # ------------------------------
 print(dataset.get_data_by_group("inputs"))
 print(dataset.get_data_by_group("outputs"))
 
-##############################################################################
+# %%
 # Load customized dataset
 # -----------------------
 # Load the data with custom parameters and input-output naming.
 dataset = load_dataset("BurgersDataset", n_samples=20, n_x=700, fluid_viscosity=0.03)
 print(dataset)
 
-##############################################################################
+# %%
 # Plot the data
 # -------------
 Curves(dataset, "x", "u_t").execute(save=False, show=True)

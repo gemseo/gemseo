@@ -32,7 +32,7 @@ from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -41,14 +41,14 @@ from gemseo.problems.analytical.binh_korn import BinhKorn
 configure_logger()
 
 
-###############################################################################
+# %%
 # Import the optimization problem
 # -------------------------------
 # Then, we instantiate the BinkKorn optimization problem.
 
 problem = BinhKorn()
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # Then, we create a Design of Experiment factory,
@@ -56,7 +56,7 @@ problem = BinhKorn()
 doe_factory = DOEFactory()
 doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.ParetoFront`

@@ -40,7 +40,7 @@ from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 configure_logger()
 
 
-###############################################################################
+# %%
 # Define the design problem
 # -------------------------
 # In a first step, we define the design problem in terms of
@@ -53,7 +53,7 @@ eq_constraints = ["c_rf"]
 ineq_constraints = ["c_lift"]
 maximize_objective = True
 
-###############################################################################
+# %%
 # Create the disciplinary datasets
 # --------------------------------
 # Then, we create the disciplinary :class:`.AbstractFullCache` datasets
@@ -76,7 +76,7 @@ for discipline in disciplines:
     scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
     datasets.append(scenario.export_to_dataset(name=discipline.name, opt_naming=False))
 
-###############################################################################
+# %%
 # Instantiate a scalable problem
 # ------------------------------
 # In a third stage, we instantiate a :class:`.ScalableProblem`
@@ -93,7 +93,7 @@ problem = ScalableProblem(
 )
 print(problem)
 
-###############################################################################
+# %%
 # .. note::
 #
 #    We could also provide options to the :class:`.ScalableModel` objects
@@ -101,13 +101,13 @@ print(problem)
 #    e.g. :code:`fill_factor` in the frame of the :class:`.ScalableDiagonalModel`.
 #    In this example, we use the standard ones.
 
-###############################################################################
+# %%
 # Visualize the N2 chart
 # ----------------------
 # We can see the coupling between disciplines through this N2 chart:
 problem.plot_n2_chart(save=False, show=True)
 
-###############################################################################
+# %%
 # Create an MDO scenario
 # ----------------------
 # Lastly, we create a :class:`.MDOScenario` with the :class:`.MDF` formulation
@@ -115,7 +115,7 @@ problem.plot_n2_chart(save=False, show=True)
 # thus ensuring the feasibility of the first iterate.
 scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
 
-###############################################################################
+# %%
 # .. note::
 #
 #    We could also provide options for the scalable models to the constructor
@@ -123,13 +123,13 @@ scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
 #    the :class:`.ScalableDiagonalModel`.
 #    In this example, we use the standard ones.
 
-###############################################################################
+# %%
 # Once the scenario is created, we can execute it as any scenario.
 # Here, we use the :code:`NLOPT_SLSQP` optimization algorithm
 # with no more than 100 iterations.
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 
-###############################################################################
+# %%
 # We can post-process the results.
 # Here, we use the standard :class:`.OptHistoryView`.
 scenario.post_process("OptHistoryView", save=False, show=True)

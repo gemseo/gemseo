@@ -34,7 +34,7 @@ from numpy import array
 configure_logger()
 
 
-###############################################################################
+# %%
 # Introduction
 # ------------
 #
@@ -49,7 +49,7 @@ configure_logger()
 # Let's make a discipline out of this from an initial :code:`'inputs.txt'`.
 
 
-###############################################################################
+# %%
 # Implementation of the discipline
 # --------------------------------
 #
@@ -106,13 +106,13 @@ class ShellExecutableDiscipline(MDODiscipline):
         self.local_data.update(outputs)
 
 
-###############################################################################
+# %%
 # Execution of the discipline
 # ---------------------------
 # Now we can run it with default input values:
 shell_disc = ShellExecutableDiscipline()
 print(shell_disc.execute())
 
-###############################################################################
+# %%
 # or run it with new input values:
 print(shell_disc.execute({"a": array([2.0]), "b": array([3.0])}))

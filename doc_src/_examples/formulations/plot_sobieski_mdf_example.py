@@ -126,7 +126,7 @@ scenario.xdsmize(save_html=False)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer
 # and the optimizer options. Algorithm specific options are passed there.
-# Use :meth:`~gemseo.api.get_algorithm_options_schema` API function for more
+# Use :func:`.get_algorithm_options_schema` API function for more
 # information or read the documentation.
 #
 # Here ftol_rel option is a stop criteria based on the relative difference

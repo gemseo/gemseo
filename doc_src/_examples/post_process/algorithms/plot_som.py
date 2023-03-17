@@ -22,7 +22,7 @@
 Self-Organizing Map
 ===================
 
-In this example, we illustrate the use of the :class:`~gemseo.post.som.SOM` plot
+In this example, we illustrate the use of the :class:`.SOM` plot
 on the Sobieski's SSBJ problem.
 """
 from __future__ import annotations
@@ -32,7 +32,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -40,13 +40,13 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
-# The :class:`~gemseo.post.som.SOM` post-processing performs a Self Organizing Map
+# The :class:`.SOM` post-processing performs a Self Organizing Map
 # clustering on the optimization history.
-# A :class:`~gemseo.post.som.SOM` is a 2D representation of a design of experiments
+# A :class:`.SOM` is a 2D representation of a design of experiments
 # which requires dimensionality reduction since it may be in a very high dimension.
 #
 # A :term:`SOM` is built by using an unsupervised artificial neural network
@@ -66,7 +66,7 @@ configure_logger()
 # SOM's provide a qualitative view of the :term:`objective function`, the
 # :term:`constraints`, and of their relative behaviors.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
@@ -80,13 +80,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -106,26 +106,26 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the
-# :class:`~gemseo.post.som.SOM` plot which performs a self organizing map
+# :class:`.SOM` plot which performs a self organizing map
 # clustering on optimization history.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 
 scenario.post_process("SOM", save=False, show=True)
 
-###############################################################################
+# %%
 # Figure :ref:`fig-ssbj-mdf-som100` illustrates another :term:`SOM` on the Sobieski
 # use case. The optimization method is a (costly) derivative free algorithm
 # (``NLOPT_COBYLA``), indeed all the relevant information for the optimization

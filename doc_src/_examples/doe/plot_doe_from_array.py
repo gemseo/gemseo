@@ -28,24 +28,24 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 
-#######################################################################################
+# %%
 # Let us consider a discipline implementing the function :math:`y=a*b`
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "a*b"})
 
-#######################################################################################
+# %%
 # where :math:`a,b\in\{1,2,\ldots,10\}`:
 design_space = create_design_space()
 design_space.add_variable("a", 1, design_space.INTEGER, 1, 10)
 design_space.add_variable("b", 1, design_space.INTEGER, 1, 10)
 
-#######################################################################################
+# %%
 # We want to evaluate this discipline over this design space
 # by using the following input samples:
 sample_1 = [1.0, 2.0]
 sample_2 = [2.0, 3.0]
 samples = np.array([sample_1, sample_2])
 
-#######################################################################################
+# %%
 # For that, we can create a scenario and execute it with a :class:`.CustomDOE`
 # with the option "samples":
 scenario = create_scenario(
@@ -53,7 +53,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
 
-#######################################################################################
+# %%
 # Then,
 # we can display the content of the database as a dataframe
 # and check the values of the output,

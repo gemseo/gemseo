@@ -41,7 +41,7 @@ from gemseo.problems.scalable.data_driven.api import plot_scalability_results
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create the disciplinary datasets
 # --------------------------------
 # First of all, we create the disciplinary :class:`.Dataset` datasets
@@ -66,7 +66,7 @@ for discipline in disciplines:
         name=discipline.name, opt_naming=False
     )
 
-###############################################################################
+# %%
 # Define the design problem
 # -------------------------
 # Then, we instantiate a :class:`.ScalabilityStudy`
@@ -92,14 +92,14 @@ study = create_scalability_study(
     fill_factor=-1,
 )
 
-###############################################################################
+# %%
 # Add the disciplinary datasets
 # -----------------------------
 study.add_discipline(datasets["Aerodynamics"])
 study.add_discipline(datasets["Structure"])
 study.add_discipline(datasets["Mission"])
 
-###############################################################################
+# %%
 # Add the optimization strategies
 # -------------------------------
 # Then, we define the different optimization strategies we want to compare:
@@ -115,7 +115,7 @@ study.add_discipline(datasets["Mission"])
 study.add_optimization_strategy("NLOPT_SLSQP", 100, "MDF")
 study.add_optimization_strategy("NLOPT_SLSQP", 100, "IDF")
 
-###############################################################################
+# %%
 # Add the scaling strategy
 # ------------------------
 # After that, we define the different scaling strategies
@@ -146,7 +146,7 @@ study.add_optimization_strategy("NLOPT_SLSQP", 100, "IDF")
 # to very specific variables, e.g. local variables.
 study.add_scaling_strategies(design_size=[1, 20])
 
-###############################################################################
+# %%
 # Execute the scalable study
 # --------------------------
 # Then, we execute the scalability study,
@@ -156,7 +156,7 @@ study.add_scaling_strategies(design_size=[1, 20])
 # (because the :class:`.ScalableDiagonalModel` relies on stochastic features.
 study.execute(n_replicates=2)
 
-###############################################################################
+# %%
 # Look at the dependency matrices
 # -------------------------------
 # Here are the dependency matrices obtained with the 1st replicate when
@@ -174,7 +174,7 @@ study.execute(n_replicates=2)
 # ~~~~~~~
 # .. image:: /_images/scalable_example/2_1_sdm_Mission_dependency-1.png
 
-###############################################################################
+# %%
 # Look at optimization histories
 # ------------------------------
 # Here are the optimization histories obtained with the 1st replicate when
@@ -213,7 +213,7 @@ study.execute(n_replicates=2)
 # .. image:: /_images/scalable_example/IDF_2_1_ineq_constraints_history-1.png
 #    :width: 45%
 
-###############################################################################
+# %%
 # Post-process the results
 # ------------------------
 # Lastly, we plot the results.
@@ -230,6 +230,6 @@ post = plot_scalability_results("study")
 post.labelize_scaling_strategy("Number of design parameters per type.")
 post.plot(xmargin=3.0, xticks=[1.0, 20.0], xticks_labels=["1", "20"], widths=1.0)
 
-###############################################################################
+# %%
 # .. image:: /_images/scalable_example/exec_time-1.png
 #

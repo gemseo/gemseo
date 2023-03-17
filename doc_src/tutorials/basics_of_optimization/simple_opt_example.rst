@@ -39,8 +39,8 @@ In this subsection, we will see how to use **|g|** to solve this problem :math:`
 1.a. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
-we create a :class:`~gemseo.core.discipline.MDODiscipline` of :class:`~gemseo.disciplines.autopy.AutoPyDiscipline` type
+Firstly, by means of the :func:`.create_discipline` API function,
+we create a :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code::
@@ -53,14 +53,14 @@ from a python function:
 
     discipline = create_discipline("AutoPyDiscipline", py_func=f)
 
-Now, we want to minimize this :class:`~gemseo.core.discipline.MDODiscipline` over a design of experiments (DOE).
+Now, we want to minimize this :class:`.MDODiscipline` over a design of experiments (DOE).
 
 1.b. Define the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For that, by means of the :meth:`~gemseo.api.create_design_space` API function,
-we define the :class:`~gemseo.algos.design_space.DesignSpace` :math:`[-5, 5]\times[-5, 5]`
-by using its :meth:`~gemseo.algos.design_space.DesignSpace.add_variable` method.
+For that, by means of the :func:`.create_design_space` API function,
+we define the :class:`.DesignSpace` :math:`[-5, 5]\times[-5, 5]`
+by using its :meth:`~.DesignSpace.add_variable` method.
 
 .. code::
 
@@ -73,9 +73,9 @@ by using its :meth:`~gemseo.algos.design_space.DesignSpace.add_variable` method.
 1.c. Define the DOE scenario
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then, by means of the :meth:`~gemseo.api.create_scenario` API function,
-we define a :class:`~gemseo.core.doe_scenario.DOEScenario` from the :class:`~gemseo.core.discipline.MDODiscipline`
-and the :class:`~gemseo.algos.design_space.DesignSpace` defined above:
+Then, by means of the :func:`.create_scenario` API function,
+we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
+and the :class:`.DesignSpace` defined above:
 
 .. code::
 
@@ -88,8 +88,8 @@ and the :class:`~gemseo.algos.design_space.DesignSpace` defined above:
 1.d. Execute the DOE scenario
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lastly, we solve the :class:`~gemseo.algos.opt_problem.OptimizationProblem` included in the :class:`~gemseo.core.doe_scenario.DOEScenario`
-defined above by minimizing the objective function over a design of experiments included in the :class:`~gemseo.algos.design_space.DesignSpace`.
+Lastly, we solve the :class:`.OptimizationProblem` included in the :class:`.DOEScenario`
+defined above by minimizing the objective function over a design of experiments included in the :class:`.DesignSpace`.
 Precisely, we choose a `full factorial design <https://en.wikipedia.org/wiki/Factorial_experiment>`_ of size :math:`11^2`:
 
 .. code::
@@ -97,7 +97,7 @@ Precisely, we choose a `full factorial design <https://en.wikipedia.org/wiki/Fac
    scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
 The optimum results can be found in the execution log. It is also possible to
-extract them by invoking the :meth:`~gemseo.core.scenario.Scenario.get_optimum` method. It
+extract them by invoking the :meth:`~.Scenario.get_optimum` method. It
 returns a dictionary containing the optimum results for the
 scenario under consideration:
 
@@ -154,7 +154,7 @@ Firstly, we create the objective function and its gradient as standard python fu
 2.b. Minimize the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now, we can to minimize this :class:`~gemseo.core.discipline.MDODiscipline` over its design space by means of
+Now, we can to minimize this :class:`.MDODiscipline` over its design space by means of
 the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the function :code:`scipy.optimize.fmin_l_bfgs_b`.
 
 .. code-block:: python
@@ -203,8 +203,8 @@ from `scipy <https://www.scipy.org/>`_ called through the optimization interface
 3.a. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
-we create a :class:`~gemseo.core.discipline.MDODiscipline` of :class:`~gemseo.disciplines.autopy.AutoPyDiscipline` type
+Firstly, by means of the :func:`.create_discipline` API function,
+we create a :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code-block:: python
@@ -222,16 +222,16 @@ from a python function:
 
     discipline = create_discipline("AutoPyDiscipline", py_func=g, py_jac=dgdx)
 
-Now, we can to minimize this :class:`~gemseo.core.discipline.MDODiscipline` over a design space,
+Now, we can to minimize this :class:`.MDODiscipline` over a design space,
 by means of a quasi-Newton method from the initial point :math:`0.5`.
 
 3.b. Define the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For that, by means of the :meth:`~gemseo.api.create_design_space` API function,
-we define the :class:`~gemseo.algos.design_space.DesignSpace` :math:`[-2., 2.]`
+For that, by means of the :func:`.create_design_space` API function,
+we define the :class:`.DesignSpace` :math:`[-2., 2.]`
 with initial value :math:`0.5`
-by using its :meth:`~gemseo.algos.design_space.DesignSpace.add_variable` method.
+by using its :meth:`~.DesignSpace.add_variable` method.
 
 .. code::
 
@@ -243,9 +243,9 @@ by using its :meth:`~gemseo.algos.design_space.DesignSpace.add_variable` method.
 3.c. Define the optimization problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then, by means of the :meth:`~gemseo.api.create_scenario` API function,
-we define a :class:`~gemseo.core.mdo_scenario.MDOScenario` from the :class:`~gemseo.core.discipline.MDODiscipline`
-and the :class:`~gemseo.algos.design_space.DesignSpace` defined above:
+Then, by means of the :func:`.create_scenario` API function,
+we define a :class:`.MDOScenario` from the :class:`.MDODiscipline`
+and the :class:`.DesignSpace` defined above:
 
 .. code::
 
@@ -258,11 +258,11 @@ and the :class:`~gemseo.algos.design_space.DesignSpace` defined above:
 3.d. Execute the optimization problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lastly, we solve the :class:`~gemseo.algos.opt_problem.OptimizationProblem` included in the :class:`~gemseo.core.mdo_scenario.MDOScenario`
-defined above by minimizing the objective function over the :class:`~gemseo.algos.design_space.DesignSpace`.
+Lastly, we solve the :class:`.OptimizationProblem` included in the :class:`.MDOScenario`
+defined above by minimizing the objective function over the :class:`.DesignSpace`.
 Precisely, we choose the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 implemented in the function :code:`scipy.optimize.fmin_l_bfgs_b` and
-indirectly called by means of the class :class:`~gemseo.algos.opt.opt_factory.OptimizersFactory` and of its function :meth:`~gemseo.algos.driver_factory.DriverFactory.execute`:
+indirectly called by means of the class :class:`.OptimizersFactory` and of its function :meth:`~.DriverFactory.execute`:
 
 .. code-block:: python
 

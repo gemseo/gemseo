@@ -36,17 +36,17 @@ from gemseo.mlearning.api import get_classification_options
 configure_logger()
 
 
-###############################################################################
+# %%
 # Get available classification models
 # -----------------------------------
 print(get_classification_models())
 
-###############################################################################
+# %%
 # Get classification model options
 # --------------------------------
 print(get_classification_options("KNNClassifier"))
 
-###############################################################################
+# %%
 # Create classification model
 # ---------------------------
 iris = load_dataset("IrisDataset", as_io=True)

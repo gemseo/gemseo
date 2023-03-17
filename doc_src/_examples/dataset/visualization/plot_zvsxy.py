@@ -32,12 +32,12 @@ from gemseo.post.dataset.zvsxy import ZvsXY
 configure_logger()
 
 
-############################################################################
+# %%
 # Load the Rosenbrock dataset
 # ---------------------------
 dataset = load_dataset("RosenbrockDataset")
 
-############################################################################
+# %%
 # Plot z vs x and y
 # -----------------
 # We can use the :class:`.ZvsXY` plot

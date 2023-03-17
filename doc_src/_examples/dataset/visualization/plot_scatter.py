@@ -35,7 +35,7 @@ from numpy import sin
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 inputs = linspace(0, 1, 20)[:, None]
@@ -46,7 +46,7 @@ dataset = Dataset()
 dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 
-############################################################################
+# %%
 # Plot y vs x
 # -----------
 # We can use the :class:`.Scatter` plot

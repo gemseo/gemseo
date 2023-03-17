@@ -35,7 +35,7 @@ from numpy.random import rand
 configure_logger()
 
 
-##############################################################################
+# %%
 # Synthetic data
 # --------------
 # Let us consider three parameters:
@@ -49,7 +49,7 @@ dim_y1 = 3
 sizes = {"x_1": dim_x1, "x_2": dim_x2, "y_1": dim_y1}
 groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
 
-##############################################################################
+# %%
 # We generate 5 random samples of the inputs where:
 #
 # - x_1 is stored in the first column,
@@ -65,7 +65,7 @@ outputs_names = ["y_1"]
 data = concatenate((inputs, outputs), 1)
 data_names = inputs_names + outputs_names
 
-##############################################################################
+# %%
 # Create a dataset
 # ----------------
 # using default names
@@ -76,7 +76,7 @@ dataset = Dataset(name="random_dataset")
 dataset.set_from_array(data)
 print(dataset)
 
-##############################################################################
+# %%
 # using particular names
 # ~~~~~~~~~~~~~~~~~~~~~~
 # We can also use the names of the variables, rather than the default ones
@@ -86,7 +86,7 @@ dataset.set_from_array(data, data_names, sizes)
 print(dataset)
 print(dataset.data)
 
-##############################################################################
+# %%
 # .. warning::
 #
 #    The number of variables names must be equal to the number of columns of
@@ -94,7 +94,7 @@ print(dataset.data)
 #    different variables by means of a dictionary and be careful that the
 #    total size is equal to this number of columns.
 
-##############################################################################
+# %%
 # using particular groups
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # We can also use the notions of groups of variables:
@@ -103,14 +103,14 @@ dataset.set_from_array(data, data_names, sizes, groups)
 print(dataset)
 print(dataset.data)
 
-##############################################################################
+# %%
 # .. note::
 #
 #    The groups are specified by means of a dictionary where indices are the
 #    variables names and values are the groups. If a variable is missing,
 #    the default group 'parameters' is considered.
 
-##############################################################################
+# %%
 # storing by names
 # ~~~~~~~~~~~~~~~~
 # We can also store the data by variables names rather than by groups.
@@ -119,7 +119,7 @@ dataset.set_from_array(data, data_names, sizes, groups)
 print(dataset)
 print(dataset.data)
 
-##############################################################################
+# %%
 # .. note::
 #
 #    The choice to be made between a storage by group and a storage by
@@ -132,7 +132,7 @@ print(dataset.data)
 #    variables of the dataset from their names, the storage by variables names
 #    is preferable.
 
-##############################################################################
+# %%
 # Access properties
 # -----------------
 # Variables names
@@ -140,51 +140,51 @@ print(dataset.data)
 # We can access the variables names:
 print(dataset.variables)
 
-##############################################################################
+# %%
 # Variables sizes
 # ~~~~~~~~~~~~~~~
 # We can access the variables sizes:
 print(dataset.sizes)
 
-##############################################################################
+# %%
 # Variables groups
 # ~~~~~~~~~~~~~~~~
 # We can access the variables groups:
 print(dataset.groups)
 
-##############################################################################
+# %%
 # Access data
 # -----------
 # Access by group
 # ~~~~~~~~~~~~~~~
 # We can get the data by group, either as an array (default option):
 print(dataset.get_data_by_group("inputs"))
-##############################################################################
+# %%
 # or as a dictionary indexed by the variables names:
 print(dataset.get_data_by_group("inputs", True))
 
-##############################################################################
+# %%
 # Access by variable name
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the data by variables names,
 # either as a dictionary indexed by the variables names (default option):
 print(dataset.get_data_by_names(["x_1", "y_1"]))
-##############################################################################
+# %%
 # or as an array:
 print(dataset.get_data_by_names(["x_1", "y_1"], False))
 
-##############################################################################
+# %%
 # Access all data
 # ~~~~~~~~~~~~~~~
 # We can get all the data, either as a large array:
 print(dataset.get_all_data())
-##############################################################################
+# %%
 # or as a dictionary indexed by variables names:
 print(dataset.get_all_data(as_dict=True))
-##############################################################################
+# %%
 # We can get these data sorted by category, either with a large array for each
 # category:
 print(dataset.get_all_data(by_group=False))
-##############################################################################
+# %%
 # or with a dictionary of variables names:
 print(dataset.get_all_data(by_group=False, as_dict=True))

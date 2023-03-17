@@ -35,7 +35,7 @@ from gemseo.api import get_available_doe_algorithms
 configure_logger()
 
 
-##############################################################################
+# %%
 # Get available DOE algorithms
 # ----------------------------
 #
@@ -43,7 +43,7 @@ configure_logger()
 # of optimization algorithms available in |g| or in external modules
 print(get_available_doe_algorithms())
 
-##########################################################################
+# %%
 # Get options schema
 # ------------------
 # For a given optimization algorithm, e.g. :code:`"DiagonalDOE"`,

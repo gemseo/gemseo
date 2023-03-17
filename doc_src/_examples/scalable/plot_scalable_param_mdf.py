@@ -41,7 +41,7 @@ from gemseo.problems.scalable.parametric.problem import TMScalableProblem
 
 configure_logger()
 
-#######################################################################################
+# %%
 # Instantiation of the scalable problem
 # -------------------------------------
 n_shared = 3
@@ -49,12 +49,12 @@ n_local = [2, 4]
 n_coupling = [2, 3]
 problem = TMScalableProblem(n_shared, n_local, n_coupling)
 
-#######################################################################################
+# %%
 # Display the coupling structure
 # ------------------------------
 generate_n2_plot(problem.disciplines, save=False, show=True)
 
-#######################################################################################
+# %%
 # Solve the MDO using an MDF formulation
 # --------------------------------------
 scenario = create_scenario(problem.disciplines, "MDF", "obj", problem.design_space)
@@ -62,7 +62,7 @@ scenario.add_constraint("cstr_0", "ineq")
 scenario.add_constraint("cstr_1", "ineq")
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 
-#######################################################################################
+# %%
 # Post-process the results
 # ------------------------
 scenario.post_process("OptHistoryView", save=False, show=True)

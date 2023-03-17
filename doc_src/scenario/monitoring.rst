@@ -17,11 +17,11 @@ Monitoring the execution of a scenario
 
 When a scenario is executed (see :ref:`sellar_mdo` for building a scenario), |g| logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
-In a situation like this, the current execution status of the :class:`~gemseo.core.discipline.MDODiscipline` is useful as well.
+In a situation like this, the current execution status of the :class:`.MDODiscipline` is useful as well.
 
 In this page, the different monitoring modes of a |g| scenario are illustrated on the :ref:`Sobieski <sobieski_problem>` MDF test case.
 
-For that, by means of the API function :meth:`~gemseo.api.create_discipline`, we build the :class:`~gemseo.core.discipline.MDODiscipline`:
+For that, by means of the API function :func:`.create_discipline`, we build the :class:`.MDODiscipline`:
 
 .. code::
 
@@ -32,7 +32,7 @@ For that, by means of the API function :meth:`~gemseo.api.create_discipline`, we
                                      "SobieskiAerodynamics",
                                      "SobieskiMission"])
 
-and by means of the API function :meth:`~gemseo.api.create_discipline`, we build the :class:`~gemseo.core.mdo_scenario.MDOScenario` :
+and by means of the API function :func:`.create_discipline`, we build the :class:`.MDOScenario` :
 
 .. code::
 
@@ -48,9 +48,9 @@ Basic monitoring using logs
 ---------------------------
 
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using |g|'s logger.
-Use :mod:`~gemseo.api.configure_logger` to configure the logger to log in a file.
+Use :func:`.configure_logger` to configure the logger to log in a file.
 
-The method :meth:`~gemseo.core.scenario.Scenario.xdsmize` of the :class:`~gemseo.core.scenario.Scenario`
+The method :meth:`~.Scenario.xdsmize` of the :class:`.Scenario`
 can be used to this aim (:code:`monitor=True`).
 If the option ``save_html`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``show_html=True``.
 If ``save_pdf`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
@@ -80,9 +80,9 @@ This generates outputs such as the following, where the process' hierarchy is re
 Graphical monitoring using `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
 -------------------------------------------------------------------------
 
-An :ref:`xdsm` diagram with the status of the :class:`~gemseo.core.discipline.MDODiscipline` can be generated at each status change
-of the :class:`~gemseo.core.discipline.MDODiscipline`. See :ref:`xdsm` for setting up the :ref:`XDSM <xdsm>` generation in a web browser.
-To trigger this mode in a scenario, use :meth:`~gemseo.core.scenario.Scenario.xdsmize`, with the :code:`monitor` argument set to :code:`True`.
+An :ref:`xdsm` diagram with the status of the :class:`.MDODiscipline` can be generated at each status change
+of the :class:`.MDODiscipline`. See :ref:`xdsm` for setting up the :ref:`XDSM <xdsm>` generation in a web browser.
+To trigger this mode in a scenario, use :meth:`~.Scenario.xdsmize`, with the :code:`monitor` argument set to :code:`True`.
 The path to the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ library must be set to the folder containing the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ :term:`HTML` files.
 
 
@@ -126,7 +126,7 @@ One can observe these events and program a platform to react and display informa
 The observer design pattern is used.
 
 In the following code, we create an :code:`Observer` object that implements an update method.
-Then, by means of the API function :meth:`~gemseo.api.monitor_scenario`, we create a :class:`~gemseo.core.monitoring.Monitoring`
+Then, by means of the API function :func:`.monitor_scenario`, we create a :class:`.Monitoring`
 and add the observer to the list of the listeners that are notified by |g| monitoring system.
 
 .. code::

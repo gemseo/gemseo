@@ -35,15 +35,15 @@ from gemseo.api import get_available_opt_algorithms
 configure_logger()
 
 
-##############################################################################
+# %%
 # Get available optimization algorithms
 # -------------------------------------
 #
-# The :meth:`~gemseo.api.get_available_opt_algorithms` function returns the list
+# The :meth:`.get_available_opt_algorithms` function returns the list
 # of optimization algorithms available in |g| or in external modules
 print(get_available_opt_algorithms())
 
-##########################################################################
+# %%
 # Get options schema
 # ------------------
 # For a given optimization algorithm, e.g. :code:`"NLOPT_SLSQP"`,

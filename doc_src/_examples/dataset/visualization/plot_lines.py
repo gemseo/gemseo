@@ -36,7 +36,7 @@ from numpy import sin
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 inputs = linspace(0, 1, 10)[:, None]
@@ -48,7 +48,7 @@ dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y1", outputs_1, "outputs", cache_as_input=False)
 dataset.add_variable("y2", outputs_2, "outputs", cache_as_input=False)
 
-############################################################################
+# %%
 # Plot y1 and y2
 # --------------
 # We can use the :class:`.Lines` plot.

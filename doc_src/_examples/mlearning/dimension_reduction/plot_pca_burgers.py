@@ -35,7 +35,7 @@ from numpy import eye
 configure_logger()
 
 
-###############################################################################
+# %%
 # Load dataset
 # ~~~~~~~~~~~~
 dataset = BurgersDataset(n_samples=20)
@@ -45,7 +45,7 @@ t = dataset.get_data_by_group(dataset.INPUT_GROUP)[:, 0]
 u_t = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
 t_split = 0.87
 
-###############################################################################
+# %%
 # Plot dataset
 # ~~~~~~~~~~~~
 
@@ -71,7 +71,7 @@ plt.legend()
 plt.title("Solutions to Burgers equation")
 plt.show()
 
-###############################################################################
+# %%
 # Create PCA
 # ~~~~~~~~~~
 n_components = 7
@@ -84,7 +84,7 @@ means = u_t.mean(axis=1)
 u_t_reduced = pca.transform(u_t)
 u_t_restored = pca.inverse_transform(u_t_reduced)
 
-###############################################################################
+# %%
 # Plot restored data
 # ~~~~~~~~~~~~~~~~~~
 color = "red"
@@ -104,7 +104,7 @@ plt.legend()
 plt.title("Reconstructed solution after PCA reduction.")
 plt.show()
 
-###############################################################################
+# %%
 # Plot principal components
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 red_component = eye(n_components)

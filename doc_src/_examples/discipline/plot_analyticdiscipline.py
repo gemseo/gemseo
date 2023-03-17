@@ -28,13 +28,13 @@ from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from numpy import array
 
-###############################################################################
+# %%
 # Import
 # ------
 
 configure_logger()
 
-###############################################################################
+# %%
 # Introduction
 # ------------
 # A simple :class:`.MDODiscipline` can be created
@@ -43,7 +43,7 @@ configure_logger()
 # which is a quick alternative to model a simple analytic MDO problem.
 
 
-###############################################################################
+# %%
 # Create the dictionary of analytic outputs
 # -----------------------------------------
 # First of all, we have to define the output expressions in a dictionary
@@ -51,13 +51,13 @@ configure_logger()
 # format:
 expressions = {"y_1": "2*x**2", "y_2": "5+3*x**2+z**3"}
 
-###############################################################################
+# %%
 # Create the discipline
 # ---------------------
 # Then, we create and instantiate the corresponding
 # :class:`.AnalyticDiscipline`,
 # which is a particular :class:`.MDODiscipline`.
-# For that, we use the API function :meth:`~gemseo.api.create_discipline` with:
+# For that, we use the API function :func:`.create_discipline` with:
 #
 # - :code:`discipline_name="AnalyticDiscipline"`,
 # - :code:`name="analytic"`,
@@ -66,7 +66,7 @@ expressions = {"y_1": "2*x**2", "y_2": "5+3*x**2+z**3"}
 # In practice, we write:
 disc = create_discipline("AnalyticDiscipline", expressions=expressions)
 
-###############################################################################
+# %%
 # .. note::
 #
 #    |g| takes care of the grammars and
@@ -76,7 +76,7 @@ disc = create_discipline("AnalyticDiscipline", expressions=expressions)
 #    float input parameter and :code:`y_1` and :code:`y_2` are
 #    monodimensional float output parameters.
 
-###############################################################################
+# %%
 # Execute the discipline
 # ----------------------
 # Lastly, we can execute this discipline any other:
@@ -85,7 +85,7 @@ out = disc.execute(input_data)
 print(("y_1 =", out["y_1"]))
 print(("y_2 =", out["y_2"]))
 
-###############################################################################
+# %%
 # About the analytic jacobian
 # ---------------------------
 # The discipline will provide analytic derivatives (Jacobian) automatically

@@ -38,7 +38,7 @@ from numpy import array
 configure_logger()
 
 
-##########################################################################
+# %%
 # Create a design space
 # ---------------------
 #
@@ -50,7 +50,7 @@ configure_logger()
 design_space = create_design_space()
 print(design_space)
 
-##########################################################################
+# %%
 # Once built, we can add variables. E.g.
 
 design_space.add_variable(
@@ -58,7 +58,7 @@ design_space.add_variable(
 )
 print(design_space)
 
-##########################################################################
+# %%
 # Read a design space
 # -------------------
 # In presence of a design space specified in a CSV file,
@@ -72,7 +72,7 @@ print(design_space)
 design_space.export_to_txt("saved_design_space.txt")
 loaded_design_space = read_design_space("saved_design_space.txt")
 
-##########################################################################
+# %%
 # Write a design space
 # --------------------
 #

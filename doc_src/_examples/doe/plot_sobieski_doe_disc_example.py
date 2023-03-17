@@ -31,18 +31,18 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 configure_logger()
 
 
-##############################################################################
+# %%
 # Instantiate the discipline
 # --------------------------
 discipline = create_discipline("SobieskiMission")
 
-##############################################################################
+# %%
 # Create the design space
 # -----------------------
 design_space = SobieskiProblem().design_space
 design_space.filter(["y_24", "y_34"])
 
-##############################################################################
+# %%
 # Create the scenario
 # -----------------------
 # Build scenario which links the disciplines with the formulation and
@@ -56,18 +56,18 @@ scenario = create_scenario(
     scenario_type="DOE",
 )
 
-##############################################################################
+# %%
 # Execute the scenario
 # -----------------------
 # Here we use a latin hypercube sampling algorithm with 30 samples.
 scenario.execute({"n_samples": 30, "algo": "lhs"})
 
-##############################################################################
+# %%
 # Plot optimization history view
 # ------------------------------
 scenario.post_process("OptHistoryView", save=False, show=True)
 
-##############################################################################
+# %%
 # Plot parallel coordinates
 # -------------------------
 scenario.post_process(

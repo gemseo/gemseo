@@ -33,7 +33,7 @@ from numpy import linspace
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 inputs = linspace(-1, 1, 100)[:, None]
@@ -50,7 +50,7 @@ other_dataset.add_variable(
     "y2", hstack((-(inputs**3), -(inputs**4))), "outputs", cache_as_input=False
 )
 
-############################################################################
+# %%
 # Plot y1 and y2
 # --------------
 # We can use the :class:`.Boxplot` plot.
@@ -60,7 +60,7 @@ plot.ylabel = "Values"
 plot.title = "Standard boxplots"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with centering
 # -------------------
 # We can center the data:
@@ -68,7 +68,7 @@ plot = Boxplot(dataset, center=True)
 plot.title = "With centering"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with scaling
 # -----------------
 # We can scale the data (normalization with the standard deviation):
@@ -76,7 +76,7 @@ plot = Boxplot(dataset, scale=True)
 plot.title = "With scaling"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot without outliers
 # ---------------------
 # We can remove the outliers:
@@ -84,7 +84,7 @@ plot = Boxplot(dataset, add_outliers=False)
 plot.title = "Without outliers"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with confidence intervals
 # ------------------------------
 # We can add confidence intervals for the median:
@@ -92,7 +92,7 @@ plot = Boxplot(dataset, add_confidence_interval=True)
 plot.title = "Confidence intervals"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot horizontally
 # -----------------
 # We can use horizontal bars:
@@ -100,7 +100,7 @@ plot = Boxplot(dataset, use_vertical_bars=False)
 plot.title = "Horizontal bars"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with other datasets
 # ------------------------
 # We can add a dataset:

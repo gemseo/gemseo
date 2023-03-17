@@ -32,7 +32,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -40,7 +40,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
@@ -61,7 +61,7 @@ configure_logger()
 # The plot method considers all variable correlations greater than 95%. A different
 # threshold value and/or a sublist of variable names can be passed as options.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
@@ -75,13 +75,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -101,7 +101,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.Correlations`
@@ -110,12 +110,12 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # objective functions w.r.t. optimization iterations or sampling snapshots.
 # This method requires the list of functions names to plot.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

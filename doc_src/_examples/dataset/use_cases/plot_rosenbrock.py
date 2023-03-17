@@ -48,7 +48,7 @@ from gemseo.post.dataset.zvsxy import ZvsXY
 configure_logger()
 
 
-##############################################################################
+# %%
 # Load Rosenbrock dataset
 # -----------------------
 # We can easily load this dataset by means of the
@@ -57,19 +57,19 @@ configure_logger()
 dataset = load_dataset("RosenbrockDataset")
 print(dataset)
 
-##############################################################################
+# %%
 # Show the input and output data
 # ------------------------------
 print(dataset.get_data_by_group("design_parameters"))
 print(dataset.get_data_by_group("functions"))
 
-##############################################################################
+# %%
 # Load the data with an input-output naming
 # -----------------------------------------
 dataset = load_dataset("RosenbrockDataset", opt_naming=False)
 print(dataset)
 
-##############################################################################
+# %%
 # Plot the data
 # -------------
 ZvsXY(dataset, x="x", x_comp=0, y="x", y_comp=1, z="rosen").execute(

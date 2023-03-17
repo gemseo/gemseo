@@ -25,7 +25,7 @@ K-means
 
 Load Iris dataset and create clusters.
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
@@ -39,7 +39,7 @@ from numpy import array
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create dataset
 # --------------
 # We import the Iris benchmark dataset through the API.
@@ -53,7 +53,7 @@ print(variables)
 dataset = Dataset("sepal_and_petal")
 dataset.set_from_array(data, variables)
 
-###############################################################################
+# %%
 # Create clustering model
 # -----------------------
 # We know that there are three classes of Iris plants.
@@ -62,7 +62,7 @@ model = create_clustering_model("KMeans", data=dataset, n_clusters=3)
 model.learn()
 print(model)
 
-###############################################################################
+# %%
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction.
@@ -75,7 +75,7 @@ input_value = {
 output_value = model.predict(input_value)
 print(output_value)
 
-###############################################################################
+# %%
 # Plot clusters
 # -------------
 # Show cluster labels

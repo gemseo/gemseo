@@ -26,7 +26,7 @@ API
 Here are some examples of the machine learning API
 applied to clustering models.
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
@@ -40,17 +40,17 @@ from gemseo.mlearning.api import get_clustering_options
 configure_logger()
 
 
-###############################################################################
+# %%
 # Get available clustering models
 # -------------------------------
 print(get_clustering_models())
 
-###############################################################################
+# %%
 # Get clustering model options
 # ----------------------------
 print(get_clustering_options("GaussianMixture"))
 
-###############################################################################
+# %%
 # Create clustering model
 # -----------------------
 iris = load_dataset("IrisDataset")
