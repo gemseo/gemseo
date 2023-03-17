@@ -221,8 +221,12 @@ class AutoPyDiscipline(MDODiscipline):
             func_jac = atleast_2d(func_jac)
         if func_jac.shape != self.__jac_shape:
             raise ValueError(
-                "The jacobian provided by the py_jac function is of wrong shape; "
-                f"expected {self.__jac_shape}, got {func_jac.shape}."
+                f"The shape {func_jac.shape} "
+                "of the Jacobian matrix "
+                f"of the discipline {self.name} "
+                f"provided by py_jac "
+                "does not match "
+                f"(output_size, input_size)={self.__jac_shape}."
             )
 
         self.jac = split_array_to_dict_of_arrays(

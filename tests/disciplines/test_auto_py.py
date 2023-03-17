@@ -222,11 +222,13 @@ def test_jacobian_shape_mismatch():
     assert disc.check_jacobian(threshold=1e-5)
 
     disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
-    msg = (
-        "The jacobian provided by the py_jac function is of wrong shape; "
-        r"expected \(1, 3\), got \(3, 1\)."
-    )
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The shape (3, 1) of the Jacobian matrix of the discipline obj "
+            "provided by py_jac does not match (output_size, input_size)=(1, 3)."
+        ),
+    ):
         disc_wrong.linearize(force_all=True)
 
 

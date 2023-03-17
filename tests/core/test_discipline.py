@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -444,7 +445,13 @@ def test_linearize_errors():
         d2.__setattr__("linearization_mode", "toto")
 
     d2.local_data["y"] = 1
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The shape (1,) of the Jacobian matrix dy/dx of the discipline LinDisc "
+            "does not match (output_size, input_size)=(1, 1)."
+        ),
+    ):
         d2._check_jacobian_shape(["x"], ["y"])
 
     sm = SobieskiMission()
