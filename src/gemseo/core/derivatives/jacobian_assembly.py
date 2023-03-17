@@ -584,7 +584,7 @@ class JacobianAssembly:
         matrix_type: JacobianType = JacobianType.MATRIX,
         use_lu_fact: bool = False,
         exec_cache_tol: float | None = None,
-        force_no_exec: bool = False,
+        execute: bool = True,
         residual_variables: Mapping[str, str] | None = None,
         **linear_solver_options: Any,
     ) -> dict[str, dict[str, ndarray]] | dict[Any, dict[Any, None]]:
@@ -604,8 +604,12 @@ class JacobianAssembly:
             exec_cache_tol: The discipline cache tolerance to
                 when calling the linearize method.
                 If None, no tolerance is set (equivalent to tol=0.0).
-            force_no_exec: Whether the discipline is not re-executed,
-                the cache is loaded anyway.
+            execute: Whether to start by executing the discipline
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline was executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.MDODiscipline.cache`.
             linear_solver_options: The options passed to the linear solver factory.
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
@@ -646,7 +650,7 @@ class JacobianAssembly:
             if disc.cache is not None and exec_cache_tol is not None:
                 disc.cache_tol = exec_cache_tol
 
-            disc.linearize(in_data, force_no_exec=force_no_exec)
+            disc.linearize(in_data, execute=execute)
 
         # compute the sizes from the Jacobians
         self.compute_sizes(functions, variables, couplings_minimal, residual_variables)

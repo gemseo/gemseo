@@ -86,7 +86,7 @@ class Testmdochain(unittest.TestCase):
                 chain = MDOParallelChain(
                     disciplines, use_threading=True, use_deep_copy=use_deep_copy
                 )
-                chain.linearize(force_all=True)
+                chain.linearize(compute_all_jacobians=True)
                 ok = chain.check_jacobian(
                     chain.default_inputs,
                     derr_approx="complex_step",

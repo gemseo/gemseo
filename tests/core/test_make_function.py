@@ -53,6 +53,7 @@ def create_disciplinary_function(
         return array([[1.0, 1.0]])
 
     discipline = AutoPyDiscipline(my_func, py_jac=my_jac)
+    discipline.add_differentiated_inputs(["x", "y"])
     discipline.add_differentiated_outputs(["z"])
     return MakeFunction(
         ["x", "y"],

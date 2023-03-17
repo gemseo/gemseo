@@ -149,8 +149,8 @@ class MDOChain(MDODiscipline):
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = discipline.get_input_data()
-        # The graph traversal algorithm avoid to force_all linearizations
-        discipline.linearize(last_cached, force_no_exec=True, force_all=False)
+        # The graph traversal algorithm avoid to compute unnecessary Jacobians
+        discipline.linearize(last_cached, execute=False, compute_all_jacobians=False)
 
         for output_name in chain_outputs:
             if output_name in self.jac:
@@ -216,8 +216,10 @@ class MDOChain(MDODiscipline):
         # use coupling_structure graph path for that
         last_cached = last_discipline.get_input_data()
 
-        # The graph traversal algorithm avoid to force_all linearizations
-        last_discipline.linearize(last_cached, force_no_exec=True, force_all=False)
+        # The graph traversal algorithm avoid to compute unnecessary Jacobians
+        last_discipline.linearize(
+            last_cached, execute=False, compute_all_jacobians=False
+        )
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines

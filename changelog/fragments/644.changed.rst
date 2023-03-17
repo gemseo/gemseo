@@ -1,0 +1,4 @@
+API change:
+
+- Replace the argument ``force_no_exec`` by ``execute`` in :meth:`.MDODiscipline.linearize` and :meth:`.JacobianAssembly.total_derivatives`.
+- Rename the argument ``force_all`` to ``compute_all_jacobians`` in :meth:`.MDODiscipline.linearize`.

@@ -119,7 +119,7 @@ def test_execute(discipline):
 
 def test_linearize(discipline):
     """Check the linearization of the discipline."""
-    discipline.linearize(force_all=True)
+    discipline.linearize(compute_all_jacobians=True)
     assert_equal(
         discipline.jac,
         {

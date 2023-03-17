@@ -326,22 +326,9 @@ class MDA(MDODiscipline):
         return concatenate(couplings)
 
     def _retrieve_diff_inouts(
-        self,
-        force_all: bool = False,
+        self, compute_all_jacobians: bool = False
     ) -> tuple[set[str] | list[str], set[str] | list[str]]:
-        """Return the names of the inputs and outputs involved in the differentiation.
-
-        Args:
-            force_all: Whether to differentiate all outputs with respect to all inputs.
-                If `False`,
-                differentiate the :attr:`.MDODiscipline._differentiated_outputs`
-                with respect to the :attr:`.MDODiscipline._differentiated_inputs`.
-
-        Returns:
-            The inputs according to which to differentiate,
-            the outputs to be differentiated.
-        """
-        if force_all:
+        if compute_all_jacobians:
             strong_cpl = set(self.strong_couplings)
             inputs = set(self.get_input_data_names())
             outputs = self.get_output_data_names()
@@ -431,7 +418,6 @@ class MDA(MDODiscipline):
         # have changed at convergence, therefore the cache is not exactly
         # the same as the current value
         exec_cache_tol = self.lin_cache_tol_fact * self.tolerance
-        force_no_exec = exec_cache_tol != 0.0
         self.__check_linear_solver_options()
         residual_variables = {}
         for disc in self.disciplines:
@@ -453,7 +439,7 @@ class MDA(MDODiscipline):
             matrix_type=self.matrix_type,
             use_lu_fact=self.use_lu_fact,
             exec_cache_tol=exec_cache_tol,
-            force_no_exec=force_no_exec,
+            execute=exec_cache_tol == 0.0,
             linear_solver=self.linear_solver,
             residual_variables=residual_variables,
             **self.linear_solver_options,

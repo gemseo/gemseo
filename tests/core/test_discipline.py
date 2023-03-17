@@ -240,7 +240,7 @@ def test_check_jac_fdapprox():
     aero = SobieskiAerodynamics("complex128")
     inpts = aero.default_inputs
     aero.linearization_mode = aero.FINITE_DIFFERENCES
-    aero.linearize(inpts, force_all=True)
+    aero.linearize(inpts, compute_all_jacobians=True)
     aero.check_jacobian(inpts)
 
     aero.linearization_mode = "auto"
@@ -251,14 +251,14 @@ def test_check_jac_csapprox():
     """Test the complex step approximation."""
     aero = SobieskiAerodynamics("complex128")
     aero.linearization_mode = aero.COMPLEX_STEP
-    aero.linearize(force_all=True)
+    aero.linearize(compute_all_jacobians=True)
     aero.check_jacobian()
 
 
 def test_check_jac_approx_plot(tmp_wd, pyplot_close_all):
     """Test the generation of the gradient plot."""
     aero = SobieskiAerodynamics()
-    aero.linearize(force_all=True)
+    aero.linearize(compute_all_jacobians=True)
     file_path = "gradients_validation.pdf"
     aero.check_jacobian(step=10.0, plot_result=True, file_path=file_path)
     assert os.path.exists(file_path)
@@ -439,7 +439,7 @@ def test_linearize_errors():
     d2.execute({"x": array([1.0])})
     # Shape is not 2D
     with pytest.raises(ValueError):
-        d2.linearize({"x": array([1])}, force_all=True)
+        d2.linearize({"x": array([1])}, compute_all_jacobians=True)
 
     with pytest.raises(ValueError):
         d2.__setattr__("linearization_mode", "toto")
@@ -473,7 +473,7 @@ def test_check_jacobian_errors():
         sm._check_jacobian_shape([], [])
 
     sm.execute()
-    sm.linearize(force_all=True)
+    sm.linearize(compute_all_jacobians=True)
     sm._check_jacobian_shape(sm.get_input_data_names(), sm.get_output_data_names())
     sm.local_data.pop("x_shared")
     sm._check_jacobian_shape(sm.get_input_data_names(), sm.get_output_data_names())
@@ -494,7 +494,7 @@ def test_check_jacobian():
     sm._compute_jacobian = _compute_jacobian
     msg = f"The discipline {sm.name} was not linearized."
     with pytest.raises(ValueError, match=msg):
-        sm.linearize(force_all=True)
+        sm.linearize(compute_all_jacobians=True)
 
     sm2 = SobieskiMission()
 
@@ -504,7 +504,7 @@ def test_check_jacobian():
 
     sm2._compute_jacobian = _compute_jacobian2
     with pytest.raises(KeyError):
-        sm2.linearize(force_all=True)
+        sm2.linearize(compute_all_jacobians=True)
 
 
 def test_check_jacobian_2():
@@ -530,20 +530,20 @@ def test_check_jacobian_2():
     disc = LinDisc()
     disc.jac_key = "z"
     with pytest.raises(KeyError):
-        disc.linearize({"x": x}, force_all=True)
+        disc.linearize({"x": x}, compute_all_jacobians=True)
     disc.jac_key = "x"
     disc.jac_len = 3
     with pytest.raises(ValueError):
-        disc.linearize({"x": x}, force_all=True)
+        disc.linearize({"x": x}, compute_all_jacobians=True)
     #         # Test not multiple d/dX
     disc.jac = {"y": {"x": array([[0.0], [1.0], [3.0]])}}
     with pytest.raises(ValueError):
-        disc.linearize({"x": x}, force_all=True)
+        disc.linearize({"x": x}, compute_all_jacobians=True)
     #         # Test inconsistent output size for gradient
     #         # Test too small d/dX
     disc.jac = {"y": {"x": array([[0.0]])}}
     with pytest.raises(ValueError):
-        disc.linearize({"x": x}, force_all=True)
+        disc.linearize({"x": x}, compute_all_jacobians=True)
 
 
 @pytest.mark.skip_under_windows
@@ -666,24 +666,24 @@ def test_cache_h5_jac(tmp_wd):
     sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
     xs = sm.default_inputs["x_shared"]
     input_data = {"x_shared": xs}
-    jac_1 = sm.linearize(input_data, force_all=True)
+    jac_1 = sm.linearize(input_data, compute_all_jacobians=True)
     sm.execute(input_data)
-    jac_2 = sm.linearize(input_data, force_all=True)
+    jac_2 = sm.linearize(input_data, compute_all_jacobians=True)
     assert check_jac_equals(jac_1, jac_2)
 
     input_data = {"x_shared": xs + 2.0}
     sm.execute(input_data)
-    jac_1 = sm.linearize(input_data, force_all=True, force_no_exec=True)
+    jac_1 = sm.linearize(input_data, compute_all_jacobians=True, execute=False)
 
     input_data = {"x_shared": xs + 3.0}
-    jac_2 = sm.linearize(input_data, force_all=True)
+    jac_2 = sm.linearize(input_data, compute_all_jacobians=True)
     assert not check_jac_equals(jac_1, jac_2)
 
     sm.execute(input_data)
-    jac_3 = sm.linearize(input_data, force_all=True)
+    jac_3 = sm.linearize(input_data, compute_all_jacobians=True)
     assert check_jac_equals(jac_3, jac_2)
 
-    jac_4 = sm.linearize(input_data, force_all=True, force_no_exec=True)
+    jac_4 = sm.linearize(input_data, compute_all_jacobians=True, execute=False)
     assert check_jac_equals(jac_3, jac_4)
 
     sm.cache = HDF5Cache(hdf_file, sm.name)
@@ -729,16 +729,16 @@ def test_jac_approx_mix_fd():
     assert sm.check_jacobian(parallel=True, n_processes=4, threshold=1e-4)
 
 
-def test_jac_set_optimal_fd_step_force_all():
-    """Test the computation of the optimal time step with force_all=True."""
+def test_jac_set_optimal_fd_step_compute_all_jacobians():
+    """Test the computation of the optimal time step with compute_all_jacobians=True."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
-    sm.set_optimal_fd_step(force_all=True)
+    sm.set_optimal_fd_step(compute_all_jacobians=True)
     assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
 def test_jac_set_optimal_fd_step_input_output():
-    """Test the computation of the optimal time step with force_all=True."""
+    """Test the computation of the optimal time step with compute_all_jacobians=True."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(inputs=["y_14"], outputs=["y_4"])
@@ -751,7 +751,7 @@ def test_jac_set_optimal_fd_step_no_jac_approx():
     sm = SobieskiMission()
     msg = "set_jacobian_approximation must be called before setting an optimal step"
     with pytest.raises(ValueError, match=msg):
-        sm.set_optimal_fd_step(force_all=True)
+        sm.set_optimal_fd_step(compute_all_jacobians=True)
 
 
 def test_jac_cache_trigger_shapecheck():
@@ -773,7 +773,7 @@ def test_jac_cache_trigger_shapecheck():
     aero._cache_was_loaded = True
     aero.add_differentiated_inputs(in_names)
     aero.add_differentiated_outputs(out_names)
-    aero.linearize(inpts, force_no_exec=True)
+    aero.linearize(inpts, execute=False)
 
 
 def test_is_linearized():
@@ -782,7 +782,7 @@ def test_is_linearized():
     # set to true by the discipline
     aero = SobieskiAerodynamics()
     aero.execute()
-    aero.linearize(force_all=True)
+    aero.linearize(compute_all_jacobians=True)
     assert aero.n_calls == 1
     assert aero.n_calls_linearize == 1
     del aero
@@ -800,7 +800,7 @@ def test_is_linearized():
     aero2._run = _run_and_jac
 
     aero2.execute()
-    aero2.linearize(force_all=True)
+    aero2.linearize(compute_all_jacobians=True)
     assert aero2.n_calls == 1
     assert aero2.n_calls_linearize == 0
 
@@ -1134,7 +1134,7 @@ def test_statuses(observer):
     ]
     observer.reset()
 
-    disc.linearize(force_all=True)
+    disc.linearize(compute_all_jacobians=True)
     assert observer.statuses == [
         MDODiscipline.STATUS_PENDING,
         MDODiscipline.STATUS_LINEARIZE,
@@ -1158,7 +1158,7 @@ def test_statuses_linearize(observer):
     disc = Sellar1()
     disc.add_status_observer(observer)
 
-    disc.linearize(force_all=True)
+    disc.linearize(compute_all_jacobians=True)
     assert observer.statuses == [
         MDODiscipline.STATUS_PENDING,
         MDODiscipline.STATUS_RUNNING,

@@ -229,7 +229,7 @@ def test_jacobian_shape_mismatch():
             "provided by py_jac does not match (output_size, input_size)=(1, 3)."
         ),
     ):
-        disc_wrong.linearize(force_all=True)
+        disc_wrong.linearize(compute_all_jacobians=True)
 
 
 def test_multiline_return():

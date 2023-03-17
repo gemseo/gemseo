@@ -185,7 +185,7 @@ def test_residuals_mda(res_disciplines):
     assert out["r2"] < 1e-13
 
     for disc in res_disciplines:
-        disc.linearize(force_all=True)
+        disc.linearize(compute_all_jacobians=True)
 
     assembly = JacobianAssembly(MDOCouplingStructure(res_disciplines))
     assembly.compute_sizes(

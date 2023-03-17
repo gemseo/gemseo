@@ -84,7 +84,7 @@ def test_jacobian(sellar_mda, sellar_inputs):
     ):
         sellar_mda.linearize(
             sellar_inputs,
-            force_all=True,
+            compute_all_jacobians=True,
         )
 
     sellar_mda.use_lu_fact = False
