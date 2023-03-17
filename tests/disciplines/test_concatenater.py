@@ -81,7 +81,7 @@ def test_concatenation_discipline_linearization(
     """Check the Jacobian data returned by Concatenater."""
     if coefficients is None:
         coefficients = {"c_1": 1.0, "c_2": 1.0}
-    jac = concatenation_disc.linearize(input_data, force_all=True)
+    jac = concatenation_disc.linearize(input_data, compute_all_jacobians=True)
     var_inputs = list(concatenation_disc.get_input_data_names())
 
     # In Python 2, we cannot assume any order in the var_inputs list

@@ -45,7 +45,7 @@ class Concatenater(MDODiscipline):
         >>> disciplines = [sellar_system_disc, concatenation_disc]
         >>> chain = create_discipline('MDOChain', disciplines=disciplines)
         >>> print(chain.execute())
-        >>> print(chain.linearize(force_all=True))
+        >>> print(chain.linearize(compute_all_jacobians=True))
     """
 
     def __init__(

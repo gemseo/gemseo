@@ -46,6 +46,7 @@ from numpy import concatenate
 from numpy import empty
 from numpy import ndarray
 from numpy import zeros
+from numpy.typing import NDArray
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
@@ -801,8 +802,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         raise NotImplementedError()
 
     def _filter_inputs(
-        self,
-        input_data: dict[str, Any] | None = None,
+        self, input_data: dict[str, Any] | None = None
     ) -> MutableMapping[str, Any]:
         """Filter data with the discipline inputs and use the default values if missing.
 
@@ -825,14 +825,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
 
         full_input_data = DisciplineData({})
-        for key in self.input_grammar.keys():
-            val = input_data.get(key)
-            if val is not None:
-                full_input_data[key] = val
+        for input_name in self.input_grammar:
+            input_value = input_data.get(input_name)
+            if input_value is not None:
+                full_input_data[input_name] = input_value
             else:
-                val = self.input_grammar.defaults.get(key)
-                if val is not None:
-                    full_input_data[key] = val
+                input_value = self.input_grammar.defaults.get(input_name)
+                if input_value is not None:
+                    full_input_data[input_name] = input_value
 
         return full_input_data
 
@@ -1085,24 +1085,23 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _retrieve_diff_inouts(
         self,
-        force_all: bool = False,
+        compute_all_jacobians: bool = False,
     ) -> tuple[list[str], list[str]]:
         """Get the inputs and outputs used in the differentiation of the discipline.
 
         Args:
-            force_all: If True,
-                consider all the inputs and outputs of the discipline;
-                otherwise,
-                consider :attr:`.MDODiscipline._differentiated_inputs`
-                and :attr:`.MDODiscipline._differentiated_outputs`.
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
         """
-        if force_all:
-            inputs = self.get_input_data_names()
-            outputs = self.get_output_data_names()
-        else:
-            inputs = self._differentiated_inputs
-            outputs = self._differentiated_outputs
-        return inputs, outputs
+        if compute_all_jacobians:
+            return self.get_input_data_names(), self.get_output_data_names()
+
+        return self._differentiated_inputs, self._differentiated_outputs
 
     @classmethod
     def activate_time_stamps(cls) -> None:
@@ -1124,70 +1123,76 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     def linearize(
         self,
         input_data: Mapping[str, Any] | None = None,
-        force_all: bool = False,
-        force_no_exec: bool = False,
-    ) -> dict[str, dict[str, ndarray]]:
-        """Execute the linearized version of the code.
+        compute_all_jacobians: bool = False,
+        execute: bool = True,
+    ) -> dict[str, dict[str, NDArray[float]]]:
+        """Compute the Jacobians of some outputs with respect to some inputs.
 
         Args:
-            input_data: The input data needed to linearize the discipline
-                according to the discipline input grammar.
-                If None, use the :attr:`.MDODiscipline.default_inputs`.
-            force_all: If False,
-                :attr:`.MDODiscipline._differentiated_inputs` and
-                :attr:`.MDODiscipline._differentiated_outputs`
-                are used to filter the differentiated variables.
-                otherwise, all outputs are differentiated wrt all inputs.
-            force_no_exec: If True,
-                the discipline is not re-executed, cache is loaded anyway.
+            input_data: The input data for which to compute the Jacobian.
+                If ``None``, use the :attr:`.MDODiscipline.default_inputs`.
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
+            execute: Whether to start by executing the discipline
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline was executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.cache`.
 
         Returns:
-            The Jacobian of the discipline.
+            The Jacobian of the discipline
+            shaped as ``{output_name: {input_name: jacobian_array}}`` where
+            ``jacobian_array[i, j]`` is the partial derivative of ``output_name[i]``
+            with respect to ``input_name[j]``.
+
+        Raises:
+            ValueError: When either the inputs
+                for which to differentiate the outputs
+                or the outputs to differentiate are missing.
         """
         # TODO: remove the execution when no option exec_before_lin
         # is set to True
-        inputs, outputs = self._retrieve_diff_inouts(force_all)
-        if not outputs:
+        inputs, outputs = self._retrieve_diff_inouts(compute_all_jacobians)
+        if not outputs or not inputs:
             self.jac.clear()
             return self.jac
-        # Save inputs dict for caching
-        input_data = self._filter_inputs(input_data)
 
-        # if force_no_exec, we do not re-execute the discipline
-        # otherwise, we ensure that the discipline was executed
-        # with the right input_data.
-        # This may trigger caching (see self.execute()
-        if not force_no_exec:
+        full_input_data = self._filter_inputs(input_data)
+        if execute:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
-            self.execute(input_data)
+            self.execute(full_input_data)
             self.exec_for_lin = False
 
-        # The local_data shall be reset to their original values in case
-        # an input is also an output, if we don't want to keep the computed
-        # state (as in MDAs)
+        # The local_data shall be reset to their original values
+        # in case an input is also an output,
+        # if we don't want to keep the computed state (as in MDAs).
         if not self._linearize_on_last_state:
-            self._local_data.update(input_data)
+            self._local_data.update(full_input_data)
 
-        # If the caching was triggered, check if the jacobian
-        # was loaded,
-        # Or the discipline._run method also linearizes the discipline
+        # If the caching was triggered,
+        # check if the jacobian was loaded,
+        # or the discipline._run method also linearizes the discipline.
         if self._cache_was_loaded or self._is_linearized:
             if self.jac:
-                # for cases when linearization is called
-                # twice with different i/o
-                # while cache_was_loaded=True, the check_jacobian_shape raises
-                # a KeyError.
+                # For cases when linearization is called twice with different I/O
+                # while cache_was_loaded=True,
+                # the check_jacobian_shape raises a KeyError.
                 try:
                     self._check_jacobian_shape(inputs, outputs)
                     return self.jac
                 except KeyError:
-                    # in this case, another computation of jacobian is
-                    # triggered.
+                    # In this case,
+                    # another computation of Jacobian is triggered.
                     pass
 
         self.status = self.STATUS_LINEARIZE
-
         t_0 = timer()
         if self._linearization_mode in self.APPROX_MODES:
             # Time already counted in execute()
@@ -1200,14 +1205,21 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if self.activate_counters:
             self.__increment_n_calls_lin()
 
-        self._check_jacobian_shape(inputs, outputs)
+        if not compute_all_jacobians:
+            for output_name in list(self.jac.keys()):
+                if output_name not in outputs:
+                    del self.jac[output_name]
+                else:
+                    jac = self.jac[output_name]
+                    for input_name in list(jac.keys()):
+                        if input_name not in inputs:
+                            del jac[input_name]
 
+        self._check_jacobian_shape(inputs, outputs)
         if self.cache is not None:
-            # Cache the Jacobian matrix
-            self.cache.cache_jacobian(input_data, self.jac)
+            self.cache.cache_jacobian(full_input_data, self.jac)
 
         self.status = self.STATUS_DONE
-
         return self.jac
 
     def set_jacobian_approximation(
@@ -1257,7 +1269,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self,
         outputs: Iterable[str] | None = None,
         inputs: Iterable[str] | None = None,
-        force_all: bool = False,
+        compute_all_jacobians: bool = False,
         print_errors: bool = False,
         numerical_error: float = EPSILON,
     ):
@@ -1288,7 +1300,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 If None, use the :attr:`.MDODiscipline._differentiated_inputs`.
             outputs: The outputs to be linearized.
                 If None, use the :attr:`.MDODiscipline._differentiated_outputs`.
-            force_all: Whether to consider all the inputs and outputs of the discipline;
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
             print_errors: Whether to display the estimated errors.
             numerical_error: The numerical error associated to the calculation of f.
                 By default, this is the machine epsilon (appx 1e-16),
@@ -1306,15 +1324,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 "set_jacobian_approximation must be called "
                 "before setting an optimal step."
             )
-        inpts, outps = self._retrieve_diff_inouts(force_all=force_all)
-        if outputs is None or force_all:
-            outputs = outps
-        if inputs is None or force_all:
-            inputs = inpts
-        errors, steps = self._jac_approx.auto_set_step(
+        diff_inputs, diff_outputs = self._retrieve_diff_inouts(
+            compute_all_jacobians=compute_all_jacobians
+        )
+        if outputs is None or compute_all_jacobians:
+            outputs = diff_outputs
+        if inputs is None or compute_all_jacobians:
+            inputs = diff_inputs
+        return self._jac_approx.auto_set_step(
             outputs, inputs, print_errors, numerical_error=numerical_error
         )
-        return errors, steps
 
     @staticmethod
     def __get_len(container) -> int:
@@ -1498,16 +1517,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         outputs: Iterable[str] | None = None,
         with_zeros: bool = False,
         fill_missing_keys: bool = False,
-    ) -> None:
+    ) -> tuple[list[str], list[str]]:
         """Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
 
         Args:
-            inputs: The inputs wrt the outputs are linearized.
+            inputs: The inputs wrt to which the outputs are linearized.
                 If None,
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
                 If None,
-                the linearization should be performed on all outputs.
+                the linearization should be performed on all outputs declared differentiable.
                 fill_missing_keys: if True, just fill the missing items
             with_zeros: If True,
                 the matrices are set to zero
@@ -1516,44 +1535,42 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             fill_missing_keys: If True,
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
-        """
-        if inputs is None:
-            inputs_names = self._differentiated_inputs
-        else:
-            inputs_names = inputs
-        inputs_vals = []
-        for diff_name in inputs_names:
-            inputs_vals.append(self.get_inputs_by_name(diff_name))
 
-        if outputs is None:
-            outputs_names = self._differentiated_outputs
+        Returns:
+            The names of the input variables
+            against which to differentiate the output ones,
+            and these output variables.
+        """
+        output_names = self._differentiated_outputs if outputs is None else outputs
+        output_values = [self.get_outputs_by_name(name) for name in output_names]
+        input_names = self._differentiated_inputs if inputs is None else inputs
+        input_values = [self.get_inputs_by_name(name) for name in input_names]
+        default_matrix = zeros if with_zeros else empty
+        if fill_missing_keys:
+            jac = self.jac
+            # Only fill the missing sub jacobians
+            for output_name, output_value in zip(output_names, output_values):
+                jac_loc = jac.get(output_name, defaultdict(None))
+                for input_name, input_value in zip(input_names, input_values):
+                    sub_jac = jac_loc.get(input_name)
+                    if sub_jac is None:
+                        jac_loc[input_name] = default_matrix(
+                            (len(output_value), len(input_value))
+                        )
         else:
-            outputs_names = outputs
-        outputs_vals = []
-        for diff_name in outputs_names:
-            outputs_vals.append(self.get_outputs_by_name(diff_name))
-        if with_zeros:
-            np_method = zeros
-        else:
-            np_method = empty
-        if not fill_missing_keys:
             # When a key is not in the default dict, ie a function is not in
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(default_dict_factory)
-            for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = jac[out_n]
-                for in_n, in_v in zip(inputs_names, inputs_vals):
-                    jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+            if input_names:
+                for output_name, output_value in zip(output_names, output_values):
+                    jac_loc = jac[output_name]
+                    for input_name, input_value in zip(input_names, input_values):
+                        jac_loc[input_name] = default_matrix(
+                            (len(output_value), len(input_value))
+                        )
             self.jac = jac
-        else:
-            jac = self.jac
-            # Only fill the missing sub jacobians
-            for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = jac.get(out_n, defaultdict(None))
-                for in_n, in_v in zip(inputs_names, inputs_vals):
-                    sub_jac = jac_loc.get(in_n)
-                    if sub_jac is None:
-                        jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+
+        return input_names, output_names
 
     @property
     def linearization_mode(self) -> str:

@@ -230,29 +230,36 @@ class AnalyticDiscipline(MDODiscipline):
     ) -> None:
         # otherwise there may be missing terms
         # if some formula have no dependency
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        input_names, output_names = self._init_jacobian(
+            inputs, outputs, with_zeros=True
+        )
         input_values = self.__convert_input_values_to_float()
         if self._fast_evaluation:
-            for output_name, gradient_function in self._sympy_jac_funcs.items():
+            for output_name in output_names:
+                gradient_function = self._sympy_jac_funcs[output_name]
                 input_data = tuple(
                     input_values[name]
                     for name in self.output_names_to_symbols[output_name]
                 )
                 jac = self.jac[output_name]
                 for input_symbol, derivative_function in gradient_function.items():
-                    jac[input_symbol] = array(
-                        [[derivative_function(*input_data)]], dtype=float64
-                    )
+                    if input_symbol in input_names:
+                        jac[input_symbol] = array(
+                            [[derivative_function(*input_data)]], dtype=float64
+                        )
         else:
             subs = {self.__real_symbols[k]: v for k, v in input_values.items()}
-            for output_name, output_expression in self._sympy_exprs.items():
+            for output_name in output_names:
+                output_expression = self._sympy_exprs[output_name]
                 jac = self.jac[output_name]
                 jac_expr = self._sympy_jac_exprs[output_name]
                 for input_symbol in output_expression.free_symbols:
-                    jac[input_symbol.name] = array(
-                        [[jac_expr[input_symbol.name].evalf(subs=subs)]],
-                        dtype=float64,
-                    )
+                    input_name = input_symbol.name
+                    if input_name in input_names:
+                        jac[input_name] = array(
+                            [[jac_expr[input_name].evalf(subs=subs)]],
+                            dtype=float64,
+                        )
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
         super().__setstate__(state)

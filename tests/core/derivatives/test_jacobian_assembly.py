@@ -49,7 +49,7 @@ def assembly() -> JacobianAssembly:
     """An assembly of Jacobians."""
     disciplines = [SobieskiAerodynamics(), SobieskiMission()]
     for discipline in disciplines:
-        discipline.linearize(force_all=True)
+        discipline.linearize(compute_all_jacobians=True)
 
     return JacobianAssembly(MDOCouplingStructure(disciplines))
 

@@ -48,7 +48,7 @@ def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat):
     assert discipline.mat.shape == (60, 30)
 
     # Check format and size of the different blocks
-    jac = discipline.linearize(force_all=True)
+    jac = discipline.linearize(compute_all_jacobians=True)
 
     for output_name in ["o1", "o2", "o3"]:
         for input_name in ["i1", "i2", "i3"]:

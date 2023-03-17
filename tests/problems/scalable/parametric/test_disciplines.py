@@ -68,7 +68,7 @@ def test_main_discipline():
     assert system.local_data["cstr_1"] == pytest.approx(
         array([-1.0 / 3.0, -0.25, -0.2]), abs=1e-8
     )
-    system.linearize(force_all=True)
+    system.linearize(compute_all_jacobians=True)
     assert system.check_jacobian(threshold=1e-6)
 
 
@@ -89,7 +89,7 @@ def test_sub_discipline():
     assert set(outputs_names) == set(disc.get_output_data_names())
     disc.execute()
     assert disc.local_data["y_0"] == pytest.approx(array([2.52631579, 2.425]), abs=1e-8)
-    disc.linearize(force_all=True)
+    disc.linearize(compute_all_jacobians=True)
     assert disc.check_jacobian(threshold=1e-6)
 
 
@@ -111,5 +111,5 @@ def test_noised_sub_discipline():
     assert set(outputs_names) == set(disc.get_output_data_names())
     disc.execute()
     assert disc.local_data["y_0"] == pytest.approx(array([2.62631579, 2.325]), abs=1e-8)
-    disc.linearize(force_all=True)
+    disc.linearize(compute_all_jacobians=True)
     assert disc.check_jacobian(threshold=1e-6)

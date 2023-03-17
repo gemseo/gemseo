@@ -279,7 +279,7 @@ def test_indices(inputs, outputs, indices, dtype):
         dtype: The data type of the variables for the test discipline.
     """
     discipline = ToyDiscipline(dtype=dtype)
-    discipline.linearize(force_all=True)
+    discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline)
     assert apprx.check_jacobian(
         discipline.jac, outputs, inputs, discipline, indices=indices
@@ -294,7 +294,7 @@ def test_wrong_step(dtype):
         dtype: The data type of the variables for the test discipline.
     """
     discipline = ToyDiscipline(dtype=dtype)
-    discipline.linearize(force_all=True)
+    discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7])
     with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
         apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
