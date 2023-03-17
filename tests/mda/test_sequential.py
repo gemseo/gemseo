@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
-from gemseo.mda.sequential_mda import GSNewtonMDA
+from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar import Y_2
@@ -43,7 +43,7 @@ def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
     y_opt = np.array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
     assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
-    mda3 = GSNewtonMDA(sellar_disciplines, max_mda_iter=4)
+    mda3 = MDAGSNewton(sellar_disciplines, max_mda_iter=4)
     mda3.execute()
     filename = "GS_sellar.pdf"
     mda3.plot_residual_history(filename=filename)
@@ -57,17 +57,17 @@ def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
 
 def test_log_convergence(sellar_disciplines):
     """Check that the boolean log_convergence is correctly set."""
-    mda = GSNewtonMDA(sellar_disciplines)
+    mda = MDAGSNewton(sellar_disciplines)
     assert not mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert not sub_mda.log_convergence
 
-    mda = GSNewtonMDA(sellar_disciplines, log_convergence=True)
+    mda = MDAGSNewton(sellar_disciplines, log_convergence=True)
     assert mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert sub_mda.log_convergence
 
-    mda = GSNewtonMDA(sellar_disciplines)
+    mda = MDAGSNewton(sellar_disciplines)
     mda.log_convergence = True
     assert mda.log_convergence
     for sub_mda in mda.mda_sequence:
@@ -86,5 +86,5 @@ def test_parallel_doe(generate_parallel_doe_data):
         generate_parallel_doe_data: Fixture that returns the optimum solution to
             a parallel DOE scenario for a particular `main_mda_name`.
     """
-    obj = generate_parallel_doe_data("GSNewtonMDA")
+    obj = generate_parallel_doe_data("MDAGSNewton")
     assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)

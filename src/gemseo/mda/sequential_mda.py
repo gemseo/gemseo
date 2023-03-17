@@ -104,7 +104,7 @@ class MDASequential(MDA):
                 break
 
 
-class GSNewtonMDA(MDASequential):
+class MDAGSNewton(MDASequential):
     """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
 
     def __init__(

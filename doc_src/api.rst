@@ -422,7 +422,7 @@ Here are the API functions for :ref:`MDA <mda>`.
 .. code::
 
    >>> get_available_mdas()
-   ['MDANewtonRaphson', 'MDAChain', 'MDARoot', 'MDAQuasiNewton', 'MDAGaussSeidel', 'GSNewtonMDA', 'MDASequential', 'MDAJacobi']
+   ['MDANewtonRaphson', 'MDAChain', 'MDARoot', 'MDAQuasiNewton', 'MDAGaussSeidel', 'MDAGSNewton', 'MDASequential', 'MDAJacobi']
 
 - The API function :meth:`~gemseo.api.get_mda_options_schema` can list the available options of an MDA;
   if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary;

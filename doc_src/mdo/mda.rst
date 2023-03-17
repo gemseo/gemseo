@@ -194,7 +194,7 @@ Classes organization
 
 The following inheritance diagram shows the different MDA classes in |g| and their organization.
 
-.. inheritance-diagram:: gemseo.mda.mda.MDA gemseo.mda.gauss_seidel.MDAGaussSeidel gemseo.mda.jacobi.MDAJacobi gemseo.mda.newton.MDANewtonRaphson gemseo.mda.sequential_mda.MDASequential gemseo.mda.sequential_mda.GSNewtonMDA gemseo.mda.newton.MDAQuasiNewton gemseo.mda.mda_chain.MDAChain
+.. inheritance-diagram:: gemseo.mda.mda.MDA gemseo.mda.gauss_seidel.MDAGaussSeidel gemseo.mda.jacobi.MDAJacobi gemseo.mda.newton.MDANewtonRaphson gemseo.mda.sequential_mda.MDASequential gemseo.mda.sequential_mda.MDAGSNewton gemseo.mda.newton.MDAQuasiNewton gemseo.mda.mda_chain.MDAChain
    :parts: 2
 
 
