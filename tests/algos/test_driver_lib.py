@@ -24,15 +24,15 @@ from unittest import mock
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.driver_lib import DriverDescription
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverDescription
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import array
 
 
-class MyDriver(DriverLib):
+class MyDriver(DriverLibrary):
     def __init__(self):
         super().__init__()
         self.descriptions = {"algo_name": None}
@@ -86,17 +86,17 @@ def test_grammar_fail():
         ValueError,
         match=(
             "Neither the options grammar file .+ for the algorithm 'unknown' "
-            "nor the options grammar file .+ for the library 'DriverLib' "
+            "nor the options grammar file .+ for the library 'DriverLibrary' "
             "has been found."
         ),
     ):
-        DriverLib().init_options_grammar("unknown")
+        DriverLibrary().init_options_grammar("unknown")
 
 
 def test_require_grad():
     """Check that an error is raised when a particular gradient method is not given."""
 
-    class MyDriver(DriverLib):
+    class MyDriver(DriverLibrary):
         def __init__(self):
             super().__init__()
             self.descriptions = {
@@ -125,7 +125,7 @@ def test_new_iteration_callback_xvect(caplog):
         {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
     )
 
-    test_driver = DriverLib()
+    test_driver = DriverLibrary()
     test_driver.problem = problem
     test_driver._max_time = 0
     test_driver.init_iter_observer(max_iter=2)
@@ -135,7 +135,7 @@ def test_new_iteration_callback_xvect(caplog):
 
 def test_init_iter_observer_message(caplog):
     """Check the iteration prefix in init_iter_observer."""
-    test_driver = DriverLib()
+    test_driver = DriverLibrary()
     test_driver.problem = Power2()
     test_driver.init_iter_observer(max_iter=2)
     assert "...   0%|" in caplog.text
@@ -145,10 +145,10 @@ def test_init_iter_observer_message(caplog):
 
 @pytest.mark.parametrize("activate_progress_bar", [False, True])
 def test_progress_bar(activate_progress_bar):
-    """Check the activation of the progress bar from the options of a DriverLib."""
+    """Check the activation of the progress bar from the options of a DriverLibrary."""
     driver = OptimizersFactory().create("SLSQP")
     driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
-    assert (driver._DriverLib__progress_bar is None) is not activate_progress_bar
+    assert (driver._DriverLibrary__progress_bar is None) is not activate_progress_bar
 
 
 def test_common_options():
@@ -156,9 +156,9 @@ def test_common_options():
     driver = MyDriver()
     driver.init_options_grammar("AlgoName")
     assert driver.opt_grammar.names == {
-        DriverLib.ROUND_INTS_OPTION,
-        DriverLib.NORMALIZE_DESIGN_SPACE_OPTION,
-        DriverLib.USE_DATABASE_OPTION,
-        DriverLib._DriverLib__RESET_ITERATION_COUNTERS_OPTION,
+        DriverLibrary.ROUND_INTS_OPTION,
+        DriverLibrary.NORMALIZE_DESIGN_SPACE_OPTION,
+        DriverLibrary.USE_DATABASE_OPTION,
+        DriverLibrary._DriverLibrary__RESET_ITERATION_COUNTERS_OPTION,
     }
     assert not driver.opt_grammar.required_names

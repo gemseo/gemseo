@@ -63,7 +63,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     """The website of the wrapped library or algorithm."""
 
 
-class AlgoLib(metaclass=GoogleDocstringInheritanceMeta):
+class AlgorithmLibrary(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class for algorithms libraries interfaces.
 
     An algorithm library solves a numerical problem

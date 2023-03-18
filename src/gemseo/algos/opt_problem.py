@@ -146,7 +146,7 @@ class OptimizationProblem:
     - the objective function as a :class:`.MDOFunction`,
       which can be a vector,
 
-    execute it from an algorithm provided by a :class:`.DriverLib`,
+    execute it from an algorithm provided by a :class:`.DriverLibrary`,
     and store some execution data in a :class:`.Database`.
 
     In particular,
@@ -223,9 +223,9 @@ class OptimizationProblem:
     """Whether to use standardized objective for logging and post-processing.
 
     The standardized objective corresponds to the original one expressed as a cost
-    function to minimize. A :class:`.DriverLib` works with this standardized objective
-    and the :class:`.Database` stores its values. However, for convenience, it may be
-    more relevant to log the expression and the values of the original objective.
+    function to minimize. A :class:`.DriverLibrary` works with this standardized
+    objective and the :class:`.Database` stores its values. However, for convenience, it
+    may be more relevant to log the expression and the values of the original objective.
     """
 
     constraint_names: dict[str, list[str]]

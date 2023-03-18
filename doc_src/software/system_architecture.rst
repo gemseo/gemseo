@@ -321,7 +321,7 @@ contains the full classes description in the different sections as well as the f
    }
    class DOELibrary {
    }
-   class OptLibrary {
+   class OptimizationLibrary {
    }
    class MDOScenario {
    }
@@ -329,10 +329,10 @@ contains the full classes description in the different sections as well as the f
    }
 
    DOELibrary -up|> DriverLibrary
-   OptLibrary -up|> DriverLibrary
+   OptimizationLibrary -up|> DriverLibrary
    Scenario "1" *-up> "1" DriverLibrary
    DOEScenario "1" *-> "1" DOELibrary
-   MDOScenario "1" *-> "1" OptLibrary
+   MDOScenario "1" *-> "1" OptimizationLibrary
    MDOScenario -up|> Scenario
    DOEScenario -up|> Scenario
    @end uml

@@ -20,7 +20,7 @@
 """A factory to execute DOE algorithms from their class names."""
 from __future__ import annotations
 
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.algos.driver_factory import DriverFactory
 
 

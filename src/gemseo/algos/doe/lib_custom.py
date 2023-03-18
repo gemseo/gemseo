@@ -35,8 +35,8 @@ from numpy import atleast_2d
 from numpy import loadtxt
 from numpy import ndarray
 
-from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
+from gemseo.algos.doe.doe_library import DOELibrary
 
 OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
 

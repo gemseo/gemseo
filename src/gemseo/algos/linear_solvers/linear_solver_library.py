@@ -31,8 +31,8 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.algo_lib import AlgoLib
-from gemseo.algos.algo_lib import AlgorithmDescription
+from gemseo.algos.algorithm_library import AlgorithmDescription
+from gemseo.algos.algorithm_library import AlgorithmLibrary
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class LinearSolverDescription(AlgorithmDescription):
     """Whether the left-hand side matrix must be a linear operator."""
 
 
-class LinearSolverLib(AlgoLib):
+class LinearSolverLibrary(AlgorithmLibrary):
     """Abstract class for libraries of linear solvers."""
 
     SAVE_WHEN_FAIL = "save_when_fail"

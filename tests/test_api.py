@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.api import AlgorithmFeatures
 from gemseo.api import compute_doe
 from gemseo.api import configure
@@ -798,7 +798,7 @@ def test_print_configuration(capfd):
     expected.indent()
     expected.add("The counters are activated.")
     expected.dedent()
-    expected.add("DriverLib")
+    expected.add("DriverLibrary")
     expected.indent()
     expected.add("The progress bar is activated.")
     assert str(expected) in out
@@ -929,7 +929,7 @@ def test_configure(
     assert MDODiscipline.activate_input_data_check == check_input_data
     assert MDODiscipline.activate_output_data_check == check_output_data
     assert MDODiscipline.activate_cache == activate_discipline_cache
-    assert DriverLib.activate_progress_bar == activate_progress_bar
+    assert DriverLibrary.activate_progress_bar == activate_progress_bar
     assert Scenario.activate_input_data_check
     assert Scenario.activate_output_data_check
     assert MDA.activate_cache
@@ -944,7 +944,7 @@ def test_configure_default():
     assert MDODiscipline.activate_input_data_check is True
     assert MDODiscipline.activate_output_data_check is True
     assert MDODiscipline.activate_cache is True
-    assert DriverLib.activate_progress_bar is True
+    assert DriverLibrary.activate_progress_bar is True
 
 
 def test_algo_features():

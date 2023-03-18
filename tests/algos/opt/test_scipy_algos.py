@@ -23,7 +23,7 @@ from unittest import TestCase
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
+from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock

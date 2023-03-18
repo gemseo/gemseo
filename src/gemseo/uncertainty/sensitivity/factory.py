@@ -25,7 +25,7 @@ from typing import Collection
 from typing import Iterable
 from typing import Mapping
 
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.factory import Factory

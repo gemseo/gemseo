@@ -118,7 +118,7 @@ from openturns import MauntzKucherenkoSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
 
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline

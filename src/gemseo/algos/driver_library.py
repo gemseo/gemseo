@@ -23,7 +23,7 @@ A driver library aims to solve an :class:`.OptimizationProblem`
 using a particular algorithm from a particular family of numerical methods.
 This algorithm will be in charge of evaluating the objective and constraints
 functions at different points of the design space, using the
-:meth:`.DriverLib.execute` method.
+:meth:`.DriverLibrary.execute` method.
 The most famous kinds of numerical methods to solve an optimization problem
 are optimization algorithms and design of experiments (DOE). A DOE driver
 browses the design space agnostically, i.e. without taking into
@@ -57,8 +57,8 @@ from tqdm.utils import _unicode
 from tqdm.utils import disp_len
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.algo_lib import AlgoLib
-from gemseo.algos.algo_lib import AlgorithmDescription
+from gemseo.algos.algorithm_library import AlgorithmDescription
+from gemseo.algos.algorithm_library import AlgorithmLibrary
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
@@ -176,7 +176,7 @@ class ProgressBar(tqdm.tqdm):
         self.fp = tqdm.utils.DisableOnWriteError(TqdmToLogger(), tqdm_instance=self)
 
 
-class DriverLib(AlgoLib):
+class DriverLibrary(AlgorithmLibrary):
     """Abstract class for DOE & optimization libraries interfaces.
 
     Lists available methods in the library for the proposed

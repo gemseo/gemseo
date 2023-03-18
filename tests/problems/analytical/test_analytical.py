@@ -22,7 +22,7 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-from gemseo.algos.driver_lib import MaxIterReachedException
+from gemseo.algos.driver_library import MaxIterReachedException
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin

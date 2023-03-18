@@ -27,8 +27,8 @@ from typing import Any
 from numpy import ndarray
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.driver_lib import DriverDescription
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverDescription
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.first_order_stop_criteria import kkt_residual_computation
 from gemseo.algos.first_order_stop_criteria import KKTReached
@@ -59,7 +59,7 @@ class OptimizationAlgorithmDescription(DriverDescription):
     """The type of problem (see :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`)."""
 
 
-class OptimizationLibrary(DriverLib):
+class OptimizationLibrary(DriverLibrary):
     """Base optimization library defining a collection of optimization algorithms.
 
     Typically used as:

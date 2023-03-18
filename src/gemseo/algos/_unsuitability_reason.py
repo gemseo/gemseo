@@ -31,10 +31,10 @@ class _UnsuitabilityReason(BaseEnum):
 
     NO_REASON = ""
 
-    # DriverLib
+    # DriverLibrary
     EMPTY_DESIGN_SPACE = "the design space is empty"
 
-    # LinearSolverLib
+    # LinearSolverLibrary
     NOT_SYMMETRIC = _LINEAR_SOLVER_TEMPLATE.format("symmetric")
     NOT_POSITIVE_DEFINITE = _LINEAR_SOLVER_TEMPLATE.format("positive definite")
     NOT_LINEAR_OPERATOR = _LINEAR_SOLVER_TEMPLATE.format("a linear operator")

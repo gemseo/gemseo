@@ -31,8 +31,8 @@ from numpy import isfinite
 from numpy import ndarray
 from numpy import real
 
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 
 # workaround to prevent dll error with xlwings from pypi with anaconda python:

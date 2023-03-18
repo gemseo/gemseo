@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 from gemseo.algos.driver_factory import DriverFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 
 
 class OptimizersFactory(DriverFactory):
