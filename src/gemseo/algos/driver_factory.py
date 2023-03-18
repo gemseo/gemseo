@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.factory import Factory
@@ -35,9 +35,11 @@ class DriverFactory:
     Automates the creation of library interfaces given a name of the algorithm.
     """
 
-    def __init__(self, driver_lib_class: type[DriverLib], driver_package: str) -> None:
+    def __init__(
+        self, driver_lib_class: type[DriverLibrary], driver_package: str
+    ) -> None:
         """Initializes the factory: scans the directories to search for subclasses of
-        DriverLib.
+        DriverLibrary.
 
         Searches subclasses of driver_lib_class in "GEMSEO_PATH" and driver_package.
         """  # noqa: D205, D212, D415
@@ -78,7 +80,7 @@ class DriverFactory:
         """
         return self.factory.classes
 
-    def create(self, name: str) -> DriverLib:
+    def create(self, name: str) -> DriverLibrary:
         """Create a driver library from an algorithm name or a library name.
 
         Args:

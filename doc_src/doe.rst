@@ -31,7 +31,7 @@ API
 In |g|,
 a :class:`.DOELibrary` contains one or several DOE algorithms.
 
-As any :class:`.DriverLib`,
+As any :class:`.DriverLibrary`,
 a :class:`.DOELibrary` executes an algorithm from an :class:`.OptimizationProblem` and options.
 Most of the DOE algorithms also need the number of samples when calling :meth:`~.DOELibrary.execute`:
 

@@ -31,8 +31,8 @@ from numpy import ndarray
 from numpy.random import RandomState
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
+from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 
 OptionType = Optional[

@@ -26,7 +26,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_pdfo import PDFOOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
+from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction

@@ -38,8 +38,8 @@ from numpy import min as np_min
 from numpy import ndarray
 from packaging import version
 
-from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
+from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.utils.string_tools import MultiLineString
 
 OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]

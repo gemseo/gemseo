@@ -163,7 +163,7 @@ from gemseo.utils.matplotlib_figure import FigSizeType
 if TYPE_CHECKING:
     from logging import Logger
     from matplotlib.figure import Figure
-    from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
@@ -1789,7 +1789,7 @@ def compute_doe(
 
 
 def _log_settings() -> str:
-    from gemseo.algos.driver_lib import DriverLib
+    from gemseo.algos.driver_library import DriverLibrary
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.utils.string_tools import MultiLineString
@@ -1825,11 +1825,11 @@ def _log_settings() -> str:
         add_de_prefix(MDOFunction.activate_counters),
     )
     text.dedent()
-    text.add("DriverLib")
+    text.add("DriverLibrary")
     text.indent()
     text.add(
         "The progress bar is {}activated.",
-        add_de_prefix(DriverLib.activate_progress_bar),
+        add_de_prefix(DriverLibrary.activate_progress_bar),
     )
     return str(text)
 
@@ -1925,14 +1925,14 @@ def configure(
         check_desvars_bounds: Whether to check the membership of design variables
             in the bounds when evaluating the functions in OptimizationProblem.
     """
-    from gemseo.algos.driver_lib import DriverLib
+    from gemseo.algos.driver_library import DriverLibrary
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
     MDODiscipline.activate_counters = activate_discipline_counters
     MDOFunction.activate_counters = activate_function_counters
-    DriverLib.activate_progress_bar = activate_progress_bar
+    DriverLibrary.activate_progress_bar = activate_progress_bar
     MDODiscipline.activate_input_data_check = check_input_data
     MDODiscipline.activate_output_data_check = check_output_data
     MDODiscipline.activate_cache = activate_discipline_cache

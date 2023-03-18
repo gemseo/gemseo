@@ -24,7 +24,7 @@ from typing import Any
 from typing import Callable
 
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 

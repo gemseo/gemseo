@@ -42,8 +42,8 @@ from numpy import savetxt
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_quality import compute_phip_criterion
-from gemseo.algos.driver_lib import DriverDescription
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverDescription
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.parallel_execution.callable_parallel_execution import (
@@ -67,8 +67,8 @@ class DOEAlgorithmDescription(DriverDescription):
     """The minimum dimension of the parameter space."""
 
 
-class DOELibrary(DriverLib):
-    """Abstract class to use for DOE library link See DriverLib."""
+class DOELibrary(DriverLibrary):
+    """Abstract class to use for DOE library link See DriverLibrary."""
 
     unit_samples: ndarray
     """The input samples transformed in :math:`[0,1]`."""

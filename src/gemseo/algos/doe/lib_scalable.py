@@ -28,8 +28,8 @@ from numpy import linspace
 from numpy import ndarray
 from numpy import newaxis
 
-from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
+from gemseo.algos.doe.doe_library import DOELibrary
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 

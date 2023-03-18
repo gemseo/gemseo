@@ -44,8 +44,8 @@ from numpy import where
 from numpy import zeros
 from optimize.snopt7 import SNOPT_solver
 
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)

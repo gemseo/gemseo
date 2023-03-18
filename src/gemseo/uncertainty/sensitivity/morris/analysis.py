@@ -81,7 +81,7 @@ from numpy import abs as np_abs
 from numpy import array
 from numpy import ndarray
 
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline

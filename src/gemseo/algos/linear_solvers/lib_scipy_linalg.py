@@ -36,13 +36,13 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import qmr
 from scipy.sparse.linalg import splu
 
-from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverDescription
-from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
+from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescription
+from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ScipyLinalgAlgos(LinearSolverLib):
+class ScipyLinalgAlgos(LinearSolverLibrary):
     """Wrapper for scipy linalg sparse linear solvers."""
 
     save_fpath: str

@@ -28,7 +28,7 @@ from typing import Callable
 import jinja2
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.driver_factory import DriverFactory
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import _get_schema
@@ -413,10 +413,10 @@ class DriverOptionsDoc(AlgoOptionsDoc):
     @staticmethod
     def __default_class_getter(
         algo_factory: DriverFactory,
-    ) -> Callable[[str], DriverLib]:
+    ) -> Callable[[str], DriverLibrary]:
         """Return the default algorithm class getter from a driver factory."""
 
-        def get_class(algo: str) -> DriverLib:
+        def get_class(algo: str) -> DriverLibrary:
             """Return the driver library associated with an algorithm.
 
             Args:

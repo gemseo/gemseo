@@ -25,14 +25,14 @@ from numpy import ndarray
 
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
+from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
 
 
 class LinearSolversFactory(DriverFactory):
     """MDA factory to create the MDA from a name or a class."""
 
     def __init__(self) -> None:  # noqa:D107
-        super().__init__(LinearSolverLib, "gemseo.algos.linear_solvers")
+        super().__init__(LinearSolverLibrary, "gemseo.algos.linear_solvers")
 
     @property
     def linear_solvers(self) -> list[str]:
