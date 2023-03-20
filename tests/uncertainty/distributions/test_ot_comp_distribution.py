@@ -29,6 +29,7 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 from numpy.random import seed
+from openturns import NormalCopula
 
 
 @pytest.fixture(scope="module")
@@ -51,24 +52,13 @@ def test_constructor(composed_distribution):
     assert composed_distribution.distribution_name == "Composed"
     assert composed_distribution.transformation == "x1_x2"
     assert len(composed_distribution.parameters) == 1
-    assert composed_distribution.parameters[0] == "independent_copula"
+    assert composed_distribution.parameters[0] is None
 
 
-@pytest.mark.parametrize(
-    "copula",
-    [OTComposedDistribution.CopulaModel.independent_copula, "independent_copula"],
-)
-def test_copula_enum_or_str(distributions, copula):
-    """Check that copula passed to __init__ can be either a CopulaModel or a str."""
-    assert (
-        str(OTComposedDistribution(distributions, copula=copula).parameters[0])
-        == "independent_copula"
-    )
-
-
-def test_available_copula_models():
-    """Check AVAILABLE_COPULA_MODELS."""
-    assert "independent_copula" in OTComposedDistribution.AVAILABLE_COPULA_MODELS
+def test_copula(distributions):
+    """Check the use of an OpenTURNS copula."""
+    distribution = OTComposedDistribution(distributions, copula=NormalCopula(4))
+    assert distribution.distribution.getCopula().getName() == "NormalCopula"
 
 
 def test_variable_name(distributions):
@@ -77,7 +67,7 @@ def test_variable_name(distributions):
 
 
 def test_str(composed_distribution):
-    assert str(composed_distribution) == "Composed(independent_copula)"
+    assert str(composed_distribution) == "Composed(None)"
 
 
 def test_get_sample(composed_distribution):

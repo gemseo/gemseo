@@ -20,6 +20,7 @@
 """Module containing a factory to create an instance of :class:`.Distribution`."""
 from __future__ import annotations
 
+from typing import Any
 from typing import Optional
 from typing import Sequence
 from typing import Union
@@ -88,14 +89,16 @@ class DistributionFactory:
     def create_composed_distribution(
         self,
         distributions: Sequence[Distribution],
-        copula_name: str = ComposedDistribution.CopulaModel.independent_copula.value,
+        copula: Any = None,
         variable: str = "",
     ) -> ComposedDistribution:
         """Create a composed probability distribution from marginal ones.
 
         Args:
             distributions: The marginal distributions.
-            copula_name: The name of the copula.
+            copula: A copula distribution
+                defining the dependency structure between random variables;
+                if ``None``, consider an independent copula.
             variable: The name of the variable, if any;
                 otherwise,
                 concatenate the names of the random variables
@@ -114,7 +117,7 @@ class DistributionFactory:
         return self.factory.create(
             f"{next(iter(identifiers))}ComposedDistribution",
             distributions=distributions,
-            copula=copula_name,
+            copula=copula,
             variable=variable,
         )
 

@@ -123,30 +123,34 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    def __init__(
-        self,
-        hdf_file: str | Path | None = None,
-        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
-        name: str | None = None,
+    def __init__(  # noqa:D107
+        self, hdf_file: str | Path | None = None, name: str | None = None
     ) -> None:
-        """
-        Args:
-            copula: A name of copula defining the dependency between random variables.
-        """  # noqa: D205, D212, D415
         LOGGER.debug("*** Create a new parameter space ***")
         super().__init__(hdf_file=hdf_file, name=name)
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
-        if copula not in ComposedDistribution.AVAILABLE_COPULA_MODELS:
-            raise ValueError(f"{copula} is not a copula name.")
-        self._copula = copula
         self.__distributions_definitions = {}
         # To be defined as:
         # self.__distributions_definitions["u"] = ("SPNormalDistribution", {"mu": 1.})
         # where the first component of the tuple is a distribution name
         # and the second one a mapping of the distribution parameter.
         self.__distribution_family_id = ""
+
+    def build_composed_distribution(self, copula: Any = None) -> None:
+        """Build the joint probability distribution.
+
+        Args:
+            copula: A copula distribution
+                defining the dependency structure between random variables;
+                if ``None``, consider an independent copula.
+        """
+        if self.uncertain_variables:
+            first_marginal = self.distributions[self.uncertain_variables[0]]
+            self.distribution = first_marginal._COMPOSED_DISTRIBUTION(
+                [self.distributions[name] for name in self.uncertain_variables], copula
+            )
 
     def is_uncertain(
         self,
@@ -247,14 +251,8 @@ class ParameterSpace(DesignSpace):
         LOGGER.debug("Add the random variable: %s.", name)
         self.distributions[name] = distribution
         self.uncertain_variables.append(name)
-        self._build_composed_distribution()
+        self.build_composed_distribution()
         self.__update_parameter_space(name)
-
-    def _build_composed_distribution(self) -> None:
-        """Build the composed distribution from the marginal ones."""
-        tmp_marginal = self.distributions[self.uncertain_variables[0]]
-        marginals = [self.distributions[name] for name in self.uncertain_variables]
-        self.distribution = tmp_marginal._COMPOSED_DISTRIBUTION(marginals, self._copula)
 
     def get_range(
         self,
@@ -297,7 +295,7 @@ class ParameterSpace(DesignSpace):
             del self.distributions[name]
             self.uncertain_variables.remove(name)
             if self.uncertain_variables:
-                self._build_composed_distribution()
+                self.build_composed_distribution()
         super().remove_variable(name)
 
     def compute_samples(
@@ -660,7 +658,7 @@ class ParameterSpace(DesignSpace):
         dataset: Dataset,
         groups: Iterable[str] | None = None,
         uncertain: Mapping[str, bool] | None = None,
-        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
+        copula: Any = None,
     ) -> ParameterSpace:
         """Initialize the parameter space from a dataset.
 
@@ -671,7 +669,7 @@ class ParameterSpace(DesignSpace):
             uncertain: Whether the variables should be uncertain or not.
             copula: A name of copula defining the dependency between random variables.
         """
-        parameter_space = ParameterSpace(copula=copula)
+        parameter_space = ParameterSpace()
 
         if uncertain is None:
             uncertain = {}
@@ -697,6 +695,7 @@ class ParameterSpace(DesignSpace):
                 else:
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
 
+        parameter_space.build_composed_distribution(copula)
         return parameter_space
 
     def to_design_space(self) -> DesignSpace:
