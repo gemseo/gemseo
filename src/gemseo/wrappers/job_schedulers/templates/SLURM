@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This work is licensed under a BSD 0-Clause License.
+#
+# Permission to use, copy, modify, and/or distribute this software
+# for any purpose with or without fee is hereby granted.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+# WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+# THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+# OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
+# FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+# NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+# WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Authors:
+#      Francois Gallard
+
+#SBATCH --job-name=$discipline_name      # Job name
+#SBATCH --mail-type=END,FAIL         # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=$user_email    # Where to send mail.  Set this to your email address
+#SBATCH --ntasks=$ntasks                  # Number of MPI tasks (i.e. processes)
+#SBATCH --cpus-per-task=$cpus_per_task            # Number of cores per MPI task
+#SBATCH --nodes=$nodes_number                    # Maximum number of nodes to be allocated
+#SBATCH --ntasks-per-node=$ntasks_per_node        # Maximum number of tasks on each node, number of cores on each node.
+#SBATCH --distribution=cyclic:cyclic # Distribute tasks cyclically first among nodes and then among sockets within a node
+#SBATCH --mem-per-cpu=$mem_per_cpu         # Memory (i.e. RAM) per core
+#SBATCH --time=$wall_time              # Wall time limit (days-hrs:min:sec)
+#SBATCH --output=$log_path     # Path to the standard output and error files relative to the working directory
+
+echo "Date              = $$(date)"
+echo "Hostname          = $$(hostname -s)"
+echo "Working Directory = $$(pwd)"
+echo ""
+echo "Number of Nodes Allocated      = $$SLURM_JOB_NUM_NODES"
+echo "Number of Tasks Allocated      = $$SLURM_NTASKS"
+echo "Number of Cores/Task Allocated = $$SLURM_CPUS_PER_TASK"
+
+$setup_cmd
+
+echo "Deserialize and run discipline..."
+gemseo-deserialize-run $workdir_path $discipline_path $inputs_path $outputs_path
+echo "Done"

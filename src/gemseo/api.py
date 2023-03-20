@@ -179,6 +179,9 @@ if TYPE_CHECKING:
     from gemseo.problems.scalable.data_driven.discipline import (
         ScalableDiscipline,
     )
+    from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
+        JobSchedulerDisciplineWrapper,
+    )
 
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
@@ -1937,3 +1940,91 @@ def configure(
     MDODiscipline.activate_output_data_check = check_output_data
     MDODiscipline.activate_cache = activate_discipline_cache
     OptimizationProblem.activate_bound_check = check_desvars_bounds
+
+
+def wrap_discipline_in_job_scheduler(
+    discipline: MDODiscipline,
+    scheduler_name: str,
+    workdir_path: Path,
+    **options: dict[str, Any],
+) -> JobSchedulerDisciplineWrapper:
+    """Wrap the discipline within another one to delegate its execution to a job
+    scheduler.
+
+    The discipline is serialized to the disk, its input too, then a job file is
+    created from a template to execute it with the provided options.
+    The submission command is launched, it will setup the environment, deserialize
+    the discipline and its inputs, execute it and serialize the outputs.
+    Finally, the deserialized outputs are returned by the wrapper.
+
+    All process classes :class:`~gemseo.core.mdo_scenario.MDOScenario`,
+    or :class:`~gemseo.mda.mda.MDA`, inherit from
+    :class:`~gemseo.core.discipline.MDODiscipline` so can be sent to HPCs in this way.
+
+    The job scheduler template script can be provided directly or the predefined
+    templates file names in gemseo.wrappers.job_schedulers.template can be used.
+    SLURM and LSF templates are provided, but one can use other job schedulers
+    or to customize the scheduler commands according to the user needs
+    and infrastructure requirements.
+
+    The command to submit the job can also be overloaded.
+
+    Args:
+        discipline: The discipline to wrap in the job scheduler.
+        scheduler_name: The name of the job scheduler (for instance LSF, SLURM, PBS).
+        workdir_path: The path to the workdir
+        **options: The submission options.
+
+    Raises:
+        OSError: if the job template does not exist.
+
+    Warning:
+        This method serializes the passed discipline so it has to be serializable.
+        All disciplines provided in GEMSEO are serializable but it is possible that
+        custom ones are not and this will make the submission proess fail.
+
+    Examples:
+        This example execute a DOE of 100 points on a MDA, each MDA is executed on 24 CPUS
+        using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
+        everytime a point of the DOE is computed, another one is submitted to the queue.
+
+        >>> from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
+        >>> from gemseo.api import create_discipline, create_scenario, create_mda
+        >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> mda = create_mda(disciplines)
+        >>> wrapped_mda= wrapp_discipline_in_job_scheduler(mda, scheduler_name="SLURM",
+        >>>                                                workdir_path="workdir",
+        >>>                                                cpus_per_task=24)
+        >>> scn=create_scenario(mda, "DisciplinaryOpt", "obj", SellarDesignSpace(),
+        >>>                     scenario_type="DOE")
+        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes":10})
+
+        In this variant, each discipline is wrapped independently in the job scheduler,
+        which allows to parallelize more the process because each discipline will run on
+        indpendent nodes, whithout being parallelized using MPI. The drawback is that
+        each discipline execution will be queued on the HPC.
+        A HDF5 cache is attached to the MDA, so all executions will be recorded.
+        Each wrapped discipline can also be cached using a HDF cache.
+
+        >>> from gemseo.core.discipline import MDODiscipline
+        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> wrapped_discs=[wrapp_discipline_in_job_scheduler(disc,
+        >>>                                                  workdir_path="workdir",
+        >>>                                                  cpus_per_task=24,
+        >>>                                                  scheduler_name="SLURM"),
+        >>>                for disc in disciplines]
+        >>> scn=create_scenario(wrapped_discs, "MDF", "obj", SellarDesignSpace(),
+        >>>                     scenario_type="DOE")
+        >>> scn.formulation.mda.set_cache_policy(MDODiscipline.HDF5_CACHE,
+        >>>                                      cache_hdf_file="mda_cache.h5")
+        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes":10})
+    """  # noqa:D205 D212 D415
+    from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
+
+    return SchedulersFactory().wrap_discipline(
+        discipline=discipline,
+        scheduler_name=scheduler_name,
+        workdir_path=workdir_path,
+        **options,
+    )
