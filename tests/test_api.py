@@ -71,6 +71,7 @@ from gemseo.api import import_discipline
 from gemseo.api import load_dataset
 from gemseo.api import monitor_scenario
 from gemseo.api import print_configuration
+from gemseo.api import wrap_discipline_in_job_scheduler
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
@@ -969,3 +970,20 @@ def test_algo_features_error():
         ValueError, match="wrong_name is not the name of an optimization algorithm."
     ):
         assert get_algorithm_features("wrong_name")
+
+
+def test_wrap_discipline_in_job_scheduler(tmpdir):
+    """Test the job scheduler API."""
+    disc = create_discipline("SobieskiMission")
+    wrapped = wrap_discipline_in_job_scheduler(
+        disc,
+        scheduler_name="LSF",
+        workdir_path=tmpdir,
+        scheduler_run_command="python",
+        job_template_path=Path(__file__).parent
+        / "wrappers"
+        / "job_schedulers"
+        / "mock_job_scheduler.py",
+        job_out_filename="run_disc.py",
+    )
+    assert "y_4" in wrapped.execute()

@@ -34,6 +34,10 @@ respectively:
    inherit from :class:`.MDODiscipline`,
    and put the Python file in the :file:`src/gemseo/problems/my_problem` package,
    which you created.
+ - for job schedulers and HPC submission,
+   inherit from :class:`.JobSchedulerDisciplineWrapper`,
+   and put the Python file in the :file:`src/gemseo/wrappers/job_schedulers` package,
+   which you created.
 
 |g| features can be extended with external Python modules.
 All kinds of additional features can be implemented:

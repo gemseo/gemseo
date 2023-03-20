@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This work is licensed under a BSD 0-Clause License.
+#
+# Permission to use, copy, modify, and/or distribute this software
+# for any purpose with or without fee is hereby granted.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+# WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+# THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+# OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
+# FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+# NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+# WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Authors:
+#      Francois Gallard
+
+#BSUB -K
+#BSUB -n $ntasks
+#BSUB -W $wall_time # HH:MM
+#BSUB -q $queue_name
+#BSUB -R span[ptile=$ntasks_per_node]
+#BSUB -R rusage[mem=$mem_per_cpu] #Memory per node
+#BSUB -u $user_email    # Where to send mail.  Set this to your email address
+#BSUB -N # To activate email sending
+#BSUB -o $log_path%J
+#BSUB -J $discipline_name
+
+echo "Date              = $$(date)"
+echo "Hostname          = $$(hostname -s)"
+echo "Working Directory = $$(pwd)"
+echo ""
+
+$setup_cmd
+
+echo "Deserialize and run discipline..."
+gemseo-deserialize-run $workdir_path $discipline_path $inputs_path $outputs_path
+echo "Done"
