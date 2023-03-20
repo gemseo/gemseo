@@ -260,6 +260,9 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         Returns:
             The path to the working directory.
         """
+        # This generates a unique random and thread safe working directory name.
+        # We do not use tempdir from the standard python library because it is a
+        # permanent run directory.
         loc_id = str(uuid1()).split("-")[0]
         current_workdir = Path(self._workdir_path / loc_id)
         current_workdir.mkdir()
