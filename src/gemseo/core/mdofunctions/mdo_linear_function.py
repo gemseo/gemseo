@@ -59,6 +59,7 @@ class MDOLinearFunction(MDOFunction):
         args: Sequence[str] | None = None,
         value_at_zero: OutputType = 0.0,
         output_names: Sequence[str] | None = None,
+        expr: str | None = None,
     ) -> None:
         """
         Args:
@@ -72,20 +73,22 @@ class MDOLinearFunction(MDOFunction):
             value_at_zero: The value :math:`b` of the linear function output at zero.
             output_names: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
+            expr: The expression of the linear function.
         """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
         self.value_at_zero = value_at_zero
-
-        # Generate the arguments strings
-        new_args = self.__class__.generate_args(input_dim, args)
-
-        # Generate the expression string
-        if output_dim == 1:
-            expr = self._generate_1d_expr(new_args)
+        if expr is None:
+            # Generate the arguments strings
+            new_args = self.__class__.generate_args(input_dim, args)
+            # Generate the expression string
+            if output_dim == 1:
+                expr = self._generate_1d_expr(new_args)
+            else:
+                expr = self._generate_nd_expr(new_args)
         else:
-            expr = self._generate_nd_expr(new_args)
+            new_args = args
 
         super().__init__(
             self._func_to_wrap,
