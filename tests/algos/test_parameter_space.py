@@ -31,6 +31,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import concatenate
 from numpy import ndarray
+from openturns import NormalCopula
 
 
 def test_constructor():
@@ -147,16 +148,6 @@ def test_remove_variable():
     assert space.variables_names == ["x1", "y2"]
     assert space.uncertain_variables == ["y2"]
     assert "y1" not in space.distributions
-
-
-def test_copula():
-    """Check the copula feature works correctly."""
-    space = ParameterSpace()
-    space.add_variable("x")
-    space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
-    with pytest.raises(ValueError, match="foo is not a copula name"):
-        ParameterSpace(copula="foo")
 
 
 def test_compute_samples():
@@ -509,3 +500,15 @@ def test_mix_different_distribution_families(first, second):
         match=f"A parameter space cannot mix {first} and {second} distributions.",
     ):
         parameter_space.add_random_variable("y", f"{second}UniformDistribution")
+
+
+def test_copula():
+    """Check build_composed_distribution."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", "OTNormalDistribution")
+    parameter_space.add_random_variable("y", "OTNormalDistribution", 2)
+    parameter_space.build_composed_distribution(NormalCopula(3))
+    assert (
+        parameter_space.distribution.distribution.getCopula().getName()
+        == "NormalCopula"
+    )

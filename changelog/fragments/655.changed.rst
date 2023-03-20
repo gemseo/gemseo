@@ -1,0 +1,5 @@
+API changes:
+
+- :class:`.ComposedDistribution` uses ``None`` as value for independent copula.
+- :class:`.ParameterSpace` no longer uses a ``copula`` passed at instantiation but to :meth:`.ParameterSpace.build_composed_distribution`.
+- :class:`.SPComposedDistribution` raises an error when set up with a copula different from ``None``.

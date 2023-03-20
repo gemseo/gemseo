@@ -17,24 +17,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a joint probability distribution from the OpenTURNS library.
+"""OpenTURNS-based joint probability distribution.
 
-The :class:`.OTComposedDistribution` class is a concrete class
-inheriting from :class:`.ComposedDistribution` which is an abstract one.
-OT stands for `OpenTURNS <http://www.openturns.org/>`_
-which is the library it relies on.
-
-This class inherits from :class:`.OTDistribution`.
-It builds a composed probability distribution
-related to given random variables from a list of :class:`.OTDistribution` objects
-implementing the probability distributions of these variables
-based on the OpenTURNS library and from a copula name.
-
-.. note::
-
-   A copula is a mathematical function used to define the dependence
-   between random variables from their cumulative density functions.
-   `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
+:class:`.OTComposedDistribution` is a :class:`.ComposedDistribution`
+based on the `OpenTURNS <http://www.openturns.org/>`_ library.
 """
 from __future__ import annotations
 
@@ -45,9 +31,6 @@ from typing import TYPE_CHECKING
 
 import openturns as ots
 
-from gemseo.utils.base_enum import CallableEnum
-from gemseo.utils.base_enum import get_names
-
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
@@ -57,20 +40,12 @@ from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 
 class OTComposedDistribution(ComposedDistribution):
-    """OpenTURNS composed distribution."""
-
-    class CopulaModel(CallableEnum):
-        """A copula model."""
-
-        independent_copula = ots.IndependentCopula
-
-    # TODO: API: remove this attribute in the next major release.
-    AVAILABLE_COPULA_MODELS = get_names(CopulaModel)
+    """OpenTURNS-based joint probability distribution."""
 
     def __init__(  # noqa: D107
         self,
         distributions: Sequence[OTDistribution],
-        copula: CopulaModel | str = CopulaModel.independent_copula,
+        copula: ots.Distribution | None = None,
         variable: str = "",
     ) -> None:
         super().__init__(distributions, copula=copula, variable=variable)
@@ -79,9 +54,9 @@ class OTComposedDistribution(ComposedDistribution):
             for distribution in distributions
             for marginal in distribution.marginals
         ]
-        self.distribution = ots.ComposedDistribution(
-            marginals, self.CopulaModel[copula](len(marginals))
-        )
+        if copula is None:
+            copula = ots.IndependentCopula(len(marginals))
+        self.distribution = ots.ComposedDistribution(marginals, copula)
         self._mapping = {}
         index = 0
         for distribution_index, distribution in enumerate(distributions):

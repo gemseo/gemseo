@@ -17,20 +17,27 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Abstract classes defining the concept of joint probability distribution.
+r"""Joint probability distribution.
 
 Overview
 --------
 
-The abstract :class:`.ComposedDistribution` class
-implements the concept of `joint probability distribution
-<https://en.wikipedia.org/wiki/Joint_probability_distribution>`_,
-which is a mathematical function giving the probabilities of occurrence
-of different possible outcomes of several random variables for an experiment.
-In the style of OpenTURNS, a :class:`.ComposedDistribution` is defined
+:class:`.ComposedDistribution` is an abstract class
+implementing the concept of `joint probability distribution
+<https://en.wikipedia.org/wiki/Joint_probability_distribution>`_.
+
+The joint probability distribution of a set of random variables
+is the probability distribution of the random vector
+consisting of these random variables.
+
+It takes into account
+both the marginal probability distributions of these random variables
+and their dependency structure.
+
+A :class:`.ComposedDistribution` is defined
 from a list of :class:`.Distribution` instances
 defining the marginals of the random variables
-and a copula defining the dependence structure between them.
+and a copula defining the dependency structure between them.
 
 .. note::
 
@@ -48,7 +55,7 @@ Construction
 The :class:`.ComposedDistribution` of a list of given uncertain variables is built
 from a list of :class:`.Distribution` objects
 implementing the probability distributions of these variables
-and from a copula name.
+and from a copula.
 
 Capabilities
 ------------
@@ -81,8 +88,7 @@ by means of the :meth:`.ComposedDistribution.compute_samples` method.
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
-from typing import Final
+from typing import Any
 from typing import Iterable
 from typing import Sequence
 
@@ -91,47 +97,33 @@ from numpy import concatenate
 from numpy import ndarray
 
 from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.base_enum import get_names
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ComposedDistribution(Distribution):
-    """Composed distribution."""
-
-    class CopulaModel(BaseEnum):
-        """A copula model."""
-
-        independent_copula = "independent_copula"
-
-    # TODO: API: remove this attribute in the next major release.
-    INDEPENDENT_COPULA: Final[str] = CopulaModel.independent_copula.value
-    """The name of the independent copula."""
-
-    # TODO: API: remove this attribute in the next major release.
-    AVAILABLE_COPULA_MODELS: ClassVar[list[str]] = get_names(CopulaModel)
-    """The names of the models defining copulas."""
+    """Joint probability distribution."""
 
     _COMPOSED = "Composed"
 
     def __init__(
         self,
         distributions: Sequence[Distribution],
-        copula: CopulaModel | str = CopulaModel.independent_copula,
+        copula: Any = None,
         variable: str = "",
     ) -> None:
         """
         Args:
-            distributions: The distributions.
-            copula: A copula model.
+            distributions: The marginal distributions.
+            copula: A copula distribution
+                defining the dependency structure between random variables;
+                if ``None``, consider an independent copula.
             variable: The name of the variable, if any;
                 otherwise,
                 concatenate the names of the random variables
                 defined by ``distributions``.
         """  # noqa: D205,D212,D415
-        dimension = sum(distribution.dimension for distribution in distributions)
         self._marginal_variables = [
             distribution.variable_name for distribution in distributions
         ]
@@ -139,7 +131,7 @@ class ComposedDistribution(Distribution):
             variable or "_".join(self._marginal_variables),
             self._COMPOSED,
             (copula,),
-            dimension,
+            sum(distribution.dimension for distribution in distributions),
         )
         self.marginals = distributions
         msg = MultiLineString()
