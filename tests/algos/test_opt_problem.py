@@ -994,7 +994,7 @@ def test_undefined_differentiation_method():
         match=(
             "'foo' is not a differentiation methods; "
             "available ones are: "
-            "'user', 'complex_step', 'finite_differences', 'no_derivatives'."
+            "'complex_step', 'finite_differences', 'no_derivatives', 'user."
         ),
     ):
         OptimizationProblem(DesignSpace(), differentiation_method="foo")

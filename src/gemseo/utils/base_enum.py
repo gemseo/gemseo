@@ -52,10 +52,15 @@ class MetaEnum(EnumMeta):
             value: An Enum member name or an Enum member.
 
         Raises:
+            KeyError: If the given value is not an enum member.
             TypeError: If the Enum member is not from the same Enum class.
         """
         if isinstance(value, str):
-            return cls.__members__[value]
+            try:
+                return cls.__members__[value]
+            except KeyError:
+                raise KeyError(f"{value} is not a {cls.__name__}.")
+
         if isinstance(value, cls):
             return value
 

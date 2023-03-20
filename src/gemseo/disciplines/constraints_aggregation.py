@@ -16,37 +16,84 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An MDODiscipline to aggregates constraints using KS/IKS/Max methods."""
+"""An MDODiscipline to aggregate constraints."""
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any
+from typing import Final
 from typing import Sequence
 
 from numpy import atleast_1d
 
+from gemseo.algos.aggregation.core import compute_iks_agg
+from gemseo.algos.aggregation.core import compute_ks_agg
+from gemseo.algos.aggregation.core import compute_max_agg
+from gemseo.algos.aggregation.core import compute_max_agg_jac
+from gemseo.algos.aggregation.core import compute_partial_iks_agg_jac
+from gemseo.algos.aggregation.core import compute_partial_ks_agg_jac
 from gemseo.algos.aggregation.core import compute_partial_sum_positive_square_agg_jac
+from gemseo.algos.aggregation.core import compute_partial_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
-from gemseo.algos.aggregation.core import iks_agg
-from gemseo.algos.aggregation.core import iks_agg_jac
-from gemseo.algos.aggregation.core import ks_agg
-from gemseo.algos.aggregation.core import ks_agg_jac
-from gemseo.algos.aggregation.core import sum_square_agg
-from gemseo.algos.aggregation.core import sum_square_agg_jac
+from gemseo.algos.aggregation.core import compute_sum_square_agg
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
-METHODS_MAP = {
-    "KS": ks_agg,
-    "IKS": iks_agg,
-    "pos_sum": compute_sum_positive_square_agg,
-    "sum": sum_square_agg,
+
+class EvaluationFunction(str, Enum):
+    """A function to compute an aggregation of constraints."""
+
+    IKS = "IKS"
+    """The induces exponential function."""
+
+    KS = "KS"
+    """The Kreisselmeier–Steinhauser function."""
+
+    POS_SUM = "POS_SUM"
+    """The positive sum squared function."""
+
+    MAX = "MAX"
+    """The maximum function."""
+
+    SUM = "SUM"
+    """The sum squared function."""
+
+
+_EVALUATION_FUNCTION_MAP: Final[str] = {
+    EvaluationFunction.IKS: compute_iks_agg,
+    EvaluationFunction.KS: compute_ks_agg,
+    EvaluationFunction.POS_SUM: compute_sum_positive_square_agg,
+    EvaluationFunction.MAX: compute_max_agg,
+    EvaluationFunction.SUM: compute_sum_square_agg,
 }
-METHODS_JAC_MAP = {
-    "KS": ks_agg_jac,
-    "IKS": iks_agg_jac,
-    "pos_sum": compute_partial_sum_positive_square_agg_jac,
-    "sum": sum_square_agg_jac,
+
+
+class JacobianEvaluationFunction(str, Enum):
+    """A function to differentiate an aggregation of constraints."""
+
+    IKS = "IKS"
+    """The Jacobian function of the induces exponential function."""
+
+    KS = "KS"
+    """The Jacobian function of the Kreisselmeier–Steinhauser function."""
+
+    POS_SUM = "POS_SUM"
+    """The Jacobian function positive sum squared function."""
+
+    SUM = "SUM"
+    """The Jacobian function of the sum squared function."""
+
+    MAX = "MAX"
+    """The Jacobian function of the maximum function."""
+
+
+_JACOBIAN_EVALUATION_FUNCTION_MAP: Final[str] = {
+    JacobianEvaluationFunction.IKS: compute_partial_iks_agg_jac,
+    JacobianEvaluationFunction.KS: compute_partial_ks_agg_jac,
+    JacobianEvaluationFunction.POS_SUM: compute_partial_sum_positive_square_agg_jac,
+    JacobianEvaluationFunction.MAX: compute_max_agg_jac,
+    JacobianEvaluationFunction.SUM: compute_partial_sum_square_agg_jac,
 }
 
 
@@ -72,61 +119,74 @@ class ConstrAggegationDisc(MDODiscipline):
 
     def __init__(
         self,
-        constr_data_names: Sequence[str],
-        method_name: str,
+        constraint_names: Sequence[str],
+        aggregation_function: str | EvaluationFunction,
         name: str | None = None,
-        **meth_options: Any,
+        **options: Any,
     ) -> None:
         """..
         Args:
-            constr_data_names: The names of the constraints to aggregate.
-                It shall be the output data of other disciplines.
-            method_name: The name of the aggregation method, among KS, IKS.
+            constraint_names: The names of the constraints to aggregate,
+                which must be discipline outputs.
+            aggregation_function: The aggregation function or its name,
+                e.g. IKS, KS, POS_SUM and SUM.
             name: The name of the discipline.
-            **meth_options: The options for the aggregation method.
+            **options: The options for the aggregation method.
 
         Raises:
             ValueError: If the method is not supported.
         """  # noqa: D205, D212, D415
-        if method_name not in METHODS_MAP:
-            raise ValueError(f"Unsupported aggregation method named {method_name}.")
+        if aggregation_function not in EvaluationFunction.__members__:
+            raise ValueError(
+                f"Unsupported aggregation function named {aggregation_function}."
+            )
 
         super().__init__(name)
-
-        self.__method_name = method_name
-        self.__meth_options = meth_options
-        output_names = [f"{self.__method_name}_{c}" for c in constr_data_names]
-
-        self.input_grammar.update(constr_data_names)
-        self.output_grammar.update(output_names)
+        self.__method_name = aggregation_function
+        self.__meth_options = options
+        self.input_grammar.update(constraint_names)
+        self.output_grammar.update(
+            [
+                f"{aggregation_function}_{constraint_name}"
+                for constraint_name in constraint_names
+            ]
+        )
         self.__data_sizes = {}
 
     def _run(self) -> None:
-        c_data = concatenate_dict_of_arrays_to_array(
+        input_data = concatenate_dict_of_arrays_to_array(
             self.local_data, self.get_input_data_names()
         )
-        method = METHODS_MAP[self.__method_name]
-        c_agg = atleast_1d(method(c_data, **self.__meth_options))
-
+        evaluation_function = _EVALUATION_FUNCTION_MAP[
+            EvaluationFunction[self.__method_name]
+        ]
+        output_data = atleast_1d(evaluation_function(input_data, **self.__meth_options))
         output_names = self.get_output_data_names()
-
-        out_data = split_array_to_dict_of_arrays(
-            c_agg, dict.fromkeys(output_names, 1), output_names
+        output_names_to_output_values = split_array_to_dict_of_arrays(
+            output_data,
+            dict.fromkeys(output_names, 1),
+            output_names,
         )
-        self.store_local_data(**out_data)
+        self.store_local_data(**output_names_to_output_values)
         if not self.__data_sizes:
-            self.__data_sizes = {k: s.size for k, s in self.local_data.items()}
+            self.__data_sizes = {
+                variable_name: variable_value.size
+                for variable_name, variable_value in self.local_data.items()
+            }
 
     def _compute_jacobian(
-        self,
-        inputs: Sequence[str] | None = None,
-        outputs: Sequence[str] | None = None,
+        self, inputs: Sequence[str] | None = None, outputs: Sequence[str] | None = None
     ) -> None:
         input_names = self.get_input_data_names()
-        c_data = concatenate_dict_of_arrays_to_array(self.local_data, input_names)
-        method_jac = METHODS_JAC_MAP[self.__method_name]
-        c_agg_jac = method_jac(c_data, **self.__meth_options)
-
+        evaluation_function = _JACOBIAN_EVALUATION_FUNCTION_MAP[
+            JacobianEvaluationFunction[self.__method_name]
+        ]
         self.jac = split_array_to_dict_of_arrays(
-            c_agg_jac, self.__data_sizes, self.get_output_data_names(), input_names
+            evaluation_function(
+                concatenate_dict_of_arrays_to_array(self.local_data, input_names),
+                **self.__meth_options,
+            ),
+            self.__data_sizes,
+            self.get_output_data_names(),
+            input_names,
         )

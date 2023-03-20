@@ -18,10 +18,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.disciplines.constraints_aggregation import EvaluationFunction
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
@@ -29,6 +32,7 @@ from numpy import concatenate
 from numpy import ones
 from numpy import ones_like
 from numpy import vstack
+from numpy.testing import assert_equal
 
 
 @pytest.fixture
@@ -71,7 +75,7 @@ def test_aggregation_discipline(disc_constr):
     ref_sol = scenario.formulation.opt_problem.solution
 
     disc_agg = create_discipline(
-        "ConstrAggegationDisc", constr_data_names=["constr"], method_name="KS"
+        "ConstrAggegationDisc", constraint_names=["constr"], aggregation_function="KS"
     )
     disc_agg.default_inputs = {"constr": array([1.0, 2.0])}
     assert disc_agg.check_jacobian(input_data={"constr": array([1.0, 2.0])})
@@ -93,21 +97,25 @@ def test_aggregation_discipline(disc_constr):
 def test_wrong_meth():
     """Tests the constraint aggregation discipline in a scenario, with analytic
     derivatives and adjoint."""
-    with pytest.raises(ValueError, match="Unsupported aggregation method named"):
+    with pytest.raises(
+        ValueError, match=re.escape("Unsupported aggregation function named unknown")
+    ):
         create_discipline(
-            "ConstrAggegationDisc", constr_data_names=["constr"], method_name="unknown"
+            "ConstrAggegationDisc",
+            constraint_names=["constr"],
+            aggregation_function="unknown",
         )
 
 
 @pytest.mark.parametrize("indices", (None, array([0]), array([1])))
-@pytest.mark.parametrize("method_name", ["KS", "IKS", "pos_sum", "sum"])
+@pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
-def test_constr_jac(disc_constr, method_name, indices, input_val):
+def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
     """Checks the Jacobian of the AggregationDiscipline."""
     disc_agg = create_discipline(
         "ConstrAggegationDisc",
-        constr_data_names=["constr"],
-        method_name=method_name,
+        constraint_names=["constr"],
+        aggregation_function=aggregation_function,
         indices=indices,
     )
     disc_agg.default_inputs = {"constr": array(input_val)}
@@ -115,15 +123,37 @@ def test_constr_jac(disc_constr, method_name, indices, input_val):
 
 
 @pytest.mark.parametrize("scale", (1.0, array([2.0, 3.0])))
-@pytest.mark.parametrize("method_name", ["KS", "IKS", "pos_sum", "sum"])
+@pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
-def test_constr_jac_scale(disc_constr, method_name, scale, input_val):
+def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
     """Checks the Jacobian of the AggregationDiscipline with scale effect."""
     disc_agg = create_discipline(
         "ConstrAggegationDisc",
-        constr_data_names=["constr"],
-        method_name=method_name,
+        constraint_names=["constr"],
+        aggregation_function=aggregation_function,
         scale=scale,
     )
     disc_agg.default_inputs = {"constr": array(input_val)}
     assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
+
+
+def test_evaluation_function_as_enum():
+    """Check the use of EvaluationFunction."""
+    discipline = create_discipline(
+        "ConstrAggegationDisc",
+        constraint_names=["constr"],
+        aggregation_function=EvaluationFunction.KS,
+    )
+    discipline.default_inputs = {"constr": array([1.0, 2.0])}
+    discipline.execute()
+    output_data_with_enum = discipline.get_output_data()
+
+    discipline = create_discipline(
+        "ConstrAggegationDisc",
+        constraint_names=["constr"],
+        aggregation_function="KS",
+    )
+    discipline.default_inputs = {"constr": array([1.0, 2.0])}
+    discipline.execute()
+    output_data_without_enum = discipline.get_output_data()
+    assert_equal(output_data_without_enum, output_data_with_enum)
