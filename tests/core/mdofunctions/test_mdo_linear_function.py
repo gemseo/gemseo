@@ -97,6 +97,18 @@ def test_nd_expression():
     assert func.expr == expr
 
 
+def test_provided_expression():
+    """Tests provided expression."""
+    func = MDOLinearFunction(
+        array([[1.0, 2.0], [3.0, 4.0]]),
+        "f",
+        args=["x", "y"],
+        value_at_zero=array([5.0, 6.0]),
+        expr="",
+    )
+    assert func.expr == ""
+
+
 def test_mult_linear_function():
     """Tests the multiplication of a standard MDOFunction and an MDOLinearFunction."""
     sqr = MDOFunction(
