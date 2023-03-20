@@ -1,0 +1,2 @@
+#! /usr/bin/env sh
+test -z "$(git status --short src tests)"
