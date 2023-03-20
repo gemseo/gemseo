@@ -35,8 +35,7 @@ from numpy import sum as np_sum
 from numpy import zeros
 
 
-# TODO: API: rename to compute_ks_agg
-def ks_agg(
+def compute_ks_agg(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -87,8 +86,7 @@ def ks_agg(
     )
 
 
-# TODO: API: rename to compute_total_ks_agg_jac
-def ks_agg_jac_v(
+def compute_total_ks_agg_jac(
     orig_val: ndarray,
     orig_jac: ndarray,
     indices: Sequence[int] | None = None,
@@ -123,8 +121,7 @@ def ks_agg_jac_v(
     return np_sum(multiply(atleast_2d(weights).T, orig_jac), axis=0)
 
 
-# TODO: API: rename to compute_partial_ks_agg_jac
-def ks_agg_jac(
+def compute_partial_ks_agg_jac(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -157,8 +154,7 @@ def ks_agg_jac(
     return __filter_jac(der, full_size, indices)
 
 
-# TODO: API: rename to compute_iks_agg
-def iks_agg(
+def compute_iks_agg(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -166,8 +162,8 @@ def iks_agg(
 ) -> float:
     """Transform a vector of constraint functions into an induces exponential function.
 
-    The induces exponential function (IKS) tends to the maximum operator when
-        the aggregation parameter tends to infinity.
+    The induces exponential function (IKS) tends to the maximum operator
+    when the aggregation parameter tends to infinity.
 
     See :cite:`kennedy2015improved`.
 
@@ -193,8 +189,7 @@ def iks_agg(
     return iks
 
 
-# TODO: API: rename to compute_total_iks_agg_jac
-def iks_agg_jac_v(
+def compute_total_iks_agg_jac(
     orig_val: ndarray,
     orig_jac: ndarray,
     indices: Sequence[int] | None = None,
@@ -245,8 +240,7 @@ def iks_agg_jac_v(
     return (-iks_den_der / iks_den**2) * iks_num + iks_num_der / iks_den
 
 
-# TODO: API: rename to compute_partial_iks_agg_jac
-def iks_agg_jac(
+def compute_partial_iks_agg_jac(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -313,8 +307,7 @@ def __filter_jac(
     return orig_jac
 
 
-# TODO: API: rename to compute_sum_square_agg
-def sum_square_agg(
+def compute_sum_square_agg(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
@@ -337,8 +330,7 @@ def sum_square_agg(
     return np_sum(scale * orig_val**2)
 
 
-# TODO: API: rename to compute_total_sum_square_agg_jac
-def sum_square_agg_jac_v(
+def compute_total_sum_square_agg_jac(
     orig_val: ndarray,
     orig_jac: ndarray,
     indices: Sequence[int] | None = None,
@@ -364,8 +356,7 @@ def sum_square_agg_jac_v(
     return np_sum((2 * scale * orig_val).flatten() * orig_jac.T, axis=1)
 
 
-# TODO: API: rename to compute_partial_sum_square_agg_jac
-def sum_square_agg_jac(
+def compute_partial_sum_square_agg_jac(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
@@ -390,8 +381,7 @@ def sum_square_agg_jac(
     return jac
 
 
-# TODO: API: rename to compute_max_agg
-def max_agg(
+def compute_max_agg(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
@@ -415,8 +405,7 @@ def max_agg(
     return array([np_max(orig_val)])
 
 
-# TODO: API: rename to compute_max_agg_jac
-def max_agg_jac_v(
+def compute_max_agg_jac(
     orig_val: ndarray,
     orig_jac: ndarray,
     indices: Sequence[int] | None = None,

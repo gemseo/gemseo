@@ -103,9 +103,7 @@ new_scenario.add_constraint("g", "ineq")
 
 # %%
 # This method aggregates the constraints using the KS function
-new_scenario.formulation.opt_problem.aggregate_constraint(
-    method="KS", rho=10.0, constr_id=0
-)
+new_scenario.formulation.opt_problem.aggregate_constraint(0, method="KS", rho=10.0)
 new_scenario.execute(algo_options)
 
 # %%

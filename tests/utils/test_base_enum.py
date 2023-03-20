@@ -60,6 +60,12 @@ def test_getitem():
     assert MyEnum[MyEnum.ELEM_1] == MyEnum.ELEM_1
 
 
+def test_getitem_incorrect_name():
+    """Check that a KeyError is raised when using an incorrect name."""
+    with pytest.raises(KeyError, match=re.escape("foo is not a MyEnum.")):
+        MyEnum["foo"]
+
+
 def test_get_member_from_name():
     """Test the get_member_from_name class method."""
     assert MyEnum.get_member_from_name("ELEM_1") == MyEnum.ELEM_1

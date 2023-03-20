@@ -61,6 +61,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from enum import Enum
 from functools import reduce
 from numbers import Number
 from pathlib import Path
@@ -93,6 +94,7 @@ from numpy import number as np_number
 from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
+from numpy.typing import NDArray
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
 from gemseo.algos.aggregation.aggregation_func import aggregate_ks
@@ -115,17 +117,39 @@ from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
 
-NAME_TO_METHOD = {
-    "sum": aggregate_sum_square,
-    "max": aggregate_max,
-    "KS": aggregate_ks,
-    "IKS": aggregate_iks,
-    "pos_sum": aggregate_positive_sum_square,
+
+class AggregationFunction(str, Enum):
+    """A function to aggregate constraints."""
+
+    IKS = "IKS"
+    """The induces exponential function."""
+
+    KS = "KS"
+    """The Kreisselmeier–Steinhauser function."""
+
+    POS_SUM = "POS_SUM"
+    """The positive sum squared function."""
+
+    MAX = "MAX"
+    """The maximum function."""
+
+    SUM = "SUM"
+    """The sum squared function."""
+
+
+_AGGREGATION_FUNCTION_MAP: Final[str] = {
+    AggregationFunction.IKS: aggregate_iks,
+    AggregationFunction.KS: aggregate_ks,
+    AggregationFunction.POS_SUM: aggregate_positive_sum_square,
+    AggregationFunction.MAX: aggregate_max,
+    AggregationFunction.SUM: aggregate_sum_square,
 }
+
 
 BestInfeasiblePointType = Tuple[
     Optional[ndarray], Optional[ndarray], bool, Dict[str, ndarray]
@@ -402,8 +426,8 @@ class OptimizationProblem:
             value = value[0].decode()
         if value not in self.DIFFERENTIATION_METHODS:
             raise ValueError(
-                "'{}' is not a differentiation methods; available ones are: '{"
-                "}'.".format(value, "', '".join(self.DIFFERENTIATION_METHODS))
+                f"'{value}' is not a differentiation methods; "
+                f"available ones are: {pretty_repr(self.DIFFERENTIATION_METHODS)}."
             )
         self.__differentiation_method = value
 
@@ -567,47 +591,51 @@ class OptimizationProblem:
 
     def aggregate_constraint(
         self,
-        constr_id: int,
-        method: str | Callable[[Callable], Callable] = "max",
-        groups: tuple[ndarray] | None = None,
+        constraint_index: int,
+        method: str | Callable[[NDArray[float]], float] | AggregationFunction = "MAX",
+        groups: Iterable[Sequence[int]] | None = None,
         **options: Any,
     ) -> None:
-        """Aggregates a constraint to generate a reduced dimension constraint.
+        """Aggregate a constraint to generate a reduced dimension constraint.
 
         Args:
-            constr_id: The index of the constraint in :attr:`.constraints`.
+            constraint_index: The index of the constraint in :attr:`.constraints`.
             method: The aggregation method, e.g. ``"max"``, ``"KS"`` or ``"IKS"``.
-            groups: The groups for which to produce an output.
-                If ``None``, a single output constraint is produced.
+            groups: The groups of components of the constraint to aggregate
+                so as to produce one aggregation constraint per group of components;
+                if ``None``, a single aggregation constraint is produced.
             **options: The options of the aggregation method.
 
         Raises:
-            ValueError: When the given is index is greater or equal
+            ValueError: When the given index is greater or equal
                 than the number of constraints
-                or when the method is aggregation unknown.
+                or when the constraint aggregation method is unknown.
         """
-        if constr_id >= len(self.constraints):
-            raise ValueError("constr_id must be lower than the number of constraints.")
+        n_constraints = len(self.constraints)
+        if constraint_index >= n_constraints:
+            raise KeyError(
+                f"The index of the constraint ({constraint_index}) must be lower "
+                f"than the number of constraints ({n_constraints})."
+            )
 
-        constr = self.constraints[constr_id]
-
+        constraint = self.constraints[constraint_index]
         if callable(method):
-            method_imp = method
+            aggregate_constraints = method
         else:
-            method_imp = NAME_TO_METHOD.get(method)
-            if method_imp is None:
-                raise ValueError(f"Unknown method {method}.")
+            aggregate_constraints = _AGGREGATION_FUNCTION_MAP[
+                AggregationFunction[method]
+            ]
 
-        del self.constraints[constr_id]
-
+        del self.constraints[constraint_index]
         if groups is None:
-            cstr = method_imp(constr, **options)
-            self.constraints.insert(constr_id, cstr)
+            self.constraints.insert(
+                constraint_index, aggregate_constraints(constraint, **options)
+            )
         else:
-            cstrs = [method_imp(constr, indx, **options) for indx in groups]
-            icstr = self.constraints[:constr_id]
-            ecstr = self.constraints[constr_id:]
-            self.constraints = icstr + cstrs + ecstr
+            self.constraints[constraint_index:constraint_index] = [
+                aggregate_constraints(constraint, indices, **options)
+                for indices in groups
+            ]
 
     def apply_exterior_penalty(
         self,
