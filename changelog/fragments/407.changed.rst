@@ -1,0 +1,4 @@
+API changes:
+
+- Rename :class:`.MDOObjScenarioAdapter` to :class:`.MDOObjectiveScenarioAdapter`.
+- The scenario adapters :class:`.MDOScenarioAdapter` and :class:`.MDOObjectiveScenarioAdapter` are now located in the package :mod:`gemseo.disciplines.scenario_adapters`.

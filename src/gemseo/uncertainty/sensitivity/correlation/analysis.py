@@ -22,10 +22,11 @@
 from __future__ import annotations
 
 import logging
-from functools import partial
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import Collection
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -56,7 +57,6 @@ from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
@@ -93,16 +93,42 @@ class CorrelationAnalysis(SensitivityAnalysis):
     """
 
     class Method(BaseEnum):
-        """The sensitivity methods."""
+        """The names of the sensitivity methods."""
 
-        KENDALL = partial(compute_kendall_tau)
-        PCC = partial(compute_pcc)
-        PEARSON = partial(compute_pearson_correlation)
-        PRCC = partial(compute_prcc)
-        SPEARMAN = partial(compute_spearman_correlation)
-        SRC = partial(compute_src)
-        SRRC = partial(compute_srrc)
-        SSRC = partial(compute_squared_src)
+        KENDALL = "KENDALL"
+        """The Kendall rank correlation coefficient."""
+
+        PCC = "PCC"
+        """The partial correlation coefficient."""
+
+        PEARSON = "PEARSON"
+        """The Pearson coefficient."""
+
+        PRCC = "PRCC"
+        """The partial rank correlation coefficient."""
+
+        SPEARMAN = "SPEARMAN"
+        """The Pearson coefficient."""
+
+        SRC = "SRC"
+        """The standard regression coefficient."""
+
+        SRRC = "SRRC"
+        """The standard rank regression coefficient."""
+
+        SSRC = "SSRC"
+        """The squared standard regression coefficient."""
+
+    __METHODS_TO_FUNCTIONS: Final[dict[str, Callable]] = {
+        Method.KENDALL.name: compute_kendall_tau,
+        Method.PCC.name: compute_pcc,
+        Method.PEARSON.name: compute_pearson_correlation,
+        Method.PRCC.name: compute_prcc,
+        Method.SPEARMAN.name: compute_spearman_correlation,
+        Method.SRC.name: compute_src,
+        Method.SRRC.name: compute_srrc,
+        Method.SSRC.name: compute_squared_src,
+    }
 
     DEFAULT_DRIVER = "OT_MONTE_CARLO"
 
@@ -128,21 +154,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
             formulation=formulation,
             **formulation_options,
         )
-        self.main_method = self.Method.SPEARMAN.name
-
-    @SensitivityAnalysis.main_method.setter
-    def main_method(  # noqa: D102
-        self,
-        name: str,
-    ) -> None:
-        if name not in self.Method:
-            raise NotImplementedError(
-                f"{name} is not an sensitivity method; "
-                f"available ones are {pretty_str(get_names(self.Method))}."
-            )
-        else:
-            LOGGER.info("Use %s indices as main indices.", name)
-            self._main_method = name
+        self.main_method = self.Method.SPEARMAN
 
     def compute_indices(  # noqa: D102
         self, outputs: str | Sequence[str] | None = None
@@ -162,7 +174,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 continue
 
             # The version of OpenTURNS offers this correlation method.
-            get_indices = method.value
+            get_indices = self.__METHODS_TO_FUNCTIONS[method.name]
             input_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
             sizes = self.dataset.sizes
             self.__correlation[algo_name] = {
@@ -350,10 +362,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
         """
         return self.__correlation
 
-    @property
-    def main_indices(self) -> FirstOrderIndicesType:  # noqa: D102
-        return self.__correlation[self.main_method]
-
     def plot(  # noqa: D102
         self,
         output: str | tuple[str, int],
@@ -383,10 +391,10 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 input_name,
                 vstack(
                     [
-                        getattr(self, indices.lower())[output_name][output_index][
+                        getattr(self, method.lower())[output_name][output_index][
                             input_name
                         ]
-                        for indices in all_indices
+                        for method in all_indices
                     ]
                 ),
             )

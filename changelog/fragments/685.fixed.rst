@@ -1,0 +1,1 @@
+:class:`.Factory` considers the base class as an available class when it is not abstract.

@@ -33,7 +33,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG

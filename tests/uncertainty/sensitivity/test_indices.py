@@ -128,7 +128,8 @@ def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
 @pytest.fixture
 def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
-    return SecondMockSensitivityAnalysis()
+    with concretize_classes(SecondMockSensitivityAnalysis):
+        return SecondMockSensitivityAnalysis()
 
 
 BARPLOT_TEST_PARAMETERS = {
@@ -258,7 +259,7 @@ def ishigami() -> SobolAnalysis:
     sobol_analysis = SobolAnalysis(
         [Ishigami1D()], space, 100, compute_second_order=False
     )
-    sobol_analysis.main_method = "total"
+    sobol_analysis.main_method = "TOTAL"
     sobol_analysis.compute_indices()
     return sobol_analysis
 

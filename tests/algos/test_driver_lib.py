@@ -29,6 +29,7 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import array
 
 
@@ -51,7 +52,8 @@ def optimization_problem():
 
 def test_empty_design_space():
     """Check that a driver cannot be executed with an empty design space."""
-    driver = MyDriver()
+    with concretize_classes(MyDriver):
+        driver = MyDriver()
     driver.algo_name = "algo_name"
     with pytest.raises(
         ValueError,
@@ -65,9 +67,11 @@ def test_empty_design_space():
 
 def test_max_iter_fail(optimization_problem):
     """Check that a ValueError is raised for an invalid `max_iter` input."""
-    MyDriver()._pre_run(optimization_problem, None)
+    with concretize_classes(MyDriver):
+        MyDriver()._pre_run(optimization_problem, None)
     with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):
-        MyDriver().init_iter_observer(max_iter=-1)
+        with concretize_classes(MyDriver):
+            MyDriver().init_iter_observer(max_iter=-1)
 
 
 def test_no_algo_fail(optimization_problem):
@@ -77,7 +81,8 @@ def test_no_algo_fail(optimization_problem):
         match="Algorithm name must be either passed as "
         "argument or set by the attribute 'algo_name'.",
     ):
-        MyDriver().execute(optimization_problem)
+        with concretize_classes(MyDriver):
+            MyDriver().execute(optimization_problem)
 
 
 def test_grammar_fail():
@@ -90,7 +95,8 @@ def test_grammar_fail():
             "has been found."
         ),
     ):
-        DriverLibrary().init_options_grammar("unknown")
+        with concretize_classes(DriverLibrary):
+            DriverLibrary().init_options_grammar("unknown")
 
 
 def test_require_grad():
@@ -107,10 +113,11 @@ def test_require_grad():
                 )
             }
 
-    with pytest.raises(ValueError, match="Algorithm toto is not available."):
-        MyDriver().is_algo_requires_grad("toto")
+    with concretize_classes(MyDriver):
+        with pytest.raises(ValueError, match="Algorithm toto is not available."):
+            MyDriver().is_algo_requires_grad("toto")
 
-    assert MyDriver().is_algo_requires_grad("SLSQP")
+        assert MyDriver().is_algo_requires_grad("SLSQP")
 
 
 def test_new_iteration_callback_xvect(caplog):
@@ -125,7 +132,8 @@ def test_new_iteration_callback_xvect(caplog):
         {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
     )
 
-    test_driver = DriverLibrary()
+    with concretize_classes(DriverLibrary):
+        test_driver = DriverLibrary()
     test_driver.problem = problem
     test_driver._max_time = 0
     test_driver.init_iter_observer(max_iter=2)
@@ -135,7 +143,8 @@ def test_new_iteration_callback_xvect(caplog):
 
 def test_init_iter_observer_message(caplog):
     """Check the iteration prefix in init_iter_observer."""
-    test_driver = DriverLibrary()
+    with concretize_classes(DriverLibrary):
+        test_driver = DriverLibrary()
     test_driver.problem = Power2()
     test_driver.init_iter_observer(max_iter=2)
     assert "...   0%|" in caplog.text
@@ -153,7 +162,8 @@ def test_progress_bar(activate_progress_bar):
 
 def test_common_options():
     """Check that the options common to all the drivers are in the option grammar."""
-    driver = MyDriver()
+    with concretize_classes(MyDriver):
+        driver = MyDriver()
     driver.init_options_grammar("AlgoName")
     assert driver.opt_grammar.names == {
         DriverLibrary.ROUND_INTS_OPTION,

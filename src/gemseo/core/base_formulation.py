@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
@@ -32,11 +33,11 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.factory import Factory
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core.scenario import Scenario
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import arange, copy, empty, in1d, ndarray, where, zeros
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -48,7 +49,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
+class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base MDO formulation class to be extended in subclasses for use.
 
     This class creates the :class:`.MDOFunction` instances
@@ -593,6 +594,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 }
             )
 
+    @abstractmethod
     def get_expected_workflow(
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
@@ -615,8 +617,8 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             an :class:`.ExecutionSequence`
             or a tuple of :class:`.ExecutionSequence` for concurrent execution.
         """
-        raise NotImplementedError()
 
+    @abstractmethod
     def get_expected_dataflow(
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
@@ -630,7 +632,6 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             where the i-th item is described by the starting discipline,
             the ending discipline and the coupling variables.
         """
-        raise NotImplementedError()
 
     @classmethod
     def get_default_sub_options_values(

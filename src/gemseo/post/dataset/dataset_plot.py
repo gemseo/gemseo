@@ -29,6 +29,7 @@ implementing at least method :meth:`!DatasetPlot._run`.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from collections import namedtuple
 from numbers import Number
 from typing import Any
@@ -38,7 +39,6 @@ from typing import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.axes import Axes
 from numpy import linspace
 
@@ -46,6 +46,7 @@ from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset
@@ -58,7 +59,7 @@ from pathlib import Path
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
 
-class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
+class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Abstract class for plotting a dataset."""
 
     color: str | list[str]
@@ -324,6 +325,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
         return figures
 
+    @abstractmethod
     def _plot(
         self,
         fig: None | Figure = None,
@@ -340,7 +342,6 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The figures.
         """
-        raise NotImplementedError
 
     def _get_variables_names(
         self,

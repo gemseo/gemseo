@@ -28,7 +28,7 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
-
+from gemseo.utils.pytest_conftest import concretize_classes
 
 OPT_LIB_NAME = "ScipyOpt"
 
@@ -154,7 +154,8 @@ def test_algorithm_handles_eqcstr_fail(lib, power):
 
 def test_optimization_algorithm():
     """Check the default settings of OptimizationAlgorithmDescription."""
-    lib = OptimizationLibrary()
+    with concretize_classes(OptimizationLibrary):
+        lib = OptimizationLibrary()
     lib.descriptions["new_algo"] = OptimizationAlgorithmDescription(
         algorithm_name="bar", internal_algorithm_name="foo"
     )

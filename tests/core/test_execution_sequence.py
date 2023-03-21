@@ -28,7 +28,7 @@ from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
