@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import logging
 import re
 from unittest import mock
 
@@ -82,21 +81,14 @@ def test_compute_indices(correlation):
 def test_wrong_main_method(correlation):
     """Check that an exception is raised when setting main_method with a wrong name."""
     with pytest.raises(
-        NotImplementedError,
+        ValueError,
         match=re.escape(
-            "foo is not an sensitivity method; "
-            "available ones are KENDALL, PCC, PEARSON, PRCC, SPEARMAN, SRC, SRRC, SSRC."
+            "foo is not a sensitivity method; "
+            "available ones are 'KENDALL', 'PCC', 'PEARSON', 'PRCC', "
+            "'SPEARMAN', 'SRC', 'SRRC' and 'SSRC'."
         ),
     ):
         correlation.main_method = "foo"
-
-
-def test_correlation_main_method(correlation, caplog):
-    """Check a logged message when changing main method."""
-    correlation.main_method = "PRCC"
-    _, log_level, log_message = caplog.record_tuples[0]
-    assert log_level == logging.INFO
-    assert log_message == ("Use PRCC indices as main indices.")
 
 
 @pytest.mark.parametrize("baseline_images", [["plot"]])

@@ -21,17 +21,9 @@
 from __future__ import annotations
 
 import openturns as ot
-from numpy import array
-from numpy import inf
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    Bounds,
-)
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
-)
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceIntervalSide,
 )
 
 
@@ -60,46 +52,46 @@ class NormalToleranceInterval(ToleranceInterval):
         self.__mean = mean
         self.__std = std
 
-    def _compute(
+    def _compute_bounds(
         self,
         coverage: float,
         alpha: float,
         size: int,
-        side: ToleranceIntervalSide,
-    ) -> Bounds:
-        if side in [
-            ToleranceIntervalSide.UPPER,
-            ToleranceIntervalSide.LOWER,
-        ]:
-            offset = ot.Normal().computeQuantile(coverage)[0] * size**0.5
-            student = ot.Student(size - 1, offset, 1.0)
-            student_quantile = student.computeQuantile(1 - alpha)[0]
-            tolerance_factor = student_quantile / size**0.5
+    ) -> tuple[float, float]:
+        z_p = ot.Normal().computeQuantile((1 + coverage) / 2.0)[0]
+        u_term = (1 + 1.0 / size) ** 0.5 * z_p
+        chi_square = ot.ChiSquare(size - 1)
+        v_term = ((size - 1) / chi_square.computeQuantile(alpha)[0]) ** 0.5
+        w_term = (
+            1
+            + (size - 3 - chi_square.computeQuantile(alpha)[0]) / (2 * (size + 1) ** 2)
+        ) ** 0.05
+        tolerance_factor = u_term * v_term * w_term
+        return (
+            self.__mean - tolerance_factor * self.__std,
+            self.__mean + tolerance_factor * self.__std,
+        )
 
-            if side == ToleranceIntervalSide.UPPER:
-                return Bounds(
-                    array([-inf]), array([self.__mean + tolerance_factor * self.__std])
-                )
-            else:
-                return Bounds(
-                    array([self.__mean - tolerance_factor * self.__std]), array([inf])
-                )
+    def _compute_upper_bound(
+        self,
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
+        offset = ot.Normal().computeQuantile(coverage)[0] * size**0.5
+        student = ot.Student(size - 1, offset, 1.0)
+        student_quantile = student.computeQuantile(1 - alpha)[0]
+        tolerance_factor = student_quantile / size**0.5
+        return self.__mean + tolerance_factor * self.__std
 
-        elif side == ToleranceIntervalSide.BOTH:
-            z_p = ot.Normal().computeQuantile((1 + coverage) / 2.0)[0]
-            u_term = (1 + 1.0 / size) ** 0.5 * z_p
-            chi_square = ot.ChiSquare(size - 1)
-            v_term = ((size - 1) / chi_square.computeQuantile(alpha)[0]) ** 0.5
-            w_term = (
-                1
-                + (size - 3 - chi_square.computeQuantile(alpha)[0])
-                / (2 * (size + 1) ** 2)
-            ) ** 0.05
-            tolerance_factor = u_term * v_term * w_term
-            return Bounds(
-                array([self.__mean - tolerance_factor * self.__std]),
-                array([self.__mean + tolerance_factor * self.__std]),
-            )
-
-        else:
-            raise ValueError("The type of tolerance interval is incorrect.")
+    def _compute_lower_bound(
+        self,
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
+        offset = ot.Normal().computeQuantile(coverage)[0] * size**0.5
+        student = ot.Student(size - 1, offset, 1.0)
+        student_quantile = student.computeQuantile(1 - alpha)[0]
+        tolerance_factor = student_quantile / size**0.5
+        return self.__mean - tolerance_factor * self.__std

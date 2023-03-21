@@ -89,6 +89,7 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.string_tools import repr_variable
 
 
@@ -217,6 +218,15 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     DEFAULT_DRIVER = PyDOE.PYDOE_LHS
 
+    class Method(BaseEnum):
+        """The names of the sensitivity methods."""
+
+        MU_STAR = "MU_STAR"
+        """The mean of the absolute finite difference."""
+
+        SIGMA = "SIGMA"
+        """The standard deviation of the absolute finite difference."""
+
     def __init__(
         self,
         disciplines: Collection[MDODiscipline],
@@ -277,7 +287,7 @@ class MorrisAnalysis(SensitivityAnalysis):
             algo=algo,
             algo_options=algo_options,
         )
-        self._main_method = "Morris(mu*)"
+        self._main_method = self.Method.MU_STAR
         self.__outputs_bounds = discipline.output_range
         self.default_output = output_names
 
@@ -356,19 +366,13 @@ class MorrisAnalysis(SensitivityAnalysis):
         self,
     ) -> dict[str, FirstOrderIndicesType]:
         return {
-            "mu": self.mu_,
-            "mu_star": self.mu_star,
-            "sigma": self.sigma,
-            "relative_sigma": self.relative_sigma,
-            "min": self.min,
-            "max": self.max,
+            "MU": self.mu_,
+            "MU_STAR": self.mu_star,
+            "SIGMA": self.sigma,
+            "RELATIVE_SIGMA": self.relative_sigma,
+            "MIN": self.min,
+            "MAX": self.max,
         }
-
-    @property
-    def main_indices(  # noqa: D102
-        self,
-    ) -> FirstOrderIndicesType:
-        return self.mu_star
 
     def plot(
         self,

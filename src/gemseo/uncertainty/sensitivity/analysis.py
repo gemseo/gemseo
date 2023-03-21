@@ -35,12 +35,12 @@ from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Collection
 from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Mapping
-from typing import NoReturn
 from typing import Sequence
 from typing import Tuple
 from typing import Union
@@ -64,10 +64,12 @@ from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
@@ -95,8 +97,12 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     default_output: list[str]
     """The default outputs of interest."""
+
     dataset: Dataset
     """The dataset containing the discipline evaluations."""
+
+    Method: ClassVar[BaseEnum]
+    """The names of the sensitivity methods."""
 
     DEFAULT_DRIVER = None
 
@@ -137,7 +143,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             formulation,
             **(formulation_options or {}),
         ).export_to_dataset(opt_naming=False)
-        self._main_method = self.__class__.__name__
+        self._main_method = None
         self._file_path_manager = FilePathManager(
             FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
@@ -294,18 +300,24 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def main_method(self) -> str:
-        """The name of the main method."""
-        return self._main_method
+        """The name of the main method.
+
+        One of the enum :class:`.Sensitivity.Method`.
+        """
+        return self._main_method.name
 
     @main_method.setter
-    def main_method(
-        self,
-        name: str,
-    ) -> NoReturn:
-        raise NotImplementedError("You cannot change the main method.")
+    def main_method(self, method_name: Method | str) -> None:  # noqa: D102
+        try:
+            self._main_method = self.Method[method_name]
+        except KeyError:
+            method_names = [method.name for method in self.Method]
+            raise ValueError(
+                f"{method_name} is not a sensitivity method; "
+                f"available ones are {pretty_repr(method_names,use_and=True)}."
+            )
 
     @property
-    @abstractmethod
     def main_indices(self) -> FirstOrderIndicesType:
         """The main sensitivity indices.
 
@@ -321,6 +333,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 ]
             }
         """
+        return self.indices[self._main_method.name]
 
     def _outputs_to_tuples(
         self,

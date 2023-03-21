@@ -83,12 +83,12 @@ def test_morris_main_indices_outputs_content(morris, output):
 
 def test_morris_main_indices(morris):
     """Check that the main indices are mu_star."""
-    assert morris.main_indices == morris.indices["mu_star"]
+    assert morris.main_indices == morris.indices["MU_STAR"]
 
 
 @pytest.mark.parametrize(
     "name",
-    ["mu", "mu_star", "sigma", "relative_sigma", "min", "max"],
+    ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
 def test_morris_indices_outputs(morris, name):
     """Check that all the outputs have indices."""
@@ -97,7 +97,7 @@ def test_morris_indices_outputs(morris, name):
 
 @pytest.mark.parametrize(
     "name",
-    ["mu", "mu_star", "sigma", "relative_sigma", "min", "max"],
+    ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_indices_outputs_content(morris, name, output):
@@ -110,7 +110,7 @@ def test_morris_indices_outputs_content(morris, name, output):
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_sigma(morris, output, variable):
     """Check that sigma is positive."""
-    assert morris.indices["sigma"][output][0][variable] >= 0
+    assert morris.indices["SIGMA"][output][0][variable] >= 0
 
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
@@ -118,8 +118,8 @@ def test_morris_sigma(morris, output, variable):
 def test_morris_mu(morris, output, variable):
     """Check that mu_star is greater or equal to mu."""
     assert (
-        morris.indices["mu_star"][output][0][variable]
-        >= morris.indices["mu"][output][0][variable]
+        morris.indices["MU_STAR"][output][0][variable]
+        >= morris.indices["MU"][output][0][variable]
     )
 
 
@@ -128,8 +128,8 @@ def test_morris_mu(morris, output, variable):
 def test_morris_min_max(morris, output, variable):
     """Check that the maximum is greater or equal to the minimum."""
     assert (
-        morris.indices["max"][output][0][variable]
-        >= morris.indices["min"][output][0][variable]
+        morris.indices["MAX"][output][0][variable]
+        >= morris.indices["MIN"][output][0][variable]
     )
 
 
@@ -137,9 +137,9 @@ def test_morris_min_max(morris, output, variable):
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_relative_sigma(morris, output, variable):
     """Check that the relative sigma is equal to sigma divided by mu_star."""
-    relative_sigma = morris.indices["relative_sigma"][output][0][variable]
-    sigma = morris.indices["sigma"][output][0][variable]
-    mu_star = morris.indices["mu_star"][output][0][variable]
+    relative_sigma = morris.indices["RELATIVE_SIGMA"][output][0][variable]
+    sigma = morris.indices["SIGMA"][output][0][variable]
+    mu_star = morris.indices["MU_STAR"][output][0][variable]
     assert relative_sigma == sigma / mu_star
 
 

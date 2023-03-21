@@ -14,20 +14,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.core.base_formulation import BaseFormulation
-from gemseo.core.factory import Factory
+import pytest
+from gemseo.disciplines.scenario_adapters.factory import ScenarioAdapterFactory
 
 
-class NotMDOFormulation(BaseFormulation):
-    def get_expected_workflow(self):
-        return
-
-    def get_expected_dataflow(self):
-        return
-
-
-class NotMDOFormulationFactory:
-    def __init__(self) -> None:
-        self.factory = Factory(
-            NotMDOFormulation, ("tests.formulations.not_mdo_formulations",)
-        )
+@pytest.mark.parametrize(
+    "class_name", ["MDOScenarioAdapter", "MDOObjectiveScenarioAdapter"]
+)
+def test_scenario_adapter_factory(class_name):
+    """Check ScenarioAdapterFactory."""
+    assert ScenarioAdapterFactory().is_available(class_name)

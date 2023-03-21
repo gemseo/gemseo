@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from typing import Callable
 
 import pytest
@@ -111,38 +112,39 @@ def test_wrong_algo(sobol):
 def test_algo(discipline, uncertain_space):
     """Check that algorithm can be passed either as a str or an Algorithm."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
-    indices = analysis.compute_indices(algo=analysis.Algorithm.Jansen)["first"]["y"][0]
+    indices = analysis.compute_indices(algo=analysis.Algorithm.Jansen)["FIRST"]["y"][0]
     assert compare_dict_of_arrays(
-        indices, analysis.compute_indices(algo="Jansen")["first"]["y"][0]
+        indices, analysis.compute_indices(algo="Jansen")["FIRST"]["y"][0]
     )
 
 
-@pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.total])
+@pytest.mark.parametrize("method", ["TOTAL", SobolAnalysis.Method.TOTAL])
 def test_method(sobol, method):
     """Check the use of the main method."""
-    assert sobol.main_method == "Sobol(first)"
+    assert sobol.main_method == "FIRST"
     assert compare_dict_of_arrays(
-        sobol.main_indices["y"][0], sobol.indices["first"]["y"][0], 0.1
+        sobol.main_indices["y"][0], sobol.indices["FIRST"]["y"][0], 0.1
     )
 
     sobol.main_method = method
-    assert sobol.main_method == "Sobol(total)"
+    assert sobol.main_method == "TOTAL"
     assert compare_dict_of_arrays(
-        sobol.main_indices["y"][0], sobol.indices["total"]["y"][0], 0.1
+        sobol.main_indices["y"][0], sobol.indices["TOTAL"]["y"][0], 0.1
     )
 
-    sobol.main_method = SobolAnalysis.Method.first
+    sobol.main_method = SobolAnalysis.Method.FIRST
 
 
 def test_wrong_method(sobol):
     """Check that a wrong method raises an error."""
     with pytest.raises(
         ValueError,
-        match=(
-            r"second is not an appropriate method; available ones are 'first', 'total'."
+        match=re.escape(
+            "SECOND is not a sensitivity method; "
+            "available ones are 'FIRST' and 'TOTAL'."
         ),
     ):
-        sobol.main_method = "second"
+        sobol.main_method = "SECOND"
 
 
 @pytest.mark.parametrize(
@@ -200,11 +202,11 @@ def test_plot(
     "order,reference",
     [
         (
-            "first",
+            "FIRST",
             {"x1": array([-0.06]), "x23": array([-0.10, -0.53])},
         ),
         (
-            "second",
+            "SECOND",
             {
                 "x1": {"x1": array([[0.0]]), "x23": array([[0.79, 1.45]])},
                 "x23": {
@@ -214,7 +216,7 @@ def test_plot(
             },
         ),
         (
-            "total",
+            "TOTAL",
             {"x1": array([0.63]), "x23": array([0.48, 0.38])},
         ),
     ],
@@ -223,7 +225,7 @@ def test_indices(sobol, order, reference):
     """Check the values of the indices."""
     assert compare_dict_of_arrays(sobol.indices[order]["y"][0], reference, 0.1)
     assert compare_dict_of_arrays(
-        getattr(sobol, f"{order}_order_indices")["y"][0], reference, 0.1
+        getattr(sobol, f"{order.lower()}_order_indices")["y"][0], reference, 0.1
     )
 
 
@@ -242,7 +244,7 @@ def test_second_order(discipline, uncertain_space, compute_second_order):
         [discipline], uncertain_space, 100, compute_second_order=compute_second_order
     )
     analysis.compute_indices()
-    assert bool(analysis.indices["second"]) is compute_second_order
+    assert bool(analysis.indices["SECOND"]) is compute_second_order
     assert bool(analysis.second_order_indices) is compute_second_order
     assert len(analysis.dataset) == (96 if compute_second_order else 100)
 

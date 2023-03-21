@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,7 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_str
 
@@ -63,7 +65,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     """The website of the wrapped library or algorithm."""
 
 
-class AlgorithmLibrary(metaclass=GoogleDocstringInheritanceMeta):
+class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Abstract class for algorithms libraries interfaces.
 
     An algorithm library solves a numerical problem
@@ -326,6 +328,7 @@ class AlgorithmLibrary(metaclass=GoogleDocstringInheritanceMeta):
         self._check_ignored_options(options)
         return self._get_options(**options)
 
+    @abstractmethod
     def _get_options(self, **options: Any) -> dict[str, Any]:
         """Retrieve the options of the library.
 
@@ -338,8 +341,8 @@ class AlgorithmLibrary(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The options of the algorithm.
         """
-        raise NotImplementedError()
 
+    @abstractmethod
     def _run(self, **options) -> Any:
         """Run the algorithm.
 
@@ -351,7 +354,6 @@ class AlgorithmLibrary(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The solution of the problem.
         """
-        raise NotImplementedError()
 
     def _check_algorithm(
         self,

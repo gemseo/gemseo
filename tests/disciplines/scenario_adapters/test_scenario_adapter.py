@@ -28,8 +28,10 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.disciplines.scenario_adapter import MDOObjScenarioAdapter
-from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import (
+    MDOObjectiveScenarioAdapter,
+)
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
@@ -379,7 +381,7 @@ def check_obj_scenario_adapter(
         objective.dim,
         outvars,
     )
-    adapter = MDOObjScenarioAdapter(scenario, ["x_shared"], outputs)
+    adapter = MDOObjectiveScenarioAdapter(scenario, ["x_shared"], outputs)
 
     adapter.execute()
     local_value = adapter.local_data[outvars[0]]

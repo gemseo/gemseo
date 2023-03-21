@@ -21,16 +21,17 @@
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from typing import Any
 from typing import NamedTuple
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import inf
 from numpy.typing import NDArray
 
 from gemseo.core.factory import Factory
 from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class Bounds(NamedTuple):  # noqa: N801
     upper: NDArray[float]
 
 
-class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
+class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Computation of tolerance intervals from a data-fitted probability distribution.
 
     A :class:`.ToleranceInterval` (TI) is initialized
@@ -82,6 +83,7 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
         """  # noqa: D205 D212 D415
         self.__size = size
 
+    @abstractmethod
     def _compute_lower_bound(
         self,
         coverage: float,
@@ -98,8 +100,8 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The lower bound of the tolerance interval.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def _compute_upper_bound(
         self,
         coverage: float,
@@ -116,7 +118,29 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The upper bound of the tolerance interval.
         """
-        raise NotImplementedError
+
+    def _compute_bounds(
+        self,
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> tuple[float, float]:
+        """Compute the lower and upper bounds of a both-sided tolerance interval.
+
+        Args:
+            coverage: A minimum percentage of belonging to the TI.
+            alpha: ``1-alpha`` is the level of confidence in [0,1].
+            size: The number of samples.
+
+        Returns:
+            The lower and upper bounds of the both-sided tolerance interval.
+        """
+        coverage = (coverage + 1.0) / 2.0
+        alpha /= 2.0
+        return (
+            self._compute_lower_bound(coverage, alpha, size),
+            self._compute_upper_bound(coverage, alpha, size),
+        )
 
     def _compute(
         self,
@@ -150,10 +174,7 @@ class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
             lower = -inf
             upper = self._compute_upper_bound(coverage, alpha, size)
         elif side == ToleranceIntervalSide.BOTH:
-            coverage = (coverage + 1.0) / 2.0
-            alpha /= 2.0
-            lower = self._compute_lower_bound(coverage, alpha, size)
-            upper = self._compute_upper_bound(coverage, alpha, size)
+            lower, upper = self._compute_bounds(coverage, alpha, size)
         else:
             raise ValueError("The type of tolerance interval is incorrect.")
         return Bounds(array([lower]), array([upper]))

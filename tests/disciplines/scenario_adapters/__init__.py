@@ -13,21 +13,3 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-
-from gemseo.core.base_formulation import BaseFormulation
-from gemseo.core.factory import Factory
-
-
-class NotMDOFormulation(BaseFormulation):
-    def get_expected_workflow(self):
-        return
-
-    def get_expected_dataflow(self):
-        return
-
-
-class NotMDOFormulationFactory:
-    def __init__(self) -> None:
-        self.factory = Factory(
-            NotMDOFormulation, ("tests.formulations.not_mdo_formulations",)
-        )

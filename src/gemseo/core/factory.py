@@ -147,6 +147,8 @@ class Factory(Multiton):
             module_names += self.__import_modules_from_env_var(env_variable)
 
         names_to_classes = self.__get_sub_classes(self.__base_class)
+        if not isabstract(self.__base_class):
+            names_to_classes[self.__base_class.__name__] = self.__base_class
         for name, cls in names_to_classes.items():
             if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
                 self.__names_to_classes[name] = cls

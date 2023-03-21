@@ -127,7 +127,6 @@ from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
@@ -170,12 +169,15 @@ class SobolAnalysis(SensitivityAnalysis):
         Martinez = MartinezSensitivityAlgorithm
 
     class Method(BaseEnum):
-        """The sensitivity methods."""
+        """The names of the sensitivity methods."""
 
-        first = "Sobol(first)"
-        total = "Sobol(total)"
+        FIRST = "FIRST"
+        """The first-order Sobol' index."""
 
-    __SECOND: Final[str] = "second"
+        TOTAL = "TOTAL"
+        """The total-order Sobol' index."""
+
+    __SECOND: Final[str] = "SECOND"
     __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
@@ -243,7 +245,7 @@ class SobolAnalysis(SensitivityAnalysis):
         )
         self.__eval_second_order = compute_second_order
         self.__use_asymptotic_distributions = use_asymptotic_distributions
-        self._main_method = self.Method.first.value
+        self._main_method = self.Method.FIRST
         dataset = self.dataset
         input_dimension = parameter_space.dimension
         sample_size = len(dataset) // (
@@ -256,16 +258,6 @@ class SobolAnalysis(SensitivityAnalysis):
         self.output_standard_deviations = {
             k: v**0.5 for k, v in self.output_variances.items()
         }
-
-    @SensitivityAnalysis.main_method.setter
-    def main_method(self, name: Method | str) -> None:  # noqa: D102
-        if name not in self.Method:
-            raise ValueError(
-                f"{name} is not an appropriate method; "
-                f"available ones are {pretty_repr([m.name for m in self.Method])}."
-            )
-        self._main_method = self.Method[name].value
-        LOGGER.info("Use %s order indices as main indices.", self._main_method)
 
     def compute_indices(
         self,
@@ -541,17 +533,10 @@ class SobolAnalysis(SensitivityAnalysis):
         self,
     ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
         return {
-            self.Method.first.name: self.first_order_indices,
+            self.Method.FIRST.name: self.first_order_indices,
             self.__SECOND: self.second_order_indices,
-            self.Method.total.name: self.total_order_indices,
+            self.Method.TOTAL.name: self.total_order_indices,
         }
-
-    @property
-    def main_indices(self) -> FirstOrderIndicesType:  # noqa: D102
-        if self.main_method == self.Method.total.value:
-            return self.total_order_indices
-        else:
-            return self.first_order_indices
 
     def plot(
         self,
