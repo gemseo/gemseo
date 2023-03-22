@@ -107,6 +107,11 @@ def test_provided_expression():
         expr="",
     )
     assert func.expr == ""
+    assert (-func).expr == ""
+    assert func.offset(1.0).expr == ""
+    assert (
+        func.restrict(frozen_indexes=array([0]), frozen_values=array([0.0])).expr == ""
+    )
 
 
 def test_mult_linear_function():
