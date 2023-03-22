@@ -50,6 +50,11 @@ class MDOLinearFunction(MDOFunction):
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
     """
+    __initial_expression: str | None
+    """The initially provided expression.
+
+    If None the expression is computed.
+    """
 
     def __init__(
         self,
@@ -79,6 +84,7 @@ class MDOLinearFunction(MDOFunction):
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
         self.value_at_zero = value_at_zero
+        self.__initial_expression = expr
         if expr is None:
             # Generate the arguments strings
             new_args = self.__class__.generate_args(input_dim, args)
@@ -260,6 +266,7 @@ class MDOLinearFunction(MDOFunction):
             self.f_type,
             self.args,
             -self._value_at_zero,
+            expr=self.__initial_expression,
         )
 
     def offset(self, value: OutputType) -> MDOLinearFunction:  # noqa:D102
@@ -269,6 +276,7 @@ class MDOLinearFunction(MDOFunction):
             self.f_type,
             self.args,
             self._value_at_zero + value,
+            expr=self.__initial_expression,
         )
 
     def restrict(
@@ -306,4 +314,5 @@ class MDOLinearFunction(MDOFunction):
             value_at_zero=(
                 matmul(frozen_coefficients, frozen_values) + self._value_at_zero
             ),
+            expr=self.__initial_expression,
         )
