@@ -30,6 +30,7 @@ from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
+from typing import Mapping
 from typing import Sequence
 from typing import Sized
 from typing import TYPE_CHECKING
@@ -48,6 +49,7 @@ from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
+from gemseo.core.serializable import Serializable
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.string_tools import pretty_str
@@ -69,7 +71,7 @@ WrappedFunctionType = Callable[[ArrayType], OutputType]
 WrappedJacobianType = Callable[[ArrayType], ArrayType]
 
 
-class MDOFunction:
+class MDOFunction(Serializable):
     """The standard definition of an array-based function with algebraic operations.
 
     :class:`.MDOFunction` is the key class
@@ -225,14 +227,6 @@ class MDOFunction:
     _outvars: list[str]
     """The names of the outputs of the function."""
 
-    _ATTR_NOT_TO_SERIALIZE: tuple[str] = ("_n_calls",)
-    """The attributes that shall be skipped at serialization.
-
-    Private attributes shall be written following name mangling conventions:
-    ``_ClassName__attribute_name``. Subclasses must expand this class attribute if
-    needed.
-    """
-
     __INPUT_NAME_PATTERN: Final[str] = "x"
     """The pattern to define a variable name, as ``"x!1"``."""
 
@@ -282,7 +276,7 @@ class MDOFunction:
         self._dim = 0
         # TODO: API: rename to _output_variables
         self._outvars = []
-        self._init_shared_attrs()
+        self._init_shared_memory_attrs()
         # Use setters to check values
         self.func = func
         self.jac = jac
@@ -375,46 +369,15 @@ class MDOFunction:
 
         return obj
 
-    def __getstate__(self) -> dict[str, Any]:
-        """Used by pickle to define what to serialize.
+    def __setstate__(
+        self,
+        state: Mapping[str, Any],
+    ) -> None:
+        super().__setstate__(state)
+        # If at some point this class includes attributes that are not serializable
+        # nor Synchronized, they shall be set last.
 
-        Returns:
-            The attributes to be serialized.
-        """
-        state = {}
-        for attribute_name in list(self.__dict__.keys() - self._ATTR_NOT_TO_SERIALIZE):
-            attribute_value = self.__dict__[attribute_name]
-
-            # At this point, there are no Synchronized attributes in MDOFunction or its
-            # child classes other than _n_calls, which is not serialized.
-            # If a Synchronized attribute is added in the future, the following check
-            # (and its counterpart in __setstate__) shall be uncommented.
-
-            # if isinstance(attribute_value, Synchronized):
-            #     # Don´t serialize shared memory object,
-            #     # this is meaningless, save the value instead
-            #     attribute_value = attribute_value.value
-
-            state[attribute_name] = attribute_value
-
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        self._init_shared_attrs()
-        for attribute_name, attribute_value in state.items():
-            # At this point, there are no Synchronized attributes in MDOFunction or its
-            # child classes other than _n_calls, which is not serialized.
-            # If a Synchronized attribute is added in the future, the following check
-            # (and its counterpart in __getstate__) shall be uncommented.
-
-            # if isinstance(attribute_value, Synchronized):
-            #     # Don´t serialize shared memory object,
-            #     # this is meaningless, save the value instead
-            #     attribute_value = attribute_value.value
-
-            self.__dict__[attribute_name] = attribute_value
-
-    def _init_shared_attrs(self) -> None:
+    def _init_shared_memory_attrs(self) -> None:
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
 

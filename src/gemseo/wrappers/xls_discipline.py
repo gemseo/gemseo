@@ -56,13 +56,11 @@ class XLSDiscipline(MDODiscipline):
         is only working under Windows and macOS.
     """
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_xls_file_path",
-        "input_names",
-        "output_names",
-        "macro_name",
-        "_copy_xls_at_setstate",
-        "_recreate_book_at_run",
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+        [
+            "_xls_app",
+            "_book",
+        ]
     )
 
     def __init__(

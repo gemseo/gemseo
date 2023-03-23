@@ -62,6 +62,10 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 class ScalableDiscipline(MDODiscipline):
     """Scalable discipline."""
 
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+        ["scalable_model"]
+    )
+
     def __init__(self, name: str | None, data, sizes=None, **parameters) -> None:
         """Constructor.
 

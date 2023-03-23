@@ -70,20 +70,6 @@ class MDOScenarioAdapter(MDODiscipline):
     UPPER_BND_SUFFIX = "_upper_bnd"
     MULTIPLIER_SUFFIX = "_multiplier"
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "scenario",
-        "_input_names",
-        "_reset_x0_before_opt",
-        "_initial_x",
-        "_set_x0_before_opt",
-        "_set_bounds_before_opt",
-        "_output_names",
-        "_output_multipliers",
-        "keep_opt_history",
-        "_dv_in_names",
-        "_bounds_names",
-    )
-
     def __init__(
         self,
         scenario: Scenario,

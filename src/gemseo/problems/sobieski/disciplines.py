@@ -45,8 +45,13 @@ class SobieskiDiscipline(MDODiscipline):
     """The Sobieski's SSBJ use case defining the MDO problem, e.g. disciplines,
     constraints, design space and reference optimum."""
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("dtype",)
     GRAMMAR_DIRECTORY = Path(__file__).parent / "grammars"
+
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+        [
+            "sobieski_problem",
+        ],
+    )
 
     def __init__(
         self,
@@ -94,8 +99,6 @@ class SobieskiMission(SobieskiDiscipline):
     If a positive number, wait the corresponding number of seconds. If ``False``, compute
     directly.
     """
-
-    _ATTR_TO_SERIALIZE = SobieskiDiscipline._ATTR_TO_SERIALIZE + ("enable_delay",)
 
     def __init__(
         self,
