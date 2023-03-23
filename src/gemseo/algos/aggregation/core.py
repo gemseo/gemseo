@@ -454,7 +454,7 @@ def compute_sum_positive_square_agg(
     """
     if indices is not None:
         orig_val = orig_val[indices]
-    return np_sum(scale * (orig_val**2) * heaviside(orig_val, 0))
+    return np_sum(scale * (orig_val**2) * heaviside(orig_val.real, 0))
 
 
 def compute_total_sum_square_positive_agg_jac(
@@ -480,7 +480,7 @@ def compute_total_sum_square_positive_agg_jac(
         orig_jac = orig_jac[indices, :]
         orig_val = orig_val[indices]
     return np_sum(
-        (2 * scale * orig_val * heaviside(orig_val, 0)).flatten() * orig_jac.T,
+        (2 * scale * orig_val * heaviside(orig_val.real, 0)).flatten() * orig_jac.T,
         axis=1,
     )
 
@@ -507,6 +507,6 @@ def compute_partial_sum_positive_square_agg_jac(
             2.0 * scale * orig_val[indices] * heaviside(orig_val[indices], 0.0)
         )
     else:
-        jac = atleast_2d(2 * scale * orig_val * heaviside(orig_val, 0.0))
+        jac = atleast_2d(2 * scale * orig_val * heaviside(orig_val.real, 0.0))
 
     return jac
