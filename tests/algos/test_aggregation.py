@@ -31,7 +31,10 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
+from numpy import complex128
 from numpy import concatenate
+from numpy import cos
+from numpy import sin
 from numpy import vstack
 
 
@@ -153,3 +156,58 @@ def test_gradients_eq(sellar_problem, indices):
     c = create_pb_alleq().constraints[0]
     f4 = aggregate_sum_square(c, indices=indices)
     f4.check_grad(array([0.5, 0.6, 0.2]), error_max=1e-5)
+
+
+def jacobian_function(x):
+    return array(concatenate([2 * x, cos(x), -sin(x)]).reshape((3, len(x))))
+
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        (
+            MDOFunction.TYPE_INEQ,
+            aggregate_max,
+        ),
+        (MDOFunction.TYPE_INEQ, aggregate_ks),
+        (MDOFunction.TYPE_INEQ, aggregate_iks),
+        (MDOFunction.TYPE_INEQ, aggregate_positive_sum_square),
+        (MDOFunction.TYPE_EQ, aggregate_sum_square),
+    ],
+)
+def complex_real_mdo_func_aggregation(
+    request,
+) -> tuple[MDOFunction, MDOFunction, callable]:
+    """Returns two MDOFunctions and a consistent aggregation callable for tests."""
+    return (
+        MDOFunction(
+            lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))], complex128),
+            "c",
+            f_type=request.param[0],
+            jac=jacobian_function,
+        ),
+        MDOFunction(
+            lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))]),
+            "r",
+            f_type=request.param[0],
+            jac=jacobian_function,
+        ),
+        request.param[1],
+    )
+
+
+@pytest.mark.parametrize("indices", [None, [0], [0, 1]])
+def test_real_complex(complex_real_mdo_func_aggregation, indices):
+    """Test that the aggregation applied to complex and real values is consistent."""
+    (
+        complex_mdo_function,
+        real_mdo_function,
+        aggregation_function,
+    ) = complex_real_mdo_func_aggregation
+    complex_mdo_func_agg = aggregation_function(complex_mdo_function, indices=indices)
+    real_mdo_func_agg = aggregation_function(real_mdo_function, indices=indices)
+    input_data = array([0.5, 0.6, 0.2])
+    complex_mdo_func_agg.check_grad(x_vect=input_data, method="ComplexStep")
+    assert pytest.approx(complex_mdo_func_agg(input_data)) == real_mdo_func_agg(
+        input_data
+    )
