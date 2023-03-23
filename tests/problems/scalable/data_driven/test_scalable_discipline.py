@@ -241,12 +241,6 @@ class ScalableProblem(unittest.TestCase):
                 linearization_mode="auto",
             )
 
-    def test_get_attributes_to_serialize(self):
-        attrs = self.scalable_disciplines[0].get_attributes_to_serialize()
-        assert len(attrs) > 5
-        for attr in attrs:
-            assert isinstance(attr, str)
-
     def test_group_dep(self):
         hdf_node_path = ScalableProblem.original_disciplines[3].name
         ScalableDiscipline(

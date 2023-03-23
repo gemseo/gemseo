@@ -628,9 +628,11 @@ def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, t
     serialized_func = mdo_function.deserialize(out_file)
 
     if activate_counters:
-        assert function.n_calls == 1
+        assert function.n_calls == serialized_func.n_calls
+        serialized_func(value)
+        assert serialized_func._n_calls.value == 2
     else:
-        assert function.n_calls is None
+        assert serialized_func.n_calls is None
 
     s_func_u_dict = serialized_func.__dict__
     ok = True

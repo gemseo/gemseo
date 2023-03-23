@@ -52,8 +52,6 @@ LOGGER = logging.getLogger(__name__)
 class MDARoot(MDA):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("strong_couplings", "all_couplings")
-
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
@@ -141,14 +139,6 @@ class MDANewtonRaphson(MDARoot):
 
        x_{k+1} = x_k - \alpha f'(x_k)^{-1} f(x_k)
     """
-
-    _ATTR_TO_SERIALIZE = MDARoot._ATTR_TO_SERIALIZE + (
-        "assembly",
-        "relax_factor",
-        "linear_solver",
-        "linear_solver_options",
-        "matrix_type",
-    )
 
     def __init__(
         self,
@@ -299,13 +289,6 @@ class MDAQuasiNewton(MDARoot):
         KRYLOV,
         DF_SANE,
     ]
-
-    _ATTR_TO_SERIALIZE = MDARoot._ATTR_TO_SERIALIZE + (
-        "method",
-        "use_gradient",
-        "assembly",
-        "normed_residual",
-    )
 
     def __init__(
         self,

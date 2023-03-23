@@ -51,21 +51,6 @@ class MDAChain(MDA):
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
-        "mdo_chain",
-        "_chain_linearize",
-        "lin_cache_tol_fact",
-        "assembly",
-        "coupling_structure",
-        "linear_solver",
-        "linear_solver_options",
-        "linear_solver_tolerance",
-        "matrix_type",
-        "use_lu_fact",
-        "all_couplings",
-        "inner_mdas",
-    )
-
     inner_mdas: list[MDA]
     """The ordered MDAs."""
 

@@ -111,12 +111,6 @@ class ConstrAggegationDisc(MDODiscipline):
     See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
     """
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_ConstrAggegationDisc__method_name",
-        "_ConstrAggegationDisc__meth_options",
-        "_ConstrAggegationDisc__data_sizes",
-    )
-
     def __init__(
         self,
         constraint_names: Sequence[str],

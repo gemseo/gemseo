@@ -104,13 +104,6 @@ class Scenario(MDODiscipline):
     activate_input_data_check = True
     activate_output_data_check = True
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_algo_name",
-        "_algo_factory",
-        "clear_history_before_run",
-        "formulation",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

@@ -64,13 +64,6 @@ class MDAJacobi(MDA):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
-        "parallel_execution",
-        "sizes",
-        "acceleration",
-        "n_processes",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

@@ -23,7 +23,6 @@ Can be both sequential or parallel execution processes.
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
@@ -56,11 +55,6 @@ class MDOChain(MDODiscipline):
         MDODiscipline.FINITE_DIFFERENCES,
         MDODiscipline.COMPLEX_STEP,
     ]
-
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_coupling_structure",
-        "_last_diff_inouts",
-    )
 
     def __init__(
         self,
@@ -311,11 +305,6 @@ class MDOChain(MDODiscipline):
 
 class MDOParallelChain(MDODiscipline):
     """Chain of processes that executes disciplines in parallel."""
-
-    _ATTR_TO_SERIALIZE: ClassVar[tuple[str]] = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "disciplines",
-        "parallel_execution",
-    )
 
     def __init__(
         self,
@@ -595,11 +584,6 @@ class MDOWarmStartedChain(MDOChain):
 
     This Chain cannot be linearized.
     """
-
-    _ATTR_TO_SERIALIZE = MDOChain._ATTR_TO_SERIALIZE + (
-        "_variable_names_to_warm_start",
-        "_warm_start_variable_names_to_values",
-    )
 
     def __init__(
         self,

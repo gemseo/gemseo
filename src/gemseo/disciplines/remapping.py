@@ -48,13 +48,6 @@ class RemappingDiscipline(MDODiscipline):
     (from the ``i``-th to the ``j``-th components of ``y``).
     """
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_discipline",
-        "_empty_original_input_data",
-        "_input_mapping",
-        "_output_mapping",
-    )
-
     def __init__(
         self,
         discipline: MDODiscipline,

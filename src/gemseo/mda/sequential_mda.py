@@ -33,8 +33,6 @@ from gemseo.mda.newton import MDANewtonRaphson
 class MDASequential(MDA):
     """A sequence of elementary MDAs."""
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("mda_sequence",)
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

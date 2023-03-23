@@ -62,12 +62,11 @@ class AnalyticDiscipline(MDODiscipline):
     input_names: list[str]
     """The names of the inputs."""
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "expressions",
-        "output_names_to_symbols",
-        "_fast_evaluation",
-        "_sympy_exprs",
-        "_sympy_jac_exprs",
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+        [
+            "_sympy_funcs",
+            "_sympy_jac_funcs",
+        ]
     )
 
     def __init__(

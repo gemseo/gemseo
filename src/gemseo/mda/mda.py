@@ -54,29 +54,6 @@ class MDA(MDODiscipline):
     FINITE_DIFFERENCES = FINITE_DIFFERENCES
 
     N_CPUS = cpu_count()
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "warm_start",
-        "_input_couplings",
-        "reset_history_each_run",
-        "norm0",
-        "residual_history",
-        "_starting_indices",
-        "tolerance",
-        "max_mda_iter",
-        "_log_convergence",
-        "lin_cache_tol_fact",
-        "assembly",
-        "coupling_structure",
-        "max_mda_iter",
-        "normed_residual",
-        "strong_couplings",
-        "matrix_type",
-        "use_lu_fact",
-        "linear_solver_tolerance",
-        "_scale_residuals_with_coupling_size",
-        "_scale_residuals_with_first_norm",
-        "_current_iter",
-    )
 
     RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
 

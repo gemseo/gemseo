@@ -49,12 +49,6 @@ class MDAGaussSeidel(MDA):
        x_{k+1} = L_*^{-1}(b-Ux_k)
     """
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
-        "strong_couplings",
-        "over_relax_factor",
-        "normed_residual",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

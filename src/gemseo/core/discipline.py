@@ -29,7 +29,6 @@ from copy import deepcopy
 from multiprocessing import cpu_count
 from multiprocessing import Manager
 from multiprocessing import Value
-from multiprocessing.sharedctypes import Synchronized
 from pathlib import Path
 from timeit import default_timer as timer
 from typing import Any
@@ -41,7 +40,6 @@ from typing import MutableMapping
 from typing import NoReturn
 from typing import TYPE_CHECKING
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import concatenate
 from numpy import empty
 from numpy import ndarray
@@ -58,6 +56,7 @@ from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_list
+from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
@@ -76,7 +75,7 @@ def default_dict_factory() -> dict:
     return defaultdict(None)
 
 
-class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
+class MDODiscipline(Serializable):
     """A software integrated in the workflow.
 
     To be used,
@@ -190,33 +189,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     activate_output_data_check: ClassVar[bool] = True
     """Whether to check the output data respect the output grammar."""
 
-    _ATTR_TO_SERIALIZE = (
-        "_cache_was_loaded",
-        "_differentiated_inputs",
-        "_differentiated_outputs",
-        "_in_data_hash_dict",
-        "_is_linearized",
-        "_jac_approx",
-        "_linearization_mode",
-        "_linearize_on_last_state",
-        "_grammar_type",
-        "_local_data",
-        "_status",
-        "cache",
-        "data_processor",
-        "_disciplines",
-        "exec_for_lin",
-        "exec_time",
-        "input_grammar",
-        "jac",
-        "n_calls",
-        "n_calls_linearize",
-        "name",
-        "output_grammar",
-        "re_exec_policy",
-        "residual_variables",
-        "run_solves_residuals",
-    )
+    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
+        "_status_observers",
+    }
 
     __mp_manager: Manager = None
     time_stamps = None
@@ -337,7 +312,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         self._status = self.STATUS_PENDING
         if self.activate_counters:
-            self._init_shared_attrs()
+            self._init_shared_memory_attrs()
 
         self._status_observers = []
 
@@ -352,8 +327,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
         return str(msg)
 
-    def _init_shared_attrs(self) -> None:
-        """Initialize the shared attributes in multiprocessing."""
+    def _init_shared_memory_attrs(self) -> None:
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
@@ -2142,73 +2116,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             obj = pickler.load()
         return obj
 
-    def get_attributes_to_serialize(self) -> list[str]:  # pylint: disable=R0201
-        """Define the names of the attributes to be serialized.
-
-        Shall be overloaded by disciplines
-
-        Returns:
-            The names of the attributes to be serialized.
-        """
-        # pylint warning ==> method could be a function but when overridden,
-        # it is a function==> self is required
-        return list(self._ATTR_TO_SERIALIZE)
-
-    def __getstate__(self) -> dict[str, Any]:
-        """Used by pickle to define what to serialize.
-
-        Returns:
-            The attributes to be serialized.
-
-        Raises:
-            AttributeError: When an attribute to be serialized is undefined.
-            TypeError: When an attribute has an undefined type.
-        """
-        state = {}
-        for attribute_name in self.get_attributes_to_serialize():
-            if attribute_name not in self.__dict__:
-                if "_" + attribute_name not in self.__dict__ and not hasattr(
-                    self, attribute_name
-                ):
-                    msg = (
-                        "The discipline {} cannot be serialized "
-                        "because its attribute {} does not exist."
-                    ).format(self.name, attribute_name)
-                    raise AttributeError(msg)
-
-                prop = self.__dict__.get("_" + attribute_name)
-                # May appear for properties that overload public attrs of super class
-                if hasattr(self, attribute_name) and not isinstance(prop, Synchronized):
-                    continue
-
-                if not isinstance(prop, Synchronized):
-                    raise TypeError(
-                        "The discipline {} cannot be serialized "
-                        "because its attribute {} has an undefined type.".format(
-                            self.name, attribute_name
-                        )
-                    )
-                # Don´t serialize shared memory object,
-                # this is meaningless, save the value instead
-                state[attribute_name] = prop.value
-            else:
-                state[attribute_name] = self.__dict__[attribute_name]
-
-        return state
-
     def __setstate__(
         self,
         state: Mapping[str, Any],
     ) -> None:
-        self._init_shared_attrs()
+        super().__setstate__(state)
+        # Initialize the attributes that are not serializable nor Synchronized last.
         self._status_observers = []
-        __dict__ = self.__dict__
-        for key, val in state.items():
-            _key = f"_{key}"
-            if _key not in __dict__.keys():
-                __dict__[key] = val
-            else:
-                __dict__[_key].value = val
 
     def get_local_data_by_name(
         self,
