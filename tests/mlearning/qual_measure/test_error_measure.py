@@ -36,14 +36,14 @@ from numpy import newaxis
 
 @pytest.mark.parametrize(
     "method",
-    ["bootstrap", "kfolds"],
+    ["evaluate_bootstrap", "evaluate_kfolds"],
 )
 def test_resampling_based_measure(method):
     """Check that a resampling-based measure does not re-train the algo (but a copy)."""
     dataset = RosenbrockDataset(opt_naming=False)
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    measure.evaluate(method)
+    getattr(measure, method)()
     assert list(algo.learning_samples_indices) == list(range(len(dataset)))
 
 
@@ -73,7 +73,9 @@ def test_dataset() -> Dataset:
 
 @pytest.mark.parametrize("input_names", [None, ["x1"]])
 @pytest.mark.parametrize("output_names", [None, ["y2"]])
-@pytest.mark.parametrize("method", ["bootstrap", "kfolds", "test"])
+@pytest.mark.parametrize(
+    "method", ["evaluate_bootstrap", "evaluate_kfolds", "evaluate_test"]
+)
 @pytest.mark.parametrize(
     "measure_cls,expected", [(MSEMeasure, 0.0), (RMSEMeasure, 0.0), (R2Measure, 1.0)]
 )
@@ -88,27 +90,24 @@ def test_subset_of_inputs_and_outputs(
 ):
     """Check that quality measures correctly handle algo with subsets of IO names."""
     kwargs = {}
-    if method == "test":
+    if method == "evaluate_test":
         kwargs["test_data"] = test_dataset
 
     algo = LinearRegressor(
         learning_dataset, input_names=input_names, output_names=output_names
     )
-    if not (measure_cls == R2Measure and method == "bootstrap"):
+    if not (measure_cls == R2Measure and method == "evaluate_bootstrap"):
         measure = measure_cls(algo)
-        result = measure.evaluate(method=method, **kwargs)
+        evaluate = getattr(measure, method)
+        result = evaluate(**kwargs)
         assert result == pytest.approx(expected)
-        result = measure.evaluate(
-            method=method, multioutput=True, as_dict=True, **kwargs
-        )
+        result = evaluate(multioutput=True, as_dict=True, **kwargs)
         assert compare_dict_of_arrays(
             result,
             {k: array([expected]) for k in output_names or ["y1", "y2"]},
             tolerance=1e-3,
         )
-        result = measure.evaluate(
-            method=method, multioutput=False, as_dict=True, **kwargs
-        )
+        result = evaluate(multioutput=False, as_dict=True, **kwargs)
         if output_names is not None:
             assert compare_dict_of_arrays(
                 result,

@@ -106,11 +106,13 @@ def test_add_candidate(dataset):
     assert cand[0].parameters["smooth"] <= 10
 
 
-@pytest.mark.parametrize("eval_method", ["kfolds", "learn"])
-def test_select(dataset, eval_method):
+@pytest.mark.parametrize("measure_evaluation_method_name", ["KFOLDS", "LEARN"])
+def test_select(dataset, measure_evaluation_method_name):
     """Test select method."""
     measure = MSEMeasure
-    selector = MLAlgoSelection(dataset, measure, eval_method=eval_method)
+    selector = MLAlgoSelection(
+        dataset, measure, measure_evaluation_method_name=measure_evaluation_method_name
+    )
     selector.add_candidate("PolynomialRegressor", degree=[1, 2])
     selector.add_candidate("LinearRegressor")
     selector.add_candidate("RBFRegressor", smooth=[0, 0.1, 1, 10])

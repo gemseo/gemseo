@@ -77,15 +77,15 @@ def test_evaluate_learn(dataset):
     """Test evaluate learn method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_train = measure.evaluate("learn")
+    mse_train = measure.evaluate_learn()
     assert mse_train < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_train = measure.evaluate("learn")
+    rmse_train = measure.evaluate_learn()
     assert abs(mse_train**0.5 - rmse_train) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_train = measure.evaluate("learn")
+    mse_train = measure.evaluate_learn()
     assert mse_train < TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -94,49 +94,41 @@ def test_evaluate_learn(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = MSEMeasure(algo)
-    mse_train = measure.evaluate("learn")
+    mse_train = measure.evaluate_learn()
     assert mse_train < TOL_DEG_2
 
 
 def test_evaluate_test(dataset, dataset_test):
     """Test evaluate test method."""
     algo = PolynomialRegressor(dataset, degree=2)
-    measure = MSEMeasure(algo)
-    mse_test = measure.evaluate("test", test_data=dataset_test)
+    mse_test = MSEMeasure(algo).evaluate_test(dataset_test)
     assert mse_test < TOL_DEG_2
-    measure = RMSEMeasure(algo)
-    rmse_test = measure.evaluate("test", test_data=dataset_test)
-
-    assert abs(mse_test**0.5 - rmse_test) < 1e-6
+    assert abs(mse_test**0.5 - RMSEMeasure(algo).evaluate_test(dataset_test)) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
-    measure = MSEMeasure(algo)
-    mse_test = measure.evaluate("test", test_data=dataset_test)
-    assert mse_test < TOL_DEG_1
+    assert MSEMeasure(algo).evaluate_test(dataset_test) < TOL_DEG_1
 
     algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
-    measure = MSEMeasure(algo)
-    mse_test = measure.evaluate("test", test_data=dataset_test)
-    assert mse_test < TOL_DEG_2
+    assert MSEMeasure(algo).evaluate_test(test_data=dataset_test) < TOL_DEG_2
 
 
 def test_evaluate_loo(dataset):
     """Test evaluate leave one out method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_loo = measure.evaluate("loo")
+    mse_loo = measure.evaluate_loo()
     assert mse_loo < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_loo = measure.evaluate("loo")
+    rmse_loo = measure.evaluate_loo()
     assert abs(mse_loo**0.5 - rmse_loo) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_loo = measure.evaluate("loo")
+    mse_loo = measure.evaluate_loo()
     assert mse_loo < TOL_DEG_1
 
 
@@ -144,15 +136,15 @@ def test_evaluate_kfolds(dataset):
     """Test evaluate k-folds method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_kfolds = measure.evaluate("kfolds")
+    mse_kfolds = measure.evaluate_kfolds()
     assert mse_kfolds < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_kfolds = measure.evaluate("kfolds")
+    rmse_kfolds = measure.evaluate_kfolds()
     assert abs(mse_kfolds**0.5 - rmse_kfolds) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_kfolds = measure.evaluate("kfolds")
+    mse_kfolds = measure.evaluate_kfolds()
     assert mse_kfolds < TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -161,7 +153,7 @@ def test_evaluate_kfolds(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = MSEMeasure(algo, fit_transformers=True)
-    mse_kfolds = measure.evaluate("kfolds")
+    mse_kfolds = measure.evaluate_kfolds()
     assert mse_kfolds < TOL_DEG_2
 
 
@@ -169,21 +161,21 @@ def test_evaluate_bootstrap(dataset):
     """Test evaluate bootstrap method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_bootstrap = measure.evaluate("bootstrap")
+    mse_bootstrap = measure.evaluate_bootstrap()
     assert mse_bootstrap < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_bootstrap = measure.evaluate("bootstrap")
-    rmse_bootstrap_2 = measure.evaluate("bootstrap", samples=list(range(20)))
+    rmse_bootstrap = measure.evaluate_bootstrap()
+    rmse_bootstrap_2 = measure.evaluate_bootstrap(samples=list(range(20)))
     assert abs(rmse_bootstrap - rmse_bootstrap_2) < 1e-6
     assert abs(mse_bootstrap**0.5 - rmse_bootstrap) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_bootstrap = measure.evaluate("bootstrap")
+    mse_bootstrap = measure.evaluate_bootstrap()
     assert mse_bootstrap < TOL_DEG_1
 
 
-@pytest.mark.parametrize("method", ["bootstrap", "kfolds"])
+@pytest.mark.parametrize("method", ["evaluate_bootstrap", "evaluate_kfolds"])
 @pytest.mark.parametrize("fit", [False, True])
 def test_fit_transformers(algo_for_transformer, method, fit):
     """Check that the transformers are fitted with the sub-datasets.
@@ -193,16 +185,19 @@ def test_fit_transformers(algo_for_transformer, method, fit):
     """
     m1 = MSEMeasure(algo_for_transformer)
     m2 = MSEMeasure(algo_for_transformer, fit_transformers=fit)
-    assert allclose(m1.evaluate(method, seed=0), m2.evaluate(method, seed=0)) is fit
+    e1 = getattr(m1, method)
+    e2 = getattr(m2, method)
+    assert allclose(e1(seed=0), e2(seed=0)) is fit
 
 
-@pytest.mark.parametrize("method", ["bootstrap", "kfolds"])
+@pytest.mark.parametrize("method", ["evaluate_bootstrap", "evaluate_kfolds"])
 @pytest.mark.parametrize("seed", [None, 0])
 def test_seed(algo_for_transformer, method, seed):
     """Check that the seed is correctly used."""
     m = MSEMeasure(algo_for_transformer)
-    kwargs = {"method": method, "seed": seed}
+    evaluate = getattr(m, method)
+    kwargs = {"seed": seed}
     if method == "kfolds":
         kwargs["randomize"] = True
 
-    assert allclose(m.evaluate(**kwargs), m.evaluate(**kwargs)) is (seed is not None)
+    assert allclose(evaluate(**kwargs), evaluate(**kwargs)) is (seed is not None)

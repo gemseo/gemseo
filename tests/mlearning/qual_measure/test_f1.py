@@ -66,32 +66,32 @@ def test_evaluate_learn(dataset):
     """Test evaluate learn method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate("learn", multioutput=False)
+    measure.evaluate_learn(multioutput=False)
 
 
 def test_evaluate_test(dataset, dataset_test):
     """Test evaluate test method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate("test", test_data=dataset_test, multioutput=False)
+    measure.evaluate_test(test_data=dataset_test, multioutput=False)
 
 
 def test_evaluate_loo(dataset):
     """Test evaluate leave one out method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate("loo", multioutput=False)
+    measure.evaluate_loo(multioutput=False)
 
 
 def test_evaluate_kfolds(dataset):
     """Test evaluate k-folds method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate("kfolds", multioutput=False)
+    measure.evaluate_kfolds(multioutput=False)
 
 
 def test_evaluate_bootstrap(dataset):
     """Test evaluate bootstrap method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate("bootstrap", multioutput=False)
+    measure.evaluate_bootstrap(multioutput=False)

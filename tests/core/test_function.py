@@ -29,10 +29,14 @@ from unittest import mock
 import numpy as np
 import pytest
 from gemseo.core.mdofunctions.concatenate import Concatenate
+from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
+from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
+from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
+from gemseo.core.mdofunctions.taylor_polynomials import compute_quadratic_approximation
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
@@ -273,7 +277,7 @@ def test_restriction(function):
     """Test the restriction of a function."""
     x_vect = array([1.0, 2.0, 3.0])
     sub_x_vect = x_vect[array([0, 2])]
-    restriction = function.restrict(array([1]), array([2.0]), 3, "f_y")
+    restriction = FunctionRestriction(array([1]), array([2.0]), 3, function, "f_y")
     assert allclose(restriction(sub_x_vect), function(x_vect))
     assert allclose(
         restriction.jac(sub_x_vect), function.jac(x_vect)[..., array([0, 2])]
@@ -289,7 +293,7 @@ def test_linearization():
         jac=lambda x: array([x, -x]),
         dim=2,
     )
-    linearization = function.linear_approximation(array([1.0, 1.0, -2.0]))
+    linearization = compute_linear_approximation(function, array([1.0, 1.0, -2.0]))
     assert allclose(linearization(array([2.0, 2.0, 2.0])), array([-3.0, 3.0]))
     linearization.check_grad(array([2.0, 2.0, 2.0]))
 
@@ -306,8 +310,8 @@ def test_convex_linearization():
     # The convex linearization (exact w.r.t. x_1) at (1, 1, -2) should be
     # [  0.5*x_1^2 + 5/2 +    (x_2-1) + 8/(x_3+2) ]
     # [ -0.5*x_1^2 - 5/2 +  1/(x_2-1) + 2*(x_3+2) ]
-    convex_lin = function.convex_linear_approx(
-        array([1.0, 1.0, -2.0]), array([False, True, True])
+    convex_lin = ConvexLinearApprox(
+        array([1.0, 1.0, -2.0]), function, array([False, True, True])
     )
     assert allclose(convex_lin(array([2.0, 2.0, 2.0])), array([7.5, 4.5]))
 
@@ -321,8 +325,8 @@ def test_convex_linearization():
         jac=lambda x: x,
         dim=1,
     )
-    convex_lin = function.convex_linear_approx(
-        array([1.0, 1.0, -2.0]), array([False, True, True])
+    convex_lin = ConvexLinearApprox(
+        array([1.0, 1.0, -2.0]), function, array([False, True, True])
     )
     value = convex_lin(array([2.0, 2.0, 2.0]))
     assert isinstance(value, float)
@@ -349,12 +353,14 @@ def test_quadratic_approximation_error(function_for_quadratic_approximation, x_v
     with pytest.raises(
         ValueError, match="Hessian approximation must be a square ndarray."
     ):
-        function_for_quadratic_approximation.quadratic_approx(*x_vect)
+        compute_quadratic_approximation(function_for_quadratic_approximation, *x_vect)
 
 
 def test_quadratic_approximation(function_for_quadratic_approximation):
     """Test the second-order polynomial of a function."""
-    approx = function_for_quadratic_approximation.quadratic_approx(ones(3), eye(3))
+    approx = compute_quadratic_approximation(
+        function_for_quadratic_approximation, ones(3), eye(3)
+    )
     assert approx(zeros(3)) == pytest.approx(0.0)
     assert allclose(approx.jac(zeros(3)), zeros(3))
     approx.check_grad(zeros(3), error_max=1e-6)
@@ -365,7 +371,7 @@ def test_concatenation():
     dim = 2
     f = MDOFunction(lambda x: norm(x) ** 2, "f", jac=lambda x: 2 * x, dim=1)
     g = MDOFunction(lambda x: x, "g", jac=lambda x: eye(dim), dim=dim)
-    h = MDOFunction.concatenate([f, g], "h")
+    h = Concatenate([f, g], "h")
     x_vect = ones(dim)
     assert allclose(h(x_vect), array([2.0, 1.0, 1.0]))
     assert allclose(h.jac(x_vect), array([[2.0, 2.0], [1.0, 0.0], [0.0, 1.0]]))
@@ -403,7 +409,7 @@ def test_linear_approximation():
     )
 
     # Get a linear approximation of the MDOFunction
-    linear_approximation = function.linear_approximation(array([7.0, 8.0]))
+    linear_approximation = compute_linear_approximation(function, array([7.0, 8.0]))
     assert (linear_approximation.coefficients == mat).all()
     assert (linear_approximation.value_at_zero == vec).all()
 

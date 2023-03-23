@@ -36,6 +36,7 @@ from numpy.random import Generator
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
@@ -70,20 +71,23 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     If ``False``, use the transformers fitted with the whole learning dataset.
     """
 
-    LEARN: ClassVar[str] = "learn"
-    """The name of the method to evaluate the measure on the learning dataset."""
+    class EvaluationMethod(BaseEnum):
+        """The evaluation method."""
 
-    TEST: ClassVar[str] = "test"
-    """The name of the method to evaluate the measure on a test dataset."""
+        LEARN = "evaluate_learn"
+        """The name of the method to evaluate the measure on the learning dataset."""
 
-    LOO: ClassVar[str] = "loo"
-    """The name of the method to evaluate the measure by leave-one-out."""
+        TEST = "evaluate_test"
+        """The name of the method to evaluate the measure on a test dataset."""
 
-    KFOLDS: ClassVar[str] = "kfolds"
-    """The name of the method to evaluate the measure by cross-validation."""
+        LOO = "evaluate_loo"
+        """The name of the method to evaluate the measure by leave-one-out."""
 
-    BOOTSTRAP: ClassVar[str] = "bootstrap"
-    """The name of the method to evaluate the measure by bootstrap."""
+        KFOLDS = "evaluate_kfolds"
+        """The name of the method to evaluate the measure by cross-validation."""
+
+        BOOTSTRAP = "evaluate_bootstrap"
+        """The name of the method to evaluate the measure by bootstrap."""
 
     SMALLER_IS_BETTER: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
@@ -115,39 +119,6 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.algo = algo
         self._fit_transformers = fit_transformers
         self.__default_seed = 0
-
-    # TODO: API: remove this method.
-    def evaluate(
-        self,
-        method: str = LEARN,
-        samples: Sequence[int] | None = None,
-        multioutput: bool = True,
-        **options: OptionType | None,
-    ) -> MeasureType:
-        """Evaluate the quality measure.
-
-        Args:
-            method: The name of the method to evaluate the quality measure.
-            samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
-            **options: The options of the estimation method
-                (e.g. ``test_data`` for the *test* method,
-                ``n_replicates`` for the *bootstrap* one, ...).
-
-        Returns:
-            The value of the quality measure.
-
-        Raises:
-            ValueError: When the name of the method is unknown.
-        """
-        try:
-            return getattr(self, f"evaluate_{method.lower()}")(
-                samples=samples, multioutput=multioutput, **options
-            )
-        except AttributeError:
-            raise ValueError(f"The method '{method}' is not available.")
 
     @abstractmethod
     def evaluate_learn(

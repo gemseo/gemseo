@@ -60,7 +60,7 @@ def test_constructor(measure, dataset):
 
 def test_evaluate_learn(measure):
     """Test evaluate learn method."""
-    quality = measure.evaluate("learn", multioutput=False)
+    quality = measure.evaluate_learn(multioutput=False)
     assert quality > 0
 
 
@@ -70,31 +70,31 @@ def test_evaluate_learn_fail(measure):
         NotImplementedError,
         match="The SilhouetteMeasure does not support the multioutput case.",
     ):
-        measure.evaluate("learn", multioutput=True)
+        measure.evaluate_learn(multioutput=True)
 
 
 def test_evaluate_test(measure, dataset_test):
     """Test evaluate test method."""
     with pytest.raises(NotImplementedError):
-        measure.evaluate("test", test_data=dataset_test, multioutput=False)
+        measure.evaluate_test(dataset_test, multioutput=False)
 
 
 def test_evaluate_loo(measure):
     """Test evaluate leave one out method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.evaluate("loo", multioutput=False)
+        quality = measure.evaluate_loo(multioutput=False)
         assert quality > 0
 
 
 def test_evaluate_kfolds(measure):
     """Test evaluate k-folds method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.evaluate("kfolds", multioutput=False)
+        quality = measure.evaluate_kfolds(multioutput=False)
         assert quality > 0
 
 
 def test_evaluate_bootstrap(measure):
     """Test evaluate bootstrap method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.evaluate("bootstrap", multioutput=False)
+        quality = measure.evaluate_bootstrap(multioutput=False)
         assert quality > 0
