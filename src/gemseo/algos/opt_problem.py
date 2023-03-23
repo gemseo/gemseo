@@ -441,6 +441,11 @@ class OptimizationProblem:
         self,
         func: MDOFunction,
     ) -> None:
+        if self.pb_type == self.LINEAR_PB and not isinstance(func, MDOLinearFunction):
+            raise TypeError(
+                "The objective of a linear optimization problem "
+                "must be an MDOLinearFunction."
+            )
         self._objective = func
 
     @staticmethod
@@ -1401,7 +1406,7 @@ class OptimizationProblem:
 
             # Preprocess the objective
             self.nonproc_objective = self.objective
-            self.objective = self.__preprocess_func(
+            self._objective = self.__preprocess_func(
                 self.objective,
                 is_function_input_normalized=is_function_input_normalized,
                 use_database=use_database,
