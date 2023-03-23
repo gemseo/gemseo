@@ -34,7 +34,6 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from numpy import array
 from numpy import array_equal
-from numpy import float64
 from numpy import inf
 from numpy import int32
 from numpy import ndarray
@@ -1121,26 +1120,6 @@ def test_get_current_x_no_complex(design_space_with_complex_value, cast):
 DTYPE = DesignSpace._DesignSpace__DEFAULT_COMMON_DTYPE
 FLOAT = DesignSpace.FLOAT
 INT = DesignSpace.INTEGER
-
-
-@pytest.mark.parametrize(
-    "current_x,current_x_array,dtype,a_type,has_current_value",
-    [
-        ({"a": array([1])}, array([]), DTYPE, FLOAT, False),
-        ({"a": array([1.0]), "b": array([2])}, array([1.0, 2.0]), float64, FLOAT, True),
-        ({"a": array([1]), "b": array([2])}, array([1, 2]), int32, INT, True),
-    ],
-)
-def test_current_x_setter(current_x, current_x_array, dtype, a_type, has_current_value):
-    """Check that _current_value.setter updates both __current_value and metadata."""
-    design_space = DesignSpace()
-    design_space.add_variable("a", var_type=a_type)
-    design_space.add_variable("b", var_type=design_space.INTEGER)
-
-    design_space._current_value = current_x
-    assert design_space._current_value == current_x
-    assert design_space._DesignSpace__common_dtype == dtype
-    assert design_space._DesignSpace__has_current_value is has_current_value
 
 
 def test_cast_to_var_type(design_space: DesignSpace):

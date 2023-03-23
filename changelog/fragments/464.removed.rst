@@ -1,4 +1,18 @@
 Removed python 3.7 support.
 
 API changes:
+
 - :attr:`.SobolAnalysis.AVAILABLE_ALGOS` no longer exists; use the ``enum`` :attr:`.SobolAnalysis.Algorithm` instead.
+- :meth:`.MLQualityMeasure.evaluate` no longer exists; please use either :meth:`.MLQualityMeasure.evaluate_learn`, :meth:`.MLQualityMeasure.evaluate_test`, :meth:`.MLQualityMeasure.evaluate_kfolds`, :meth:`.MLQualityMeasure.evaluate_loo` and :meth:`.MLQualityMeasure.evaluate_bootstrap`.
+- Remove :meth:`.BaseEnum.get_member_from_name`; please use :meth:`.BaseEnum.__getitem__`.
+- Remove :meth:`.DOELibrary.compute_phip_criteria`; please use :func:`.compute_phip_criterion`.
+- Remove :attr:`.OTComposedDistribution.AVAILABLE_COPULA_MODELS`; please use :attr:`.OTComposedDistribution.CopulaModel`.
+- Remove :attr:`.ComposedDistribution.AVAILABLE_COPULA_MODELS`; please use :attr:`.ComposedDistribution.CopulaModel`.
+- Remove :attr:`.SPComposedDistribution.AVAILABLE_COPULA_MODELS`; please use :attr:`.SPComposedDistribution.CopulaModel`.
+- Remove :attr:`.ComposedDistribution.INDEPENDENT_COPULA`; please use :attr:`.ComposedDistribution.INDEPENDENT_COPULA`.
+- Remove :attr:`.SobolAnalysis.AVAILABLE_ALGOS`; please use :attr:`.SobolAnalysis.Algorithm`.
+- Remove :meth:`.MDOFunction.concatenate`; please use :class:`.Concatenate`.
+- Remove :meth:`.MDOFunction.convex_linear_approx`; please use :class:`.ConvexLinearApprox`.
+- Remove :meth:`.MDOFunction.linear_approximation`; please use :meth:`.compute_linear_approximation`.
+- Remove :meth:`.MDOFunction.quadratic_approx`; please use :meth:`.compute_quadratic_approximation`.
+- Remove :meth:`.MDOFunction.restrict`; please use :class:`.FunctionRestriction`.

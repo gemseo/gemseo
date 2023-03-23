@@ -240,12 +240,6 @@ class DesignSpace(collections.abc.MutableMapping):
         """The current design value."""
         return self.__current_value
 
-    # TODO: API: this is never used in all our codes, remove.
-    @_current_value.setter
-    def _current_value(self, value: Mapping[str, ndarray]) -> None:
-        self.__current_value = value
-        self.__update_current_metadata()
-
     def __update_current_metadata(self) -> None:
         """Update information about the current design value for quick access."""
         self.__update_current_status()

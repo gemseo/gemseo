@@ -57,12 +57,6 @@ def test_constructor(fit_transformers, dataset):
     assert measure._fit_transformers is fit_transformers
 
 
-def test_evaluate_unknown_method(measure):
-    """Check that an error is raised when evaluating an unknown method."""
-    with pytest.raises(ValueError, match="The method 'foo' is not available"):
-        measure.evaluate("foo")
-
-
 def test_is_better():
     class MLQualityMeasureToMinimize(MLQualityMeasure):
         SMALLER_IS_BETTER = True

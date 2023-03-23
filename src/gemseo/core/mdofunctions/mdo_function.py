@@ -32,7 +32,6 @@ from typing import Final
 from typing import Iterable
 from typing import Sequence
 from typing import Sized
-from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import abs as np_abs
@@ -52,12 +51,6 @@ from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.string_tools import pretty_str
 
-if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-    from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
-    from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
-    from gemseo.core.mdofunctions.concatenate import Concatenate
-    from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -785,207 +778,6 @@ class MDOFunction:
         )
         return function
 
-    # TODO: Remove this deprecated method.
-    def restrict(
-        self,
-        frozen_indexes: ndarray[int],
-        frozen_values: ArrayType,
-        input_dim: int,
-        name: str | None = None,
-        f_type: str | None = None,
-        expr: str | None = None,
-        args: Sequence[str] | None = None,
-    ) -> FunctionRestriction:
-        r"""Return a restriction of the function.
-
-        :math:`\newcommand{\frozeninds}{I}\newcommand{\xfrozen}{\hat{x}}\newcommand{
-        \frestr}{\hat{f}}`
-        For a subset :math:`\approxinds` of the variables indexes of a function
-        :math:`f` to remain frozen at values :math:`\xfrozen_{i \in \frozeninds}` the
-        restriction of :math:`f` is given by
-
-        .. math::
-            \frestr:
-            x_{i \not\in \approxinds}
-            \longmapsto
-            f(\xref_{i \in \approxinds}, x_{i \not\in \approxinds}).
-
-        Args:
-            frozen_indexes: The indexes of the inputs that will be frozen
-            frozen_values: The values of the inputs that will be frozen.
-            input_dim: The dimension of input space of the function before restriction.
-            name: The name of the function after restriction.
-                If ``None``,
-                create a default name
-                based on the name of the current function
-                and on the argument `args`.
-            f_type: The type of the function after restriction.
-                If ``None``, the function will have no type.
-            expr: The expression of the function after restriction.
-                If ``None``, the function will have no expression.
-            args: The names of the inputs of the function after restriction.
-                If ``None``, the inputs of the function will have no names.
-
-        Returns:
-            The restriction of the function.
-        """
-        from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
-
-        return FunctionRestriction(
-            frozen_indexes, frozen_values, input_dim, self, name, f_type, expr, args
-        )
-
-    # TODO: Remove this deprecated method.
-    def linear_approximation(
-        self,
-        x_vect: ArrayType,
-        name: str | None = None,
-        f_type: str | None = None,
-        args: Sequence[str] | None = None,
-    ) -> MDOLinearFunction:
-        r"""Compute a first-order Taylor polynomial of the function.
-
-        :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
-        The first-order Taylor polynomial of a (possibly vector-valued) function
-        :math:`f` at a point :math:`\xref` is defined as
-
-        .. math::
-            \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
-            f(x)
-            \approx
-            f(\xref) + \sum_{i = 1}^{\dim} \partialder \, (x_i - \xref_i).
-
-        Args:
-            x_vect: The input vector at which to build the Taylor polynomial.
-            name: The name of the linear approximation function.
-                If ``None``, create a name from the name of the function.
-            f_type: The type of the linear approximation function.
-                If ``None``, the function will have no type.
-            args: The names of the inputs of the linear approximation function,
-                or a name base.
-                If ``None``, use the names of the inputs of the function.
-
-        Returns:
-            The first-order Taylor polynomial of the function at the input vector.
-        """
-        from gemseo.core.mdofunctions.taylor_polynomials import (
-            compute_linear_approximation,
-        )
-
-        return compute_linear_approximation(
-            self, x_vect, name=name, f_type=f_type, args=args
-        )
-
-    # TODO: Remove this deprecated method.
-    def convex_linear_approx(
-        self,
-        x_vect: ArrayType,
-        approx_indexes: ndarray[bool] | None = None,
-        sign_threshold: float = 1e-9,
-    ) -> ConvexLinearApprox:
-        r"""Compute a convex linearization of the function.
-
-        :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
-        The convex linearization of a function :math:`f` at a point :math:`\xref`
-        is defined as
-
-        .. math::
-            \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
-            f(x)
-            \approx
-            f(\xref)
-            +
-            \sum_{\substack{i = 1 \\ \partialder > 0}}^{\dim}
-            \partialder \, (x_i - \xref_i)
-            -
-            \sum_{\substack{i = 1 \\ \partialder < 0}}^{\dim}
-            \partialder \, \xref_i^2 \, \left(\frac{1}{x_i} - \frac{1}{\xref_i}\right).
-
-        :math:`\newcommand{\approxinds}{I}`
-        Optionally, one may require the convex linearization of :math:`f` with
-        respect to a subset of its variables
-        :math:`x_{i \in \approxinds}`, :math:`I \subset \{1, \dots, \dim\}`,
-        rather than all of them:
-
-        .. math::
-            f(x)
-            =
-            f(x_{i \in \approxinds}, x_{i \not\in \approxinds})
-            \approx
-            f(\xref_{i \in \approxinds}, x_{i \not\in \approxinds})
-            +
-            \sum_{\substack{i \in \approxinds \\ \partialder > 0}}
-            \partialder \, (x_i - \xref_i)
-            -
-            \sum_{\substack{i \in \approxinds \\ \partialder < 0}}
-            \partialder
-            \, \xref_i^2 \, \left(\frac{1}{x_i} - \frac{1}{\xref_i}\right).
-
-        Args:
-            x_vect: The input vector at which to build the convex linearization.
-            approx_indexes: A boolean mask
-                specifying w.r.t. which inputs the function should be approximated.
-                If ``None``, consider all the inputs.
-            sign_threshold: The threshold for the sign of the derivatives.
-
-        Returns:
-            The convex linearization of the function at the given input vector.
-        """
-        from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
-
-        return ConvexLinearApprox(
-            x_vect, self, approx_indexes=approx_indexes, sign_threshold=sign_threshold
-        )
-
-    # TODO: Remove this deprecated method.
-    def quadratic_approx(
-        self,
-        x_vect: ArrayType,
-        hessian_approx: ArrayType,
-        args: Sequence[str] | None = None,
-    ) -> MDOQuadraticFunction:
-        r"""Build a quadratic approximation of the function at a given point.
-
-        The function must be scalar-valued.
-
-        :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}\newcommand{
-        \hessapprox}{\hat{H}}`
-        For a given approximation :math:`\hessapprox` of the Hessian matrix of a
-        function :math:`f` at a point :math:`\xref`, the quadratic approximation of
-        :math:`f` is defined as
-
-        .. math::
-            \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
-            f(x)
-            \approx
-            f(\xref)
-            + \sum_{i = 1}^{\dim} \partialder \, (x_i - \xref_i)
-            + \frac{1}{2} \sum_{i = 1}^{\dim} \sum_{j = 1}^{\dim}
-            \hessapprox_{ij} (x_i - \xref_i) (x_j - \xref_j).
-
-        Args:
-            x_vect: The input vector at which to build the quadratic approximation.
-            hessian_approx: The approximation of the Hessian matrix
-                at this input vector.
-            args: The names of the inputs of the quadratic approximation function,
-                or a name base.
-                If ``None``, use the ones of the current function.
-
-        Returns:
-            The second-order Taylor polynomial of the function at the given point.
-
-        Raises:
-            ValueError: Either if the approximated Hessian matrix is not square,
-                or if it is not consistent with the dimension of the given point.
-            AttributeError: If the function does not have
-                an implemented Jacobian function.
-        """
-        from gemseo.core.mdofunctions.taylor_polynomials import (
-            compute_quadratic_approximation,
-        )
-
-        return compute_quadratic_approximation(self, x_vect, hessian_approx, args=args)
-
     def check_grad(
         self,
         x_vect: ArrayType,
@@ -1188,26 +980,6 @@ class MDOFunction:
             The names of the inputs.
         """
         return [f"{args_base}{cls.INDEX_PREFIX}{i}" for i in range(input_dim)]
-
-    # TODO: Remove this deprecated method.
-    @staticmethod
-    def concatenate(
-        functions: Iterable[MDOFunction], name: str, f_type: str | None = None
-    ) -> Concatenate:
-        """Concatenate functions.
-
-        Args:
-            functions: The functions to be concatenated.
-            name: The name of the concatenation function.
-            f_type: The type of the concatenation function.
-                If ``None``, the function will have no type.
-
-        Returns:
-            The concatenation of the functions.
-        """
-        from gemseo.core.mdofunctions.concatenate import Concatenate
-
-        return Concatenate(functions, name, f_type)
 
     @property
     def expects_normalized_inputs(self) -> bool:

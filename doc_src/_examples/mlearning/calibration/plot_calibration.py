@@ -41,7 +41,8 @@ dataset = RosenbrockDataset(opt_naming=False, n_samples=25)
 # ------------------
 configure_logger()
 test_dataset = RosenbrockDataset(opt_naming=False)
-measure_options = {"method": "test", "test_data": test_dataset}
+measure_evaluation_method = "test"
+measure_options = {"test_data": test_dataset}
 
 # %%
 # Calibrate the degree of the polynomial regression
@@ -56,7 +57,8 @@ calibration = MLAlgoCalibration(
     ["degree"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method=measure_evaluation_method,
+    measure_options=measure_options,
 )
 calibration.execute({"algo": "fullfact", "n_samples": 10})
 x_opt = calibration.optimal_parameters
@@ -97,7 +99,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method=measure_evaluation_method,
+    measure_options=measure_options,
     degree=10,
 )
 calibration.execute({"algo": "fullfact", "n_samples": 10})
@@ -139,7 +142,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method=measure_evaluation_method,
+    measure_options=measure_options,
     degree=10,
     l2_penalty_ratio=0.0,
 )
@@ -183,7 +187,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level", "l2_penalty_ratio"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method=measure_evaluation_method,
+    measure_options=measure_options,
     degree=10,
 )
 calibration.execute({"algo": "fullfact", "n_samples": 100})
@@ -236,7 +241,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level", "l2_penalty_ratio"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method=measure_evaluation_method,
+    measure_options=measure_options,
     degree=10,
 )
 calibration.execute({"algo": "NLOPT_COBYLA", "max_iter": 100})

@@ -12,3 +12,8 @@ API changes:
 - Rename the second positional argument ``method_name`` of :class:`.ConstrAggegationDisc` to ``aggregation_function``.
 - Rename the first position argument ``constr_id`` of :meth:`.OptimizationProblem.aggregate_constraint` to ``constraint_index``.
 - Rename the aggregation methods ``"pos_sum"``, ``"sum"`` and ``"max"`` to ``"POS_SUM"``, ``"SUM"`` and ``"MAX"``.
+- The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoAssessor` with the argument ``measure_evaluation_method``.
+- The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoSelection` with the argument ``measure_evaluation_method``.
+- The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoCalibration` with the argument ``measure_evaluation_method``.
+
+The names of the methods to evaluate a quality measure can be accessed with :attr:`.MLAlgoQualityMeasure.EvaluationMethod`.

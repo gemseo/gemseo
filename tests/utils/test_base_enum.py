@@ -60,18 +60,6 @@ def test_getitem():
     assert MyEnum[MyEnum.ELEM_1] == MyEnum.ELEM_1
 
 
-def test_getitem_incorrect_name():
-    """Check that a KeyError is raised when using an incorrect name."""
-    with pytest.raises(KeyError, match=re.escape("foo is not a MyEnum.")):
-        MyEnum["foo"]
-
-
-def test_get_member_from_name():
-    """Test the get_member_from_name class method."""
-    assert MyEnum.get_member_from_name("ELEM_1") == MyEnum.ELEM_1
-    assert MyEnum.get_member_from_name(MyEnum.ELEM_1) == MyEnum.ELEM_1
-
-
 def test_get_member_from_name_incorrect_enum():
     """Test that providing an incorrect Enum will raise an Exception."""
     with pytest.raises(
@@ -80,7 +68,7 @@ def test_get_member_from_name_incorrect_enum():
             "The type of value is ['ELEM_1'] but MyEnum or str are expected."
         ),
     ):
-        MyEnum.get_member_from_name(MyEnum2.ELEM_1)
+        MyEnum[MyEnum2.ELEM_1]
 
 
 def test_base_enum2():

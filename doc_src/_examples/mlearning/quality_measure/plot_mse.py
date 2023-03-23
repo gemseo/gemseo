@@ -99,8 +99,8 @@ print(model)
 # ------------------
 measure = MSEMeasure(model)
 
-mse_train = measure.evaluate("learn")
-mse_test = measure.evaluate("test", test_data=dataset_test)
+mse_train = measure.evaluate_learn()
+mse_test = measure.evaluate_test(dataset_test)
 
 print("Training error:", mse_train)
 print("Test error:", mse_test)
@@ -141,7 +141,7 @@ for power in powers:
     model = create_regression_model("PolynomialRegressor", dataset, degree=power)
     measure = MSEMeasure(model)
 
-    test_mse = measure.evaluate("test", test_data=dataset_test)
+    test_mse = measure.evaluate_test(dataset_test)
     test_errors += [test_mse]
 
     y_refined = model.predict({"x": x_refined[:, None]})["y"].flatten()

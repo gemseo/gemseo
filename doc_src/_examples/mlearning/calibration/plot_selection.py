@@ -55,7 +55,9 @@ dataset.add_variable("y", y[:, None], Dataset.OUTPUT_GROUP, cache_as_input=False
 # We consider three regression models, with different possible hyperparameters.
 # A mean squared error quality measure is used with a k-folds cross validation
 # scheme (5 folds).
-selector = MLAlgoSelection(dataset, MSEMeasure, eval_method="kfolds", n_folds=5)
+selector = MLAlgoSelection(
+    dataset, MSEMeasure, measure_evaluation_method_name="KFOLDS", n_folds=5
+)
 selector.add_candidate(
     "LinearRegressor",
     penalty_level=[0, 0.1, 1, 10, 20],

@@ -26,7 +26,6 @@ import pytest
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -136,14 +135,6 @@ def test_evaluate_samples_multiproc_with_observables(doe):
         assert disc.n_calls == 0
     else:
         assert disc.n_calls == 8
-
-
-def test_phip_criteria():
-    """Check that the phi-p criterion is well implemented."""
-    power = 3.0
-    samples = array([[0.0, 0.0], [0.0, 2.0], [0.0, 3.0]])
-    expected = sum(val ** (-power) for val in [2.0, 3.0, 1.0]) ** (1.0 / power)
-    assert DOELibrary.compute_phip_criteria(samples, power) == expected
 
 
 @pytest.fixture(scope="module")

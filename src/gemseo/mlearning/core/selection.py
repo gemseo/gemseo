@@ -86,7 +86,8 @@ class MLAlgoSelection:
         self,
         dataset: Dataset,
         measure: str | MLQualityMeasure,
-        eval_method: str = MLQualityMeasure.LEARN,
+        measure_evaluation_method_name: str
+        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -95,7 +96,8 @@ class MLAlgoSelection:
             dataset: The learning dataset.
             measure: The name of a quality measure
                 to measure the quality of the machine learning algorithms.
-            eval_method: The name of the method to evaluate the quality measure.
+            measure_evaluation_method_name: The name of the method
+                to evaluate the quality measure.
             samples: The indices of the learning samples to consider.
                 Other indices are neither used for training nor for testing.
                 If None, use all the samples.
@@ -112,9 +114,10 @@ class MLAlgoSelection:
         else:
             self.measure = measure
 
-        self.measure_options = dict(
-            samples=samples, method=eval_method, **measure_options
-        )
+        self.__measure_evaluation_method_name = MLQualityMeasure.EvaluationMethod[
+            measure_evaluation_method_name
+        ]
+        self.measure_options = dict(samples=samples, **measure_options)
         self.factory = MLAlgoFactory()
 
         self.candidates = []
@@ -172,7 +175,10 @@ class MLAlgoSelection:
             params = dict(zip(keys, prodvalues))
             if not calib_space:
                 algo_new = self.factory.create(name, data=self.dataset, **params)
-                quality_new = self.measure(algo_new).evaluate(**self.measure_options)
+                evaluate = getattr(
+                    self.measure(algo_new), self.__measure_evaluation_method_name.value
+                )
+                quality_new = evaluate(**self.measure_options)
             else:
                 calib = MLAlgoCalibration(
                     name,
@@ -180,7 +186,8 @@ class MLAlgoSelection:
                     calib_space.variables_names,
                     calib_space,
                     self.measure,
-                    self.measure_options,
+                    measure_evaluation_method_name=self.__measure_evaluation_method_name,
+                    measure_options=self.measure_options,
                     **params,
                 )
                 calib.execute(calib_algo)

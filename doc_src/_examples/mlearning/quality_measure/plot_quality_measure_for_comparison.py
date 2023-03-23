@@ -114,8 +114,8 @@ measure_randfor = MSEMeasure(randfor)
 # Evaluate on training set directly (keyword: 'learn')
 # ****************************************************
 print("Learn:")
-print("Error MoE:", measure_moe.evaluate(method="learn"))
-print("Error Random Forest:", measure_randfor.evaluate(method="learn"))
+print("Error MoE:", measure_moe.evaluate_learn())
+print("Error Random Forest:", measure_randfor.evaluate_learn())
 
 plt.figure()
 plt.plot(x_refined, moe.predict(x_refined[:, None]).flatten(), label="MoE")
@@ -152,12 +152,12 @@ plt.show()
 # cross validation algorithm. We also plot the predictions from the last
 # iteration of the algorithm.
 print("K-folds:")
-print("Error MoE:", measure_moe.evaluate("kfolds"))
-print("Error Random Forest:", measure_randfor.evaluate("kfolds"))
+print("Error MoE:", measure_moe.evaluate_kfolds())
+print("Error Random Forest:", measure_randfor.evaluate_kfolds())
 
 print("Loo:")
-print("Error MoE:", measure_moe.evaluate("loo"))
-print("Error Random Forest:", measure_randfor.evaluate("loo"))
+print("Error MoE:", measure_moe.evaluate_loo())
+print("Error Random Forest:", measure_randfor.evaluate_loo())
 
 plt.plot(x_refined, moe.predict(x_refined[:, None]).flatten(), label="MoE")
 plt.plot(
@@ -217,12 +217,12 @@ measure_moe = MSEMeasure(moe)
 measure_randfor = MSEMeasure(randfor)
 
 print("Learn:")
-print("Error MoE:", measure_moe.evaluate(method="learn"))
-print("Error Random Forest:", measure_randfor.evaluate(method="learn"))
+print("Error MoE:", measure_moe.evaluate_learn())
+print("Error Random Forest:", measure_randfor.evaluate_learn())
 
 print("K-folds:")
-print("Error MoE:", measure_moe.evaluate("kfolds"))
-print("Error Random Forest:", measure_randfor.evaluate("kfolds"))
+print("Error MoE:", measure_moe.evaluate_kfolds())
+print("Error Random Forest:", measure_randfor.evaluate_kfolds())
 
 # %%
 # Plot data

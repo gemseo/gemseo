@@ -41,7 +41,6 @@ from numpy import ndarray
 from numpy import savetxt
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_quality import compute_phip_criterion
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -114,22 +113,6 @@ class DOELibrary(DriverLibrary):
         self.samples = array([])
         self.seed = 0
         self.eval_jac = False
-
-    # TODO: API: remove this method
-    @staticmethod
-    def compute_phip_criteria(samples: ndarray, power: float = 10.0) -> float:
-        r"""Compute the :math:`\phi^p` space-filling criterion (the smaller the better).
-
-        See :cite:`morris1995`.
-
-        Args:
-            samples: The samples of the input variables.
-            power: The power :math:`p` of the :math:`\phi^p` criterion.
-
-        Returns:
-            The :math:`\phi^p` space-filling criterion.
-        """
-        return compute_phip_criterion(samples, power)
 
     def _pre_run(
         self,

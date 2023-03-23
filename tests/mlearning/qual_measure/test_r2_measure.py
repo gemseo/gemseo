@@ -77,12 +77,12 @@ def test_evaluate_learn(dataset):
     """Test evaluate learn method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_train = measure.evaluate("learn")
+    r2_train = measure.evaluate_learn()
     assert r2_train > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_train = measure.evaluate("learn")
+    r2_train = measure.evaluate_learn()
     assert r2_train > 1 - TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -91,7 +91,7 @@ def test_evaluate_learn(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = R2Measure(algo)
-    r2_train = measure.evaluate("learn")
+    r2_train = measure.evaluate_learn()
     assert r2_train > 1 - TOL_DEG_2
 
 
@@ -99,12 +99,12 @@ def test_evaluate_test(dataset, dataset_test):
     """Test evaluate test method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_test = measure.evaluate("test", test_data=dataset_test)
+    r2_test = measure.evaluate_test(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_test = measure.evaluate("test", test_data=dataset_test)
+    r2_test = measure.evaluate_test(dataset_test)
     assert r2_test > 1 - TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -113,7 +113,7 @@ def test_evaluate_test(dataset, dataset_test):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = R2Measure(algo)
-    r2_test = measure.evaluate("test", test_data=dataset_test)
+    r2_test = measure.evaluate_test(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
 
@@ -121,12 +121,12 @@ def test_evaluate_loo(dataset):
     """Test evaluate leave one out method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_loo = measure.evaluate("loo")
+    r2_loo = measure.evaluate_loo()
     assert r2_loo > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_loo = measure.evaluate("loo")
+    r2_loo = measure.evaluate_loo()
     assert r2_loo < 1 - TOL_DEG_3
 
 
@@ -134,12 +134,12 @@ def test_evaluate_kfolds(dataset):
     """Test evaluate k-folds method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_kfolds = measure.evaluate("kfolds")
+    r2_kfolds = measure.evaluate_kfolds()
     assert r2_kfolds > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_kfolds = measure.evaluate("kfolds")
+    r2_kfolds = measure.evaluate_kfolds()
     assert r2_kfolds < 1 - TOL_DEG_3
 
     algo = PolynomialRegressor(
@@ -148,7 +148,7 @@ def test_evaluate_kfolds(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = R2Measure(algo)
-    r2_kfolds = measure.evaluate("kfolds")
+    r2_kfolds = measure.evaluate_kfolds()
     assert r2_kfolds > 1 - TOL_DEG_2
 
 
@@ -157,7 +157,7 @@ def test_evaluate_bootstrap(dataset):
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     with pytest.raises(NotImplementedError):
-        measure.evaluate("bootstrap")
+        measure.evaluate_bootstrap()
 
 
 @pytest.mark.parametrize("fit", [False, True])
@@ -169,4 +169,4 @@ def test_fit_transformers(algo_for_transformer, fit):
     """
     m1 = R2Measure(algo_for_transformer)
     m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
-    assert allclose(m1.evaluate("kfolds", seed=0), m2.evaluate("kfolds", seed=0)) is fit
+    assert allclose(m1.evaluate_kfolds(seed=0), m2.evaluate_kfolds(seed=0)) is fit

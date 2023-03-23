@@ -79,27 +79,6 @@ class MetaEnum(EnumMeta):
 class BaseEnum(Enum, metaclass=MetaEnum):
     """A base Enum class that can be compared to strings."""
 
-    # TODO: API: remove this method in the next major release.
-    @classmethod
-    def get_member_from_name(
-        cls,
-        value: str | BaseEnum,
-    ) -> BaseEnum:
-        """Return an Enum member from a name or a member.
-
-        This class method returns an Enum member
-        either from the name of the member or the member itself.
-        It enables backward compatibility with the use of class attributes
-        for options.
-
-        Args:
-            value: An Enum member name or an Enum member.
-
-        Raises:
-            TypeError: If the Enum member is not from the same Enum class.
-        """
-        return cls[value]
-
     def __eq__(
         self,
         other: BaseEnum | str,

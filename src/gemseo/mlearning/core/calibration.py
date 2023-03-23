@@ -115,6 +115,8 @@ class MLAlgoAssessor(MDODiscipline):
         dataset: Dataset,
         parameters: Iterable[str],
         measure: type[MLQualityMeasure],
+        measure_evaluation_method_name: str
+        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -125,6 +127,8 @@ class MLAlgoAssessor(MDODiscipline):
             dataset: A learning dataset.
             parameters: The parameters of the machine learning algorithm to calibrate.
             measure: A measure to assess the machine learning algorithm.
+            measure_evaluation_method_name: The name of the method
+                to evaluate the quality measure.
             measure_options: The options of the quality measure.
                 If "multioutput" is missing,
                 it is added with False as value.
@@ -153,13 +157,16 @@ class MLAlgoAssessor(MDODiscipline):
         self.algo = algo
         self.measure = measure
         self.measure_options = measure_options or {}
+        self.__measure_evaluation_method_name = MLQualityMeasure.EvaluationMethod[
+            measure_evaluation_method_name
+        ]
         self.parameters = algo_options
         self.data = dataset
         self.transformer = transformer
         self.algos = []
-
         if self.measure_options.get("multioutput", False):
             raise ValueError("MLAlgoAssessor does not support multioutput.")
+
         self.measure_options[self.MULTIOUTPUT] = False
 
     def _run(self) -> None:
@@ -181,8 +188,9 @@ class MLAlgoAssessor(MDODiscipline):
         )
         algo.learn()
         measure = self.measure(algo)
-        learning = measure.evaluate(multioutput=False)
-        criterion = measure.evaluate(**self.measure_options)
+        learning = measure.evaluate_learn(multioutput=False)
+        evaluate = getattr(measure, self.__measure_evaluation_method_name.value)
+        criterion = evaluate(**self.measure_options)
         self.store_local_data(criterion=array([criterion]), learning=array([learning]))
         self.algos.append(algo)
 
@@ -221,6 +229,8 @@ class MLAlgoCalibration:
         parameters: Iterable[str],
         calibration_space: DesignSpace,
         measure: MLQualityMeasure,
+        measure_evaluation_method_name: str
+        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -233,6 +243,8 @@ class MLAlgoCalibration:
                 to calibrate.
             calibration_space: The space defining the calibration variables.
             measure: A measure to assess the machine learning algorithm.
+            measure_evaluation_method_name: The name of the method
+                to evaluate the quality measure.
             measure_options: The options of the quality measure.
                 If ``None``, do not use the quality measure options.
             transformer: The strategies
@@ -254,8 +266,9 @@ class MLAlgoCalibration:
             dataset,
             parameters,
             measure,
-            measure_options,
-            transformer,
+            measure_evaluation_method_name=measure_evaluation_method_name,
+            measure_options=measure_options,
+            transformer=transformer,
             **algo_options,
         )
         self.algo_assessor = disc
