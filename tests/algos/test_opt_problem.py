@@ -176,6 +176,27 @@ def test_add_constraints(pow2_problem):
         problem.check()
 
 
+def test_wrong_linear_problem_setting():
+    n = 3
+    design_space = DesignSpace()
+    design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
+    design_space.set_current_value(np.zeros(n))
+    problem = OptimizationProblem(design_space, pb_type=OptimizationProblem.LINEAR_PB)
+    f = MDOFunction(Power2.ineq_constraint1, name="f")
+    with pytest.raises(
+        TypeError,
+        match="The objective of a linear optimization problem "
+        "must be an MDOLinearFunction.",
+    ):
+        problem.objective = f
+    with pytest.raises(
+        TypeError,
+        match="The constraint of a linear optimization problem "
+        "must be an MDOLinearFunction.",
+    ):
+        problem.add_constraint(f)
+
+
 def test_getmsg_ineq_constraints(pow2_problem):
     expected = []
     problem = pow2_problem
