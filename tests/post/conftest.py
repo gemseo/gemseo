@@ -75,6 +75,15 @@ def common_problem(__common_problem):
 
 
 @pytest.fixture
+def large_common_problem(__common_problem):
+    """The __common_problem sampled 20 times on a diagonal of its input space."""
+    lib = DiagonalDOE()
+    lib.algo_name = "DiagonalDOE"
+    lib.execute(__common_problem, n_samples=20, eval_jac=True)
+    return __common_problem
+
+
+@pytest.fixture
 def common_problem_():
     """A dummy optimization problem to check post-processors."""
     problem = Rosenbrock()

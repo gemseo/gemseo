@@ -23,6 +23,7 @@ import logging
 from typing import Final
 from typing import Sequence
 
+from matplotlib.ticker import MaxNLocator
 from numpy import arange
 from numpy import newaxis
 
@@ -71,7 +72,7 @@ class BasicHistory(OptPostProcessor):
             dataset,
             abscissa_variable=self.__ITERATION_NAME,
             variables=problem.get_function_names(variable_names),
-            set_xticks_from_data=True,
+            set_xticks_from_data=False,
         )
         plot.font_size = 12
         plot.xlabel = "Iterations"
@@ -79,5 +80,6 @@ class BasicHistory(OptPostProcessor):
         plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
         figures = plot.execute(save=False)
+        figures[-1].gca().get_xaxis().set_major_locator(MaxNLocator(integer=True))
         for figure in figures:
             self._add_figure(figure)
