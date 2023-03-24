@@ -8,15 +8,15 @@ cfgv==3.3.1
     # via pre-commit
 distlib==0.3.6
     # via virtualenv
-filelock==3.10.0
+filelock==3.10.3
     # via virtualenv
-identify==2.5.20
+identify==2.5.21
     # via pre-commit
 nodeenv==1.7.0
     # via pre-commit
 platformdirs==3.1.1
     # via virtualenv
-pre-commit==3.1.1
+pre-commit==3.2.0
     # via -r requirements/check.in
 pyyaml==6.0
     # via pre-commit
