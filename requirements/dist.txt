@@ -20,7 +20,7 @@ docutils==0.19
     # via readme-renderer
 idna==3.4
     # via requests
-importlib-metadata==6.0.0
+importlib-metadata==6.1.0
     # via
     #   keyring
     #   twine
