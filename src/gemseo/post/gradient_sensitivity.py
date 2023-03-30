@@ -29,6 +29,7 @@ from matplotlib.figure import Figure
 from numpy import arange
 from numpy import atleast_2d
 from numpy import ndarray
+from numpy import where
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
@@ -132,7 +133,7 @@ class GradientSensitivity(OptPostProcessor):
                 gradient_value = gradient_values[function_name]
             else:
                 gradient_value = self.database.get_f_of_x(
-                    f"@{function_name}", design_value
+                    self.database.get_gradient_name(function_name), design_value
                 )
             if gradient_value is None:
                 continue
@@ -192,7 +193,14 @@ class GradientSensitivity(OptPostProcessor):
         rotation = 90
         for output_name, gradient_value in sorted(gradients.items()):
             axe = axes[i][j]
-            axe.bar(abscissa, gradient_value, color="blue", align="center")
+            axe.bar(
+                abscissa,
+                gradient_value,
+                color=where(gradient_value < 0, "blue", "red"),
+                align="center",
+            )
+            axe.grid()
+            axe.set_axisbelow(True)
             axe.set_title(output_name)
             axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissa)
