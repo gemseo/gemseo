@@ -142,11 +142,12 @@ class PyDOE(DOELibrary):
                 If None, use a pre-determined number of points.
             center_cc: The 2-tuple of center points for the central composite
                 design. If None, use (4, 4).
-            n_samples: The number of samples. If None, then use the number of
-                levels per input dimension provided by the argument `levels`.
-            levels: The level in each direction for the full-factorial design.
-                If `None`, then the number of samples provided by the argument
-                `n_samples` is used in order to deduce the levels.
+            n_samples: The number of samples. If there is a parameter ``levels``,
+                the latter can be specified
+                and the former set to its default value ``None``.
+            levels: The levels. If there is a parameter ``n_samples``,
+                the latter can be specified
+                and the former set to its default value ``None``.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.

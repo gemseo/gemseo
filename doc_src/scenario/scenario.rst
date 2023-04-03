@@ -299,15 +299,18 @@ or sampling the problem, e.g.
 
 .. note::
 
-   - Both :class:`.MDOScenario` and :class:`.DOEScenario` use the :code:`algo` argument:
-
-       - Available values of :code:`algo` argument can be found by means of the :meth:`.Scenario.get_available_driver_names` method of the :class:`.Scenario` class,
-       - Any algorithm options are provided through the argument :code:`algo_options` with a dictionary.
-       - Algorithm options for :class:`.MDOScenario` can be found here: :ref:`gen_opt_algos`
-       - Algorithm options for :class:`.DOEScenario` can be found here: :ref:`gen_doe_algos`
-
-   - :class:`.MDOScenario` also requires the :code:`max_iter` mandatory argument corresponding to the maximum number of iterations in the :code:`algo` optimization algorithm. Optional arguments are referenced here: :ref:`gen_opt_algos`,
-   - :class:`.DOEScenario` also requires the :code:`n_samples` mandatory argument corresponding to the number of samples in the :code:`algo` sampling algorithm. Optional arguments are referenced here: :ref:`gen_doe_algos`.
+   :meth:`.MDOScenario.execute` and :meth:`.DOEScenario.execute` use input data defined as a dictionary
+   with at least an algorithm name :code:`algo` (see :meth:`.Scenario.get_available_driver_names` for a complete list).
+   A :class:`.MDOScenario` also requires the mandatory parameter :code:`max_iter`
+   corresponding to the maximum number of iterations of the optimization algorithm;
+   the other parameters can be passed as a dictionary of options (see :ref:`gen_opt_algos`),
+   e.g. ``{"algo": "SLSQP", "max_iter": 100, "algo_options": dict_of_options}``.
+   On the other hand,
+   depending on the DOE algorithm,
+   :class:`.DOEScenario` can require either :code:`n_samples`
+   or other arguments to be mandatory.
+   The other optional parameters can be passed as a dictionary (see :ref:`gen_doe_algos`),
+   e.g. ``{"algo": "lhs", "n_samples": 10, "algo_options": dict_of_options}``.
 
 .. seealso::
 

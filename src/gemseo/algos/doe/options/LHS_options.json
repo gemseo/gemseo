@@ -2,6 +2,7 @@
     "name": "lhs_options",
     "description": "Latin-Hypercube algorithm from the pyDOE library",
     "id": "https://pythonhosted.org/pyDOE/randomized.html#latin-hypercube",
+    "required": ["n_samples"],
     "properties": {
         "criterion": {
             "type": ["null", "string"],

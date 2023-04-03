@@ -2,6 +2,7 @@
     "name": "OT_OPT_LHS_options",
     "description": "Optimal LHS DOE from the OpenTURNS library",
     "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.OptimalLHSExperiment.html",
+    "required": ["n_samples"],
     "properties": {
         "n_samples":{
             "type": "integer",

@@ -366,9 +366,16 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             )
             algo_lib = algo_factory.create(algo)
             options_grammar = algo_lib.init_options_grammar(algo)
-            return {
+            options = {
                 k: v for k, v in options_schema.items() if k in options_grammar.names
             }
+            for name in options_grammar.required_names:
+                if name not in options:
+                    options[name] = {}
+
+                options[name]["default"] = ""
+
+            return options
 
         return get_options_schema
 

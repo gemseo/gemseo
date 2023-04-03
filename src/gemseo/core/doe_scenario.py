@@ -93,18 +93,19 @@ class DOEScenario(Scenario):
             self._lib = lib
             self._algo_name = algo_name
 
+        options = dict(options)
         if self.N_SAMPLES in lib.opt_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in options:
                 LOGGER.warning(
-                    "Double definition of algorithm option n_samples, keeping value: %s.",
+                    "Double definition of algorithm option n_samples, "
+                    "keeping value: %s.",
                     n_samples,
                 )
             options[self.N_SAMPLES] = n_samples
 
         self.optimization_result = lib.execute(self.formulation.opt_problem, **options)
         self.__samples = lib.samples
-
         return self.optimization_result
 
     def _update_input_grammar(self) -> None:  # noqa: D102

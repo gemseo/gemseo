@@ -1,5 +1,6 @@
 {
     "name": "PDFOOPT_options",
+    "required":["max_iter"],
     "properties": {
         "rhobeg": {
             "type": "number",
