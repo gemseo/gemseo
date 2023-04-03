@@ -19,7 +19,7 @@ from gemseo_templator.blocks.template import Block
 block = Block(
     title="Saving &#x26; Storing Data",
     description=(
-        'Store disciplinary evaluations in a <a href="caching.html">cache</a>,'
+        'Store disciplinary evaluations in a <a href="cache.html">cache</a>,'
         "either in memory or saved in a file. "
         'Use a <a href="dataset.html">dataset</a> to store many kinds of data '
         "and make them easy to handle for visualization, display and query purposes."
