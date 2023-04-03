@@ -74,7 +74,7 @@ repos:
       args: [--py38-plus]
 
 - repo: https://github.com/psf/black
-  rev: 23.1.0
+  rev: 23.3.0
   hooks:
     - id: black
 
@@ -96,7 +96,7 @@ repos:
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.4.2
+  rev: v1.5.1
   hooks:
     - id: insert-license
       name: insert LGPL license
