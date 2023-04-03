@@ -20,6 +20,7 @@
 """Tests for the class SensitivityAnalysis."""
 from __future__ import annotations
 
+import pandas as pd
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -28,6 +29,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
 from gemseo.utils.pytest_conftest import concretize_classes
 from gemseo.utils.testing import image_comparison
@@ -36,6 +38,7 @@ from numpy import linspace
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_array_equal
+from pandas._testing import assert_frame_equal
 
 
 @pytest.fixture
@@ -116,6 +119,68 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
     @property
     def main_indices(self):
         return self.indices["m2"]
+
+
+class MockMorrisAnalysisIndices(MorrisAnalysis):
+    """A mock of a Morris sensitivity analysis, from which a dataset can be exported."""
+
+    def __init__(self):
+        self.dataset = Dataset()
+        self.dataset.sizes = {
+            "x1": 1,
+        }
+
+    @property
+    def inputs_names(self) -> list[str]:
+        """The names of the inputs."""
+        return ["x1"]
+
+    @property
+    def indices(self):
+        return {
+            "mu": {
+                "y": [
+                    {
+                        "x1": array([-0.36000398]),
+                    }
+                ]
+            },
+            "mu_star": {
+                "y": [
+                    {
+                        "x1": array([0.67947346]),
+                    }
+                ]
+            },
+            "sigma": {
+                "y": [
+                    {
+                        "x1": array([0.98724949]),
+                    }
+                ]
+            },
+            "relative_sigma": {
+                "y": [
+                    {
+                        "x1": array([1.45296254]),
+                    }
+                ]
+            },
+            "min": {
+                "y": [
+                    {
+                        "x1": array([0.0338188]),
+                    }
+                ]
+            },
+            "max": {
+                "y": [
+                    {
+                        "x1": array([2.2360336]),
+                    }
+                ]
+            },
+        }
 
 
 @pytest.fixture
@@ -241,10 +306,52 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
     dataset = mock_sensitivity_analysis.export_to_dataset()
     assert isinstance(dataset, Dataset)
     assert dataset.row_names == ["x1", "x2[0]", "x2[1]"]
-    assert dataset.variables == ["y1", "y2"]
+    assert dataset.variables == ["m1(y1)", "m1(y2)", "m2(y1)", "m2(y2)"]
     assert dataset.groups == ["m1", "m2"]
-    assert_array_equal(dataset.data["y1"], array([[1], [1], [1]]))
-    assert_array_equal(dataset.data["y2"], array([[2, 3], [2, 3], [2, 3]]))
+    assert dataset.columns_names == [
+        "m1(y1)",
+        "m1(y2)[0]",
+        "m1(y2)[1]",
+        "m2(y1)",
+        "m2(y2)[0]",
+        "m2(y2)[1]",
+    ]
+    assert dataset.sizes == {"m1(y1)": 1, "m1(y2)": 2, "m2(y1)": 1, "m2(y2)": 2}
+    assert_array_equal(dataset.data["m1(y1)"], array([[1.25], [1.5], [1.75]]))
+    assert_array_equal(dataset.data["m1(y2)"], [[2.25, 3.25], [2.5, 3.5], [2.75, 3.75]])
+    assert_array_equal(dataset.data["m2(y1)"], [[1], [1], [1]])
+    assert_array_equal(dataset.data["m2(y2)"], [[2, 3], [2, 3], [2, 3]])
+
+
+def test_export_to_dataset_morris():
+    """Test the exported dataset from a Morris sensitivity analysis, and test the
+    dataframe obtained from this dataset."""
+    sensitivity_analysis = MockMorrisAnalysisIndices()
+    dataset = sensitivity_analysis.export_to_dataset()
+    expected_groups = ["max", "min", "mu", "mu_star", "relative_sigma", "sigma"]
+    for group in expected_groups:
+        for i, values in enumerate(
+            sensitivity_analysis.indices[group]["y"][0].values()
+        ):
+            assert_array_equal(dataset[f"{group}(y)"][i], values)
+    assert set(dataset.groups) == set(expected_groups)
+    assert set(dataset.variables) == {
+        "max(y)",
+        "min(y)",
+        "mu(y)",
+        "mu_star(y)",
+        "relative_sigma(y)",
+        "sigma(y)",
+    }
+    # Test that the dataframe obtained from the dataset.
+    columns_index2 = []
+    for _i in range(len(expected_groups)):
+        columns_index2.append("0")
+    columns = [expected_groups, dataset.variables, columns_index2]
+    values = [[2.2360336, 0.0338188, -0.36000398, 0.67947346, 1.45296254, 0.98724949]]
+    expected_df = pd.DataFrame(values, index=dataset.row_names, columns=columns)
+    df = dataset.export_to_dataframe()
+    assert_frame_equal(df, expected_df)
 
 
 @pytest.fixture(scope="module")

@@ -897,7 +897,12 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                     )
                     data[-1] = [item for sublist in data[-1] for item in sublist]
             data = array(data).T
-            dataset.add_group(method, data, variables, sizes)
+            dataset.add_group(
+                method,
+                data,
+                variables=[f"{method}({v})" for v in variables],
+                sizes={f"{method}({v})": s for v, s in sizes.items()},
+            )
         dataset.row_names = rows_names
         return dataset
 
