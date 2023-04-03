@@ -31,7 +31,6 @@ import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import array
 from numpy import hstack
 from numpy import linspace
@@ -79,15 +78,12 @@ print(dataset.export_to_dataframe())
 # %%
 # Mixture of experts model
 # ~~~~~~~~~~~~~~~~~~~~~~~~
-# We construct the MoE model using the predefined parameters, and fit the model
-# to the dataset through the learn() method.
-model = create_regression_model(
-    "MOERegressor", dataset, transformer={"outputs": MinMaxScaler()}
-)
+# We construct the MoE model using the predefined parameters,
+# and fit the model to the dataset through the :meth:`~.MOERegressor.learn` method.
+model = create_regression_model("MOERegressor", dataset)
 model.set_clusterer("KMeans", n_clusters=3)
 model.set_classifier("KNNClassifier", n_neighbors=5)
 model.set_regressor("GaussianProcessRegressor")
-
 model.learn()
 
 # %%
