@@ -546,14 +546,12 @@ def test_check_jacobian_2():
         disc.linearize({"x": x}, compute_all_jacobians=True)
 
 
-@pytest.mark.skip_under_windows
 def test_check_jacobian_parallel_fd():
     """Test check_jacobian in parallel."""
     sm = SobieskiMission()
     sm.check_jacobian(step=1e-6, threshold=1e-6, parallel=True, n_processes=6)
 
 
-@pytest.mark.skip_under_windows
 def test_check_jacobian_parallel_cplx():
     """Test check_jacobian in parallel with complex-step."""
     sm = SobieskiMission()
@@ -719,7 +717,6 @@ def test_cache_run_and_linearize():
     assert sm.n_calls_linearize == 0
 
 
-@pytest.mark.skip_under_windows
 def test_jac_approx_mix_fd():
     """Check the complex step method with parallel=True."""
     sm = SobieskiMission()

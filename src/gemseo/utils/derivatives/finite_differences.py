@@ -94,20 +94,8 @@ class FirstOrderFD(GradientApproximator):
         if not isinstance(step, ndarray):
             step = full(n_perturbations, step)
 
-        def func_noargs(
-            f_input_values: ndarray,
-        ) -> ndarray:
-            """Call the function without explicitly passed arguments.
-
-            Args:
-                f_input_values: The input value.
-
-            Return:
-                The value of the function output.
-            """
-            return self.f_pointer(f_input_values, **kwargs)
-
-        functions = [func_noargs] * (n_perturbations + 1)
+        self._function_kwargs = kwargs
+        functions = [self._wrap_function] * (n_perturbations + 1)
         parallel_execution = CallableParallelExecution(functions, **self._par_args)
 
         perturbated_inputs = [
@@ -235,14 +223,8 @@ class FirstOrderFD(GradientApproximator):
         errors = zeros(n_dim)
         comp_step = self._get_opt_step
         if self._parallel:
-
-            def func_noargs(
-                xval: ndarray,
-            ) -> ndarray:
-                """Call the function without explicitly passed arguments."""
-                return self.f_pointer(xval, **kwargs)
-
-            functions = [func_noargs] * (n_dim + 1)
+            self._function_kwargs = kwargs
+            functions = [self._wrap_function] * (n_dim * 2 + 1)
             parallel_execution = CallableParallelExecution(functions, **self._par_args)
 
             all_x = [x_vect] + [x_p_arr[:, i] for i in range(n_dim)]
