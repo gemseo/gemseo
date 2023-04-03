@@ -107,11 +107,11 @@ class CustomDOE(DOELibrary):
         """Set the options.
 
         Args:
-            doe_file: Either a file path or the generator to read.
-                If None, the samples are used and must be provided.
-            samples: The samples.
+            doe_file: The path to the file containing the input samples.
+                If ``None``, use ``samples``.
+            samples: The input samples.
                 They must be at least a 2D-array.
-                If None, the `doe_file` is used and must be provided.
+                If ``None``, use ``doe_file``.
             delimiter: The character used to separate values.
                 If None, use whitespace.
             comments:  The characters or list of characters

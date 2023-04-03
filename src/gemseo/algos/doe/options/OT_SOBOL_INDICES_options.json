@@ -2,6 +2,7 @@
     "name": "OT_SOBOL_INDICES_options",
     "description": "DOE for Sobol' indices from the OpenTURNS library",
     "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.SobolIndicesExperiment.html",
+    "required": ["n_samples"],
     "properties": {
         "n_samples":{
             "type": "integer",

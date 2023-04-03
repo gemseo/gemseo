@@ -1,8 +1,9 @@
 {
     "name": "CUSTOM_options",
     "description": "Run a DOE from samples provided either as an array or as a file",
+    "required": ["doe_file", "samples"],
     "properties": {
-         "doe_file": {
+        "doe_file": {
             "type": ["null", "string"]
         },
         "samples":{
@@ -42,7 +43,6 @@
         	"minimum":0
         }
     },
-    "required": [],
     "$schema": "http://json-schema.org/draft-04/schema",
     "additionalProperties": false,
     "type": "object"

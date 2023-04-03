@@ -1,6 +1,7 @@
 {
 	"name": "PSEVEN_options",
-	"properties": {
+    "required":["max_iter"],
+    "properties": {
 		"xtol_rel": {
 			"type": "number",
 			"minimum": 0.0

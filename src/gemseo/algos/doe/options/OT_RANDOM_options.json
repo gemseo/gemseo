@@ -2,6 +2,7 @@
     "name": "OT_RANDOM_options",
     "description": "Random DOE from the OpenTURNS library",
     "id": "http://www.openturns.org/",
+    "required": ["n_samples"],
     "properties": {
         "n_samples":{
             "type":  "integer",

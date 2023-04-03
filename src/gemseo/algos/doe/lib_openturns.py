@@ -160,15 +160,15 @@ class OpenTURNS(DOELibrary):
         r"""Set the options.
 
         Args:
-            levels: The levels for axial, full-factorial (box), factorial
-                and composite designs. If None, the number of samples is
-                used in order to deduce the levels.
+            levels: The levels. If there is a parameter ``n_samples``,
+                the latter can be specified
+                and the former set to its default value ``None``.
             centers: The centers for axial, factorial and composite designs.
                 If None, centers = 0.5.
             eval_jac: Whether to evaluate the jacobian.
-            n_samples: The number of samples. If None, the algorithm uses
-                the number of levels per input dimension provided by the
-                argument ``levels``.
+            n_samples: The number of samples. If there is a parameter ``levels``,
+                the latter can be specified
+                and the former set to its default value ``None``.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
@@ -341,10 +341,13 @@ class OpenTURNS(DOELibrary):
                 "tuple of normalized levels in [0,1] you need in your design."
             )
         self.__check_and_cast_levels(options)
-        if self.CENTER_KEYWORD in options:
-            self.__check_and_cast_centers(dimension, options)
-        else:
+        centers = options.get(self.CENTER_KEYWORD)
+        if centers is None:
             options[self.CENTER_KEYWORD] = [0.5] * dimension
+        else:
+            if len(centers) == 1:
+                options[self.CENTER_KEYWORD] = centers * dimension
+            self.__check_and_cast_centers(dimension, options)
 
     def __generate_stratified(
         self,
