@@ -194,7 +194,7 @@ class DisciplineJacApprox:
             )
             LOGGER.info(errors)
         self.discipline.cache_tol = old_cache_tol
-        data = self.discipline.local_data
+        data = self.discipline.default_inputs or self.discipline.local_data
         data_sizes = {key: val.size for key, val in data.items()}
         self.auto_steps = split_array_to_dict_of_arrays(steps_opt, data_sizes, inputs)
         return errors, self.auto_steps

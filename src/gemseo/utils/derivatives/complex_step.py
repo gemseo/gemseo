@@ -108,20 +108,8 @@ class ComplexStep(GradientApproximator):
         step: float,
         **kwargs: Any,
     ) -> ndarray:
-        def func_noargs(
-            f_input_values: ndarray,
-        ) -> ndarray:
-            """Call the function without explicitly passed arguments.
-
-            Args:
-                f_input_values: The input value.
-
-            Return:
-                The value of the function output.
-            """
-            return self.f_pointer(f_input_values, **kwargs)
-
-        functions = [func_noargs] * n_perturbations
+        self._function_kwargs = kwargs
+        functions = [self._wrap_function] * n_perturbations
         parallel_execution = CallableParallelExecution(functions, **self._par_args)
 
         perturbated_inputs = [

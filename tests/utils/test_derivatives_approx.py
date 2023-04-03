@@ -137,10 +137,16 @@ def test_complex_fail():
 
 
 @pytest.mark.parametrize("discipline_name", ["Sellar1", "Sellar2"])
-def test_auto_step(discipline_name):
+@pytest.mark.parametrize("parallel", [True, False])
+def test_auto_step(discipline_name, parallel):
     discipline = create_discipline(discipline_name)
 
-    ok = discipline.check_jacobian(auto_set_step=True, threshold=1e-2, step=1e-7)
+    ok = discipline.check_jacobian(
+        auto_set_step=True,
+        threshold=1e-2,
+        step=1e-7,
+        parallel=parallel,
+    )
     assert ok
 
 

@@ -67,6 +67,7 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
         self.step = step
         self._design_space = design_space
         self._normalize = normalize
+        self._function_kwargs = {}
 
     @property
     def _parallel(self) -> bool:
@@ -116,6 +117,8 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
             input_dimension, x_vect, x_indices=x_indices, step=step
         )
         n_perturbations = input_perturbations.shape[1]
+
+        self._function_kwargs = kwargs
 
         if self._parallel:
             grad = self._compute_parallel_grad(
@@ -228,6 +231,20 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
               either one global step or one step by input component.
         """
         raise NotImplementedError
+
+    def _wrap_function(
+        self,
+        f_input_values: ndarray,
+    ) -> ndarray:
+        """Wrap the function to be called without explicitly passed arguments.
+
+        Args:
+            f_input_values: The input values.
+
+        Return:
+            The value of the function output.
+        """
+        return self.f_pointer(f_input_values, **self._function_kwargs)
 
 
 class GradientApproximationFactory:
