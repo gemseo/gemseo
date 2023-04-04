@@ -30,6 +30,7 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import _get_schema
 from gemseo.api import get_algorithm_features
@@ -507,6 +508,7 @@ def main(gen_opts_path: str | Path) -> None:
         DriverOptionsDoc("doe", "DOE", DOEFactory(), user_guide_anchor="doe"),
         DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
         DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
+        DriverOptionsDoc("ode", "Ordinary Differential Equation", ODESolversFactory()),
         InitOptionsDoc(
             "distribution", "Probability distribution", DistributionFactory()
         ),
