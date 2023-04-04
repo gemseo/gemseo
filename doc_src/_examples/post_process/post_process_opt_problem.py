@@ -24,10 +24,10 @@ Post-process an optimization problem
 """
 from __future__ import annotations
 
+from gemseo import create_design_space
+from gemseo import execute_algo
+from gemseo import execute_post
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import execute_algo
-from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 # %%

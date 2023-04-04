@@ -20,8 +20,8 @@
 from __future__ import annotations
 
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis

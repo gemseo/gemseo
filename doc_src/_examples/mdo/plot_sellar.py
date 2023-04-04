@@ -45,9 +45,9 @@ from __future__ import annotations
 
 from math import exp
 
+from gemseo import configure_logger
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
-from gemseo.api import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from numpy import array
 from numpy import ones

@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import import_classification_model
+from gemseo.mlearning import import_classification_model
 from gemseo.mlearning.classification.svm import SVMClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose

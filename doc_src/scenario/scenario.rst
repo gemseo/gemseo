@@ -50,7 +50,7 @@ A :class:`.Scenario` is defined by four main elements:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After the instantiation of the different :class:`.MDODiscipline`,
-an instance of this scenario can be created from the :meth:`~gemseo.api.create_scenario` API function whose arguments are:
+an instance of this scenario can be created from the :meth:`~gemseo.create_scenario` API function whose arguments are:
 
 - :code:`disciplines`: the ``list`` of instantiated :class:`.MDODiscipline`,
 - :code:`formulation`: the multidisciplinary formulation name (:code:`str`)
@@ -61,11 +61,11 @@ an instance of this scenario can be created from the :meth:`~gemseo.api.create_s
 - :code:`maximize_objective=False`: the choice between maximizing or minimizing the objective function (:code:`bool`),
 - :code:`**formulation_options`: options passed to the multidisciplinary formulation.
 
-The types of scenarios already implemented in |g| can be obtained by means of the :meth:`~gemseo.api.get_available_scenario_types` API function:
+The types of scenarios already implemented in |g| can be obtained by means of the :meth:`~gemseo.get_available_scenario_types` API function:
 
 .. code::
 
-   from gemseo.api import get_available_scenario_types
+   from gemseo import get_available_scenario_types
 
    get_available_scenario_types():
 
@@ -80,7 +80,7 @@ which results in:
 ****************************
 
 We can easily create a :class:`.MDOScenario` or a :class:`.DOEScenario`
-from the :meth:`~gemseo.api.create_scenario` API function.
+from the :meth:`~gemseo.create_scenario` API function.
 
 2.a. Instantiate the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,7 +89,7 @@ For that, we first instantiate the different :class:`.MDODiscipline`, e.g.
 
 .. code::
 
-   from gemseo.api import create_discipline
+   from gemseo import create_discipline
 
    disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
@@ -131,11 +131,11 @@ corresponding to a multidisciplinary formulation name specified by the user, e.g
 
    formulation = 'MDF'
 
-The list of the different available formulations can be obtained by means of the :meth:`~gemseo.api.get_available_formulations` API function:
+The list of the different available formulations can be obtained by means of the :meth:`~gemseo.get_available_formulations` API function:
 
 .. code::
 
-   from gemseo.api import get_available_formulations
+   from gemseo import get_available_formulations
 
    get_available_formulations()
 
@@ -147,7 +147,7 @@ which yields:
 
 .. note::
 
-   :code:`argument=value` formulation options can also be passed to the :meth:`~gemseo.api.create_scenario` API function.
+   :code:`argument=value` formulation options can also be passed to the :meth:`~gemseo.create_scenario` API function.
    Available options for the different formulations are presented in :ref:`gen_formulation_algos`.
 
 2.e. Choose the type of scenario
@@ -160,11 +160,11 @@ the type of scenario must be chosen, e.g.
 
    scenario_type = 'MDO'
 
-Remind that the different types of scenario can be obtained by means of the :meth:`~gemseo.api.get_available_scenario_types` API function:
+Remind that the different types of scenario can be obtained by means of the :meth:`~gemseo.get_available_scenario_types` API function:
 
 .. code::
 
-   from gemseo.api import get_available_scenario_types
+   from gemseo import get_available_scenario_types
 
    get_available_scenario_types()
 
@@ -178,11 +178,11 @@ which yields:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From these different elements, we can instantiate the :class:`.Scenario`
-by means of the :meth:`~gemseo.api.create_scenario` API function:
+by means of the :meth:`~gemseo.create_scenario` API function:
 
 .. code::
 
-   from gemseo.api import create_scenario
+   from gemseo import create_scenario
 
    scenario = create_scenario(
        disciplines=disciplines,
@@ -387,7 +387,7 @@ which yields:
 
 |g| provides many post-processing tools which can be called
 either by means of the :meth:`.Scenario.post_process` method of the :class:`.Scenario` class
-or by means of the :meth:`~gemseo.api.execute_post` API function.
+or by means of the :meth:`~gemseo.execute_post` API function.
 :meth:`.Scenario.post_process` method of the :class:`.Scenario` class
 returns the list of available post-processing methods.
 Find more information about post-processing and visualization here: :ref:`post_processing`.

@@ -28,9 +28,9 @@ For that, we need to import this :class:`.Dataset` class:
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
@@ -72,7 +72,7 @@ print(dataset)
 #     Only design variables and functions (objective function, constraints) are
 #     stored in the database. If you want to store state variables, you must add
 #     them as observables before the problem is executed. Use the
-#     :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+#     :func:`.core.scenario.Scenario.add_observable` method.
 
 # %%
 # Access properties

@@ -27,15 +27,15 @@ on the Sobieski's SSBJ problem.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 # %%
 # Import
 # ------
-# The first step is to import some functions from the API
+# The first step is to import some high-level functions
 # and a method to get the design space.
 
 configure_logger()
@@ -117,7 +117,7 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the API function
+#    of customization options. Use the high-level function
 #    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:

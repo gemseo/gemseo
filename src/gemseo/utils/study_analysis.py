@@ -30,10 +30,10 @@ from typing import Mapping
 from pandas import DataFrame  # noqa F401
 from pandas import read_excel
 
-from gemseo.api import create_design_space
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
-from gemseo.api import get_available_formulations
+from gemseo import create_design_space
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
+from gemseo import get_available_formulations
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario

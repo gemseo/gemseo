@@ -15,7 +15,7 @@
 Scalable models
 ===============
 
-.. automodule:: gemseo.problems.scalable.data_driven.api
+.. automodule:: gemseo.problems.scalable.data_driven
    :noindex:
 
 .. automodule:: gemseo.problems.scalable.data_driven.problem

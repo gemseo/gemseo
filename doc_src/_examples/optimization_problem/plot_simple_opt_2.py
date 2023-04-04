@@ -27,12 +27,12 @@ Analytical test case # 2
 # -------
 from __future__ import annotations
 
+from gemseo import configure_logger
+from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
-from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import cos
 from numpy import exp

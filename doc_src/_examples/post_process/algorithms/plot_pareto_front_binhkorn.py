@@ -27,15 +27,15 @@ on the Binh and Korn multi-objective problem.
 """
 from __future__ import annotations
 
+from gemseo import configure_logger
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 
 # %%
 # Import
 # ------
-# The first step is to import some functions from the API
+# The first step is to import some high-level functions
 # and a method to get the design space.
 
 configure_logger()

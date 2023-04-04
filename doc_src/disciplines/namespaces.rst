@@ -32,7 +32,7 @@ In terms of API this would result in the following example:
 
 .. code::
 
-    >>> from gemseo.api import create_discipline
+    >>> from gemseo import create_discipline
     >>> from gemseo.core.chain import MDOChain
     >>>
     >>> def func_a(x=1.):

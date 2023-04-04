@@ -25,8 +25,8 @@ Parallel coordinates
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
+from gemseo import configure_logger
+from gemseo import load_dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 
 configure_logger()

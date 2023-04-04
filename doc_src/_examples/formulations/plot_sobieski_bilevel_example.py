@@ -25,10 +25,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_post
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_post
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()

@@ -23,10 +23,10 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.post_factory import PostFactory

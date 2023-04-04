@@ -23,8 +23,8 @@ Solve a 2D MBB topology optimization problem
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo.api import configure_logger
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_scenario
 from gemseo.problems.topo_opt.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )

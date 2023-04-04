@@ -33,7 +33,7 @@ we call the :class:`.MDODiscipline` superconstructor:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -56,7 +56,7 @@ the simplest approach is to apply the :meth:`.JSONGrammar.update` method to a li
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -76,7 +76,7 @@ pass an optional argument to the superconstructor:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -144,7 +144,7 @@ with a :code:`dict` data example:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -192,7 +192,7 @@ We also define the default inputs by means of the :attr:`!MDODiscipline.default_
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
     from numpy import array
 
     class NewDiscipline(MDODiscipline):

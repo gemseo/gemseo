@@ -23,8 +23,8 @@ import re
 from unittest import mock
 
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.correlation import analysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.utils.base_enum import get_names

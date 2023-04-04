@@ -32,7 +32,7 @@ Setting up an :class:`.OptimizationProblem`
 -------------------------------------------
 
 The :class:`.OptimizationProblem` class is composed of at least a
-:class:`~gemseo.algos.design_space.DesignSpace` created from :meth:`~gemseo.api.create_design_space` which describes the :term:`design variables`:
+:class:`~gemseo.algos.design_space.DesignSpace` created from :func:`.create_design_space` which describes the :term:`design variables`:
 
 .. code::
 
@@ -130,7 +130,7 @@ The optimization history can be plotted using one of the post processing tools, 
 
 .. code::
 
-    from gemseo.api import execute_post
+    from gemseo import execute_post
 
     execute_post(problem, "OptHistoryView", save=True, file_path="simple_opt")
 
@@ -154,7 +154,7 @@ DOE algorithms
 `pyDOE <https://pythonhosted.org/pyDOE/>`_, and
 `OpenTURNS <http://www.openturns.org/>`_.
 To list the available DOE algorithms in the current |g| configuration, use
-:meth:`gemseo.api.get_available_doe_algorithms`.
+:meth:`gemseo.get_available_doe_algorithms`.
 
 The set of plots below shows plots using various available algorithms.
 

@@ -47,7 +47,7 @@ class ResamplingBenchmark(BaseBenchmark):
 
     def __init__(self, use_configure: bool):  # noqa: D107
         if use_configure:
-            from gemseo.api import configure
+            from gemseo import configure
 
             configure()
 

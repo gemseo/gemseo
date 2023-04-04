@@ -25,10 +25,10 @@ from __future__ import annotations
 
 from os import name as os_name
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
@@ -60,7 +60,7 @@ for discipline in disciplines:
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
-# A quick way of getting this information is the API function
+# A quick way of getting this information is the high-level function
 # :func:`.generate_n2_plot`. A much more detailed explanation of coupling
 # visualization is available :ref:`here <coupling_visualization>`.
 generate_n2_plot(disciplines, save=False, show=True)
@@ -171,7 +171,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the API function
+#    of customization options. Use the high-level function
 #    :func:`.get_post_processing_options_schema` to print a table with
 #    the attributes for any post-processing algo. Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1

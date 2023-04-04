@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline

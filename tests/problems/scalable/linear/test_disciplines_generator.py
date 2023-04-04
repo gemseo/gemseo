@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_mda
+from gemseo import create_mda
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.linear.disciplines_generator import _get_disc_names
 from gemseo.problems.scalable.linear.disciplines_generator import (

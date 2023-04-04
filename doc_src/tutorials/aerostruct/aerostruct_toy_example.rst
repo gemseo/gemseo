@@ -24,7 +24,7 @@ In this tutorial, we are creating the disciplines from their analytic formulatio
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     def create_disciplines():
         """
@@ -190,7 +190,7 @@ where:
 
 .. code::
 
-    from gemseo.api import create_scenario
+    from gemseo import create_scenario
     from gemseo.problems.aerostructure.aerostructure_design_space import AerostructureDesignSpace
     from copy import deepcopy
 

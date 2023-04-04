@@ -21,9 +21,9 @@ from __future__ import annotations
 import pickle
 
 import pytest
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.disciplines.analytic import AnalyticDiscipline

@@ -24,8 +24,8 @@ Calibration of a polynomial regression
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset

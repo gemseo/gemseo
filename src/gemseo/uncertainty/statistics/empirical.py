@@ -75,7 +75,7 @@ class EmpiricalStatistics(Statistics):
     and the values are the statistic estimated for the different component.
 
     Examples:
-        >>> from gemseo.api import (
+        >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
         ...     create_scenario)

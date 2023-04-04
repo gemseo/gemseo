@@ -34,9 +34,9 @@ We would like to solve this MDO problem by means of an MDF formulation.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem
 
 configure_logger()

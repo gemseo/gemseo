@@ -21,11 +21,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.analytical.power_2 import Power2

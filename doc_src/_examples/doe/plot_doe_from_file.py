@@ -23,9 +23,9 @@ Use a design of experiments from a file
 """
 from __future__ import annotations
 
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 
 # %%
 # Let us consider a discipline implementing the function :math:`y=a*b`

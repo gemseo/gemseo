@@ -26,14 +26,14 @@ from typing import Any
 from typing import Callable
 
 import jinja2
+from gemseo import _get_schema
+from gemseo import get_algorithm_features
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import _get_schema
-from gemseo.api import get_algorithm_features
 from gemseo.core.factory import Factory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory

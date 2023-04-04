@@ -29,10 +29,10 @@ which a scenario will evaluate a list of disciplines.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import export_design_space
-from gemseo.api import read_design_space
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import export_design_space
+from gemseo import read_design_space
 from numpy import array
 
 configure_logger()
@@ -43,7 +43,7 @@ configure_logger()
 # ---------------------
 #
 # To create a standard :class:`.DesignSpace`,
-# the API function :meth:`~gemseo.api.create_design_space` can be used.
+# the API function :func:`.create_design_space` can be used.
 #
 # - This function does not take any argument.
 # - This function returns an empty instance of :class:`.DesignSpace`.
@@ -62,7 +62,7 @@ print(design_space)
 # Read a design space
 # -------------------
 # In presence of a design space specified in a CSV file,
-# the API function :meth:`~gemseo.api.read_design_space` can be used.
+# the API function :func:`.read_design_space` can be used.
 #
 # - Its first argument is the file path of the design space.
 #   Its second argument is the list of fields available in the file
@@ -77,7 +77,7 @@ loaded_design_space = read_design_space("saved_design_space.txt")
 # --------------------
 #
 # To export an instance of :class:`.DesignSpace` into an hdf or txt file,
-# the :meth:`~gemseo.api.export_design_space` API function can be used:
+# the :func:`.export_design_space` API function can be used:
 loaded_design_space.add_variable("y", l_b=-1, u_b=3, value=0.0)
 export_design_space(loaded_design_space, "saved_design_space.txt")
 print(read_design_space("saved_design_space.txt"))

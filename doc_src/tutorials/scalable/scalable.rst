@@ -36,11 +36,11 @@ Here, we take 5 for the dimension of all outputs (here "y\_1", which is of dimen
 2. Creation of the discipline
 -----------------------------
 
-First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.api.create_discipline` API function and the argument :code:`"Sellar1"`. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
+First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument :code:`"Sellar1"`. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
 
 .. code::
 
-   from gemseo.api import create_discipline
+   from gemseo import create_discipline
 
    sellar = create_discipline("Sellar1")
 
@@ -52,7 +52,7 @@ First of all, we create the reference :class:`.MDODiscipline`: with the help of 
 
    .. code::
 
-      from gemseo.api import create_discipline
+      from gemseo import create_discipline
 
       newmdodiscipline = create_discipline("NewMDODiscipline")
 
@@ -80,7 +80,7 @@ and optional ones :
 2.1. Sample the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :code:`hdf_file_path` file is built from the :meth:`~gemseo.api.create_scenario` API function applied to the :class:`.MDODiscipline` instance, :code:`sellar`,
+The :code:`hdf_file_path` file is built from the :func:`.create_scenario` API function applied to the :class:`.MDODiscipline` instance, :code:`sellar`,
 with :code:`DOE` scenario type and the following :class:`.DesignSpace`:
 
 .. code::
@@ -93,7 +93,7 @@ The DOE algorithm is :code:`'DiagonalDOE'` and use a sampling of size :code:`n_s
 
 .. code::
 
-   from gemseo.api import create_scenario
+   from gemseo import create_scenario
 
    sellar.set_cache_policy(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
    output = sellar.get_output_data_names()[0]
@@ -127,7 +127,7 @@ Lastly, we define the density factor for the matrix S describing the dependencie
    # Density factor for the dependency matrix S
    fill_factor = 0.6
 
-From this, we can create the :class:`.ScalableDiscipline` by means of the API function :meth:`~gemseo.api.create_discipline`:
+From this, we can create the :class:`.ScalableDiscipline` by means of the API function :func:`.create_discipline`:
 
 .. code::
 

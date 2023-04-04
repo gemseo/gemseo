@@ -26,7 +26,7 @@ In this example, we will see how to use :class:`.HDF5Cache`.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.caches.hdf5_cache import HDF5Cache
 from numpy import array
 

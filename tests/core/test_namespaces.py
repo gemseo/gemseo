@@ -33,9 +33,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_mda
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure

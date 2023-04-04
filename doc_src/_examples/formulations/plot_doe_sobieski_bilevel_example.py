@@ -26,9 +26,9 @@ from __future__ import annotations
 from copy import deepcopy
 from os import name as os_name
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()

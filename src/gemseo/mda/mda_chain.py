@@ -32,7 +32,7 @@ from typing import Sequence
 
 from numpy import array
 
-from gemseo.api import create_mda
+from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure

@@ -51,8 +51,8 @@ or classification ones.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
+from gemseo import configure_logger
+from gemseo import load_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.radviz import Radar
@@ -65,8 +65,8 @@ configure_logger()
 # %%
 # Load Iris dataset
 # -----------------
-# We can easily load this dataset by means of the
-# :meth:`~gemseo.api.load_dataset` function of the API:
+# We can easily load this dataset
+# by means of the high-level function :func:`~gemseo.load_dataset`:
 
 iris = load_dataset("IrisDataset")
 

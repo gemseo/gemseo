@@ -21,11 +21,11 @@ Available formulations in |g|
 -----------------------------------------
 
 To see which formulations are available in your |g| version, you may have a look in the folder **gemseo.formulations**.
-Another possibility is to use the API method :meth:`gemseo.api.get_available_formulations` to list them:
+Another possibility is to use the API method :meth:`gemseo.get_available_formulations` to list them:
 
 .. code:: python
 
-    from gemseo.api import get_available_formulations
+    from gemseo import get_available_formulations
     print(get_available_formulations())
 
 This prints the formulations names available in the current configuration.

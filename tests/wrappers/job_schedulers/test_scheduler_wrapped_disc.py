@@ -24,8 +24,8 @@ from string import Template
 from subprocess import CalledProcessError
 
 import pytest
-from gemseo.api import create_discipline
-from gemseo.api import wrap_discipline_in_job_scheduler
+from gemseo import create_discipline
+from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.utils.testing import compare_dict_of_arrays
 from gemseo.wrappers import job_schedulers
 from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (

@@ -31,7 +31,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.pce import CleaningOptions
 from gemseo.mlearning.regression.pce import PCERegressor
 from gemseo.utils.testing import compare_dict_of_arrays

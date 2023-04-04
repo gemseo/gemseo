@@ -22,10 +22,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from gemseo import execute_algo
+from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import execute_algo
-from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.utils.testing import image_comparison

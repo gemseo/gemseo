@@ -61,7 +61,7 @@ and `Jacobi <https://en.wikipedia.org/wiki/Jacobi_method>`__ algorithms.
 
 .. code::
 
-     from gemseo.api import create_mda, create_discipline
+     from gemseo import create_mda, create_discipline
 
      disciplines = create_discipline(["SobieskiPropulsion", "SobieskiAerodynamics",
                                      "SobieskiMission", "SobieskiStructure"])

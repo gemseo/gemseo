@@ -25,7 +25,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from numpy import allclose

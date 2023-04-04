@@ -23,11 +23,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace

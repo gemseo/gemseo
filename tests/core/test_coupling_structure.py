@@ -23,7 +23,7 @@ from os.path import exists
 from random import shuffle
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline

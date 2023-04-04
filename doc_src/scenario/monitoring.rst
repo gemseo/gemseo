@@ -25,7 +25,7 @@ For that, by means of the API function :func:`.create_discipline`, we build the 
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disciplines = create_discipline(["SobieskiStructure",
                                      "SobieskiPropulsion",
@@ -36,7 +36,7 @@ and by means of the API function :func:`.create_discipline`, we build the :class
 
 .. code::
 
-    from gemseo.api import create_scenario
+    from gemseo import create_scenario
 
     scenario = create_scenario(disciplines,
                                formulation_name="MDF",
@@ -131,7 +131,7 @@ and add the observer to the list of the listeners that are notified by |g| monit
 
 .. code::
 
-    from gemseo.api import monitor_scenario
+    from gemseo import monitor_scenario
 
     class Observer(object):
 

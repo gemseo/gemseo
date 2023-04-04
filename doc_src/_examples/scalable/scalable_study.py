@@ -29,14 +29,14 @@ we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.problems.scalable.data_driven.api import create_scalability_study
-from gemseo.problems.scalable.data_driven.api import plot_scalability_results
+from gemseo.problems.scalable.data_driven import create_scalability_study
+from gemseo.problems.scalable.data_driven import plot_scalability_results
 
 configure_logger()
 

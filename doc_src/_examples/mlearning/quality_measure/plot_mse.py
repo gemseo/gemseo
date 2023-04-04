@@ -30,10 +30,10 @@ predictions with the output on the test set.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo.api import configure_logger
-from gemseo.api import create_dataset
+from gemseo import configure_logger
+from gemseo import create_dataset
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import create_regression_model
+from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from numpy import arange
 from numpy import argmin

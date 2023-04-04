@@ -29,11 +29,11 @@ Then, we can consider the :class:`.AutoPyDiscipline` to convert it into an :clas
 Create and instantiate the discipline
 *************************************
 
-For that, we can use the :meth:`~gemseo.api.create_discipline` API function with :code:`AutoPyDiscipline` as first argument:
+For that, we can use the :func:`.create_discipline` API function with :code:`AutoPyDiscipline` as first argument:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
     from numpy import array
 
     disc = create_discipline('AutoPyDiscipline', py_func=f)

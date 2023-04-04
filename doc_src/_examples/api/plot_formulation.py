@@ -27,12 +27,12 @@ related to MDO formulations: their names, their options and their sub-options.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import get_available_formulations
-from gemseo.api import get_formulation_options_schema
-from gemseo.api import get_formulation_sub_options_schema
-from gemseo.api import get_formulations_options_defaults
-from gemseo.api import get_formulations_sub_options_defaults
+from gemseo import configure_logger
+from gemseo import get_available_formulations
+from gemseo import get_formulation_options_schema
+from gemseo import get_formulation_sub_options_schema
+from gemseo import get_formulations_options_defaults
+from gemseo import get_formulations_sub_options_defaults
 
 configure_logger()
 
@@ -41,7 +41,7 @@ configure_logger()
 # Get available formulations
 # --------------------------
 #
-# The :meth:`~gemseo.api.get_available_formulations` function returns the list
+# The :func:`.get_available_formulations` function returns the list
 # of MDO formulations available in |g| or in external modules
 print(get_available_formulations())
 
@@ -51,20 +51,20 @@ print(get_available_formulations())
 # For a given MDO formulation, e.g. :code:`"MDF"`, we can:
 #
 # - get the options of an MDO formulation using the
-#   :meth:`~gemseo.api.get_formulation_options_schema` function; e.g.
+#   :func:`.get_formulation_options_schema` function; e.g.
 print(get_formulation_options_schema("MDF"))
 
 # %%
 # - get the default option values using the
-#   :meth:`~gemseo.api.get_formulations_options_defaults` function; e.g.
+#   :func:`.get_formulations_options_defaults` function; e.g.
 print(get_formulations_options_defaults("MDF"))
 
 # %%
 # - get sub-options of an MDO formulation using the
-#   :meth:`~gemseo.api.get_formulation_sub_options_schema` function; e.g.
+#   :func:`.get_formulation_sub_options_schema` function; e.g.
 print(get_formulation_sub_options_schema("MDF", main_mda_name="MDAGaussSeidel"))
 
 # %%
 # - get the sub-option values using the
-#   :meth:`~gemseo.api.get_formulations_sub_options_defaults` function; e.g.
+#   :func:`.get_formulations_sub_options_defaults` function; e.g.
 print(get_formulations_sub_options_defaults("MDF", main_mda_name="MDAGaussSeidel"))

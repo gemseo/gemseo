@@ -15,10 +15,10 @@
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 from __future__ import annotations
 
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import get_available_formulations
-from gemseo.api import get_available_scenario_types
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import get_available_formulations
+from gemseo import get_available_scenario_types
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 get_available_scenario_types()

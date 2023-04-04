@@ -27,8 +27,8 @@ from typing import Iterator
 
 import h5py
 import pytest
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton

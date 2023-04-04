@@ -33,8 +33,8 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
-from gemseo.api import create_mda
+from gemseo import create_discipline
+from gemseo import create_mda
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline

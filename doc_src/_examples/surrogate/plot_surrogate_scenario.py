@@ -49,10 +49,10 @@ Then, the surrogate discipline can be used as any other discipline in a
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import create_surrogate
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import create_surrogate
 from gemseo.core.dataset import Dataset
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from numpy import array
@@ -105,7 +105,7 @@ synthetic_dataset.set_from_array(data, variables, sizes, groups)
 # example.
 #
 # Firstly, we create the :class:`.MDODiscipline` by means of the API function
-# :meth:`~gemseo.api.create_discipline`:
+# :func:`.create_discipline`:
 #
 
 discipline = create_discipline("SobieskiMission")
@@ -126,7 +126,7 @@ design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 #
 # From this :class:`.MDODiscipline` and this :class:`.DesignSpace`,
 # we build a :class:`.DOEScenario`
-# by means of the API function :meth:`~gemseo.api.create_scenario`:
+# by means of the API function :func:`.create_scenario`:
 #
 scenario = create_scenario(
     [discipline],
@@ -150,7 +150,7 @@ mission_dataset = scenario.export_to_dataset(opt_naming=False)
 #    <http://www.openturns.org/>`_. Some examples of these designs are plotted
 #    in :ref:`doe_algos`.  To list the available :term:`DOE` algorithms in the
 #    current |g| configuration, use
-#    :meth:`gemseo.api.get_available_doe_algorithms`.
+#    :meth:`gemseo.get_available_doe_algorithms`.
 
 # %%
 # Create the :class:`.SurrogateDiscipline`
@@ -159,12 +159,12 @@ mission_dataset = scenario.export_to_dataset(opt_naming=False)
 # From this :class:`.Dataset`, we can build a :class:`.SurrogateDiscipline`
 # of the :class:`.MDODiscipline`.
 #
-# Indeed, by means of the API function :class:`~gemseo.api.create_surrogate`,
+# Indeed, by means of the API function :class:`~gemseo.create_surrogate`,
 # we create the :class:`.SurrogateDiscipline` from the dataset,
 # which can be executed as any other :term:`discipline`.
 #
 # Precisely,
-# by means of the API function :meth:`~gemseo.api.create_surrogate`,
+# by means of the API function :func:`.create_surrogate`,
 # we create a :class:`.SurrogateDiscipline` relying on a :class:`.LinearRegressor`
 # and inheriting from :class:`.MDODiscipline`:
 
