@@ -21,10 +21,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+from gemseo import configure_logger
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space import DesignVariableType
-from gemseo.api import configure_logger
-from gemseo.api import create_scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
 

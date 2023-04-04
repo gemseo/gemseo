@@ -26,7 +26,7 @@ cache only stores the last inputs and outputs stored.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.caches.simple_cache import SimpleCache
 from numpy import array
 

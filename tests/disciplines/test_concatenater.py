@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.disciplines.concatenater import Concatenater
 from numpy import array
 from numpy import concatenate

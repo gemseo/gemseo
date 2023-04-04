@@ -28,9 +28,9 @@ from __future__ import annotations
 
 from os import name as os_name
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_mda
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_mda
 
 IS_NT = os_name == "nt"
 

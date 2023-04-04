@@ -23,6 +23,9 @@ import logging
 from sys import platform
 
 import pytest
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -30,9 +33,6 @@ from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_algo
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2

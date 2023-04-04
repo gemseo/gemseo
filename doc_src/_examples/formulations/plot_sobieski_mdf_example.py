@@ -23,10 +23,10 @@ MDF-based MDO on the Sobieski SSBJ test case
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
@@ -58,7 +58,7 @@ for discipline in disciplines:
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
-# A quick way of getting this information is the API function
+# A quick way of getting this information is the high-level function
 # :func:`.generate_n2_plot`. A much more detailed explanation of coupling
 # visualization is available :ref:`here <coupling_visualization>`.
 generate_n2_plot(disciplines, save=False, show=True)
@@ -126,8 +126,8 @@ scenario.xdsmize(save_html=False)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer
 # and the optimizer options. Algorithm specific options are passed there.
-# Use :func:`.get_algorithm_options_schema` API function for more
-# information or read the documentation.
+# Use the high-level function :func:`.get_algorithm_options_schema`
+# for more information or read the documentation.
 #
 # Here ftol_rel option is a stop criteria based on the relative difference
 # in the objective between two iterates ineq_tolerance the tolerance

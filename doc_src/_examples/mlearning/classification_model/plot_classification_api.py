@@ -27,11 +27,11 @@ applied to classification models.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_classification_model
-from gemseo.mlearning.api import get_classification_models
-from gemseo.mlearning.api import get_classification_options
+from gemseo import configure_logger
+from gemseo import load_dataset
+from gemseo.mlearning import create_classification_model
+from gemseo.mlearning import get_classification_models
+from gemseo.mlearning import get_classification_options
 
 configure_logger()
 

@@ -10,7 +10,7 @@
 \begin{minipage}{0.3\textwidth}
 Instantiate an MDO or DOE scenario:
 \begin{python}
-from gemseo.api import (create_scenario, create_discipline,
+from gemseo import (create_scenario, create_discipline,
                       read_design_space)
 disc_names = ['disc1', 'disc2', 'disc3']
 disciplines = create_discipline(disc_names, 'ext_path')

@@ -20,9 +20,9 @@
 from __future__ import annotations
 
 import pytest
+from gemseo import execute_algo
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
-from gemseo.api import execute_algo
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import ones
 

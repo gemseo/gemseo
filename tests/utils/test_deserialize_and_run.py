@@ -18,7 +18,7 @@ import pickle
 from pathlib import Path
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.utils.deserialize_and_run import _parse_inputs
 from gemseo.utils.deserialize_and_run import _run_discipline_save_outputs
 from gemseo.utils.deserialize_and_run import main

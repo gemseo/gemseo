@@ -31,11 +31,11 @@ applied to clustering models.
 # ------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_clustering_model
-from gemseo.mlearning.api import get_clustering_models
-from gemseo.mlearning.api import get_clustering_options
+from gemseo import configure_logger
+from gemseo import load_dataset
+from gemseo.mlearning import create_clustering_model
+from gemseo.mlearning import get_clustering_models
+from gemseo.mlearning import get_clustering_options
 
 configure_logger()
 

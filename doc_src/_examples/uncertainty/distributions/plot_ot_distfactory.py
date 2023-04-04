@@ -24,7 +24,7 @@ Fitting a distribution from data based on OpenTURNS
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from numpy.random import randn
 from numpy.random import seed

@@ -28,10 +28,10 @@ using a :class:`.MDOScenarioAdapter`.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 
 configure_logger()

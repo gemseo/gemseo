@@ -28,9 +28,9 @@ related to design of experiments.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import get_algorithm_options_schema
-from gemseo.api import get_available_doe_algorithms
+from gemseo import configure_logger
+from gemseo import get_algorithm_options_schema
+from gemseo import get_available_doe_algorithms
 
 configure_logger()
 
@@ -39,7 +39,7 @@ configure_logger()
 # Get available DOE algorithms
 # ----------------------------
 #
-# The :meth:`~gemseo.api.get_available_doe_algorithms` function returns the list
+# The :func:`.get_available_doe_algorithms` function returns the list
 # of optimization algorithms available in |g| or in external modules
 print(get_available_doe_algorithms())
 

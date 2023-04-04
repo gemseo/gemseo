@@ -779,7 +779,7 @@ and ``True`` when type checking:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
-        from gemseo.api import create_discipline
+        from gemseo import create_discipline
 
 Line feeds
 ~~~~~~~~~~

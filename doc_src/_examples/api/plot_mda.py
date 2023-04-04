@@ -22,18 +22,18 @@
 MDA
 ===
 
-In this example, we will discover the different functions of the API
+In this example, we will discover the different high-level functions
 related to MDAs, which are the |g|' objects dedicated to the
 feasibility of the multidisciplinary coupling. All classes
 implementing MDAs inherit from :class:`.MDA` which is an abstract class.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_mda
-from gemseo.api import get_available_mdas
-from gemseo.api import get_mda_options_schema
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_mda
+from gemseo import get_available_mdas
+from gemseo import get_mda_options_schema
 
 configure_logger()
 
@@ -42,7 +42,7 @@ configure_logger()
 # Get available MDA
 # -----------------
 #
-# The :meth:`~gemseo.api.get_available_mdas` function returns the list
+# The :func:`.get_available_mdas` function returns the list
 # of MDAs available in |g| or in external modules
 print(get_available_mdas())
 
@@ -56,7 +56,7 @@ print(get_mda_options_schema("MDAGaussSeidel"))
 # %%
 # Create an MDA
 # -------------
-# The API function :meth:`~gemseo.api.create_mda` can be used
+# The high-level function :func:`~gemseo.create_mda` can be used
 # to create a scenario:
 disciplines = create_discipline(["Sellar1", "Sellar2"])
 mda = create_mda("MDAGaussSeidel", disciplines)

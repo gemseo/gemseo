@@ -43,7 +43,7 @@ variables (a.k.a. random variables) from:
 
 - a variable name,
 - a distribution name
-  (see :meth:`~gemseo.uncertainty.api.get_available_distributions`),
+  (see :func:`.uncertainty.get_available_distributions`),
 - an optional variable size,
 - optional distribution parameters (:code:`parameters` set as
   a tuple of positional arguments for :class:`.OTDistribution`

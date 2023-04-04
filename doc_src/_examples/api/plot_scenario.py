@@ -24,15 +24,15 @@ Scenario
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import get_available_scenario_types
-from gemseo.api import get_scenario_differentiation_modes
-from gemseo.api import get_scenario_inputs_schema
-from gemseo.api import get_scenario_options_schema
-from gemseo.api import monitor_scenario
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import get_available_scenario_types
+from gemseo import get_scenario_differentiation_modes
+from gemseo import get_scenario_inputs_schema
+from gemseo import get_scenario_options_schema
+from gemseo import monitor_scenario
 
 configure_logger()
 
@@ -49,7 +49,7 @@ configure_logger()
 #
 # Get available scenario type
 # ---------------------------
-# The API function :meth:`~gemseo.api.get_available_scenario_types` can be used
+# The high-level function :func:`~gemseo.get_available_scenario_types` can be used
 # to get the available scenario types (:class:`.MDOScenario` and
 # :class:`.DOEScenario`).
 print(get_available_scenario_types())
@@ -57,14 +57,14 @@ print(get_available_scenario_types())
 # %%
 # Get scenario options schema
 # ---------------------------
-# The :meth:`~gemseo.api.get_scenario_options_schema` function can be used
+# The :func:`.get_scenario_options_schema` function can be used
 # to get the options of a given scenario type:
 print(get_scenario_options_schema("MDO"))
 
 # %%
 # Create a scenario
 # -----------------
-# The API function :meth:`~gemseo.api.create_scenario` can be used
+# The API function :func:`.create_scenario` can be used
 # to create a scenario:
 #
 # - The four first arguments are mandatory:
@@ -104,14 +104,14 @@ scenario.post_process(
 )
 
 # %%
-# - The :meth:`~gemseo.api.get_scenario_inputs_schema` function can be used
+# - The :func:`.get_scenario_inputs_schema` function can be used
 #   to get the inputs of a scenario:
 print(get_scenario_inputs_schema(scenario))
 
 # %%
 # Get scenario differentiation modes
 # ----------------------------------
-# The :meth:`~gemseo.api.get_scenario_differentiation_modes` can be used to
+# The :func:`.get_scenario_differentiation_modes` can be used to
 # get the available differentiation modes of a scenario:
 print(get_scenario_differentiation_modes())
 
@@ -120,7 +120,7 @@ print(get_scenario_differentiation_modes())
 # ------------------
 # To monitor a scenario execution programmatically,
 # ie get a notification when a discipline status is changed,
-# use :meth:`~gemseo.api.monitor_scenario`.
+# use :func:`.monitor_scenario`.
 # The first argument is the scenario to monitor, and the second is an
 # observer object, that is notified by its update(atom) method, which takes an
 # :class:`~gemseo.core.execution_sequence.AtomicExecSequence` as argument.

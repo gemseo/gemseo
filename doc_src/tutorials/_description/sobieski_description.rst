@@ -170,7 +170,7 @@ To create the SSBJ disciplines :
 
 .. code::
 
-     from gemseo.api import  create_discipline
+     from gemseo import  create_discipline
 
      disciplines = create_discipline(["SobieskiStructure",
                                      "SobieskiPropulsion",

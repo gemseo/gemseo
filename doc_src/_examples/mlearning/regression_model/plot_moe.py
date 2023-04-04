@@ -28,9 +28,9 @@ mixture of experts regression model to obtain an approximation.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_regression_model
+from gemseo import configure_logger
+from gemseo import load_dataset
+from gemseo.mlearning import create_regression_model
 from numpy import array
 from numpy import hstack
 from numpy import linspace

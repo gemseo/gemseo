@@ -25,12 +25,12 @@ Create an MDO Scenario
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import get_available_opt_algorithms
-from gemseo.api import get_available_post_processings
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import get_available_opt_algorithms
+from gemseo import get_available_post_processings
 from numpy import ones
 
 configure_logger()
@@ -55,7 +55,7 @@ configure_logger()
 #
 # Define the discipline
 # ---------------------
-# Firstly, by means of the :func:`.create_discipline` API function,
+# Firstly, by means of the high-level function :func:`.create_discipline`,
 # we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
@@ -75,7 +75,7 @@ print(f"Default inputs: {discipline.default_inputs}")
 #
 # Define the design space
 # -----------------------
-# For that, by means of the :func:`.create_design_space` API function,
+# For that, by means of the high-level function :func:`.create_design_space`,
 # we define the :class:`.DesignSpace` :math:`[-2, 2]` with initial value :math:`0.5`
 # by using its :meth:`.DesignSpace.add_variable` method.
 

@@ -19,8 +19,8 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.scalable.data_driven.api import create_scalability_study
-from gemseo.problems.scalable.data_driven.api import plot_scalability_results
+from gemseo.problems.scalable.data_driven import create_scalability_study
+from gemseo.problems.scalable.data_driven import plot_scalability_results
 
 
 def test_create_scalability_study():

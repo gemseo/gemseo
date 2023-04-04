@@ -17,8 +17,8 @@ from __future__ import annotations
 
 import sys
 
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_discipline
+from gemseo import create_scenario
 
 num = int(sys.argv[1])
 

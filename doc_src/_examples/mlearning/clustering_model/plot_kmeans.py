@@ -30,10 +30,10 @@ Load Iris dataset and create clusters.
 # ------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
+from gemseo import configure_logger
+from gemseo import load_dataset
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import create_clustering_model
+from gemseo.mlearning import create_clustering_model
 from numpy import array
 
 configure_logger()

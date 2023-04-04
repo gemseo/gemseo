@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.wrappers.filtering_discipline import FilteringDiscipline
 
 

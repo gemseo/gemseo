@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import import_clustering_model
+from gemseo.mlearning import import_clustering_model
 from gemseo.mlearning.clustering.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose

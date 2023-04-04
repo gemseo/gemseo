@@ -46,7 +46,7 @@ the :code:`formulation` value. For a detailed explanation on how to setup the ca
 
 .. code::
 
-   from gemseo.api import create_discipline, create_scenario
+   from gemseo import create_discipline, create_scenario
 
    formulation = 'MDF'
 
@@ -77,9 +77,9 @@ From this :code:`scenario`, we can apply any kind of post-processing dedicated t
     .. automethod:: gemseo.core.scenario.Scenario.post_process
        :noindex:
 
-- or by means of the :meth:`~gemseo.api.execute_post` API method:
+- or by means of the :func:`.execute_post` API method:
 
-    .. autofunction:: gemseo.api.execute_post
+    .. autofunction:: gemseo.execute_post
        :noindex:
 
 .. note::

@@ -21,7 +21,7 @@ import pytest
 pytest.importorskip("matlab")
 
 from gemseo.algos.design_space import DesignSpace  # noqa: E402
-from gemseo.api import create_discipline, create_scenario  # noqa: E402
+from gemseo import create_discipline, create_scenario  # noqa: E402
 
 from .matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402
 

@@ -22,7 +22,7 @@ from pathlib import Path
 from subprocess import CalledProcessError
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.wrappers.job_schedulers.slurm import SLURM
 from pytest import fixture
 

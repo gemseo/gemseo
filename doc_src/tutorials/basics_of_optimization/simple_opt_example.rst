@@ -45,7 +45,7 @@ from a python function:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     def f(x1=0., x2=0.):
         y = x1 + x2
@@ -64,7 +64,7 @@ by using its :meth:`~.DesignSpace.add_variable` method.
 
 .. code::
 
-   from gemseo.api import create_design_space
+   from gemseo import create_design_space
 
    design_space = create_design_space()
    design_space.add_variable("x1", 1, l_b=-5, u_b=5, var_type="integer")
@@ -79,7 +79,7 @@ and the :class:`.DesignSpace` defined above:
 
 .. code::
 
-   from gemseo.api import create_scenario
+   from gemseo import create_scenario
 
    scenario = create_scenario(
        discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
@@ -141,7 +141,7 @@ Firstly, we create the objective function and its gradient as standard python fu
 .. code-block:: python
 
     import numpy as np
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     def g(x=0):
         y = np.sin(x) - np.exp(x)
@@ -210,7 +210,7 @@ from a python function:
 .. code-block:: python
 
     import numpy as np
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     def g(x=0):
         y = np.sin(x) - np.exp(x)
@@ -235,7 +235,7 @@ by using its :meth:`~.DesignSpace.add_variable` method.
 
 .. code::
 
-   from gemseo.api import create_design_space
+   from gemseo import create_design_space
 
    design_space = create_design_space()
    design_space.add_variable("x", 1, l_b=-2., u_b=2., value=-0.5 * np.ones(1))
@@ -249,7 +249,7 @@ and the :class:`.DesignSpace` defined above:
 
 .. code::
 
-   from gemseo.api import create_scenario
+   from gemseo import create_scenario
 
    scenario = create_scenario(
        discipline, "DisciplinaryOpt", "y", design_space, scenario_type="MDO"
@@ -295,7 +295,7 @@ which yields:
 
    .. code::
 
-      from gemseo.api import get_available_opt_algorithms
+      from gemseo import get_available_opt_algorithms
 
       algo_list = get_available_opt_algorithms()
       print('Available algorithms: {}'.format(algo_list))
@@ -317,12 +317,12 @@ After the resolution of the :class:`~gemseo.algos.opt_problem.OptimizationProble
    problem = scenario.formulation.opt_problem
    problem.export_hdf("my_optim.hdf5")
 
-We can also post-process the optimization history by means of the function :meth:`~gemseo.api.execute_post`,
+We can also post-process the optimization history by means of the function :func:`.execute_post`,
 either from the :class:`~gemseo.algos.opt_problem.OptimizationProblem`:
 
 .. code::
 
-   from gemseo.api import execute_post
+   from gemseo import execute_post
 
    execute_post(problem, "OptHistoryView", save=True, file_path="opt_view_with_doe")
 
@@ -330,7 +330,7 @@ or from the :term:`HDF` file created above:
 
 .. code::
 
-   from gemseo.api import execute_post
+   from gemseo import execute_post
 
    execute_post("my_optim.hdf5", "OptHistoryView", save=True, file_path="opt_view_from_disk")
 

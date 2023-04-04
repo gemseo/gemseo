@@ -23,8 +23,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from gemseo import execute_algo
 from gemseo.algos.database import Database
-from gemseo.api import execute_algo
 
 p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")
 

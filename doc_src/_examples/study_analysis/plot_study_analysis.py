@@ -27,7 +27,7 @@ from os import mkdir
 from os.path import exists
 from os.path import join
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.utils.study_analysis import StudyAnalysis
 
 configure_logger()

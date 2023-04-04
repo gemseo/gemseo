@@ -27,13 +27,13 @@ applied to regression models.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.api import get_regression_models
-from gemseo.mlearning.api import get_regression_options
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.mlearning import create_regression_model
+from gemseo.mlearning import get_regression_models
+from gemseo.mlearning import get_regression_options
 
 configure_logger()
 

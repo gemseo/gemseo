@@ -27,8 +27,8 @@ In this example, we will see how to create and how to manipulate an instance of
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
+from gemseo import configure_logger
+from gemseo import create_design_space
 from numpy import array
 
 configure_logger()
@@ -38,8 +38,8 @@ configure_logger()
 # Create a design space
 # ---------------------
 #
-# The user can create an instance of the :class:`.DesignSpace` using the API
-# and the :func:`.create_design_space` function.
+# The user can create an instance of the :class:`.DesignSpace`
+# using the high-level function :func:`.create_design_space`.
 
 
 design_space = create_design_space()

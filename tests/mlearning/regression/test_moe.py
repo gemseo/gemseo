@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
 from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.regression.linreg import LinearRegressor

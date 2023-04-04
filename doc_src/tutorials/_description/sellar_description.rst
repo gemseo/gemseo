@@ -34,7 +34,7 @@ To create the Sellar disciplines, use the function ``create_discipline``:
 
 .. code::
 
-     from gemseo.api import create_discipline
+     from gemseo import create_discipline
 
      disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 

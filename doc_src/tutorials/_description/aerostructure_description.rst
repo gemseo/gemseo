@@ -64,11 +64,11 @@ The Aerostructure disciplines are also available with analytic derivatives in th
 Creation of the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create the aerostructure disciplines, use the function :meth:`~gemseo.api.create_discipline`:
+To create the aerostructure disciplines, use the function :func:`.create_discipline`:
 
 .. code::
 
-     from gemseo.api import create_discipline
+     from gemseo import create_discipline
 
      disciplines = create_discipline(["Aerodynamics",
                                       "Structure",

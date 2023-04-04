@@ -110,12 +110,12 @@ then the installation failed.
 Test the |g| dependencies with the API
 --------------------------------------
 
-You can use the function :meth:`~gemseo.api.print_configuration` to print
+You can use the function :func:`.print_configuration` to print
 the successfully loaded modules and the failed imports with the reason.
 
 .. code-block:: py
 
-    from gemseo.api import print_configuration
+    from gemseo import print_configuration
 
     print_configuration()
 

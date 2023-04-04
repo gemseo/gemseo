@@ -24,15 +24,15 @@ Discipline
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import generate_coupling_graph
-from gemseo.api import generate_n2_plot
-from gemseo.api import get_available_disciplines
-from gemseo.api import get_discipline_inputs_schema
-from gemseo.api import get_discipline_options_defaults
-from gemseo.api import get_discipline_options_schema
-from gemseo.api import get_discipline_outputs_schema
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import generate_coupling_graph
+from gemseo import generate_n2_plot
+from gemseo import get_available_disciplines
+from gemseo import get_discipline_inputs_schema
+from gemseo import get_discipline_options_defaults
+from gemseo import get_discipline_options_schema
+from gemseo import get_discipline_outputs_schema
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
@@ -51,7 +51,7 @@ configure_logger()
 # Get available disciplines
 # -------------------------
 #
-# The :meth:`~gemseo.api.get_available_disciplines` function
+# The :func:`.get_available_disciplines` function
 # can list the available disciplines:
 
 get_available_disciplines()
@@ -59,7 +59,7 @@ get_available_disciplines()
 # %%
 # Create a discipline
 # -------------------
-# The :meth:`~gemseo.api.create_discipline` function can create a
+# The :func:`.create_discipline` function can create a
 # :class:`.MDODiscipline` or a list of :class:`.MDODiscipline`
 # by using its class name. Specific :code:`**options` can be provided in
 # argument. E.g.
@@ -101,29 +101,29 @@ print(get_all_outputs(disciplines))
 # Get discipline schemas for inputs, outputs and options
 # ------------------------------------------------------
 #
-# - The function :meth:`~gemseo.api.get_discipline_inputs_schema` returns
+# - The function :func:`.get_discipline_inputs_schema` returns
 #   the inputs of a discipline. E.g.
 print(get_discipline_inputs_schema(disciplines[0]))
 
 # %%
-# - The function :meth:`~gemseo.api.get_discipline_outputs_schema` returns
+# - The function :func:`.get_discipline_outputs_schema` returns
 #   the outputs of a discipline. E.g.
 print(get_discipline_outputs_schema(disciplines[0]))
 
 # %%
-# - The function :meth:`~gemseo.api.get_discipline_options_schema` returns
+# - The function :func:`.get_discipline_options_schema` returns
 #   the options of a discipline. E.g.
 print(get_discipline_options_schema("SobieskiMission"))
 
 # %%
-# - The function :meth:`~gemseo.api.get_discipline_options_defaults`
+# - The function :func:`.get_discipline_options_defaults`
 #   can get the default option values of a discipline. E.g.
 print(get_discipline_options_defaults("SobieskiMission"))
 
 # %%
 # Plot coupling structure
 # -----------------------
-# The :meth:`~gemseo.api.generate_coupling_graph` function plots the
+# The :func:`.generate_coupling_graph` function plots the
 # coupling graph of a set of :class:`.MDODiscipline`:
 generate_coupling_graph(disciplines, file_path="full_coupling_graph.pdf")
 generate_coupling_graph(
@@ -131,6 +131,6 @@ generate_coupling_graph(
 )
 
 # %%
-# The :meth:`~gemseo.api.generate_n2_plot` function plots the N2 diagram of
+# The :func:`.generate_n2_plot` function plots the N2 diagram of
 # a set of :class:`.MDODiscipline`:
 generate_n2_plot(disciplines, save=False, show=True)

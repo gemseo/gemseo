@@ -27,7 +27,7 @@ from __future__ import annotations
 import os
 import subprocess
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from numpy import array
 

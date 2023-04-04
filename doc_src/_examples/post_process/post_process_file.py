@@ -24,7 +24,7 @@ Post-process an HDF5 file
 """
 from __future__ import annotations
 
-from gemseo.api import execute_post
+from gemseo import execute_post
 
 # %%
 # We can post-process an HDF5 file

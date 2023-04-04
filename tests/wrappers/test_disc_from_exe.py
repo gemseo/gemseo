@@ -26,7 +26,7 @@ from os.path import join
 from unittest import mock
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.wrappers.disc_from_exe import DiscFromExe
 from gemseo.wrappers.disc_from_exe import FoldersIter
 from gemseo.wrappers.disc_from_exe import parse_key_value_file

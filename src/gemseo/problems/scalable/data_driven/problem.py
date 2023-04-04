@@ -59,11 +59,11 @@ from numpy import random
 from numpy import where
 from numpy import zeros
 
+from gemseo import create_design_space
+from gemseo import create_scenario
+from gemseo import generate_coupling_graph
+from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_design_space
-from gemseo.api import create_scenario
-from gemseo.api import generate_coupling_graph
-from gemseo.api import generate_n2_plot
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario

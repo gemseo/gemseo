@@ -30,11 +30,11 @@ Analytical test case # 3
 # -------
 from __future__ import annotations
 
+from gemseo import configure_logger
+from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
-from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import sum as np_sum
 

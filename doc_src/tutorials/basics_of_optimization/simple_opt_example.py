@@ -16,11 +16,11 @@
 from __future__ import annotations
 
 import numpy as np
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_post
-from gemseo.api import get_available_opt_algorithms
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_post
+from gemseo import get_available_opt_algorithms
 from scipy import optimize
 
 # PART 1

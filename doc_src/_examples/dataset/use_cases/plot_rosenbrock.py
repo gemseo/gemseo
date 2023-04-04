@@ -40,8 +40,8 @@ design of experiments.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
+from gemseo import configure_logger
+from gemseo import load_dataset
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.zvsxy import ZvsXY
 
@@ -51,8 +51,8 @@ configure_logger()
 # %%
 # Load Rosenbrock dataset
 # -----------------------
-# We can easily load this dataset by means of the
-# :meth:`~gemseo.api.load_dataset` function of the API:
+# We can easily load this dataset
+# by means of the high-level function :func:`.load_dataset`:
 
 dataset = load_dataset("RosenbrockDataset")
 print(dataset)

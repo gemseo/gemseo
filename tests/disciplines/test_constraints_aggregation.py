@@ -21,9 +21,9 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.disciplines.constraints_aggregation import EvaluationFunction
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose

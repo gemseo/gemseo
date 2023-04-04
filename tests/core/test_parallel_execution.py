@@ -23,9 +23,9 @@ import unittest
 from timeit import default_timer as timer
 
 import pytest
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,

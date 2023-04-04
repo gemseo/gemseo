@@ -27,7 +27,7 @@ array. For that, we need to import this :class:`.Dataset` class:
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.core.dataset import Dataset
 from numpy import concatenate
 from numpy.random import rand

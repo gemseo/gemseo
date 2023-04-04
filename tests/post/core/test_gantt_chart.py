@@ -23,7 +23,7 @@ import pickle
 from pathlib import Path
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.utils.testing import image_comparison

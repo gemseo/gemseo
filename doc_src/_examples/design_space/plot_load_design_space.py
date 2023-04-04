@@ -27,9 +27,9 @@ from the disk.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import export_design_space
-from gemseo.api import read_design_space
+from gemseo import configure_logger
+from gemseo import export_design_space
+from gemseo import read_design_space
 
 configure_logger()
 

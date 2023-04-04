@@ -48,7 +48,7 @@ class SensitivityAnalysisFactory:
 
     Examples:
         >>> from numpy import pi
-        >>> from gemseo.api import create_discipline, create_parameter_space
+        >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.factory import (
         ...     SensitivityAnalysisFactory
         ... )

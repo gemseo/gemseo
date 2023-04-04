@@ -42,10 +42,10 @@ Store observables
 # All the imports needed for the tutorials are performed here.
 from __future__ import annotations
 
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from numpy import array
 from numpy import ones
 
@@ -58,7 +58,7 @@ configure_logger()
 # In this section,
 # we use the available classes :class:`.Sellar1`, :class:`.Sellar2`
 # and :class:`.SellarSystem` to define the disciplines of the problem.
-# The :meth:`~gemseo.api.create_discipline` API function allows us to
+# The :func:`.create_discipline` API function allows us to
 # carry out this task easily, as well as store the instances in a list
 # to be used later on.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])

@@ -1,0 +1,6 @@
+API changes:
+
+- The high-level functions defined in :mod:`gemseo.uncertainty.api` have been moved to :mod:`gemseo.uncertainty`.
+- The high-level functions defined in :mod:`gemseo.mlearning.api` have been moved to :mod:`gemseo.mlearning`.
+- The high-level functions defined in :mod:`gemseo.api` have been moved to :mod:`gemseo`.
+- The high-level functions defined in :mod:`gemseo.problems.scalable.data_driven.api` have been moved to :mod:`gemseo.problems.scalable.data_driven`.

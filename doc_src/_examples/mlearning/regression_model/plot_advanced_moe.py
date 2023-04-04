@@ -24,8 +24,8 @@ Advanced mixture of experts
 """
 from __future__ import annotations
 
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_regression_model
+from gemseo import load_dataset
+from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
@@ -51,7 +51,7 @@ dataset = load_dataset("RosenbrockDataset", opt_naming=False)
 # --------------
 # First,
 # we initialize a :class:`.MOERegressor` with soft classification
-# by means of the machine learning API function :func:`.create_regression_model`.
+# by means of the high-level machine learning function :func:`.create_regression_model`.
 model = create_regression_model("MOERegressor", dataset, hard=False)
 
 # %%

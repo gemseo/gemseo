@@ -34,11 +34,11 @@ For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegress
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import create_surrogate
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import create_surrogate
 from numpy import array
 
 # %%

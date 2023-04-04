@@ -39,11 +39,11 @@ from __future__ import annotations
 
 from math import exp
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from numpy import array
 from numpy import ones
 
@@ -136,7 +136,7 @@ print(f"Default inputs: {disc_sellar_1.default_inputs}")
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
-# A quick way of getting this information is the API function
+# A quick way of getting this information is the high-level function
 # :func:`.generate_n2_plot`. A much more detailed explanation of coupling
 # visualization is available :ref:`here <coupling_visualization>`.
 generate_n2_plot(disciplines, save=False, show=True)
@@ -169,8 +169,9 @@ print(design_space)
 # Definition of the MDO scenario
 # ------------------------------
 # Once the disciplines and the design space have been defined,
-# we can create our MDO scenario by using the :func:`.create_scenario`
-# API call. In this simple example,
+# we can create our MDO scenario
+# by using the high-level function :func:`.create_scenario`.
+# In this simple example,
 # we are using a Multiple Disciplinary Feasible (:term:`MDF`) strategy.
 # The Multiple Disciplinary Analyses (:term:`MDA`) are carried out using the
 # Gauss-Seidel method. The scenario definition reads:

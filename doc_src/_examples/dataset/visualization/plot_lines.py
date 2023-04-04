@@ -25,7 +25,7 @@ Lines
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from numpy import cos

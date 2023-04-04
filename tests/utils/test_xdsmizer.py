@@ -26,8 +26,8 @@ from typing import Any
 from typing import Mapping
 
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_discipline
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory

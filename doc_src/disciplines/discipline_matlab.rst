@@ -67,7 +67,7 @@ the previous function is to use the |g| API:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="simple_scalar_func.m")
@@ -115,7 +115,7 @@ Thus, inputs must match the right size when executing the discipline:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc_vec = create_discipline("MatlabDiscipline",
                                  matlab_fct="simple_vector_func.m")
@@ -189,7 +189,7 @@ the boolean argument :code:`is_jac_returned_by_func` in this case:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="jac_func.m",
@@ -284,7 +284,7 @@ An example is:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="simple_scalar_func.m",
@@ -305,7 +305,7 @@ An example is:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="simple_scalar_func.m",
@@ -322,7 +322,7 @@ denoted ``x``, ``y``, ``z1`` and ``z2`` in the MATLAB function:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline(
         "MatlabDiscipline",

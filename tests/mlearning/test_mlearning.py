@@ -17,35 +17,35 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test machine learning API."""
+"""Test high-level functions for machine learning."""
 from __future__ import annotations
 
 import pickle
 from pathlib import Path
 
 import pytest
+from gemseo import create_dataset
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_dataset
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import create_classification_model
-from gemseo.mlearning.api import create_clustering_model
-from gemseo.mlearning.api import create_mlearning_model
-from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.api import get_classification_models
-from gemseo.mlearning.api import get_classification_options
-from gemseo.mlearning.api import get_clustering_models
-from gemseo.mlearning.api import get_clustering_options
-from gemseo.mlearning.api import get_mlearning_models
-from gemseo.mlearning.api import get_mlearning_options
-from gemseo.mlearning.api import get_regression_models
-from gemseo.mlearning.api import get_regression_options
-from gemseo.mlearning.api import import_classification_model
-from gemseo.mlearning.api import import_clustering_model
-from gemseo.mlearning.api import import_mlearning_model
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import create_classification_model
+from gemseo.mlearning import create_clustering_model
+from gemseo.mlearning import create_mlearning_model
+from gemseo.mlearning import create_regression_model
+from gemseo.mlearning import get_classification_models
+from gemseo.mlearning import get_classification_options
+from gemseo.mlearning import get_clustering_models
+from gemseo.mlearning import get_clustering_options
+from gemseo.mlearning import get_mlearning_models
+from gemseo.mlearning import get_mlearning_options
+from gemseo.mlearning import get_regression_models
+from gemseo.mlearning import get_regression_options
+from gemseo.mlearning import import_classification_model
+from gemseo.mlearning import import_clustering_model
+from gemseo.mlearning import import_mlearning_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
