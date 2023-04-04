@@ -14,30 +14,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from .doe import block as doe
-from .formulation import block as formulation
-from .linear_solver import block as linear_solver
-from .mda import block as mda
-from .mlearning import block as mlearning
-from .ode import block as ode
-from .opt import block as opt
-from .post import block as post
-from .scalable import block as scalable
-from .study_analysis import block as study_analysis
-from .surrogate import block as surrogate
-from .uncertainty import block as uncertainty
+from gemseo_templator.blocks.template import Block
+from gemseo_templator.blocks.template import WebLink
 
-blocks = [
-    study_analysis,
-    opt,
-    doe,
-    formulation,
-    mda,
-    linear_solver,
-    post,
-    surrogate,
-    scalable,
-    mlearning,
-    uncertainty,
-    ode,
-]
+block = Block(
+    title="Ordinary Differential Equation",
+    description="Define and solve an ordinary differential equation.",
+    url="algorithms/ode_algos.html",
+    dependencies=[
+        WebLink("SciPy", url="https://www.scipy.org/"),
+    ],
+    options="algorithms/ode_algos.html",
+)

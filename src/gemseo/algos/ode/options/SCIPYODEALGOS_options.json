@@ -1,0 +1,50 @@
+{
+  "name": "SCIPYODEALGOS_options",
+  "required": [],
+  "properties": {
+    "first_step": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "max_step": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "rtol": {
+      "anyOf": [
+        {
+          "type": "array"
+        },
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "atol": {
+      "anyOf": [
+        {
+          "type": "array"
+        },
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      ]
+    },
+    "min_step": {
+      "type": "number",
+      "inclusiveMinimum": 0
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
+}
