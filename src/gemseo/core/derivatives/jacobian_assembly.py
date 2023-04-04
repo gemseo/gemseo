@@ -27,6 +27,7 @@ from collections import defaultdict
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Collection
 from typing import Generator
 from typing import Iterable
 from typing import Mapping
@@ -42,6 +43,7 @@ from numpy import int8
 from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import norm
+from scipy.sparse import bmat
 from scipy.sparse import csr_matrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import eye
@@ -216,6 +218,14 @@ class JacobianAssembly:
         """The column slice indicating where to position the disciplinary Jacobian within
         the assembled Jacobian when defined as an array."""
 
+        row_index: int
+        """The row index of the disciplinary Jacobian within the assembled Jacobian when
+        defined blockwise."""
+
+        column_index: int
+        """The column index of the disciplinary Jacobian within the assembled Jacobian
+        when defined blockwise."""
+
     def __init__(self, coupling_structure: MDOCouplingStructure) -> None:
         """
         Args:
@@ -389,10 +399,7 @@ class JacobianAssembly:
         Returns:
             The dimension if the system.
         """
-        number = 0
-        for name in names:
-            number += self.sizes[name]
-        return number
+        return sum(self.sizes[name] for name in names)
 
     def _get_jacobian_generator(
         self,
@@ -416,11 +423,11 @@ class JacobianAssembly:
         """
         row = 0
         # Iterate over outputs
-        for _, function in enumerate(functions):
+        for row_index, function in enumerate(functions):
             column = 0
             function_jacobian = self.disciplines[function].jac[function]
             # Iterate over inputs
-            for _, variable in enumerate(variables):
+            for column_index, variable in enumerate(variables):
                 jacobian = function_jacobian.get(variable, None)
                 variable_size = self.sizes[variable]
 
@@ -442,6 +449,8 @@ class JacobianAssembly:
                     yield jacobian.real, self.JacobianPosition(
                         row_slice=slice(row, row + jacobian.shape[0]),
                         column_slice=slice(column, column + jacobian.shape[1]),
+                        row_index=row_index,
+                        column_index=column_index,
                     )
 
                 column += variable_size
@@ -449,10 +458,8 @@ class JacobianAssembly:
 
     def _assemble_jacobian_as_matrix(
         self,
-        functions: Iterable[str],
-        variables: Iterable[str],
-        n_functions: int,
-        n_variables: int,
+        functions: Collection[str],
+        variables: Collection[str],
         is_residual: bool = False,
     ) -> csr_matrix:
         """Form the Jacobian as a sparse matrix in Compressed Sparse Row (CSR) format.
@@ -463,32 +470,45 @@ class JacobianAssembly:
         Args:
             functions: The functions to differentiate.
             variables: The differentiation variables.
-            n_functions: The number of functions components.
-            n_variables: The number of variables components.
             is_residual: Whether the functions are residuals.
 
         Returns:
             The Jacobian as a sparse matrix in CSR format.
         """
-        jacobians = self._get_jacobian_generator(
+        # Fill in with zero blocks of appropriate dimension if necessary
+        variable_sizes = [self.sizes[variable_name] for variable_name in variables]
+        function_sizes = [self.sizes[function_name] for function_name in functions]
+
+        # Initialize the block Jacobian with the appropriate structure
+        total_jacobian: list[list[None | csr_matrix]] = [
+            [None for _ in variables] for _ in functions
+        ]
+
+        variable_sizes_0 = variable_sizes[0]
+        for i, function_size in enumerate(function_sizes):
+            total_jacobian[i][0] = csr_matrix((function_size, variable_sizes_0))
+
+        function_sizes_0 = function_sizes[0]
+        total_jacobian_0 = total_jacobian[0]
+        for j, variable_size in enumerate(variable_sizes):
+            total_jacobian_0[j] = csr_matrix((function_sizes_0, variable_size))
+
+        # Perform the assembly
+        jacobian_generator = self._get_jacobian_generator(
             functions, variables, is_residual=is_residual
         )
 
-        # Initialize the assembled Jacobian as an empty DOK matrix
-        total_jacobian = dok_matrix((n_functions, n_variables))
+        for jacobian, position in jacobian_generator:
+            total_jacobian[position.row_index][position.column_index] = csr_matrix(
+                jacobian.real
+            )
 
-        # Perform the assembly
-        for jacobian, position in jacobians:
-            total_jacobian[position.row_slice, position.column_slice] = jacobian
-
-        return total_jacobian.tocsr()
+        return bmat(total_jacobian, format="csr")
 
     def assemble_jacobian(
         self,
-        functions: Iterable[str],
-        variables: Iterable[str],
-        n_functions: int,
-        n_variables: int,
+        functions: Collection[str],
+        variables: Collection[str],
         is_residual: bool = False,
         jacobian_type: JacobianType = JacobianType.MATRIX,
     ) -> csr_matrix | JacobianOperator:
@@ -497,8 +517,6 @@ class JacobianAssembly:
         Args:
             functions: The functions to differentiate.
             variables: The differentiation variables.
-            n_functions: The number of functions components.
-            n_variables: The number of variables components.
             is_residual: Whether the functions are residuals.
             jacobian_type: The type of representation for the Jacobian ∂f/∂v.
 
@@ -509,8 +527,6 @@ class JacobianAssembly:
             return self._assemble_jacobian_as_matrix(
                 functions,
                 variables,
-                n_functions,
-                n_variables,
                 is_residual,
             )
 
@@ -518,8 +534,8 @@ class JacobianAssembly:
             return JacobianOperator(
                 functions,
                 variables,
-                n_functions,
-                n_variables,
+                self.compute_dimension(functions),
+                self.compute_dimension(variables),
                 self._get_jacobian_generator,
                 is_residual,
             )
@@ -576,8 +592,8 @@ class JacobianAssembly:
     def total_derivatives(
         self,
         in_data,
-        functions: Iterable[str],
-        variables: Iterable[str],
+        functions: Collection[str],
+        variables: Collection[str],
         couplings: Iterable[str],
         linear_solver: str = "DEFAULT",
         mode: str = AUTO_MODE,
@@ -660,21 +676,13 @@ class JacobianAssembly:
         if residual_variables:
             n_residuals += self.compute_dimension(residual_variables.keys())
         # compute the partial derivatives of the residuals
-        dres_dx = self.assemble_jacobian(
-            couplings_and_res, variables, n_residuals, n_variables, is_residual=True
-        )
+        dres_dx = self.assemble_jacobian(couplings_and_res, variables, is_residual=True)
 
         # compute the partial derivatives of the interest functions
         (dfun_dx, dfun_dy) = ({}, {})
         for fun in functions:
-            function_size = self.sizes[fun]
-
-            dfun_dx[fun] = self.assemble_jacobian(
-                [fun], variables, function_size, n_variables
-            )
-            dfun_dy[fun] = self.assemble_jacobian(
-                [fun], couplings_and_res, function_size, n_residuals
-            )
+            dfun_dx[fun] = self.assemble_jacobian([fun], variables)
+            dfun_dy[fun] = self.assemble_jacobian([fun], couplings_and_res)
 
         mode = self._check_mode(mode, n_variables, n_functions)
 
@@ -685,8 +693,6 @@ class JacobianAssembly:
             dres_dy = self.assemble_jacobian(
                 couplings_and_res,
                 couplings_and_states,
-                n_residuals,
-                n_residuals,
                 is_residual=True,
                 jacobian_type=matrix_type,
             )
@@ -708,8 +714,6 @@ class JacobianAssembly:
             dres_dy_t = self.assemble_jacobian(
                 couplings_and_res,
                 couplings_and_states,
-                n_residuals,
-                n_residuals,
                 is_residual=True,
                 jacobian_type=matrix_type,
             )
@@ -759,7 +763,7 @@ class JacobianAssembly:
     def compute_newton_step(
         self,
         in_data: Mapping[str, Any],
-        couplings: Iterable[str],
+        couplings: Collection[str],
         relax_factor: float | int,
         linear_solver: str = "DEFAULT",
         matrix_type: JacobianType = JacobianType.MATRIX,
@@ -805,14 +809,11 @@ class JacobianAssembly:
                     disc.jac[out] = {}
 
         self.compute_sizes(couplings, couplings, couplings)
-        n_couplings = self.compute_dimension(couplings)
 
         # compute the partial derivatives of the residuals
         dres_dy = self.assemble_jacobian(
             couplings,
             couplings,
-            n_couplings,
-            n_couplings,
             is_residual=True,
             jacobian_type=matrix_type,
         )
@@ -871,8 +872,8 @@ class JacobianAssembly:
     # plot method
     def plot_dependency_jacobian(
         self,
-        functions: Iterable[str],
-        variables: Iterable[str],
+        functions: Collection[str],
+        variables: Collection[str],
         save: bool = True,
         show: bool = False,
         filepath: str | None = None,
@@ -896,7 +897,6 @@ class JacobianAssembly:
             The file name.
         """
         self.compute_sizes(functions, variables, [])
-        n_variables = self.compute_dimension(variables)
 
         total_jac = None
         # compute the positions of the outputs
@@ -904,8 +904,7 @@ class JacobianAssembly:
         current_position = 0
 
         for fun in functions:
-            fun_size = self.sizes[fun]
-            dfun_dx = self.assemble_jacobian([fun], variables, fun_size, n_variables)
+            dfun_dx = self.assemble_jacobian([fun], variables)
             outputs_positions[fun] = current_position
             current_position += self.sizes[fun]
 
