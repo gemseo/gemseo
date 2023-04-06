@@ -103,10 +103,10 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
         unique_disc_per_output=True,
         no_strong_couplings=True,
         no_self_coupled=True,
-        grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE,
+        grammar_type=MDOChain.GrammarType.SIMPLE,
     )
     assert MDOChain(
-        disciplines, grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE
+        disciplines, grammar_type=MDOChain.GrammarType.SIMPLE
     ).check_jacobian()
 
 
@@ -125,10 +125,10 @@ def test_chain_jac_io_sizes(inputs_size, outputs_size, unique_disc_per_output):
         unique_disc_per_output=unique_disc_per_output,
         no_strong_couplings=True,
         no_self_coupled=True,
-        grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE,
+        grammar_type=MDOChain.GrammarType.SIMPLE,
     )
     assert MDOChain(
-        disciplines, grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE
+        disciplines, grammar_type=MDOChain.GrammarType.SIMPLE
     ).check_jacobian()
 
 
@@ -151,10 +151,10 @@ def test_chain_jac_random_with_couplings(
         unique_disc_per_output=True,
         no_strong_couplings=True,
         no_self_coupled=no_self_coupled,
-        grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE,
+        grammar_type=MDOChain.GrammarType.SIMPLE,
     )
     assert MDOChain(
-        disciplines, grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE
+        disciplines, grammar_type=MDOChain.GrammarType.SIMPLE
     ).check_jacobian()
 
 
@@ -165,10 +165,10 @@ def test_chain_jac_random_with_couplings(
 #         ("C", ["3" ], ["2"]),
 #         ("G", [ "2"], ["0"])]
 #     disciplines = create_disciplines_from_desc(
-#     disc_descriptions ,grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE
+#     disc_descriptions ,grammar_type=MDOChain.GrammarType.SIMPLE
 #     )
 #     assert MDOChain(disciplines,
-#         grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE).check_jacobian()
+#         grammar_type=MDOChain.GrammarType.SIMPLE).check_jacobian()
 
 
 # def test_chain_jac_big( ):
@@ -183,7 +183,7 @@ def test_chain_jac_random_with_couplings(
 #         unique_disc_per_output=False,
 #         no_strong_couplings=False,
 #         no_self_coupled=False,
-#         grammar_type=MDOChain.SIMPLE_GRAMMAR_TYPE
+#         grammar_type=MDOChain.GrammarType.SIMPLE
 #     )
 #     coupling_structure = MDOCouplingStructure(disciplines)
 #     print("N Disc",len(disciplines))

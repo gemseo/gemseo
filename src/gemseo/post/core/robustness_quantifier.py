@@ -20,10 +20,13 @@
 """Quantification of robustness of the optimum to variables perturbations."""
 from __future__ import annotations
 
+from typing import Callable
+from typing import Final
 from typing import Sized
 
 import numpy as np
 from numpy.random import multivariate_normal
+from strenum import StrEnum
 
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import LSTSQApprox
@@ -33,27 +36,31 @@ from gemseo.post.core.hessians import SR1Approx
 class RobustnessQuantifier:
     """classdocs."""
 
-    AVAILABLE_APPROXIMATIONS = ["BFGS", "SR1", "LEAST_SQUARES"]
+    class Approximation(StrEnum):
+        """The approximation types."""
 
-    def __init__(self, history, approximation_method: str = "SR1") -> None:
+        BFGS = "BFGS"
+        SR1 = "SR1"
+        LEAST_SQUARES = "LEAST_SQUARES"
+
+    __APPROXIMATION_TO_METHOD: Final[Approximation, Callable] = {
+        Approximation.BFGS: BFGSApprox,
+        Approximation.SR1: SR1Approx,
+        Approximation.LEAST_SQUARES: LSTSQApprox,
+    }
+
+    def __init__(
+        self, history, approximation_method: Approximation = Approximation.SR1
+    ) -> None:
         """
         Args:
             history: An approximation history.
-            approximation_method: The name of an approximation method for the Hessian.
+            approximation_method: The approximation method for the Hessian.
         """  # noqa: D205, D212, D415
         self.history = history
-        if approximation_method not in self.AVAILABLE_APPROXIMATIONS:
-            raise ValueError(
-                f"Unknown hessian approximation method {approximation_method}; "
-                f"the available ones are: {self.AVAILABLE_APPROXIMATIONS}."
-            )
-        if approximation_method == "SR1":
-            approx_class = SR1Approx
-        elif approximation_method == "BFGS":
-            approx_class = BFGSApprox
-        elif approximation_method == "LEAST_SQUARES":
-            approx_class = LSTSQApprox
-        self.approximator = approx_class(history)
+        self.approximator = self.__APPROXIMATION_TO_METHOD[approximation_method](
+            history
+        )
         self.b_mat = None
         self.x_ref = None
         self.f_ref = None

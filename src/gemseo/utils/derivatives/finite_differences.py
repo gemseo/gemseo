@@ -33,7 +33,7 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
+from gemseo.core.derivatives.derivation_modes import ApproximationMode
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -51,7 +51,7 @@ class FirstOrderFD(GradientApproximator):
         \frac{df(x)}{dx}\approx\frac{f(x+\\delta x)-f(x)}{\\delta x}
     """
 
-    ALIAS = FINITE_DIFFERENCES
+    ALIAS = ApproximationMode.FINITE_DIFFERENCES
 
     def __init__(  # noqa:D107
         self,

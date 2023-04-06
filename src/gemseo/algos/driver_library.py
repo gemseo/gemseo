@@ -53,6 +53,7 @@ from numpy import ndarray
 from numpy import ones
 from numpy import where
 from numpy import zeros
+from strenum import StrEnum
 from tqdm.utils import _unicode
 from tqdm.utils import disp_len
 
@@ -71,7 +72,9 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
+from gemseo.core.derivatives import derivation_modes
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
@@ -186,15 +189,20 @@ class DriverLibrary(AlgorithmLibrary):
     and put your file in gemseo.algos.doe or gemseo.algo.opt packages.
     """
 
-    USER_DEFINED_GRADIENT = OptimizationProblem.USER_GRAD
-    COMPLEX_STEP_METHOD = OptimizationProblem.COMPLEX_STEP
-    FINITE_DIFF_METHOD = OptimizationProblem.FINITE_DIFFERENCES
+    ApproximationMode = derivation_modes.ApproximationMode
 
-    DIFFERENTIATION_METHODS = [
-        USER_DEFINED_GRADIENT,
-        COMPLEX_STEP_METHOD,
-        FINITE_DIFF_METHOD,
-    ]
+    class _DifferentiationMethod(StrEnum):
+        """The additional differentiation methods."""
+
+        USER_GRAD = OptimizationProblem.DifferentiationMethod.USER_GRAD
+
+    DifferentiationMethod = merge_enums(
+        "DifferentiationMethod",
+        StrEnum,
+        ApproximationMode,
+        _DifferentiationMethod,
+        doc="The differentiation methods.",
+    )
 
     INEQ_TOLERANCE = "ineq_tolerance"
     EQ_TOLERANCE = "eq_tolerance"

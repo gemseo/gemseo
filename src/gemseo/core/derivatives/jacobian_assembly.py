@@ -20,7 +20,6 @@
 """Coupled derivatives calculations."""
 from __future__ import annotations
 
-import enum
 import itertools
 import logging
 from collections import defaultdict
@@ -52,6 +51,7 @@ from scipy.sparse import vstack
 from scipy.sparse.csc import csc_matrix
 from scipy.sparse.linalg import factorized
 from scipy.sparse.linalg import LinearOperator
+from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
@@ -182,22 +182,9 @@ class JacobianAssembly:
     __linear_solver_factory: LinearSolversFactory
     """The linear solver factory."""
 
-    AVAILABLE_MODES: ClassVar[tuple[str]] = derivation_modes.AVAILABLE_MODES
-    """The enumeration of the available modes."""
+    DerivationMode = derivation_modes.DerivationMode
 
-    DIRECT_MODE: ClassVar[str] = derivation_modes.DIRECT_MODE
-    """The name of the direct mode."""
-
-    ADJOINT_MODE: ClassVar[str] = derivation_modes.ADJOINT_MODE
-    """The name of the adjoint mode."""
-
-    AUTO_MODE: ClassVar[str] = derivation_modes.AUTO_MODE
-    """The name of the auto-mode."""
-
-    REVERSE_MODE: ClassVar[str] = derivation_modes.REVERSE_MODE
-    """The name of the reverse mode."""
-
-    class JacobianType(str, enum.Enum):
+    class JacobianType(StrEnum):
         """The available types for the Jacobian matrix."""
 
         LINEAR_OPERATOR = "linear_operator"
@@ -208,7 +195,7 @@ class JacobianAssembly:
         """Jacobian matrix in Compressed Sparse Row (CSR) format."""
 
     class JacobianPosition(NamedTuple):
-        """The position of disciplinary Jacobians within the assembled Jacobian."""
+        """The position of the discipline's Jacobians within the assembled Jacobian."""
 
         row_slice: slice
         """The row slice indicating where to position the disciplinary Jacobian within
@@ -371,8 +358,8 @@ class JacobianAssembly:
                     f"Failed to determine the size of input variable {variable}"
                 )
 
-    @staticmethod
-    def _check_mode(mode: str, n_variables: int, n_functions: int) -> str:
+    @classmethod
+    def _check_mode(cls, mode: str, n_variables: int, n_functions: int) -> str:
         """Check the differentiation mode (direct or adjoint).
 
         Args:
@@ -383,11 +370,11 @@ class JacobianAssembly:
         Returns:
             The linearization mode.
         """
-        if mode == JacobianAssembly.AUTO_MODE:
+        if mode == cls.DerivationMode.AUTO:
             if n_variables <= n_functions:
-                mode = JacobianAssembly.DIRECT_MODE
+                mode = cls.DerivationMode.DIRECT
             else:
-                mode = JacobianAssembly.ADJOINT_MODE
+                mode = cls.DerivationMode.ADJOINT
         return mode
 
     def compute_dimension(self, names: Iterable[str]) -> int:
@@ -596,7 +583,7 @@ class JacobianAssembly:
         variables: Collection[str],
         couplings: Iterable[str],
         linear_solver: str = "DEFAULT",
-        mode: str = AUTO_MODE,
+        mode: DerivationMode = DerivationMode.AUTO,
         matrix_type: JacobianType = JacobianType.MATRIX,
         use_lu_fact: bool = False,
         exec_cache_tol: float | None = None,
@@ -687,7 +674,7 @@ class JacobianAssembly:
         mode = self._check_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
-        if mode == JacobianAssembly.DIRECT_MODE:
+        if mode == self.DerivationMode.DIRECT:
             # sparse square matrix ∂R/∂y
 
             dres_dy = self.assemble_jacobian(
@@ -709,7 +696,7 @@ class JacobianAssembly:
                 use_lu_fact=use_lu_fact,
                 **linear_solver_options,
             )
-        elif mode == JacobianAssembly.ADJOINT_MODE:
+        elif mode == self.DerivationMode.ADJOINT:
             # transposed square matrix ∂R/∂y^T
             dres_dy_t = self.assemble_jacobian(
                 couplings_and_res,

@@ -117,6 +117,8 @@ from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
+from strenum import PascalCaseStrEnum
+from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.doe.lib_openturns import OpenTURNS
@@ -125,7 +127,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
 
@@ -160,15 +161,22 @@ class SobolAnalysis(SensitivityAnalysis):
         >>> indices = analysis.compute_indices()
     """
 
-    class Algorithm(BaseEnum):
+    class Algorithm(PascalCaseStrEnum):
         """The algorithms to estimate the Sobol' indices."""
 
-        Saltelli = SaltelliSensitivityAlgorithm
-        Jansen = JansenSensitivityAlgorithm
-        MauntzKucherenko = MauntzKucherenkoSensitivityAlgorithm
-        Martinez = MartinezSensitivityAlgorithm
+        SALTELLI = "Saltelli"
+        JANSEN = "Jansen"
+        MAUNTZ_KUCHERENKO = "MauntzKucherenko"
+        MARTINEZ = "Martinez"
 
-    class Method(BaseEnum):
+    __ALGO_NAME_TO_CLASS: dict[Algorithm, type] = {
+        Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
+        Algorithm.JANSEN: JansenSensitivityAlgorithm,
+        Algorithm.MAUNTZ_KUCHERENKO: MauntzKucherenkoSensitivityAlgorithm,
+        Algorithm.MARTINEZ: MartinezSensitivityAlgorithm,
+    }
+
+    class Method(StrEnum):
         """The names of the sensitivity methods."""
 
         FIRST = "FIRST"
@@ -190,7 +198,7 @@ class SobolAnalysis(SensitivityAnalysis):
     output_standard_deviations: dict[str, NDArray[float]]
     """The standard deviations of the output variables."""
 
-    def __init__(  # noqa: D107,D205,D212,D415
+    def __init__(
         self,
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
@@ -203,7 +211,7 @@ class SobolAnalysis(SensitivityAnalysis):
         use_asymptotic_distributions: bool = True,
         **formulation_options: Any,
     ) -> None:
-        r"""..
+        r"""
         Args:
             compute_second_order: Whether to compute the second-order indices.
             use_asymptotic_distributions: Whether to estimate
@@ -262,7 +270,7 @@ class SobolAnalysis(SensitivityAnalysis):
     def compute_indices(
         self,
         outputs: str | Sequence[str] | None = None,
-        algo: Algorithm | str = Algorithm.Saltelli,
+        algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
     ) -> dict[str, FirstOrderIndicesType]:
         """
@@ -270,12 +278,6 @@ class SobolAnalysis(SensitivityAnalysis):
             algo: The name of the algorithm to estimate the Sobol' indices.
             confidence_level: The level of the confidence intervals.
         """  # noqa:D205,D212,D415
-        if algo not in self.Algorithm:
-            raise ValueError(
-                f"The algorithm {algo} is not available to compute the Sobol' indices."
-            )
-
-        algorithm = self.Algorithm[algo].value
         output_names = outputs or self.default_output
         if isinstance(output_names, str):
             output_names = [output_names]
@@ -301,7 +303,7 @@ class SobolAnalysis(SensitivityAnalysis):
             algos = self.__output_names_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
                 algos.append(
-                    algorithm(
+                    self.__ALGO_NAME_TO_CLASS[algo](
                         inputs, Sample(sub_output_data[:, newaxis]), sub_sample_size
                     )
                 )
@@ -533,9 +535,9 @@ class SobolAnalysis(SensitivityAnalysis):
         self,
     ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
         return {
-            self.Method.FIRST.name: self.first_order_indices,
+            self.Method.FIRST: self.first_order_indices,
             self.__SECOND: self.second_order_indices,
-            self.Method.TOTAL.name: self.total_order_indices,
+            self.Method.TOTAL: self.total_order_indices,
         }
 
     def plot(

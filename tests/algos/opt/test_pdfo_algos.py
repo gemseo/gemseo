@@ -136,7 +136,9 @@ class TestPDFO(TestCase):
     def test_xtol_ftol_activation(self):
         def run_pb(algo_options):
             design_space = DesignSpace()
-            design_space.add_variable("x1", 2, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
+            design_space.add_variable(
+                "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+            )
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
             res = OptimizersFactory().execute(problem, "PDFO_COBYLA", **algo_options)

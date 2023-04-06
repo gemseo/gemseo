@@ -55,7 +55,7 @@ def dataset_factory(dataset_name, expressions, design_space_variables, objective
         objective_name (str): The name of the objective variable.
     """
     discipline = AnalyticDiscipline(expressions)
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=-3.0, u_b=3.0)
     for name, bounds in design_space_variables.items():
@@ -183,7 +183,7 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", RBFRegressor.AVAILABLE_FUNCTIONS + [_r3])
+@pytest.mark.parametrize("function", list(RBFRegressor.Function) + [_r3])
 def test_rbf(dataset, transformer, function):
     """Test polynomial regression Jacobians."""
     if function is _r3:

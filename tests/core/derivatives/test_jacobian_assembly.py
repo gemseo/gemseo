@@ -173,7 +173,7 @@ def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
 
 @pytest.mark.parametrize(
     "mode",
-    [JacobianAssembly.DIRECT_MODE, JacobianAssembly.ADJOINT_MODE],
+    [JacobianAssembly.DerivationMode.DIRECT, JacobianAssembly.DerivationMode.ADJOINT],
 )
 @pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
 @pytest.mark.parametrize("use_lu_fact", [False, True])
@@ -204,7 +204,11 @@ def test_sobieski_all_modes(
 def test_total_derivatives(mda, variables, couplings):
     """Check that total_derivatives() returns a non-empty nested dictionary."""
     jac = mda.assembly.total_derivatives(
-        in_data, None, variables, couplings, mode=JacobianAssembly.ADJOINT_MODE
+        in_data,
+        None,
+        variables,
+        couplings,
+        mode=JacobianAssembly.DerivationMode.ADJOINT,
     )
     assert jac["y_4"]["x_shared"] is None
     assert jac["y_1"]["TOTO"] is None
@@ -275,7 +279,7 @@ def test_lu_convergence_warning(assembly, caplog):
 
 @pytest.mark.parametrize(
     "mode",
-    [JacobianAssembly.ADJOINT_MODE, JacobianAssembly.DIRECT_MODE],
+    [JacobianAssembly.DerivationMode.ADJOINT, JacobianAssembly.DerivationMode.DIRECT],
 )
 @pytest.mark.parametrize(
     "jacobian_type",

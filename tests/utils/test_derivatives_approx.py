@@ -128,12 +128,16 @@ def test_abs_der():
 
 def test_complex_fail():
     discipline = SobieskiMission("complex128")
-    assert discipline.check_jacobian(derr_approx=discipline.COMPLEX_STEP)
+    assert discipline.check_jacobian(
+        derr_approx=discipline.ApproximationMode.COMPLEX_STEP
+    )
 
     data = deepcopy(discipline.default_inputs)
     data["x_shared"] += 0.1j
     with pytest.raises(ValueError):
-        discipline.check_jacobian(data, derr_approx=discipline.COMPLEX_STEP)
+        discipline.check_jacobian(
+            data, derr_approx=discipline.ApproximationMode.COMPLEX_STEP
+        )
 
 
 @pytest.mark.parametrize("discipline_name", ["Sellar1", "Sellar2"])

@@ -45,14 +45,16 @@ class TestScipyLinprog(TestCase):
 
         # Optimization functions
         args = ["x", "y"]
-        problem = OptimizationProblem(design_space, OptimizationProblem.LINEAR_PB)
+        problem = OptimizationProblem(
+            design_space, OptimizationProblem.ProblemType.LINEAR
+        )
         problem.objective = MDOLinearFunction(
-            array([1.0, 1.0]), "f", MDOFunction.TYPE_OBJ, args, -1.0
+            array([1.0, 1.0]), "f", MDOFunction.FunctionType.OBJ, args, -1.0
         )
         ineq_constraint = MDOLinearFunction(array([1.0, 1.0]), "g", args=args)
-        problem.add_constraint(ineq_constraint, 1.0, MDOFunction.TYPE_INEQ)
+        problem.add_constraint(ineq_constraint, 1.0, MDOFunction.ConstraintType.INEQ)
         eq_constraint = MDOLinearFunction(array([-2.0, 1.0]), "h", args=args)
-        problem.add_constraint(eq_constraint, 0.0, MDOFunction.TYPE_EQ)
+        problem.add_constraint(eq_constraint, 0.0, MDOFunction.ConstraintType.EQ)
 
         return problem
 

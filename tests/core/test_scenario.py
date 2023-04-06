@@ -20,9 +20,9 @@ from __future__ import annotations
 
 import pickle
 import re
-import unittest
 from pathlib import Path
 from typing import Sequence
+from unittest.mock import patch
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -53,7 +53,7 @@ from numpy.testing import assert_equal
 
 def build_mdo_scenario(
     formulation: str,
-    grammar_type: str = MDOScenario.JSON_GRAMMAR_TYPE,
+    grammar_type: MDODiscipline.GrammarType = MDOScenario.GrammarType.JSON,
 ) -> MDOScenario:
     """Build the scenario for SSBJ.
 
@@ -64,14 +64,14 @@ def build_mdo_scenario(
     Returns:
         The MDOScenario.
     """
-    if grammar_type == MDOScenario.JSON_GRAMMAR_TYPE:
+    if grammar_type == MDOScenario.GrammarType.JSON:
         disciplines = [
             SobieskiPropulsion(),
             SobieskiAerodynamics(),
             SobieskiMission(),
             SobieskiStructure(),
         ]
-    elif grammar_type == MDOScenario.SIMPLE_GRAMMAR_TYPE:
+    elif grammar_type == MDOScenario.GrammarType.SIMPLE:
         disciplines = [
             SobieskiPropulsionSG(),
             SobieskiAerodynamicsSG(),
@@ -137,16 +137,13 @@ def test_scenario_state(mdf_scenario):
 
 def test_add_user_defined_constraint_error(mdf_scenario):
     # Set the design constraints
-    with pytest.raises(
-        ValueError,
-        match="Constraint type must be either 'eq' or 'ineq'; got 'foo' instead.",
-    ):
-        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="foo")
-
-    mdf_scenario.set_differentiation_method(None)
+    mdf_scenario.set_differentiation_method(
+        mdf_scenario.DifferentiationMethod.NO_DERIVATIVE
+    )
 
     assert (
-        mdf_scenario.formulation.opt_problem.differentiation_method == "no_derivatives"
+        mdf_scenario.formulation.opt_problem.differentiation_method
+        == mdf_scenario.DifferentiationMethod.NO_DERIVATIVE
     )
 
 
@@ -227,7 +224,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
-    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
     indirect=True,
 )
 def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
@@ -273,7 +270,7 @@ def test_typeerror_formulation():
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
-    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
     indirect=True,
 )
 def test_get_optimization_results(mdf_variable_grammar_scenario):
@@ -411,7 +408,7 @@ def test_database_name(mdf_scenario):
     assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
 
 
-@unittest.mock.patch("timeit.default_timer", new=lambda: 1)
+@patch("timeit.default_timer", new=lambda: 1)
 def test_run_log(mdf_scenario, caplog):
     """Check the log message of Scenario._run."""
     mdf_scenario._run_algorithm = lambda: None
@@ -534,7 +531,7 @@ def complex_step_scenario() -> MDOScenario:
             self.local_data["y"] = self.local_data["x"]
 
     scenario = MDOScenario([MyDiscipline()], "DisciplinaryOpt", "y", design_space)
-    scenario.set_differentiation_method(scenario.COMPLEX_STEP)
+    scenario.set_differentiation_method(scenario.ApproximationMode.COMPLEX_STEP)
     return scenario
 
 
@@ -611,7 +608,7 @@ def test_complex_casting(
             assert value.dtype == float64
 
     mdf_scenario.set_differentiation_method(
-        mdf_scenario.COMPLEX_STEP,
+        mdf_scenario.ApproximationMode.COMPLEX_STEP,
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
     for discipline in mdf_scenario.disciplines:
@@ -655,7 +652,7 @@ def test_complex_casting_with_non_float_variables(
             an AnalyticDiscipline that has integer and string inputs.
     """
     scenario_with_non_float_variables.set_differentiation_method(
-        scenario_with_non_float_variables.COMPLEX_STEP,
+        scenario_with_non_float_variables.ApproximationMode.COMPLEX_STEP,
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
 

@@ -59,12 +59,6 @@ class TestRobustnessQuantifier(unittest.TestCase):
         """"""
         RobustnessQuantifier(None)
 
-    def test_method_error(self):
-        """"""
-        self.assertRaises(
-            ValueError, RobustnessQuantifier, None, approximation_method="bidon"
-        )
-
     def test_init_methods(self):
         """"""
         RobustnessQuantifier(self.database)
@@ -73,7 +67,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
 
     def test_build_approx(self):
         """"""
-        for method in RobustnessQuantifier.AVAILABLE_APPROXIMATIONS:
+        for method in RobustnessQuantifier.Approximation:
             rq = RobustnessQuantifier(self.database, method)
             rq.compute_approximation(funcname="rosen", last_iter=-1)
 

@@ -37,12 +37,12 @@ class FakeDiscipline(MDODiscipline):
         self,
         input_grammar_file,
         output_grammar_file,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type=MDODiscipline.GrammarType.JSON,
     ):
         """
 
         :param input_grammar_file: param output_grammar_file:
-        :param grammar_type: Default value = MDODiscipline.JSON_GRAMMAR_TYPE)
+        :param grammar_type: Default value = MDODiscipline.GrammarType.JSON)
         :param output_grammar_file:
 
         """

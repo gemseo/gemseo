@@ -45,11 +45,3 @@ class TestLinearSolver(unittest.TestCase):
         LinearSolver().solve(a, b)
 
         LinearSolver().solve(diag(list(range(2))), ones(2), maxiter=-1)
-
-        self.assertRaises(
-            AttributeError,
-            LinearSolver().solve,
-            diag(list(range(2))),
-            ones((3, 2)),
-            linear_solver="toto",
-        )

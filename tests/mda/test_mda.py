@@ -63,11 +63,11 @@ def test_reset(sellar_mda, sellar_inputs):
     disciplines = sellar_mda.disciplines
     for discipline in disciplines:
         discipline.execute(sellar_inputs)
-        assert discipline.status == MDODiscipline.STATUS_DONE
+        assert discipline.status == MDODiscipline.ExecutionStatus.DONE
 
     sellar_mda.reset_statuses_for_run()
     for discipline in disciplines:
-        assert discipline.status == MDODiscipline.STATUS_PENDING
+        assert discipline.status == MDODiscipline.ExecutionStatus.PENDING
 
 
 def test_input_couplings():
@@ -168,7 +168,7 @@ def test_consistency_fail(desc, log_message, caplog):
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
 def test_array_couplings(mda_class, grammar_type):
     disciplines = create_disciplines_from_desc(

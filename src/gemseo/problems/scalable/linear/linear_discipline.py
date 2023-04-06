@@ -58,7 +58,7 @@ class LinearDiscipline(MDODiscipline):
         output_names: Sequence[str],
         inputs_size: int = 1,
         outputs_size: int = 1,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         matrix_format: MatrixFormat = MatrixFormat.DENSE,
         matrix_density: float = DEFAULT_MATRIX_DENSITY,
     ) -> None:

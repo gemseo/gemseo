@@ -48,8 +48,8 @@ from typing import Any
 from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
+from typing import NamedTuple
 from typing import Sequence
-from typing import Union
 
 import h5py
 from numpy import abs as np_abs
@@ -79,11 +79,11 @@ from numpy import string_
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
+from strenum import StrEnum
 
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.cache import hash_data_dict
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
@@ -92,31 +92,11 @@ from gemseo.utils.string_tools import pretty_str
 LOGGER = logging.getLogger(__name__)
 
 
-class DesignVariableType(BaseEnum):
-    """A type of design variable."""
+class _DesignVariableType(StrEnum):
+    """The type of design variable."""
 
     FLOAT = "float"
     INTEGER = "integer"
-
-
-VarType = Union[
-    str,
-    Sequence[str],
-    DesignVariableType,
-    Sequence[DesignVariableType],
-]
-
-DesignVariable = collections.namedtuple(
-    "DesignVariable",
-    ["size", "var_type", "l_b", "u_b", "value"],
-    defaults=(
-        1,
-        DesignVariableType.FLOAT,
-        None,
-        None,
-        None,
-    ),
-)
 
 
 class DesignSpace(collections.abc.MutableMapping):
@@ -157,15 +137,22 @@ class DesignSpace(collections.abc.MutableMapping):
     """The normalization policies of the variables components indexed by the variables
     names; if `True`, the component can be normalized."""
 
+    DesignVariableType = _DesignVariableType
+
+    class DesignVariable(NamedTuple):
+        """A design variable."""
+
+        size: int | None = 1
+        var_type: _DesignVariableType | None = _DesignVariableType.FLOAT
+        l_b: ndarray | None = None
+        u_b: ndarray | None = None
+        value: ndarray | None = None
+
     __VARIABLE_TYPES_TO_DTYPES: ClassVar[dict[str, str]] = {
-        DesignVariableType.FLOAT.value: "float64",
-        DesignVariableType.INTEGER.value: "int32",
+        DesignVariableType.FLOAT: "float64",
+        DesignVariableType.INTEGER: "int32",
     }
 
-    FLOAT = DesignVariableType.FLOAT
-    INTEGER = DesignVariableType.INTEGER
-    AVAILABLE_TYPES = [FLOAT, INTEGER]
-    __TYPE_NAMES = tuple(x.value for x in DesignVariableType)
     MINIMAL_FIELDS = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES = ["name", "lower_bound", "value", "upper_bound", "type"]
 
@@ -400,7 +387,8 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         name: str,
         size: int = 1,
-        var_type: VarType = DesignVariableType.FLOAT,
+        var_type: DesignVariableType
+        | Sequence[DesignVariableType] = DesignVariableType.FLOAT,
         l_b: float | ndarray | None = None,
         u_b: float | ndarray | None = None,
         value: float | ndarray | None = None,
@@ -471,7 +459,8 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         name: str,
         size: int,
-        var_type: VarType = DesignVariableType.FLOAT,
+        var_type: DesignVariableType
+        | Sequence[DesignVariableType] = DesignVariableType.FLOAT,
     ) -> None:
         """Add a type to a variable.
 
@@ -479,16 +468,14 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable.
             size: The size of the variable.
             var_type: Either the type of the variable (see
-            :attr:`.DesignSpace.AVAILABLE_TYPES`)
+            :attr:`.DesignSpace.DesignVariablesType`)
                 or the types of its components.
 
         Raises:
             ValueError: Either if the number of component types is different
                 from the variable size or if a variable type is unknown.
         """
-        if not hasattr(var_type, "__iter__") or isinstance(
-            var_type, (str, DesignVariableType, bytes)
-        ):
+        if isinstance(var_type, (str, self.DesignVariableType, bytes)):
             var_type = [var_type] * size
 
         if len(var_type) != size:
@@ -504,11 +491,9 @@ class DesignSpace(collections.abc.MutableMapping):
             if isinstance(v_type, bytes):
                 v_type = v_type.decode()
 
-            if isinstance(v_type, str) and v_type not in self.__TYPE_NAMES:
+            if v_type not in set(self.DesignVariableType):
                 msg = f'The type "{v_type}" of {name} is not known.'
                 raise ValueError(msg)
-            elif v_type in DesignVariableType:
-                v_type = v_type.value
 
             var_types += [v_type]
 
@@ -665,7 +650,7 @@ class DesignSpace(collections.abc.MutableMapping):
             raise ValueError(f"Value {value[idx]} of variable '{name}' is NaN.")
 
         # Check if some components of an integer variable are not integer.
-        if self.variables_types[name][0] == DesignVariableType.INTEGER.value:
+        if self.variables_types[name][0] == self.DesignVariableType.INTEGER:
             indices = all_indices - set(nonzero(self.__is_integer(value))[0])
             for idx in indices:
                 raise ValueError(
@@ -801,7 +786,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Returns:
             Whether the design space has at least one integer variable.
         """
-        return self.INTEGER.value in [
+        return self.DesignVariableType.INTEGER in [
             self.variables_types[variable_name][0]
             for variable_name in self.variables_names
         ]
@@ -949,7 +934,7 @@ class DesignSpace(collections.abc.MutableMapping):
                     )
 
                 if (
-                    self.variables_types[name][0] == DesignVariableType.INTEGER.value
+                    self.variables_types[name][0] == self.DesignVariableType.INTEGER
                 ) and not self.__is_integer(x_real):
                     raise ValueError(
                         f"The variable {name} is of type integer; "
@@ -1224,7 +1209,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         self.__integer_components = concatenate(
             [
-                self.variables_types[variable_name] == DesignVariableType.INTEGER.value
+                self.variables_types[variable_name] == self.DesignVariableType.INTEGER
                 for variable_name in self.variables_names
             ]
         )
@@ -1569,7 +1554,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 variable_type = self.variables_types[name]
                 if isinstance(variable_type, ndarray):
                     variable_type = variable_type[0]
-                if variable_type == DesignVariableType.INTEGER.value:
+                if variable_type == self.DesignVariableType.INTEGER:
                     value = value.astype(self.__VARIABLE_TYPES_TO_DTYPES[variable_type])
                 self.__current_value[name] = value
 
@@ -1625,7 +1610,7 @@ class DesignSpace(collections.abc.MutableMapping):
     def get_lower_bound(
         self,
         name: str,
-    ) -> ndarray:
+    ) -> ndarray | None:
         """Return the lower bound of a variable.
 
         Args:
@@ -1639,7 +1624,7 @@ class DesignSpace(collections.abc.MutableMapping):
     def get_upper_bound(
         self,
         name: str,
-    ) -> ndarray:
+    ) -> ndarray | None:
         """Return the upper bound of a variable.
 
         Args:
@@ -2001,8 +1986,9 @@ class DesignSpace(collections.abc.MutableMapping):
             table_str = header_char + table.get_string()
             outf.write(table_str)
 
-    @staticmethod
+    @classmethod
     def read_from_txt(
+        cls,
         input_file: str | Path,
         header: Iterable[str] | None = None,
     ) -> DesignSpace:
@@ -2068,7 +2054,7 @@ class DesignSpace(collections.abc.MutableMapping):
             if var_type_field in col_map:
                 var_type = str_data[k : k + size, col_map[var_type_field]].tolist()
             else:
-                var_type = DesignVariableType.FLOAT
+                var_type = cls.DesignVariableType.FLOAT
             design_space.add_variable(name, size, var_type, l_b, u_b, value)
             k += size
         design_space.check()
@@ -2182,7 +2168,7 @@ class DesignSpace(collections.abc.MutableMapping):
         except KeyError:
             value = None
 
-        return DesignVariable(
+        return self.DesignVariable(
             size=self.get_size(name),
             var_type=self.get_type(name),
             l_b=self.get_lower_bound(name),
@@ -2296,10 +2282,10 @@ class DesignSpace(collections.abc.MutableMapping):
 
                 current_value.append(current_value_i)
 
-            if self.FLOAT.value in value.var_type:
-                var_type = self.FLOAT.value
+            if self.DesignVariableType.FLOAT in value.var_type:
+                var_type = self.DesignVariableType.FLOAT
             else:
-                var_type = self.INTEGER.value
+                var_type = self.DesignVariableType.INTEGER
 
             self.set_current_variable(
                 name,

@@ -26,8 +26,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.design_space import DesignVariable
-from gemseo.algos.design_space import DesignVariableType
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -46,6 +44,12 @@ CURRENT_DIR = Path(__file__).parent
 TEST_INFILE = CURRENT_DIR / "design_space.txt"
 FAIL_HDF = CURRENT_DIR / "fail.hdf5"
 
+DesignVariableType = DesignSpace.DesignVariableType
+
+DTYPE = DesignSpace._DesignSpace__DEFAULT_COMMON_DTYPE
+FLOAT = DesignSpace.DesignVariableType.FLOAT
+INTEGER = DesignSpace.DesignVariableType.INTEGER
+
 
 @pytest.fixture
 def design_space():
@@ -56,25 +60,21 @@ def design_space():
     ds = DesignSpace()
     ds.add_variable("x1", l_b=0.0, u_b=2.0)
     ds.add_variable("x2", l_b=-2.0, u_b=2.0)
-    ds.add_variable("x3", var_type=DesignVariableType.INTEGER, l_b=0, u_b=2)
+    ds.add_variable("x3", var_type=INTEGER, l_b=0, u_b=2)
     ds.add_variable("x4", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     ds.add_variable("x5", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     ds.add_variable("x6", u_b=2.0)
     ds.add_variable("x7", l_b=0.0)
-    ds.add_variable("x8", var_type=DesignVariableType.INTEGER, l_b=1, u_b=1)
+    ds.add_variable("x8", var_type=INTEGER, l_b=1, u_b=1)
     ds.add_variable("x9", size=3, l_b=-1.0, u_b=2.0)
     ds.add_variable("x10", size=3)
     ds.add_variable("x11", size=2)
     ds.add_variable("x12")
     ds.add_variable("x13", value=array([0.5]))
-    ds.add_variable("x14", var_type=DesignVariableType.INTEGER, value=array([2.0]))
+    ds.add_variable("x14", var_type=INTEGER, value=array([2.0]))
     ds.add_variable("x15")
-    ds.add_variable(
-        "x16", size=2, var_type=[DesignVariableType.FLOAT] * 2, value=array([1.0, 2.0])
-    )
-    ds.add_variable(
-        "x17", size=2, var_type=[DesignVariableType.INTEGER] * 2, value=array([1, 2])
-    )
+    ds.add_variable("x16", size=2, var_type=[FLOAT] * 2, value=array([1.0, 2.0]))
+    ds.add_variable("x17", size=2, var_type=[INTEGER] * 2, value=array([1, 2]))
     ds.add_variable("x18", l_b=-1.0, u_b=2.0)
     ds.add_variable("x19", l_b=1.0, u_b=3.0)
     ds.add_variable("x20", var_type=b"float")
@@ -106,9 +106,7 @@ def test_add_variable_with_inconsistent_types_list(design_space):
         ValueError,
         match="The list of types for variable 'varname' should be of size 3.",
     ):
-        design_space.add_variable(
-            name="varname", size=3, var_type=[DesignVariableType.FLOAT] * 2
-        )
+        design_space.add_variable(name="varname", size=3, var_type=[FLOAT] * 2)
 
 
 def test_add_variable_with_unkown_type(design_space):
@@ -123,7 +121,7 @@ def test_add_variable_with_unkown_type_from_list(design_space):
         design_space.add_variable(
             name="varname",
             size=2,
-            var_type=[DesignVariableType.FLOAT, "a"],
+            var_type=[FLOAT, "a"],
         )
 
 
@@ -198,7 +196,7 @@ def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value):
         design_space.add_variable(
             name="varname",
             size=1,
-            var_type=DesignVariableType.FLOAT,
+            var_type=FLOAT,
             l_b=l_b,
             u_b=u_b,
             value=value,
@@ -221,7 +219,7 @@ def test_add_variable_value(design_space):
     design_space.add_variable(
         "varname",
         size=3,
-        var_type=DesignVariableType.FLOAT,
+        var_type=FLOAT,
         l_b=0.0,
         u_b=1.0,
         value=[None, None, None],
@@ -450,9 +448,7 @@ def test_normalization():
         "x_1", size=2, l_b=array([None, 0.0]), u_b=array([0.0, None])
     )
     design_space.add_variable("x_2", l_b=0.0, u_b=10.0)
-    design_space.add_variable(
-        "x_3", var_type=DesignVariableType.INTEGER, l_b=0.0, u_b=10.0
-    )
+    design_space.add_variable("x_3", var_type=INTEGER, l_b=0.0, u_b=10.0)
     # Test the normalization policies:
     assert not design_space.normalize["x_1"][0]
     assert not design_space.normalize["x_1"][1]
@@ -540,8 +536,8 @@ def test_current_x():
     l_b = {"x_1": 0.5, "x_2": (None, 2.0)}
     u_b = {"x_1": None, "x_2": (4.0, 5.0)}
     var_types = {
-        "x_1": DesignVariableType.FLOAT,
-        "x_2": DesignVariableType.INTEGER,
+        "x_1": FLOAT,
+        "x_2": INTEGER,
     }
     x_0 = np.array([0.5, 4.0, 4.0])
     # create the design space
@@ -581,7 +577,7 @@ def test_current_x():
     x_2!1      integer  2      4        5
     """
 
-    assert design_space.get_type("x_1") == np.array([DesignVariableType.FLOAT.value])
+    assert design_space.get_type("x_1") == np.array([FLOAT])
     assert design_space.get_type("x_3") is None
 
     design_space.set_current_variable("x_1", np.array([5.0]))
@@ -795,8 +791,8 @@ def test_len(design_space):
 
 
 def test_getitem(design_space):
-    assert design_space["x21"] == DesignVariable(
-        var_type=DesignVariableType.FLOAT.value,
+    assert design_space["x21"] == DesignSpace.DesignVariable(
+        var_type=FLOAT,
         value=array([0.5]),
         size=1,
         l_b=array([-inf]),
@@ -852,7 +848,7 @@ def test_gradient_unnormalization(design_space):
 
 def test_vartype_passed_as_bytes(design_space):
     """Check that a variable type passed as bytes is properly decoded."""
-    assert design_space.variables_types["x20"] == DesignVariableType.FLOAT.value
+    assert design_space.variables_types["x20"] == FLOAT
 
 
 @pytest.mark.parametrize(
@@ -897,11 +893,9 @@ def test_design_space_name():
 def design_space_for_normalize_vect() -> DesignSpace:
     """A design space to check normalize_vect."""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x_1", 2, DesignSpace.FLOAT, array([None, 0.0]), array([0.0, None])
-    )
-    design_space.add_variable("x_2", 1, DesignSpace.FLOAT, 0.0, 10.0)
-    design_space.add_variable("x_3", 1, DesignSpace.INTEGER, 0.0, 10.0)
+    design_space.add_variable("x_1", 2, FLOAT, array([None, 0.0]), array([0.0, None]))
+    design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
+    design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
     return design_space
 
 
@@ -934,10 +928,14 @@ def test_unnormalize_vect(input_vec, ref):
     floats or integers."""
     design_space = DesignSpace()
     design_space.add_variable(
-        "x_1", 2, DesignSpace.FLOAT, array([None, 0.0]), array([0.0, None])
+        "x_1",
+        2,
+        FLOAT,
+        array([None, 0.0]),
+        array([0.0, None]),
     )
-    design_space.add_variable("x_2", 1, DesignSpace.FLOAT, 0.0, 10.0)
-    design_space.add_variable("x_3", 1, DesignSpace.INTEGER, 0.0, 10.0)
+    design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
+    design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
 
     assert design_space.unnormalize_vect(input_vec) == pytest.approx(ref)
 
@@ -980,9 +978,7 @@ def test_ineq():
 def test_setitem():
     """Check that DesignSpace.__setitem__ works."""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x1", size=2, var_type=design_space.INTEGER, l_b=-1, u_b=1, value=0
-    )
+    design_space.add_variable("x1", size=2, var_type=INTEGER, l_b=-1, u_b=1, value=0)
 
     new_design_space = DesignSpace()
     new_design_space["x1"] = design_space["x1"]
@@ -1015,13 +1011,15 @@ def test_transform():
 def test_setitem_from_dict():
     """Check that DesignSpace.__setitem__ works from an user dictionary."""
     design_space = DesignSpace()
-    design_space["x"] = DesignVariable(l_b=2.0)
+    design_space["x"] = DesignSpace.DesignVariable(l_b=2.0)
     assert design_space["x"].l_b == array([2.0])
 
 
 def test_rename_variable():
     """Check the renaming of a variable."""
-    design_variable = DesignVariable(2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    design_variable = DesignSpace.DesignVariable(
+        2, "integer", 0.0, 2.0, array([1.0, 2.0])
+    )
 
     design_space = DesignSpace()
     design_space["x"] = design_variable
@@ -1047,12 +1045,12 @@ def test_rename_unknown_variable():
             {
                 "int": {
                     "size": 2,
-                    "var_type": [DesignVariableType.INTEGER] * 2,
+                    "var_type": [INTEGER] * 2,
                     "value": array([1, 2]),
                 },
                 "float": {
                     "size": 1,
-                    "var_type": DesignVariableType.FLOAT,
+                    "var_type": FLOAT,
                     "value": array([1.0]),
                 },
             },
@@ -1062,12 +1060,12 @@ def test_rename_unknown_variable():
             {
                 "float_1": {
                     "size": 2,
-                    "var_type": [DesignVariableType.FLOAT] * 2,
+                    "var_type": [FLOAT] * 2,
                     "value": array([1, 2]),
                 },
                 "float_2": {
                     "size": 1,
-                    "var_type": DesignVariableType.FLOAT,
+                    "var_type": FLOAT,
                     "value": array([1.0]),
                 },
             },
@@ -1077,12 +1075,12 @@ def test_rename_unknown_variable():
             {
                 "int_1": {
                     "size": 2,
-                    "var_type": [DesignVariableType.INTEGER] * 2,
+                    "var_type": [INTEGER] * 2,
                     "value": array([1, 2]),
                 },
                 "int_2": {
                     "size": 1,
-                    "var_type": DesignVariableType.INTEGER,
+                    "var_type": INTEGER,
                     "value": array([1]),
                 },
             },
@@ -1117,11 +1115,6 @@ def test_get_current_x_no_complex(design_space_with_complex_value, cast):
     assert (current_x.dtype.kind == "c") is not cast
 
 
-DTYPE = DesignSpace._DesignSpace__DEFAULT_COMMON_DTYPE
-FLOAT = DesignSpace.FLOAT
-INT = DesignSpace.INTEGER
-
-
 def test_cast_to_var_type(design_space: DesignSpace):
     """Test that a given value is cast to var_type in add_variable.
 
@@ -1147,7 +1140,7 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool):
 def design_space_to_check_membership() -> DesignSpace:
     """A design space to test the method check_membership."""
     design_space = DesignSpace()
-    design_space.add_variable("x", var_type=DesignSpace.INTEGER, l_b=-2, u_b=-1)
+    design_space.add_variable("x", var_type=INTEGER, l_b=-2, u_b=-1)
     design_space.add_variable("y", size=2, l_b=1.0, u_b=2.0)
     return design_space
 
@@ -1256,7 +1249,7 @@ def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub):
         expected_lb: The expected lower bounds.
     """
     ds = DesignSpace()
-    ds.add_variable("x", 2, l_b=l_b, u_b=u_b, var_type=DesignVariableType.INTEGER)
+    ds.add_variable("x", 2, l_b=l_b, u_b=u_b, var_type=INTEGER)
     assert array_equal(ds._lower_bounds["x"], expected_lb)
     assert array_equal(ds._upper_bounds["x"], expected_ub)
 
@@ -1334,9 +1327,7 @@ def test_get_current_value_bad_names():
 def test_initialize_missing_current_values(l_b, u_b, value):
     """Check the initialization of the missing current values."""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", size=2, var_type=design_space.INTEGER, l_b=l_b, u_b=u_b
-    )
+    design_space.add_variable("x", size=2, var_type=INTEGER, l_b=l_b, u_b=u_b)
     design_space.initialize_missing_current_values()
     assert_equal(design_space["x"].value, value)
 

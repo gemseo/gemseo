@@ -54,7 +54,7 @@ def test_grammar_type():
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
-    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = discipline.GrammarType.SIMPLE
     formulation = DisciplinaryOpt(
         [discipline] * 2, "y", design_space, grammar_type=grammar_type
     )

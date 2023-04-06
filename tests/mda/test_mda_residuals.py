@@ -200,7 +200,7 @@ def test_residuals_mda(res_disciplines):
 
 @pytest.mark.parametrize(
     "mode",
-    [JacobianAssembly.ADJOINT_MODE, JacobianAssembly.DIRECT_MODE],
+    [JacobianAssembly.DerivationMode.ADJOINT, JacobianAssembly.DerivationMode.DIRECT],
 )
 @pytest.mark.parametrize(
     "matrix_type",

@@ -96,7 +96,7 @@ class AutoPyDiscipline(MDODiscipline):
         py_jac: Callable[[DataType, ..., DataType], ndarray] | None = None,
         name: str | None = None,
         use_arrays: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:

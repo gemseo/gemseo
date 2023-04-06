@@ -75,7 +75,7 @@ class BiLevel(MDOFormulation):
         apply_cstr_tosub_scenarios: bool = True,
         apply_cstr_to_system: bool = True,
         reset_x0_before_opt: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         **main_mda_options: Any,
     ) -> None:
         """
@@ -443,7 +443,7 @@ class BiLevel(MDOFormulation):
     def add_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -488,7 +488,7 @@ class BiLevel(MDOFormulation):
     def _add_system_level_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -514,7 +514,7 @@ class BiLevel(MDOFormulation):
     def _add_sub_level_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,

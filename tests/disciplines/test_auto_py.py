@@ -100,7 +100,7 @@ def test_basic():
 
 @pytest.mark.parametrize(
     "grammar_type",
-    [AutoPyDiscipline.SIMPLE_GRAMMAR_TYPE, AutoPyDiscipline.JSON_GRAMMAR_TYPE],
+    [AutoPyDiscipline.GrammarType.SIMPLE, AutoPyDiscipline.GrammarType.JSON],
 )
 def test_jac(grammar_type):
     """Test a basic jacobian."""

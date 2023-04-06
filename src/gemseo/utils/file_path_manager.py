@@ -17,33 +17,40 @@ from __future__ import annotations
 
 import re
 from collections import namedtuple
-from enum import Enum
 from pathlib import Path
 from re import findall
+
+from strenum import LowercaseStrEnum
 
 from gemseo.utils.string_tools import MultiLineString
 
 FileDefinition = namedtuple("FileDefinition", ["name", "extension"])
 
 
-class FileType(Enum):
-    """The type of a file, defined by its default name and format."""
-
-    FIGURE = FileDefinition("figure", "png")
-    SCHEMA = FileDefinition("schema", "json")
-    TEXT = FileDefinition("document", "txt")
-    WEBPAGE = FileDefinition("page", "html")
-
-
 class FilePathManager:
     """A factory of file paths for a given type of file and with default settings."""
+
+    class FileType(LowercaseStrEnum):
+        """The type of file, defined by its default name and format."""
+
+        FIGURE = "figure"
+        SCHEMA = "schema"
+        TEXT = "document"
+        WEBPAGE = "page"
+
+    __FILE_TYPE_TO_EXTENSION = {
+        FileType.FIGURE: "png",
+        FileType.SCHEMA: "json",
+        FileType.TEXT: "txt",
+        FileType.WEBPAGE: "html",
+    }
 
     def __init__(
         self,
         file_type: FileType,
-        default_name: str = None,
-        default_directory: Path | None = None,
-        default_extension: str | None = None,
+        default_name: str = "",
+        default_directory: Path | str = "",
+        default_extension: str = "",
     ) -> None:
         """
         Args:
@@ -51,31 +58,34 @@ class FilePathManager:
                 defined by its default file name and format;
                 select a file type by iterating over ``FileType``.
             default_name: The default file name.
-                If None, use the default file name related to the given type of file.
+                If empty, use the default file name related to the given type of file.
             default_directory: The default directory path.
-                If None, use the current working directory.
+                If empty, use the current working directory.
             default_extension: The default extension.
-                If None, use the default extension related to the given type of file.
+                If empty, use the default extension related to the given type of file.
         """  # noqa:D205 D212 D415
-        if default_name is None:
-            self.__default_name = file_type.value.name
-        else:
+        if default_name:
             self.__default_name = default_name
-
-        self.__default_directory = Path(default_directory or Path.cwd())
-
-        if default_extension is None:
-            self.__default_extension = file_type.value.extension
         else:
-            self.__default_extension = default_extension
+            self.__default_name = file_type.value
 
-        self.__file_type = file_type.name
+        if default_directory:
+            self.__default_directory = Path(default_directory)
+        else:
+            self.__default_directory = Path.cwd()
+
+        if default_extension:
+            self.__default_extension = default_extension
+        else:
+            self.__default_extension = self.__FILE_TYPE_TO_EXTENSION[file_type]
+
+        self.__file_type = file_type
 
     def __str__(self) -> str:
         string = MultiLineString()
         string.add(self.__class__.__name__)
         string.indent()
-        string.add("File type: {}", self.__file_type)
+        string.add("File type: {}", self.__file_type.name)
         string.add("Default file name: {}", self.__default_name)
         string.add("Default file extension: {}", self.__default_extension)
         string.add("Default directory: {}", self.__default_directory)
@@ -83,31 +93,30 @@ class FilePathManager:
 
     def create_file_path(
         self,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_extension: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_extension: str = "",
     ) -> Path:
         """Make a file path from a directory path, a file name and a file extension.
 
         Args:
             file_path: The path of the file to be returned.
-                If None,
-                create a file path
+                If empty, create a file path
                 from ``directory_path``, ``file_name`` and ``file_extension``.
             directory_path: The path of the directory.
-                If None, use the default directory path.
+                If empty, use the default directory path.
             file_name: The file name to be used.
-                If None, use the default file name.
+                If empty, use the default file name.
             file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If None, use the default file extension.
+                If empty, use the default file extension.
 
         Returns:
             The file path.
         """
         suffix = f".{file_extension or self.__default_extension}"
 
-        if file_path is not None:
+        if file_path:
             file_path = Path(file_path)
             if not file_path.suffix:
                 file_path = file_path.with_suffix(suffix)
@@ -115,10 +124,10 @@ class FilePathManager:
 
         file_name = file_name or self.__default_name
 
-        if directory_path is None:
-            directory_path = self.__default_directory
-        else:
+        if directory_path:
             directory_path = Path(directory_path)
+        else:
+            directory_path = self.__default_directory
 
         return (directory_path / file_name).with_suffix(suffix)
 

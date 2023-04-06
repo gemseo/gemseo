@@ -81,7 +81,7 @@ class ConsistencyCstr(MDOFunction):
             expr=expr,
             jac=self._jac_to_wrap,
             outvars=self.__coupl_func.outvars,
-            f_type=MDOFunction.TYPE_EQ,
+            f_type=MDOFunction.ConstraintType.EQ,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:

@@ -54,7 +54,7 @@ class RemappingDiscipline(MDODiscipline):
         input_mapping: NameMapping,
         output_mapping: NameMapping,
     ) -> None:
-        """..
+        """
         Args:
             discipline: The original discipline.
             input_mapping: The input names to the original input names.

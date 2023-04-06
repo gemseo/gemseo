@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Linear solvers wrapper."""
+"""Linear solvers' wrapper."""
 from __future__ import annotations
 
 import logging
@@ -27,6 +27,7 @@ import scipy.sparse.linalg as scipy_linalg
 from scipy.sparse.base import issparse
 from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import cgs
+from strenum import LowercaseStrEnum
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,26 +35,12 @@ LOGGER = logging.getLogger(__name__)
 class LinearSolver:
     """Solve a linear system Ax=b."""
 
-    LGMRES = "lgmres"
-    AVAILABLE_SOLVERS = {LGMRES: scipy_linalg.lgmres}
+    Solver = LowercaseStrEnum("Solver", "LGMRES")
+    _SOLVER_NAME_TO_FUNCTION = {Solver.LGMRES: scipy_linalg.lgmres}
 
     def __init__(self) -> None:
         """Constructor."""
         self.outer_v = []  # Used to store (v,Av) pairs for restart and multiple RHS
-
-    @staticmethod
-    def _check_linear_solver(linear_solver):
-        """Check that linear solver is available.
-
-        Args:
-            linear_solver: The name of the linear solver to solve the linear problem.
-        """
-        solver = LinearSolver.AVAILABLE_SOLVERS.get(linear_solver, None)
-        if solver is None:
-            raise AttributeError(
-                "Invalid linear solver" + str(linear_solver) + " for scipy sparse: "
-            )
-        return solver
 
     @staticmethod
     def _check_b(a_mat, b_vec):
@@ -76,13 +63,15 @@ class LinearSolver:
                 str(b_vec.shape),
             )
             raise ValueError(
-                "Second member of the linear system" + " must be a column vector"
+                "Second member of the linear system must be a column vector"
             )
         if issparse(b_vec):
             b_vec = b_vec.toarray()
         return b_vec.real
 
-    def solve(self, a_mat, b_vec: Sized, linear_solver: str = "lgmres", **options):
+    def solve(
+        self, a_mat, b_vec: Sized, linear_solver: Solver = Solver.LGMRES, **options
+    ):
         """Solve the linear system :math:`Ax=b`.
 
         Args:
@@ -94,7 +83,7 @@ class LinearSolver:
         Returns:
             The solution :math:`x` such that :math:`Ax=b`.
         """
-        scipy_linear_solver = LinearSolver._check_linear_solver(linear_solver)
+        scipy_linear_solver = self._SOLVER_NAME_TO_FUNCTION[linear_solver]
 
         # check the dimensions of b
         b_vec = LinearSolver._check_b(a_mat, b_vec)

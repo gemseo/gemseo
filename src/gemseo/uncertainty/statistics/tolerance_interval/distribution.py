@@ -28,21 +28,12 @@ from typing import NamedTuple
 from numpy import array
 from numpy import inf
 from numpy.typing import NDArray
+from strenum import LowercaseStrEnum
 
 from gemseo.core.factory import Factory
-from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
-
-ToleranceIntervalSide = BaseEnum("ToleranceIntervalSide", "LOWER UPPER BOTH")
-
-
-class Bounds(NamedTuple):  # noqa: N801
-    """The component-wise bounds of a vector."""
-
-    lower: NDArray[float]
-    upper: NDArray[float]
 
 
 class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -72,6 +63,19 @@ class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
        while the *A-value* is the lower bound of the lower-sided tolerance interval
        with 95%-coverage and 95%-confidence.
     """
+
+    class ToleranceIntervalSide(LowercaseStrEnum):
+        """The side of the tolerance interval."""
+
+        LOWER = "lower"
+        UPPER = "upper"
+        BOTH = "both"
+
+    class Bounds(NamedTuple):
+        """The component-wise bounds of a vector."""
+
+        lower: NDArray[float]
+        upper: NDArray[float]
 
     def __init__(
         self,
@@ -167,17 +171,17 @@ class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: If the type of tolerance interval is incorrect.
         """
-        if side == ToleranceIntervalSide.LOWER:
+        if side == self.ToleranceIntervalSide.LOWER:
             lower = self._compute_lower_bound(coverage, alpha, size)
             upper = inf
-        elif side == ToleranceIntervalSide.UPPER:
+        elif side == self.ToleranceIntervalSide.UPPER:
             lower = -inf
             upper = self._compute_upper_bound(coverage, alpha, size)
-        elif side == ToleranceIntervalSide.BOTH:
+        elif side == self.ToleranceIntervalSide.BOTH:
             lower, upper = self._compute_bounds(coverage, alpha, size)
         else:
             raise ValueError("The type of tolerance interval is incorrect.")
-        return Bounds(array([lower]), array([upper]))
+        return self.Bounds(array([lower]), array([upper]))
 
     def compute(
         self,

@@ -97,9 +97,6 @@ def get_eq_constraints():
 def test_constraint_check():
     """Test the checking of the constraints."""
     ineq_cstr_1, ineq_cstr_2 = get_ineq_constraints()
-    # Check constraint type
-    with pytest.raises(ValueError):
-        build_constraints_matrices([ineq_cstr_1, ineq_cstr_2], "obj")
     # Check function type
     nonlinear_ineq_cstr = MDOFunction(lambda x: x**2, "square", f_type="ineq")
     with pytest.raises(TypeError):

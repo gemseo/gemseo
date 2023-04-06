@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import Callable
 
 import pytest
@@ -28,7 +27,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.base_enum import get_names
 from gemseo.utils.testing import compare_dict_of_arrays
 from gemseo.utils.testing import image_comparison
 from numpy import array
@@ -90,29 +88,10 @@ def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     return sobol.get_intervals(False)
 
 
-def test_algorithms():
-    """Check the available algorithms to estimate the Sobol' indices."""
-    assert get_names(SobolAnalysis.Algorithm) == [
-        "Jansen",
-        "Martinez",
-        "MauntzKucherenko",
-        "Saltelli",
-    ]
-
-
-def test_wrong_algo(sobol):
-    """Check that a wrong estimation algorithm raises an error."""
-    with pytest.raises(
-        ValueError,
-        match="The algorithm foo is not available to compute the Sobol' indices.",
-    ):
-        sobol.compute_indices(algo="foo")
-
-
 def test_algo(discipline, uncertain_space):
     """Check that algorithm can be passed either as a str or an Algorithm."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
-    indices = analysis.compute_indices(algo=analysis.Algorithm.Jansen)["FIRST"]["y"][0]
+    indices = analysis.compute_indices(algo=analysis.Algorithm.JANSEN)["FIRST"]["y"][0]
     assert compare_dict_of_arrays(
         indices, analysis.compute_indices(algo="Jansen")["FIRST"]["y"][0]
     )
@@ -133,18 +112,6 @@ def test_method(sobol, method):
     )
 
     sobol.main_method = SobolAnalysis.Method.FIRST
-
-
-def test_wrong_method(sobol):
-    """Check that a wrong method raises an error."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "SECOND is not a sensitivity method; "
-            "available ones are 'FIRST' and 'TOTAL'."
-        ),
-    ):
-        sobol.main_method = "SECOND"
 
 
 @pytest.mark.parametrize(
@@ -302,15 +269,15 @@ def test_output_standard_deviations(sobol):
 
 
 @pytest.mark.parametrize("use_variance", [False, True])
-@pytest.mark.parametrize("order", ["first", "second", "total"])
+@pytest.mark.parametrize("order", ["FIRST", "SECOND", "TOTAL"])
 def test_unscale_indices(sobol, use_variance, order):
     """Check SobolAnalysis.unscaled_indices()."""
     orders_to_indices = {
-        "first": sobol.first_order_indices,
-        "second": sobol.second_order_indices,
-        "total": sobol.total_order_indices,
+        "FIRST": sobol.first_order_indices,
+        "SECOND": sobol.second_order_indices,
+        "TOTAL": sobol.total_order_indices,
     }
-    is_second_order = order == "second"
+    is_second_order = order == "SECOND"
     indices = orders_to_indices[order]
 
     def f(x):

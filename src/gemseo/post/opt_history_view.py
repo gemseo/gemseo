@@ -151,8 +151,8 @@ class OptHistoryView(OptPostProcessor):
             self._create_hessian_approx_plot(self.database, self._standardized_obj_name)
 
         # inequality and equality constraints
-        self._plot_cstr_history(ineq_cstr_names, MDOFunction.TYPE_INEQ)
-        self._plot_cstr_history(eq_cstr_names, MDOFunction.TYPE_EQ)
+        self._plot_cstr_history(ineq_cstr_names, MDOFunction.ConstraintType.INEQ)
+        self._plot_cstr_history(eq_cstr_names, MDOFunction.ConstraintType.EQ)
 
     def _plot_cstr_history(
         self,
@@ -517,7 +517,7 @@ class OptHistoryView(OptPostProcessor):
     def _build_cstr_fig(
         self,
         cstr_matrix: ndarray,
-        cstr_type: str,
+        cstr_type: MDOFunction.ConstraintType,
         vmax: float,
         n_cstr: int,
         cstr_labels: Sequence[str],
@@ -526,7 +526,7 @@ class OptHistoryView(OptPostProcessor):
 
         Args:
             cstr_matrix: The matrix of constraints values.
-            cstr_type: The type of the constraints, either 'eq' or 'ineq'.
+            cstr_type: The type of the constraints.
             cstr_labels: The labels for the constraints.
             vmax: The maximum constraint absolute value.
             n_cstr: The number of constraints.
@@ -535,7 +535,7 @@ class OptHistoryView(OptPostProcessor):
         Returns:
             The constraints figure.
         """
-        if cstr_type == MDOFunction.TYPE_EQ:
+        if cstr_type == MDOFunction.ConstraintType.EQ:
             cmap = self.eq_cstr_cmap
             constraint_type = "equality"
         else:

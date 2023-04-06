@@ -369,9 +369,9 @@ class Nlopt(OptimizationLibrary):
             dim = constraint.dim
             for idim in range(dim):
                 nl_fun = self.__make_constraint(func, jac, idim)
-                if f_type == MDOFunction.TYPE_INEQ:
+                if f_type == MDOFunction.ConstraintType.INEQ:
                     nlopt_problem.add_inequality_constraint(nl_fun, ctol)
-                elif f_type == MDOFunction.TYPE_EQ:
+                elif f_type == MDOFunction.ConstraintType.EQ:
                     nlopt_problem.add_equality_constraint(nl_fun, ctol)
 
     def __set_prob_options(

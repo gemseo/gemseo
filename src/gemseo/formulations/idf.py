@@ -71,7 +71,7 @@ class IDF(MDOFormulation):
         n_processes: int = 1,
         use_threading: bool = True,
         start_at_equilibrium: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -277,7 +277,7 @@ class IDF(MDOFormulation):
             expr=expr,
             jac=coupl_min_x_jac,
             outvars=coupl_func.outvars,
-            f_type=MDOFunction.TYPE_EQ,
+            f_type=MDOFunction.ConstraintType.EQ,
         )
 
     def _build_constraints(self) -> None:

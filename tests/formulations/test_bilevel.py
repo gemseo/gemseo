@@ -224,7 +224,7 @@ def test_grammar_type():
     scn2 = MDOScenario(
         [discipline], "DisciplinaryOpt", "y2", design_space.filter(["x2"], copy=True)
     )
-    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = discipline.GrammarType.SIMPLE
     formulation = BiLevel(
         [scn1, scn2],
         "y1",
@@ -309,10 +309,10 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario):
         sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
     """
     scenario = sobieski_bilevel_scenario()
-    scenario.formulation.chain.set_cache_policy(scenario.MEMORY_FULL_CACHE)
+    scenario.formulation.chain.set_cache_policy(scenario.CacheType.MEMORY_FULL)
     bilevel_chain_cache = scenario.formulation.chain.cache
     scenario.formulation.chain.disciplines[0].set_cache_policy(
-        scenario.MEMORY_FULL_CACHE
+        scenario.CacheType.MEMORY_FULL
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
     scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 3})

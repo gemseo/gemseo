@@ -181,7 +181,9 @@ def test_wrong_linear_problem_setting():
     design_space = DesignSpace()
     design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
     design_space.set_current_value(np.zeros(n))
-    problem = OptimizationProblem(design_space, pb_type=OptimizationProblem.LINEAR_PB)
+    problem = OptimizationProblem(
+        design_space, pb_type=OptimizationProblem.ProblemType.LINEAR
+    )
     f = MDOFunction(Power2.ineq_constraint1, name="f")
     with pytest.raises(
         TypeError,
@@ -393,13 +395,6 @@ def _test_check_bounds(pow2_problem):
         problem.check()
 
 
-def test_pb_type(pow2_problem):
-    problem = pow2_problem
-    problem.pb_type = "None"
-    with pytest.raises(TypeError):
-        problem.check()
-
-
 def test_differentiation_method_without_current_x(pow2_problem):
     """Check that a ValueError is raised when the current x is not defined."""
     pow2_problem.design_space.set_current_value({})
@@ -409,7 +404,7 @@ def test_differentiation_method_without_current_x(pow2_problem):
 
 def test_differentiation_method(pow2_problem):
     problem = pow2_problem
-    problem.differentiation_method = problem.COMPLEX_STEP
+    problem.differentiation_method = problem.ApproximationMode.COMPLEX_STEP
     problem.fd_step = 0.0
     with pytest.raises(ValueError):
         problem.check()
@@ -418,7 +413,7 @@ def test_differentiation_method(pow2_problem):
     problem.fd_step = 1j * 1.0e-7
     problem.check()
 
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.fd_step = 0.0
     with pytest.raises(ValueError):
         problem.check()
@@ -1008,19 +1003,6 @@ def test_is_mono_objective():
     assert problem.is_mono_objective
 
 
-def test_undefined_differentiation_method():
-    """Check that passing an undefined differentiation raises a ValueError."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            "'foo' is not a differentiation methods; "
-            "available ones are: "
-            "'complex_step', 'finite_differences', 'no_derivatives', 'user."
-        ),
-    ):
-        OptimizationProblem(DesignSpace(), differentiation_method="foo")
-
-
 @pytest.fixture
 def problem() -> OptimizationProblem:
     """A simple optimization problem :math:`max_x x`."""
@@ -1205,7 +1187,7 @@ def test_approximated_jacobian_wrt_uncertain_variables():
     uspace = ParameterSpace()
     uspace.add_random_variable("u", "OTNormalDistribution")
     problem = OptimizationProblem(uspace)
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.objective = MDOFunction(lambda u: u, "func")
     CustomDOE().execute(problem, "CustomDOE", samples=array([[0.0]]), eval_jac=True)
     grad = problem.database.get_func_grad_history("func")
@@ -1486,7 +1468,7 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.objective = MDOFunction(lambda x: x, "f", jac=lambda x: 1)
     problem.add_constraint(
         MDOFunction(lambda x: x, "c", f_type="ineq", jac=lambda x: 1)
@@ -1547,7 +1529,7 @@ def test_export_to_dataset(input_values, expected):
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x * 2, "obj")
     problem.constraints.append(
-        MDOFunction(lambda x: x * 3, "cstr", f_type=MDOFunction.TYPE_INEQ)
+        MDOFunction(lambda x: x * 3, "cstr", f_type=MDOFunction.ConstraintType.INEQ)
     )
 
     algo = CustomDOE()
@@ -1610,7 +1592,9 @@ def test_objective_name():
     assert problem.get_objective_name(False) == "f"
 
 
-@pytest.mark.parametrize("cstr_type", [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ])
+@pytest.mark.parametrize(
+    "cstr_type", [MDOFunction.ConstraintType.EQ, MDOFunction.FunctionType.INEQ]
+)
 @pytest.mark.parametrize("has_default_name", [False, True])
 @pytest.mark.parametrize(
     "value,positive,name",
@@ -1629,7 +1613,10 @@ def test_constraint_name(has_default_name, value, positive, cstr_type, name):
     constraint_function = MDOFunction(lambda x: x, "c")
     constraint_function.has_default_name = has_default_name
     problem.add_constraint(
-        constraint_function, value=value, positive=positive, cstr_type=cstr_type
+        constraint_function,
+        value=value,
+        positive=positive,
+        cstr_type=cstr_type,
     )
     cstr_name = problem.constraints[0].name
     if not has_default_name:

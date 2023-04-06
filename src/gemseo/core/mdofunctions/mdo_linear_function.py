@@ -71,7 +71,7 @@ class MDOLinearFunction(MDOFunction):
             coefficients: The coefficients :math:`A` of the linear function.
             name: The name of the linear function.
             f_type: The type of the linear function among
-                :attr:`.MDOFunction.AVAILABLE_TYPES`.
+                :attr:`.MDOFunction.FunctionType`.
                 If ``None``, the linear function will have no type.
             args: The names of the inputs of the linear function.
                 If ``None``, the inputs of the linear function will have no names.

@@ -122,7 +122,7 @@ def create_disciplines_from_sizes(
     nb_of_disc_outputs: int = 1,
     inputs_size: int = 1,
     outputs_size: int = 1,
-    grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     unique_disc_per_output: bool = False,
     no_self_coupled: bool = False,
     no_strong_couplings: bool = False,
@@ -242,7 +242,7 @@ def create_disciplines_from_desc(
     disc_descriptions,  # Sequence[Tuple[str,Sequence[str],Sequence[str]]]
     inputs_size: int = 1,
     outputs_size: int = 1,
-    grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
     matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
 ) -> list[LinearDiscipline]:

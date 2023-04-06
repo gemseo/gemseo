@@ -32,7 +32,7 @@ from gemseo.wrappers.disc_from_exe import FoldersIter
 from gemseo.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.wrappers.disc_from_exe import parse_outfile
 from gemseo.wrappers.disc_from_exe import parse_template
-from gemseo.wrappers.disc_from_exe import Parsers
+from gemseo.wrappers.disc_from_exe import Parser
 from numpy import array
 
 from .cfgobj_exe import execute as exec_cfg
@@ -113,7 +113,7 @@ def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
         output_template=join(DIRNAME, "output_template.cfg"),
         output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method=Parsers.KEY_VALUE_PARSER,
+        parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
     )
@@ -139,7 +139,7 @@ def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
         output_template=join(DIRNAME, "output_template.cfg"),
         output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method=Parsers.KEY_VALUE_PARSER,
+        parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
         folders_iter=FoldersIter.UUID,
@@ -169,7 +169,7 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
         output_template=join(DIRNAME, "output_template.cfg"),
         output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method="KEY_VALUE_PARSER",
+        parse_outfile_method="KEY_VALUE",
         input_filename="input.cfg",
         output_filename="output.cfg",
         folders_iter=folders_iter[0],
@@ -180,18 +180,18 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
 @pytest.mark.parametrize(
     "parser",
     [
-        ("TEMPLATE_PARSER", Parsers.TEMPLATE_PARSER),
-        (Parsers.TEMPLATE_PARSER, Parsers.TEMPLATE_PARSER),
-        (Parsers.KEY_VALUE_PARSER, Parsers.KEY_VALUE_PARSER),
-        ("KEY_VALUE_PARSER", Parsers.KEY_VALUE_PARSER),
-        (lambda a, b: zip(a, b), Parsers.CUSTOM_CALLABLE),
+        ("TEMPLATE", Parser.TEMPLATE),
+        (Parser.TEMPLATE, Parser.TEMPLATE),
+        (Parser.KEY_VALUE, Parser.KEY_VALUE),
+        ("KEY_VALUE", Parser.KEY_VALUE),
+        (lambda a, b: zip(a, b), Parser.CUSTOM_CALLABLE),
     ],
 )
 def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, parser):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
-    disc = create_discipline(
+    create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
@@ -202,29 +202,6 @@ def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, par
         output_filename="output.cfg",
         folders_iter="UUID",
     )
-    assert disc._parse_outfile_method == parser[1]
-
-
-def test_disc_from_exe_invalid_folder_iter(xfail_if_windows_unc_issue, tmp_wd):
-    """Test that a ValueError Exception is raised if an incorrect folder iter is
-    provided."""
-    sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
-
-    with pytest.raises(
-        ValueError, match="wrong_folder_iter is not a valid FoldersIter value."
-    ):
-        create_discipline(
-            "DiscFromExe",
-            input_template=join(DIRNAME, "input_template.cfg"),
-            output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmp_wd),
-            executable_command=exec_cmd,
-            parse_outfile_method=Parsers.KEY_VALUE_PARSER,
-            input_filename="input.cfg",
-            output_filename="output.cfg",
-            folders_iter="wrong_folder_iter",
-        )
 
 
 def test_exec_cfg(tmp_wd):
@@ -277,7 +254,7 @@ def test_disc_from_exe_fail_exe(xfail_if_windows_unc_issue, tmp_wd):
         output_template=join(DIRNAME, "output_template.cfg"),
         output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method=Parsers.KEY_VALUE_PARSER,
+        parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
     )

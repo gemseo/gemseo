@@ -27,7 +27,6 @@ from typing import Mapping
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.core.derivatives import derivation_modes
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
@@ -58,7 +57,7 @@ class SurrogateDiscipline(MDODiscipline):
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:
-        """..
+        """
         Args:
             surrogate: Either the class name
                 or the instance of the :class:`.MLRegressionAlgo`.
@@ -132,10 +131,10 @@ class SurrogateDiscipline(MDODiscipline):
         self.add_differentiated_outputs()
         try:
             self.regression_model.predict_jacobian(self.default_inputs)
-            self.linearization_mode = derivation_modes.AUTO_MODE
+            self.linearization_mode = self.LinearizationMode.AUTO
             msg.add("Jacobian: use surrogate model jacobian")
         except NotImplementedError:
-            self.linearization_mode = self.FINITE_DIFFERENCES
+            self.linearization_mode = self.LinearizationMode.FINITE_DIFFERENCES
             msg.add("Jacobian: use finite differences")
         LOGGER.info("%s", msg)
 

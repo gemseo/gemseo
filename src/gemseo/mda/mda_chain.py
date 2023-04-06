@@ -65,7 +65,7 @@ class MDAChain(MDA):
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         use_lu_fact: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         coupling_structure: MDOCouplingStructure | None = None,
         sub_coupling_structures: Iterable[MDOCouplingStructure] | None = None,
         log_convergence: bool = False,

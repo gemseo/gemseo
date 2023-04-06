@@ -175,19 +175,19 @@ either using the default cache strategy, e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.SIMPLE_CACHE)
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.SIMPLE)
 
 or the HDF5 cache strategy with the discipline name as node name (here :code:`SellarSystem`), e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.HDF5_CACHE, cache_hdf_file='cached_data.hdf5')
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5')
 
 or the HDF5 cache strategy with a user-defined name as node name (here :code:`node`), e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.HDF5_CACHE, cache_hdf_file='cached_data.hdf5', cache_hdf_node_name='node')
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_name='node')
 
 .. note::
 

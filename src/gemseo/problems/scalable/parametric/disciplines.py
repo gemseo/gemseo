@@ -94,7 +94,7 @@ class TMMainDiscipline(TMDiscipline):
         self.input_grammar.update(self.model.inputs_names)
         self.output_grammar.update(self.model.outputs_names)
         self.default_inputs = default_inputs
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     @property
     def n_disciplines(self):
@@ -167,7 +167,7 @@ class TMSubDiscipline(TMDiscipline):
         self.input_grammar.update(self.model.inputs_names)
         self.output_grammar.update(self.model.outputs_names)
         self.default_inputs = default_inputs
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name(X_SHARED_NAME)

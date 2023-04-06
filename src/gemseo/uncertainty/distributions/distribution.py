@@ -90,7 +90,6 @@ from numpy import array
 from numpy import ndarray
 
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -206,7 +205,8 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             self.standard_parameters = standard_parameters
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE, default_name=f"distribution_{self.variable_name}"
+            FilePathManager.FileType.FIGURE,
+            default_name=f"distribution_{self.variable_name}",
         )
         msg = MultiLineString()
         msg.add("Define the random variable: {}", variable)

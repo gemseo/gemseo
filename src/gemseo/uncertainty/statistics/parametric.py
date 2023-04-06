@@ -51,8 +51,8 @@ and can consider optional arguments:
   (by default, statistics are computed for all variables),
 - a fitting criterion name
   (by default, BIC is used;
-  see :attr:`.AVAILABLE_CRITERIA`
-  and :attr:`.AVAILABLE_SIGNIFICANCE_TESTS`
+  see :attr:`.FittingCriterion`
+  and :attr:`.SignificanceTest`
   for more information),
 - a level associated with the fitting criterion,
 - a selection criterion:
@@ -91,7 +91,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import Mapping
@@ -110,13 +109,10 @@ from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    Bounds,
+    ToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
-)
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceIntervalSide,
 )
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -176,17 +172,20 @@ class ParametricStatistics(Statistics):
         >>> mean = statistics.compute_mean()
     """
 
-    fitting_criterion: str
-    """The name of the goodness-of-fit criterion, measuring how the distribution fits the
-    data."""
+    DistributionName = OTDistributionFitter.DistributionName
+    FittingCriterion = OTDistributionFitter.FittingCriterion
+    SignificanceTest = OTDistributionFitter.SignificanceTest
+    SelectionCriterion = OTDistributionFitter.SelectionCriterion
 
-    level: float
+    fitting_criterion: FittingCriterion
+    """The goodness-of-fit criterion, measuring how the distribution fits the data."""
+
+    level: float | None
     """The test level, i.e. risk of committing a Type 1 error, that is an incorrect
     rejection of a true null hypothesis, for criteria based on test hypothesis."""
 
-    selection_criterion: str
-    """The name of the selection criterion to select a distribution from a list of
-    candidates."""
+    selection_criterion: SelectionCriterion
+    """The selection criterion to select a distribution from a list of candidates."""
 
     distributions: dict[str, DistributionType | list[DistributionType]]
     """The probability distributions of the random variables.
@@ -196,29 +195,14 @@ class ParametricStatistics(Statistics):
     expressed as the unique marginal distribution.
     """
 
-    AVAILABLE_DISTRIBUTIONS: ClassVar[list[str]] = sorted(
-        OTDistributionFitter._AVAILABLE_DISTRIBUTIONS.keys()
-    )
-    """The names of the available probability distributions."""
-
-    AVAILABLE_CRITERIA: ClassVar[list[str]] = sorted(
-        OTDistributionFitter._AVAILABLE_FITTING_TESTS.keys()
-    )
-    """The names of the available fitting criteria."""
-
-    AVAILABLE_SIGNIFICANCE_TESTS: ClassVar[list[str]] = sorted(
-        OTDistributionFitter.SIGNIFICANCE_TESTS
-    )
-    """The names of the available significance tests."""
-
     def __init__(
         self,
         dataset: Dataset,
-        distributions: Sequence[str],
+        distributions: Sequence[DistributionName],
         variables_names: Iterable[str] | None = None,
-        fitting_criterion: str = "BIC",
+        fitting_criterion: FittingCriterion = FittingCriterion.BIC,
         level: float = 0.05,
-        selection_criterion: str = "best",
+        selection_criterion: SelectionCriterion = SelectionCriterion.BEST,
         name: str | None = None,
     ) -> None:
         """
@@ -233,15 +217,14 @@ class ParametricStatistics(Statistics):
                 i.e. the risk of committing a Type 1 error,
                 that is an incorrect rejection of a true null hypothesis,
                 for criteria based on test hypothesis.
-            selection_criterion: The name of the selection criterion
+            selection_criterion: The selection criterion
                 to select a distribution from a list of candidates.
-                Either 'first' or 'best'.
         """  # noqa: D205,D212,D415
         super().__init__(dataset, variables_names, name)
         self.fitting_criterion = fitting_criterion
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
-        if self.fitting_criterion in OTDistributionFitter.SIGNIFICANCE_TESTS:
+        if self.fitting_criterion in self.SignificanceTest.__members__:
             self.level = level
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
         else:
@@ -296,8 +279,7 @@ class ParametricStatistics(Statistics):
             for name, result in self._all_distributions[variable][index].items()
         }
         criterion_value_is_p_value = False
-        significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
-        if self.fitting_criterion in significance_tests:
+        if self.fitting_criterion in self.SignificanceTest.__members__:
             distribution_names_to_criterion_values = {
                 name: result[1]["p-value"]
                 for name, result in distribution_names_to_criterion_values.items()
@@ -388,12 +370,12 @@ class ParametricStatistics(Statistics):
         save_show_figure(fig, show, file_path)
 
     def _select_best_distributions(
-        self, distributions_names: Sequence[str]
+        self, distributions_names: Sequence[DistributionName]
     ) -> dict[str, DistributionType | list[DistributionType]]:
         """Select the best distributions for the different variables.
 
         Args:
-            distributions_names: The names of the distributions.
+            distributions_names: The distribution names.
 
         Returns:
             The best distributions for the different variables.
@@ -443,7 +425,7 @@ class ParametricStatistics(Statistics):
 
     def _fit_distributions(
         self,
-        distributions: Iterable[str],
+        distributions: Iterable[DistributionName],
     ) -> dict[str, list[dict[str, dict[str, OTDistribution | MeasureType]]]]:
         """Fit different distributions for the different marginals.
 
@@ -472,7 +454,7 @@ class ParametricStatistics(Statistics):
         self,
         variable: str,
         sample: ndarray,
-        distributions: Iterable[str],
+        distributions: Iterable[DistributionName],
     ) -> dict[str, dict[str, OTDistribution | MeasureType]]:
         """Fit different distributions for a given dataset marginal.
 
@@ -563,8 +545,8 @@ class ParametricStatistics(Statistics):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> dict[str, list[Bounds]]:
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+    ) -> dict[str, list[ToleranceInterval.Bounds]]:
         if not 0.0 <= coverage <= 1.0:
             raise ValueError("The argument 'coverage' must be a number in [0,1].")
 

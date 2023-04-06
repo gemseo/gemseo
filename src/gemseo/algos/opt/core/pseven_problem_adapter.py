@@ -204,9 +204,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             TypeError: If the type of the design variable is not supported by pSeven.
         """
         var_type = self.__problem.design_space.get_type(variable_name)[index]
-        if var_type == DesignSpace.FLOAT.value:
+        if var_type == DesignSpace.DesignVariableType.FLOAT:
             return "Continuous"
-        if var_type == DesignSpace.INTEGER.value:
+        if var_type == DesignSpace.DesignVariableType.INTEGER:
             return "Integer"
         raise TypeError(f"Unsupported design variable type: {var_type}.")
         # TODO: For future reference, pSeven also supports discrete and categorical
@@ -266,10 +266,10 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         Raises:
             ValueError: If the constraint type is invalid.
         """
-        if constraint.f_type == MDOFunction.TYPE_EQ:
+        if constraint.f_type == MDOFunction.ConstraintType.EQ:
             return -self.__problem.eq_tolerance, self.__problem.eq_tolerance
 
-        if constraint.f_type == MDOFunction.TYPE_INEQ:
+        if constraint.f_type == MDOFunction.ConstraintType.INEQ:
             return None, self.__problem.ineq_tolerance
 
         raise ValueError("Invalid constraint type.")

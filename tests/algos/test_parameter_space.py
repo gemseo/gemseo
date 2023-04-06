@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.design_space import DesignVariable
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.parameter_space import RandomVariable
 from gemseo.core.dataset import Dataset
@@ -472,7 +471,9 @@ def test_transform():
 
 def test_rename_variable():
     """Check the renaming of a variable."""
-    design_variable = DesignVariable(2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    design_variable = DesignSpace.DesignVariable(
+        2, "integer", 0.0, 2.0, array([1.0, 2.0])
+    )
     random_variable = RandomVariable(
         "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
     )

@@ -101,7 +101,7 @@ class MDOInitializationChain(MDOChain):
         self,
         disciplines: list[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         disc_ordered = order_disciplines_from_default_inputs(disciplines)
         super().__init__(disciplines=disc_ordered, name=name, grammar_type=grammar_type)

@@ -115,18 +115,23 @@ def objective_and_problem_for_tests(constraints_before_obj):
     f = MDOFunction(
         func=dummy_sleep_function,
         name="f",
-        f_type=MDOFunction.TYPE_OBJ,
+        f_type=MDOFunction.FunctionType.OBJ,
         expr="f(x)",
     )
     g = MDOFunction(
         func=dummy_sleep_function,
         name="g",
-        f_type=MDOFunction.TYPE_INEQ,
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="g(x)",
     )
     design_space = DesignSpace()
     design_space.add_variable(
-        "x", l_b=0.0, u_b=10.0, value=5.0, size=1, var_type=DesignSpace.FLOAT
+        "x",
+        l_b=0.0,
+        u_b=10.0,
+        value=5.0,
+        size=1,
+        var_type=DesignSpace.DesignVariableType.FLOAT,
     )
     problem = OptimizationProblem(design_space)
     problem.objective = f

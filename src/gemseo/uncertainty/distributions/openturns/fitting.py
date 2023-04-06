@@ -104,18 +104,35 @@ from __future__ import annotations
 import logging
 from typing import Callable
 from typing import Mapping
+from typing import MutableSequence
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
 import openturns as ots
 from numpy import ndarray
+from strenum import LowercaseStrEnum
+from strenum import StrEnum
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 LOGGER = logging.getLogger(__name__)
 
 MeasureType = Union[Tuple[bool, Mapping[str, float]], float]
+
+
+def _get_distribution_factories() -> dict[str, ots.DistributionFactory]:
+    """Return the distribution factories.
+
+    Returns:
+        The bindings from the distributions to their factories.
+    """
+    dist_to_factory_class = {}
+    for factory in ots.DistributionFactory.GetContinuousUniVariateFactories():
+        factory_class_name = factory.getImplementation().getClassName()
+        dist_name = factory_class_name.split("Factory")[0]
+        dist_to_factory_class[dist_name] = getattr(ots, factory_class_name)
+    return dist_to_factory_class
 
 
 class OTDistributionFitter:
@@ -127,24 +144,31 @@ class OTDistributionFitter:
     data: ndarray
     """The data array."""
 
-    _AVAILABLE_DISTRIBUTIONS = {}
-    for factory in ots.DistributionFactory.GetContinuousUniVariateFactories():
-        factory_class_name = factory.getImplementation().getClassName()
-        dist_name = factory_class_name.split("Factory")[0]
-        _AVAILABLE_DISTRIBUTIONS[dist_name] = getattr(ots, factory_class_name)
+    _DISTRIBUTIONS_NAME_TO_FACTORY = _get_distribution_factories()
 
-    AVAILABLE_DISTRIBUTIONS = sorted(_AVAILABLE_DISTRIBUTIONS.keys())
-
-    _AVAILABLE_FITTING_TESTS = {
+    _FITTINGS_CRITERION_TO_TEST = {
         "BIC": ots.FittingTest.BIC,
-        "Kolmogorov": ots.FittingTest.Kolmogorov,
         "ChiSquared": ots.FittingTest.ChiSquared,
+        "Kolmogorov": ots.FittingTest.Kolmogorov,
     }
-    AVAILABLE_FITTING_TESTS = sorted(_AVAILABLE_FITTING_TESTS.keys())
 
-    SIGNIFICANCE_TESTS = ["Kolmogorov", "ChiSquared"]
+    DistributionName = StrEnum(
+        "DistributionName", sorted(_DISTRIBUTIONS_NAME_TO_FACTORY.keys())
+    )
+    """The available probability distributions."""
 
-    _CRITERIA_TO_MINIMIZE = ["BIC"]
+    FittingCriterion = StrEnum(
+        "FittingCriterion", sorted(_FITTINGS_CRITERION_TO_TEST.keys())
+    )
+    """The available fitting criteria."""
+
+    SignificanceTest = StrEnum("SignificanceTest", "ChiSquared Kolmogorov")
+    """The available significance tests."""
+
+    SelectionCriterion = LowercaseStrEnum("SelectionCriterion", "FIRST BEST")
+    """The different selection criteria."""
+
+    __CRITERIA_TO_MINIMIZE = [FittingCriterion.BIC]
 
     def __init__(
         self,
@@ -157,59 +181,39 @@ class OTDistributionFitter:
             data: A data array.
         """  # noqa: D205,D212,D415
         self.variable = variable
-        try:
-            isinstance(data, ndarray)
-            self.data = ots.Sample(data.reshape((-1, 1)))
-        except AttributeError:
-            raise TypeError("data must be a numpy array")
+        self.data = ots.Sample(data.reshape((-1, 1)))
 
     def _get_factory(
         self,
-        distribution: str,
+        distribution_name: DistributionName,
     ) -> ots.DistributionFactory:
-        """Get the distribution factory.
+        """Return the distribution factory.
 
         Args:
-            distribution: The name of the distribution.
+            distribution_name: The distribution name.
 
         Returns:
-            An OpenTURNS distribution factory.
+            The OpenTURNS distribution factory.
         """
-        try:
-            distribution_factory = self._AVAILABLE_DISTRIBUTIONS[distribution]
-        except KeyError:
-            distributions = ", ".join(list(self._AVAILABLE_DISTRIBUTIONS.keys()))
-            raise ValueError(
-                "{} is not a name of distribution available for fitting; "
-                "available ones are: {}.".format(distribution, distributions)
-            )
-        return distribution_factory
+        return self._DISTRIBUTIONS_NAME_TO_FACTORY[distribution_name]
 
     def _get_fitting_test(
         self,
-        criterion: str,
+        criterion: FittingCriterion,
     ) -> Callable:
         """Get the fitting test.
 
         Args:
-            criterion: The name of a fitting criterion.
+            criterion: The fitting criterion.
 
         Returns:
             The OpenTURNS fitting test corresponding to the provided name.
         """
-        try:
-            fitting_test = self._AVAILABLE_FITTING_TESTS[criterion]
-        except KeyError:
-            tests = ", ".join(list(self._AVAILABLE_FITTING_TESTS.keys()))
-            raise ValueError(
-                "{} is not a name of fitting test; "
-                "available ones are: {}.".format(criterion, tests)
-            )
-        return fitting_test
+        return self._FITTINGS_CRITERION_TO_TEST[criterion]
 
     def fit(
         self,
-        distribution: str,
+        distribution: DistributionName,
     ) -> OTDistribution:
         """Fit a distribution.
 
@@ -222,13 +226,12 @@ class OTDistributionFitter:
         factory = self._get_factory(distribution)
         fitted_distribution = factory().build(self.data)
         parameters = fitted_distribution.getParameter()
-        distribution = OTDistribution(self.variable, distribution, parameters)
-        return distribution
+        return OTDistribution(self.variable, distribution, parameters)
 
     def compute_measure(
         self,
-        distribution: OTDistribution | str,
-        criterion: str,
+        distribution: OTDistribution | DistributionName,
+        criterion: FittingCriterion,
         level: float = 0.05,
     ) -> MeasureType:
         """Measure the goodness-of-fit of a distribution to data.
@@ -244,49 +247,47 @@ class OTDistributionFitter:
         Returns:
             The goodness-of-fit measure.
         """
-        if isinstance(distribution, str):
+        if distribution in self.DistributionName.__members__:
             distribution = self.fit(distribution)
         if distribution.dimension > 1:
             raise TypeError("A 1D distribution is required.")
         distribution = distribution.marginals[0]
         fitting_test = self._get_fitting_test(criterion)
-        if criterion in self.SIGNIFICANCE_TESTS:
+        if criterion in self.SignificanceTest.__members__:
             result = fitting_test(self.data, distribution, level)
             details = {
                 "p-value": result.getPValue(),
                 "statistics": result.getStatistic(),
                 "level": level,
             }
-            result = (result.getBinaryQualityMeasure(), details)
+            return result.getBinaryQualityMeasure(), details
         else:
-            result = fitting_test(self.data, distribution)
-        return result
+            return fitting_test(self.data, distribution)
 
     def select(
         self,
-        distributions: Sequence[str] | Sequence[OTDistribution],
-        fitting_criterion: str,
+        distributions: MutableSequence[DistributionName | OTDistribution],
+        fitting_criterion: FittingCriterion,
         level: float = 0.05,
-        selection_criterion: str = "best",
+        selection_criterion: SelectionCriterion = SelectionCriterion.BEST,
     ) -> OTDistribution:
         """Select the best distribution from a list of candidates.
 
         Args:
             distributions: The distributions.
-            fitting_criterion: The name of the goodness-of-fit criterion.
+            fitting_criterion: The goodness-of-fit criterion.
             level: A test level,
                 i.e. the risk of committing a Type 1 error,
                 that is an incorrect rejection of a true null hypothesis,
                 for criteria based on test hypothesis.
-            selection_criterion:  The name of the selection criterion.
-                Either 'first' or 'best'.
+            selection_criterion: The selection criterion.
 
         Returns:
             The best distribution.
         """
         measures = []
         for index, distribution in enumerate(distributions):
-            if isinstance(distribution, str):
+            if distribution in self.DistributionName.__members__:
                 distribution = self.fit(distribution)
             measures.append(
                 self.compute_measure(distribution, fitting_criterion, level)
@@ -300,27 +301,26 @@ class OTDistributionFitter:
     @classmethod
     def select_from_measures(
         cls,
-        measures: list[MeasureType],
-        fitting_criterion: str,
+        measures: MutableSequence[MeasureType],
+        fitting_criterion: FittingCriterion,
         level: float = 0.05,
-        selection_criterion: str = "best",
+        selection_criterion: SelectionCriterion = SelectionCriterion.BEST,
     ) -> int:
         """Select the best distribution from measures.
 
         Args:
             measures: The measures.
-            fitting_criterion: The name of the goodness-of-fit criterion.
+            fitting_criterion: The goodness-of-fit criterion.
             level: A test level,
                 i.e. the risk of committing a Type 1 error,
                 that is an incorrect rejection of a true null hypothesis,
                 for criteria based on test hypothesis.
-            selection_criterion:  The name of the selection criterion.
-                Either 'first' or 'best'.
+            selection_criterion: The selection criterion.
 
         Returns:
             The index of the best distribution.
         """
-        if fitting_criterion in cls.SIGNIFICANCE_TESTS:
+        if fitting_criterion in cls.SignificanceTest.__members__:
             for index, _ in enumerate(measures):
                 measures[index] = measures[index][1]["p-value"]
             if sum(p_value > level for p_value in measures) == 0:
@@ -328,24 +328,23 @@ class OTDistributionFitter:
                     "All criteria values are lower than the significance level %s.",
                     level,
                 )
-        if selection_criterion == "best" or level is None:
-            index = cls.__find_opt_distribution(measures, fitting_criterion)
+        if selection_criterion == cls.SelectionCriterion.BEST or level is None:
+            return cls.__find_opt_distribution(measures, fitting_criterion)
         else:
-            index = cls.__apply_first_strategy(measures, fitting_criterion, level)
-        return index
+            return cls.__apply_first_strategy(measures, fitting_criterion, level)
 
     @classmethod
     def __apply_first_strategy(
         cls,
-        measures: list[float],
-        fitting_criterion: str,
+        measures: Sequence[float],
+        fitting_criterion: FittingCriterion,
         level: float = 0.05,
     ) -> int:
         """Select the best distribution from measures by applying the "first" strategy.
 
         Args:
             measures: The measures.
-            fitting_criterion: The name of the goodness-of-fit criterion.
+            fitting_criterion: The goodness-of-fit criterion.
             level: A test level,
                 i.e. the risk of committing a Type 1 error,
                 that is an incorrect rejection of a true null hypothesis,
@@ -368,35 +367,36 @@ class OTDistributionFitter:
     @classmethod
     def __find_opt_distribution(
         cls,
-        measures: list[float],
-        fitting_criterion: str,
+        measures: Sequence[float],
+        fitting_criterion: FittingCriterion,
     ) -> int:
-        """Select the best distribution from measures by applying the "best" strategy.
+        """Select the best distribution from measures.
+
+        By applying the :attr:`.SelectionCriterion.BEST` strategy.
 
         Args:
             measures: The measures.
-            fitting_criterion: The name of the goodness-of-fit criterion.
+            fitting_criterion: The goodness-of-fit criterion.
 
         Returns:
             The index of the optimum distribution.
         """
-        if fitting_criterion in cls._CRITERIA_TO_MINIMIZE:
-            index = measures.index(min(measures))
+        if fitting_criterion in cls.__CRITERIA_TO_MINIMIZE:
+            return measures.index(min(measures))
         else:
-            index = measures.index(max(measures))
-        return index
+            return measures.index(max(measures))
 
     @property
     def available_distributions(self) -> list[str]:
         """The available distributions."""
-        return sorted(self._AVAILABLE_DISTRIBUTIONS.keys())
+        return sorted(self._DISTRIBUTIONS_NAME_TO_FACTORY.keys())
 
     @property
     def available_criteria(self) -> list[str]:
         """The available goodness-of-fit criteria."""
-        return sorted(self._AVAILABLE_FITTING_TESTS.keys())
+        return sorted(self._FITTINGS_CRITERION_TO_TEST.keys())
 
     @property
     def available_significance_tests(self) -> list[str]:
         """The significance tests."""
-        return sorted(self.SIGNIFICANCE_TESTS)
+        return sorted(self.SignificanceTest)

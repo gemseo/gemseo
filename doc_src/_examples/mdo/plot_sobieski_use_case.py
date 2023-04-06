@@ -248,7 +248,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # differences, complex step and :ref:`mda` linearization in direct or adjoint mode.
 # These modes are automatically selected by |g| to minimize the CPU time. Yet, they
 # can be forced on demand in each :ref:`mda`:
-scenario.formulation.mda.linearization_mode = JacobianAssembly.DIRECT_MODE
+scenario.formulation.mda.linearization_mode = JacobianAssembly.DerivationMode.DIRECT
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
 # %%
 # The method used to solve the adjoint or direct linear problem may also be selected.

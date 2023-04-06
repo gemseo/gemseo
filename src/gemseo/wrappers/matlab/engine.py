@@ -50,23 +50,16 @@ from __future__ import annotations
 
 import logging
 import os
-from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
 import matlab.engine
 from numpy import ndarray  # noqa F401
+from strenum import StrEnum
 
 from gemseo.wrappers.matlab.matlab_data_processor import double2array
 
 LOGGER = logging.getLogger(__name__)
-
-
-class ParallelType(Enum):
-    """Types of Matlab parallel execution."""
-
-    LOCAL = "local"
-    CLOUD = "MATLAB Parallel Cloud"
 
 
 @lru_cache
@@ -118,6 +111,12 @@ class MatlabEngine:
         >>> eng1.close_session()
         >>> print(eng1.is_closed)
     """
+
+    class ParallelType(StrEnum):
+        """Types of Matlab parallel execution."""
+
+        LOCAL = "local"
+        CLOUD = "MATLAB Parallel Cloud"
 
     __matlab: MatlabEngine
     """The matlab engine."""
@@ -323,7 +322,7 @@ class MatlabEngine:
 
         try:
             self.execute_function(
-                "parpool", parallel_type.value, float(n_parallel_workers), nargout=0
+                "parpool", parallel_type, float(n_parallel_workers), nargout=0
             )
         except matlab.engine.MatlabExecutionError:
             LOGGER.warning(

@@ -328,7 +328,7 @@ class XDSMizer:
 
                     if (
                         atom.status
-                        and atom.parent.status is MDODiscipline.STATUS_RUNNING
+                        and atom.parent.status is MDODiscipline.ExecutionStatus.RUNNING
                     ):
                         node = None
                         for a_node in nodes:

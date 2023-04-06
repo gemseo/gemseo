@@ -28,11 +28,13 @@ from typing import Sequence
 
 from numpy import ndarray
 from numpy import zeros
+from strenum import LowercaseStrEnum
+from strenum import StrEnum
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.core.derivatives.derivation_modes import ApproximationMode
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -42,6 +44,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+from gemseo.utils.enumeration import merge_enums
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,26 +52,35 @@ LOGGER = logging.getLogger(__name__)
 class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
-    AVAILABLE_MODES = [
-        derivation_modes.REVERSE_MODE,
-        derivation_modes.AUTO_MODE,
-        MDODiscipline.FINITE_DIFFERENCES,
-        MDODiscipline.COMPLEX_STEP,
-    ]
+    class _DerivationMode(LowercaseStrEnum):
+        """The derivation modes."""
+
+        REVERSE = "reverse"
+        """The reverse Jacobian accumulation, chain rule from outputs to inputs."""
+
+        AUTO = "auto"
+        """Automatic switch between direct, reverse or adjoint depending on data
+        sizes."""
+
+    LinearizationMode = merge_enums(
+        "LinearizationMode",
+        StrEnum,
+        ApproximationMode,
+        _DerivationMode,
+    )
 
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
@@ -310,7 +322,7 @@ class MDOParallelChain(MDODiscipline):
         self,
         disciplines: Sequence[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         use_threading: bool = True,
         n_processes: int | None = None,
         use_deep_copy: bool = False,
@@ -320,8 +332,7 @@ class MDOParallelChain(MDODiscipline):
             disciplines: The disciplines.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -506,7 +517,7 @@ class MDOAdditiveChain(MDOParallelChain):
         disciplines: Sequence[MDODiscipline],
         outputs_to_sum: Iterable[str],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         use_threading: bool = True,
         n_processes: int | None = None,
     ) -> None:
@@ -516,8 +527,7 @@ class MDOAdditiveChain(MDOParallelChain):
             outputs_to_sum: The names of the outputs to sum.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -590,7 +600,7 @@ class MDOWarmStartedChain(MDOChain):
         disciplines: Sequence[MDODiscipline],
         variable_names_to_warm_start: Sequence[str],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -600,8 +610,7 @@ class MDOWarmStartedChain(MDOChain):
                 If the list is empty, no variables are warm started.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
 
         Raises:
             ValueError: If the variable names to warm start are not outputs of the

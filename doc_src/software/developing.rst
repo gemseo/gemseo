@@ -330,6 +330,10 @@ Error messages
   Error messages will be read by humans:
   they shall be explicit and valid sentences.
 
+Enumerations
+  Use ``StrEnum`` from the ``strenum`` package for creating collections of constants that are compatible with strings.
+  This allows to easily work with non-Python API like REST.
+
 .. _git:
 
 Git

@@ -226,7 +226,7 @@ def test_grammar_type():
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
-    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = discipline.GrammarType.SIMPLE
     formulation = IDF(
         [discipline], "y", design_space, grammar_type=grammar_type, n_processes=2
     )

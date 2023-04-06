@@ -78,14 +78,14 @@ class MDOScenarioAdapter(MDODiscipline):
         reset_x0_before_opt: bool = False,
         set_x0_before_opt: bool = False,
         set_bounds_before_opt: bool = False,
-        cache_type: str = MDODiscipline.SIMPLE_CACHE,
+        cache_type: MDODiscipline.CacheType = MDODiscipline.CacheType.SIMPLE,
         output_multipliers: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         name: str | None = None,
         keep_opt_history: bool = False,
         opt_history_file_prefix: str = "",
     ) -> None:
-        """..
+        """
         Args:
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.

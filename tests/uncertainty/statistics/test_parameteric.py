@@ -26,7 +26,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceIntervalSide,
+    ToleranceInterval,
 )
 from gemseo.utils.testing import image_comparison
 from numpy import array
@@ -73,18 +73,6 @@ def statistics(dataset, tested_distributions) -> ParametricStatistics:
     return ParametricStatistics(dataset, tested_distributions)
 
 
-def test_wrong_fitting_criterion(dataset, tested_distributions):
-    """Check that an ValueError is raised when using a wrong fitting criterion."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"dummy is not a name of fitting test; "
-            r"available ones are: BIC, Kolmogorov, ChiSquared."
-        ),
-    ):
-        ParametricStatistics(dataset, tested_distributions, fitting_criterion="dummy")
-
-
 def test_str(statistics):
     """Check __str__."""
     assert str(statistics) == (
@@ -119,18 +107,6 @@ def test_get_criteria(
     for distribution, criterion in criteria.items():
         assert distribution in tested_distributions
         assert isinstance(criterion, numbers.Number)
-
-
-def test_get_criteria_wrong_fitting_criterion(dataset, tested_distributions):
-    """Check get_criteria() with with wrong fitting criterion."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"foo is not a name of distribution available for fitting\; "
-            r"available ones are: Arcsine, Beta,*"
-        ),
-    ):
-        ParametricStatistics(dataset, ["foo"])
 
 
 @pytest.mark.parametrize(
@@ -304,26 +280,26 @@ def test_tolerance_interval(generate_samples, distribution):
     dataset.set_from_array(generate_samples(100).reshape((-1, 1)))
     statistics = ParametricStatistics(dataset, [distribution])
     tolerance_interval = statistics.compute_tolerance_interval(
-        0.1, side=ToleranceIntervalSide.BOTH
+        0.1, side=ToleranceInterval.ToleranceIntervalSide.BOTH
     )
     assert tolerance_interval["x_0"][0].lower.shape == (1,)
     assert tolerance_interval["x_0"][0].upper.shape == (1,)
     assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
     tolerance_interval = statistics.compute_tolerance_interval(
-        0.1, side=ToleranceIntervalSide.UPPER
+        0.1, side=ToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
     tolerance_interval = statistics.compute_tolerance_interval(
-        0.1, side=ToleranceIntervalSide.LOWER
+        0.1, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
     assert tolerance_interval["x_0"][0].upper == inf
 
     b_value = statistics.compute_tolerance_interval(
-        0.9, side=ToleranceIntervalSide.LOWER
+        0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     a_value = statistics.compute_tolerance_interval(
-        0.95, side=ToleranceIntervalSide.LOWER
+        0.95, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert b_value["x_0"][0].lower >= a_value["x_0"][0].lower
 
@@ -338,9 +314,7 @@ def test_abvalue_normal():
 
 
 def test_available(statistics):
-    assert "Normal" in ParametricStatistics.AVAILABLE_DISTRIBUTIONS
-    assert "BIC" in ParametricStatistics.AVAILABLE_CRITERIA
-    assert "Kolmogorov" in ParametricStatistics.AVAILABLE_SIGNIFICANCE_TESTS
+    assert "Normal" in ParametricStatistics.DistributionName.__members__
     assert "Normal" in statistics.get_fitting_matrix()
 
 
@@ -349,8 +323,12 @@ def test_available(statistics):
     [
         (
             "tolerance_interval",
-            {"coverage": 0.9, "tolerance": 0.99, "side": ToleranceIntervalSide.LOWER},
-            "TI[X; 0.9, LOWER, 0.99]",
+            {
+                "coverage": 0.9,
+                "tolerance": 0.99,
+                "side": ToleranceInterval.ToleranceIntervalSide.LOWER,
+            },
+            "TI[X; 0.9, lower, 0.99]",
         ),
         (
             "tolerance_interval",
@@ -358,9 +336,9 @@ def test_available(statistics):
                 "show_name": True,
                 "coverage": 0.9,
                 "tolerance": 0.99,
-                "side": ToleranceIntervalSide.LOWER,
+                "side": ToleranceInterval.ToleranceIntervalSide.LOWER,
             },
-            "TI[X; coverage=0.9, side=LOWER, tolerance=0.99]",
+            "TI[X; coverage=0.9, side=lower, tolerance=0.99]",
         ),
         ("a_value", {}, "Aval[X]"),
         ("b_value", {}, "Bval[X]"),

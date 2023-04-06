@@ -166,13 +166,13 @@ def jacobian_function(x):
     scope="module",
     params=[
         (
-            MDOFunction.TYPE_INEQ,
+            MDOFunction.FunctionType.INEQ,
             aggregate_max,
         ),
-        (MDOFunction.TYPE_INEQ, aggregate_ks),
-        (MDOFunction.TYPE_INEQ, aggregate_iks),
-        (MDOFunction.TYPE_INEQ, aggregate_positive_sum_square),
-        (MDOFunction.TYPE_EQ, aggregate_sum_square),
+        (MDOFunction.FunctionType.INEQ, aggregate_ks),
+        (MDOFunction.FunctionType.INEQ, aggregate_iks),
+        (MDOFunction.FunctionType.INEQ, aggregate_positive_sum_square),
+        (MDOFunction.FunctionType.EQ, aggregate_sum_square),
     ],
 )
 def complex_real_mdo_func_aggregation(

@@ -300,7 +300,7 @@ class LagrangeMultipliers:
             x_vect = self.opt_problem.design_space.normalize_vect(x_vect)
         for constraint in self.opt_problem.constraints:
             value = constraint(x_vect)
-            if constraint.f_type == constraint.TYPE_EQ:
+            if constraint.f_type == constraint.ConstraintType.EQ:
                 value = np_abs(value) - self.opt_problem.eq_tolerance
             else:
                 value = value - self.opt_problem.ineq_tolerance

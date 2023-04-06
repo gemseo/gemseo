@@ -46,7 +46,7 @@ def dataset() -> Dataset:
     discipline = AnalyticDiscipline(
         {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"}
     )
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
     design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
@@ -87,7 +87,7 @@ def model_with_1d_output(dataset) -> RBFRegressor:
 
 def test_get_available_functions():
     """Test available RBFs."""
-    for function in RBFRegressor.AVAILABLE_FUNCTIONS:
+    for function in RBFRegressor.Function:
         assert hasattr(Rbf, f"_h_{function}")
 
 
@@ -168,7 +168,7 @@ def test_pred_single_out(model_with_1d_output):
 
 def test_predict_jacobian(dataset):
     """Test prediction."""
-    for function in RBFRegressor.AVAILABLE_FUNCTIONS:
+    for function in RBFRegressor.Function:
         model_ = RBFRegressor(dataset, function=function)
         model_.learn()
         jacobian = model_.predict_jacobian(INPUT_VALUE)

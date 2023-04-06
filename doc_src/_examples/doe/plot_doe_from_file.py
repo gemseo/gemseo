@@ -34,8 +34,8 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"y": "a*b"})
 # %%
 # where :math:`a,b\in\{1,2,\ldots,10\}`:
 design_space = create_design_space()
-design_space.add_variable("a", 1, design_space.INTEGER, 1, 10)
-design_space.add_variable("b", 1, design_space.INTEGER, 1, 10)
+design_space.add_variable("a", 1, design_space.DesignVariableType.INTEGER, 1, 10)
+design_space.add_variable("b", 1, design_space.DesignVariableType.INTEGER, 1, 10)
 
 # %%
 # We want to evaluate this discipline over this design space

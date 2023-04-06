@@ -38,11 +38,11 @@ from uuid import uuid1
 
 from numpy import array
 from numpy import ndarray
+from strenum import StrEnum
 
 from gemseo.core.data_processor import DataProcessor  # noqa: F401
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.base_enum import BaseEnum
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,20 +50,11 @@ NUMERICS = [str(j) for j in range(10)]
 INPUT_REGEX = r"GEMSEO_INPUT\{(.*)\}"
 OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
 
+FoldersIter = StrEnum("FoldersIter", "NUMBERED UUID")
+"""Folders iteration type."""
 
-class FoldersIter(BaseEnum):
-    """Folders iteration type."""
-
-    NUMBERED = 0
-    UUID = 1
-
-
-class Parsers(BaseEnum):
-    """Parser types."""
-
-    KEY_VALUE_PARSER = 0
-    TEMPLATE_PARSER = 1
-    CUSTOM_CALLABLE = 2
+Parser = StrEnum("Parser", "KEY_VALUE TEMPLATE CUSTOM_CALLABLE")
+"""Parser types."""
 
 
 class DiscFromExe(MDODiscipline):
@@ -151,9 +142,9 @@ class DiscFromExe(MDODiscipline):
         executable_command: str,
         input_filename: str,
         output_filename: str,
-        folders_iter: str | FoldersIter = FoldersIter.NUMBERED,
+        folders_iter: FoldersIter = FoldersIter.NUMBERED,
         name: str | None = None,
-        parse_outfile_method: str | Parsers = Parsers.TEMPLATE_PARSER,
+        parse_outfile_method: Parser = Parser.TEMPLATE,
         write_input_file_method: str | None = None,
         parse_out_separator: str = "=",
         use_shell: bool = True,
@@ -190,7 +181,7 @@ class DiscFromExe(MDODiscipline):
                 by the user to parse the output template file.
                 If ``None``,
                 use :func:`~gemseo.wrappers.template_grammar_editor.parse_outfile`.
-                If the :attr:`~.Parsers.KEY_VALUE_PARSER` is used as
+                If the :attr:`~.Parser.KEY_VALUE` is used as
                 output parser, specify the separator key.
             write_input_file_method: The method to write the input data file.
                 If ``None``,
@@ -209,20 +200,14 @@ class DiscFromExe(MDODiscipline):
         self.output_filename = output_filename
         self.executable_command = executable_command
         self.__use_shell = use_shell
-        if (
-            parse_outfile_method is None
-            or parse_outfile_method == Parsers.TEMPLATE_PARSER
-        ):
+        if parse_outfile_method is None or parse_outfile_method == Parser.TEMPLATE:
             self.parse_outfile = parse_outfile
-            self._parse_outfile_method = Parsers.TEMPLATE_PARSER
-        elif parse_outfile_method == Parsers.KEY_VALUE_PARSER:
+        elif parse_outfile_method == Parser.KEY_VALUE:
             self.parse_outfile = lambda a, b: parse_key_value_file(
                 a, b, parse_out_separator
             )
-            self._parse_outfile_method = Parsers.KEY_VALUE_PARSER
         else:
             self.parse_outfile = parse_outfile_method
-            self._parse_outfile_method = Parsers.CUSTOM_CALLABLE
 
         if not callable(self.parse_outfile):
             raise TypeError("The parse_outfile_method must be callable")
@@ -244,24 +229,6 @@ class DiscFromExe(MDODiscipline):
         self._counter = Value("i", self._get_max_outdir())
         self.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
-
-    @property
-    def folders_iter(self) -> FoldersIter:
-        """The names of the new execution directories.
-
-        Raises:
-            ValueError: When the value is not a valid :class:`.FoldersIter`.
-        """
-        return self.__folders_iter
-
-    @folders_iter.setter
-    def folders_iter(
-        self,
-        value: str | FoldersIter,
-    ) -> None:
-        if value not in FoldersIter:
-            raise ValueError(f"{value} is not a valid FoldersIter value.")
-        self.__folders_iter = FoldersIter[value]
 
     def __check_base_path_on_windows(self) -> None:
         """Check that the base path can be used.
@@ -349,7 +316,7 @@ class DiscFromExe(MDODiscipline):
         the successive iterations are named by an integer 1, 2, 3 etc.
         This is multiprocess safe.
         Otherwise, a unique number based on the UUID function is generated.
-        This last option shall be used if multiple MDO processes are runned
+        This last option shall be used if multiple MDO processes are run
         in the same workdir.
 
         Returns:

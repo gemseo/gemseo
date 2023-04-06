@@ -55,8 +55,10 @@ class OptimizationAlgorithmDescription(DriverDescription):
     positive_constraints: bool = False
     """Whether the optimization algorithm requires positive constraints."""
 
-    problem_type: str = OptimizationProblem.NON_LINEAR_PB
-    """The type of problem (see :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`)."""
+    problem_type: OptimizationProblem.ProblemType = (
+        OptimizationProblem.ProblemType.NON_LINEAR
+    )
+    """The type of problem (see :attr:`.OptimizationProblem.ProblemType`)."""
 
 
 class OptimizationLibrary(DriverLibrary):
@@ -262,8 +264,8 @@ class OptimizationLibrary(DriverLibrary):
             return _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
 
         if (
-            problem.pb_type == problem.NON_LINEAR_PB
-            and algorithm_description.problem_type == problem.LINEAR_PB
+            problem.pb_type == problem.ProblemType.NON_LINEAR
+            and algorithm_description.problem_type == problem.ProblemType.LINEAR
         ):
             return _UnsuitabilityReason.NON_LINEAR_PROBLEM
 

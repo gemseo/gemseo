@@ -30,10 +30,7 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
 
-STATUS_FAILED = MDODiscipline.STATUS_FAILED
-STATUS_DONE = MDODiscipline.STATUS_DONE
-STATUS_PENDING = MDODiscipline.STATUS_PENDING
-STATUS_RUNNING = MDODiscipline.STATUS_RUNNING
+_ExecutionStatus = MDODiscipline.ExecutionStatus
 
 
 class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -86,7 +83,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     def status(self):
         """Get the value of the status.
 
-        One of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
+        One of :attr:`.MDODiscipline.ExecutionStatus`.
 
         Returns:
             The value of the status.
@@ -97,7 +94,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     def status(self, status) -> None:
         """Set the value of the status.
 
-        One of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
+        One of :attr:`.MDODiscipline.ExecutionStatus`.
 
         Args:
             status: The value of the status
@@ -138,7 +135,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def enable(self) -> None:
         """Set the execution sequence as activated (enabled)."""
-        self.status = STATUS_PENDING
+        self.status = _ExecutionStatus.PENDING
         self._enabled = True
 
     def disable(self) -> None:
@@ -234,8 +231,11 @@ class AtomicExecSequence(ExecutionSequence):
             discipline: The discipline whose status changed.
         """
         if self._enabled and self.status != discipline.status:
-            self.status = discipline.status or STATUS_PENDING
-            if self.status == STATUS_DONE or self.status == STATUS_FAILED:
+            self.status = discipline.status or _ExecutionStatus.PENDING
+            if (
+                self.status == _ExecutionStatus.DONE
+                or self.status == _ExecutionStatus.FAILED
+            ):
                 self.disable()
             if self._parent:
                 self._parent.update_child_status(self)
@@ -251,7 +251,7 @@ class AtomicExecSequence(ExecutionSequence):
 
         Args:
             status: The value of the status,
-                one of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
+                one of :attr:`.MDODiscipline.ExecutionStatus`.
         """
         old_status = self._status
         self._status = status
@@ -329,7 +329,7 @@ class CompositeExecSequence(ExecutionSequence):
 
         Args:
             status: The value of the status,
-                one of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
+                one of :attr:`.MDODiscipline.ExecutionStatus`.
         """
         self.status = status
         for sequence in self.sequences:
@@ -468,9 +468,9 @@ class ExtendableExecSequence(CompositeExecSequence):
             child: The child execution sequence (contained in sequences)
                 whose status has changed.
         """
-        if child.status == STATUS_FAILED:
-            self.status = STATUS_FAILED
-        elif child.status == STATUS_DONE:
+        if child.status == _ExecutionStatus.FAILED:
+            self.status = _ExecutionStatus.FAILED
+        elif child.status == _ExecutionStatus.DONE:
             self._update_child_done_status(child)
         else:
             self.status = child.status
@@ -522,13 +522,13 @@ class SerialExecSequence(ExtendableExecSequence):
         Args:
             child: The child execution sequence in done state.
         """
-        if child.status == STATUS_DONE:
+        if child.status == _ExecutionStatus.DONE:
             child.disable()
             self.exec_index += 1
             if self.exec_index < len(self.sequences):
                 self.sequences[self.exec_index].enable()
             else:  # last seq done
-                self.status = STATUS_DONE
+                self.status = _ExecutionStatus.DONE
                 self.disable()
 
 
@@ -562,9 +562,9 @@ class ParallelExecSequence(ExtendableExecSequence):
         """
         all_done = True
         for sequence in self.sequences:
-            all_done = all_done and (sequence.status == STATUS_DONE)
+            all_done = all_done and (sequence.status == _ExecutionStatus.DONE)
         if all_done:
-            self.status = STATUS_DONE
+            self.status = _ExecutionStatus.DONE
             self.disable()
 
 
@@ -633,18 +633,18 @@ class LoopExecSequence(CompositeExecSequence):
         """
         self.status = self.atom_controller.status
         if child == self.atom_controller:
-            if self.status == STATUS_RUNNING:
+            if self.status == _ExecutionStatus.RUNNING:
                 if not self.iteration_sequence.enabled():
                     self.iteration_sequence.enable()
-            elif self.status == STATUS_DONE:
+            elif self.status == _ExecutionStatus.DONE:
                 self.disable()
-                self.force_statuses(STATUS_DONE)
+                self.force_statuses(_ExecutionStatus.DONE)
         if child == self.iteration_sequence:
-            if child.status == STATUS_DONE:
+            if child.status == _ExecutionStatus.DONE:
                 self.iteration_count += 1
                 self.iteration_sequence.enable()
-        if child.status == STATUS_FAILED:
-            self.status = STATUS_FAILED
+        if child.status == _ExecutionStatus.FAILED:
+            self.status = _ExecutionStatus.FAILED
 
 
 class ExecutionSequenceFactory:

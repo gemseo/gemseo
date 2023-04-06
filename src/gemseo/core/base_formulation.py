@@ -90,7 +90,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         **options: Any,
     ) -> None:
         """
@@ -100,9 +100,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If multiple names are passed, the objective will be a vector.
             design_space: The design space.
             maximize_objective: Whether to maximize the objective.
-            grammar_type: The type of the input and output grammars,
-                either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             **options: The options of the formulation.
         """  # noqa: D205, D212, D415
         self._disciplines = disciplines
@@ -129,7 +127,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     @staticmethod
     def _check_add_cstr_input(
         output_name: str,
-        constraint_type: str,
+        constraint_type: MDOFunction.ConstraintType,
     ) -> list[str]:
         """Check the output name and constraint type passed to :meth:`.add_constraint`.
 
@@ -137,15 +135,8 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             output_name: The name of the output to be used as a constraint.
                 For instance, if g_1 is given and constraint_type="eq",
                 g_1=0 will be added as a constraint to the optimizer.
-            constraint_type: The type of constraint,
-                either "eq" for equality constraint
-                or "ineq" for inequality constraint.
+            constraint_type: The type of constraint.
         """
-        if constraint_type not in [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ]:
-            raise ValueError(
-                "Constraint type must be either 'eq' or 'ineq',"
-                " got: %s instead" % constraint_type
-            )
         if isinstance(output_name, list):
             output_names = output_name
         else:
@@ -155,7 +146,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     def add_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -211,7 +202,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if observable_name is not None:
             obs_fun.name = observable_name
-        obs_fun.f_type = MDOFunction.TYPE_OBS
+        obs_fun.f_type = MDOFunction.FunctionType.OBS
         self.opt_problem.add_observable(obs_fun)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:
@@ -517,7 +508,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         obj_mdo_fun = FunctionFromDiscipline(
             objective_name, self, discipline, top_level_disc
         )
-        obj_mdo_fun.f_type = MDOFunction.TYPE_OBJ
+        obj_mdo_fun.f_type = MDOFunction.FunctionType.OBJ
         self.opt_problem.objective = obj_mdo_fun
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()

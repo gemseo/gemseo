@@ -91,7 +91,7 @@ def test_split_namespace():
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 @pytest.mark.parametrize("use_defaults", [True, False])
 def test_analytic_disc_ns(grammar_type, use_defaults):
@@ -120,7 +120,7 @@ def test_analytic_disc_ns(grammar_type, use_defaults):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_chain_disc_ns(grammar_type):
     """Tests MDOChain features with namespaces."""
@@ -157,7 +157,7 @@ def test_chain_disc_ns(grammar_type):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 @pytest.mark.parametrize("chain_type", [MDOChain, MDOParallelChain])
 def test_chain_disc_ns_twice(grammar_type, chain_type):
@@ -210,7 +210,7 @@ def test_chain_disc_ns_twice(grammar_type, chain_type):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_mda_with_namespaces(grammar_type):
     """Tests MDAs and namespaces."""
