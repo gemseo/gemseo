@@ -333,14 +333,15 @@ def test_validate_error(raise_exception, data, error_msg, caplog):
         ["name2"],
     ],
 )
+@pytest.mark.parametrize("merge", (True, False))
 @exclude_names
-def test_update(schema_path, names, exclude_names):
+def test_update(schema_path, names, merge, exclude_names):
     """Verify update with names."""
     g = new_grammar(schema_path)
     names_before = set(g.keys())
     required_names_before = set(g.required_names)
 
-    g.update(names, exclude_names=exclude_names)
+    g.update(names, exclude_names=exclude_names, merge=merge)
 
     exclude_names = set(exclude_names)
 
@@ -355,12 +356,15 @@ def test_update(schema_path, names, exclude_names):
     property = g.schema["properties"][name]
 
     if name == "name1" and schema_path:
-        assert property == {
-            "anyOf": [
-                {"type": "integer"},
-                {"type": "array", "items": {"type": "number"}},
-            ]
-        }
+        if merge:
+            assert property == {
+                "anyOf": [
+                    {"type": "integer"},
+                    {"type": "array", "items": {"type": "number"}},
+                ]
+            }
+        else:
+            assert property == {"type": "array", "items": {"type": "number"}}
 
     if name == "name2" or not schema_path:
         assert property == {"type": "array", "items": {"type": "number"}}
@@ -378,9 +382,10 @@ def test_update(schema_path, names, exclude_names):
         ({"name1": {"name2": 0}}, "object"),
     ],
 )
-def test_update_from_data_with_empty(data, expected_type):
+@pytest.mark.parametrize("merge", (True, False))
+def test_update_from_data_with_empty(data, expected_type, merge):
     """Verify update_from_data from an empty grammar."""
-    g = _test_update_from_data(None, data)
+    g = _test_update_from_data(None, data, merge)
 
     if not g:
         return
@@ -395,37 +400,53 @@ def test_update_from_data_with_empty(data, expected_type):
         ({"name1": 0}, "integer"),
         ({"name1": 0.0}, "number"),
         ({"name1": ""}, ["integer", "string"]),
-        ({"name1": True}, ["boolean", "integer"]),
-        ({"name1": ndarray([0])}, ["array", "integer"]),
+        ({"name1": True}, ["integer", "boolean"]),
+        ({"name1": ndarray([0])}, ["integer", "array"]),
         ({"name1": {"name2": 0}}, "object"),
     ],
 )
-def test_update_from_data_with_non_empty(data, expected_type):
+@pytest.mark.parametrize("merge", (True, False))
+def test_update_from_data_with_non_empty(data, expected_type, merge):
     """Verify update_from_data from a non empty grammar."""
-    g = _test_update_from_data(DATA_PATH / "grammar_2.json", data)
+    g = _test_update_from_data(DATA_PATH / "grammar_2.json", data, merge)
 
     if isinstance(data.get("name1"), dict):
-        assert g.schema["properties"]["name1"] == {
-            "anyOf": [
-                {"type": "integer"},
-                {
-                    "type": "object",
-                    "properties": {"name2": {"type": "integer"}},
-                    "required": ["name2"],
-                },
-            ]
-        }
+        if merge:
+            assert g.schema["properties"]["name1"] == {
+                "anyOf": [
+                    {"type": "integer"},
+                    {
+                        "type": "object",
+                        "properties": {"name2": {"type": "integer"}},
+                        "required": ["name2"],
+                    },
+                ]
+            }
+        else:
+            assert g.schema["properties"]["name1"] == {
+                "type": "object",
+                "properties": {"name2": {"type": "integer"}},
+                "required": ["name2"],
+            }
     else:
-        assert g.schema["properties"]["name1"]["type"] == expected_type
+        if not merge and not isinstance(expected_type, str):
+            expected_type_ = expected_type[1]
+        else:
+            if isinstance(expected_type, str):
+                expected_type_ = expected_type
+            else:
+                # genson sorts the types
+                expected_type_ = sorted(expected_type)
+        assert g.schema["properties"]["name1"]["type"] == expected_type_
 
 
-def _test_update_from_data(schema_path: Path | None, data: Data):
+def _test_update_from_data(schema_path: Path | None, data: Data, merge):
     """Helper function for testing update_from_data."""
     g = new_grammar(schema_path)
     names_before = set(g.keys())
     required_names_before = set(g.required_names)
 
-    g.update_from_data(data)
+    g.update_from_data(data, merge)
 
     assert_reset_dependencies(g)
     assert set(g) == names_before | set(data)

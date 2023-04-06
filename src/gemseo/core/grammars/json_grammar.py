@@ -61,7 +61,14 @@ SerializedGrammarType = Dict[
 
 
 class JSONGrammar(BaseGrammar):
-    """A grammar based on a JSON schema."""
+    """A grammar based on a JSON schema.
+
+    For the dictionary-like methods similar to ``update``,
+    when a key exists in both grammars,
+    the values can be merged instead of being
+    updated by passing ``merge = True``.
+    In that case, the resulting grammar will allow any of the values.
+    """
 
     __validator: Callable[[Mapping[str, Any]], None] | None
     """The schema validator."""
@@ -125,7 +132,7 @@ class JSONGrammar(BaseGrammar):
     def __copy__(self) -> JSONGrammar:
         grammar = self._copy_base()
         # Updating is much faster than deep copying a schema builder.
-        grammar.__update(self.__schema_builder)
+        grammar.__update(self.__schema_builder, False)
         grammar.__schema = self.__schema.copy()
         grammar.__validator = copy(self.__validator)
         return grammar
@@ -147,8 +154,13 @@ class JSONGrammar(BaseGrammar):
         self,
         grammar: JSONGrammar | Iterable[str] | DictSchemaType,
         exclude_names: Iterable[str] = (),
+        merge: bool = False,
     ) -> None:
-        """Update the elements from another grammar or names or a schema."""
+        """Update the elements from another grammar or names or a schema.
+
+        Args:
+            merge: Whether to merge or update the grammar.
+        """  # noqa:D417
         if isinstance(grammar, JSONGrammar):
             if exclude_names:
                 schema_builder = deepcopy(grammar.__schema_builder)
@@ -157,7 +169,7 @@ class JSONGrammar(BaseGrammar):
                         del schema_builder[name]
             else:
                 schema_builder = grammar.__schema_builder
-            self.__update(schema_builder)
+            self.__update(schema_builder, merge)
             self._update_namespaces_from_grammar(grammar)
             self._defaults.update(grammar._defaults, exclude=exclude_names)
         elif isinstance(grammar, BaseGrammar):
@@ -171,13 +183,13 @@ class JSONGrammar(BaseGrammar):
                     schema.pop(name)
             else:
                 schema = grammar
-            self.__update(schema)
+            self.__update(schema, merge)
         elif isinstance(grammar, Iterable) and not isinstance(grammar, str):
             if not grammar:
                 return
             for name in grammar:
                 if name not in exclude_names:
-                    self.__schema_builder.add_object({name: [0.0]})
+                    self.__schema_builder.add_object({name: [0.0]}, not merge)
         else:
             raise TypeError(f"Cannot update from a {type(grammar)}.")
         self.__init_dependencies()
@@ -237,15 +249,19 @@ class JSONGrammar(BaseGrammar):
     def update_from_data(
         self,
         data: Data,
+        merge: bool = False,
     ) -> None:
         """
+        Args:
+            merge: Whether to merge or update the grammar.
+
         Notes:
             The types of the values of the ``data`` will be converted
             to JSON Schema types and define the elements of the JSON Schema.
         """  # noqa: D205, D212, D415
         if not data:
             return
-        self.__schema_builder.add_object(self.__cast_array_to_list(data))
+        self.__schema_builder.add_object(self.__cast_array_to_list(data), not merge)
         self.__init_dependencies()
 
     def is_array(  # noqa: D102
@@ -310,22 +326,21 @@ class JSONGrammar(BaseGrammar):
     def __update(
         self,
         schema: DictSchemaType,
+        merge: bool,
     ) -> None:
         """Update the elements from a schema.
 
         Args:
-            schema: The schema to take the elements from.
-        """
-        self.__schema_builder.add_schema(schema)
+            merge: Whether to merge or update the grammar.
+        """  # noqa:D417
+        self.__schema_builder.add_schema(schema, not merge)
 
-    def update_from_file(
-        self,
-        path: str | Path,
-    ) -> None:
+    def update_from_file(self, path: str | Path, merge: bool = False) -> None:
         """Update the grammar from a schema file.
 
         Args:
             path: The path to the schema file.
+            merge: Whether to merge or update the grammar.
 
         Raises:
             FileNotFoundError: If the schema file does not exist.
@@ -335,7 +350,7 @@ class JSONGrammar(BaseGrammar):
             raise FileNotFoundError(
                 f"Cannot update the grammar from non existing file: {path}."
             )
-        self.__schema_builder.add_schema(json.loads(path.read_text()))
+        self.__schema_builder.add_schema(json.loads(path.read_text()), not merge)
         self.__init_dependencies()
 
     def write(
@@ -522,5 +537,7 @@ class JSONGrammar(BaseGrammar):
         # That will create the missing attributes.
         self.__dict__.update(state)
         self.clear()
-        self.__schema_builder.add_schema(state[f"_{self.__class__.__name__}__schema"])
+        self.__schema_builder.add_schema(
+            state[f"_{self.__class__.__name__}__schema"], True
+        )
         self._defaults.update(state.pop("defaults"))
