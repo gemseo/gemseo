@@ -48,7 +48,7 @@ execute_algo(optimization_problem, "NLOPT_COBYLA", max_iter=10)
 # %%
 # Then,
 # we save the results to an HDF5 file for future post-processing:
-optimization_problem.export_hdf("my_results.hdf")
+optimization_problem.to_hdf("my_results.hdf")
 
 # %%
 # .. seealso:: :ref:`sphx_glr_examples_post_process_post_process_file.py`.

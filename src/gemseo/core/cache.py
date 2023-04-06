@@ -290,7 +290,7 @@ class AbstractCache(ABCMapping):
     def last_entry(self) -> CacheEntry:
         """The last cache entry."""
 
-    def export_to_dataset(
+    def to_dataset(
         self,
         name: str | None = None,
         by_group: bool = True,
@@ -747,7 +747,7 @@ class AbstractFullCache(AbstractCache):
             jacobian_data = self._read_data(index, self._JACOBIAN_GROUP, **options)
             yield CacheEntry(input_data, output_data, jacobian_data)
 
-    def export_to_ggobi(
+    def to_ggobi(
         self,
         file_path: str,
         input_names: Iterable[str] | None = None,

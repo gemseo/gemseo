@@ -132,15 +132,15 @@ opt_problem = scenario.formulation.opt_problem
 # We can easily build a dataset from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the functions
 # (default option):
-dataset = opt_problem.export_to_dataset("sellar_problem")
+dataset = opt_problem.to_dataset("sellar_problem")
 print(dataset)
 # %%
 # or by considering all features as default parameters:
-dataset = opt_problem.export_to_dataset("sellar_problem", categorize=False)
+dataset = opt_problem.to_dataset("sellar_problem", categorize=False)
 print(dataset)
 # %%
 # or by using an input-output naming rather than an optimization naming:
-dataset = opt_problem.export_to_dataset("sellar_problem", opt_naming=False)
+dataset = opt_problem.to_dataset("sellar_problem", opt_naming=False)
 print(dataset)
 # %%
 # Access observables by name

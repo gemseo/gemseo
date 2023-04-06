@@ -103,7 +103,7 @@ class EmpiricalStatistics(Statistics):
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = scenario.export_to_dataset(opt_naming=False)
+        >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
         >>> statistics = EmpiricalStatistics(dataset)
         >>> mean = statistics.compute_mean()

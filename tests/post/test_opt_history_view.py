@@ -38,7 +38,7 @@ POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 
 def test_get_constraints():
     """Test that the constraints of the problem are retrieved correctly."""
-    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    problem = OptimizationProblem.from_hdf(POWER2_PATH)
     view = OptHistoryView(problem)
 
     _, cstr = view._get_constraints(["toto", "ineq1"])
@@ -75,7 +75,7 @@ def test_get_constraints():
 @image_comparison(None)
 def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
     """Test that a problem with constraints is properly rendered."""
-    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    problem = OptimizationProblem.from_hdf(POWER2_PATH)
     post = execute_post(
         problem,
         "OptHistoryView",
@@ -126,7 +126,7 @@ def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all)
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(problem_path)
+    problem = OptimizationProblem.from_hdf(problem_path)
     post = execute_post(problem, "OptHistoryView", show=False, save=False)
     post.figures
 

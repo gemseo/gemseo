@@ -281,8 +281,8 @@ def test_serialization(tmp_wd):
     disc = A(with_df, MDODiscipline.GrammarType.JSON)
     disc.execute()
     pickle_file_name = "a.pickle"
-    disc.serialize(pickle_file_name)
+    disc.to_pickle(pickle_file_name)
 
-    new_disc = MDODiscipline.deserialize(pickle_file_name)
+    new_disc = MDODiscipline.from_pickle(pickle_file_name)
 
     compare_dict_of_arrays(disc.local_data, new_disc.local_data)

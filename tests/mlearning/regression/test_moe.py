@@ -200,7 +200,7 @@ def test_predict_jacobian_soft(model_soft):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     out1 = model.predict(input_value)

@@ -198,8 +198,8 @@ def test_indices(sobol, order, reference):
 
 def test_save_load(sobol, tmp_wd):
     """Check saving and loading a SobolAnalysis."""
-    sobol.save("foo.pkl")
-    new_sobol = SobolAnalysis.load("foo.pkl")
+    sobol.to_pickle("foo.pkl")
+    new_sobol = SobolAnalysis.from_pickle("foo.pkl")
     assert_equal(new_sobol.dataset.data, sobol.dataset.data)
     assert new_sobol.default_output == sobol.default_output
 

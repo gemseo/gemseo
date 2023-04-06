@@ -86,7 +86,7 @@ we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~g
 
     from gemseo import read_design_space
 
-    input_file = join(dirname(__file__), "sobieski_design_space.txt")
+    input_file = join(dirname(__file__), "sobieski_design_space.csv")
     design_space = read_design_space(input_file)
 
 3. Define the trade-off study
@@ -266,7 +266,7 @@ Then, for each disciplinary scenario, we
    from copy import deepcopy
    from gemseo import read_design_space
 
-   input_file = join(dirname(__file__), "sobieski_design_space.txt")
+   input_file = join(dirname(__file__), "sobieski_design_space.csv")
    design_space = read_design_space(input_file)
    design_space_prop = deepcopy(design_space).filter("x_3")
    design_space_aero = deepcopy(design_space).filter("x_2")

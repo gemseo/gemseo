@@ -65,7 +65,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "fullfact", "n_samples": 9})
 
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", data=dataset)
 model.learn()
 

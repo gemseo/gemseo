@@ -63,7 +63,7 @@ def dataset(discipline, probability_space) -> Dataset:
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y1", probability_space)
     scenario.add_observable("y2")
     scenario.execute({"algo": "fullfact", "n_samples": 9})
-    dataset = scenario.export_to_dataset(opt_naming=False)
+    dataset = scenario.to_dataset(opt_naming=False)
     dataset.add_variable("weight", array([[1]] * 9))
     return dataset
 
@@ -91,7 +91,7 @@ def ishigami_dataset(ishigami_discipline, ishigami_probability_space) -> Dataset
         [ishigami_discipline], "DisciplinaryOpt", "y", ishigami_probability_space
     )
     scenario.execute({"algo": "fullfact", "n_samples": 125})
-    return scenario.export_to_dataset(opt_naming=False)
+    return scenario.to_dataset(opt_naming=False)
 
 
 @pytest.fixture(scope="module")
@@ -567,7 +567,7 @@ def test_save_load_with_pickle(pce, tmp_wd):
 
 def test_save_load(pce, tmp_wd):
     """Check some attributes are correctly loaded."""
-    directory_path = pce.save("my_model")
+    directory_path = pce.to_pickle("my_model")
     model = import_regression_model(directory_path)
     assert model._prediction_function
     assert model._mean.size

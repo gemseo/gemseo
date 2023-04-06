@@ -31,8 +31,8 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_design_space
-from gemseo import export_design_space
 from gemseo import read_design_space
+from gemseo import write_design_space
 from numpy import array
 
 configure_logger()
@@ -69,15 +69,15 @@ print(design_space)
 #   and is optional.
 # - By default, the design space reads these information from the file.
 # - This function returns an instance of :class:`.DesignSpace`.
-design_space.export_to_txt("saved_design_space.txt")
-loaded_design_space = read_design_space("saved_design_space.txt")
+design_space.to_csv("saved_design_space.csv")
+loaded_design_space = read_design_space("saved_design_space.csv")
 
 # %%
 # Write a design space
 # --------------------
 #
-# To export an instance of :class:`.DesignSpace` into an hdf or txt file,
-# the :func:`.export_design_space` API function can be used:
+# To export an instance of :class:`.DesignSpace` into an HDF or CSV file,
+# the :func:`.write_design_space` API function can be used:
 loaded_design_space.add_variable("y", l_b=-1, u_b=3, value=0.0)
-export_design_space(loaded_design_space, "saved_design_space.txt")
-print(read_design_space("saved_design_space.txt"))
+write_design_space(loaded_design_space, "saved_design_space.csv")
+print(read_design_space("saved_design_space.csv"))

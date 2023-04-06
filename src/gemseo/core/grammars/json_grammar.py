@@ -309,7 +309,7 @@ class JSONGrammar(BaseGrammar):
             del self.__schema_builder[element_name]
         self.__init_dependencies()
 
-    def convert_to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
+    def to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         grammar = SimpleGrammar(self.name)
         grammar.update(self.__get_names_to_types())
         for name in self.keys() - self.required_names:

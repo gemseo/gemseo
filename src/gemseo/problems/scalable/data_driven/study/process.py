@@ -633,7 +633,7 @@ class ScalabilityStudy:
                     )
                     fpath = result.get_file_path(self.directory)
                     msg.add("Save statistics in {}", fpath)
-                    result.save(str(self.directory))
+                    result.to_pickle(str(self.directory))
                     LOGGER.debug("%s", msg)
         return self.results
 

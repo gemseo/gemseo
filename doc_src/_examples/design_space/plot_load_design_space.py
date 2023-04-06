@@ -28,8 +28,8 @@ from the disk.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import export_design_space
 from gemseo import read_design_space
+from gemseo import write_design_space
 
 configure_logger()
 
@@ -42,7 +42,7 @@ configure_logger()
 # :func:`.create_design_space` function.
 
 
-design_space = read_design_space("design_space.txt")
+design_space = read_design_space("design_space.csv")
 print(design_space)
 
 
@@ -61,7 +61,7 @@ print(design_space)
 # -----------------------
 #
 # The user can export a :class:`.DesignSpace` instance by using the
-# :func:`.export_design_space` function.
+# :func:`.write_design_space` function.
 
 
-export_design_space(design_space, "new_design_space.txt")
+write_design_space(design_space, "new_design_space.csv")

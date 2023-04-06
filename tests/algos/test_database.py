@@ -95,12 +95,12 @@ def test_correct_store_unstore(problem):
 def test_write_read(tmp_wd, problem):
     """Test the writing of objective function values and gradient values."""
     database = problem.database
-    outf = "rosen.hdf"
-    database.export_hdf(outf)
-    assert Path(outf).exists()
+    hdf_file = "rosen.hdf"
+    database.to_hdf(hdf_file)
+    assert Path(hdf_file).exists()
     fname = problem.objective.name
 
-    loaded_db = Database(outf)
+    loaded_db = Database.from_hdf(hdf_file)
 
     for x_var in database.keys():
         x_var = x_var.unwrap()
@@ -253,22 +253,22 @@ def test_append_export(tmp_wd):
     database = Database()
     file_path_db = "test_db_append.hdf5"
     # Export empty file
-    database.export_hdf(file_path_db)
+    database.to_hdf(file_path_db)
     val = {"f": arange(2)}
     n_calls = 200
     for i in range(n_calls):
         database.store(array([i]), values_dict=val, add_iter=False)
 
     # Export again with append mode
-    database.export_hdf(file_path_db, append=True)
+    database.to_hdf(file_path_db, append=True)
 
-    assert len(Database(file_path_db)) == n_calls
+    assert len(Database.from_hdf(file_path_db)) == n_calls
 
     i += 1
     database.store(array([i]), values_dict=val, add_iter=False)
     # Export again with append mode and check that it is much faster
-    database.export_hdf(file_path_db, append=True)
-    assert len(Database(file_path_db)) == n_calls + 1
+    database.to_hdf(file_path_db, append=True)
+    assert len(Database.from_hdf(file_path_db)) == n_calls + 1
 
 
 def test_add_listeners():
@@ -291,13 +291,13 @@ def test_append_export_after_store(tmp_wd):
     for i in range(n_calls):
         idx = array([i, i + 1])
         database.store(idx, values_dict=val1)
-        database.export_hdf(file_path_db, append=True)
+        database.to_hdf(file_path_db, append=True)
         database.store(idx, values_dict=val2)
-        database.export_hdf(file_path_db, append=True)
+        database.to_hdf(file_path_db, append=True)
         database.store(idx, values_dict=val3)
-        database.export_hdf(file_path_db, append=True)
+        database.to_hdf(file_path_db, append=True)
 
-    new_database = Database(file_path_db)
+    new_database = Database.from_hdf(file_path_db)
 
     n_calls = len(database)
 
@@ -511,7 +511,7 @@ def test_get_history_array_wrong_f_name(problem):
 def test_ggobi_export(tmp_wd, problem):
     """Tests export to GGobi."""
     file_path = "opt_hist.xml"
-    problem.database.export_to_ggobi(file_path=file_path)
+    problem.database.to_ggobi(file_path=file_path)
     assert Path(file_path).exists()
 
 
@@ -519,10 +519,10 @@ def test_hdf_grad_export(tmp_wd, problem):
     """Tests export into HDF."""
     database = problem.database
     f_database_ref, x_database_ref = database.get_complete_history()
-    func_data = "rosen_grad_test.hdf5"
-    database.export_hdf(func_data)
+    hdf_file = "rosen_grad_test.hdf5"
+    database.to_hdf(hdf_file)
 
-    database_read = Database(func_data)
+    database_read = Database.from_hdf(hdf_file)
     f_database, x_database = database_read.get_complete_history()
     assert array(f_database) == pytest.approx(array(f_database_ref), rel=1e-16)
     assert array(x_database) == pytest.approx(array(x_database_ref), rel=1e-16)
@@ -531,7 +531,7 @@ def test_hdf_grad_export(tmp_wd, problem):
 
 def test_hdf_import():
     """Tests import from HDF."""
-    database = Database(input_hdf_file=DIRNAME / "rosen_grad.hdf5")
+    database = Database.from_hdf(DIRNAME / "rosen_grad.hdf5")
     fname = "rosen"
     gname = Database.get_gradient_name(fname)
     hist_x = database.get_x_history()
@@ -546,8 +546,7 @@ def test_hdf_import():
 
 def test_hdf_import_sob():
     """Tests import from HDF."""
-    inf = DIRNAME / "mdf_backup.h5"
-    database = Database(input_hdf_file=inf)
+    database = Database.from_hdf(DIRNAME / "mdf_backup.h5")
     hist_x = database.get_x_history()
     assert len(hist_x) == 5
     for func in ("-y_4", "g_1", "g_2", "g_3"):
@@ -561,9 +560,9 @@ def test_opendace_import(tmp_wd):
     """Tests import from Opendace."""
     database = Database()
     inf = DIRNAME / "rae2822_cl075_085_mach_068_074.xml"
-    database.import_from_opendace(inf)
+    database.update_from_opendace(inf)
     outfpath = Path("rae2822_cl075_085_mach_068_074_cp.hdf5")
-    database.export_hdf(outfpath)
+    database.to_hdf(outfpath)
     assert outfpath.exists()
 
 
@@ -684,7 +683,7 @@ def test_unwrap():
 
 def test_fail_import():
     with pytest.raises(KeyError):
-        Database(FAIL_HDF)
+        Database.from_hdf(FAIL_HDF)
 
 
 def test_remove_empty_entries():

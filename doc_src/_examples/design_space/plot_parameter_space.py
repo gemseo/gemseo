@@ -102,7 +102,7 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # %%
 # We can visualize the result by encapsulating the database in
 # a :class:`.Dataset`:
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 
 # %%
 # This visualization can be tabular for example:
@@ -132,5 +132,5 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # We can see that the deterministic variable 'x' is set to its default
 # value for all evaluations, contrary to the previous case where we were
 # considering the whole parameter space.
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 print(dataset.export_to_dataframe())

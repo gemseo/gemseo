@@ -57,7 +57,7 @@ the :code:`formulation` value. For a detailed explanation on how to setup the ca
                               formulation=formulation,
                               objective_name="y_4",
                               maximize_objective=True,
-                              design_space="design_space.txt")
+                              design_space="design_space.csv")
 
    scenario.set_differentiation_method("user")
 

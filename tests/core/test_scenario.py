@@ -214,7 +214,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
     assert file_path.exists()
 
-    opt_read = OptimizationProblem.import_hdf(file_path)
+    opt_read = OptimizationProblem.from_hdf(file_path)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
@@ -237,7 +237,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
         filename, pre_load=True
     )
     mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
-    opt_read = OptimizationProblem.import_hdf(filename)
+    opt_read = OptimizationProblem.from_hdf(filename)
 
     assert len(opt_read.database) == len(
         mdf_variable_grammar_scenario.formulation.opt_problem.database
@@ -493,7 +493,7 @@ def mocked_export_to_dataset(
     opt_naming: bool = True,
     export_gradients: bool = False,
 ) -> Dataset:
-    """A mock for OptimizationProblem.export_to_dataset."""
+    """A mock for OptimizationProblem.to_dataset."""
     return (
         name,
         by_group,
@@ -504,10 +504,10 @@ def mocked_export_to_dataset(
 
 
 def test_export_to_dataset(mdf_scenario):
-    """Check that export_to_dataset calls OptimizationProblem.export_to_dataset."""
+    """Check that to_dataset calls OptimizationProblem.to_dataset."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    mdf_scenario.export_to_dataset = mocked_export_to_dataset
-    dataset = mdf_scenario.export_to_dataset(
+    mdf_scenario.to_dataset = mocked_export_to_dataset
+    dataset = mdf_scenario.to_dataset(
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
     )
     assert dataset == (1, 2, 3, 4, 5)

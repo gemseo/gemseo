@@ -72,7 +72,7 @@ class TestSellar(unittest.TestCase):
         """"""
         fname = "Sellar1.pkl"
         for disc in [Sellar1(), Sellar2(), SellarSystem()]:
-            disc.serialize(fname)
+            disc.to_pickle(fname)
             assert os.path.exists(fname)
 
     def test_jac_sellar_system(self):

@@ -67,7 +67,7 @@ def test_load(dataset, tmp_wd):
     """Test the loading of a model from data."""
     factory = MLAlgoFactory()
     ml_algo = factory.create("RandomForestClassifier", data=dataset)
-    dirname = ml_algo.save()
+    dirname = ml_algo.to_pickle()
     loaded_ml_algo = factory.load(dirname)
     assert hasattr(loaded_ml_algo, "parameters")
 

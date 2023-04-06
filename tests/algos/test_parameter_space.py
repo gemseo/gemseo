@@ -422,7 +422,7 @@ def test_gradient_unnormalization():
 
 def test_parameter_space_name():
     """Check the naming of a parameter space."""
-    assert ParameterSpace().name is None
+    assert ParameterSpace().name == ""
     assert ParameterSpace(name="my_name").name == "my_name"
 
 

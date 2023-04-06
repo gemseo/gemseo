@@ -101,7 +101,7 @@ class PostFactory(BaseFactory):
             **options: The options of the post-processor.
         """
         if isinstance(opt_problem, str):
-            opt_problem = OptimizationProblem.import_hdf(opt_problem)
+            opt_problem = OptimizationProblem.from_hdf(opt_problem)
         post = self.create(opt_problem, post_name)
         post.execute(
             save=save,

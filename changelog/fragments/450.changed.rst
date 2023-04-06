@@ -1,0 +1,33 @@
+- :class:`.DesignSpace` has a class method :meth:`.DesignSpace.from_file` and an instance method :meth:`.DesignSpace.to_file`.
+- :func:`read_design_space` can read an HDF file.
+
+API changes:
+
+- Rename :meth:`.DesignSpace.export_hdf` to :meth:`.DesignSpace.to_hdf`.
+- Rename :meth:`.DesignSpace.import_hdf` to :meth:`.DesignSpace.from_hdf` which is a class method.
+- Rename :meth:`.DesignSpace.export_to_txt` to :meth:`.DesignSpace.to_csv`.
+- Rename :meth:`.DesignSpace.read_from_txt` to :meth:`.DesignSpace.from_csv` which is a class method.
+- Rename :meth:`.Database.export_hdf` to :meth:`.Database.to_hdf`.
+- Replace :meth:`.Database.import_hdf` by the class method :meth:`.Database.from_hdf` and the instance method :meth:`.Database.update_from_hdf`.
+- Rename :meth:`.Database.export_to_ggobi` to :meth:`.Database.to_ggobi`.
+- Rename :meth:`.Database.import_from_opendace` to :meth:`.Database.update_from_opendace`.
+- :class:`.Database` no longer has the argument ``input_hdf_file``; use ``database = Database.from_hdf(file_path)`` instead.
+- Rename :meth:`.OptimizationProblem.export_hdf` to :meth:`.OptimizationProblem.to_hdf`.
+- Rename :meth:`.OptimizationProblem.import_hdf` to :meth:`.OptimizationProblem.from_hdf` which is a class method.
+- Rename :meth:`.OptimizationProblem.export_to_dataset` to :meth:`.OptimizationProblem.to_dataset`.
+- Rename :meth:`.AbstractCache.export_to_dataset` to :meth:`.AbstractCache.to_dataset`.
+- Rename :meth:`.AbstractCache.export_to_ggobi` to :meth:`.AbstractCache.to_ggobi`.
+- Rename :meth:`.Scenario.export_to_dataset` to :meth:`.Scenario.to_dataset`.
+- Rename :meth:`.SensitivityAnalysis.export_to_dataset` to :meth:`.SensitivityAnalysis.to_dataset`.
+- Rename :meth:`.SensitivityAnalysis.save` to :meth:`.SensitivityAnalysis.to_pickle`.
+- Rename :meth:`.SensitivityAnalysis.load` to :meth:`.SensitivityAnalysis.from_pickle` which is a class method.
+- Rename :meth:`.MDOFunction.serialize` to :meth:`.MDOFunction.to_pickle`.
+- Rename :meth:`.MDOFunction.deserialize` to :meth:`.MDOFunction.from_pickle` which is a static method.
+- Rename :meth:`.MDODiscipline.serialize` to :meth:`.MDODiscipline.to_pickle`.
+- Rename :meth:`.MDODiscipline.deserialize` to :meth:`.MDODiscipline.from_pickle` which is a static method.
+- Rename :meth:`.MLAlgo.save` to :meth:`.MLAlgo.to_pickle`.
+- Rename :meth:`.ScalabilityResult.save` to :meth:`.ScalabilityResult.to_pickle`.
+- Rename :meth:`.BaseGrammar.convert_to_simple_grammar` to :meth:`.BaseGrammar.to_simple_grammar`.
+- The argument ``export_hdf`` of :func:`write_design_space` has been removed.
+- Rename :func:`export_design_space` to :func:`write_design_space`.
+- :class:`.DesignSpace` no longer has ``file_path`` as argument; use ``design_space = DesignSpace.from_file(file_path)`` instead.

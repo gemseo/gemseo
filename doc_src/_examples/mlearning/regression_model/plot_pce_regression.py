@@ -80,7 +80,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 prob_space = create_parameter_space()
 prob_space.add_random_variable("x_1", "OTUniformDistribution")
 prob_space.add_random_variable("x_2", "OTUniformDistribution")
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model(
     "PCERegressor", data=dataset, probability_space=prob_space, transformer=None
 )
@@ -99,7 +99,7 @@ print(output_value)
 # Save the regression model
 # -------------------------
 # Lastly, we save the model.
-directory = model.save()
+directory = model.to_pickle()
 
 # %%
 # Load the regression model

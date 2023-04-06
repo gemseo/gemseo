@@ -113,9 +113,7 @@ def get_design_space(to_complex: bool = True) -> DesignSpace:
     Args:
         to_complex: Whether the current design point is a complex vector.
     """
-    ds_read = DesignSpace.read_from_txt(
-        Path(__file__).parent / "propane_design_space.txt"
-    )
+    ds_read = DesignSpace.from_csv(Path(__file__).parent / "propane_design_space.csv")
     if to_complex:
         ds_read.to_complex()
     return ds_read

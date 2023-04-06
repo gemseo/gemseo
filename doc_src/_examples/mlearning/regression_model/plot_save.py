@@ -79,7 +79,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 # ---------------------------
 # Then, we build the linear regression model from the database and
 # displays this model.
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("RBFRegressor", data=dataset)
 model.learn()
 
@@ -93,7 +93,7 @@ print(model.predict(input_value))
 # Save the regression model
 # -------------------------
 # Lastly, we save the model.
-directory = model.save()
+directory = model.to_pickle()
 print(directory)
 
 # %%

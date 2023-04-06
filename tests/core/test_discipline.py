@@ -298,8 +298,8 @@ def test_serialize_deserialize(tmp_wd):
     input_data = SobieskiProblem().get_default_inputs()
     aero.execute(input_data)
     locd = aero.local_data
-    aero.serialize(out_file)
-    saero_u = MDODiscipline.deserialize(out_file)
+    aero.to_pickle(out_file)
+    saero_u = MDODiscipline.from_pickle(out_file)
     for k, v in locd.items():
         assert k in saero_u.local_data
         assert (v == saero_u.local_data[k]).all()
@@ -309,7 +309,7 @@ def test_serialize_deserialize(tmp_wd):
 
     aero.get_attributes_to_serialize = attr_list
     with pytest.raises(AttributeError):
-        aero.serialize(out_file)
+        aero.to_pickle(out_file)
 
     saero_u_dict = saero_u.__dict__
     ok = True
@@ -324,12 +324,12 @@ def test_serialize_run_deserialize(tmp_wd):
     aero = SobieskiAerodynamics()
     out_file = "sellar1.o"
     input_data = SobieskiProblem().get_default_inputs()
-    aero.serialize(out_file)
-    saero_u = MDODiscipline.deserialize(out_file)
-    saero_u.serialize(out_file)
+    aero.to_pickle(out_file)
+    saero_u = MDODiscipline.from_pickle(out_file)
+    saero_u.to_pickle(out_file)
     saero_u.execute(input_data)
-    saero_u.serialize(out_file)
-    saero_loc = MDODiscipline.deserialize(out_file)
+    saero_u.to_pickle(out_file)
+    saero_loc = MDODiscipline.from_pickle(out_file)
     saero_loc.status = "PENDING"
     saero_loc.execute(input_data)
 
@@ -345,8 +345,8 @@ def test_serialize_hdf_cache(tmp_wd):
     aero.set_cache_policy(aero.CacheType.HDF5, cache_hdf_file=cache_hdf_file)
     aero.execute()
     out_file = "sob_aero.pckl"
-    aero.serialize(out_file)
-    saero_u = MDODiscipline.deserialize(out_file)
+    aero.to_pickle(out_file)
+    saero_u = MDODiscipline.from_pickle(out_file)
     assert saero_u.cache.last_entry.outputs["y_2"] is not None
 
 
@@ -1169,6 +1169,6 @@ def test_self_coupled(self_coupled_disc, name, group, value):
     """Check that the value of each variable is equal to the prescribed value, and that
     each variable belongs to the prescribed group."""
     self_coupled_disc.execute()
-    d = self_coupled_disc.cache.export_to_dataset()
+    d = self_coupled_disc.cache.to_dataset()
     assert allclose(d[name], value)
     assert d._groups[name] == group

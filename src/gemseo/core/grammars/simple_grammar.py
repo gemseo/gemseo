@@ -128,7 +128,7 @@ class SimpleGrammar(BaseGrammar):
             ValueError: If the element types are bad.
         """
         if isinstance(grammar, BaseGrammar):
-            grammar = grammar.convert_to_simple_grammar()
+            grammar = grammar.to_simple_grammar()
             self.__update(grammar, grammar.__required_names, exclude_names)
             self._update_namespaces_from_grammar(grammar)
             self._defaults.update(grammar._defaults, exclude=exclude_names)
@@ -245,7 +245,7 @@ class SimpleGrammar(BaseGrammar):
             if element_name in self.__required_names:
                 self.__required_names.remove(element_name)
 
-    def convert_to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
+    def to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         return self
 
     @property

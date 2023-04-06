@@ -37,7 +37,6 @@ from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo import export_design_space
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo import get_algorithm_features
@@ -70,6 +69,7 @@ from gemseo import load_dataset
 from gemseo import monitor_scenario
 from gemseo import print_configuration
 from gemseo import wrap_discipline_in_job_scheduler
+from gemseo import write_design_space
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.dataset import Dataset
@@ -440,7 +440,7 @@ def test_create_surrogate():
     doe.execute({"algo": "fullfact", "n_samples": 10})
     surr = create_surrogate(
         "RBFRegressor",
-        disc.cache.export_to_dataset(),
+        disc.cache.to_dataset(),
         input_names=["y_24", "y_34"],
     )
     outs = surr.execute({"y_24": array([1.0]), "y_34": array([1.0])})
@@ -603,7 +603,7 @@ def test_create_design_space():
     design_space.check()
 
 
-def test_export_design_space(tmp_wd):
+def test_write_design_space(tmp_wd):
     """Test that a design space can be exported to a text or h5 file.
 
     Args:
@@ -611,8 +611,8 @@ def test_export_design_space(tmp_wd):
     """
     design_space = create_design_space()
     design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
-    export_design_space(design_space, "design_space.txt")
-    export_design_space(design_space, "design_space.h5", True)
+    write_design_space(design_space, "design_space.csv")
+    write_design_space(design_space, "design_space.h5")
 
 
 def test_create_cache():
@@ -738,7 +738,7 @@ def test_import_analytic_discipline(tmp_wd):
     file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
-    discipline.serialize(file_path)
+    discipline.to_pickle(file_path)
     discipline.execute()
 
     loaded_discipline = import_discipline(file_path, AnalyticDiscipline)
@@ -753,7 +753,7 @@ def test_import_discipline(tmp_wd):
     file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("Sellar1")
-    discipline.serialize(file_path)
+    discipline.to_pickle(file_path)
     discipline.execute()
 
     loaded_discipline = import_discipline(file_path)

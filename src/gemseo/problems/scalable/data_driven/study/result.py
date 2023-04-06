@@ -128,7 +128,7 @@ class ScalabilityResult:
         fpath = Path(study_directory) / RESULTS_DIRECTORY / fname
         return fpath
 
-    def save(self, study_directory) -> Path:
+    def to_pickle(self, study_directory) -> Path:
         """Save a scalability result into a pickle file whose name is the name of the
         ScalabilityResult instance.
 

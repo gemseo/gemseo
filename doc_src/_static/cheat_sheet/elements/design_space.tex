@@ -11,7 +11,7 @@
 Read a design space from a file and handle it:
 \begin{python}
 from gemseo import read_design_space
-design_space = read_design_space('file.txt')
+design_space = read_design_space('file.csv')
 design_space.filter(['x', 'y']) # Keep x & y variables
 design_space.add_variable('z', l_b=-3, u_b=2)
 del design_space['x']
@@ -25,8 +25,8 @@ design_space.add_variable('z', size=2, l_b=-3, u_b=2)
 \end{python}
 Export a design space to a text or HDF file:
 \begin{python}
-from gemseo import export_design_space
-export_design_space(design_space, 'file.txt')
+from gemseo import write_design_space
+write_design_space(design_space, 'file.csv')
 \end{python}
 \end{minipage}
 };

@@ -236,9 +236,9 @@ def scenario() -> DOEScenario:
 def test_scenario(scenario_pn, scenario):
     """Check the MDA results of the four disciplines."""
     scenario_pn.execute({"algo": "OT_HALTON", "n_samples": 10})
-    dataset_pn = scenario_pn.export_to_dataset(opt_naming=False)
+    dataset_pn = scenario_pn.to_dataset(opt_naming=False)
     scenario.execute({"algo": "OT_HALTON", "n_samples": 10})
-    dataset = scenario.export_to_dataset(opt_naming=False)
+    dataset = scenario.to_dataset(opt_naming=False)
     data_pn = dataset_pn.get_data_by_names(
         [
             "t_c",

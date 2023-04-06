@@ -109,7 +109,7 @@ or by means of the file path of the design space:
 
 .. code::
 
-    design_space = 'path_to_sellar_design_space.txt'
+    design_space = 'path_to_sellar_design_space.csv'
 
 2.c. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

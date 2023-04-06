@@ -88,7 +88,7 @@ def test_scalabilitystudy1(sellar_use_case):
     )
     study = ScalabilityStudy(objective, design_variables, directory)
     for discipline_name in disciplines_names:
-        study.add_discipline(HDF5Cache(f_name, discipline_name).export_to_dataset())
+        study.add_discipline(HDF5Cache(f_name, discipline_name).to_dataset())
     assert disciplines_names == study.disciplines_names
     study.set_input_output_dependency("SellarSystem", OBJ, [Y_1])
     with pytest.raises(TypeError):
@@ -159,7 +159,7 @@ def test_scalabilitystudy2(sellar_use_case):
     variables = [{X_SHARED: i} for i in range(1, 3)]
     study = ScalabilityStudy(objective, design_variables, "study_2")
     for discipline_name in disciplines_names:
-        study.add_discipline(HDF5Cache(f_name, discipline_name).export_to_dataset())
+        study.add_discipline(HDF5Cache(f_name, discipline_name).to_dataset())
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF")
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
     study.add_scaling_strategies(

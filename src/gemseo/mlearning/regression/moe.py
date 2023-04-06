@@ -724,10 +724,10 @@ class MOERegressor(MLRegressionAlgo):
         self,
         directory: Path,
     ) -> None:
-        self.clusterer.save(directory / "clusterer")
-        self.classifier.save(directory / "classifier")
+        self.clusterer.to_pickle(directory / "clusterer")
+        self.classifier.to_pickle(directory / "classifier")
         for i, local_model in enumerate(self.regress_models):
-            local_model.save(directory / f"local_model_{i}")
+            local_model.to_pickle(directory / f"local_model_{i}")
 
     def load_algo(
         self,

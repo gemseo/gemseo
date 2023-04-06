@@ -30,7 +30,7 @@ def discipline_and_data(tmpdir):
     tmpdir = Path(tmpdir)
     path_to_discipline = tmpdir / "discipline.pckl"
     discipline = create_discipline("SobieskiMission")
-    discipline.serialize(path_to_discipline)
+    discipline.to_pickle(path_to_discipline)
     path_to_outputs = tmpdir / "outputs.pckl"
     path_to_input_data = tmpdir / "inputs.pckl"
     with open(path_to_input_data, "wb") as outf:

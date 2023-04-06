@@ -360,7 +360,7 @@ class MDOScenarioAdapter(MDODiscipline):
         if self.keep_opt_history and opt_problem.solution is not None:
             self.databases.append(deepcopy(opt_problem.database))
             if self.__opt_history_file_prefix:
-                self.databases[-1].export_hdf(
+                self.databases[-1].to_hdf(
                     f"{self.__opt_history_file_prefix}_{len(self.databases)}.h5"
                 )
 

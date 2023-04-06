@@ -194,7 +194,7 @@ def create_statistics(
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = scenario.export_to_dataset(opt_naming=False)
+        >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
         >>> statistics = create_statistics(dataset)
         >>> mean = statistics.compute_mean()
@@ -281,4 +281,4 @@ def load_sensitivity_analysis(file_path: str | Path) -> SensitivityAnalysis:
     """
     from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 
-    return SensitivityAnalysis.load(file_path)
+    return SensitivityAnalysis.from_pickle(file_path)

@@ -303,7 +303,7 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
     Args:
         mock_sensitivity_analysis: The sensitivity analysis.
     """
-    dataset = mock_sensitivity_analysis.export_to_dataset()
+    dataset = mock_sensitivity_analysis.to_dataset()
     assert isinstance(dataset, Dataset)
     assert dataset.row_names == ["x1", "x2[0]", "x2[1]"]
     assert dataset.variables == ["m1(y1)", "m1(y2)", "m2(y1)", "m2(y2)"]
@@ -327,7 +327,7 @@ def test_export_to_dataset_morris():
     """Test the exported dataset from a Morris sensitivity analysis, and test the
     dataframe obtained from this dataset."""
     sensitivity_analysis = MockMorrisAnalysisIndices()
-    dataset = sensitivity_analysis.export_to_dataset()
+    dataset = sensitivity_analysis.to_dataset()
     expected_groups = ["max", "min", "mu", "mu_star", "relative_sigma", "sigma"]
     for group in expected_groups:
         for i, values in enumerate(

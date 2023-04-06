@@ -78,7 +78,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 # ---------------------------
 # Then, we build the linear regression model from the database and
 # displays this model.
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model(
     "PolynomialRegressor", data=dataset, degree=2, transformer=None
 )

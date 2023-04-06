@@ -78,7 +78,7 @@ def dataset() -> Dataset:
     design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    return discipline.cache.export_to_dataset("dataset_name")
+    return discipline.cache.to_dataset("dataset_name")
 
 
 @pytest.fixture
@@ -193,21 +193,21 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
     """Test import of model."""
     model = create_mlearning_model("LinearRegressor", dataset)
     model.learn()
-    dirname = model.save()
+    dirname = model.to_pickle()
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
     model = create_mlearning_model("KMeans", dataset)
     model.learn()
-    dirname = model.save()
+    dirname = model.to_pickle()
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
     model = create_mlearning_model("RandomForestClassifier", dataset)
     model.learn()
-    dirname = model.save()
+    dirname = model.to_pickle()
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
 
@@ -216,7 +216,7 @@ def test_import_regression_model(dataset, tmp_wd):
     """Test import of regression model."""
     model = create_regression_model("LinearRegressor", dataset)
     model.learn()
-    dirname = model.save()
+    dirname = model.to_pickle()
     loaded_model = import_regression_model(dirname)
     assert hasattr(loaded_model, "parameters")
 
@@ -244,7 +244,7 @@ def test_import_classification_model(classification_data, tmp_wd):
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
     model = create_classification_model("KNNClassifier", dataset)
     model.learn()
-    dirname = model.save()
+    dirname = model.to_pickle()
     loaded_model = import_classification_model(dirname)
     assert hasattr(loaded_model, "parameters")
 
@@ -255,7 +255,7 @@ def test_import_clustering_model(cluster_data, tmp_wd):
     dataset = create_dataset("dataset_name", data, variables)
     model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
     model.learn()
-    dirname = model.save()
+    dirname = model.to_pickle()
     loaded_model = import_clustering_model(dirname)
     assert hasattr(loaded_model, "parameters")
 

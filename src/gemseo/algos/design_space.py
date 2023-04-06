@@ -182,20 +182,13 @@ class DesignSpace(collections.abc.MutableMapping):
     __norm_current_value_array: ndarray
     """The norm of the current value stored as a concatenated array."""
 
-    def __init__(
-        self,
-        hdf_file: str | Path | None = None,
-        name: str | None = None,
-    ) -> None:
+    def __init__(self, name: str = "") -> None:
         """
         Args:
-            hdf_file: The path to the file
-                containing the description of an initial design space.
-                If None, start with an empty design space.
-            name: The name to be given to the design space,
-                `None` if the design space is unnamed.
+            name: The name to be given to the design space.
+                If empty, the design space is unnamed.
         """  # noqa: D205, D212, D415
-        self.name = name
+        self.name = name or ""
         self.variables_names = []
         self.dimension = 0
         self.variables_sizes = {}
@@ -219,8 +212,6 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__has_current_value = False
         self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
         self.__clear_dependent_data()
-        if hdf_file is not None:
-            self.import_hdf(hdf_file)
 
     @property
     def _current_value(self) -> dict[str, ndarray]:
@@ -1848,7 +1839,7 @@ class DesignSpace(collections.abc.MutableMapping):
         table.align["type"] = "l"
         return table
 
-    def export_hdf(
+    def to_hdf(
         self,
         file_path: str | Path,
         append: bool = False,
@@ -1892,31 +1883,41 @@ class DesignSpace(collections.abc.MutableMapping):
                 if value is not None:
                     var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
 
-    def import_hdf(
-        self,
-        file_path: str | Path,
-    ) -> None:
-        """Import a design space from an HDF file.
+    @classmethod
+    def from_hdf(cls, file_path: str | Path) -> DesignSpace:
+        """Create a design space from an HDF file.
 
         Args:
-            file_path: The path to the file
-                containing the description of a design space.
+            file_path: The path to the HDF file.
+
+        Returns:
+            The design space defined in the file.
         """
+        design_space = cls()
         with h5py.File(file_path) as h5file:
-            design_vars_grp = get_hdf5_group(h5file, self.DESIGN_SPACE_GROUP)
-            variable_names = get_hdf5_group(design_vars_grp, self.NAMES_GROUP)
+            design_vars_grp = get_hdf5_group(h5file, design_space.DESIGN_SPACE_GROUP)
+            variable_names = get_hdf5_group(design_vars_grp, design_space.NAMES_GROUP)
 
             for name in variable_names:
                 name = name.decode()
                 var_group = get_hdf5_group(design_vars_grp, name)
-                l_b = self.__read_opt_attr_array(var_group, self.LB_GROUP)
-                u_b = self.__read_opt_attr_array(var_group, self.UB_GROUP)
-                var_type = self.__read_opt_attr_array(var_group, self.VAR_TYPE_GROUP)
-                value = self.__read_opt_attr_array(var_group, self.VALUE_GROUP)
-                size = get_hdf5_group(var_group, self.SIZE_GROUP)[()]
-                self.add_variable(name, size, var_type, l_b, u_b, value)
+                l_b = design_space.__read_opt_attr_array(
+                    var_group, design_space.LB_GROUP
+                )
+                u_b = design_space.__read_opt_attr_array(
+                    var_group, design_space.UB_GROUP
+                )
+                var_type = design_space.__read_opt_attr_array(
+                    var_group, design_space.VAR_TYPE_GROUP
+                )
+                value = design_space.__read_opt_attr_array(
+                    var_group, design_space.VALUE_GROUP
+                )
+                size = get_hdf5_group(var_group, design_space.SIZE_GROUP)[()]
+                design_space.add_variable(name, size, var_type, l_b, u_b, value)
 
-        self.check()
+        design_space.check()
+        return design_space
 
     @staticmethod
     def __read_opt_attr_array(
@@ -1959,14 +1960,47 @@ class DesignSpace(collections.abc.MutableMapping):
 
         self.__update_common_dtype()
 
-    def export_to_txt(
+    @classmethod
+    def from_file(cls, file_path: str | Path, **options) -> DesignSpace:
+        """Create a design space from a file.
+
+        Args:
+            file_path: The path to the file.
+                If the extension starts with `"hdf"`,
+                the file will be considered as an HDF file.
+            **options: The keyword reading options.
+
+        Returns:
+            The design space defined in the file.
+        """
+        if h5py.is_hdf5(file_path):
+            return cls.from_hdf(file_path)
+        else:
+            return cls.from_csv(file_path, **options)
+
+    def to_file(self, file_path: str | Path, **options):
+        """Save the design space.
+
+        Args:
+            file_path: The file path to save the design space.
+                If the extension starts with `"hdf"`,
+                the design space will be saved in an HDF file.
+            **options: The keyword reading options.
+        """
+        file_path = Path(file_path)
+        if file_path.suffix.startswith((".hdf", ".h5")):
+            self.to_hdf(file_path, append=options.get("append", False))
+        else:
+            self.to_csv(file_path, **options)
+
+    def to_csv(
         self,
         output_file: str | Path,
         fields: Sequence[str] | None = None,
         header_char: str = "",
         **table_options: Any,
     ) -> None:
-        """Export the design space to a text file.
+        """Export the design space to a CSV file.
 
         Args:
             output_file: The path to the file.
@@ -1987,39 +2021,36 @@ class DesignSpace(collections.abc.MutableMapping):
             outf.write(table_str)
 
     @classmethod
-    def read_from_txt(
-        cls,
-        input_file: str | Path,
-        header: Iterable[str] | None = None,
+    def from_csv(
+        cls, file_path: str | Path, header: Iterable[str] | None = None
     ) -> DesignSpace:
-        """Create a design space from a text file.
+        """Create a design space from a CSV file.
 
         Args:
-            input_file: The path to the file.
+            file_path: The path to the CSV file.
             header: The names of the fields saved in the file.
-                If None, read them in the file.
+                If ``None``, read them in the file.
 
         Returns:
-            The design space read from the file.
+            The design space defined in the file.
 
         Raises:
             ValueError: If the file does not contain the minimal variables
                 in its header.
         """
-        float_data = genfromtxt(input_file, dtype="float")
-        str_data = genfromtxt(input_file, dtype="str")
+        design_space = cls()
+        float_data = genfromtxt(file_path, dtype="float")
+        str_data = genfromtxt(file_path, dtype="str")
         if header is None:
             header = str_data[0, :].tolist()
             start_read = 1
         else:
             start_read = 0
-        if not set(DesignSpace.MINIMAL_FIELDS).issubset(set(header)):
+        if not set(cls.MINIMAL_FIELDS).issubset(set(header)):
             raise ValueError(
-                "Malformed DesignSpace input file {} does not contain "
+                f"Malformed DesignSpace input file {file_path} does not contain "
                 "minimal variables in header:"
-                "{}; got instead: {}.".format(
-                    input_file, DesignSpace.MINIMAL_FIELDS, header
-                )
+                f"{cls.MINIMAL_FIELDS}; got instead: {header}."
             )
         col_map = {field: i for i, field in enumerate(header)}
         var_names = str_data[start_read:, 0].tolist()
@@ -2031,16 +2062,15 @@ class DesignSpace(collections.abc.MutableMapping):
                 prev_name = name
             elif prev_name != name:
                 raise ValueError(
-                    f"Malformed DesignSpace input file {input_file} contains some "
-                    f"variables ({name}) in a non-consecutive order."
+                    f"Malformed DesignSpace input file {file_path} contains some "
+                    f"variables ({file_path}) in a non-consecutive order."
                 )
 
         k = start_read
-        design_space = DesignSpace()
-        lower_bounds_field = DesignSpace.MINIMAL_FIELDS[1]
-        upper_bounds_field = DesignSpace.MINIMAL_FIELDS[2]
-        value_field = DesignSpace.TABLE_NAMES[2]
-        var_type_field = DesignSpace.TABLE_NAMES[-1]
+        lower_bounds_field = cls.MINIMAL_FIELDS[1]
+        upper_bounds_field = cls.MINIMAL_FIELDS[2]
+        value_field = cls.TABLE_NAMES[2]
+        var_type_field = cls.TABLE_NAMES[-1]
         for name in unique_names:
             size = var_names.count(name)
             l_b = float_data[k : k + size, col_map[lower_bounds_field]]
@@ -2062,7 +2092,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def __str__(self) -> str:
         return (
-            f"Design space: {self.name or ''}\n"
+            f"Design space: {self.name}\n"
             + self.get_pretty_table(with_index=True).get_string()
         )
 

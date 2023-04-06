@@ -358,8 +358,8 @@ def test_morris_multiple_disciplines():
 
 def test_save_load(morris, tmp_wd):
     """Check saving and loading a MorrisAnalysis."""
-    morris.save("foo.pkl")
-    new_morris = MorrisAnalysis.load("foo.pkl")
+    morris.to_pickle("foo.pkl")
+    new_morris = MorrisAnalysis.from_pickle("foo.pkl")
     assert_equal(new_morris.dataset.data, morris.dataset.data)
     assert new_morris.default_output == morris.default_output
     assert new_morris.n_replicates == morris.n_replicates

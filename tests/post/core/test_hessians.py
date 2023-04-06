@@ -56,7 +56,7 @@ def build_history(
     Returns:
         The Rosenbrock hessian, the problem solution and the opt problem.
     """
-    problem = OptimizationProblem.import_hdf(problem_path)
+    problem = OptimizationProblem.from_hdf(problem_path)
     x_opt = problem.solution.x_opt
     h_ref = rosen_hess(x_opt)
     return h_ref, problem.solution, problem
@@ -187,7 +187,7 @@ def test_baseclass_methods():
 
 def test_get_x_grad_history_on_sobieski():
     """Test the gradient history on the Sobieski problem."""
-    opt_pb = OptimizationProblem.import_hdf(MDF_HIST_PATH)
+    opt_pb = OptimizationProblem.from_hdf(MDF_HIST_PATH)
     apprx = HessianApproximation(opt_pb.database)
     with pytest.raises(ValueError):
         apprx.get_x_grad_history("g_1")

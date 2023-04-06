@@ -115,7 +115,7 @@ design_space = SobieskiProblem().design_space
 # %%
 #     .. code::
 #
-#           vi design_space.txt
+#           vi design_space.csv
 #
 #           name      lower_bound      value      upper_bound  type
 #           x_shared      0.01          0.05          0.09     float

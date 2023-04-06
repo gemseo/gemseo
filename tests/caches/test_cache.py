@@ -124,7 +124,7 @@ def test_hdf_cache_read(tmp_wd):
     cache = HDF5Cache("dummy.h5", "DummyCache")
 
     with pytest.raises(ValueError):
-        cache.export_to_ggobi(
+        cache.to_ggobi(
             "out.ggobi",
             input_names=["i", "j"],
             output_names=["o"],
@@ -143,7 +143,7 @@ def test_hdf_cache_read(tmp_wd):
 
     assert len(cache_read) == n
 
-    cache.export_to_ggobi(
+    cache.to_ggobi(
         "out1.ggobi",
         input_names=["i", "j"],
         output_names=["o"],
@@ -155,13 +155,11 @@ def test_hdf_cache_read(tmp_wd):
 
     assert len(cache) == n + 1
     exp_ggobi = Path("out2.ggobi")
-    cache.export_to_ggobi(
-        str(exp_ggobi), input_names=["i", "k"], output_names=["o", "t"]
-    )
+    cache.to_ggobi(str(exp_ggobi), input_names=["i", "k"], output_names=["o", "t"])
     assert exp_ggobi.exists()
 
     with pytest.raises(ValueError):
-        cache.export_to_ggobi(
+        cache.to_ggobi(
             "out3.ggobi",
             input_names=["izgz"],
             output_names=["o"],
@@ -619,7 +617,7 @@ def test_export_to_dataset_and_entries(
     second_outputs = {"y": array([2.0])}
     simple_cache[first_inputs] = (first_outputs, first_jacobian)
     simple_cache[second_inputs] = (second_outputs, second_jacobian)
-    dataset = simple_cache.export_to_dataset()
+    dataset = simple_cache.to_dataset()
     assert len(dataset) == 1
     assert dataset["x"][0, 0] == 1.0
     assert dataset["y"][0, 0] == 2.0

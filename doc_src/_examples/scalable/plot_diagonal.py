@@ -93,7 +93,7 @@ scenario.execute({"algo": "DiagonalDOE", "n_samples": 20})
 # The second step is to build a :class:`.ScalableDiscipline`,
 # using a :class:`.ScalableDiagonalModel` and the database
 # converted to a :class:`.Dataset`.
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 scalable = create_scalable("ScalableDiagonalModel", dataset)
 
 # %%

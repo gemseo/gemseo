@@ -117,7 +117,7 @@ def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
     model.learn()
     factory = MLAlgoFactory()
 
-    directory_path = model.save(save_learning_set=True)
+    directory_path = model.to_pickle(save_learning_set=True)
     imported_model = factory.load(directory_path)
     assert array_equal(
         imported_model.learning_set.get_data_by_names(["x_1"], False),
@@ -125,7 +125,7 @@ def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
     )
     assert imported_model.is_trained
 
-    directory_path = model.save()
+    directory_path = model.to_pickle()
     imported_model = factory.load(directory_path)
     assert len(model.learning_set) == 0
     assert len(imported_model.learning_set) == 0

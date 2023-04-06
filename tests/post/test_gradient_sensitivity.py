@@ -60,7 +60,7 @@ def test_import_gradient_sensitivity(
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
         "GradientSensitivity",
@@ -279,7 +279,7 @@ def test_compute_missing_gradients(
                 with matplotlib pyplot.
         caplog: Fixture to access and control log capturing.
     """
-    problem = OptimizationProblem.import_hdf(str(opt_problem))
+    problem = OptimizationProblem.from_hdf(str(opt_problem))
 
     if opt_problem == SOBIESKI_MISSING_GRADIENTS:
         with pytest.raises(
@@ -317,7 +317,7 @@ def test_compute_missing_gradients_with_eval(factory, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
                 with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(str(SOBIESKI_MISSING_GRADIENTS))
+    problem = OptimizationProblem.from_hdf(str(SOBIESKI_MISSING_GRADIENTS))
 
     with open(SOBIESKI_GRADIENT_VALUES, "rb") as handle:
         gradients = pickle.load(handle)

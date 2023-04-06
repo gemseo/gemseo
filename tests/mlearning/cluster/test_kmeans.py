@@ -186,7 +186,7 @@ def test_predict_proba(model, hard):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_clustering_model(dirname)
     out1 = model.predict(VALUE)
     out2 = imported_model.predict(VALUE)

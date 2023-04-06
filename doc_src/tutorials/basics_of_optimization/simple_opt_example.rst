@@ -315,7 +315,7 @@ After the resolution of the :class:`~gemseo.algos.opt_problem.OptimizationProble
 .. code::
 
    problem = scenario.formulation.opt_problem
-   problem.export_hdf("my_optim.hdf5")
+   problem.to_hdf("my_optim.hdf5")
 
 We can also post-process the optimization history by means of the function :func:`.execute_post`,
 either from the :class:`~gemseo.algos.opt_problem.OptimizationProblem`:

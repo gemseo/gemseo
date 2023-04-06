@@ -215,9 +215,9 @@ Write a design space
 ~~~~~~~~~~~~~~~~~~~~
 
 To export an instance of :class:`.DesignSpace` into an hdf or txt file,
-the :func:`.export_design_space` function can be used:
+the :func:`.write_design_space` function can be used:
 
-.. automethod:: gemseo.export_design_space
+.. automethod:: gemseo.write_design_space
    :noindex:
 
 About MDO formulations

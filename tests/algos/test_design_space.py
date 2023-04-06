@@ -23,6 +23,7 @@ import logging
 import re
 from pathlib import Path
 
+import h5py
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -41,7 +42,7 @@ from numpy.linalg import norm
 from numpy.testing import assert_equal
 
 CURRENT_DIR = Path(__file__).parent
-TEST_INFILE = CURRENT_DIR / "design_space.txt"
+TEST_INFILE = CURRENT_DIR / "design_space.csv"
 FAIL_HDF = CURRENT_DIR / "fail.hdf5"
 
 DesignVariableType = DesignSpace.DesignVariableType
@@ -275,9 +276,9 @@ def test_set_current_value_with_malformed_current_x(design_space):
         design_space.set_current_value(1.0)
 
 
-def test_read_from_txt():
-    """Check that a variable name is correct when reading a txt file."""
-    ds = DesignSpace.read_from_txt(CURRENT_DIR / "design_space_4.txt")
+def test_read_from_csv():
+    """Check that a variable name is correct when reading a CSV file."""
+    ds = DesignSpace.from_csv(CURRENT_DIR / "design_space_4.csv")
     assert ds.variables_names == ["x_shared"]
 
 
@@ -630,34 +631,34 @@ def get_sobieski_design_space():
 
 
 def test_read_write(tmp_wd):
-    """Check that read_from_txt and export_to_txt works correctly."""
+    """Check that from_csv and to_csv work correctly."""
     ref_ds = get_sobieski_design_space()
-    f_path = Path("sobieski_design_space.txt")
-    ref_ds.export_to_txt(f_path)
-    read_ds = DesignSpace.read_from_txt(f_path)
+    f_path = Path("sobieski_design_space.csv")
+    ref_ds.to_csv(f_path)
+    read_ds = DesignSpace.from_csv(f_path)
     read_ds.get_lower_bounds()
     check_ds(ref_ds, read_ds, f_path)
 
-    ds = DesignSpace.read_from_txt(TEST_INFILE)
+    ds = DesignSpace.from_csv(TEST_INFILE)
     assert not ds.has_current_value()
     for i in range(1, 9):
-        testfile = CURRENT_DIR / f"design_space_fail_{i}.txt"
+        testfile = CURRENT_DIR / f"design_space_fail_{i}.csv"
         with pytest.raises(ValueError):
-            DesignSpace.read_from_txt(testfile)
+            DesignSpace.from_csv(testfile)
 
     for i in range(1, 4):
-        testfile = CURRENT_DIR / f"design_space_{i}.txt"
+        testfile = CURRENT_DIR / f"design_space_{i}.csv"
         header = None
         if i == 2:
             header = ["name", "value", "lower_bound", "type", "upper_bound"]
-        DesignSpace.read_from_txt(testfile, header=header)
+        DesignSpace.from_csv(testfile, header=header)
 
-    ds = DesignSpace.read_from_txt(TEST_INFILE)
+    ds = DesignSpace.from_csv(TEST_INFILE)
     ds.set_lower_bound("x_shared", None)
     ds.set_upper_bound("x_shared", None)
 
-    out_f = Path("table.txt")
-    ds.export_to_txt(out_f, sortby="upper_bound")
+    out_f = Path("table.csv")
+    ds.to_csv(out_f, sortby="upper_bound")
     assert out_f.exists()
 
 
@@ -710,21 +711,31 @@ def test_hdf5_export(tmp_wd):
     """Tests the export of a Design space in the HDF5 format."""
     ref_ds = get_sobieski_design_space()
     f_path = Path("_sobieski_design_space.h5")
-    ref_ds.export_hdf(f_path)
-    read_ds = DesignSpace(f_path)
-    check_ds(ref_ds, read_ds, f_path)
+    ref_ds.to_hdf(f_path)
+
+
+@pytest.mark.parametrize("suffix", [".csv", ".h5", ".hdf", ".hdf5", ".txt"])
+def test_to_from_file(tmp_wd, suffix):
+    """Check that the methods to_file() and from_file() work correctly."""
+    file_path = Path("foo").with_suffix(suffix)
+    design_space = get_sobieski_design_space()
+    design_space.to_file(file_path)
+    assert h5py.is_hdf5(file_path) == file_path.suffix.startswith((".h5", ".hdf"))
+
+    read_design_space = DesignSpace.from_file(file_path)
+    check_ds(design_space, read_design_space, file_path)
 
 
 def test_import_error_with_missing_file():
     """Check that a missing HDF file cannot be imported."""
     with pytest.raises(FileNotFoundError):
-        DesignSpace(hdf_file="dummy.h5")
+        DesignSpace.from_hdf("dummy.h5")
 
 
 def test_fail_import():
     """Check that a malformed HDF file cannot be imported."""
     with pytest.raises(KeyError):
-        DesignSpace().import_hdf(FAIL_HDF)
+        DesignSpace.from_hdf(FAIL_HDF)
 
 
 @pytest.fixture(scope="module")
@@ -885,7 +896,7 @@ def test_current_x_with_missing_variable(design_space):
 
 def test_design_space_name():
     """Check the naming of a design space."""
-    assert DesignSpace().name is None
+    assert DesignSpace().name == ""
     assert DesignSpace(name="my_name").name == "my_name"
 
 
@@ -1352,6 +1363,6 @@ def test_export_import_with_none_value(tmp_wd):
     """Check that a design space exported without default value can be imported."""
     design_space = DesignSpace()
     design_space.add_variable("x")
-    design_space.export_to_txt("foo.txt")
-    txt_design_space = DesignSpace.read_from_txt("foo.txt")
+    design_space.to_csv("foo.csv")
+    txt_design_space = DesignSpace.from_csv("foo.csv")
     assert txt_design_space == design_space

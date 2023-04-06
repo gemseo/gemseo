@@ -46,7 +46,7 @@ def dataset() -> Dataset:
     design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    return discipline.cache.export_to_dataset("dataset_name")
+    return discipline.cache.to_dataset("dataset_name")
 
 
 @pytest.fixture
@@ -114,7 +114,7 @@ def test_model_1d_output(model_1d_output):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

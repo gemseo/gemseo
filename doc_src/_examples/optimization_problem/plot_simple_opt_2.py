@@ -90,7 +90,7 @@ print("Available algorithms ", algo_list)
 # Save the optimization results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We can serialize the results for further exploitation.
-problem.export_hdf("my_optim.hdf5")
+problem.to_hdf("my_optim.hdf5")
 
 # %%
 # Post-process the results

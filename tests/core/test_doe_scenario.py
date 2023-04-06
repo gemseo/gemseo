@@ -289,7 +289,7 @@ def test_export_to_dataset_with_repeated_inputs():
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1.0], [2.0], [1.0]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-    dataset = scenario.export_to_dataset(by_group=False)
+    dataset = scenario.to_dataset(by_group=False)
     assert_equal(
         dataset.data,
         {
@@ -307,7 +307,7 @@ def test_export_to_dataset_normalized_integers():
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1], [2], [10]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-    dataset = scenario.export_to_dataset(by_group=False)
+    dataset = scenario.to_dataset(by_group=False)
     assert_equal(
         dataset.data,
         {

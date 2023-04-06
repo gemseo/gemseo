@@ -619,8 +619,8 @@ def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, t
     out_file = "function1.o"
     function.activate_counters = activate_counters
     function(value)
-    function.serialize(out_file)
-    serialized_func = mdo_function.deserialize(out_file)
+    function.to_pickle(out_file)
+    serialized_func = mdo_function.from_pickle(out_file)
 
     if activate_counters:
         assert function.n_calls == serialized_func.n_calls

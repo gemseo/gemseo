@@ -377,9 +377,9 @@ class Scenario(MDODiscipline):
         """
         opt_pb = self.formulation.opt_problem
         if file_format == OptimizationProblem.HDF5_FORMAT:
-            opt_pb.export_hdf(file_path=file_path, append=append)
+            opt_pb.to_hdf(file_path=file_path, append=append)
         elif file_format == OptimizationProblem.GGOBI_FORMAT:
-            opt_pb.database.export_to_ggobi(file_path=file_path)
+            opt_pb.database.to_ggobi(file_path=file_path)
         else:
             raise ValueError(
                 f"Cannot export optimization history to file format: {file_format}."
@@ -426,7 +426,7 @@ class Scenario(MDODiscipline):
                 )
                 remove(self._opt_hist_backup_path)
             elif pre_load:
-                opt_pb.database.import_hdf(self._opt_hist_backup_path)
+                opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
                 max_iteration = opt_pb.database.get_max_iteration()
                 if max_iteration != 0:
                     opt_pb.current_iter = max_iteration
@@ -632,7 +632,7 @@ class Scenario(MDODiscipline):
         """
         return True
 
-    def export_to_dataset(
+    def to_dataset(
         self,
         name: str | None = None,
         by_group: bool = True,
@@ -677,7 +677,7 @@ class Scenario(MDODiscipline):
         Returns:
             A dataset built from the database of the optimization problem.
         """
-        return self.formulation.opt_problem.export_to_dataset(
+        return self.formulation.opt_problem.to_dataset(
             name=name,
             by_group=by_group,
             categorize=categorize,
