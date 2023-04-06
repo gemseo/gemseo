@@ -279,8 +279,7 @@ class BiLevel(MDOFormulation):
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
-        factory = MDAFactory().factory
-        return factory.get_options_grammar(main_mda_name)
+        return MDAFactory().get_options_grammar(main_mda_name)
 
     @classmethod
     def get_default_sub_options_values(
@@ -296,8 +295,7 @@ class BiLevel(MDOFormulation):
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
-        factory = MDAFactory().factory
-        return factory.get_default_options_values(main_mda_name)
+        return MDAFactory().get_default_options_values(main_mda_name)
 
     def _build_mdas(
         self,

@@ -20,42 +20,17 @@
 """A factory for datasets."""
 from __future__ import annotations
 
-from typing import Any
-
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.dataset import Dataset
-from gemseo.core.factory import Factory
 
 
-class DatasetFactory:
+class DatasetFactory(BaseFactory):
     """A factory for :class:`.Dataset`."""
 
-    def __init__(self) -> None:
-        self.factory = Factory(Dataset, ("gemseo.problems.dataset",))
-
-    def create(self, dataset: str, **options: Any) -> Dataset:
-        """Create a :class:`.Dataset`.
-
-        Args:
-            dataset: The name of the dataset (its classname).
-            **options: The options of the dataset.
-
-        Returns:
-            A dataset.
-        """
-        return self.factory.create(dataset, **options)
+    _CLASS = Dataset
+    _MODULE_NAMES = ("gemseo.problems.dataset",)
 
     @property
     def datasets(self) -> list[str]:
         """The names of the available datasets."""
-        return self.factory.classes
-
-    def is_available(self, dataset: str) -> bool:
-        """Check the availability of a dataset.
-
-        Args:
-            dataset: The name of the dataset (its class name).
-
-        Returns:
-            Whether the dataset is available.
-        """
-        return self.factory.is_available(dataset)
+        return self.class_names

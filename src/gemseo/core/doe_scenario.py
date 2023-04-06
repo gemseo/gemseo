@@ -73,7 +73,7 @@ class DOEScenario(Scenario):
         self.__samples = None
 
     def _init_algo_factory(self) -> None:
-        self._algo_factory = DOEFactory()
+        self._algo_factory = DOEFactory(use_cache=True)
 
     def _run_algorithm(self) -> None:
         algo_name = self.local_data[self.ALGO]

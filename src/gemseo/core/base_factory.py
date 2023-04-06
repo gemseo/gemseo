@@ -25,26 +25,68 @@ import logging
 import os
 import pkgutil
 import sys
+from abc import ABCMeta
+from abc import abstractmethod
 from importlib import metadata
 from inspect import isabstract
 from typing import Any
+from typing import ClassVar
 from typing import Iterable
+
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.singleton import _Multiton
-from gemseo.utils.singleton import Multiton
 from gemseo.utils.source_parsing import get_default_options_values
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Factory(Multiton):
-    """Factory of class objects with cache.
+class _FactoryMultitonMeta(ABCMeta, GoogleDocstringInheritanceMeta):
+    """A metaclass for implementing the Multiton design pattern.
 
-    This factory can create an object from a base class
-    or any of its subclasses that can be imported from the given modules sources.
+    See `Multiton <https://en.wikipedia.org/wiki/Multiton_pattern>`.
+
+    As opposed to the functools.lru_cache,
+    the objects built from this metaclass can be pickled.
+
+    A cache entry is bound to the tuple combining :attr:`.Factory._CLASS` and
+    :attr:`.Factory._MODULE_NAMES`.
+    When instantiating a factory, if an instance has already been created for this
+    tuple then this instance is used, otherwise a new instance is created is stored
+    into the cache.
+    """
+
+    __cache: ClassVar[dict[tuple, BaseFactory]] = {}
+    """The cache that keeps the factory instances."""
+
+    def __call__(cls) -> BaseFactory:  # noqa: D107
+        key = (cls._CLASS,) + tuple(cls._MODULE_NAMES)
+        # Either return an instance that match an already existing key
+        # or create and return a new instance.
+        return cls.__cache.setdefault(key, type.__call__(cls))
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clear the cache."""
+        cls.__cache.clear()
+
+
+class BaseFactory(metaclass=_FactoryMultitonMeta):
+    """A base class for factory of objects.
+
+    This factory can create objects from a base class
+    or any of its subclasses that can be imported from the given module sources.
+    The base class and the module sources shall be defined as class attributes of the
+    factory class,
+    for instance::
+
+        class AFactory(BaseFactory):
+            _CLASS = ABaseClass
+            _MODULE_NAMES = ("first.module.fully.qualified.name",
+                             "second.module.fully.qualified.name")
+
     There are 3 sources of modules that can be searched:
 
     - fully qualified module names (such as gemseo.problems, ...),
@@ -77,32 +119,37 @@ class Factory(Multiton):
     the object in cache instead of instantiating a new one.
     """
 
-    # Names of the environment variable to search for classes
-    __GEMSEO_PATH = "GEMSEO_PATH"
-    __GEMS_PATH = "GEMS_PATH"
+    _ENV_VAR_WITH_SEARCH_PATHS: ClassVar[str] = "GEMSEO_PATH"
+    """The name of the environment variable that contains the paths to search for
+    classes."""
 
-    # The name of the setuptools entry point for declaring plugins.
-    PLUGIN_ENTRY_POINT = "gemseo_plugins"
+    PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
+    """The name of the setuptools entry point for declaring plugins."""
 
-    def __init__(
-        self,
-        base_class: type[Any],
-        module_names: Iterable[str] | None = None,
-    ) -> None:
-        """
-        Args:
-            base_class: The base class to be considered.
-            module_names: The fully qualified modules names to be searched.
-        """  # noqa: D205, D212, D415
-        if not isinstance(base_class, type):
-            raise TypeError("Class to search must be a class!")
+    __names_to_classes: dict[str, type]
+    """The class names bound to the classes."""
 
-        self.__base_class = base_class
-        self.__module_names = module_names or []
+    __names_to_library_names: dict[str, str]
+    """The class names bound to the names of the module the contains it."""
+
+    failed_imports: dict[str, str]
+    """The class names bound to the import errors."""
+
+    def __init__(self) -> None:  # noqa: D107
         self.__names_to_classes = {}
         self.__names_to_library_names = {}
         self.failed_imports = {}
         self.update()
+
+    @property
+    @abstractmethod
+    def _CLASS(self) -> type:  # noqa: 802
+        """The base class that the factory can build."""
+
+    @property
+    @abstractmethod
+    def _MODULE_NAMES(self) -> list[str]:  # noqa: 802
+        """The fully qualified names of the modules to search."""
 
     def update(self) -> None:
         """Search for the classes that can be instantiated.
@@ -112,7 +159,7 @@ class Factory(Multiton):
             2. The plugin packages
             3. The packages from the environment variables
         """
-        module_names = list(self.__module_names)
+        module_names = list(self._MODULE_NAMES)
 
         # Import the fully qualified modules names.
         for module_name in module_names:
@@ -131,24 +178,13 @@ class Factory(Multiton):
             self.__import_modules_from(module_name)
             module_names += [module_name]
 
-        gems_path = os.environ.get(self.__GEMS_PATH)
-        if gems_path is not None:
-            msg = (
-                "GEMS is now named GEMSEO. "
-                "The GEMS_PATH environment variable is now deprecated "
-                "and it is strongly recommended "
-                "to use the GEMSEO_PATH environment variable "
-                "instead to register your GEMSEO plugins."
-            )
-            LOGGER.warning(msg)
+        module_names += self.__import_modules_from_env_var()
 
-        # Import from the environment variable paths.
-        for env_variable in [self.__GEMSEO_PATH, self.__GEMS_PATH]:
-            module_names += self.__import_modules_from_env_var(env_variable)
+        names_to_classes = self.__get_sub_classes(self._CLASS)
 
-        names_to_classes = self.__get_sub_classes(self.__base_class)
-        if not isabstract(self.__base_class):
-            names_to_classes[self.__base_class.__name__] = self.__base_class
+        if not isabstract(self._CLASS):
+            names_to_classes[self._CLASS.__name__] = self._CLASS
+
         for name, cls in names_to_classes.items():
             if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
                 self.__names_to_classes[name] = cls
@@ -163,23 +199,20 @@ class Factory(Multiton):
         LOGGER.debug("Failed to import package %s", pkg_name)
         self.failed_imports[pkg_name] = ""
 
-    def __import_modules_from_env_var(self, env_variable: str) -> list[str]:
+    def __import_modules_from_env_var(self) -> list[str]:
         """Import the modules from the path given by an environment variable.
-
-        Args:
-            env_variable: The name of an environment variable.
 
         Returns:
             The imported fully qualified module names.
         """
-        g_path = os.environ.get(env_variable)
-        if g_path is None:
+        search_paths = os.environ.get(self._ENV_VAR_WITH_SEARCH_PATHS)
+        if search_paths is None:
             return []
 
-        if ":" in g_path:
-            paths = g_path.split(":")
+        if ":" in search_paths:
+            paths = search_paths.split(":")
         else:
-            paths = [g_path]
+            paths = [search_paths]
 
         # temporary make the paths visible to the import machinery
         for path in paths:
@@ -214,9 +247,9 @@ class Factory(Multiton):
                 importlib.import_module(mod_name)
             except Exception as err:  # pylint: disable=(broad-except
                 LOGGER.debug("Failed to import module: %s", mod_name, exc_info=True)
-                self.failed_imports[mod_name] = err
+                self.failed_imports[mod_name] = str(err)
 
-    def __get_sub_classes(self, cls: type[Any]) -> dict[str, type[Any]]:
+    def __get_sub_classes(self, cls: type) -> dict[str, type]:
         """Find all the subclasses of a class.
 
         The class names are unique,
@@ -238,8 +271,8 @@ class Factory(Multiton):
 
     @staticmethod
     def __is_class_in_modules(
-        module_names: str,
-        cls: type[Any],
+        module_names: Iterable[str],
+        cls: type,
     ) -> bool:
         """Return whether a class belongs to given modules.
 
@@ -257,7 +290,7 @@ class Factory(Multiton):
 
     # TODO: API: rename classes to class_names
     @property
-    def classes(self) -> list[str]:
+    def class_names(self) -> list[str]:
         """The sorted names of the available classes."""
         return sorted(self.__names_to_classes.keys())
 
@@ -283,7 +316,7 @@ class Factory(Multiton):
         """
         return self.__names_to_library_names[name]
 
-    def get_class(self, name: str) -> type[Any]:
+    def get_class(self, name: str) -> type:
         """Return a class from its name.
 
         Args:
@@ -295,14 +328,13 @@ class Factory(Multiton):
         Raises:
             ImportError: If the class is not available.
         """
-        try:
-            return self.__names_to_classes[name]
-        except KeyError:
+        class_ = self.__names_to_classes.get(name)
+        if class_ is None:
+            names = ", ".join(sorted(self.__names_to_classes.keys()))
             raise ImportError(
-                "Class {} is not available; \navailable ones are: {}.".format(
-                    name, ", ".join(sorted(self.__names_to_classes.keys()))
-                )
+                f"The class {name} is not available; the available ones are: {names}.",
             )
+        return class_
 
     def create(
         self,
@@ -339,8 +371,7 @@ class Factory(Multiton):
         Returns:
             The mapping from the argument names to their documentation.
         """
-        cls = self.get_class(name)
-        return get_options_doc(cls.__init__)
+        return get_options_doc(self.get_class(name).__init__)
 
     def get_default_options_values(
         self, name: str
@@ -353,8 +384,7 @@ class Factory(Multiton):
         Returns:
             The mapping from the argument names to their default values.
         """
-        cls = self.get_class(name)
-        return get_default_options_values(cls)
+        return get_default_options_values(self.get_class(name))
 
     def get_options_grammar(
         self,
@@ -416,8 +446,7 @@ class Factory(Multiton):
         Returns:
             The JSON grammar.
         """
-        cls = self.get_class(name)
-        return cls.get_sub_options_grammar(**options)
+        return self.get_class(name).get_sub_options_grammar(**options)
 
     def get_default_sub_options_values(
         self,
@@ -434,22 +463,16 @@ class Factory(Multiton):
         Returns:
             The JSON grammar.
         """
-        cls = self.get_class(name)
-        return cls.get_default_sub_options_values(**options)
-
-    @staticmethod
-    def cache_clear() -> None:
-        """Clear the cache."""
-        _Multiton.cache_clear()
+        return self.get_class(name).get_default_sub_options_values(**options)
 
     def __str__(self) -> str:
-        return f"Factory({self.__base_class.__name__})"
+        return f"Factory of {self._CLASS.__name__} objects"
 
     def __repr__(self) -> str:
         # Display the successfully loaded modules and the failed imports with the reason
         table = PrettyTable(
-            ["Module", "Is available ?", "Purpose or error message"],
-            title=self.__base_class.__name__,
+            ["Module", "Is available?", "Purpose or error message"],
+            title=self._CLASS.__name__,
             min_table_width=120,
             max_table_width=120,
         )
@@ -469,7 +492,7 @@ class Factory(Multiton):
             names_to_import_statuses[class_name] = [class_name, "Yes", msg]
 
         for package_name, err in self.failed_imports.items():
-            names_to_import_statuses[package_name] = [package_name, "No", str(err)]
+            names_to_import_statuses[package_name] = [package_name, "No", err]
 
         # Take them all and then sort them for pretty printing
         for name in sorted(names_to_import_statuses.keys()):

@@ -75,7 +75,7 @@ def test_assure_samples(measure):
 
 def test_factory():
     """Check that the factory of MLQualityMeasure works correctly."""
-    assert "MSEMeasure" in MLQualityMeasureFactory().classes
+    assert "MSEMeasure" in MLQualityMeasureFactory().class_names
 
 
 @pytest.fixture

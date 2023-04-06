@@ -30,7 +30,7 @@ from numpy import inf
 from numpy.typing import NDArray
 from strenum import LowercaseStrEnum
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
@@ -206,13 +206,11 @@ class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._compute(coverage, 1 - confidence, self.__size, side)
 
 
-class ToleranceIntervalFactory:
+class ToleranceIntervalFactory(BaseFactory):
     """A factory of :class:`.ToleranceInterval`."""
 
-    def __init__(self) -> None:  # noqa: D107
-        self.__factory = Factory(
-            ToleranceInterval, ("gemseo.uncertainty.statistics.tolerance_interval",)
-        )
+    _CLASS = ToleranceInterval
+    _MODULE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)
 
     def create(
         self,
@@ -255,4 +253,4 @@ class ToleranceIntervalFactory:
         Returns:
             The class.
         """
-        return self.__factory.get_class(f"{name}ToleranceInterval")
+        return super().get_class(f"{name}ToleranceInterval")

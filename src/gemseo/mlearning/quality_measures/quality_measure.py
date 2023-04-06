@@ -34,8 +34,8 @@ from numpy.random import default_rng
 from numpy.random import Generator
 from strenum import StrEnum
 
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.dataset import Dataset
-from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
@@ -332,8 +332,8 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             self.algo.learn(samples)
 
 
-class MLQualityMeasureFactory(Factory):
+class MLQualityMeasureFactory(BaseFactory):
     """A factory of :class:`.MLQualityMeasure`."""
 
-    def __init__(self) -> None:
-        super().__init__(MLQualityMeasure, ("gemseo.mlearning.quality_measures",))
+    _CLASS = MLQualityMeasure
+    _MODULE_NAMES = ("gemseo.mlearning.quality_measures",)

@@ -56,8 +56,8 @@ def test_create_with_wrong_formulation_name(factory):
     with pytest.raises(
         ImportError,
         match=(
-            "Class foo is not available; \n"
-            "available ones are: BiLevel, DisciplinaryOpt, IDF, MDF."
+            "The class foo is not available; "
+            "the available ones are: BiLevel, DisciplinaryOpt, IDF, MDF."
         ),
     ):
         factory.create("foo", None, None, None)
@@ -83,5 +83,5 @@ def test_not_mdo_formulation():
     """Check the use of a factory of _BaseFormulation that is not a MDOFormulation."""
     with concretize_classes(ANotMDOFormulation):
         factory = NotMDOFormulationFactory()
-        assert factory.factory.is_available("ANotMDOFormulation")
-        assert not factory.factory.is_available("MDF")
+        assert factory.is_available("ANotMDOFormulation")
+        assert not factory.is_available("MDF")

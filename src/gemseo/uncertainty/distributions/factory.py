@@ -25,7 +25,7 @@ from typing import Optional
 from typing import Sequence
 from typing import Union
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.distributions.distribution import ParametersType
@@ -37,7 +37,7 @@ DistributionParametersType = Union[
 ]
 
 
-class DistributionFactory:
+class DistributionFactory(BaseFactory):
     """Factory to build instances of :class:`.Distribution`.
 
     At initialization, this factory scans the following modules
@@ -63,8 +63,8 @@ class DistributionFactory:
         Normal(mu=0.0, sigma=1.0)
     """
 
-    def __init__(self) -> None:  # noqa: D107
-        self.factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
+    _CLASS = Distribution
+    _MODULE_NAMES = ("gemseo.uncertainty.distributions",)
 
     def create_marginal_distribution(
         self,
@@ -82,7 +82,7 @@ class DistributionFactory:
         Returns:
             The marginal probability distribution.
         """
-        return self.factory.create(distribution_name, variable=variable, **parameters)
+        return super().create(distribution_name, variable=variable, **parameters)
 
     create = create_marginal_distribution
 
@@ -114,7 +114,7 @@ class DistributionFactory:
                 f"with different identifiers; got {pretty_str(identifiers)}."
             )
 
-        return self.factory.create(
+        return super().create(
             f"{next(iter(identifiers))}ComposedDistribution",
             distributions=distributions,
             copula=copula,
@@ -124,15 +124,4 @@ class DistributionFactory:
     @property
     def available_distributions(self) -> list[str]:
         """The available probability distributions."""
-        return self.factory.classes
-
-    def is_available(self, distribution_name: str) -> bool:
-        """Check the availability of a probability distribution.
-
-        Args:
-            distribution_name: The name of a class defining a distribution.
-
-        Returns:
-            The availability of the distribution.
-        """
-        return self.factory.is_available(distribution_name)
+        return self.class_names

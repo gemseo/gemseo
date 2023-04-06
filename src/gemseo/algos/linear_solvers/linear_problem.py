@@ -28,8 +28,10 @@ from numpy.linalg import norm
 from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
 
+from gemseo.algos.base_problem import BaseProblem
 
-class LinearProblem:
+
+class LinearProblem(BaseProblem):
     """Representation of the linear equations' system ``A.x = b``.
 
     It also contains the solution, and some properties of the system such as the symmetry

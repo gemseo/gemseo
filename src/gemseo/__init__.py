@@ -601,8 +601,7 @@ def get_formulation_options_schema(
     """
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
-    factory = MDOFormulationsFactory().factory
-    grammar = factory.get_options_grammar(formulation_name)
+    grammar = MDOFormulationsFactory().get_options_grammar(formulation_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -639,8 +638,9 @@ def get_formulation_sub_options_schema(
     """
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
-    factory = MDOFormulationsFactory().factory
-    grammar = factory.get_sub_options_grammar(formulation_name, **formulation_options)
+    grammar = MDOFormulationsFactory().get_sub_options_grammar(
+        formulation_name, **formulation_options
+    )
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -672,8 +672,7 @@ def get_formulations_sub_options_defaults(
     """
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
-    factory = MDOFormulationsFactory().factory
-    return factory.get_default_sub_options_values(
+    return MDOFormulationsFactory().get_default_sub_options_values(
         formulation_name, **formulation_options
     )
 
@@ -705,8 +704,7 @@ def get_formulations_options_defaults(
     """
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
-    factory = MDOFormulationsFactory().factory
-    return factory.get_default_options_values(formulation_name)
+    return MDOFormulationsFactory().get_default_options_values(formulation_name)
 
 
 def get_discipline_options_schema(
@@ -836,8 +834,7 @@ def get_discipline_options_defaults(
     """
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
-    factory = DisciplinesFactory().factory
-    return factory.get_default_options_values(discipline_name)
+    return DisciplinesFactory().get_default_options_values(discipline_name)
 
 
 def get_scenario_differentiation_modes() -> (
@@ -987,8 +984,7 @@ def get_mda_options_schema(
     """
     from gemseo.mda.mda_factory import MDAFactory
 
-    factory = MDAFactory().factory
-    grammar = factory.get_options_grammar(mda_name)
+    grammar = MDAFactory().get_options_grammar(mda_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -1317,8 +1313,7 @@ def create_mda(
     """
     from gemseo.mda.mda_factory import MDAFactory
 
-    factory = MDAFactory()
-    return factory.create(mda_name=mda_name, disciplines=disciplines, **options)
+    return MDAFactory().create(mda_name=mda_name, disciplines=disciplines, **options)
 
 
 def execute_post(
@@ -1473,7 +1468,7 @@ def print_configuration() -> None:
         MDAFactory,
         PostFactory,
     ):
-        factory_repr = repr(factory().factory)
+        factory_repr = repr(factory())
         LOGGER.info("%s", factory_repr)
         print(factory_repr)  # noqa: T201
 
@@ -1871,7 +1866,7 @@ def get_algorithm_features(
     return AlgorithmFeatures(
         algorithm_name=description.algorithm_name,
         library_name=description.library_name,
-        root_package_name=factory.factory.get_library_name(driver.__class__.__name__),
+        root_package_name=factory.get_library_name(driver.__class__.__name__),
         handle_equality_constraints=description.handle_equality_constraints,
         handle_inequality_constraints=description.handle_inequality_constraints,
         handle_float_variables=True,

@@ -29,9 +29,9 @@ from typing import Sequence
 from typing import TYPE_CHECKING
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.factory import Factory
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
@@ -659,16 +659,8 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
 
-class BaseFormulationsFactory:
+class BaseFormulationsFactory(BaseFactory):
     """A factory of :class:`~gemseo.core.base_formulation.BaseFormulation`."""
-
-    def __init__(self, cls: type, module_names: Iterable[str] | None = None) -> None:
-        """
-        Args:
-            cls: The base class.
-            module_names: The names of the modules to search in.
-        """  # noqa: D205, D212, D415
-        self.factory = Factory(cls, module_names)
 
     def create(
         self,
@@ -690,7 +682,7 @@ class BaseFormulationsFactory:
             maximize_objective: Whether to maximize the objective.
             **options: The options for the creation of the formulation.
         """
-        return self.factory.create(
+        return super().create(
             formulation_name,
             disciplines=disciplines,
             design_space=design_space,
@@ -702,18 +694,4 @@ class BaseFormulationsFactory:
     @property
     def formulations(self) -> list[str]:
         """The available formulations."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        formulation_name: str,
-    ) -> bool:
-        """Check the availability of a formulation.
-
-        Args:
-            formulation_name: The formulation name to check.
-
-        Returns:
-            Whether the formulation is available.
-        """
-        return self.factory.is_available(formulation_name)
+        return self.class_names

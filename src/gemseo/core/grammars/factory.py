@@ -23,17 +23,17 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.grammars.base_grammar import BaseGrammar
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GrammarFactory:
+class GrammarFactory(BaseFactory):
     """A factory of :class:`.BaseGrammar`."""
 
-    def __init__(self) -> None:  # noqa: D107
-        self.__factory = Factory(BaseGrammar, ("gemseo.core.grammars",))
+    _CLASS = BaseGrammar
+    _MODULE_NAMES = ("gemseo.core.grammars",)
 
     def create(
         self,
@@ -48,20 +48,9 @@ class GrammarFactory:
             name: The name to be given to the grammar.
             **options: The options to be passed to the initialization.
         """
-        return self.__factory.create(class_name, name=name, **options)
+        return super().create(class_name, name=name, **options)
 
     @property
     def grammars(self) -> list[str]:
         """The sorted names of the available grammars."""
-        return self.__factory.classes
-
-    def is_available(self, class_name: str) -> bool:
-        """Return whether a grammar class exists.
-
-        Args:
-            class_name: The name of a class deriving from :class:`.BaseGrammar`.
-
-        Returns:
-            Whether the grammar class exists.
-        """
-        return self.__factory.is_available(class_name)
+        return self.class_names

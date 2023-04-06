@@ -156,7 +156,7 @@ def generate_test_functions(
 ) -> list[Callable[[], None]]:
     """Generate test functions for a DOE library.
 
-    This methods filters the algorithms adapted to the benchmark problem.
+    This method filters the algorithms adapted to the benchmark problem.
 
     Args:
         opt_lib_name: The name of the library.

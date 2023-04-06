@@ -12,25 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Provide the base class for problems."""
 from __future__ import annotations
 
-import pytest
-from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
+from abc import ABC
+from abc import abstractmethod
 
 
-@pytest.fixture()
-def factory() -> SchedulersFactory:
-    return SchedulersFactory()
+class BaseProblem(ABC):
+    """Base class for problems."""
 
-
-def test_available_schedulers(factory):
-    """Test the availability of job schedulers using the Factory mechanism."""
-    assert factory.is_available("LSF")
-    assert factory.is_available("SLURM")
-
-    assert "LSF" in factory.scheduler_names
-    assert "SLURM" in factory.scheduler_names
+    @abstractmethod
+    def check(self) -> None:
+        """Check the problem."""

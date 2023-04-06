@@ -26,7 +26,7 @@ from numpy import float64
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 
 EPSILON = finfo(float).eps
 
@@ -247,14 +247,17 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
         return self.f_pointer(f_input_values, **self._function_kwargs)
 
 
-class GradientApproximationFactory:
+class GradientApproximationFactory(BaseFactory):
     """A factory to create gradient approximators."""
 
+    _CLASS = GradientApproximator
+    _MODULE_NAMES = ("gemseo.utils.derivatives",)
+
     def __init__(self) -> None:  # noqa:D107
-        self.factory = Factory(GradientApproximator, ("gemseo.utils.derivatives",))
+        super().__init__()
         self.__aliases = {
-            self.factory.get_class(class_name).ALIAS: class_name
-            for class_name in self.factory.classes
+            self.get_class(class_name).ALIAS: class_name
+            for class_name in self.class_names
         }
 
     def create(
@@ -284,26 +287,15 @@ class GradientApproximationFactory:
             name = self.__aliases[name]
 
         if step is None:
-            return self.factory.create(
+            return super().create(
                 name, f_pointer=f_pointer, parallel=parallel, **parallel_args
             )
-        else:
-            return self.factory.create(
-                name, f_pointer=f_pointer, step=step, parallel=parallel, **parallel_args
-            )
+
+        return super().create(
+            name, f_pointer=f_pointer, step=step, parallel=parallel, **parallel_args
+        )
 
     @property
     def gradient_approximators(self) -> list[str]:
         """The gradient approximators."""
-        return self.factory.classes
-
-    def is_available(self, class_name: str) -> bool:
-        """Whether a gradient approximator is available.
-
-        Args:
-            class_name: The name of the class implementing the gradient approximator.
-
-        Return:
-            Whether the gradient approximator is available.
-        """
-        return self.factory.is_available(class_name)
+        return self.class_names
