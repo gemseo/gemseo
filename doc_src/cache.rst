@@ -59,9 +59,9 @@ Export to another format
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :attr:`~.MDODiscipline.cache` can be converted to a :class:`.Dataset` for post-processing purposes
-using its method :meth:`~.AbstractCache.export_to_dataset`.
+using its method :meth:`~.AbstractCache.to_dataset`.
 It can also be saved into an XML file to be read by `ggobi <http://ggobi.org/>`__
-using its method :meth:`~.AbstractFullCache.export_to_ggobi`.
+using its method :meth:`~.AbstractFullCache.to_ggobi`.
 
 .. note::
 

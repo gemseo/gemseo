@@ -216,7 +216,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         """
 
     @abstractmethod
-    def convert_to_simple_grammar(self) -> SimpleGrammar:
+    def to_simple_grammar(self) -> SimpleGrammar:
         """Convert the grammar to a :class:`.SimpleGrammar`.
 
         Returns:

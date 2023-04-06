@@ -744,11 +744,11 @@ class SobieskiProblem:
         """
         if self.__design_space is None:
             if self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER:
-                file_name = f"sobieski_original_design_space{suffix}.txt"
+                file_name = f"sobieski_original_design_space{suffix}.csv"
             else:
-                file_name = f"sobieski_design_space{suffix}.txt"
+                file_name = f"sobieski_design_space{suffix}.csv"
 
-            self.__design_space = DesignSpace.read_from_txt(
+            self.__design_space = DesignSpace.from_csv(
                 Path(__file__).parent / file_name
             )
             if self.__dtype == complex128:

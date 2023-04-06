@@ -31,7 +31,7 @@ POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 @pytest.fixture(scope="module")
 def problem():
-    return OptimizationProblem.import_hdf(file_path=POWER2)
+    return OptimizationProblem.from_hdf(file_path=POWER2)
 
 
 TEST_PARAMETERS = {

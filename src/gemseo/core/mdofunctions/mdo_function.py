@@ -343,7 +343,7 @@ class MDOFunction(Serializable):
 
         self._func = f_pointer or NotImplementedCallable()
 
-    def serialize(self, file_path: str | Path) -> None:
+    def to_pickle(self, file_path: str | Path) -> None:
         """Serialize the function and store it in a file.
 
         Args:
@@ -354,7 +354,7 @@ class MDOFunction(Serializable):
             pickler.dump(self)
 
     @staticmethod
-    def deserialize(file_path: str | Path) -> MDOFunction:
+    def from_pickle(file_path: str | Path) -> MDOFunction:
         """Deserialize a function from a file.
 
         Args:

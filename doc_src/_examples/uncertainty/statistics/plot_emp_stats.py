@@ -76,7 +76,7 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
 # In this second stage,
 # we create an :class:`.EmpiricalStatistics`
 # from the database encapsulated in a :class:`.Dataset`:
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 analysis = create_statistics(dataset, name="SobieskiMission")
 
 print(analysis)

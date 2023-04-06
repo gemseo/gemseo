@@ -1,1 +1,1 @@
-:meth:`.OptimizationProblem.export_to_dataset` uses the order of the design variables given by the :class:`.ParameterSpace` to build the :class:`.Dataset`.
+:meth:`.OptimizationProblem.to_dataset` uses the order of the design variables given by the :class:`.ParameterSpace` to build the :class:`.Dataset`.

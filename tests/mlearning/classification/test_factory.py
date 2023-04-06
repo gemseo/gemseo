@@ -56,7 +56,7 @@ def test_load(dataset, tmp_wd):
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     knn.learn()
-    dirname = knn.save()
+    dirname = knn.to_pickle()
     loaded_knn = factory.load(dirname)
     assert hasattr(loaded_knn, "parameters")
 

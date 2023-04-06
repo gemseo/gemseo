@@ -42,7 +42,7 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
+    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -100,7 +100,7 @@ def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(SSBJ_HDF5_PATH)
+    problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
     post = factory.execute(
         problem,
         "VariableInfluence",

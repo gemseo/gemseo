@@ -52,17 +52,17 @@ cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 # ----------------
 # We can easily build a dataset from this :class:`.MemoryFullCache`,
 # either by separating the inputs from the outputs (default option):
-dataset = cache.export_to_dataset("toy_cache")
+dataset = cache.to_dataset("toy_cache")
 print(dataset)
 # %%
 # or by considering all features as default parameters:
-dataset = cache.export_to_dataset("toy_cache", categorize=False)
+dataset = cache.to_dataset("toy_cache", categorize=False)
 print(dataset)
 
 # %%
 # Access properties
 # -----------------
-dataset = cache.export_to_dataset("toy_cache")
+dataset = cache.to_dataset("toy_cache")
 # %%
 # Variables names
 # ~~~~~~~~~~~~~~~

@@ -41,7 +41,7 @@ and by means of the API function :func:`.create_discipline`, we build the :class
     scenario = create_scenario(disciplines,
                                formulation_name="MDF",
                                objective_name="y_4",
-                               design_space="design_space.txt")
+                               design_space="design_space.csv")
 
 
 Basic monitoring using logs

@@ -102,7 +102,7 @@ def dataset_from_cache() -> Dataset:
     design_space.add_variable("x_1", l_b=-1, u_b=2)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    data = discipline.cache.export_to_dataset("dataset_name")
+    data = discipline.cache.to_dataset("dataset_name")
     return data
 
 
@@ -205,7 +205,7 @@ def test_jacobian_constant(dataset):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

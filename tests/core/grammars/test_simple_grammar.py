@@ -435,7 +435,7 @@ def test_restrict_to(names, required_names):
 def test_convert_to_simple_grammar():
     """Verify grammar conversion."""
     g = SimpleGrammar("g")
-    assert id(g.convert_to_simple_grammar()) == id(g)
+    assert id(g.to_simple_grammar()) == id(g)
 
 
 @parametrized_names_to_types

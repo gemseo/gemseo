@@ -57,7 +57,7 @@ def test_load(dataset, tmp_wd):
     factory = ClusteringModelFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     kmeans.learn()
-    dirname = kmeans.save()
+    dirname = kmeans.to_pickle()
     loaded_kmeans = factory.load(dirname)
     assert hasattr(loaded_kmeans, "parameters")
 

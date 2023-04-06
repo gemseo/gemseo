@@ -103,11 +103,11 @@ optimization libraries. It can be obtained using :
 
 The optimization history can be saved to the disk for further analysis,
 without having to re execute the optimization.
-For that, we use the function :meth:`.OptimizationProblem.export_hdf`:
+For that, we use the function :meth:`.OptimizationProblem.to_hdf`:
 
 .. code::
 
-    problem.export_hdf("simple_opt.hdf5")
+    problem.to_hdf("simple_opt.hdf5")
 
 Solving the problem by DOE
 --------------------------

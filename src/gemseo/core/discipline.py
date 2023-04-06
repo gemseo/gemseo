@@ -2068,10 +2068,7 @@ class MDODiscipline(Serializable):
             with_namespace=with_namespaces or not self.input_grammar.to_namespaced,
         )
 
-    def serialize(
-        self,
-        file_path: str | Path,
-    ) -> None:
+    def to_pickle(self, file_path: str | Path) -> None:
         """Serialize the discipline and store it in a file.
 
         Args:
@@ -2082,9 +2079,7 @@ class MDODiscipline(Serializable):
             pickler.dump(self)
 
     @staticmethod
-    def deserialize(
-        file_path: str | Path,
-    ) -> MDODiscipline:
+    def from_pickle(file_path: str | Path) -> MDODiscipline:
         """Deserialize a discipline from a file.
 
         Args:

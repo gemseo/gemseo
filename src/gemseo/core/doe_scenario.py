@@ -121,7 +121,7 @@ class DOEScenario(Scenario):
             for name in ("n_samples", "algo_options"):
                 self.input_grammar.required_names.remove(name)
 
-    def export_to_dataset(  # noqa: D102
+    def to_dataset(  # noqa: D102
         self,
         name: str | None = None,
         by_group: bool = True,
@@ -129,7 +129,7 @@ class DOEScenario(Scenario):
         opt_naming: bool = True,
         export_gradients: bool = False,
     ) -> Dataset:
-        return self.formulation.opt_problem.export_to_dataset(
+        return self.formulation.opt_problem.to_dataset(
             name=name,
             by_group=by_group,
             categorize=categorize,

@@ -116,10 +116,10 @@ def test_serialize(tmp_wd, fast_evaluation):
     file_path = "discipline.h5"
 
     discipline = AnalyticDiscipline({"y": "2*x"}, fast_evaluation=fast_evaluation)
-    discipline.serialize(file_path)
+    discipline.to_pickle(file_path)
     discipline.execute(input_data)
 
-    saved_discipline = AnalyticDiscipline.deserialize(file_path)
+    saved_discipline = AnalyticDiscipline.from_pickle(file_path)
     saved_discipline.execute(input_data)
 
     assert_equal(saved_discipline.get_output_data(), discipline.get_output_data())

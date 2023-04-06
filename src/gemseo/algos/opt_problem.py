@@ -343,10 +343,12 @@ class OptimizationProblem(BaseProblem):
         self.current_iter = 0
         self.use_standardized_objective = use_standardized_objective
         self.__functions_are_preprocessed = False
-        if isinstance(input_database, Database):
+        if input_database is None:
+            self.database = Database()
+        elif isinstance(input_database, Database):
             self.database = input_database
         else:
-            self.database = Database(input_hdf_file=input_database)
+            self.database = Database.from_hdf(input_database)
         self.solution = None
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
@@ -1961,11 +1963,7 @@ class OptimizationProblem(BaseProblem):
                 dtype = h5py.special_dtype(vlen=str)
             cls.__store_h5data(group, attr, attr_name, dtype)
 
-    def export_hdf(
-        self,
-        file_path: str | Path,
-        append: bool = False,
-    ) -> None:
+    def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
@@ -2005,17 +2003,15 @@ class OptimizationProblem(BaseProblem):
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
-        self.database.export_hdf(file_path, append=True)
+        self.database.to_hdf(file_path, append=True)
 
         # Design space shall remain the same in append mode
         if not append or no_design_space:
-            self.design_space.export_hdf(file_path, append=True)
+            self.design_space.to_hdf(file_path, append=True)
 
     @classmethod
-    def import_hdf(
-        cls,
-        file_path: str | Path,
-        x_tolerance: float = 0.0,
+    def from_hdf(
+        cls, file_path: str | Path, x_tolerance: float = 0.0
     ) -> OptimizationProblem:
         """Import an optimization history from an HDF file.
 
@@ -2028,7 +2024,7 @@ class OptimizationProblem(BaseProblem):
         """
         LOGGER.info("Import optimization problem from file: %s", file_path)
 
-        design_space = DesignSpace(file_path)
+        design_space = DesignSpace.from_file(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
         with h5py.File(file_path) as h5file:
@@ -2072,7 +2068,7 @@ class OptimizationProblem(BaseProblem):
 
         return opt_pb
 
-    def export_to_dataset(
+    def to_dataset(
         self,
         name: str | None = None,
         by_group: bool = True,
@@ -2360,7 +2356,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The data related to the variables.
         """
-        dataset = self.export_to_dataset("OptimizationProblem")
+        dataset = self.to_dataset("OptimizationProblem")
         data = dataset.get_data_by_names(names, as_dict)
 
         if filter_non_feasible:

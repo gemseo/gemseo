@@ -73,7 +73,7 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
         "ScatterPlotMatrix",
@@ -96,7 +96,7 @@ def test_non_existent_var(tmp_wd):
         tmp_wd : Fixture to move into a temporary directory.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(POWER2)
     with pytest.raises(
         ValueError,
         match=r"Cannot build scatter plot matrix: function foo is neither "

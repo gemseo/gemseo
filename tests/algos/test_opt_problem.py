@@ -546,7 +546,7 @@ def test_export_hdf(tmp_wd):
     file_path = Path("power2.h5")
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP")
-    problem.export_hdf(file_path, append=True)  # Shall still work now
+    problem.to_hdf(file_path, append=True)  # Shall still work now
 
     def check_pb(imp_pb):
         assert file_path.exists()
@@ -557,13 +557,13 @@ def test_export_hdf(tmp_wd):
         assert problem.get_eq_cstr_total_dim() == 1
         assert problem.get_ineq_cstr_total_dim() == 2
 
-    problem.export_hdf(file_path)
+    problem.to_hdf(file_path)
 
-    imp_pb = OptimizationProblem.import_hdf(file_path)
+    imp_pb = OptimizationProblem.from_hdf(file_path)
     check_pb(imp_pb)
 
-    problem.export_hdf(file_path, append=True)
-    imp_pb = OptimizationProblem.import_hdf(file_path)
+    problem.to_hdf(file_path, append=True)
+    imp_pb = OptimizationProblem.from_hdf(file_path)
     check_pb(imp_pb)
     val = imp_pb.objective(imp_pb.database.get_x_by_iter(1))
     assert isinstance(val, float)
@@ -790,7 +790,7 @@ def test_nan_func():
 
 def test_fail_import():
     with pytest.raises(KeyError):
-        OptimizationProblem.import_hdf(FAIL_HDF)
+        OptimizationProblem.from_hdf(FAIL_HDF)
 
 
 def test_append_export(tmp_wd):
@@ -804,24 +804,24 @@ def test_append_export(tmp_wd):
     func = problem.objective
     file_path_db = "test_pb_append.hdf5"
     # Export empty file
-    problem.export_hdf(file_path_db)
+    problem.to_hdf(file_path_db)
 
     n_calls = 200
     for i in range(n_calls):
         func(array([0.1, 1.0 / (i + 1.0)]))
 
     # Export again with append mode
-    problem.export_hdf(file_path_db, append=True)
+    problem.to_hdf(file_path_db, append=True)
 
-    read_db = Database(file_path_db)
+    read_db = Database.from_hdf(file_path_db)
     assert len(read_db) == n_calls
 
     i += 1
     func(array([0.1, 1.0 / (i + 1.0)]))
 
     # Export again with identical elements plus a new one.
-    problem.export_hdf(file_path_db, append=True)
-    read_db = Database(file_path_db)
+    problem.to_hdf(file_path_db, append=True)
+    read_db = Database.from_hdf(file_path_db)
     assert len(read_db) == n_calls + 1
 
 
@@ -871,13 +871,13 @@ def test_observable(pow2_problem):
     assert iter_obs == iter_norms
 
     # Check that the observable is exported
-    dataset = problem.export_to_dataset("dataset")
+    dataset = problem.to_dataset("dataset")
     func_data = dataset.get_data_by_group("functions", as_dict=True)
     obs_data = func_data.get(design_norm)
     assert obs_data is not None
     assert func_data[design_norm][:, 0].tolist() == iter_norms
     assert dataset.GRADIENT_GROUP not in dataset.groups
-    dataset = problem.export_to_dataset("dataset", export_gradients=True)
+    dataset = problem.to_dataset("dataset", export_gradients=True)
     assert dataset.GRADIENT_GROUP in dataset.groups
     name = Database.get_gradient_name("pow2")
     n_iter = len(database)
@@ -1050,9 +1050,9 @@ def test_database_name(problem):
     """Check the name of the database."""
     DOEFactory().execute(problem, "fullfact", n_samples=1)
     problem.database.name = "my_database"
-    dataset = problem.export_to_dataset()
+    dataset = problem.to_dataset()
     assert dataset.name == problem.database.name
-    dataset = problem.export_to_dataset("dataset")
+    dataset = problem.to_dataset("dataset")
     assert dataset.name == "dataset"
 
 
@@ -1319,9 +1319,9 @@ def test_function_string_representation_from_hdf():
     # problem.constraints.append(
     #     MDOFunction(lambda x: x[0] + x[1], "g", args=["x0", "x1"])
     # )
-    # problem.export_hdf("opt_problem_to_check_string_representation.hdf5")
+    # problem.to_hdf("opt_problem_to_check_string_representation.hdf5")
 
-    new_problem = OptimizationProblem.import_hdf(
+    new_problem = OptimizationProblem.from_hdf(
         DIRNAME / "opt_problem_to_check_string_representation.hdf5"
     )
     assert str(new_problem.objective) == "f(x0, x1)"
@@ -1432,7 +1432,7 @@ def test_dataset_missing_values(categorize, export_gradients):
         {"Iter": [5]},
     )
     # Export to a dataset.
-    dataset = problem.export_to_dataset(
+    dataset = problem.to_dataset(
         categorize=categorize, export_gradients=export_gradients
     )
     # Check that the missing values are exported as NaN.
@@ -1504,8 +1504,8 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
 
     # Export and import the optimization problem.
     file_path = "power2.h5"
-    pow2_problem.export_hdf(file_path)
-    imp_pb = OptimizationProblem.import_hdf(file_path)
+    pow2_problem.to_hdf(file_path)
+    imp_pb = OptimizationProblem.from_hdf(file_path)
 
     # Check the set of observables.
     # Assuming that two functions are equal if they have the same name.
@@ -1536,7 +1536,7 @@ def test_export_to_dataset(input_values, expected):
     algo.algo_name = "CustomDOE"
     algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
 
-    dataset = problem.export_to_dataset(input_values=input_values, by_group=False)
+    dataset = problem.to_dataset(input_values=input_values, by_group=False)
     assert_equal(
         dataset.data,
         {
@@ -1561,7 +1561,7 @@ def test_export_to_dataset_input_names_order(name):
     algo.algo_name = "CustomDOE"
     algo.execute(problem, samples=array([[1.0, 1.0], [2.0, 2.0]]))
 
-    dataset = problem.export_to_dataset()
+    dataset = problem.to_dataset()
     assert dataset.get_names("design_parameters") == ["b", name]
 
 
@@ -1722,7 +1722,7 @@ def test_avoid_complex_in_dataset():
     )
     problem.preprocess_functions()
     problem.evaluate_functions(array([0.25 + 0j]), eval_jac=True)
-    dataset = problem.export_to_dataset(export_gradients=True)
+    dataset = problem.to_dataset(export_gradients=True)
     for name in ["@f", "f", "x"]:
         assert dataset[name].dtype.kind == "f"
 

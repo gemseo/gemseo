@@ -70,8 +70,8 @@ def discipline(module_tmp_wd, request) -> MDODiscipline:
 
     # Use the remapping discipline loaded from the disk, after serialization
     file_name = "discipline.pkl"
-    discipline.serialize(file_name)
-    return MDODiscipline.deserialize(file_name)
+    discipline.to_pickle(file_name)
+    return MDODiscipline.from_pickle(file_name)
 
 
 def test_original_discipline(discipline):

@@ -57,15 +57,15 @@ opt_problem = scenario.formulation.opt_problem
 # We can easily build a dataset from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the function
 # (default option):
-dataset = opt_problem.export_to_dataset("sellar1_doe")
+dataset = opt_problem.to_dataset("sellar1_doe")
 print(dataset)
 # %%
 # or by considering all features as default parameters:
-dataset = opt_problem.export_to_dataset("sellar1_doe", categorize=False)
+dataset = opt_problem.to_dataset("sellar1_doe", categorize=False)
 print(dataset)
 # %%
 # or by using an input-output naming rather than an optimization naming:
-dataset = opt_problem.export_to_dataset("sellar1_doe", opt_naming=False)
+dataset = opt_problem.to_dataset("sellar1_doe", opt_naming=False)
 print(dataset)
 # %%
 # .. note::
@@ -77,7 +77,7 @@ print(dataset)
 # %%
 # Access properties
 # -----------------
-dataset = opt_problem.export_to_dataset("sellar1_doe")
+dataset = opt_problem.to_dataset("sellar1_doe")
 # %%
 # Variables names
 # ~~~~~~~~~~~~~~~

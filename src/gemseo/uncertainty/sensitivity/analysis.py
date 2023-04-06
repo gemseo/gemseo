@@ -140,14 +140,14 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             algo_options or {},
             formulation,
             **(formulation_options or {}),
-        ).export_to_dataset(opt_naming=False)
+        ).to_dataset(opt_naming=False)
         self._main_method = None
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
 
-    def save(self, file_path: str | Path) -> None:
+    def to_pickle(self, file_path: str | Path) -> None:
         """Save the current sensitivity analysis on the disk.
 
         Args:
@@ -157,7 +157,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             pickle.dump(self, f)
 
     @staticmethod
-    def load(file_path: str | Path) -> SensitivityAnalysis:
+    def from_pickle(file_path: str | Path) -> SensitivityAnalysis:
         """Load a sensitivity analysis from the disk.
 
         Args:
@@ -857,11 +857,11 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         save_show_figure(fig, show, file_path)
         return fig
 
-    def export_to_dataset(self) -> Dataset:
+    def to_dataset(self) -> Dataset:
         """Convert :attr:`.SensitivityAnalysis.indices` into a :class:`.Dataset`.
 
         Returns:
-            Dataset: The sensitivity indices.
+            The sensitivity indices.
         """
         sizes = self.dataset.sizes
 

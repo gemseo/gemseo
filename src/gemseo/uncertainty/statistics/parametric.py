@@ -163,7 +163,7 @@ class ParametricStatistics(Statistics):
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = scenario.export_to_dataset(opt_naming=False)
+        >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
         >>> statistics = ParametricStatistics(
         ...     dataset, ['Normal', 'Uniform', 'Triangular']

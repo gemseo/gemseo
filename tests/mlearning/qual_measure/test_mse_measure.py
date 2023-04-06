@@ -49,7 +49,7 @@ def dataset() -> Dataset:
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": 20})
-    return MODEL.cache.export_to_dataset()
+    return MODEL.cache.to_dataset()
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def dataset_test() -> Dataset:
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": 5})
-    return MODEL.cache.export_to_dataset()
+    return MODEL.cache.to_dataset()
 
 
 def test_constructor(dataset):

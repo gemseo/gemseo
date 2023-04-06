@@ -34,7 +34,7 @@ from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives.derivatives_approx import comp_best_step
 from numpy import array
 
-DS_FILE = Path(__file__).parent / "sobieski_design_space.txt"
+DS_FILE = Path(__file__).parent / "sobieski_design_space.csv"
 NLOPT_OPTIONS = {
     "eq_tolerance": 1e-11,
     "ftol_abs": 1e-14,

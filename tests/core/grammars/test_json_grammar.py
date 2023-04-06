@@ -524,7 +524,7 @@ def test_restrict_to(names):
 def test_convert_to_simple_grammar(schema_path):
     """Verify grammar conversion."""
     g1 = new_grammar(schema_path)
-    g2 = g1.convert_to_simple_grammar()
+    g2 = g1.to_simple_grammar()
     assert set(g1) == set(g2)
     assert g1.required_names == g2.required_names
     assert isinstance(g2, SimpleGrammar)
@@ -533,7 +533,7 @@ def test_convert_to_simple_grammar(schema_path):
 def test_convert_to_simple_grammar_not_convertible_type():
     """Verify grammar conversion with non convertible type."""
     g1 = new_grammar(DATA_PATH / "grammar_1.json")
-    g2 = g1.convert_to_simple_grammar()
+    g2 = g1.to_simple_grammar()
     assert g2["name"] is None
 
 
@@ -542,7 +542,7 @@ def test_convert_to_simple_grammar_warnings(caplog):
     g1 = new_grammar(
         DATA_PATH / "grammar_conversion_to_simple_grammar_warn_for_array.json"
     )
-    g2 = g1.convert_to_simple_grammar()
+    g2 = g1.to_simple_grammar()
     assert len(g2) == 1
     assert g2["name"] == ndarray
     assert caplog.records[0].levelname == "WARNING"

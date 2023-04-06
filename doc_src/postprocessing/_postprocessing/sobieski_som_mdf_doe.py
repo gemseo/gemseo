@@ -37,7 +37,7 @@ scenario = create_scenario(
     objective_name="y_4",
     maximize_objective=True,
     scenario_type="DOE",
-    design_space="design_space.txt",
+    design_space="design_space.csv",
 )
 
 scenario.set_differentiation_method()

@@ -113,7 +113,7 @@ provide two samples to be evaluated:
    sample_2 = [2, 3]  # a=2, b=3
    samples = array([sample_1, sample_2])
    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-   print(scenario.export_to_dataset().export_to_dataframe())
+   print(scenario.to_dataset().export_to_dataframe())
 
 Which prints the results of the computation as follows:
 

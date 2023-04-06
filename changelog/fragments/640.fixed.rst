@@ -1,1 +1,1 @@
-:meth:`.SensitivityAnalysis.export_to_dataset` works correctly with several methods and the returned :class:`.Dataset` can be exported to a ``DataFrame``.
+:meth:`.SensitivityAnalysis.to_dataset` works correctly with several methods and the returned :class:`.Dataset` can be exported to a ``DataFrame``.

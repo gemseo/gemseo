@@ -64,7 +64,7 @@ def dataset_factory(dataset_name, expressions, design_space_variables, objective
         [discipline], "DisciplinaryOpt", objective_name, design_space
     )
     scenario.execute({"algo": "lhs", "n_samples": LEARNING_SIZE})
-    return discipline.cache.export_to_dataset(dataset_name)
+    return discipline.cache.to_dataset(dataset_name)
 
 
 # the following contains the arguments passed to dataset_factory

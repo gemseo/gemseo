@@ -304,7 +304,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             )
         return str(msg)
 
-    def save(
+    def to_pickle(
         self,
         directory: str | None = None,
         path: str | Path = ".",

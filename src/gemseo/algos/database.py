@@ -95,7 +95,7 @@ class Database:
 
     .. note::
         Serializing an :class:`.OptimizationProblem`
-        using its method :class:`~.OptimizationProblem.export_hdf`
+        using its method :class:`~.OptimizationProblem.to_hdf`
         also serializes its :class:`.Database`.
 
     The database is based on a two-levels dictionary-like mapping such as
@@ -131,37 +131,22 @@ class Database:
     __component_names_to_names: dict[str, str]
     """The variable names associated with variable component names."""
 
-    def __init__(
-        self,
-        input_hdf_file: str | Path | None = None,
-        name: str | None = None,
-    ) -> None:
+    def __init__(self, name: str = "") -> None:
         """
         Args:
-            input_hdf_file: The path of an HDF file containing an initial database
-                if any.
-                It should have been generated with :meth:`.Database.export_hdf`.
             name: The name to be given to the database.
-                If ``None``, use the class name.
+                If empty, use the class name.
         """  # noqa: D205, D212, D415
-        if name is None:
-            self.name = self.__class__.__name__
-        else:
-            self.name = name
-
+        self.name = name or self.__class__.__name__
         self.__dict = {}
         self.__max_iteration = 0
         self.__store_listeners = []
         self.__newiter_listeners = []
 
         # This list enables to temporary save the last inputs that have been
-        # stored before any export_hdf is called.
+        # stored before any to_hdf is called.
         # It is used to append the exported hdf file.
         self.__hdf_export_buffer = []
-
-        if input_hdf_file is not None:
-            self.import_hdf(input_hdf_file)
-
         self.__component_names_to_names = {}
 
     @property
@@ -1148,7 +1133,7 @@ class Database:
             index_dataset, keys_group, values_group, output_values
         )
 
-    def export_hdf(
+    def to_hdf(
         self,
         file_path: str | Path = "optimization_history.h5",
         append: bool = False,
@@ -1168,7 +1153,7 @@ class Database:
             # The append mode loops over the last stored entries in order to
             # check whether some new outputs have been added.
             # However, if the hdf file has been re-written by a previous function
-            # (such as OptimizationProblem.export_hdf),
+            # (such as OptimizationProblem.to_hdf),
             # there is no existing database inside the hdf file.
             # In such case, we have to check whether the design
             # variables group exists because otherwise the function tries to
@@ -1207,13 +1192,32 @@ class Database:
 
         self.__hdf_export_buffer = []
 
-    def import_hdf(self, filename: str | Path = "optimization_history.h5") -> None:
-        """Import a database from an HDF file.
+    @staticmethod
+    def from_hdf(
+        file_path: str | Path = "optimization_history.h5", name: str = ""
+    ) -> Database:
+        """Create a database from an HDF file.
 
         Args:
-            filename: The path of the HDF file.
+            file_path: The path of the HDF file.
+            name: The name of the database.
+
+        Returns:
+            The database defined in the file.
         """
-        with h5py.File(filename) as h5file:
+        database = Database(name)
+        database.update_from_hdf(file_path)
+        return database
+
+    def update_from_hdf(
+        self, file_path: str | Path = "optimization_history.h5"
+    ) -> Database:
+        """Update the current database from an HDF file.
+
+        Args:
+            file_path: The path of the HDF file.
+        """
+        with h5py.File(file_path) as h5file:
             design_vars_grp = h5file["x"]
             keys_group = h5file["k"]
             values_group = h5file["v"]
@@ -1245,6 +1249,8 @@ class Database:
                 self.store(
                     array(design_vars_grp[str_index]), scalar_dict, add_iter=False
                 )
+
+        return self
 
     @staticmethod
     def set_dv_names(
@@ -1434,17 +1440,17 @@ class Database:
 
         return list(chain(*names_to_flat_names.values())), flat_values
 
-    def export_to_ggobi(
+    def to_ggobi(
         self,
         functions: Iterable[str] | None = None,
         file_path: str | Path = "opt_hist.xml",
         design_variables_names: str | Iterable[str] | None = None,
     ) -> None:
-        """Export the database to a xml file for ggobi tool.
+        """Export the database to a XML file for ggobi tool.
 
         Args:
             functions: The names of output functions.
-            file_path: The path to the xml file.
+            file_path: The path to the XML file.
             design_variables_names: The names of the input design variables.
         """
         values_array, variables_names, functions = self.get_history_array(
@@ -1458,8 +1464,8 @@ class Database:
             file_path=file_path,
         )
 
-    def import_from_opendace(self, database_file: str | Path) -> None:
-        """Load the current database from an opendace xml database.
+    def update_from_opendace(self, database_file: str | Path) -> None:
+        """Update the current database from an opendace XML database.
 
         Args:
             database_file: The path to an opendace database.
@@ -1473,7 +1479,7 @@ class Database:
             x_vect = array(data.pop("x"))
             data_reformat = data["y"]
             for key, value in data["dy"].items():
-                data_reformat["@" + key[1:]] = array(value)
+                data_reformat[self.get_gradient_name(key[1:])] = array(value)
             self.store(x_vect, data_reformat)
 
     @classmethod
@@ -1516,11 +1522,7 @@ class HashableNdarray:
     (which requires the user to be careful enough not to modify it).
     """
 
-    def __init__(
-        self,
-        wrapped: ndarray,
-        tight: bool = False,
-    ) -> None:
+    def __init__(self, wrapped: ndarray, tight: bool = False) -> None:
         """
         Args:
             wrapped: The array that must be wrapped.

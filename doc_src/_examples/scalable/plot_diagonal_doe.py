@@ -72,7 +72,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
 
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 dataset.plot("ScatterMatrix", save=False, show=True)
 
 # %%
@@ -92,5 +92,5 @@ scenario.execute(
     {"algo": "DiagonalDOE", "n_samples": 10, "algo_options": {"reverse": ["y"]}}
 )
 
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 dataset.plot("ScatterMatrix", save=False, show=True)

@@ -123,8 +123,8 @@ def test_correlation_outputs():
 
 def test_save_load(correlation, tmp_wd):
     """Check saving and loading a CorrelationAnalysis."""
-    correlation.save("foo.pkl")
-    new_correlation = CorrelationAnalysis.load("foo.pkl")
+    correlation.to_pickle("foo.pkl")
+    new_correlation = CorrelationAnalysis.from_pickle("foo.pkl")
     correlation.compute_indices()
     new_correlation.compute_indices()
     assert_equal(new_correlation.dataset.data, correlation.dataset.data)

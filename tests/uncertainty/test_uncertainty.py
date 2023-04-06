@@ -92,7 +92,7 @@ def test_load_sensitivity_analysis(tmp_wd):
     analysis = create_sensitivity_analysis(
         "SobolAnalysis", [discipline], space, n_samples=1000
     )
-    analysis.save("foo.pkl")
+    analysis.to_pickle("foo.pkl")
 
     new_analysis = load_sensitivity_analysis("foo.pkl")
     assert new_analysis.__class__.__name__ == new_analysis.__class__.__name__

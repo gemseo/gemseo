@@ -91,7 +91,6 @@ from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
     split_array_to_dict_of_arrays,
 )
-from pathlib import Path
 
 RandomVariable = collections.namedtuple(
     "RandomVariable",
@@ -123,11 +122,9 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    def __init__(  # noqa:D107
-        self, hdf_file: str | Path | None = None, name: str | None = None
-    ) -> None:
+    def __init__(self, name: str = "") -> None:  # noqa:D107
         LOGGER.debug("*** Create a new parameter space ***")
-        super().__init__(hdf_file=hdf_file, name=name)
+        super().__init__(name=name)
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None

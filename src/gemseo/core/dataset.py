@@ -44,8 +44,8 @@ or from a single variable (:meth:`.Dataset.add_variable`).
 
 An :class:`.AbstractFullCache` or an :class:`.OptimizationProblem`
 can also be exported to a :class:`.Dataset`
-using :meth:`.AbstractFullCache.export_to_dataset`
-and :meth:`.OptimizationProblem.export_to_dataset` respectively.
+using :meth:`.AbstractFullCache.to_dataset`
+and :meth:`.OptimizationProblem.to_dataset` respectively.
 
 From a :class:`.Dataset`,
 we can easily access its length and data,

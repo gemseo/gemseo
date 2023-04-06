@@ -105,7 +105,7 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 
 # %%
 # We can export the optimization problem to a :class:`.Dataset`:
-dataset = scenario.export_to_dataset(name="samples")
+dataset = scenario.to_dataset(name="samples")
 
 # %%
 # and visualize it in a tabular way:
@@ -137,5 +137,5 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # We can see that the deterministic variable 'x' is set to its default value
 # for all evaluations,
 # contrary to the previous case where we were considering the whole parameter space:
-dataset = scenario.export_to_dataset(name="samples")
+dataset = scenario.to_dataset(name="samples")
 print(dataset.export_to_dataframe())
