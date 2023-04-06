@@ -82,7 +82,9 @@ class PostOptimalAnalysis:
     # Dictionary key for term "Lagrange multipliers dot constraints Jacobian"
     MULT_DOT_CONSTR_JAC = "mult_dot_constr_jac"
 
-    def __init__(self, opt_problem: OptimizationProblem, ineq_tol: bool = None) -> None:
+    def __init__(
+        self, opt_problem: OptimizationProblem, ineq_tol: float = None
+    ) -> None:
         """
         Args:
             opt_problem: The solved optimization problem to be analyzed.
