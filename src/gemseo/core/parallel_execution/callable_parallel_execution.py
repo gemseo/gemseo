@@ -230,7 +230,6 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         self.inputs = inputs
 
         tasks = list(range(n_tasks))[::-1]
-
         # Queue for workers.
         if self.use_threading:
             queue_in = queue.Queue()
@@ -246,7 +245,7 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         task_callables = _TaskCallables(self.workers, self.inputs)
 
         processes = []
-        for _ in range(self.n_processes):
+        for _ in range(min(n_tasks, self.n_processes)):
             proc = processor(
                 target=_execute_workers,
                 args=(task_callables, queue_in, queue_out),

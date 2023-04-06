@@ -557,9 +557,9 @@ class MDOScenarioAdapter(MDODiscipline):
         # Gather the names of the functions to differentiate
         opt_problem = self.scenario.formulation.opt_problem
         if func_names is None:
-            func_names = (
-                opt_problem.objective.outvars + opt_problem.get_constraints_names()
-            )
+            func_names = opt_problem.objective.outvars + [
+                out_var for cstr in opt_problem.constraints for out_var in cstr.outvars
+            ]
 
         # Identify the disciplines that compute the functions
         disciplines = dict()
