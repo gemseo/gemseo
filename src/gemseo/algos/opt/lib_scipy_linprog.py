@@ -39,7 +39,9 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a linear optimization algorithm from the SciPy library."""
 
-    problem_type: str = OptimizationProblem.LINEAR_PB
+    problem_type: OptimizationProblem.ProblemType = (
+        OptimizationProblem.ProblemType.LINEAR
+    )
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
     library_name: str = "SciPy"
@@ -178,10 +180,10 @@ class ScipyLinprog(OptimizationLibrary):
         obj_coeff = self.problem.nonproc_objective.coefficients[0, :].real
         constraints = self.problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
-            constraints, MDOLinearFunction.TYPE_INEQ
+            constraints, MDOLinearFunction.ConstraintType.INEQ
         )
         eq_lhs, eq_rhs = build_constraints_matrices(
-            constraints, MDOLinearFunction.TYPE_EQ
+            constraints, MDOLinearFunction.ConstraintType.EQ
         )
 
         # |g| is in charge of ensuring max iterations, since it may

@@ -131,7 +131,7 @@ class SellarSystem(MDODiscipline):
         self.input_grammar.update(["x_local", "x_shared", "y_1", "y_2"])
         self.output_grammar.update(["obj", "c_1", "c_2"])
         self.default_inputs = get_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(

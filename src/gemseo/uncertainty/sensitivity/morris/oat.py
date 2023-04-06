@@ -82,7 +82,7 @@ class _OATSensitivity(MDODiscipline):
         parameter_space: DesignSpace,
         step: float,
     ) -> None:
-        """.. # noqa: D107 D205 D212 D415
+        """
         Args:
             scenario: The scenario for the analysis.
             parameter_space: A parameter space.
@@ -92,7 +92,7 @@ class _OATSensitivity(MDODiscipline):
         Raises:
             ValueError: If the relative variation step is lower than or equal to 0
                 or greater than or equal to 0.5.
-        """
+        """  # noqa: D205, D212, D415
         if not 0 < step < 0.5:
             raise ValueError(
                 "Relative variation step must be "

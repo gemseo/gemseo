@@ -7,7 +7,7 @@
       "type": "boolean"
     },
     "grammar_type": {
-      "description": "The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.",
+      "description": "The type of the input and output grammars.",
       "type": "string"
     },
     "main_mda_name": {

@@ -33,7 +33,7 @@ from gemseo.utils.pytest_conftest import concretize_classes
 from numpy import allclose
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
-MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
+MODEL.set_cache_policy(MODEL.CacheType.MEMORY_FULL)
 
 TOL_DEG_1 = 0.1
 TOL_DEG_2 = 0.001

@@ -115,8 +115,7 @@ class MLAlgoAssessor(MDODiscipline):
         dataset: Dataset,
         parameters: Iterable[str],
         measure: type[MLQualityMeasure],
-        measure_evaluation_method_name: str
-        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
+        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: B950
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -157,9 +156,7 @@ class MLAlgoAssessor(MDODiscipline):
         self.algo = algo
         self.measure = measure
         self.measure_options = measure_options or {}
-        self.__measure_evaluation_method_name = MLQualityMeasure.EvaluationMethod[
-            measure_evaluation_method_name
-        ]
+        self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.parameters = algo_options
         self.data = dataset
         self.transformer = transformer
@@ -189,7 +186,9 @@ class MLAlgoAssessor(MDODiscipline):
         algo.learn()
         measure = self.measure(algo)
         learning = measure.evaluate_learn(multioutput=False)
-        evaluate = getattr(measure, self.__measure_evaluation_method_name.value)
+        evaluate = getattr(
+            measure, f"evaluate_{self.__measure_evaluation_method_name.lower()}"
+        )
         criterion = evaluate(**self.measure_options)
         self.store_local_data(criterion=array([criterion]), learning=array([learning]))
         self.algos.append(algo)

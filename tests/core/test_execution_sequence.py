@@ -102,90 +102,90 @@ class TestExecSequence(unittest.TestCase):
     def test_serial_execution(self):
         seq = ExecutionSequenceFactory.serial([self.d1, self.d1])
         seq.enable()
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d1.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(seq.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.DONE)
         seq = SerialExecSequence()
         self.assertRaises(Exception, seq.enable)
 
     def test_serial_execution_failed(self):
         seq = ExecutionSequenceFactory.serial([self.d1, self.d2])
         seq.enable()
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d1.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_FAILED
-        self.assertEqual(seq.status, MDODiscipline.STATUS_FAILED)
-        self.d1.status = MDODiscipline.STATUS_PENDING  # check PENDING ignored
-        self.assertEqual(seq.status, MDODiscipline.STATUS_FAILED)
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.FAILED
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.FAILED)
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING  # check PENDING ignored
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.FAILED)
 
     def test_parallel_execution(self):
         seq = ExecutionSequenceFactory.parallel([self.d1, self.d2])
         seq.enable()
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d2.status = MDODiscipline.STATUS_PENDING
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d1.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d2.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d2.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(seq.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d2.status = MDODiscipline.ExecutionStatus.PENDING
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d2.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d2.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.DONE)
         for state in seq.get_statuses().values():
-            self.assertEqual(MDODiscipline.STATUS_DONE, state)
+            self.assertEqual(MDODiscipline.ExecutionStatus.DONE, state)
 
     def test_parallel_execution_failed(self):
         seq = ExecutionSequenceFactory.parallel([self.d1, self.d2])
         seq.enable()
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d2.status = MDODiscipline.STATUS_PENDING
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d1.status = MDODiscipline.STATUS_FAILED
-        self.assertEqual(seq.status, MDODiscipline.STATUS_FAILED)
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d2.status = MDODiscipline.ExecutionStatus.PENDING
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d1.status = MDODiscipline.ExecutionStatus.FAILED
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.FAILED)
 
     def test_loop_execution(self):
         seq = ExecutionSequenceFactory.loop(
             self.d3, ExecutionSequenceFactory.serial([self.d1, self.d2])
         )
         seq.enable()
-        self.d3.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_PENDING)
-        self.d3.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.d2.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_RUNNING
-        self.d1.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d2.status = MDODiscipline.STATUS_RUNNING
-        self.d2.status = MDODiscipline.STATUS_DONE
+        self.d3.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.PENDING)
+        self.d3.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.d2.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d2.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.d2.status = MDODiscipline.ExecutionStatus.DONE
         self.assertEqual(seq.iteration_count, 1)
-        self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
-        self.d1.status = MDODiscipline.STATUS_PENDING
-        self.d2.status = MDODiscipline.STATUS_PENDING
-        self.d1.status = MDODiscipline.STATUS_RUNNING
-        self.d1.status = MDODiscipline.STATUS_DONE
-        self.d2.status = MDODiscipline.STATUS_RUNNING
-        self.d2.status = MDODiscipline.STATUS_DONE
-        self.d3.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(seq.status, MDODiscipline.STATUS_DONE)
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.RUNNING)
+        self.d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.d2.status = MDODiscipline.ExecutionStatus.PENDING
+        self.d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.d2.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.d2.status = MDODiscipline.ExecutionStatus.DONE
+        self.d3.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.DONE)
         self.assertEqual(seq.iteration_count, 2)
 
     def test_loop_execution_failed(self):
@@ -193,8 +193,8 @@ class TestExecSequence(unittest.TestCase):
             self.d3, ExecutionSequenceFactory.serial([self.d1, self.d2])
         )
         seq.enable()
-        self.d3.status = MDODiscipline.STATUS_FAILED
-        self.assertEqual(seq.status, MDODiscipline.STATUS_FAILED)
+        self.d3.status = MDODiscipline.ExecutionStatus.FAILED
+        self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.FAILED)
 
     def status_of(self, seq, disc, n=0):
         #         print seq
@@ -216,36 +216,52 @@ class TestExecSequence(unittest.TestCase):
         seq = ExecutionSequenceFactory.serial([d1])
         seq.extend(d2.get_expected_workflow())
         seq.enable()
-        d1.status = MDODiscipline.STATUS_PENDING
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_PENDING)
+        d1.status = MDODiscipline.ExecutionStatus.PENDING
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.PENDING)
         self.assertEqual(self.status_of(seq, sc_prop), None)
         self.assertEqual(self.status_of(seq, d1, 1), None)
-        d1.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_RUNNING)
+        d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.RUNNING)
         self.assertEqual(self.status_of(seq, sc_prop), None)
         self.assertEqual(self.status_of(seq, d1, 1), None)
-        d1.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.status_of(seq, sc_prop), MDODiscipline.STATUS_PENDING)
+        d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
+        self.assertEqual(
+            self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.PENDING
+        )
         self.assertEqual(self.status_of(seq, d1, 1), None)
-        sc_prop.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.status_of(seq, sc_prop), MDODiscipline.STATUS_RUNNING)
-        self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.STATUS_PENDING)
-        d1.status = MDODiscipline.STATUS_RUNNING
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.status_of(seq, sc_prop), MDODiscipline.STATUS_RUNNING)
-        self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.STATUS_RUNNING)
-        d1.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.status_of(seq, sc_prop), MDODiscipline.STATUS_RUNNING)
+        sc_prop.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
+        self.assertEqual(
+            self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.RUNNING
+        )
+        self.assertEqual(
+            self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.PENDING
+        )
+        d1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
+        self.assertEqual(
+            self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.RUNNING
+        )
+        self.assertEqual(
+            self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.RUNNING
+        )
+        d1.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
+        self.assertEqual(
+            self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.RUNNING
+        )
         # when done iteration_sequence is enabled again thus atom is in pending
         # state and not done
-        self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.STATUS_PENDING)
-        sc_prop.status = MDODiscipline.STATUS_DONE
-        self.assertEqual(self.status_of(seq, d1), MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.status_of(seq, sc_prop), MDODiscipline.STATUS_DONE)
-        self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.STATUS_DONE)
+        self.assertEqual(
+            self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.PENDING
+        )
+        sc_prop.status = MDODiscipline.ExecutionStatus.DONE
+        self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
+        self.assertEqual(
+            self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.DONE
+        )
+        self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.DONE)
 
     def test_visitor_pattern(self):
         class Visitor:

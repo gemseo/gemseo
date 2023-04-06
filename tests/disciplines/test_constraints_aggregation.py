@@ -18,13 +18,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.disciplines.constraints_aggregation import EvaluationFunction
+from gemseo.disciplines.constraints_aggregation import ConstrAggegationDisc
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
@@ -94,19 +92,6 @@ def test_aggregation_discipline(disc_constr):
     assert allclose(sol2.x_opt, ref_sol.x_opt, rtol=1e-2)
 
 
-def test_wrong_meth():
-    """Tests the constraint aggregation discipline in a scenario, with analytic
-    derivatives and adjoint."""
-    with pytest.raises(
-        ValueError, match=re.escape("Unsupported aggregation function named unknown")
-    ):
-        create_discipline(
-            "ConstrAggegationDisc",
-            constraint_names=["constr"],
-            aggregation_function="unknown",
-        )
-
-
 @pytest.mark.parametrize("indices", (None, array([0]), array([1])))
 @pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
@@ -142,7 +127,7 @@ def test_evaluation_function_as_enum():
     discipline = create_discipline(
         "ConstrAggegationDisc",
         constraint_names=["constr"],
-        aggregation_function=EvaluationFunction.KS,
+        aggregation_function=ConstrAggegationDisc.EvaluationFunction.KS,
     )
     discipline.default_inputs = {"constr": array([1.0, 2.0])}
     discipline.execute()

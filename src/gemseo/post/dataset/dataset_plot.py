@@ -43,7 +43,6 @@ from matplotlib.axes import Axes
 from numpy import linspace
 
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -182,7 +181,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.zmax = None
         self.fig_size = (6.4, 4.8)
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE,
+            FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
         self.__output_files = []

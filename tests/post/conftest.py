@@ -52,7 +52,7 @@ def __common_problem():
     func = MDOFunction(lambda x: x * 2.5, "neg")
     func.has_default_name = True
     problem.add_constraint(func, cstr_type="ineq", value=0.5)
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     return problem
 
 

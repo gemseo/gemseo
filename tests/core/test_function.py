@@ -56,9 +56,9 @@ def sinus() -> MDOFunction:
 
 @pytest.fixture(scope="module")
 def sinus_eq_outvars() -> MDOFunction:
-    """The sinus function of type TYPE_EQ with outvars."""
+    """The sinus function of type ConstraintType.EQ with outvars."""
     return MDOFunction(
-        math.sin, "sin", outvars=array(["sin"]), f_type=MDOFunction.TYPE_EQ
+        math.sin, "sin", outvars=array(["sin"]), f_type=MDOFunction.ConstraintType.EQ
     )
 
 
@@ -82,9 +82,10 @@ def test_has_outvars(sinus, sinus_eq_outvars):
 
 
 def test_f_type(sinus, sinus_eq_outvars):
-    """Check that the sum of a TYPE_EQ function with another function has TYPE_EQ."""
-    assert (sinus + sinus_eq_outvars).f_type == MDOFunction.TYPE_EQ
-    assert (sinus_eq_outvars + sinus).f_type == MDOFunction.TYPE_EQ
+    """Check that the sum of a ConstraintType.EQ function with another function has
+    FunctionType.EQ."""
+    assert (sinus + sinus_eq_outvars).f_type == MDOFunction.ConstraintType.EQ
+    assert (sinus_eq_outvars + sinus).f_type == MDOFunction.ConstraintType.EQ
 
 
 @pytest.mark.parametrize("operator,symbol", [(mul, "*"), (add, "+")])
@@ -119,18 +120,6 @@ def get_full_sin_func():
     )
 
 
-def test_f_type_error():
-    """Check that an exception is raised when passing a wrong function type."""
-    with pytest.raises(
-        Exception,
-        match=re.escape(
-            "MDOFunction type must be among ['obj', 'eq', 'ineq', 'obs']; "
-            "got Xobj instead."
-        ),
-    ):
-        MDOFunction(math.sin, "F", f_type="Xobj")
-
-
 def test_check_format():
     """xxx."""
     MDOFunction(
@@ -162,7 +151,7 @@ def test_add_sub_neg():
         jac=lambda x: np.array(np.cos(x)),
         expr="sin(x)",
         args=["x"],
-        f_type=MDOFunction.TYPE_EQ,
+        f_type=MDOFunction.ConstraintType.EQ,
         dim=1,
     )
     g = MDOFunction(
@@ -205,7 +194,7 @@ def test_todict_fromdict():
         jac=lambda x: np.array(np.cos(x)),
         expr="sin(x)",
         args=["x"],
-        f_type=MDOFunction.TYPE_EQ,
+        f_type=MDOFunction.ConstraintType.EQ,
         dim=1,
     )
     original_function_dict = original_function.to_dict()

@@ -142,7 +142,7 @@ class PropaneReaction(MDODiscipline):
             "y_2": ones(2, dtype=complex128),
             "y_3": ones(3, dtype=complex128),
         }
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         inputs = ["y_1", "y_2", "y_3", "x_shared"]
@@ -242,7 +242,7 @@ class PropaneComb1(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
@@ -285,7 +285,7 @@ class PropaneComb2(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
@@ -331,7 +331,7 @@ class PropaneComb3(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")

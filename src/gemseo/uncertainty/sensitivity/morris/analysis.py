@@ -80,6 +80,7 @@ import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 from numpy import ndarray
+from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
@@ -89,7 +90,6 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
-from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.string_tools import repr_variable
 
 
@@ -218,7 +218,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     DEFAULT_DRIVER = PyDOE.PYDOE_LHS
 
-    class Method(BaseEnum):
+    class Method(StrEnum):
         """The names of the sensitivity methods."""
 
         MU_STAR = "MU_STAR"
@@ -240,7 +240,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        r"""..
+        r"""
         Args:
             n_replicates: The number of times
                 the OAT method is repeated. Used only if ``n_samples`` is None.

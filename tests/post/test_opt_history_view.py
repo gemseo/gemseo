@@ -234,7 +234,7 @@ def test_461(case, baseline_images):
         problem.objective = problem.objective = MDOFunction(
             lambda x: array([x[0] ** 2 + x[1] ** 2]), "func"
         )
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
     execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
     execute_post(problem, "OptHistoryView", save=False, show=False)

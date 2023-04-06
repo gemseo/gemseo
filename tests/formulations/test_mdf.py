@@ -111,6 +111,6 @@ def test_grammar_type():
     discipline = AnalyticDiscipline({"y1": "x+y2", "y2": "x+2*y1"})
     design_space = DesignSpace()
     design_space.add_variable("x")
-    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = discipline.GrammarType.SIMPLE
     formulation = MDF([discipline], "y1", design_space, grammar_type=grammar_type)
     assert formulation.mda.grammar_type == grammar_type

@@ -120,7 +120,7 @@ class Mission(MDODiscipline):
         """
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("lift", "mass", "drag", "reserve_fact")
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
         self.r_val = r_val
         self.lift_val = lift_val
 
@@ -199,7 +199,7 @@ class Aerodynamics(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("sweep", "thick_airfoils", "displ")
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         sweep, thick_airfoils, displ = self.get_inputs_by_name(
@@ -292,7 +292,7 @@ class Structure(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("sweep", "forces", "thick_panels")
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         sweep, thick_panels, forces = self.get_inputs_by_name(

@@ -113,12 +113,12 @@ def test_is_algorithm_suited_has_ineq_constraints():
 def test_is_algorithm_suited_pbm_type():
     """Check is_algorithm_suited with unhandled problem type."""
     description = OptimizationAlgorithmDescription(
-        "foo", "bar", problem_type=OptimizationProblem.LINEAR_PB
+        "foo", "bar", problem_type=OptimizationProblem.ProblemType.LINEAR
     )
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.pb_type = problem.NON_LINEAR_PB
+    problem.pb_type = problem.ProblemType.NON_LINEAR
     assert not OptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         OptimizationLibrary._get_unsuitability_reason(description, problem)

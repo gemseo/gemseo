@@ -59,7 +59,7 @@ def sellar_use_case(tmp_wd):
     disciplines_names = []
     for discipline_class in [Sellar1, Sellar2, SellarSystem]:
         discipline = discipline_class()
-        discipline.set_cache_policy(discipline.HDF5_CACHE, cache_hdf_file=file_name)
+        discipline.set_cache_policy(discipline.CacheType.HDF5, cache_hdf_file=file_name)
         disciplines_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))
         inputs_names = list(discipline.input_grammar.keys())

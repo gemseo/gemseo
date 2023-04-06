@@ -45,11 +45,13 @@ from numpy import empty
 from numpy import ndarray
 from numpy import zeros
 from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.defaults import Defaults
@@ -60,6 +62,7 @@ from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -100,6 +103,46 @@ class MDODiscipline(Serializable):
     or your own which derives from :class:`.BaseGrammar`.
     """
 
+    class ExecutionStatus(StrEnum):
+        """The execution statuses of a discipline."""
+
+        VIRTUAL = "VIRTUAL"
+        PENDING = "PENDING"
+        DONE = "DONE"
+        RUNNING = "RUNNING"
+        FAILED = "FAILED"
+        LINEARIZE = "LINEARIZE"
+
+    class GrammarType(StrEnum):
+        """The name of the grammar class."""
+
+        JSON = "JSONGrammar"
+        SIMPLE = "SimpleGrammar"
+
+    class CacheType(StrEnum):
+        """The name of the cache class."""
+
+        SIMPLE = "SimpleCache"
+        HDF5 = "HDF5Cache"
+        MEMORY_FULL = "MemoryFullCache"
+        NONE = ""
+        """No cache is used."""
+
+    ApproximationMode = derivation_modes.ApproximationMode
+
+    LinearizationMode = merge_enums(
+        "LinearizationMode",
+        StrEnum,
+        DerivationMode,
+        ApproximationMode,
+    )
+
+    class ReExecutionPolicy(StrEnum):
+        """The re-execution policy of a discipline."""
+
+        DONE = "RE_EXEC_DONE"
+        NEVER = "RE_EXEC_NEVER"
+
     input_grammar: BaseGrammar
     """The input grammar."""
 
@@ -109,20 +152,17 @@ class MDODiscipline(Serializable):
     data_processor: DataProcessor
     """A tool to pre- and post-process discipline data."""
 
-    re_exec_policy: str
-    """The policy to re-execute the same discipline."""
-
     residual_variables: Mapping[str, str]
     """The output variables mapping to their inputs, to be considered as residuals; they
     shall be equal to zero."""
 
     run_solves_residuals: bool
-    """If True, the run method shall solve the residuals."""
+    """Whether the run method shall solve the residuals."""
 
     jac: dict[str, dict[str, ndarray]]
-    """The Jacobians of the outputs wrt inputs of the form ``{output: {input:
+    """The Jacobians of the outputs wrt inputs.
 
-    matrix}}``.
+    The structure is ``{output: {input: matrix}}``.
     """
 
     exec_for_lin: bool
@@ -135,51 +175,6 @@ class MDODiscipline(Serializable):
     """The cache containing one or several executions of the discipline according to the
     cache policy."""
 
-    STATUS_VIRTUAL = "VIRTUAL"
-    STATUS_PENDING = "PENDING"
-    STATUS_DONE = "DONE"
-    STATUS_RUNNING = "RUNNING"
-    STATUS_FAILED = "FAILED"
-    STATUS_LINEARIZE = "LINEARIZE"
-    AVAILABLE_STATUSES = [
-        STATUS_DONE,
-        STATUS_FAILED,
-        STATUS_PENDING,
-        STATUS_RUNNING,
-        STATUS_VIRTUAL,
-        STATUS_LINEARIZE,
-    ]
-
-    JSON_GRAMMAR_TYPE = "JSONGrammar"
-    SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"
-
-    GRAMMAR_DIRECTORY: ClassVar[str | None] = None
-    """The directory in which to search for the grammar files if not the class one."""
-
-    COMPLEX_STEP = derivation_modes.COMPLEX_STEP
-    FINITE_DIFFERENCES = derivation_modes.FINITE_DIFFERENCES
-
-    SIMPLE_CACHE = "SimpleCache"
-    HDF5_CACHE = "HDF5Cache"
-    MEMORY_FULL_CACHE = "MemoryFullCache"
-
-    activate_cache: bool = True
-    """Whether to cache the discipline evaluations by default."""
-
-    APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
-    AVAILABLE_MODES = (
-        derivation_modes.AUTO_MODE,
-        derivation_modes.DIRECT_MODE,
-        derivation_modes.ADJOINT_MODE,
-        derivation_modes.REVERSE_MODE,
-        derivation_modes.FINITE_DIFFERENCES,
-        derivation_modes.COMPLEX_STEP,
-    )
-
-    RE_EXECUTE_DONE_POLICY = "RE_EXEC_DONE"
-    RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
-    N_CPUS = cpu_count()
-
     activate_counters: ClassVar[bool] = True
     """Whether to activate the counters (execution time, calls and linearizations)."""
 
@@ -188,6 +183,17 @@ class MDODiscipline(Serializable):
 
     activate_output_data_check: ClassVar[bool] = True
     """Whether to check the output data respect the output grammar."""
+
+    activate_cache: bool = True
+    """Whether to cache the discipline evaluations by default."""
+
+    re_exec_policy: ReExecutionPolicy
+    """The policy to re-execute the same discipline."""
+
+    GRAMMAR_DIRECTORY: ClassVar[str | None] = None
+    """The directory in which to search for the grammar files if not the class one."""
+
+    N_CPUS = cpu_count()
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
         "_status_observers",
@@ -202,8 +208,8 @@ class MDODiscipline(Serializable):
         input_grammar_file: str | Path | None = None,
         output_grammar_file: str | Path | None = None,
         auto_detect_grammar_files: bool = False,
-        grammar_type: str = JSON_GRAMMAR_TYPE,
-        cache_type: str | None = SIMPLE_CACHE,
+        grammar_type: GrammarType = GrammarType.JSON,
+        cache_type: CacheType = CacheType.SIMPLE,
         cache_file_path: str | Path | None = None,
     ) -> None:
         """
@@ -229,17 +235,10 @@ class MDODiscipline(Serializable):
                 in the :attr:`.GRAMMAR_DIRECTORY` if any
                 or in the directory of the discipline class module
                 when ``{input,output}_grammar_file`` is ``None``.
-            grammar_type: The type of grammar to define the input and output variables,
-                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
-            cache_type: The type of policy to cache the discipline evaluations,
-                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
-                :attr:`.MDODiscipline.HDF5_CACHE` to cache them in an HDF file,
-                or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
-                If ``None`` or if :attr:`.activate_cache` is ``True``,
-                do not cache the discipline evaluations.
+            grammar_type: The type of the input and output grammars.
+            cache_type: The type of cache.
             cache_file_path: The HDF file path
-                when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
+                when ``grammar_type`` is :attr:`.MDODiscipline.CacheType.HDF5`.
         """  # noqa: D205, D212, D415
         self.data_processor = None
         self.input_grammar = None
@@ -247,7 +246,7 @@ class MDODiscipline(Serializable):
 
         # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
         # : list of outputs that shall be null, to be considered as residuals
         self.residual_variables = {}
 
@@ -282,17 +281,16 @@ class MDODiscipline(Serializable):
 
         self.cache = None
         if not self.activate_cache:
-            cache_type = None
+            cache_type = self.CacheType.NONE
 
-        if cache_type is not None:
+        if cache_type is not self.CacheType.NONE:
             self.cache = self.__create_new_cache(
                 cache_type, hdf_file_path=cache_file_path, hdf_node_path=self.name
             )
 
         self._cache_was_loaded = False
 
-        # linearize mode :auto, adjoint, direct
-        self._linearization_mode = derivation_modes.AUTO_MODE
+        self._linearization_mode = self.LinearizationMode.AUTO
 
         self._grammar_type = grammar_type
 
@@ -310,7 +308,7 @@ class MDODiscipline(Serializable):
         self._local_data = None
         self.__set_local_data({})
 
-        self._status = self.STATUS_PENDING
+        self._status = self.ExecutionStatus.PENDING
         if self.activate_counters:
             self._init_shared_memory_attrs()
 
@@ -420,7 +418,7 @@ class MDODiscipline(Serializable):
         self._n_calls_linearize.value = value
 
     @property
-    def grammar_type(self) -> str:
+    def grammar_type(self) -> GrammarType:
         """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
@@ -500,12 +498,12 @@ class MDODiscipline(Serializable):
     ) -> None:
         """Add the inputs against which to differentiate the outputs.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
         an input is either a non-numeric array or not an array, it will be ignored.
         If an input is declared as an array but the type of its items is not defined, it
         is assumed as a numeric array.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
         an input is not an array, it will be ignored. Keep in mind that in this case
         the array subtype is not checked.
 
@@ -540,12 +538,12 @@ class MDODiscipline(Serializable):
     ) -> None:
         """Add the outputs to be differentiated.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
         an output is either a non-numeric array or not an array, it will be ignored.
         If an output is declared as an array but the type of its items is not defined,
         it is assumed as a numeric array.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
         an output is not an array, it will be ignored. Keep in mind that in this case
         the array subtype is not checked.
 
@@ -587,12 +585,12 @@ class MDODiscipline(Serializable):
         Returns:
             The cache object.
         """
-        if class_name != self.HDF5_CACHE:
+        if class_name != self.CacheType.HDF5:
             for key in ("hdf_file_path", "hdf_node_path"):
                 if key in kwargs:
                     del kwargs[key]
 
-        if class_name != self.MEMORY_FULL_CACHE:
+        if class_name != self.CacheType.MEMORY_FULL:
             key = "is_memory_shared"
             if key in kwargs:
                 del kwargs[key]
@@ -601,7 +599,7 @@ class MDODiscipline(Serializable):
 
     def set_cache_policy(
         self,
-        cache_type: str = SIMPLE_CACHE,
+        cache_type: CacheType = CacheType.SIMPLE,
         cache_tolerance: float = 0.0,
         cache_hdf_file: str | Path | None = None,
         cache_hdf_node_name: str | None = None,
@@ -630,7 +628,7 @@ class MDODiscipline(Serializable):
                 to consider that two input arrays are equal.
             cache_hdf_file: The path to the HDF file to store the data;
                 this argument is mandatory when the
-                :attr:`.MDODiscipline.HDF5_CACHE` policy is used.
+                :attr:`.MDODiscipline.CacheType.HDF5` policy is used.
             cache_hdf_node_name: The name of the HDF file node
                 to store the discipline data.
                 If None, :attr:`.MDODiscipline.name` is used.
@@ -646,7 +644,7 @@ class MDODiscipline(Serializable):
                    because the cache will not be shared among the processes.
         """
         if self.cache.__class__.__name__ != cache_type or not (
-            cache_type == self.HDF5_CACHE
+            cache_type == self.CacheType.HDF5
             and cache_hdf_file == self.cache.hdf_file.hdf_file_path
             and cache_hdf_node_name == self.cache.hdf_node_name
         ):
@@ -743,7 +741,7 @@ class MDODiscipline(Serializable):
         self,
         input_grammar_file: str | Path | None,
         output_grammar_file: str | Path | None,
-        grammar_type: str = JSON_GRAMMAR_TYPE,
+        grammar_type: GrammarType = GrammarType.JSON,
     ) -> None:
         """Create the input and output grammars.
 
@@ -752,9 +750,7 @@ class MDODiscipline(Serializable):
                 If None, do not initialize the input grammar from a schema file.
             output_grammar_file: The output grammar file path.
                 If None, do not initialize the output grammar from a schema file.
-            grammar_type: The type of grammar,
-                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
         """
         factory = GrammarFactory()
         self.input_grammar = factory.create(
@@ -824,28 +820,28 @@ class MDODiscipline(Serializable):
         Check the status of the discipline depending on
         :attr:`.MDODiscipline.re_execute_policy`.
 
-        If ``re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
-        the status shall be either :attr:`.MDODiscipline.STATUS_PENDING`
+        If ``re_exec_policy == ReExecutionPolicy.NEVER``,
+        the status shall be either :attr:`.MDODiscipline.ExecutionStatus.PENDING`
         or :attr:`.MDODiscipline.VIRTUAL`.
 
-        If ``self.re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
+        If ``self.re_exec_policy == ReExecutionPolicy.NEVER``,
 
-        - if status is :attr:`.MDODiscipline.STATUS_DONE`,
+        - if status is :attr:`.MDODiscipline.ExecutionStatus.DONE`,
           :meth:`.MDODiscipline.reset_statuses_for_run`.
         - otherwise status must be :attr:`.MDODiscipline.VIRTUAL`
-          or :attr:`.MDODiscipline.STATUS_PENDING`.
+          or :attr:`.MDODiscipline.ExecutionStatus.PENDING`.
 
         Raises:
             ValueError:
                 When the discipline status and the re-execution policy are no consistent.
         """
         if self.status not in [
-            self.STATUS_PENDING,
-            self.STATUS_VIRTUAL,
-            self.STATUS_DONE,
+            self.ExecutionStatus.PENDING,
+            self.ExecutionStatus.VIRTUAL,
+            self.ExecutionStatus.DONE,
         ] or (
-            self.status == self.STATUS_DONE
-            and self.re_exec_policy == self.RE_EXECUTE_NEVER_POLICY
+            self.status == self.ExecutionStatus.DONE
+            and self.re_exec_policy == self.ReExecutionPolicy.NEVER
         ):
             raise ValueError(
                 f"Trying to run a discipline {type(self)} with status: {self.status} "
@@ -895,13 +891,13 @@ class MDODiscipline(Serializable):
         * Caches the inputs.
         * Checks the input data against :attr:`.MDODiscipline.input_grammar`.
         * If :attr:`.MDODiscipline.data_processor` is not None, runs the preprocessor.
-        * Updates the status to :attr:`.MDODiscipline.STATUS_RUNNING`.
+        * Updates the status to :attr:`.MDODiscipline.ExecutionStatus.RUNNING`.
         * Calls the :meth:`.MDODiscipline._run` method, that shall be defined.
         * If :attr:`.MDODiscipline.data_processor` is not None, runs the postprocessor.
         * Checks the output data.
         * Caches the outputs.
-        * Updates the status to :attr:`.MDODiscipline.STATUS_DONE`
-          or :attr:`.MDODiscipline.STATUS_FAILED`.
+        * Updates the status to :attr:`.MDODiscipline.ExecutionStatus.DONE`
+          or :attr:`.MDODiscipline.ExecutionStatus.FAILED`.
         * Updates summed execution time.
 
         Args:
@@ -954,19 +950,19 @@ class MDODiscipline(Serializable):
         t_0 = timer()
 
         self._check_status_before_run()
-        self.status = self.STATUS_RUNNING
+        self.status = self.ExecutionStatus.RUNNING
 
         try:
             # Effectively run the discipline, the _run method has to be
             # Defined by the subclasses
             self._run()
         except Exception:
-            self.status = self.STATUS_FAILED
+            self.status = self.ExecutionStatus.FAILED
             # Update the status but
             # raise the same exception
             raise
 
-        self.status = self.STATUS_DONE
+        self.status = self.ExecutionStatus.DONE
 
         if self.activate_counters:
             self.__increment_exec_time(t_0)
@@ -1166,9 +1162,9 @@ class MDODiscipline(Serializable):
                     # another computation of Jacobian is triggered.
                     pass
 
-        self.status = self.STATUS_LINEARIZE
+        self.status = self.ExecutionStatus.LINEARIZE
         t_0 = timer()
-        if self._linearization_mode in self.APPROX_MODES:
+        if self._linearization_mode in set(self.ApproximationMode):
             # Time already counted in execute()
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
@@ -1193,12 +1189,12 @@ class MDODiscipline(Serializable):
         if self.cache is not None:
             self.cache.cache_jacobian(full_input_data, self.jac)
 
-        self.status = self.STATUS_DONE
+        self.status = self.ExecutionStatus.DONE
         return self.jac
 
     def set_jacobian_approximation(
         self,
-        jac_approx_type: str = FINITE_DIFFERENCES,
+        jac_approx_type: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         jax_approx_step: float = 1e-7,
         jac_approx_n_processes: int = 1,
         jac_approx_use_threading: bool = False,
@@ -1547,8 +1543,8 @@ class MDODiscipline(Serializable):
         return input_names, output_names
 
     @property
-    def linearization_mode(self) -> str:
-        """The linearization mode among :attr:`.MDODiscipline.AVAILABLE_MODES`.
+    def linearization_mode(self) -> LinearizationMode:
+        """The linearization mode among :attr:`.MDODiscipline.LinearizationMode`.
 
         Raises:
             ValueError: When the linearization mode is unknown.
@@ -1558,21 +1554,20 @@ class MDODiscipline(Serializable):
     @linearization_mode.setter
     def linearization_mode(
         self,
-        linearization_mode: str,
+        linearization_mode: LinearizationMode,
     ) -> None:
-        if linearization_mode not in self.AVAILABLE_MODES:
-            msg = "Linearization mode '{}' is unknown; it must be one of {}."
-            raise ValueError(msg.format(linearization_mode, self.AVAILABLE_MODES))
-
         self._linearization_mode = linearization_mode
 
-        if linearization_mode in self.APPROX_MODES and self._jac_approx is None:
+        if (
+            linearization_mode in set(self.ApproximationMode)
+            and self._jac_approx is None
+        ):
             self.set_jacobian_approximation(linearization_mode)
 
     def check_jacobian(
         self,
         input_data: dict[str, ndarray] | None = None,
-        derr_approx: str = FINITE_DIFFERENCES,
+        derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-7,
         threshold: float = 1e-8,
         linearization_mode: str = "auto",
@@ -1704,7 +1699,7 @@ class MDODiscipline(Serializable):
         )
 
     @property
-    def status(self) -> str:
+    def status(self) -> ExecutionStatus:
         """The status of the discipline.
 
         The status aims at monitoring the process and give the user a simplified view on
@@ -1713,18 +1708,6 @@ class MDODiscipline(Serializable):
         is _compute_jacobian or approximate jacobian computation.
         """
         return self._status
-
-    def _check_status(
-        self,
-        status: str,
-    ) -> None:
-        """Check the status according to possible statuses.
-
-        Raises:
-            ValueError: When the status is unknown.
-        """
-        if status not in self.AVAILABLE_STATUSES:
-            raise ValueError(f"Unknown status: {status}.")
 
     def set_disciplines_statuses(
         self,
@@ -1814,10 +1797,10 @@ class MDODiscipline(Serializable):
         Returns:
             Whether the discipline can be run again.
         """
-        return status != self.STATUS_RUNNING
+        return status != self.ExecutionStatus.RUNNING
 
     def reset_statuses_for_run(self) -> None:
-        """Set all the statuses to :attr:`.MDODiscipline.STATUS_PENDING`.
+        """Set all the statuses to :attr:`.MDODiscipline.ExecutionStatus.PENDING`.
 
         Raises:
             ValueError: When the discipline cannot be run because of its status.
@@ -1828,14 +1811,13 @@ class MDODiscipline(Serializable):
                     self.name, self.status
                 )
             )
-        self.status = self.STATUS_PENDING
+        self.status = self.ExecutionStatus.PENDING
 
     @status.setter
     def status(
         self,
-        status: str,
+        status: ExecutionStatus,
     ) -> None:
-        self._check_status(status)
         self._status = status
         self.notify_status_observers()
 

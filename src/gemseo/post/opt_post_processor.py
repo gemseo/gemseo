@@ -45,7 +45,6 @@ from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -138,7 +137,9 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         # The data required to eventually rebuild the plot in another framework.
         self.materials_for_plotting = {}
         default_file_name = FilePathManager.to_snake_case(self.__class__.__name__)
-        self.__file_path_manager = FilePathManager(FileType.FIGURE, default_file_name)
+        self.__file_path_manager = FilePathManager(
+            FilePathManager.FileType.FIGURE, default_file_name
+        )
         self.__output_files = []
         self.__figures = {}
         self.__nameless_figure_counter = 0

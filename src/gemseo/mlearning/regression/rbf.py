@@ -53,6 +53,7 @@ from numpy import newaxis
 from numpy import sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
+from strenum import StrEnum
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import TransformerType
@@ -78,23 +79,16 @@ class RBFRegressor(MLRegressionAlgo):
 
     EUCLIDEAN: Final[str] = "euclidean"
 
-    MULTIQUADRIC: Final[str] = "multiquadric"
-    INVERSE_MULTIQUADRIC: Final[str] = "inverse_multiquadric"
-    GAUSSIAN: Final[str] = "gaussian"
-    LINEAR: Final[str] = "linear"
-    CUBIC: Final[str] = "cubic"
-    QUINTIC: Final[str] = "quintic"
-    THIN_PLATE: Final[str] = "thin_plate"
+    class Function(StrEnum):
+        """The radial basis functions."""
 
-    AVAILABLE_FUNCTIONS: list[str] = [
-        MULTIQUADRIC,
-        INVERSE_MULTIQUADRIC,
-        GAUSSIAN,
-        LINEAR,
-        CUBIC,
-        QUINTIC,
-        THIN_PLATE,
-    ]
+        MULTIQUADRIC = "multiquadric"
+        INVERSE_MULTIQUADRIC = "inverse_multiquadric"
+        GAUSSIAN = "gaussian"
+        LINEAR = "linear"
+        CUBIC = "cubic"
+        QUINTIC = "quintic"
+        THIN_PLATE = "thin_plate"
 
     def __init__(
         self,
@@ -102,7 +96,7 @@ class RBFRegressor(MLRegressionAlgo):
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
-        function: str | Callable[[float, float], float] = MULTIQUADRIC,
+        function: Function | Callable[[float, float], float] = Function.MULTIQUADRIC,
         der_function: Callable[[ndarray], ndarray] | None = None,
         epsilon: float | None = None,
         smooth: float = 0.0,
@@ -152,8 +146,6 @@ class RBFRegressor(MLRegressionAlgo):
                 scipy.spatial.distance.cdist.html>`_
                 or a function that computes the distance between two points.
         """
-        if isinstance(function, str):
-            function = str(function)
         super().__init__(
             data,
             transformer=transformer,

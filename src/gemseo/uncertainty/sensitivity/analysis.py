@@ -52,6 +52,7 @@ from numpy import ndarray
 from numpy import newaxis
 from numpy import vstack
 from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
@@ -64,12 +65,9 @@ from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
-from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
@@ -101,7 +99,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     dataset: Dataset
     """The dataset containing the discipline evaluations."""
 
-    Method: ClassVar[BaseEnum]
+    Method: ClassVar[type[StrEnum]]
     """The names of the sensitivity methods."""
 
     DEFAULT_DRIVER = None
@@ -145,7 +143,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         ).export_to_dataset(opt_naming=False)
         self._main_method = None
         self._file_path_manager = FilePathManager(
-            FileType.FIGURE,
+            FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
 
@@ -299,23 +297,16 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @property
-    def main_method(self) -> str:
+    def main_method(self) -> Method:
         """The name of the main method.
 
         One of the enum :class:`.Sensitivity.Method`.
         """
-        return self._main_method.name
+        return self._main_method
 
     @main_method.setter
-    def main_method(self, method_name: Method | str) -> None:  # noqa: D102
-        try:
-            self._main_method = self.Method[method_name]
-        except KeyError:
-            method_names = [method.name for method in self.Method]
-            raise ValueError(
-                f"{method_name} is not a sensitivity method; "
-                f"available ones are {pretty_repr(method_names,use_and=True)}."
-            )
+    def main_method(self, method: Method) -> None:  # noqa: D102
+        self._main_method = method
 
     @property
     def main_indices(self) -> FirstOrderIndicesType:
@@ -333,7 +324,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 ]
             }
         """
-        return self.indices[self._main_method.name]
+        return self.indices[self._main_method]
 
     def _outputs_to_tuples(
         self,

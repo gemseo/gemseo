@@ -280,24 +280,11 @@ def norm_data():
     return randn(100)
 
 
-def test_otdistfitter_constructor():
-    with pytest.raises(TypeError):
-        OTDistributionFitter("x", {"x_" + str(index): index for index in range(100)})
-
-
 def test_otdistfitter_distribution(norm_data):
     factory = OTDistributionFitter("x", norm_data)
-    with pytest.raises(ValueError):
-        factory.fit("Dummy")
     with pytest.raises(TypeError):
         dist = OTNormalDistribution("x", dimension=2)
         factory.compute_measure(dist, "BIC")
-
-
-def test_otdistfitter_criterion(norm_data):
-    factory = OTDistributionFitter("x", norm_data)
-    with pytest.raises(ValueError):
-        factory.compute_measure("Normal", "Dummy")
 
 
 def test_otdistfitter_fit(norm_data):

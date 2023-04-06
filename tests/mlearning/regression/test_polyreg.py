@@ -96,7 +96,7 @@ def dataset_from_cache() -> Dataset:
             "y_3": "10*x_1*x_2**2 + 7*x_2**5",
         }
     )
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_2", l_b=-1, u_b=2)
     design_space.add_variable("x_1", l_b=-1, u_b=2)

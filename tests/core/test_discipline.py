@@ -131,13 +131,6 @@ def test_execute_status_error(sobieski_chain):
         chain.execute(indata)
 
 
-def test_check_status_error(sobieski_chain):
-    """Test the execution with a None status."""
-    chain, _ = sobieski_chain
-    with pytest.raises(ValueError):
-        chain._check_status("None")
-
-
 def test_check_input_data_exception_chain(sobieski_chain):
     """Test the check input data exception."""
     chain, indata = sobieski_chain
@@ -147,11 +140,11 @@ def test_check_input_data_exception_chain(sobieski_chain):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
 def test_check_input_data_exception(grammar_type):
     """Test the check input data exception."""
-    if grammar_type == MDODiscipline.SIMPLE_GRAMMAR_TYPE:
+    if grammar_type == MDODiscipline.GrammarType.SIMPLE:
         struct = SobieskiStructureSG()
     else:
         struct = SobieskiStructure()
@@ -226,20 +219,11 @@ def test_get_data_list_from_dict_error(sobieski_chain):
         MDODiscipline.get_data_list_from_dict(2, indata)
 
 
-def test_check_lin_error():
-    """Test that an exception is raised when approx is inexistant."""
-    aero = SobieskiAerodynamics()
-    problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=aero.get_input_data_names())
-    with pytest.raises(ValueError):
-        aero.check_jacobian(indata, derr_approx="bidon")
-
-
 def test_check_jac_fdapprox():
     """Test the finite difference approximation."""
     aero = SobieskiAerodynamics("complex128")
     inpts = aero.default_inputs
-    aero.linearization_mode = aero.FINITE_DIFFERENCES
+    aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     aero.linearize(inpts, compute_all_jacobians=True)
     aero.check_jacobian(inpts)
 
@@ -250,7 +234,7 @@ def test_check_jac_fdapprox():
 def test_check_jac_csapprox():
     """Test the complex step approximation."""
     aero = SobieskiAerodynamics("complex128")
-    aero.linearization_mode = aero.COMPLEX_STEP
+    aero.linearization_mode = aero.ApproximationMode.COMPLEX_STEP
     aero.linearize(compute_all_jacobians=True)
     aero.check_jacobian()
 
@@ -358,7 +342,7 @@ def test_serialize_hdf_cache(tmp_wd):
     """Test the serialization into a HDF5 cache."""
     aero = SobieskiAerodynamics()
     cache_hdf_file = "aero_cache.h5"
-    aero.set_cache_policy(aero.HDF5_CACHE, cache_hdf_file=cache_hdf_file)
+    aero.set_cache_policy(aero.CacheType.HDF5, cache_hdf_file=cache_hdf_file)
     aero.execute()
     out_file = "sob_aero.pckl"
     aero.serialize(out_file)
@@ -440,9 +424,6 @@ def test_linearize_errors():
     # Shape is not 2D
     with pytest.raises(ValueError):
         d2.linearize({"x": array([1])}, compute_all_jacobians=True)
-
-    with pytest.raises(ValueError):
-        d2.__setattr__("linearization_mode", "toto")
 
     d2.local_data["y"] = 1
     with pytest.raises(
@@ -556,7 +537,7 @@ def test_check_jacobian_parallel_cplx():
     """Test check_jacobian in parallel with complex-step."""
     sm = SobieskiMission()
     sm.check_jacobian(
-        derr_approx=sm.COMPLEX_STEP,
+        derr_approx=sm.ApproximationMode.COMPLEX_STEP,
         step=1e-30,
         threshold=1e-6,
         parallel=True,
@@ -575,15 +556,15 @@ def test_execute_rerun_errors():
     d.input_grammar.update(["a"])
     d.output_grammar.update(["b"])
     d.execute({"a": [1]})
-    d.status = d.STATUS_RUNNING
+    d.status = d.ExecutionStatus.RUNNING
     with pytest.raises(ValueError):
         d.execute({"a": [2]})
     with pytest.raises(ValueError):
         d.reset_statuses_for_run()
 
-    d.status = d.STATUS_DONE
+    d.status = d.ExecutionStatus.DONE
     d.execute({"a": [1]})
-    d.re_exec_policy = d.RE_EXECUTE_NEVER_POLICY
+    d.re_exec_policy = d.ReExecutionPolicy.NEVER
     d.execute({"a": [1]})
     with pytest.raises(ValueError):
         d.execute({"a": [2]})
@@ -611,7 +592,7 @@ def test_cache_h5(tmp_wd):
     """Test the HDF5 cache."""
     sm = SobieskiMission(enable_delay=0.1)
     hdf_file = sm.name + ".hdf5"
-    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
+    sm.set_cache_policy(sm.CacheType.HDF5, cache_hdf_file=hdf_file)
     xs = sm.default_inputs["x_shared"]
     sm.execute({"x_shared": xs})
     t0 = sm.exec_time
@@ -634,7 +615,7 @@ def test_cache_h5_inpts(tmp_wd):
     """Test the HD5 cache for inputs."""
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
-    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
+    sm.set_cache_policy(sm.CacheType.HDF5, cache_hdf_file=hdf_file)
     xs = sm.default_inputs["x_shared"]
     sm.execute({"x_shared": xs})
     out_ref = sm.local_data["y_4"]
@@ -645,9 +626,9 @@ def test_cache_h5_inpts(tmp_wd):
 
 
 def test_cache_memory_inpts():
-    """Test the MEMORY_FULL_CACHE."""
+    """Test the CacheType.MEMORY_FULL."""
     sm = SobieskiMission()
-    sm.set_cache_policy(sm.MEMORY_FULL_CACHE)
+    sm.set_cache_policy(sm.CacheType.MEMORY_FULL)
     xs = sm.default_inputs["x_shared"]
     sm.execute({"x_shared": xs})
     out_ref = sm.local_data["y_4"]
@@ -661,7 +642,7 @@ def test_cache_h5_jac(tmp_wd):
     """Test the HDF5 cache for the Jacobian."""
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
-    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
+    sm.set_cache_policy(sm.CacheType.HDF5, cache_hdf_file=hdf_file)
     xs = sm.default_inputs["x_shared"]
     input_data = {"x_shared": xs}
     jac_1 = sm.linearize(input_data, compute_all_jacobians=True)
@@ -692,8 +673,8 @@ def test_replace_h5_cache(tmp_wd):
     sm = SobieskiMission()
     hdf_file_1 = sm.name + "_1.hdf5"
     hdf_file_2 = sm.name + "_2.hdf5"
-    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file_1)
-    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file_2)
+    sm.set_cache_policy(sm.CacheType.HDF5, cache_hdf_file=hdf_file_1)
+    sm.set_cache_policy(sm.CacheType.HDF5, cache_hdf_file=hdf_file_2)
     assert sm.cache.hdf_file.hdf_file_path == hdf_file_2
 
 
@@ -721,7 +702,9 @@ def test_jac_approx_mix_fd():
     """Check the complex step method with parallel=True."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation(
-        sm.COMPLEX_STEP, jax_approx_step=1e-30, jac_approx_n_processes=4
+        sm.ApproximationMode.COMPLEX_STEP,
+        jax_approx_step=1e-30,
+        jac_approx_n_processes=4,
     )
     assert sm.check_jacobian(parallel=True, n_processes=4, threshold=1e-4)
 
@@ -758,7 +741,7 @@ def test_jac_cache_trigger_shapecheck():
     # it will compute the jacobian with the new i/o
     aero = SobieskiAerodynamics("complex128")
     inpts = aero.default_inputs
-    aero.linearization_mode = aero.FINITE_DIFFERENCES
+    aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     in_names = ["x_2", "y_12"]
     aero.add_differentiated_inputs(in_names)
     out_names = ["y_21"]
@@ -871,8 +854,8 @@ def test_deactivate_counters():
 
 
 def test_cache_none():
-    """Check that the discipline cache can be deactivate."""
-    discipline = MDODiscipline(cache_type=None)
+    """Check that the discipline cache can be deactivated."""
+    discipline = MDODiscipline(cache_type=MDODiscipline.CacheType.NONE)
     assert discipline.activate_cache is True
     assert discipline.cache is None
 
@@ -1005,35 +988,35 @@ def test_get_sub_disciplines_recursive(recursive, expected):
         (
             {"x": array([1.0]), "in_path": "some_string"},
             {"y": array([0.0]), "out_path": "another_string"},
-            MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+            MDODiscipline.GrammarType.SIMPLE,
             ["x"],
             ["y"],
         ),
         (
             {"x": array([1]), "in_path": "some_string"},
             {"y": 1, "out_path": "another_string"},
-            MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+            MDODiscipline.GrammarType.SIMPLE,
             ["x"],
             [],
         ),
         (
             {"x": array([1.0]), "in_path": array(["some_string"])},
             {"y": array([0.0]), "out_path": array(["another_string"])},
-            MDODiscipline.JSON_GRAMMAR_TYPE,
+            MDODiscipline.GrammarType.JSON,
             ["x"],
             ["y"],
         ),
         (
             {"x": array([1.0]), "in_path": "some_string"},
             {"y": array([0.0]), "out_path": "another_string"},
-            MDODiscipline.JSON_GRAMMAR_TYPE,
+            MDODiscipline.GrammarType.JSON,
             ["x"],
             ["y"],
         ),
         (
             {"x": array([1]), "in_path": "some_string"},
             {"y": 1, "out_path": "another_string"},
-            MDODiscipline.JSON_GRAMMAR_TYPE,
+            MDODiscipline.GrammarType.JSON,
             ["x"],
             [],
         ),
@@ -1044,10 +1027,10 @@ def test_add_differentiated_io_non_numeric(
 ):
     """Check that non-numeric i/o are ignored in add_differentiated_inputs/outputs.
 
-    If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+    If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
     an input/output is either a non-numeric array or not an array, it will be ignored.
 
-    If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+    If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
     an input/output is not an array, it will be ignored. Keep in mind that in this case
     the array subtype is not checked.
 
@@ -1121,21 +1104,21 @@ def test_statuses(observer):
     assert not observer.statuses
 
     disc.reset_statuses_for_run()
-    assert observer.statuses == [MDODiscipline.STATUS_PENDING]
+    assert observer.statuses == [MDODiscipline.ExecutionStatus.PENDING]
     observer.reset()
 
     disc.execute()
     assert observer.statuses == [
-        MDODiscipline.STATUS_RUNNING,
-        MDODiscipline.STATUS_DONE,
+        MDODiscipline.ExecutionStatus.RUNNING,
+        MDODiscipline.ExecutionStatus.DONE,
     ]
     observer.reset()
 
     disc.linearize(compute_all_jacobians=True)
     assert observer.statuses == [
-        MDODiscipline.STATUS_PENDING,
-        MDODiscipline.STATUS_LINEARIZE,
-        MDODiscipline.STATUS_DONE,
+        MDODiscipline.ExecutionStatus.PENDING,
+        MDODiscipline.ExecutionStatus.LINEARIZE,
+        MDODiscipline.ExecutionStatus.DONE,
     ]
     observer.reset()
 
@@ -1145,8 +1128,8 @@ def test_statuses(observer):
     except Exception:
         pass
     assert observer.statuses == [
-        MDODiscipline.STATUS_RUNNING,
-        MDODiscipline.STATUS_FAILED,
+        MDODiscipline.ExecutionStatus.RUNNING,
+        MDODiscipline.ExecutionStatus.FAILED,
     ]
 
 
@@ -1157,11 +1140,11 @@ def test_statuses_linearize(observer):
 
     disc.linearize(compute_all_jacobians=True)
     assert observer.statuses == [
-        MDODiscipline.STATUS_PENDING,
-        MDODiscipline.STATUS_RUNNING,
-        MDODiscipline.STATUS_DONE,
-        MDODiscipline.STATUS_LINEARIZE,
-        MDODiscipline.STATUS_DONE,
+        MDODiscipline.ExecutionStatus.PENDING,
+        MDODiscipline.ExecutionStatus.RUNNING,
+        MDODiscipline.ExecutionStatus.DONE,
+        MDODiscipline.ExecutionStatus.LINEARIZE,
+        MDODiscipline.ExecutionStatus.DONE,
     ]
     observer.reset()
 

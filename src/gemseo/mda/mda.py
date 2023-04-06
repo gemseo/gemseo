@@ -37,7 +37,6 @@ from numpy.linalg import norm
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -50,8 +49,6 @@ LOGGER = logging.getLogger(__name__)
 
 class MDA(MDODiscipline):
     """An MDA analysis."""
-
-    FINITE_DIFFERENCES = FINITE_DIFFERENCES
 
     N_CPUS = cpu_count()
 
@@ -117,7 +114,7 @@ class MDA(MDODiscipline):
         disciplines: list[MDODiscipline],
         max_mda_iter: int = 10,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
@@ -133,9 +130,7 @@ class MDA(MDODiscipline):
             max_mda_iter: The maximum iterations number for the MDA algorithm.
             name: The name to be given to the MDA.
                 If None, use the name of the class.
-            grammar_type: The type of the input and output grammars,
-                either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             tolerance: The tolerance of the iterative direct coupling solver;
                 the norm of the current residuals divided by initial residuals norm
                 shall be lower than the tolerance to stop iterating.
@@ -481,7 +476,7 @@ class MDA(MDODiscipline):
     def check_jacobian(
         self,
         input_data: Mapping[str, ndarray] | None = None,
-        derr_approx: str = FINITE_DIFFERENCES,
+        derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:B950
         step: float = 1e-7,
         threshold: float = 1e-8,
         linearization_mode: str = "auto",

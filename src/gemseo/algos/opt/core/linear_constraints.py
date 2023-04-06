@@ -27,30 +27,23 @@ from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 def build_constraints_matrices(
-    constraints: Iterable[MDOLinearFunction], constraint_type: str
+    constraints: Iterable[MDOLinearFunction],
+    constraint_type: MDOFunction.ConstraintType,
 ) -> tuple[ndarray | None, ndarray | None]:
     """Build the constraints matrices associated with passed linear constraints.
 
     Args:
         constraints: The linear constraints.
-        constraint_type: The type of constraint to consider.
+        constraint_type: The type of constraint.
 
     Returns:
         The left-hand side matrix, the right-hand side vector
     """
-    # Check the constraint type
-    valid_types = [MDOLinearFunction.TYPE_INEQ, MDOLinearFunction.TYPE_EQ]
-    if constraint_type not in valid_types:
-        raise ValueError(
-            "{} is not among valid constraint types {}".format(
-                constraint_type, " ".join(valid_types)
-            )
-        )
-
     # Filter the constraints to consider
     constraints = [
         constraint for constraint in constraints if constraint.f_type == constraint_type

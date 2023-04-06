@@ -54,7 +54,7 @@ class MDAGaussSeidel(MDA):
         disciplines: Sequence[MDODiscipline],
         name: str | None = None,
         max_mda_iter: int = 10,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,

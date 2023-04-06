@@ -61,7 +61,7 @@ class MDOQuadraticFunction(MDOFunction):
             quad_coeffs: The second-order coefficients.
             name: The name of the function.
             f_type: The type of the linear function
-                among :attr:`.MDOFunction.AVAILABLE_TYPES`.
+                among :attr:`.MDOFunction.FunctionType`.
                 If ``None``, the linear function will have no type.
             args: The names of the inputs of the linear function.
                 If ``None``, the inputs of the linear function will have no names.

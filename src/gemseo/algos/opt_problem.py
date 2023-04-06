@@ -61,7 +61,6 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from enum import Enum
 from functools import reduce
 from numbers import Number
 from pathlib import Path
@@ -95,6 +94,7 @@ from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
 from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
 from gemseo.algos.aggregation.aggregation_func import aggregate_ks
@@ -105,51 +105,22 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
-from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
+from gemseo.core.derivatives import derivation_modes
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
+from gemseo.disciplines.constraints_aggregation import ConstrAggegationDisc
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
-
-
-class AggregationFunction(str, Enum):
-    """A function to aggregate constraints."""
-
-    IKS = "IKS"
-    """The induces exponential function."""
-
-    KS = "KS"
-    """The Kreisselmeier–Steinhauser function."""
-
-    POS_SUM = "POS_SUM"
-    """The positive sum squared function."""
-
-    MAX = "MAX"
-    """The maximum function."""
-
-    SUM = "SUM"
-    """The sum squared function."""
-
-
-_AGGREGATION_FUNCTION_MAP: Final[str] = {
-    AggregationFunction.IKS: aggregate_iks,
-    AggregationFunction.KS: aggregate_ks,
-    AggregationFunction.POS_SUM: aggregate_positive_sum_square,
-    AggregationFunction.MAX: aggregate_max,
-    AggregationFunction.SUM: aggregate_sum_square,
-}
-
 
 BestInfeasiblePointType = Tuple[
     Optional[ndarray], Optional[ndarray], bool, Dict[str, ndarray]
@@ -255,24 +226,43 @@ class OptimizationProblem:
     constraint_names: dict[str, list[str]]
     """The standardized constraint names bound to the original ones."""
 
-    LINEAR_PB: Final[str] = "linear"
-    NON_LINEAR_PB: Final[str] = "non-linear"
-    AVAILABLE_PB_TYPES: ClassVar[str] = [LINEAR_PB, NON_LINEAR_PB]
+    AggregationFunction = ConstrAggegationDisc.EvaluationFunction
 
-    USER_GRAD: Final[str] = "user"
-    COMPLEX_STEP: Final[str] = COMPLEX_STEP
-    FINITE_DIFFERENCES: Final[str] = FINITE_DIFFERENCES
-    __DIFFERENTIATION_CLASSES: ClassVar[str] = {
-        COMPLEX_STEP: ComplexStep,
-        FINITE_DIFFERENCES: FirstOrderFD,
+    _AGGREGATION_FUNCTION_MAP: Final[str] = {
+        AggregationFunction.IKS: aggregate_iks,
+        AggregationFunction.KS: aggregate_ks,
+        AggregationFunction.POS_SUM: aggregate_positive_sum_square,
+        AggregationFunction.MAX: aggregate_max,
+        AggregationFunction.SUM: aggregate_sum_square,
     }
-    NO_DERIVATIVES: Final[str] = "no_derivatives"
-    DIFFERENTIATION_METHODS: ClassVar[str] = [
-        USER_GRAD,
-        COMPLEX_STEP,
-        FINITE_DIFFERENCES,
-        NO_DERIVATIVES,
-    ]
+
+    class ProblemType(StrEnum):
+        """The type of problem."""
+
+        LINEAR = "linear"
+        NON_LINEAR = "non-linear"
+
+    ApproximationMode = derivation_modes.ApproximationMode
+
+    class _DifferentiationMethod(StrEnum):
+        """The additional differentiation methods."""
+
+        USER_GRAD = "user"
+        NO_DERIVATIVE = "no_derivative"
+
+    DifferentiationMethod = merge_enums(
+        "DifferentiationMethod",
+        StrEnum,
+        ApproximationMode,
+        _DifferentiationMethod,
+        doc="The differentiation methods.",
+    )
+
+    __DIFFERENTIATION_CLASSES: Final[str] = {
+        ApproximationMode.COMPLEX_STEP: ComplexStep,
+        ApproximationMode.FINITE_DIFFERENCES: FirstOrderFD,
+    }
+
     DESIGN_VAR_NAMES: Final[str] = "x_names"
     DESIGN_VAR_SIZE: Final[str] = "x_size"
     DESIGN_SPACE_ATTRS: Final[str] = [
@@ -309,9 +299,9 @@ class OptimizationProblem:
     def __init__(
         self,
         design_space: DesignSpace,
-        pb_type: str = NON_LINEAR_PB,
+        pb_type: ProblemType = ProblemType.NON_LINEAR,
         input_database: str | Path | Database | None = None,
-        differentiation_method: str = USER_GRAD,
+        differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         fd_step: float = 1e-7,
         parallel_differentiation: bool = False,
         use_standardized_objective: bool = True,
@@ -320,8 +310,7 @@ class OptimizationProblem:
         """
         Args:
             design_space: The design space on which the functions are evaluated.
-            pb_type: The type of the optimization problem
-                among :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`.
+            pb_type: The type of the optimization problem.
             input_database: A database to initialize that of the optimization problem.
                 If None, the optimization problem starts from an empty database.
             differentiation_method: The default differentiation method to be applied
@@ -413,25 +402,6 @@ class OptimizationProblem:
         self.__parallel_differentiation_options = value
 
     @property
-    def differentiation_method(self) -> str:
-        """The differentiation method."""
-        return self.__differentiation_method
-
-    @differentiation_method.setter
-    def differentiation_method(
-        self,
-        value: str,
-    ) -> None:
-        if not isinstance(value, str):
-            value = value[0].decode()
-        if value not in self.DIFFERENTIATION_METHODS:
-            raise ValueError(
-                f"'{value}' is not a differentiation methods; "
-                f"available ones are: {pretty_repr(self.DIFFERENTIATION_METHODS)}."
-            )
-        self.__differentiation_method = value
-
-    @property
     def objective(self) -> MDOFunction:
         """The objective function."""
         return self._objective
@@ -441,7 +411,9 @@ class OptimizationProblem:
         self,
         func: MDOFunction,
     ) -> None:
-        if self.pb_type == self.LINEAR_PB and not isinstance(func, MDOLinearFunction):
+        if self.pb_type == self.ProblemType.LINEAR and not isinstance(
+            func, MDOLinearFunction
+        ):
             raise TypeError(
                 "The objective of a linear optimization problem "
                 "must be an MDOLinearFunction."
@@ -451,7 +423,7 @@ class OptimizationProblem:
     @staticmethod
     def repr_constraint(
         func: MDOFunction,
-        ctype: str,
+        cstr_type: MDOFunction.ConstraintType,
         value: float | None = None,
         positive: bool = False,
     ) -> str:
@@ -459,8 +431,7 @@ class OptimizationProblem:
 
         Args:
             func: The constraint function.
-            ctype: The type of the constraint.
-                Either equality or inequality.
+            cstr_type: The type of the constraint.
             value: The value for which the constraint is active.
                 If None, this value is 0.
             positive: If True, then the inequality constraint is positive.
@@ -475,7 +446,7 @@ class OptimizationProblem:
             arguments = ", ".join(func.args)
             str_repr += f"({arguments})"
 
-        if ctype == func.TYPE_EQ:
+        if cstr_type == MDOFunction.ConstraintType.EQ:
             sign = " == "
         elif positive:
             sign = " >= "
@@ -503,7 +474,7 @@ class OptimizationProblem:
         self,
         cstr_func: MDOFunction,
         value: float | None = None,
-        cstr_type: str | None = None,
+        cstr_type: MDOFunction.ConstraintType | None = None,
         positive: bool = False,
     ) -> None:
         """Add a constraint (equality and inequality) to the optimization problem.
@@ -513,7 +484,6 @@ class OptimizationProblem:
             value: The value for which the constraint is active.
                 If None, this value is 0.
             cstr_type: The type of the constraint.
-                Either equality or inequality.
             positive: If True, then the inequality constraint is positive.
 
         Raises:
@@ -524,7 +494,7 @@ class OptimizationProblem:
         func_name = cstr_func.name
         has_default_name = cstr_func.has_default_name
         self.check_format(cstr_func)
-        if self.pb_type == OptimizationProblem.LINEAR_PB and not isinstance(
+        if self.pb_type == OptimizationProblem.ProblemType.LINEAR and not isinstance(
             cstr_func, MDOLinearFunction
         ):
             raise TypeError(
@@ -574,7 +544,7 @@ class OptimizationProblem:
             value: The value for which the constraint is active.
                 If None, this value is 0.
         """
-        self.add_constraint(cstr_func, value, cstr_type=MDOFunction.TYPE_EQ)
+        self.add_constraint(cstr_func, value, cstr_type=MDOFunction.ConstraintType.EQ)
 
     def add_ineq_constraint(
         self,
@@ -591,13 +561,17 @@ class OptimizationProblem:
             positive: If True, then the inequality constraint is positive.
         """
         self.add_constraint(
-            cstr_func, value, cstr_type=MDOFunction.TYPE_INEQ, positive=positive
+            cstr_func,
+            value,
+            cstr_type=MDOFunction.ConstraintType.INEQ,
+            positive=positive,
         )
 
     def aggregate_constraint(
         self,
         constraint_index: int,
-        method: str | Callable[[NDArray[float]], float] | AggregationFunction = "MAX",
+        method: Callable[[NDArray[float]], float]
+        | AggregationFunction = AggregationFunction.MAX,
         groups: Iterable[Sequence[int]] | None = None,
         **options: Any,
     ) -> None:
@@ -607,7 +581,7 @@ class OptimizationProblem:
             constraint_index: The index of the constraint in :attr:`.constraints`.
             method: The aggregation method, e.g. ``"max"``, ``"KS"`` or ``"IKS"``.
             groups: The groups of components of the constraint to aggregate
-                so as to produce one aggregation constraint per group of components;
+                to produce one aggregation constraint per group of components;
                 if ``None``, a single aggregation constraint is produced.
             **options: The options of the aggregation method.
 
@@ -627,9 +601,7 @@ class OptimizationProblem:
         if callable(method):
             aggregate_constraints = method
         else:
-            aggregate_constraints = _AGGREGATION_FUNCTION_MAP[
-                AggregationFunction[method]
-            ]
+            aggregate_constraints = self._AGGREGATION_FUNCTION_MAP[method]
 
         del self.constraints[constraint_index]
         if groups is None:
@@ -689,7 +661,7 @@ class OptimizationProblem:
         penalized_objective = self.objective / objective_scale
         self.add_observable(self.objective)
         for constr in self.constraints:
-            if constr.f_type == MDOFunction.TYPE_INEQ:
+            if constr.f_type == MDOFunction.ConstraintType.INEQ:
                 penalized_objective += aggregate_positive_sum_square(
                     constr, scale=scale_inequality
                 )
@@ -739,7 +711,7 @@ class OptimizationProblem:
             return
 
         self.check_format(obs_func)
-        obs_func.f_type = MDOFunction.TYPE_OBS
+        obs_func.f_type = MDOFunction.FunctionType.OBS
         self.observables.append(obs_func)
         self.__observable_names.add(name)
         if new_iter:
@@ -763,7 +735,7 @@ class OptimizationProblem:
             Returns:
                 True if the function is an equality constraint.
             """
-            return func.f_type == MDOFunction.TYPE_EQ
+            return func.f_type == MDOFunction.ConstraintType.EQ
 
         return list(filter(is_equality_constraint, self.constraints))
 
@@ -785,7 +757,7 @@ class OptimizationProblem:
             Returns:
                 True if the function is an inequality constraint.
             """
-            return func.f_type == MDOFunction.TYPE_INEQ
+            return func.f_type == MDOFunction.ConstraintType.INEQ
 
         return list(filter(is_inequality_constraint, self.constraints))
 
@@ -1017,7 +989,7 @@ class OptimizationProblem:
         Returns:
             The total dimension of the equality constraints.
         """
-        return self.__count_cstr_total_dim(MDOFunction.TYPE_EQ)
+        return self.__count_cstr_total_dim(MDOFunction.ConstraintType.EQ)
 
     def get_ineq_cstr_total_dim(self) -> int:
         """Retrieve the total dimension of the inequality constraints.
@@ -1029,7 +1001,7 @@ class OptimizationProblem:
         Returns:
             The total dimension of the inequality constraints.
         """
-        return self.__count_cstr_total_dim(MDOFunction.TYPE_INEQ)
+        return self.__count_cstr_total_dim(MDOFunction.ConstraintType.INEQ)
 
     def __count_cstr_total_dim(
         self,
@@ -1355,7 +1327,7 @@ class OptimizationProblem:
         if round_ints:
             # Keep the rounding option only if there is an integer design variable
             round_ints = any(
-                np_any(var_type == DesignSpace.INTEGER)
+                np_any(var_type == DesignSpace.DesignVariableType.INTEGER)
                 for var_type in self.design_space.variables_types.values()
             )
         # Avoids multiple wrappings of functions when multiple executions
@@ -1413,7 +1385,7 @@ class OptimizationProblem:
                 round_ints=round_ints,
             )
             self.objective.special_repr = self.objective.special_repr
-            self.objective.f_type = MDOFunction.TYPE_OBJ
+            self.objective.f_type = MDOFunction.FunctionType.OBJ
             self.__functions_are_preprocessed = True
             self.check()
             self.__eval_obs_jac = eval_obs_jac
@@ -1474,7 +1446,7 @@ class OptimizationProblem:
         else:
             func = NormFunction(func, is_function_input_normalized, round_ints, self)
 
-        if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
+        if self.differentiation_method in self.__DIFFERENTIATION_CLASSES:
             self.__add_fd_jac(func, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
@@ -1532,7 +1504,7 @@ class OptimizationProblem:
     ) -> None:
         """Add a pointer to the approached Jacobian of the function.
 
-        This Jacobian matrix is generated either by COMPLEX_STEP or FINITE_DIFFERENCES.
+        This Jacobian matrix is generated according :attr:`.differentiation_method`.
 
         Args:
             func: The function to be derivated.
@@ -1569,7 +1541,6 @@ class OptimizationProblem:
         """
         if self.objective is None:
             raise ValueError("Missing objective function in OptimizationProblem")
-        self.__check_pb_type()
         self.design_space.check()
         self.__check_differentiation_method()
         self.check_format(self.objective)
@@ -1590,26 +1561,10 @@ class OptimizationProblem:
                 )
         self.check_format(self.objective)
 
-    def __check_pb_type(self):
-        """Check that the problem type is right.
-
-        Available type are: :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`.
-
-        Raises:
-            ValueError: If a function declared as a constraint has the wrong type.
-        """
-        if self.pb_type not in self.AVAILABLE_PB_TYPES:
-            raise TypeError(
-                "Unknown problem type {}, "
-                "available problem types are {}".format(
-                    self.pb_type, self.AVAILABLE_PB_TYPES
-                )
-            )
-
     def __check_differentiation_method(self):
         """Check that the differentiation method is in allowed ones.
 
-        Available ones are: :attr:`.OptimizationProblem.DIFFERENTIATION_METHODS`.
+        Available ones are: :attr:`.OptimizationProblem.DifferentiationMethod`.
 
         Raises:
             ValueError: If either
@@ -1617,15 +1572,7 @@ class OptimizationProblem:
                 the complex step is null or
                 the finite differences' step is null.
         """
-        if self.differentiation_method not in self.DIFFERENTIATION_METHODS:
-            raise ValueError(
-                "Unknown method {} "
-                "is not among the supported ones: {}".format(
-                    self.differentiation_method, self.DIFFERENTIATION_METHODS
-                )
-            )
-
-        if self.differentiation_method == self.COMPLEX_STEP:
+        if self.differentiation_method == self.ApproximationMode.COMPLEX_STEP:
             if self.fd_step == 0:
                 raise ValueError("ComplexStep step is null!")
             if self.fd_step.imag != 0:
@@ -1635,7 +1582,7 @@ class OptimizationProblem:
                     " Auto setting the real part"
                 )
                 self.fd_step = self.fd_step.imag
-        elif self.differentiation_method == self.FINITE_DIFFERENCES:
+        elif self.differentiation_method == self.ApproximationMode.FINITE_DIFFERENCES:
             if self.fd_step == 0:
                 raise ValueError("Finite differences step is null!")
             if self.fd_step.imag != 0:
@@ -1659,7 +1606,7 @@ class OptimizationProblem:
 
     def _satisfied_constraint(
         self,
-        cstr_type: str,
+        cstr_type: MDOFunction.ConstraintType,
         value: ndarray,
     ) -> bool:
         """Determine if an evaluation satisfies a constraint within a given tolerance.
@@ -1671,7 +1618,7 @@ class OptimizationProblem:
         Returns:
             Whether a value satisfies a constraint.
         """
-        if cstr_type == MDOFunction.TYPE_EQ:
+        if cstr_type == MDOFunction.ConstraintType.EQ:
             return np_all(np_abs(value) <= self.eq_tolerance)
         return np_all(value <= self.ineq_tolerance)
 
@@ -1767,7 +1714,7 @@ class OptimizationProblem:
                 if isnan(eval_cstr).any():
                     return False, inf
                 is_pt_feasible = False
-                if constraint.f_type == MDOFunction.TYPE_INEQ:
+                if constraint.f_type == MDOFunction.ConstraintType.INEQ:
                     if isinstance(eval_cstr, ndarray):
                         viol_inds = where(eval_cstr > self.ineq_tolerance)
                         f_violation += (
@@ -2503,7 +2450,7 @@ class OptimizationProblem:
         )
         for constraint in self.constraints:
             value = atleast_1d(values[constraint.name])
-            if constraint.f_type == MDOFunction.TYPE_EQ:
+            if constraint.f_type == MDOFunction.ConstraintType.EQ:
                 value = numpy.absolute(value)
                 tolerance = self.eq_tolerance
             else:

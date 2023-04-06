@@ -87,6 +87,7 @@ from pandas import read_csv
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
+from gemseo.core.discipline import MDODiscipline
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.factory import DatasetPlotFactory
@@ -184,11 +185,7 @@ class Dataset:
     }
     """The default variable names for the different groups."""
 
-    HDF5_CACHE: ClassVar[str] = "HDF5Cache"
-    """The name of the :class:`.HDF5Cache`."""
-
-    MEMORY_FULL_CACHE: ClassVar[str] = "MemoryFullCache"
-    """The name of the :class:`.MemoryFullCache`."""
+    CacheType = MDODiscipline.CacheType
 
     __GETITEM_ERROR_MESSAGE: ClassVar[str] = (
         "You can get items from a dataset in one of the following ways: "
@@ -1241,7 +1238,7 @@ class Dataset:
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
-        cache_type: str = MEMORY_FULL_CACHE,
+        cache_type: CacheType = CacheType.MEMORY_FULL,
         cache_hdf_file: str | None = None,
         cache_hdf_node_name: str | None = None,
         **options,
@@ -1270,7 +1267,7 @@ class Dataset:
 
         create_cache = CacheFactory().create
         cache_hdf_node_name = cache_hdf_node_name or self.name
-        if cache_type == self.HDF5_CACHE:
+        if cache_type == self.CacheType.HDF5:
             cache = create_cache(
                 cache_type,
                 hdf_file_path=cache_hdf_file,

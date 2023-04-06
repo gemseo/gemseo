@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from unittest import mock
 
 import pytest
@@ -27,7 +26,6 @@ from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.uncertainty.sensitivity.correlation import analysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.utils.base_enum import get_names
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.testing import image_comparison
 from numpy.testing import assert_equal
@@ -50,18 +48,18 @@ def test_compute_indices(correlation):
     correlation.compute_indices()
     indices = correlation.indices
     # Check the methods for which the indices have been computed.
-    all_methods = set(get_names(correlation.Method))
+    all_methods = set(correlation.Method)
     available_methods = set(indices.keys())
     if IS_OT_LOWER_THAN_1_20:
         assert available_methods == all_methods - {
-            correlation.Method.KENDALL.name,
-            correlation.Method.SSRC.name,
+            correlation.Method.KENDALL,
+            correlation.Method.SSRC,
         }
     else:
         assert available_methods == all_methods
 
     # Check the names and sizes of the outputs.
-    pearson = indices["PEARSON"]
+    pearson = indices["Pearson"]
     output_names = {"y1", "y2"}
     assert set(pearson.keys()) == output_names
     for output_name in output_names:
@@ -73,22 +71,9 @@ def test_compute_indices(correlation):
     for input_name in input_names:
         assert pearson["y1"][0][input_name].shape == (1,)
 
-    # Check that the property ``method`` is ``indices[algo.name.lower()]``.
+    # Check that the property ``method`` is ``indices[algo.lower()]``.
     for algo in correlation.Method:
-        assert getattr(correlation, algo.name.lower()) == indices[algo.name]
-
-
-def test_wrong_main_method(correlation):
-    """Check that an exception is raised when setting main_method with a wrong name."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "foo is not a sensitivity method; "
-            "available ones are 'KENDALL', 'PCC', 'PEARSON', 'PRCC', "
-            "'SPEARMAN', 'SRC', 'SRRC' and 'SSRC'."
-        ),
-    ):
-        correlation.main_method = "foo"
+        assert getattr(correlation, algo.lower()) == indices[algo]
 
 
 @pytest.mark.parametrize("baseline_images", [["plot"]])
@@ -112,7 +97,7 @@ def test_aggregate_sensitivity_indices(correlation):
     """Check _aggregate_sensitivity_indices()."""
     correlation.compute_indices()
     assert correlation.sort_parameters("y2") == ["x2", "x1"]
-    indices = correlation.indices["SPEARMAN"]["y2"][0]
+    indices = correlation.indices["Spearman"]["y2"][0]
     c1 = indices["x1"]
     c2 = indices["x2"]
     assert c2 < 0 < c1
@@ -151,12 +136,12 @@ def test_mock_ot_version(correlation):
     indices = correlation.compute_indices()
     assert correlation.kendall
     assert correlation.ssrc
-    assert correlation.Method.KENDALL.name in indices
-    assert correlation.Method.SSRC.name in indices
+    assert correlation.Method.KENDALL in indices
+    assert correlation.Method.SSRC in indices
 
     with mock.patch.object(analysis, "IS_OT_LOWER_THAN_1_20", new=True):
         indices = correlation.compute_indices()
         assert not correlation.kendall
         assert not correlation.ssrc
-        assert correlation.Method.KENDALL.name not in indices
-        assert correlation.Method.SSRC.name not in indices
+        assert correlation.Method.KENDALL not in indices
+        assert correlation.Method.SSRC not in indices

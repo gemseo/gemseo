@@ -49,7 +49,7 @@ class MDF(MDOFormulation):
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         main_mda_name: str = "MDAChain",
         inner_mda_name: str = "MDAJacobi",
         **main_mda_options: Any,

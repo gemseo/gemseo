@@ -129,12 +129,13 @@ Surrogates
 
 High-level functions
 ********************
-"""  # noqa:D205 D212 D415
+"""
 from __future__ import annotations
 
 import logging
 import re
 from collections import namedtuple
+from pathlib import Path
 from typing import Any
 from typing import Iterable
 from typing import Mapping
@@ -144,7 +145,15 @@ from typing import TYPE_CHECKING
 import pkg_resources as __pkg_resources
 from numpy import ndarray
 
+from gemseo.core.discipline import MDODiscipline
+from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.matplotlib_figure import FigSizeType
+
+try:
+    __version__ = __pkg_resources.get_distribution("package-name").version
+except __pkg_resources.DistributionNotFound:
+    # package is not installed
+    pass
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -156,7 +165,6 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
     from gemseo.core.dataset import Dataset
-    from gemseo.core.discipline import MDODiscipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
     from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -168,16 +176,6 @@ if TYPE_CHECKING:
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
         JobSchedulerDisciplineWrapper,
     )
-
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
-
-from pathlib import Path
-
-try:
-    __version__ = __pkg_resources.get_distribution("package-name").version
-except __pkg_resources.DistributionNotFound:
-    # package is not installed
-    pass
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -842,7 +840,9 @@ def get_discipline_options_defaults(
     return factory.get_default_options_values(discipline_name)
 
 
-def get_scenario_differentiation_modes() -> str:
+def get_scenario_differentiation_modes() -> (
+    tuple[OptimizationProblem.DifferentiationMethod]
+):
     """Return the names of the available differentiation modes of a scenario.
 
     Returns:
@@ -861,7 +861,7 @@ def get_scenario_differentiation_modes() -> str:
     """
     from gemseo.algos.opt_problem import OptimizationProblem
 
-    return OptimizationProblem.DIFFERENTIATION_METHODS
+    return tuple(OptimizationProblem.DifferentiationMethod)
 
 
 def get_available_scenario_types() -> list[str]:
@@ -999,7 +999,7 @@ def create_scenario(
     design_space: DesignSpace | str | Path,
     name: str | None = None,
     scenario_type: str = "MDO",
-    grammar_type: str = "JSONGrammar",
+    grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     maximize_objective: bool = False,
     **options: Any,
 ) -> Scenario:

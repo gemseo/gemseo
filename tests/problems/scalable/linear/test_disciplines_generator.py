@@ -89,7 +89,7 @@ def test_lin_disc_jac():
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
 def test_create_disciplines_from_sizes(grammar_type):
     """Test that the disciplines are well created according to the specifications."""

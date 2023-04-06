@@ -43,7 +43,7 @@ class DFChooser(MDODiscipline):
     def __init__(
         self,
         with_df: bool,
-        grammar_type: str,
+        grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool,
     ):
         super().__init__(grammar_type=grammar_type)
@@ -64,7 +64,7 @@ class A(DFChooser):
     def __init__(
         self,
         with_df: bool,
-        grammar_type: str,
+        grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool = False,
     ):
         super().__init__(with_df, grammar_type, df_shares_io)
@@ -96,7 +96,7 @@ class B(DFChooser):
     def __init__(
         self,
         with_df: bool,
-        grammar_type: str,
+        grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool = False,
     ):
         super().__init__(with_df, grammar_type, df_shares_io)
@@ -121,7 +121,7 @@ class B(DFChooser):
 def get_executed_disc(
     disc_class: type,
     with_df: bool,
-    grammar_type: str,
+    grammar_type: MDODiscipline.GrammarType,
     df_shares_io: bool = False,
 ) -> MDODiscipline:
     """Create, execute and return a discipline.
@@ -149,7 +149,7 @@ def get_executed_disc(
 # @pytest.mark.parametrize("df_shares_io", [False, True])
 @pytest.mark.parametrize("df_shares_io", [True])
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 @pytest.mark.parametrize(
     "disc_class",
@@ -175,7 +175,7 @@ def test_disciplines_comparison(grammar_type, disc_class, df_shares_io):
 
 def test_mdo_function_comparison():
     """Compare results of data frames against NumPy arrays with MDOFunctions."""
-    grammar_type = MDODiscipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = MDODiscipline.GrammarType.SIMPLE
 
     with_df = False
     fct_gen = MDOFunctionGenerator(A(with_df, grammar_type))
@@ -193,7 +193,7 @@ class A2(A):
     """Discipline with 2 inputs and 2 outputs."""
 
     def __init__(self, with_df):
-        super().__init__(with_df, MDODiscipline.SIMPLE_GRAMMAR_TYPE)
+        super().__init__(with_df, MDODiscipline.GrammarType.SIMPLE)
         if self.with_df:
             self.input_grammar.update({to_df_key("x", "c"): ndarray})
             self.default_inputs["x"]["c"] = array([0.0])
@@ -278,7 +278,7 @@ def test_cache(cache_name, cache_options, tmp_wd):
 def test_serialization(tmp_wd):
     """Verify serialization."""
     with_df = True
-    disc = A(with_df, MDODiscipline.JSON_GRAMMAR_TYPE)
+    disc = A(with_df, MDODiscipline.GrammarType.JSON)
     disc.execute()
     pickle_file_name = "a.pickle"
     disc.serialize(pickle_file_name)

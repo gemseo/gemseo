@@ -27,7 +27,7 @@ from typing import Final
 from typing import Iterable
 from typing import Mapping
 
-from pandas import DataFrame  # noqa F401
+from pandas import DataFrame
 from pandas import read_excel
 
 from gemseo import create_design_space
@@ -492,8 +492,6 @@ class StudyAnalysis:
 
     scenarios: dict[str, MDOScenario]
     """The scenarios."""
-
-    AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
 
     def __init__(self, xls_study_path: str | Path) -> None:
         """Initialize the study from the Excel specification.

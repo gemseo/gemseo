@@ -94,7 +94,6 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from enum import Enum
 from typing import Final
 from typing import Iterable
 from typing import Mapping
@@ -104,10 +103,7 @@ from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    Bounds,
-)
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceIntervalSide,
+    ToleranceInterval,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -180,8 +176,8 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> dict[str, list[Bounds]]:  # noqa: D102
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+    ) -> dict[str, list[ToleranceInterval.Bounds]]:  # noqa: D102
         r"""Compute a :math:`(p,1-\alpha)` tolerance interval :math:`\text{TI}[X]`.
 
         The tolerance interval :math:`\text{TI}[X]` is defined
@@ -235,7 +231,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
             for name, tolerance_intervals in self.compute_tolerance_interval(
-                0.99, side=ToleranceIntervalSide.LOWER
+                0.99, side=ToleranceInterval.ToleranceIntervalSide.LOWER
             ).items()
         }
 
@@ -258,7 +254,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
             for name, tolerance_intervals in self.compute_tolerance_interval(
-                0.9, side=ToleranceIntervalSide.LOWER
+                0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
             ).items()
         }
 
@@ -514,10 +510,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             values = []
             for name in sorted(options):
-                if isinstance(options[name], Enum):
-                    values.append(str(options[name].name))
-                else:
-                    values.append(str(options[name]))
+                values.append(str(options[name]))
 
         value = ", ".join(values)
         if value and not separator:

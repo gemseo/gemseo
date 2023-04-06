@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from gemseo.utils.base_enum import BaseEnum
+from strenum import StrEnum
 
 _LINEAR_SOLVER_TEMPLATE: Final[str] = "the left-hand side of the problem is not {}"
 """The template of the reason why an algorithm is unsuited for a problem."""
@@ -26,7 +26,7 @@ _OPTIMIZER_TEMPLATE: Final[str] = "it does not handle {}"
 """The template of the reason why an algorithm is unsuited for a problem."""
 
 
-class _UnsuitabilityReason(BaseEnum):
+class _UnsuitabilityReason(StrEnum):
     """The reason why an algorithm is unsuited for a problem."""
 
     NO_REASON = ""
@@ -48,9 +48,6 @@ class _UnsuitabilityReason(BaseEnum):
     SMALL_DIMENSION = (
         "the dimension of the problem is lower than the minimum dimension it can handle"
     )
-
-    def __str__(self) -> str:
-        return self.value
 
     def __bool__(self) -> bool:
         return self != self.NO_REASON

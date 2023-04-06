@@ -54,7 +54,7 @@ class DOEScenario(Scenario):
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
@@ -110,7 +110,7 @@ class DOEScenario(Scenario):
 
     def _update_input_grammar(self) -> None:  # noqa: D102
         super()._update_input_grammar()
-        if self.grammar_type == self.SIMPLE_GRAMMAR_TYPE:
+        if self.grammar_type == self.GrammarType.SIMPLE:
             self.input_grammar.update(
                 {
                     self.EVAL_JAC: bool,

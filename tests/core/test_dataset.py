@@ -636,7 +636,7 @@ def test_plot(dataset, tmp_wd):
 
 def test_export_to_dataset():
     disc = AnalyticDiscipline({"obj": "x1+x2", "cstr": "x1-x2"})
-    disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
+    disc.set_cache_policy(disc.CacheType.MEMORY_FULL)
     d_s = DesignSpace()
     d_s.add_variable("x1", 1, "float", 0, 1, 0.5)
     d_s.add_variable("x2", 1, "float", 0, 1, 0.5)

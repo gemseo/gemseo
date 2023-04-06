@@ -110,8 +110,8 @@ class MatlabDiscipline(MDODiscipline):
         output_grammar_file: str | None = None,
         auto_detect_grammar_files: bool = False,
         check_opt_data: bool = True,
-        cache_type: str = MDODiscipline.SIMPLE_CACHE,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        cache_type: MDODiscipline.CacheType = MDODiscipline.CacheType.SIMPLE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         cache_file_path: str | None = None,
         is_jac_returned_by_func: bool = False,
     ) -> None:
@@ -138,10 +138,8 @@ class MatlabDiscipline(MDODiscipline):
                 self.name _input.json and self.name _output.json.
             check_opt_data: If true, check input and output data of
                 discipline, pass if False.
-            cache_type: The type of cache policy, SIMPLE_CACHE
-                or HDF5_CACHE.
-            grammar_type: The type of grammar to use for IO declaration
-                either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE.
+            cache_type: The type of cache.
+            grammar_type: The type of the input and output grammars.
             cache_file_path: The file to store the data,
                 mandatory when HDF caching is used.
             is_jac_returned_by_func: If True, the jacobian matrices should be returned

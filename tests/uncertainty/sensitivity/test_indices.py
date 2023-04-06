@@ -268,7 +268,7 @@ def test_plot_comparison(
     spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
     pearson = CorrelationAnalysis([discipline], parameter_space, 10)
-    pearson.main_method = pearson.Method.PEARSON.name
+    pearson.main_method = pearson.Method.PEARSON
     pearson.compute_indices()
     plot = pearson.plot_comparison(
         spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot

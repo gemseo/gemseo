@@ -74,7 +74,7 @@ class AnalyticDiscipline(MDODiscipline):
         expressions: Mapping[str, str | Expr],
         name: str | None = None,
         fast_evaluation: bool = True,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -97,7 +97,7 @@ class AnalyticDiscipline(MDODiscipline):
         self._init_expressions()
         self._init_grammars()
         self._init_default_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _init_grammars(self) -> None:
         """Initialize the input an output grammars from the expressions' dictionary."""

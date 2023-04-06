@@ -140,12 +140,8 @@ def test_generate_coupling_graph(tmp_wd):
     assert Path("coupl.dot").exists()
 
 
-def test_get_algorithm_options_schema(tmp_wd):
-    """Test that all available options are printed.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_algorithm_options_schema():
+    """Test that all available options are printed."""
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
     assert len(schema_dict["properties"]) == 15
@@ -162,22 +158,14 @@ def test_get_algorithm_options_schema(tmp_wd):
     get_algorithm_options_schema("SLSQP", pretty_print=True)
 
 
-def test_get_surrogate_options_schema(tmp_wd):
-    """Test that the surrogate options schema is printed.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_surrogate_options_schema():
+    """Test that the surrogate options schema is printed."""
     get_surrogate_options_schema("RBFRegressor")
     get_surrogate_options_schema("RBFRegressor", pretty_print=True)
 
 
-def test_create_scenario_and_monitor(tmp_wd):
-    """Test the creation of a scenario from the SobieskiMission discipline.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_scenario_and_monitor():
+    """Test the creation of a scenario from the SobieskiMission discipline."""
     create_scenario(
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
@@ -197,12 +185,8 @@ def test_create_scenario_and_monitor(tmp_wd):
         )
 
 
-def test_monitor_scenario(tmp_wd):
-    """Test the scenario monitoring API method.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_monitor_scenario():
+    """Test the scenario monitoring API method."""
     scenario = create_scenario(
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
@@ -239,12 +223,8 @@ def test_execute_post(tmp_wd):
         execute_post(1234, "OptHistoryView")
 
 
-def test_create_doe_scenario(tmp_wd):
-    """Test the creation of a DOE scenario.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_doe_scenario():
+    """Test the creation of a DOE scenario."""
     create_scenario(
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
@@ -326,12 +306,8 @@ def test_get_formulation_sub_options_schema_print(capfd, formulation_name, opts)
         assert bool(re.search(expected, out))
 
 
-def test_get_scenario_inputs_schema(tmp_wd):
-    """Check that the scenario inputs schema is retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_scenario_inputs_schema():
+    """Check that the scenario inputs schema is retrieved correctly."""
     aero = create_discipline(["SobieskiAerodynamics"])
     design_space = SobieskiProblem().design_space
     sc_aero = create_scenario(
@@ -345,12 +321,8 @@ def test_get_scenario_inputs_schema(tmp_wd):
     get_scenario_inputs_schema(sc_aero, pretty_print=True)
 
 
-def test_exec_algo(tmp_wd):
-    """Test the execution of an algorithm with the Rosenbrock problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_exec_algo():
+    """Test the execution of an algorithm with the Rosenbrock problem."""
     problem = Rosenbrock()
     sol = execute_algo(problem, "L-BFGS-B", max_iter=200)
     assert abs(sol.f_opt) < 1e-8
@@ -365,12 +337,8 @@ def test_exec_algo(tmp_wd):
         execute_algo(problem, "lhs", "unknown_algo", n_samples=200)
 
 
-def test_get_scenario_options_schema(tmp_wd):
-    """Check that the scenario options schema is retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_scenario_options_schema():
+    """Check that the scenario options schema is retrieved correctly."""
     schema = get_scenario_options_schema("MDO")
     assert "name" in schema["properties"]
 
@@ -380,94 +348,63 @@ def test_get_scenario_options_schema(tmp_wd):
     get_scenario_options_schema("MDO", pretty_print=True)
 
 
-def test_get_mda_options_schema(tmp_wd):
-    """Check that the mda options schema are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_mda_options_schema():
+    """Check that the mda options schema are retrieved correctly."""
     schema = get_mda_options_schema("MDAJacobi")
     assert "name" in schema["properties"]
 
     get_mda_options_schema("MDAJacobi", pretty_print=True)
 
 
-def test_get_available_opt_algorithms(tmp_wd):
-    """Check that the optimization algorithms are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_opt_algorithms():
+    """Check that the optimization algorithms are retrieved correctly."""
     algos = get_available_opt_algorithms()
     assert "SLSQP" in algos
     assert "L-BFGS-B" in algos
     assert "TNC" in algos
 
 
-def test_get_available_doe_algorithms(tmp_wd):
-    """Test that the doe algorithms are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_doe_algorithms():
+    """Test that the doe algorithms are retrieved correctly."""
     algos = get_available_doe_algorithms()
     assert "lhs" in algos
     assert "fullfact" in algos
 
 
-def test_get_available_formulations(tmp_wd):
-    """Test that the available formulations are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_formulations():
+    """Test that the available formulations are retrieved correctly."""
     formulations = get_available_formulations()
     assert "MDF" in formulations
     assert "DisciplinaryOpt" in formulations
     assert "IDF" in formulations
 
 
-def test_get_available_post_processings(tmp_wd):
-    """Test that the available post-processing methods are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_post_processings():
+    """Test that the available post-processing methods are retrieved correctly."""
     post_processors = get_available_post_processings()
     assert "OptHistoryView" in post_processors
     assert "RadarChart" in post_processors
 
 
-def test_get_available_surrogates(tmp_wd):
-    """Test that the available surrogates are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_surrogates():
+    """Test that the available surrogates are retrieved correctly."""
     surrogates = get_available_surrogates()
     assert "RBFRegressor" in surrogates
     assert "LinearRegressor" in surrogates
 
 
-def test_get_available_disciplines(tmp_wd):
-    """Test that the available disciplines are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_disciplines():
+    """Test that the available disciplines are retrieved correctly."""
     disciplines = get_available_disciplines()
     assert "SobieskiMission" in disciplines
     assert "Sellar1" in disciplines
 
 
-def test_create_discipline(tmp_wd):
+def test_create_discipline():
     """Test that API method creates a discipline properly.
 
-    Test exceptions when the options dictionary does not follow the
-    specified json grammar.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
+    Test exceptions when the options dictionary does not follow the specified json
+    grammar.
     """
     options = {
         "dtype": "float64",
@@ -481,7 +418,7 @@ def test_create_discipline(tmp_wd):
     options_fail = {
         "dtype": "float64",
         "linearization_mode": "finite_differences",
-        "cache_type": MDODiscipline.SIMPLE_CACHE,
+        "cache_type": MDODiscipline.CacheType.SIMPLE,
     }
 
     msg = (
@@ -492,15 +429,11 @@ def test_create_discipline(tmp_wd):
         create_discipline("SobieskiMission", **options_fail)
 
 
-def test_create_surrogate(tmp_wd):
-    """Test the creation of a surrogate discipline.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_surrogate():
+    """Test the creation of a surrogate discipline."""
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
-    disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
+    disc.set_cache_policy(disc.CacheType.MEMORY_FULL)
     design_space = SobieskiProblem().design_space
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
@@ -515,12 +448,8 @@ def test_create_surrogate(tmp_wd):
     assert outs["y_4"] > 0.0
 
 
-def test_create_scalable(tmp_wd):
-    """Test the creation of a scalable discipline.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_scalable():
+    """Test the creation of a scalable discipline."""
 
     def f_1(x_1, x_2, x_3):
         return sin(2 * np_pi * x_1) + cos(2 * np_pi * x_2) + x_3
@@ -538,12 +467,8 @@ def test_create_scalable(tmp_wd):
     create_scalable("ScalableDiagonalModel", data, fill_factor=0.7)
 
 
-def test_create_mda(tmp_wd):
-    """Test the creation of an MDA from the Sobieski disciplines.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_mda():
+    """Test the creation of an MDA from the Sobieski disciplines."""
     disciplines = create_discipline(
         [
             "SobieskiAerodynamics",
@@ -557,22 +482,14 @@ def test_create_mda(tmp_wd):
     assert mda.residual_history[-1] < 1e-4
 
 
-def test_get_available_mdas(tmp_wd):
-    """Test that the available MDA solvers are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_mdas():
+    """Test that the available MDA solvers are retrieved correctly."""
     mdas = get_available_mdas()
     assert "MDAGaussSeidel" in mdas
 
 
-def test_get_discipline_inputs_schema(tmp_wd):
-    """Test that the discipline input schemas are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_discipline_inputs_schema():
+    """Test that the discipline input schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_inputs_schema(mission)
     for key in mission.get_input_data_names():
@@ -583,12 +500,8 @@ def test_get_discipline_inputs_schema(tmp_wd):
     get_discipline_inputs_schema(mission, pretty_print=True)
 
 
-def test_get_discipline_outputs_schema(tmp_wd):
-    """Test that the discipline output schemas are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_discipline_outputs_schema():
+    """Test that the discipline output schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_outputs_schema(mission)
     for key in mission.get_output_data_names():
@@ -599,33 +512,21 @@ def test_get_discipline_outputs_schema(tmp_wd):
     get_discipline_outputs_schema(mission, pretty_print=True)
 
 
-def test_get_scenario_differentiation_modes(tmp_wd):
-    """Test that the scenario differentiation modes are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_scenario_differentiation_modes():
+    """Test that the scenario differentiation modes are retrieved correctly."""
     modes = get_scenario_differentiation_modes()
     for mode in modes:
         assert isinstance(mode, str)
 
 
-def test_get_post_processing_options_schema(tmp_wd):
-    """Test that the post-processing option schemas are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_post_processing_options_schema():
+    """Test that the post-processing option schemas are retrieved correctly."""
     for post in get_available_post_processings():
         get_post_processing_options_schema(post)
 
 
-def test_get_formulation_options_schema(tmp_wd):
-    """Test that the formulation options schemas are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_formulation_options_schema():
+    """Test that the formulation options schemas are retrieved correctly."""
     mdf_schema = get_formulation_options_schema("MDF")
     for prop in ["maximize_objective", "inner_mda_name"]:
         assert prop in mdf_schema["required"]
@@ -641,12 +542,8 @@ def test_get_formulation_options_schema(tmp_wd):
     get_formulation_options_schema("IDF", pretty_print=True)
 
 
-def test_get_discipline_options_schema(tmp_wd):
-    """Test that the discipline options schemas are retrived correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_discipline_options_schema():
+    """Test that the discipline options schemas are retrieved correctly."""
     for disc in ["SobieskiMission", "MDOChain", "AnalyticDiscipline"]:
         schema = get_discipline_options_schema(disc)
         props = schema["properties"]
@@ -661,23 +558,15 @@ def test_get_discipline_options_schema(tmp_wd):
         get_discipline_options_schema(disc, pretty_print=True)
 
 
-def test_get_discipline_options_defaults(tmp_wd):
-    """Test that the discipline options defaults are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_discipline_options_defaults():
+    """Test that the discipline options defaults are retrieved correctly."""
     for disc in ["SobieskiMission", "MDOChain", "AnalyticDiscipline"]:
         defaults = get_discipline_options_defaults(disc)
         assert len(defaults) > 0
 
 
-def test_get_default_sub_options_values(tmp_wd):
-    """Test that the default sub options values are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_default_sub_options_values():
+    """Test that the default sub options values are retrieved correctly."""
     defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
 
@@ -685,46 +574,30 @@ def test_get_default_sub_options_values(tmp_wd):
     assert defaults is None
 
 
-def test_get_formulations_options_defaults(tmp_wd):
-    """Test that the formulation options defaults are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_formulations_options_defaults():
+    """Test that the formulation options defaults are retrieved correctly."""
     for form in ["MDF", "BiLevel"]:
         defaults = get_formulations_options_defaults(form)
         assert len(defaults) > 0
 
 
-def test_get_available_scenario_types(tmp_wd):
-    """Test that the available scenario types are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_scenario_types():
+    """Test that the available scenario types are retrieved correctly."""
     scen_types = get_available_scenario_types()
     assert "MDO" in scen_types
     assert "DOE" in scen_types
 
 
-def test_create_parameter_space(tmp_wd):
-    """Test the creation of a parameter space.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_parameter_space():
+    """Test the creation of a parameter space."""
     parameter_space = create_parameter_space()
     parameter_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
     parameter_space.add_random_variable("other_name", "OTNormalDistribution")
     parameter_space.check()
 
 
-def test_create_design_space(tmp_wd):
-    """Test the creation of a design space.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_design_space():
+    """Test the creation of a design space."""
     design_space = create_design_space()
     design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
     design_space.check()
@@ -742,33 +615,21 @@ def test_export_design_space(tmp_wd):
     export_design_space(design_space, "design_space.h5", True)
 
 
-def test_create_cache(tmp_wd):
-    """Test the creation of a cache.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_create_cache():
+    """Test the creation of a cache."""
     cache = create_cache("MemoryFullCache")
     assert not cache
 
 
-def test_get_available_caches(tmp_wd):
-    """Test that the available caches are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_get_available_caches():
+    """Test that the available caches are retrieved correctly."""
     caches = get_available_caches()
     # plugins may add classes
     assert set(caches) <= {"HDF5Cache", "MemoryFullCache", "SimpleCache"}
 
 
-def test_load_dataset(tmp_wd):
-    """Test the load_dataset method with the `BurgersDataset`.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+def test_load_dataset():
+    """Test the load_dataset method with the `BurgersDataset`."""
     burgers = load_dataset("BurgersDataset")
     assert burgers.length == 30
 

@@ -41,6 +41,7 @@ from numpy import ufunc
 from numpy import where
 from numpy.linalg import norm
 from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
@@ -51,6 +52,7 @@ from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
 
 
@@ -85,7 +87,7 @@ class MDOFunction(Serializable):
 
     - the type of the function,
       e.g. :code:`f_type="obj"` if the function will be used as an objective
-      (see :attr:`.MDOFunction.AVAILABLE_TYPES` for the available types),
+      (see :attr:`.MDOFunction.FunctionType`),
     - the function computing the Jacobian matrix,
       e.g. :code:`jac=lambda x: array([2.])`,
     - the literal expression to be used for the string representation of the object,
@@ -131,23 +133,28 @@ class MDOFunction(Serializable):
     (see :meth:`.MDOFunction.check_grad`).
     """
 
-    TYPE_OBJ: str = "obj"
-    """The type of function for objective."""
+    class ConstraintType(StrEnum):
+        """The type of constraint."""
 
-    TYPE_EQ: str = "eq"
-    """The type of function for equality constraint."""
+        EQ = "eq"
+        """The type of function for equality constraint."""
 
-    TYPE_INEQ: str = "ineq"
-    """The type of function for inequality constraint."""
+        INEQ = "ineq"
+        """The type of function for inequality constraint."""
 
-    TYPE_OBS: str = "obs"
-    """The type of function for observable."""
+    class _FunctionType(StrEnum):
+        """The type of function complementary to the constraints."""
 
-    __CONSTRAINT_TYPES: Final[tuple[str]] = (TYPE_INEQ, TYPE_EQ)
-    """The different types of constraint."""
+        OBJ = "obj"
+        """The type of function for objective."""
 
-    AVAILABLE_TYPES: list[str] = [TYPE_OBJ, TYPE_EQ, TYPE_INEQ, TYPE_OBS]
-    """The available types of function."""
+        OBS = "obs"
+        """The type of function for observable."""
+
+        NONE = ""
+        """The type of function is not set."""
+
+    FunctionType = merge_enums("FunctionType", StrEnum, _FunctionType, ConstraintType)
 
     DICT_REPR_ATTR: list[str] = [
         "name",
@@ -196,8 +203,8 @@ class MDOFunction(Serializable):
     _n_calls: Value
     """The number of times that the function has been evaluated."""
 
-    _f_type: str
-    """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`."""
+    _f_type: FunctionType
+    """The type of the function."""
 
     _func: WrappedFunctionType
     """The function to be evaluated from a given input vector."""
@@ -227,7 +234,7 @@ class MDOFunction(Serializable):
         self,
         func: WrappedFunctionType | None,
         name: str,
-        f_type: str = "",
+        f_type: FunctionType = FunctionType.NONE,
         jac: WrappedJacobianType | None = None,
         expr: str = "",
         args: Iterable[str] | None = None,
@@ -241,8 +248,7 @@ class MDOFunction(Serializable):
             func: The original function to be actually called.
                 If ``None``, the function will not have an original function.
             name: The name of the function.
-            f_type: The type of the function among :attr:`.MDOFunction.AVAILABLE_TYPES`
-                if any.
+            f_type: The type of the function.
             jac: The original Jacobian function to be actually called.
                 If ``None``, the function will not have an original Jacobian function.
             expr: The expression of the function, e.g. `"2*x"`, if any.
@@ -421,24 +427,6 @@ class MDOFunction(Serializable):
         self._name = name or ""
 
     @property
-    def f_type(self) -> str:
-        """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`."""
-        return self._f_type
-
-    @f_type.setter
-    def f_type(
-        self,
-        f_type: str,
-    ) -> None:
-        if f_type not in [None, ""] and f_type not in self.AVAILABLE_TYPES:
-            raise ValueError(
-                "MDOFunction type must be among {}; got {} instead.".format(
-                    self.AVAILABLE_TYPES, f_type
-                )
-            )
-        self._f_type = f_type or ""
-
-    @property
     def jac(self) -> WrappedJacobianType:
         """The Jacobian function to be evaluated from a given input vector."""
         return self._jac
@@ -503,7 +491,7 @@ class MDOFunction(Serializable):
         Returns:
             Whether the function is a constraint.
         """
-        return self.f_type in self.__CONSTRAINT_TYPES
+        return self.f_type in set(self.ConstraintType)
 
     def __repr__(self) -> str:
         return self.special_repr or self.default_repr
@@ -518,7 +506,7 @@ class MDOFunction(Serializable):
                 name = "#".join(self.outvars) or self.name
                 left = f"{name}({pretty_str(self.args, sort=False)})"
 
-            sign = "==" if self.f_type == self.TYPE_EQ else "<="
+            sign = "==" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
         strings = [self.name]

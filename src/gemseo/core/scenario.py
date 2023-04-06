@@ -95,6 +95,7 @@ class Scenario(MDODiscipline):
     post_factory: PostFactory | None
     """The factory for post-processors if any."""
 
+    DifferentiationMethod = OptimizationProblem.DifferentiationMethod
     # Constants for input variables in json schema
     X_0 = "x_0"
     U_BOUNDS = "u_bounds"
@@ -111,7 +112,7 @@ class Scenario(MDODiscipline):
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
@@ -129,9 +130,6 @@ class Scenario(MDODiscipline):
                 e.g. :class:`.IDF` with the coupling variables).
             name: The name to be given to this scenario.
                 If ``None``, use the name of the class.
-            grammar_type: The type of grammar to declare the input and output variables
-                either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options of the :class:`.MDOFormulation`.
         """  # noqa: D205, D212, D415
@@ -214,7 +212,7 @@ class Scenario(MDODiscipline):
 
     def set_differentiation_method(
         self,
-        method: str | None = "user",
+        method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         step: float = 1e-6,
         cast_default_inputs_to_complex: bool = False,
     ) -> None:
@@ -227,18 +225,13 @@ class Scenario(MDODiscipline):
         that they are ``ndarray`` with ``dtype`` ``float64``.
 
         Args:
-            method: The method to use to differentiate the process,
-                either ``"user"``, ``"finite_differences"``, ``"complex_step"`` or
-                ``"no_derivatives"``, which is equivalent to ``None``.
+            method: The method to use to differentiate the process.
             step: The finite difference step.
             cast_default_inputs_to_complex: Whether to cast all float default inputs
                 of the scenario's disciplines if the selected method is
                 ``"complex_step"``.
         """
-        if method is None:
-            method = OptimizationProblem.NO_DERIVATIVES
-
-        elif method == OptimizationProblem.COMPLEX_STEP:
+        if method == self.DifferentiationMethod.COMPLEX_STEP:
             self.formulation.design_space.to_complex()
             if cast_default_inputs_to_complex:
                 self.__cast_default_inputs_to_complex()
@@ -256,7 +249,7 @@ class Scenario(MDODiscipline):
     def add_constraint(
         self,
         output_name: str | Sequence[str],
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -275,9 +268,7 @@ class Scenario(MDODiscipline):
                 `g_1=0` will be added as constraint to the optimizer.
                 If several names are given,
                 a single discipline must provide all outputs.
-            constraint_type: The type of constraint,
-                `"eq"` for equality constraint and
-                `"ineq"` for inequality constraint.
+            constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored.
                 If ``None``, the name of the constraint is generated from the output name.
             value: The value for which the constraint is active.
@@ -287,12 +278,6 @@ class Scenario(MDODiscipline):
         Raises:
             ValueError: If the constraint type is neither 'eq' or 'ineq'.
         """
-        if constraint_type not in [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ]:
-            raise ValueError(
-                "Constraint type must be either 'eq' or 'ineq'; "
-                "got '{}' instead.".format(constraint_type)
-            )
-
         self.formulation.add_constraint(
             output_name,
             constraint_type,
@@ -623,7 +608,7 @@ class Scenario(MDODiscipline):
 
     def _update_input_grammar(self) -> None:
         """Update the input grammar from the names of available drivers."""
-        if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
+        if self.grammar_type == MDODiscipline.GrammarType.JSON:
             self.input_grammar.update(
                 {
                     "properties": {

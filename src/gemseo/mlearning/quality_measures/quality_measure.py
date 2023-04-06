@@ -32,11 +32,11 @@ from numpy import array_split
 from numpy import ndarray
 from numpy.random import default_rng
 from numpy.random import Generator
+from strenum import StrEnum
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
@@ -71,22 +71,22 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     If ``False``, use the transformers fitted with the whole learning dataset.
     """
 
-    class EvaluationMethod(BaseEnum):
+    class EvaluationMethod(StrEnum):
         """The evaluation method."""
 
-        LEARN = "evaluate_learn"
+        LEARN = "LEARN"
         """The name of the method to evaluate the measure on the learning dataset."""
 
-        TEST = "evaluate_test"
+        TEST = "TEST"
         """The name of the method to evaluate the measure on a test dataset."""
 
-        LOO = "evaluate_loo"
+        LOO = "LOO"
         """The name of the method to evaluate the measure by leave-one-out."""
 
-        KFOLDS = "evaluate_kfolds"
+        KFOLDS = "KFOLDS"
         """The name of the method to evaluate the measure by cross-validation."""
 
-        BOOTSTRAP = "evaluate_bootstrap"
+        BOOTSTRAP = "BOOTSTRAP"
         """The name of the method to evaluate the measure by bootstrap."""
 
     SMALLER_IS_BETTER: ClassVar[bool] = True

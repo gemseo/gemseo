@@ -86,8 +86,7 @@ class MLAlgoSelection:
         self,
         dataset: Dataset,
         measure: str | MLQualityMeasure,
-        measure_evaluation_method_name: str
-        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
+        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: B950
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -114,9 +113,7 @@ class MLAlgoSelection:
         else:
             self.measure = measure
 
-        self.__measure_evaluation_method_name = MLQualityMeasure.EvaluationMethod[
-            measure_evaluation_method_name
-        ]
+        self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.measure_options = dict(samples=samples, **measure_options)
         self.factory = MLAlgoFactory()
 
@@ -176,7 +173,8 @@ class MLAlgoSelection:
             if not calib_space:
                 algo_new = self.factory.create(name, data=self.dataset, **params)
                 evaluate = getattr(
-                    self.measure(algo_new), self.__measure_evaluation_method_name.value
+                    self.measure(algo_new),
+                    f"evaluate_{self.__measure_evaluation_method_name.lower()}",
                 )
                 quality_new = evaluate(**self.measure_options)
             else:

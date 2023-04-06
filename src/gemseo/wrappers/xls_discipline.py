@@ -149,7 +149,7 @@ class XLSDiscipline(MDODiscipline):
         self.__create_book(quit_xls_at_exit=quit_xls_at_exit)
         self._init_grammars()
         self._init_defaults()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
         if recreate_book_at_run or copy_xls_at_setstate:
             self.__reset_xls_objects()
 

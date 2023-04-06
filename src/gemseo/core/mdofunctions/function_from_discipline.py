@@ -98,7 +98,7 @@ class FunctionFromDiscipline(MDOFunction):
             self._func_to_wrap,
             jac=self._jac_to_wrap,
             name=self.__out_x_func.name,
-            f_type=MDOFunction.TYPE_OBJ,
+            f_type=MDOFunction.FunctionType.OBJ,
             args=self.__x_names,
             expr=self.__out_x_func.expr,
             dim=self.__out_x_func.dim,

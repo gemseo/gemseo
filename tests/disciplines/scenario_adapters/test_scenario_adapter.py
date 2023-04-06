@@ -203,7 +203,7 @@ def test_chain(scenario):
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
 
     # Allow re exec when DONE for the chain execution
-    mda.re_exec_policy = mda.RE_EXECUTE_DONE_POLICY
+    mda.re_exec_policy = mda.ReExecutionPolicy.DONE
     chain = MDOChain([mda, adapter, mda])
 
     # Sobieski Z opt
@@ -374,7 +374,7 @@ def check_obj_scenario_adapter(
     problem.objective = MDOFunction(
         lambda _: 123.456,
         objective.name,
-        MDOFunction.TYPE_OBJ,
+        MDOFunction.FunctionType.OBJ,
         lambda _: zeros(dim),
         "123.456",
         objective.args,

@@ -81,7 +81,7 @@ if TYPE_CHECKING:
 
 from numpy import array, ndarray
 
-from gemseo.algos.design_space import DesignSpace, DesignVariable
+from gemseo.algos.design_space import DesignSpace
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.factory import (
     DistributionFactory,
@@ -726,7 +726,7 @@ class ParameterSpace(DesignSpace):
     def __getitem__(
         self,
         name: str,
-    ) -> DesignVariable | RandomVariable:
+    ) -> DesignSpace.DesignVariable | RandomVariable:
         if name not in self.variables_names:
             raise KeyError(f"Variable '{name}' is not known.")
 
@@ -742,7 +742,7 @@ class ParameterSpace(DesignSpace):
             except KeyError:
                 value = None
 
-            return DesignVariable(
+            return DesignSpace.DesignVariable(
                 size=self.get_size(name),
                 var_type=self.get_type(name),
                 l_b=self.get_lower_bound(name),
@@ -753,7 +753,7 @@ class ParameterSpace(DesignSpace):
     def __setitem__(
         self,
         name: str,
-        item: DesignVariable | RandomVariable,
+        item: DesignSpace.DesignVariable | RandomVariable,
     ) -> None:
         if isinstance(item, RandomVariable):
             self.add_random_variable(

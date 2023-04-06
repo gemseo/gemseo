@@ -94,5 +94,8 @@ print(("y_2 =", out["y_2"]))
 # This can be checked easily using
 # :meth:`.MDODiscipline.check_jacobian`:
 disc.check_jacobian(
-    input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
+    input_data,
+    derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,
+    step=1e-5,
+    threshold=1e-3,
 )

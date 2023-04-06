@@ -23,10 +23,7 @@ from __future__ import annotations
 from numpy import exp
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    Bounds,
-)
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceIntervalSide,
+    ToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.normal import (
     NormalToleranceInterval,
@@ -65,7 +62,7 @@ class LogNormalToleranceInterval(NormalToleranceInterval):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> Bounds:
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+    ) -> NormalToleranceInterval.Bounds:
         lower, upper = super().compute(coverage, confidence, side)
-        return Bounds(exp(lower) + self.__location, exp(upper) + self.__location)
+        return self.Bounds(exp(lower) + self.__location, exp(upper) + self.__location)

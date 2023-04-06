@@ -29,8 +29,7 @@ from typing import Sequence
 from typing import Sized
 from typing import TYPE_CHECKING
 
-from gemseo.core.derivatives.derivation_modes import AVAILABLE_APPROX_MODES
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
+from gemseo.core.derivatives.derivation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 
@@ -70,7 +69,7 @@ class DisciplineJacApprox:
     def __init__(
         self,
         discipline: MDODiscipline,
-        approx_method: str = FINITE_DIFFERENCES,
+        approx_method: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: Number | Iterable[Number] = 1e-7,
         parallel: bool = False,
         n_processes: int = N_CPUS,
@@ -133,10 +132,6 @@ class DisciplineJacApprox:
         self.func = self.generator.get_function(
             input_names=inputs, output_names=outputs
         )
-        if self.approx_method not in AVAILABLE_APPROX_MODES:
-            raise ValueError(
-                f"Unknown Jacobian approximation method {self.approx_method}."
-            )
         factory = GradientApproximationFactory()
         self.approximator = factory.create(
             self.approx_method,

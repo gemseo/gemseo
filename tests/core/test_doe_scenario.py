@@ -23,6 +23,7 @@ import pickle
 import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo import MDODiscipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataException
@@ -44,7 +45,7 @@ from numpy.testing import assert_equal
 
 def build_mdo_scenario(
     formulation: str,
-    grammar_type: str = DOEScenario.JSON_GRAMMAR_TYPE,
+    grammar_type: MDODiscipline.GrammarType = DOEScenario.GrammarType.JSON,
 ) -> DOEScenario:
     """Build the DOE scenario for SSBJ.
 
@@ -55,14 +56,14 @@ def build_mdo_scenario(
     Returns:
         The DOE scenario.
     """
-    if grammar_type == DOEScenario.JSON_GRAMMAR_TYPE:
+    if grammar_type == DOEScenario.GrammarType.JSON:
         disciplines = [
             SobieskiPropulsion(),
             SobieskiAerodynamics(),
             SobieskiMission(),
             SobieskiStructure(),
         ]
-    elif grammar_type == DOEScenario.SIMPLE_GRAMMAR_TYPE:
+    elif grammar_type == DOEScenario.GrammarType.SIMPLE:
         disciplines = [
             SobieskiPropulsionSG(),
             SobieskiAerodynamicsSG(),
@@ -106,7 +107,7 @@ def test_parallel_doe_hdf_cache(caplog):
     )
     path = "cache.h5"
     for disc in disciplines:
-        disc.set_cache_policy(disc.HDF5_CACHE, cache_hdf_file=path)
+        disc.set_cache_policy(disc.CacheType.HDF5, cache_hdf_file=path)
 
     scenario = create_scenario(
         disciplines,
@@ -141,7 +142,7 @@ def test_parallel_doe_hdf_cache(caplog):
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_doe_scenario",
-    [DOEScenario.SIMPLE_GRAMMAR_TYPE, DOEScenario.JSON_GRAMMAR_TYPE],
+    [DOEScenario.GrammarType.SIMPLE, DOEScenario.GrammarType.JSON],
     indirect=True,
 )
 def test_doe_scenario(mdf_variable_grammar_doe_scenario):
