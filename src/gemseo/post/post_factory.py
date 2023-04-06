@@ -26,14 +26,14 @@ from pathlib import Path
 from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PostFactory:
+class PostFactory(BaseFactory):
     """Post-processing factory to run optimization post-processors.
 
     List the available post-processors on the current configuration
@@ -43,28 +43,17 @@ class PostFactory:
     and from disk, from a serialized optimization problem.
     """
 
+    _CLASS = OptPostProcessor
+    _MODULE_NAMES = ("gemseo.post",)
+
     def __init__(self) -> None:  # noqa:D107
-        self.factory = Factory(OptPostProcessor, ("gemseo.post",))
+        super().__init__()
         self.executed_post = []
 
     @property
     def posts(self) -> list[str]:
         """The available post processors."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        name: str,
-    ) -> bool:
-        """Check the availability of a post-processor.
-
-        Args:
-            name: The name of the post-processor.
-
-        Returns:
-            Whether the post-processor is available.
-        """
-        return self.factory.is_available(name)
+        return self.class_names
 
     def create(
         self,
@@ -77,7 +66,7 @@ class PostFactory:
             opt_problem: The optimization problem to be post-processed.
             post_name: The name of the post-processor.
         """
-        return self.factory.create(post_name, opt_problem=opt_problem)
+        return super().create(post_name, opt_problem=opt_problem)
 
     def execute(
         self,

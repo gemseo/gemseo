@@ -20,13 +20,12 @@
 """A factory to execute DOE algorithms from their class names."""
 from __future__ import annotations
 
+from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.doe.doe_library import DOELibrary
-from gemseo.algos.driver_factory import DriverFactory
 
 
-class DOEFactory(DriverFactory):
-    """DOE factory to create DOE libraries, see DriverFactory."""
+class DOEFactory(BaseAlgoFactory):
+    """DOE factory to create DOE libraries, see BaseAlgoFactory."""
 
-    def __init__(self) -> None:
-        """Test and import optimization library if it is available."""
-        super().__init__(DOELibrary, "gemseo.algos.doe")
+    _CLASS = DOELibrary
+    _MODULE_NAMES = ("gemseo.algos.doe",)

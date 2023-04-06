@@ -80,14 +80,14 @@ class ScipyODEAlgos(ODESolverLib):
     ) -> dict[str, Any]:
         """Check the options and set the default values.
 
-        For more informations, see
+        For more information, see
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html
 
         Args:
             first_step: Initial step size. If None, let the algorithm choose.
             max_step: Maximum allowed step size.
             rtol: Relative tolerance.
-            atol: Absolute tolerace.
+            atol: Absolute tolerance.
             jac_sparsity: Sparsity structure of the Jacobian matrix.
             lband: Lower boundary of the bandwidth for the "LSODA" method.
             uband: Upper boundary of the bandwidth for the "LSODA" method.
@@ -116,6 +116,7 @@ class ScipyODEAlgos(ODESolverLib):
             options["t_eval"] = self.problem.time_vector
         if self.problem.jac is not None:
             options["jac"] = self.problem.jac
+
         solution = solve_ivp(
             fun=self.problem.func,
             y0=self.problem.initial_state,

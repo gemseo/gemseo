@@ -226,7 +226,7 @@ class JacobianAssembly:
         self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
         self.n_newton_linear_resolutions = 0
-        self.__linear_solver_factory = LinearSolversFactory()
+        self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
 
     def __check_inputs(
         self,
@@ -966,7 +966,7 @@ class CoupledSystem:
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0
         self.lu_fact = 0
-        self.__linear_solver_factory = LinearSolversFactory()
+        self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
         self.linear_problem = None
 
     def direct_mode(

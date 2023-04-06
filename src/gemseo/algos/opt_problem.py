@@ -101,6 +101,7 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_ks
 from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
+from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
@@ -131,7 +132,7 @@ OptimumSolutionType = Tuple[
 ]
 
 
-class OptimizationProblem:
+class OptimizationProblem(BaseProblem):
     """An optimization problem.
 
     Create an optimization problem from:

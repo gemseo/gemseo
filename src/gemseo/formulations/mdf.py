@@ -111,8 +111,7 @@ class MDF(MDOFormulation):
             raise ValueError(
                 "main_mda_name option required to deduce the sub options of MDF."
             )
-        factory = MDAFactory().factory
-        return factory.get_options_grammar(main_mda)
+        return MDAFactory().get_options_grammar(main_mda)
 
     @classmethod
     def get_default_sub_options_values(cls, **options: str) -> dict:  # noqa:D102
@@ -121,8 +120,7 @@ class MDF(MDOFormulation):
             raise ValueError(
                 "main_mda_name option required to deduce the sub options of MDF."
             )
-        factory = MDAFactory().factory
-        return factory.get_default_options_values(main_mda)
+        return MDAFactory().get_default_options_values(main_mda)
 
     def _build_objective(self) -> None:
         """Build the objective function from the MDA and the objective name."""

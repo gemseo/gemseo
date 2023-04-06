@@ -26,12 +26,12 @@ from typing import Any
 from typing import Mapping
 
 from gemseo.core import discipline
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.factory import Factory
 from gemseo.core.grammars.json_grammar import JSONGrammar
 
 
-class DisciplinesFactory:
+class DisciplinesFactory(BaseFactory):
     """The **DisciplinesFactory** is used to create :class:`.MDODiscipline` objects.
 
     Three types of directories are scanned
@@ -43,6 +43,14 @@ class DisciplinesFactory:
       benchmark test cases,
     """
 
+    _CLASS = MDODiscipline
+    _MODULE_NAMES = (
+        "gemseo.problems",
+        "gemseo.core",
+        "gemseo.disciplines",
+        "gemseo.wrappers",
+    )
+
     def __init__(self) -> None:
         """The constructor initializes the factory by scanning the directories to search
         for subclasses of :class:`.MDODiscipline` objects.
@@ -50,15 +58,7 @@ class DisciplinesFactory:
         Searches in "GEMSEO_PATH" and :doc:`gemseo.problems`.
         """
         # Defines the benchmark problems to be imported
-        self.factory = Factory(
-            MDODiscipline,
-            (
-                "gemseo.problems",
-                "gemseo.core",
-                "gemseo.disciplines",
-                "gemseo.wrappers",
-            ),
-        )
+        super().__init__()
         self.__base_grammar = JSONGrammar("MDODiscipline_options")
         base_gram_path = Path(discipline.__file__).parent / "MDODiscipline_options.json"
         self.__base_grammar.update_from_file(base_gram_path)
@@ -78,7 +78,7 @@ class DisciplinesFactory:
         """
         common_options, specific_options = self.__filter_common_options(options)
         self.__base_grammar.validate(common_options)
-        discipline = self.factory.create(discipline_name, **specific_options)
+        discipline = super().create(discipline_name, **specific_options)
         if "linearization_mode" in common_options:
             discipline.linearization_mode = common_options["linearization_mode"]
 
@@ -125,14 +125,10 @@ class DisciplinesFactory:
         specific_options = {k: v for k, v in options.items() if k not in common_options}
         return common_options, specific_options
 
-    def update(self) -> None:
-        """Update the paths, to be used if GEMSEO_PATH was changed."""
-        self.factory.update()
-
     @property
     def disciplines(self) -> list[str]:
         """The names of the available disciplines."""
-        return self.factory.classes
+        return self.class_names
 
     def get_options_grammar(
         self, name: str, write_schema: bool = False, schema_path: str | None = None
@@ -148,7 +144,7 @@ class DisciplinesFactory:
         Returns:
             The JSON grammar of the options.
         """
-        disc_gram = self.factory.get_options_grammar(name, write_schema, schema_path)
+        disc_gram = super().get_options_grammar(name, write_schema, schema_path)
         option_grammar = deepcopy(self.__base_grammar)
         option_grammar.update(disc_gram)
         return option_grammar

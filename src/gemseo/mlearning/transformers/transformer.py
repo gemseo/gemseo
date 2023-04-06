@@ -43,7 +43,7 @@ from numpy import newaxis
 from typing_extensions import ParamSpecArgs
 from typing_extensions import ParamSpecKwargs
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 ParameterType = Union[bool, int, float, ndarray, str, None]
@@ -208,8 +208,8 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         return g
 
 
-class TransformerFactory(Factory):
+class TransformerFactory(BaseFactory):
     """A factory of :class:`.Transformer`."""
 
-    def __init__(self) -> None:
-        super().__init__(Transformer, ("gemseo.mlearning.transformers",))
+    _CLASS = Transformer
+    _MODULE_NAMES = ("gemseo.mlearning.transformers",)

@@ -680,7 +680,7 @@ def test_print_configuration(capfd):
             r"\+-+\+$\n"
             r"\|\s+{}\s+\|$\n"
             r"\+-+\+-+\+-+\+$\n"
-            r"\|\s+Module\s+\|\s+Is available \?\s+\|\s+Purpose or error "
+            r"\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error "
             r"message\s+\|$\n".format(module)
         )
 

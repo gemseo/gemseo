@@ -20,40 +20,17 @@
 """A factory for caches."""
 from __future__ import annotations
 
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.cache import AbstractCache
-from gemseo.core.factory import Factory
 
 
-class CacheFactory:
+class CacheFactory(BaseFactory):
     """A factory for :class:`.AbstractCache`."""
 
-    def __init__(self) -> None:  # noqa:D107
-        self.factory = Factory(AbstractCache, ("gemseo.caches",))
-
-    def create(self, cache_name: str, **options) -> AbstractCache:
-        """Create an :class:`.AbstractCache`.
-
-        Args:
-            cache_name: The name of the cache class.
-            **options: The options of the cache
-
-        Returns:
-            A cache.
-        """
-        return self.factory.create(cache_name, **options)
+    _CLASS = AbstractCache
+    _MODULE_NAMES = ("gemseo.caches",)
 
     @property
     def caches(self) -> list[str]:
         """The names of the cache classes."""
-        return self.factory.classes
-
-    def is_available(self, cache_name: str) -> bool:
-        """Check the availability of a cache.
-
-        Args:
-            cache_name: The name of the cache.
-
-        Returns:
-            Whether the cache is available.
-        """
-        return self.factory.is_available(cache_name)
+        return self.class_names

@@ -23,14 +23,16 @@ from typing import Callable
 
 from numpy import asarray
 from numpy import empty
+from numpy import ndarray
 from numpy.typing import ArrayLike
 from numpy.typing import NDArray
 
+from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.ode.ode_result import ODEResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
-class ODEProblem:
+class ODEProblem(BaseProblem):
     r"""First-order ordinary differential equation (ODE).
 
     .. math:: \frac{ds(t)}{dt} = f(t, s(t)).
@@ -38,10 +40,10 @@ class ODEProblem:
     :math:`f` is called the right-hand side of the ODE.
     """
 
-    func: Callable[[float, NDArray[float]], NDArray[float]]
+    func: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
     """The right-hand side of the ODE."""
 
-    jac: Callable[[float, NDArray[float]], NDArray[float]]
+    jac: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
     """The Jacobian function of the right-hand side of the ODE."""
 
     initial_state: NDArray[float]
@@ -58,11 +60,12 @@ class ODEProblem:
 
     def __init__(
         self,
-        func: Callable[[float, NDArray[float]], NDArray[float]] | NDArray[float],
+        func: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
+        | NDArray[float],
         initial_state: ArrayLike,
         initial_time: float,
         final_time: float,
-        jac: Callable[[float, NDArray[float]], NDArray[float]]
+        jac: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
         | NDArray[float]
         | None = None,
         time_vector: NDArray[float] | None = None,
@@ -91,16 +94,20 @@ class ODEProblem:
             solver_options={},
         )
 
-    def check(self):
-        """Ensure the parameters of the problem are consistent."""
+    def check(self) -> None:
+        """Ensure the parameters of the problem are consistent.
+
+        Raises:
+            ValueError: If the state and time shapes are inconsistent.
+        """
         if self.result.state_vector.size != 0:
             if self.result.state_vector.shape[1] != self.time_vector.size:
                 raise ValueError("Inconsistent state and time shapes.")
 
-    def _func(self, state):
+    def _func(self, state) -> ndarray:
         return asarray(self.func(self.time_vector, state))
 
-    def _jac(self, state):
+    def _jac(self, state) -> ndarray:
         return asarray(self.jac(self.time_vector, state))
 
     def check_jacobian(

@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 
 
@@ -38,3 +39,28 @@ def test_init_library_error():
 def test_is_scipy_available():
     assert OptimizersFactory().is_available("ScipyOpt")
     assert "SLSQP" in OptimizersFactory().algorithms
+
+
+def test_solver_factory_cache():
+    """Verify the caching of the solver factory."""
+    factory = LinearSolversFactory(use_cache=True)
+    lib1 = factory.create("DEFAULT")
+    lib2 = factory.create("DEFAULT")
+    assert lib2 is lib1
+
+    # A new instance has a different cache.
+    factory = LinearSolversFactory(use_cache=True)
+    lib1_bis = factory.create("DEFAULT")
+    lib2_bis = factory.create("DEFAULT")
+    assert lib2_bis is lib1_bis
+    assert lib2_bis is not lib2
+    assert lib1_bis is not lib1
+
+
+def test_clear_lib_cache():
+    """Verify clearing the lib cache."""
+    factory = LinearSolversFactory(use_cache=True)
+    lib1 = factory.create("DEFAULT")
+    factory.clear_lib_cache()
+    lib2 = factory.create("DEFAULT")
+    assert lib1 is not lib2

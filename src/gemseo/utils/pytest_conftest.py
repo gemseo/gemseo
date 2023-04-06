@@ -30,7 +30,7 @@ import matplotlib.testing.decorators
 import pytest
 from packaging import version
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 
 __ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 
@@ -114,9 +114,9 @@ def pyplot_close_all() -> None:
 @pytest.fixture
 def reset_factory():
     """Reset the factory cache."""
-    Factory.cache_clear()
+    BaseFactory.clear_cache()
     yield
-    Factory.cache_clear()
+    BaseFactory.clear_cache()
 
 
 # Backup before we monkey patch.

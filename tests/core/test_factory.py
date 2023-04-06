@@ -27,25 +27,50 @@ from importlib import metadata
 from pathlib import Path
 
 import pytest
-from gemseo.core.factory import Factory
-from gemseo.core.formulation import MDOFormulation
-from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.core.base_factory import _FactoryMultitonMeta
+from gemseo.core.base_factory import BaseFactory
+from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
 
 
+class MultitonFactory(metaclass=_FactoryMultitonMeta):
+    _CLASS = int
+    _MODULE_NAMES = tuple()
+
+
+def test_multiton():
+    """Verify the multiton behavior."""
+
+    class MultitonFactory2(metaclass=_FactoryMultitonMeta):
+        _CLASS = str
+        _MODULE_NAMES = tuple()
+
+    a = MultitonFactory()
+    assert a is MultitonFactory()
+    assert a is not MultitonFactory2()
+
+
+def test_multiton_cache_clear():
+    """Verify the clearing of the cache of the multiton."""
+    # The cache is not empty because of the Multiton* classes declared in the module.
+    MultitonFactory()
+    assert _FactoryMultitonMeta._FactoryMultitonMeta__cache
+    BaseFactory.clear_cache()
+    assert not _FactoryMultitonMeta._FactoryMultitonMeta__cache
+
+
 def test_print_configuration(reset_factory):
     """Verify the string representation of a factory."""
-    factory = Factory(MDOFormulation, ("gemseo.formulations",))
+    factory = MDOFormulationsFactory()
 
     # check table header
     header_patterns = [
         r"^\+-+\+$",
         r"^\|\s+MDOFormulation\s+\|$",
         r"^\+-+\+-+\+-+\+$",
-        r"^\|\s+Module\s+\|\s+Is available \?\s+\|\s+Purpose or error "
-        r"message\s+\|$",
+        r"^\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error " r"message\s+\|$",
     ]
 
     for pattern, line in zip(header_patterns, repr(factory).split("\n")):
@@ -59,31 +84,24 @@ def test_print_configuration(reset_factory):
         assert re.findall(pattern, repr(factory))
 
 
-def test_unknown_class(reset_factory):
-    """Verify that Factory catches bad classes."""
-    msg = "Class to search must be a class!"
-    with pytest.raises(TypeError, match=msg):
-        Factory("UnknownClass")
-
-
 def test_create_error(reset_factory):
     """Verify that Factory.create catches bad sub-classes."""
-    factory = Factory(MDOFormulation)
-    msg = "Class dummy is not available; \navailable ones are: "
+    factory = MDOFormulationsFactory()
+    msg = "The class dummy is not available; the available ones are: "
     with pytest.raises(ImportError, match=msg):
-        factory.create("dummy")
+        factory.create("dummy", "dummy", "dummy", "dummy")
 
 
 def test_create_bad_option(reset_factory):
     """Verify that a Factory.create catches bad options."""
-    factory = Factory(MDOFormulation, ("gemseo.formulations",))
+    factory = MDOFormulationsFactory()
     with pytest.raises(TypeError):
         factory.create("MDF", bad_option="bad_value")
 
 
 def test_parse_docstrings(reset_factory, tmp_wd):
-    factory = Factory(MDOFormulation, ("gemseo.formulations",))
-    formulations = factory.classes
+    factory = MDOFormulationsFactory()
+    formulations = factory.class_names
 
     assert len(formulations) > 3
 
@@ -119,9 +137,8 @@ def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
 
     # Create a module that shall fail to load the plugin.
     code = """
-from gemseo.core.factory import Factory
-from gemseo.core.formulation import MDOFormulation
-assert 'DummyBiLevel' in Factory(MDOFormulation).classes
+from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+assert 'DummyBiLevel' in MDOFormulationsFactory().class_names
 """
     module_path = tmp_path / "module.py"
     module_path.write_text(code)
@@ -136,25 +153,18 @@ assert 'DummyBiLevel' in Factory(MDOFormulation).classes
     assert "AssertionError" in str(exc_info.value.output)
 
 
-def test_ext_plugin_gems_path(monkeypatch, reset_factory):
-    """Verify that plugins are discovered from the GEMS_PATH env variable."""
-    monkeypatch.setenv("GEMS_PATH", DATA)
-    # There could be more classes available with the plugins
-    assert "DummyBiLevel" in Factory(MDOFormulation).classes
-
-
 def test_ext_plugin_gemseo_path(monkeypatch, reset_factory):
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in Factory(MDOFormulation).classes
+    assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
 def test_wanted_classes(monkeypatch, reset_factory):
     """Verify that the classes found are the expected ones."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in Factory(MDOFormulation).classes
+    assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
 def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
@@ -165,23 +175,29 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
         value = "dummy_formulations"
 
     def entry_points():
-        return {Factory.PLUGIN_ENTRY_POINT: [DummyEntryPoint]}
+        return {BaseFactory.PLUGIN_ENTRY_POINT: [DummyEntryPoint]}
 
     monkeypatch.setattr(metadata, "entry_points", entry_points)
     monkeypatch.syspath_prepend(DATA / "gemseo_dummy_plugins")
 
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in Factory(MDOFormulation).classes
+    assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
 def test_get_library_name(reset_factory):
     """Verify that the library names found are the expected ones."""
-    factory = Factory(MDOFormulation, ("gemseo.formulations",))
+    factory = MDOFormulationsFactory()
     assert factory.get_library_name("MDF") == "gemseo"
 
 
 def test_concrete_classes():
     """Check that the factory considers only the concrete classes."""
-    factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
-    assert "OTComposedDistribution" in factory.classes
-    assert "ComposedDistribution" not in factory.classes
+    factory = MDOFormulationsFactory()
+    assert "BiLevel" in factory.class_names
+    assert factory._CLASS not in factory.class_names
+
+
+def test_str():
+    """Verify str() on a factory."""
+    factory = MDOFormulationsFactory()
+    assert str(factory) == "Factory of MDOFormulation objects"

@@ -23,20 +23,18 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.factory import Factory
 from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
 )
 
 
-class SchedulersFactory:
+class SchedulersFactory(BaseFactory):
     """Job schedulers factory to create job scheduler interfaces from a name."""
 
-    def __init__(self) -> None:  # noqa: D107
-        self.factory = Factory(
-            JobSchedulerDisciplineWrapper, ("gemseo.wrappers.job_schedulers",)
-        )
+    _CLASS = JobSchedulerDisciplineWrapper
+    _MODULE_NAMES = ("gemseo.wrappers.job_schedulers",)
 
     def wrap_discipline(
         self,
@@ -80,7 +78,7 @@ class SchedulersFactory:
         All disciplines provided in |g| are serializable but it is possible that custom
         ones are not and this will make the submission process fail.
         """  # noqa:D205 D212 D415
-        return self.factory.create(
+        return self.create(
             scheduler_name,
             discipline=discipline,
             workdir_path=workdir_path,
@@ -90,18 +88,4 @@ class SchedulersFactory:
     @property
     def scheduler_names(self) -> list[str]:
         """The names of the available job scheduler interfaces."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        scheduler_name: str,
-    ) -> bool:
-        """Check the availability of a job scheduler interface.
-
-        Args:
-            scheduler_name: The name of the job scheduler interface.
-
-        Returns:
-            Whether the job scheduler interface is available.
-        """
-        return self.factory.is_available(scheduler_name)
+        return self.class_names

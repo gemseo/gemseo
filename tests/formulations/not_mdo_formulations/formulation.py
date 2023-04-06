@@ -14,8 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.base_formulation import BaseFormulation
-from gemseo.core.factory import Factory
 
 
 class NotMDOFormulation(BaseFormulation):
@@ -26,8 +26,6 @@ class NotMDOFormulation(BaseFormulation):
         return
 
 
-class NotMDOFormulationFactory:
-    def __init__(self) -> None:
-        self.factory = Factory(
-            NotMDOFormulation, ("tests.formulations.not_mdo_formulations",)
-        )
+class NotMDOFormulationFactory(BaseFactory):
+    _CLASS = NotMDOFormulation
+    _MODULE_NAMES = ("tests.formulations.not_mdo_formulations",)

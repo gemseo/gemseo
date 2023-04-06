@@ -15,12 +15,12 @@
 """A factory of scenario adapters."""
 from __future__ import annotations
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 
 
-class ScenarioAdapterFactory(Factory):
+class ScenarioAdapterFactory(BaseFactory):
     """A factory of scenario adapters."""
 
-    def __init__(self):  # noqa: D107
-        super().__init__(MDOScenarioAdapter, ("gemseo.disciplines.scenario_adapters",))
+    _CLASS = MDOScenarioAdapter
+    _MODULE_NAMES = ("gemseo.disciplines.scenario_adapters",)

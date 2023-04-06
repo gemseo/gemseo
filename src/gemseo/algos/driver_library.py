@@ -60,6 +60,7 @@ from tqdm.utils import disp_len
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
+from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
@@ -180,10 +181,9 @@ class ProgressBar(tqdm.tqdm):
 
 
 class DriverLibrary(AlgorithmLibrary):
-    """Abstract class for DOE & optimization libraries interfaces.
+    """Abstract class for library interfaces.
 
-    Lists available methods in the library for the proposed
-    problem to be solved.
+    Lists available methods in the library for the proposed problem to be solved.
 
     To integrate an optimization package, inherit from this class
     and put your file in gemseo.algos.doe or gemseo.algo.opt packages.
@@ -465,7 +465,7 @@ class DriverLibrary(AlgorithmLibrary):
 
     def execute(
         self,
-        problem: OptimizationProblem,
+        problem: BaseProblem,
         algo_name: str | None = None,
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,

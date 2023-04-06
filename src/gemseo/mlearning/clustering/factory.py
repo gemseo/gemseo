@@ -25,7 +25,6 @@ clustering model type is available.
 """
 from __future__ import annotations
 
-from gemseo.core.factory import Factory
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.core.factory import MLAlgoFactory
 
@@ -40,6 +39,5 @@ class ClusteringModelFactory(MLAlgoFactory):
     with "gemseo_" and referenced in the PYTHONPATH environment variable.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.factory = Factory(MLClusteringAlgo, ("gemseo.mlearning.clustering",))
+    _CLASS = MLClusteringAlgo
+    _MODULE_NAMES = ("gemseo.mlearning.clustering",)

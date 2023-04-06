@@ -352,7 +352,7 @@ def get_mlearning_options(
     from gemseo import _get_schema
 
     return _get_schema(
-        MLAlgoFactory().factory.get_options_grammar(model_name),
+        MLAlgoFactory().get_options_grammar(model_name),
         output_json,
         pretty_print,
     )
@@ -381,7 +381,7 @@ def get_regression_options(
     from gemseo import _get_schema
 
     return _get_schema(
-        RegressionModelFactory().factory.get_options_grammar(model_name),
+        RegressionModelFactory().get_options_grammar(model_name),
         output_json,
         pretty_print,
     )
@@ -410,7 +410,7 @@ def get_classification_options(
     from gemseo import _get_schema
 
     return _get_schema(
-        ClassificationModelFactory().factory.get_options_grammar(model_name),
+        ClassificationModelFactory().get_options_grammar(model_name),
         output_json,
         pretty_print,
     )
@@ -439,7 +439,7 @@ def get_clustering_options(
     from gemseo import _get_schema
 
     return _get_schema(
-        ClusteringModelFactory().factory.get_options_grammar(model_name),
+        ClusteringModelFactory().get_options_grammar(model_name),
         output_json,
         pretty_print,
     )

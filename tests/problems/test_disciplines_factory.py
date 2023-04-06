@@ -60,7 +60,7 @@ def test_create(monkeypatch, reset_factory):
     assert dummy.opts1 == 1
 
     fact2 = DisciplinesFactory()
-    assert id(fact.factory) == id(fact2.factory)
+    assert id(fact) == id(fact2)
 
     fact3 = DisciplinesFactory()
     dummy = fact3.create("DummyDisciplineIMP", opts1=1)

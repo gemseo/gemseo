@@ -22,17 +22,17 @@ from __future__ import annotations
 
 from typing import Any
 
-from gemseo.algos.driver_factory import DriverFactory
+from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.ode_solver_lib import ODESolverLib
 from gemseo.algos.opt_result import OptimizationResult
 
 
-class ODESolversFactory(DriverFactory):
+class ODESolversFactory(BaseAlgoFactory):
     """This class instantiates and ODE solver from its class name."""
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__(ODESolverLib, "gemseo.algos.ode")
+    _CLASS = ODESolverLib
+    _MODULE_NAMES = ("gemseo.algos.ode",)
 
     def execute(
         self,
@@ -54,5 +54,4 @@ class ODESolversFactory(DriverFactory):
         Returns:
             The solution.
         """
-        lib = self.create(algo_name)
-        return lib.execute(problem, algo_name=algo_name, **options)
+        return super().execute(problem, algo_name, **options)
