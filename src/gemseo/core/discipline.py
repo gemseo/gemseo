@@ -1130,8 +1130,16 @@ class MDODiscipline(Serializable):
         # is set to True
         inputs, outputs = self._retrieve_diff_inouts(compute_all_jacobians)
         if not outputs or not inputs:
-            self.jac.clear()
-            return self.jac
+            input_data = self._filter_inputs(input_data)
+            _, out_cached, out_jac = self.cache[input_data]
+            if out_cached:
+                self.jac = out_jac
+            else:
+                self.jac = {}
+            # self.jac.clear()  # this aint work
+            # self.jac = {}  # this aint work
+            # return {}#this aint work
+            return self.jac  # this aint work
 
         full_input_data = self._filter_inputs(input_data)
         if execute:

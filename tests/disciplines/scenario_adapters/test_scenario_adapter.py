@@ -21,10 +21,14 @@ from __future__ import annotations
 import pickle
 from copy import deepcopy
 from pathlib import Path
+from typing import Iterable
 
 import pytest
+from gemseo import create_scenario
 from gemseo.algos.database import Database
 from gemseo.core.chain import MDOChain
+from gemseo.core.chain import MDOParallelChain
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -41,8 +45,10 @@ from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from numpy import all as np_all
 from numpy import allclose
 from numpy import array
+from numpy import atleast_2d
 from numpy import matmul
 from numpy import ones
+from numpy import ones_like
 from numpy import zeros
 from numpy import zeros_like
 
@@ -494,3 +500,161 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt):
 
     adapter.execute()
     assert adapter.scenario.optimization_result.is_feasible
+
+
+class DisciplineMain(MDODiscipline):
+    """Discipline that takes as inputs alpha and computes beta=2*alpha.
+
+    Jacobians are computed in _run method.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update(["alpha"])
+        self.output_grammar.update(["beta"])
+
+    def _run(self) -> None:
+        (alpha,) = self.get_inputs_by_name(["alpha"])
+        self.local_data["beta"] = 2.0 * alpha
+        self._is_linearized = True
+        self.jac = {"beta": {"alpha": 2.0 * atleast_2d(ones_like(alpha))}}
+
+
+class DisciplineMainWithJacobian(MDODiscipline):
+    """Discipline that takes as inputs alpha and computes beta=2*alpha.
+
+    Jacobian are computed _compute_jacobian method.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update(["alpha"])
+        self.output_grammar.update(["beta"])
+
+    def _run(self) -> None:
+        (alpha,) = self.get_inputs_by_name(["alpha"])
+        self.local_data["beta"] = 2.0 * alpha
+
+    def _compute_jacobian(
+        self,
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
+        (alpha,) = self.get_inputs_by_name(["alpha"])
+        self.local_data["beta"] = 2.0 * alpha
+        self.jac = {"beta": {"alpha": 2.0 * atleast_2d(ones_like(alpha))}}
+
+
+class DisciplineSub1(MDODiscipline):
+    """Discipline that takes as inputs x and computes f=3*x."""
+
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update(["x"])
+        self.output_grammar.update(["f"])
+
+    def _run(self) -> None:
+        (x,) = self.get_inputs_by_name(["x"])
+        self.local_data["f"] = 3.0 * x
+        self._is_linearized = True
+        self.jac = {"f": {"x": 3.0 * atleast_2d(ones_like(x))}}
+
+
+class DisciplineSub2(MDODiscipline):
+    """Discipline that takes x and beta and compute g=x+beta."""
+
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update(["x", "beta"])
+        self.output_grammar.update(["g"])
+        self.default_inputs = {"x": array([0.0]), "beta": array([0.0])}
+
+    def _run(self) -> None:
+        x, beta = self.get_inputs_by_name(["x", "beta"])
+        self.local_data["g"] = x + beta
+        self._is_linearized = True
+        self.jac = {
+            "g": {"x": atleast_2d(ones_like(x)), "beta": atleast_2d(ones_like(beta))}
+        }
+
+
+@pytest.fixture(
+    params=[
+        [DisciplineMain(), DisciplineSub1(), DisciplineSub2()],
+        [DisciplineMainWithJacobian(), DisciplineSub1(), DisciplineSub2()],
+        [MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])],
+        [MDOChain([DisciplineMainWithJacobian(), DisciplineSub1(), DisciplineSub2()])],
+        [DisciplineMain(), MDOParallelChain([DisciplineSub1(), DisciplineSub2()])],
+    ]
+)
+def disciplines_fixture(request):
+    """Disciplines to be used in the scenario adapter."""
+    return request.param
+
+
+@pytest.fixture
+def scenario_fixture(disciplines_fixture):
+    """Fixture generating a discipline depending only on main design variable.
+
+    This discipline is linerarized in the _run.
+    """
+    design_space = create_design_space()
+    design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=array([1.0]), size=1)
+    scenario = create_scenario(
+        disciplines_fixture,
+        formulation="DisciplinaryOpt",
+        objective_name="f",
+        design_space=design_space,
+    )
+    scenario.add_constraint("g", MDOFunction.ConstraintType.INEQ, value=5)
+    scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
+    dv_names = ["alpha"]
+    return MDOScenarioAdapter(scenario, dv_names, ["f"], set_x0_before_opt=True)
+
+
+def test_scenario_adapter(scenario_fixture):
+    """Test the scenario execution."""
+    design_space = create_design_space()
+    design_space.add_variable("alpha", l_b=-1.5, u_b=1.5, value=array([1.0]), size=1)
+    scenario = create_scenario(
+        [scenario_fixture],
+        formulation="DisciplinaryOpt",
+        objective_name="f",
+        design_space=design_space,
+    )
+    scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
+    scenario.execute()
+    assert scenario.formulation.opt_problem.solution is not None
+
+
+def test_run_scenario_adapter(scenario_fixture):
+    """Test te execution of the scenario adapter."""
+    out = scenario_fixture.execute({"alpha": array([0.0])})
+    assert "f" in out
+
+
+def test_linearize_scenario_adapter(scenario_fixture):
+    """Test the linearization of the scenario adapter."""
+    out = scenario_fixture.linearize(
+        {"alpha": array([0.0])}, compute_all_jacobians=True
+    )
+    assert "f" in out
+
+
+def test_multiple_linearize():
+    """Tests two linearizations and linearize in the _run method."""
+    disc2 = MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])
+    disc2.default_inputs = {"x": array([0.0]), "alpha": array([0.0])}
+    disc2.add_differentiated_inputs("x")
+    disc2.add_differentiated_outputs("g")
+    disc2.linearize()
+    disc2._differentiated_inputs = []
+    disc2._differentiated_outputs = []
+    disc2.linearize()
+    assert "g" in disc2.jac
+    disc2._differentiated_inputs = ["alpha"]
+    disc2._differentiated_outputs = ["g"]
+    disc2.linearize()
+    assert "g" in disc2.jac
+    assert "alpha" in disc2.jac["g"]
+    assert "x" not in disc2.jac["g"]

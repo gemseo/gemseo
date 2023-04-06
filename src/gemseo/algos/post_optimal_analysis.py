@@ -233,7 +233,9 @@ class PostOptimalAnalysis:
             )
 
         # Check the inputs and Jacobians consistency
-        func_names = self.outvars + self.opt_problem.get_constraints_names()
+        func_names = self.outvars + [
+            out_var for cstr in self.opt_problem.constraints for out_var in cstr.outvars
+        ]
         PostOptimalAnalysis._check_jacobians(functions_jac, func_names, inputs)
 
         # Compute the Lagrange multipliers
