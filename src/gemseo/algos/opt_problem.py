@@ -2371,8 +2371,18 @@ class OptimizationProblem(BaseProblem):
 
     @property
     def is_mono_objective(self) -> bool:
-        """Whether the optimization problem is mono-objective."""
-        return len(self.objective.output_names) == 1
+        """Whether the optimization problem is mono-objective.
+
+        Raises:
+            ValueError: When the dimension of the objective cannot be determined.
+        """
+        obj_dim = self.objective.dim
+        if obj_dim != 0:
+            return obj_dim == 1
+        n_outvars = len(self.objective.output_names)
+        if n_outvars == 0:
+            raise ValueError("Cannot determine the dimension of the objective.")
+        return n_outvars == 1
 
     def get_functions_dimensions(
         self, names: Iterable[str] | None = None

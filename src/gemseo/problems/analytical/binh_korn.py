@@ -74,6 +74,7 @@ class BinhKorn(OptimizationProblem):
             jac=self.__compute_binhkorn_jac,
             expr="(4*x**2+ 4*y**2, (x-5.)**2 + (y-5.)**2)",
             input_names=["x", "y"],
+            dim=2,
         )
         ineq1 = MDOFunction(
             self.__compute_ineq_constraint1,

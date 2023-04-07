@@ -1,0 +1,1 @@
+Fix ``OptimizationProblem.is_mono_objective`` that returned wrong values when the objective had one outvars but multidimensional.
