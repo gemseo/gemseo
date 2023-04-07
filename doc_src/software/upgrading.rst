@@ -107,7 +107,7 @@ API changes that affect plugin or features developers
 - The class variable ``MLAlgo.ABBR`` has been renamed to :attr:`.MLAlgo.SHORT_ALGO_NAME`.
 - For ``OptResult`` and ``MDOFunction``: ``get_data_dict_repr`` has been renamed to ``to_dict``.
 - Remove plugin detection for packages with ``gemseo_`` prefix.
-- ``MDOFunctionGenerator.get_function``: ``input_names_list`` and ``output_names_list``  has been renamed to ``output_names`` and ``output_names``.
+- ``MDODisciplineAdapterGenerator.get_function``: ``input_names_list`` and ``output_names_list``  has been renamed to ``output_names`` and ``output_names``.
 - ``MDOScenarioAdapter.__init__``: ``inputs_list`` and ``outputs_list``  has been renamed to ``input_names`` and ``output_names``.
 - ``OptPostProcessor.out_data_dict``  has been renamed to :attr:`.OptPostProcessor.materials_for_plotting`.
 

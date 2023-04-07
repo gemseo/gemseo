@@ -26,7 +26,9 @@ import pytest
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -147,7 +149,7 @@ class TestParallelExecution(unittest.TestCase):
 
         assert s_1.n_calls == n
 
-        func_gen = MDOFunctionGenerator(s_1)
+        func_gen = MDODisciplineAdapterGenerator(s_1)
         y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
         parallel_execution = CallableParallelExecution([y_0_func])
@@ -211,7 +213,7 @@ class TestParallelExecution(unittest.TestCase):
 
     def test_async_call(self):
         disc = create_discipline("SobieskiMission")
-        func = MDOFunctionGenerator(disc).get_function([X_SHARED], ["y_4"])
+        func = MDODisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
 
         x_list = [i * ones(6) for i in range(4)]
 

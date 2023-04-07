@@ -29,7 +29,9 @@ from typing import TYPE_CHECKING
 
 from numpy import empty
 
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -83,7 +85,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
             self.__discipline = self.__gen.discipline
         else:
-            self.__gen = MDOFunctionGenerator(self.__discipline)
+            self.__gen = MDODisciplineAdapterGenerator(self.__discipline)
 
         if self.__x_names is None:
             self.__x_names = self.__mdo_formulation.get_x_names_of_disc(

@@ -31,7 +31,9 @@ from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
@@ -325,7 +327,7 @@ def test_adapter(tmp_wd, idf_scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(idf_scenario, inputs, outputs)
-    gen = MDOFunctionGenerator(adapter)
+    gen = MDODisciplineAdapterGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
     f_x1 = func(x_shared)

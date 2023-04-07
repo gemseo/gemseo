@@ -22,7 +22,9 @@ from __future__ import annotations
 import pytest
 from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.func_operations import RestrictedFunction
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.problems.analytical.rosenbrock import RosenMF
 from numpy import array
 from numpy import ones
@@ -31,7 +33,7 @@ from scipy.optimize import rosen
 
 
 def test_linear_composition():
-    fg = MDOFunctionGenerator(RosenMF(3))
+    fg = MDODisciplineAdapterGenerator(RosenMF(3))
     f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": array([0])})
     f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": array([1])})
 
@@ -47,7 +49,7 @@ def test_linear_composition():
 
 
 def test_restricted_function():
-    fg = MDOFunctionGenerator(RosenMF(3))
+    fg = MDODisciplineAdapterGenerator(RosenMF(3))
     x = zeros(3)
     f_ref = fg.get_function(["fidelity", "x"], ["rosen"])
 

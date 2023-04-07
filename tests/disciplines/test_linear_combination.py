@@ -19,7 +19,9 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.disciplines.linear_combination import LinearCombination
 from numpy import array
 
@@ -83,7 +85,7 @@ def test_parallel_doe_execution(linear_combination_for_tests):
     design_space.add_variable("beta", l_b=-1.0, u_b=1.0, value=0.0)
     design_space.add_variable("gamma", l_b=-1.0, u_b=1.0, value=0.0)
     opt_problem = OptimizationProblem(design_space)
-    opt_problem.objective = MDOFunctionGenerator(
+    opt_problem.objective = MDODisciplineAdapterGenerator(
         linear_combination_for_tests
     ).get_function(
         input_names=["alpha", "beta", "gamma"],

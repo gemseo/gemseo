@@ -43,7 +43,9 @@ from numpy import arange, copy, empty, in1d, ndarray, where, zeros
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
@@ -68,7 +70,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     The link between the instances of :class:`.MDODiscipline`,
     the design variables and
     the names of the discipline outputs used as constraints, objective and observables
-    is made with the :class:`.MDOFunctionGenerator`,
+    is made with the :class:`.MDODisciplineAdapterGenerator`,
     which generates instances of :class:`.MDOFunction` from the disciplines.
     """
 
@@ -246,11 +248,11 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         output_names: Iterable[str],
         top_level_disc: bool = False,
-    ) -> MDOFunctionGenerator:
+    ) -> MDODisciplineAdapterGenerator:
         """Create a generator of :class:`.MDOFunction` from the names of the outputs.
 
         Find a discipline which computes all the provided outputs
-        and build the associated :class:`.MDOFunctionGenerator`.
+        and build the associated :class:`.MDODisciplineAdapterGenerator`.
 
         Args:
             output_names: The names of the outputs.
@@ -265,7 +267,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             search_among = self.disciplines
         for discipline in search_among:
             if discipline.is_all_outputs_existing(output_names):
-                return MDOFunctionGenerator(discipline)
+                return MDODisciplineAdapterGenerator(discipline)
         raise ValueError(
             "No discipline known by formulation %s"
             " has all outputs named %s" % (type(self).__name__, output_names)
@@ -275,11 +277,11 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         input_names: Iterable[str],
         top_level_disc: bool = False,
-    ) -> MDOFunctionGenerator:
+    ) -> MDODisciplineAdapterGenerator:
         """Create a generator of :class:`.MDOFunction` from the names of the inputs.
 
         Find a discipline which has all the provided inputs
-        and build the associated :class:`.MDOFunctionGenerator.
+        and build the associated :class:`.MDODisciplineAdapterGenerator.
 
         Args:
             input_names: The names of the inputs.
@@ -294,7 +296,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             search_among = self.disciplines
         for discipline in search_among:
             if discipline.is_all_inputs_existing(input_names):
-                return MDOFunctionGenerator(discipline)
+                return MDODisciplineAdapterGenerator(discipline)
         raise ValueError(
             "No discipline known by formulation %s"
             " has all inputs named %s" % (type(self).__name__, input_names)
