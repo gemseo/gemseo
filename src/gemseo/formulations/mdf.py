@@ -114,13 +114,13 @@ class MDF(MDOFormulation):
         return MDAFactory().get_options_grammar(main_mda)
 
     @classmethod
-    def get_default_sub_options_values(cls, **options: str) -> dict:  # noqa:D102
+    def get_default_sub_option_values(cls, **options: str) -> dict:  # noqa:D102
         main_mda = options.get("main_mda_name")
         if main_mda is None:
             raise ValueError(
                 "main_mda_name option required to deduce the sub options of MDF."
             )
-        return MDAFactory().get_default_options_values(main_mda)
+        return MDAFactory().get_default_option_values(main_mda)
 
     def _build_objective(self) -> None:
         """Build the objective function from the MDA and the objective name."""
@@ -148,5 +148,5 @@ class MDF(MDOFormulation):
         """Remove the coupling variables from the design space."""
         design_space = self.opt_problem.design_space
         for coupling in self.mda.all_couplings:
-            if coupling in design_space.variables_names:
+            if coupling in design_space.variable_names:
                 design_space.remove_variable(coupling)

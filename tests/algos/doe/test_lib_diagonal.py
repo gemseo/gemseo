@@ -84,8 +84,8 @@ def variables_space():
     """A mock design space."""
     design_space = mock.Mock()
     design_space.dimension = 2
-    design_space.variables_names = ["x", "y"]
-    design_space.variables_sizes = {"x": 1, "y": 1}
+    design_space.variable_names = ["x", "y"]
+    design_space.variable_sizes = {"x": 1, "y": 1}
     return design_space
 
 

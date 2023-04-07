@@ -282,14 +282,14 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
     """
     x_opt = array([1.0, 2.0])
     f_opt = array([3.0])
-    constraints_values = {"g": array([4.0, 5.0])}
+    constraint_values = {"g": array([4.0, 5.0])}
     constraints_grad = {"g": array([6.0, 7.0])}
     is_feasible = True
 
     opt_results = OptimizationResult(
         x_opt=x_opt,
         f_opt=f_opt,
-        constraints_values=constraints_values,
+        constraint_values=constraint_values,
         constraints_grad=constraints_grad,
         is_feasible=is_feasible,
     )
@@ -299,7 +299,7 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
 
     assert_equal(optimum.x_opt, x_opt)
     assert_equal(optimum.f_opt, f_opt)
-    assert_equal(optimum.constraints_values, constraints_values)
+    assert_equal(optimum.constraint_values, constraint_values)
     assert_equal(optimum.constraints_grad, constraints_grad)
     assert optimum.is_feasible is is_feasible
 

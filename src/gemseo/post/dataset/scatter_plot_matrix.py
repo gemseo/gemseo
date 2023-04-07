@@ -130,7 +130,7 @@ class ScatterMatrix(DatasetPlot):
             _, variable_name = self._get_label(classifier)
             dataframe = dataframe.drop(labels=variable_name, axis=1)
 
-        dataframe.columns = self._get_variables_names(dataframe)
+        dataframe.columns = self._get_variable_names(dataframe)
         fig, axes = self._get_figure_and_axes(fig, axes, self.fig_size)
         sub_axes = scatter_matrix(
             dataframe,

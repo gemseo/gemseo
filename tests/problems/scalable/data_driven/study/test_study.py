@@ -56,14 +56,14 @@ def sellar_use_case(tmp_wd):
     n_samples = 20
     os.mkdir("data")
     file_name = "data/sellar.h5"
-    disciplines_names = []
+    discipline_names = []
     for discipline_class in [Sellar1, Sellar2, SellarSystem]:
         discipline = discipline_class()
         discipline.set_cache_policy(discipline.CacheType.HDF5, cache_hdf_file=file_name)
-        disciplines_names.append(discipline.name)
+        discipline_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))
-        inputs_names = list(discipline.input_grammar.keys())
-        design_space = SellarDesignSpace().filter(inputs_names)
+        input_names = list(discipline.input_grammar.keys())
+        design_space = SellarDesignSpace().filter(input_names)
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space
         )
@@ -73,11 +73,11 @@ def sellar_use_case(tmp_wd):
     os.mkdir("study_1")
     os.mkdir("study_2")
     os.makedirs("empty_dir/results")
-    return design_variables, objective_name, file_name, disciplines_names
+    return design_variables, objective_name, file_name, discipline_names
 
 
 def test_scalabilitystudy1(sellar_use_case):
-    design_variables, objective, f_name, disciplines_names = sellar_use_case
+    design_variables, objective, f_name, discipline_names = sellar_use_case
     variables = [{X_SHARED: i} for i in range(1, 2)]
     directory = "study_1"
     ScalabilityStudy(
@@ -87,9 +87,11 @@ def test_scalabilitystudy1(sellar_use_case):
         feasibility_level={"g_1": 0.0, "g_2": 0.0},
     )
     study = ScalabilityStudy(objective, design_variables, directory)
-    for discipline_name in disciplines_names:
-        study.add_discipline(HDF5Cache(f_name, discipline_name).to_dataset())
-    assert disciplines_names == study.disciplines_names
+    for discipline_name in discipline_names:
+        study.add_discipline(
+            HDF5Cache(hdf_file_path=f_name, hdf_node_path=discipline_name).to_dataset()
+        )
+    assert discipline_names == study.discipline_names
     study.set_input_output_dependency("SellarSystem", OBJ, [Y_1])
     with pytest.raises(TypeError):
         study.set_input_output_dependency("SellarSystem", OBJ, Y_1)
@@ -155,11 +157,13 @@ def test_scalabilitystudy1(sellar_use_case):
 
 
 def test_scalabilitystudy2(sellar_use_case):
-    design_variables, objective, f_name, disciplines_names = sellar_use_case
+    design_variables, objective, f_name, discipline_names = sellar_use_case
     variables = [{X_SHARED: i} for i in range(1, 3)]
     study = ScalabilityStudy(objective, design_variables, "study_2")
-    for discipline_name in disciplines_names:
-        study.add_discipline(HDF5Cache(f_name, discipline_name).to_dataset())
+    for discipline_name in discipline_names:
+        study.add_discipline(
+            HDF5Cache(hdf_file_path=f_name, hdf_node_path=discipline_name).to_dataset()
+        )
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF")
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
     study.add_scaling_strategies(

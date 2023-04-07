@@ -152,7 +152,9 @@ class ScalableProblem(unittest.TestCase):
                 hdf_node_path = discipline.name
                 sizes = ScalableProblem.sizes
                 fill_factor = ScalableProblem.fill_factor
-                data = HDF5Cache(HDF_CACHE_PATH, hdf_node_path).to_dataset()
+                data = HDF5Cache(
+                    hdf_file_path=HDF_CACHE_PATH, hdf_node_path=hdf_node_path
+                ).to_dataset()
                 scal_disc = ScalableDiscipline(
                     ScalableProblem.scalable_model,
                     data=data,
@@ -245,7 +247,9 @@ class ScalableProblem(unittest.TestCase):
         hdf_node_path = ScalableProblem.original_disciplines[3].name
         ScalableDiscipline(
             ScalableProblem.scalable_model,
-            data=HDF5Cache(HDF_CACHE_PATH, hdf_node_path).to_dataset(),
+            data=HDF5Cache(
+                hdf_file_path=HDF_CACHE_PATH, hdf_node_path=hdf_node_path
+            ).to_dataset(),
             sizes=ScalableProblem.sizes,
             fill_factor=ScalableProblem.fill_factor,
             group_dep={"y_4": []},

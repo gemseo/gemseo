@@ -463,7 +463,7 @@ def test_export_to_dataframe_with_ordering(
         assert column == expected_column
 
 
-def test_get_columns_names():
+def test_get_column_names():
     """Check the default names of the dataset columns."""
     dataset = Dataset()
     dataset.set_from_array(array([[1.0], [1.0]]))
@@ -557,7 +557,7 @@ def test_dataset_from_file(filename, header, expected_names):
     dataset = Dataset()
     dataset.set_from_file(file_path, header=header)
     assert_equal(dataset.data[dataset.PARAMETER_GROUP], [[1, 2, 3, 4], [-1, -2, -3, 4]])
-    assert dataset.columns_names == expected_names
+    assert dataset.column_names == expected_names
 
 
 @pytest.fixture(scope="module")

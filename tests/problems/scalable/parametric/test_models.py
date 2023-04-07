@@ -56,15 +56,15 @@ def test_tm_main_model(varnames):
         y_1: array([4.0, 5.0, 6.0]),
     }
     model = TMMainModel(c_constraint, default_inputs)
-    inputs_names = [xsh, y_0, y_1]
-    outputs_names = [c_0, c_1, obj]
-    assert set(inputs_names) == set(model.inputs_names)
-    assert set(outputs_names) == set(model.outputs_names)
-    for name in inputs_names:
-        assert model.inputs_sizes[name] == len(default_inputs[name])
-    assert model.outputs_sizes[obj] == 1
-    assert model.outputs_sizes[c_0] == len(c_constraint[0])
-    assert model.outputs_sizes[c_1] == len(c_constraint[1])
+    input_names = [xsh, y_0, y_1]
+    output_names = [c_0, c_1, obj]
+    assert set(input_names) == set(model.input_names)
+    assert set(output_names) == set(model.output_names)
+    for name in input_names:
+        assert model.input_sizes[name] == len(default_inputs[name])
+    assert model.output_sizes[obj] == 1
+    assert model.output_sizes[c_0] == len(c_constraint[0])
+    assert model.output_sizes[c_1] == len(c_constraint[1])
 
     result = model()
     assert result[obj] == pytest.approx(array([49.0 / 3.0]), abs=1e-8)
@@ -109,17 +109,17 @@ def test_tm_sub_model(varnames):
     c_local = array([[2.0, 3.0], [2.0, 3.0]])
     c_coupling = {y_1: array([[3.0, 4.0, 5.0], [3.0, 4.0, 5.0]])}
 
-    inputs_names = [xsh, xl_0, y_1]
-    outputs_names = [y_0]
+    input_names = [xsh, xl_0, y_1]
+    output_names = [y_0]
 
     model = TMSubModel(index, c_shared, c_local, c_coupling, default_inputs)
     assert model.name == "SubModel_0"
-    assert set(inputs_names) == set(model.inputs_names)
-    assert set(outputs_names) == set(model.outputs_names)
-    for name in inputs_names:
-        assert model.inputs_sizes[name] == len(default_inputs[name])
+    assert set(input_names) == set(model.input_names)
+    assert set(output_names) == set(model.output_names)
+    for name in input_names:
+        assert model.input_sizes[name] == len(default_inputs[name])
     c_y1 = c_coupling[y_1]
-    assert model.outputs_sizes[y_0] == len(c_local) == len(c_shared) == len(c_y1)
+    assert model.output_sizes[y_0] == len(c_local) == len(c_shared) == len(c_y1)
 
     out = model()
     assert isinstance(out, dict)

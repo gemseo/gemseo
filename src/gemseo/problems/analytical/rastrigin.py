@@ -80,7 +80,7 @@ class Rastrigin(OptimizationProblem):
             f_type="obj",
             jac=self.rastrigin_jac,
             expr="20 + sum(x[i]**2 - 10*cos(2pi*x[i]))",
-            args=["x"],
+            input_names=["x"],
         )
 
     @staticmethod

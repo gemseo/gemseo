@@ -8,8 +8,8 @@ API changes:
 - Rename :func:`.max_agg_jac_v` to :func:`.compute_max_agg_jac`
 - Rename :func:`.sum_square_agg` to :func:`.compute_sum_square_agg`
 - Rename :func:`.sum_square_agg_jac_v` to :func:`.compute_total_sum_square_agg_jac`
-- Rename the first positional argument ``constr_data_names`` of :class:`.ConstrAggegationDisc` to ``constraint_names``.
-- Rename the second positional argument ``method_name`` of :class:`.ConstrAggegationDisc` to ``aggregation_function``.
+- Rename the first positional argument ``constr_data_names`` of :class:`.ConstraintAggregation` to ``constraint_names``.
+- Rename the second positional argument ``method_name`` of :class:`.ConstraintAggregation` to ``aggregation_function``.
 - Rename the first position argument ``constr_id`` of :meth:`.OptimizationProblem.aggregate_constraint` to ``constraint_index``.
 - Rename the aggregation methods ``"pos_sum"``, ``"sum"`` and ``"max"`` to ``"POS_SUM"``, ``"SUM"`` and ``"MAX"``.
 - The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoAssessor` with the argument ``measure_evaluation_method``.

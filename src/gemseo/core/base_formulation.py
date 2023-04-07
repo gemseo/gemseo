@@ -316,7 +316,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The size of the variable.
         """
-        return self.opt_problem.design_space.variables_sizes[variable_name]
+        return self.opt_problem.design_space.variable_sizes[variable_name]
 
     def _get_dv_indices(
         self,
@@ -334,7 +334,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             and last dimension is its size.
         """
         start = end = 0
-        sizes = self.opt_problem.design_space.variables_sizes
+        sizes = self.opt_problem.design_space.variable_sizes
         names_to_indices = {}
         for name in names:
             size = sizes[name]
@@ -371,10 +371,10 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             IndexError: when the sizes of variables are inconsistent.
         """
         if all_data_names is None:
-            all_data_names = self.get_optim_variables_names()
+            all_data_names = self.get_optim_variable_names()
         indices = self._get_dv_indices(all_data_names)
-        variables_sizes = self.opt_problem.design_space.variables_sizes
-        total_size = sum(variables_sizes[var] for var in all_data_names)
+        variable_sizes = self.opt_problem.design_space.variable_sizes
+        total_size = sum(variable_sizes[var] for var in all_data_names)
         if x_full is None:
             x_unmask = zeros(total_size, dtype=x_masked.dtype)
         else:
@@ -444,10 +444,10 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         design_space = self.opt_problem.design_space
         if all_data_names is None:
-            all_data_names = design_space.variables_names
+            all_data_names = design_space.variable_names
 
-        variables_sizes = design_space.variables_sizes
-        total_size = sum(variables_sizes[var] for var in masking_data_names)
+        variable_sizes = design_space.variable_sizes
+        total_size = sum(variable_sizes[var] for var in masking_data_names)
         indices = self._get_dv_indices(all_data_names)
         x_mask = empty(total_size, dtype="int")
         i_masked_min = i_masked_max = 0
@@ -473,7 +473,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         all_inputs = {
             var for disc in disciplines for var in disc.get_input_data_names()
         }
-        for name in set(design_space.variables_names):
+        for name in set(design_space.variable_names):
             if name not in all_inputs:
                 design_space.remove_variable(name)
                 LOGGER.info(
@@ -485,9 +485,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _remove_sub_scenario_dv_from_ds(self) -> None:
         """Remove the sub scenarios design variables from the design space."""
         for scenario in self.get_sub_scenarios():
-            loc_vars = scenario.design_space.variables_names
+            loc_vars = scenario.design_space.variable_names
             for var in loc_vars:
-                if var in self.design_space.variables_names:
+                if var in self.design_space.variable_names:
                     self.design_space.remove_variable(var)
 
     def _build_objective_from_disc(
@@ -515,7 +515,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()
 
-    def get_optim_variables_names(self) -> list[str]:
+    def get_optim_variable_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.
 
         This is different from the design variable names provided by the user,
@@ -525,7 +525,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The optimization variable names.
         """
-        return self.opt_problem.design_space.variables_names
+        return self.opt_problem.design_space.variable_names
 
     def get_x_names_of_disc(
         self,
@@ -539,9 +539,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
              The names of the design variables.
         """
-        optim_variables_names = self.get_optim_variables_names()
+        optim_variable_names = self.get_optim_variable_names()
         input_names = discipline.get_input_data_names()
-        return [name for name in optim_variables_names if name in input_names]
+        return [name for name in optim_variable_names if name in input_names]
 
     def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
         """Accessor to the sub-disciplines.
@@ -627,7 +627,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @classmethod
-    def get_default_sub_options_values(
+    def get_default_sub_option_values(
         cls, **options: str
     ) -> dict:  # pylint: disable=W0613
         """Return the default values of the sub-options of the formulation.

@@ -49,7 +49,10 @@ def scalable_problem():
     mission = SobieskiMission()
     disciplines = [aero, propu, struct, mission]
     disc_names = [disc.name for disc in disciplines]
-    datasets = [HDF5Cache(HDF_CACHE_PATH, disc).to_dataset() for disc in disc_names]
+    datasets = [
+        HDF5Cache(hdf_file_path=HDF_CACHE_PATH, hdf_node_path=disc).to_dataset()
+        for disc in disc_names
+    ]
     scalpbm = ScalableProblem(
         datasets, design_variables, objective_function, eq_constraints, ineq_constraints
     )

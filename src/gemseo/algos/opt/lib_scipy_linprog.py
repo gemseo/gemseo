@@ -220,11 +220,11 @@ class ScipyLinprog(OptimizationLibrary):
             no_db_no_norm=True,
         )
         f_opt = val_opt[self.problem.objective.name]
-        constraints_values = {
-            key: val_opt[key] for key in self.problem.get_constraints_names()
+        constraint_values = {
+            key: val_opt[key] for key in self.problem.get_constraint_names()
         }
         constraints_grad = {
-            key: jac_opt[key] for key in self.problem.get_constraints_names()
+            key: jac_opt[key] for key in self.problem.get_constraint_names()
         }
         is_feasible = self.problem.is_point_feasible(val_opt)
         optim_result = OptimizationResult(
@@ -232,7 +232,7 @@ class ScipyLinprog(OptimizationLibrary):
             x_opt=x_opt,
             f_opt=f_opt,
             status=linprog_result.status,
-            constraints_values=constraints_values,
+            constraint_values=constraint_values,
             constraints_grad=constraints_grad,
             optimizer_name=self.algo_name,
             message=linprog_result.message,

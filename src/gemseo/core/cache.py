@@ -802,13 +802,13 @@ class AbstractFullCache(AbstractCache):
         if not all_output_data:
             raise ValueError("Failed to find outputs in the cache.")
 
-        variables_names = []
+        variable_names = []
         for data_name in list(shared_input_names) + list(shared_output_names):
             data_size = names_to_sizes[data_name]
             if data_size == 1:
-                variables_names.append(data_name)
+                variable_names.append(data_name)
             else:
-                variables_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
+                variable_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
 
         cache_as_array = vstack(
             concatenate(
@@ -820,7 +820,7 @@ class AbstractFullCache(AbstractCache):
             )
             for index in range(len(all_input_data))
         )
-        save_data_arrays_to_xml(variables_names, cache_as_array, file_path)
+        save_data_arrays_to_xml(variable_names, cache_as_array, file_path)
 
     def update(
         self,

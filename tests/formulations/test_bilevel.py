@@ -121,7 +121,7 @@ def test_get_sub_options_grammar_errors():
     with pytest.raises(ValueError):
         BiLevel.get_sub_options_grammar()
     with pytest.raises(ValueError):
-        BiLevel.get_default_sub_options_values()
+        BiLevel.get_default_sub_option_values()
 
 
 def test_get_sub_options_grammar():
@@ -129,10 +129,8 @@ def test_get_sub_options_grammar():
     sub_options_schema = BiLevel.get_sub_options_grammar(main_mda_name="MDAJacobi")
     assert sub_options_schema.name == "MDAJacobi"
 
-    sub_options_values = BiLevel.get_default_sub_options_values(
-        main_mda_name="MDAJacobi"
-    )
-    assert "acceleration" in sub_options_values.keys()
+    sub_option_values = BiLevel.get_default_sub_option_values(main_mda_name="MDAJacobi")
+    assert "acceleration" in sub_option_values.keys()
 
 
 def test_bilevel_aerostructure():

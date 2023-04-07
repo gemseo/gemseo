@@ -2,7 +2,7 @@
     "name": "OptHistoryView_options",
     "required": [],
     "properties": {
-        "variables_names": {
+        "variable_names": {
             "type": "array"
         },
         "obj_relative": {

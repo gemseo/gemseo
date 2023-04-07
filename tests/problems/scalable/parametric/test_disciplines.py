@@ -30,7 +30,7 @@ def test_scalable_problem():
     assert isinstance(pbm.main_discipline, TMMainDiscipline)
     for discipline in pbm.sub_disciplines:
         assert isinstance(discipline, TMSubDiscipline)
-    variables_names = ["x_shared", "x_local_0", "x_local_1", "y_0", "y_1"]
+    variable_names = ["x_shared", "x_local_0", "x_local_1", "y_0", "y_1"]
     c_shared = [array([[0.417022]]), array([[0.30233257]])]
     c_local = [array([[0.72032449]]), array([[0.14675589]])]
     c_coupling = [{"y_1": array([[0.00011437]])}, {"y_0": array([[0.09233859]])}]
@@ -47,7 +47,7 @@ def test_scalable_problem():
     disc = pbm.disciplines[0]
     assert c_constraint[0] == pytest.approx(disc.model.coefficients[0], abs=1e-8)
     assert c_constraint[1] == pytest.approx(disc.model.coefficients[1], abs=1e-8)
-    assert set(pbm.design_space.variables_names) == set(variables_names)
+    assert set(pbm.design_space.variable_names) == set(variable_names)
 
 
 def test_main_discipline():
@@ -58,10 +58,10 @@ def test_main_discipline():
         "y_1": array([4.0, 5.0, 6.0]),
     }
     system = TMMainDiscipline(c_constraint, default_inputs)
-    inputs_names = ["x_shared", "y_0", "y_1"]
-    outputs_names = ["cstr_0", "cstr_1", "obj"]
-    assert set(inputs_names) == set(system.get_input_data_names())
-    assert set(outputs_names) == set(system.get_output_data_names())
+    input_names = ["x_shared", "y_0", "y_1"]
+    output_names = ["cstr_0", "cstr_1", "obj"]
+    assert set(input_names) == set(system.get_input_data_names())
+    assert set(output_names) == set(system.get_output_data_names())
     system.execute()
     assert system.local_data["obj"] == pytest.approx(array([49.0 / 3.0]), abs=1e-8)
     assert system.local_data["cstr_0"] == pytest.approx(array([-1.0, -0.5]), abs=1e-8)
@@ -83,10 +83,10 @@ def test_sub_discipline():
     c_local = array([[2.0, 3.0], [2.0, 3.0]])
     c_coupling = {"y_1": array([[3.0, 4.0, 5.0], [3.0, 4.0, 5.0]])}
     disc = TMSubDiscipline(index, c_shared, c_local, c_coupling, default_inputs)
-    inputs_names = ["x_shared", "x_local_0", "y_1"]
-    outputs_names = ["y_0"]
-    assert set(inputs_names) == set(disc.get_input_data_names())
-    assert set(outputs_names) == set(disc.get_output_data_names())
+    input_names = ["x_shared", "x_local_0", "y_1"]
+    output_names = ["y_0"]
+    assert set(input_names) == set(disc.get_input_data_names())
+    assert set(output_names) == set(disc.get_output_data_names())
     disc.execute()
     assert disc.local_data["y_0"] == pytest.approx(array([2.52631579, 2.425]), abs=1e-8)
     disc.linearize(compute_all_jacobians=True)
@@ -105,10 +105,10 @@ def test_noised_sub_discipline():
     c_local = array([[2.0, 3.0], [2.0, 3.0]])
     c_coupling = {"y_1": array([[3.0, 4.0, 5.0], [3.0, 4.0, 5.0]])}
     disc = TMSubDiscipline(index, c_shared, c_local, c_coupling, default_inputs)
-    inputs_names = ["x_shared", "x_local_0", "y_1", "u_local_0"]
-    outputs_names = ["y_0"]
-    assert set(inputs_names) == set(disc.get_input_data_names())
-    assert set(outputs_names) == set(disc.get_output_data_names())
+    input_names = ["x_shared", "x_local_0", "y_1", "u_local_0"]
+    output_names = ["y_0"]
+    assert set(input_names) == set(disc.get_input_data_names())
+    assert set(output_names) == set(disc.get_output_data_names())
     disc.execute()
     assert disc.local_data["y_0"] == pytest.approx(array([2.62631579, 2.325]), abs=1e-8)
     disc.linearize(compute_all_jacobians=True)

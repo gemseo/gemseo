@@ -62,8 +62,8 @@ class ScatterPlotMatrix(OptPostProcessor):
         """  # noqa: D205, D212, D415
         problem = self.opt_problem
         add_design_variables = False
-        all_function_names = problem.get_all_functions_names()
-        all_design_names = problem.design_space.variables_names
+        all_function_names = problem.get_all_function_name()
+        all_design_names = problem.design_space.variable_names
 
         if not problem.minimize_objective and self._obj_name in variable_names:
             obj_index = variable_names.index(self._obj_name)
@@ -95,7 +95,7 @@ class ScatterPlotMatrix(OptPostProcessor):
                         f"nor design variables: {all_design_names}"
                     )
 
-                if variable_name in problem.design_space.variables_names:
+                if variable_name in problem.design_space.variable_names:
                     add_design_variables = True
                     design_names.append(variable_name)
                 elif variable_name in problem.constraint_names:

@@ -161,22 +161,22 @@ class SobieskiBase:
     @classmethod
     def get_bounds_by_name(
         cls,
-        variables_names: str | Sequence[str],
+        variable_names: str | Sequence[str],
     ) -> tuple[ndarray, ndarray]:
         """Return the bounds of the design and coupling variables.
 
         Args:
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The lower and upper bounds of these variables.
         """
-        if isinstance(variables_names, str):
-            variables_names = [variables_names]
+        if isinstance(variable_names, str):
+            variable_names = [variable_names]
 
         bounds = atleast_2d(
             concatenate(
-                [_NAMES_TO_BOUNDS[variable_name] for variable_name in variables_names],
+                [_NAMES_TO_BOUNDS[variable_name] for variable_name in variable_names],
                 axis=0,
             )
         )

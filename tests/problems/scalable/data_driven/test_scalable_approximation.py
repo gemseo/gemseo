@@ -49,7 +49,9 @@ def test_build_model(sobieski_aerodynamics):
     for k, value in sobieski_aerodynamics.default_inputs.items():
         sizes[k] = len(value)
 
-    hdf_cache = HDF5Cache(HDF_CACHE_PATH, sobieski_aerodynamics.name)
+    hdf_cache = HDF5Cache(
+        hdf_file_path=HDF_CACHE_PATH, hdf_node_path=sobieski_aerodynamics.name
+    )
     dataset = hdf_cache.to_dataset()
 
     scd = ScalableDiscipline("ScalableDiagonalModel", dataset, sizes, fill_factor=0.7)

@@ -54,7 +54,7 @@ def get_options_doc(
     )
 
 
-def get_default_options_values(
+def get_default_option_values(
     cls,
 ) -> dict[str, str]:
     """Get the options default values for the given class, by only addressing kwargs.

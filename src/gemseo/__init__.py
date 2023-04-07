@@ -672,7 +672,7 @@ def get_formulations_sub_options_defaults(
     """
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
-    return MDOFormulationsFactory().get_default_sub_options_values(
+    return MDOFormulationsFactory().get_default_sub_option_values(
         formulation_name, **formulation_options
     )
 
@@ -704,7 +704,7 @@ def get_formulations_options_defaults(
     """
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 
-    return MDOFormulationsFactory().get_default_options_values(formulation_name)
+    return MDOFormulationsFactory().get_default_option_values(formulation_name)
 
 
 def get_discipline_options_schema(
@@ -834,7 +834,7 @@ def get_discipline_options_defaults(
     """
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
-    return DisciplinesFactory().get_default_options_values(discipline_name)
+    return DisciplinesFactory().get_default_option_values(discipline_name)
 
 
 def get_scenario_differentiation_modes() -> (

@@ -89,8 +89,8 @@ class MDODisciplineAdapter(MDOFunction):
             self._func_to_wrap,
             jac=self._jac_to_wrap,
             name="_".join(self.__output_names),
-            args=self.__input_names,
-            outvars=self.__output_names,
+            input_names=self.__input_names,
+            output_names=self.__output_names,
         )
 
     def __compute_input_indices(self) -> None:

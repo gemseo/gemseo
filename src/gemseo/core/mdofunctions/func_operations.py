@@ -57,9 +57,9 @@ class RestrictedFunction(MDOFunction):
             jac=self._jac_to_wrap,
             f_type=orig_function.f_type,
             expr=orig_function.expr,
-            args=orig_function.args,
+            input_names=orig_function.input_names,
             dim=orig_function.dim,
-            outvars=orig_function.outvars,
+            output_names=orig_function.output_names,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
@@ -115,9 +115,9 @@ class LinearComposition(MDOFunction):
             jac=self._restricted_jac,
             f_type=orig_function.f_type,
             expr="Mat*" + str(orig_function.expr),
-            args=orig_function.args,
+            input_names=orig_function.input_names,
             dim=orig_function.dim,
-            outvars=orig_function.outvars,
+            output_names=orig_function.output_names,
         )
 
     def _restricted_function(self, x_vect: ndarray) -> MDOFunction:

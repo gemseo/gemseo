@@ -37,9 +37,9 @@ class Offset(MDOFunction):
             f_type=function.f_type,
             jac=function.jac,
             expr=function.expr,
-            args=function.args,
+            input_names=function.input_names,
             dim=function.dim,
-            outvars=function.outvars,
+            output_names=function.output_names,
             force_real=function.force_real,
             special_repr=function.special_repr,
         )

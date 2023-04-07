@@ -472,15 +472,13 @@ def test_contains_dataname(problem):
 def test_get_history_array(problem):
     """Tests history extraction into an array."""
     database = problem.database
-    values_array, variables_names, functions = (
-        values_array,
-        variables_names,
-        functions,
-    ) = database.get_history_array(design_variables_names=["x_1", "x_2"])
-    values_array, _, _ = database.get_history_array(design_variables_names="x_1")
+    values_array, variable_names, functions = database.get_history_array(
+        design_variable_names=["x_1", "x_2"]
+    )
+    values_array, _, _ = database.get_history_array(design_variable_names="x_1")
     assert values_array[-1, 1] < 1e-13
     with pytest.raises(TypeError):
-        database.get_history_array(design_variables_names={"x_1": 0})
+        database.get_history_array(design_variable_names={"x_1": 0})
     # Test special case with only one iteration:
     database = Database()
     database.store(array([1.0, 1.0]), {"Rosenbrock": 0.0})
@@ -765,7 +763,7 @@ def test_last_item(simple_database):
 
 def test_get_history_array_with_simple_database(simple_database):
     """Check get_history_array with a simple database."""
-    values_array, variables_names, functions = simple_database.get_history_array()
+    values_array, variable_names, functions = simple_database.get_history_array()
     assert_almost_equal(values_array, array([[1.0, 1.0, 2.0, 3.0, 4.0, 5.0, 0.0]]))
-    assert variables_names == ["Iter", "w", "x", "y", "z[0]", "z[1]", "x_1"]
+    assert variable_names == ["Iter", "w", "x", "y", "z[0]", "z[1]", "x_1"]
     assert functions == ["Iter", "w", "x", "y", "z"]

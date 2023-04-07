@@ -50,20 +50,20 @@ class N2JSON:
 
         data = {}
 
-        self.__disciplines_names = self._get_disciplines_names()
+        self.__discipline_names = self._get_discipline_names()
 
         couplings = self._graph.get_disciplines_couplings()
 
         groups, n_groups, data["children"] = self._compute_groups(
-            self.__disciplines_names
+            self.__discipline_names
         )
 
-        variables_sizes = self._compute_variables_sizes()
+        variable_sizes = self._compute_variable_sizes()
 
         data["nodes"], data["groups"] = self._create_nodes(
             groups,
-            variables_sizes,
-            self.__disciplines_names,
+            variable_sizes,
+            self.__discipline_names,
             n_groups,
             data["children"],
         )
@@ -71,13 +71,13 @@ class N2JSON:
         data["links"] = self._create_links(
             couplings,
             len(data["nodes"]),
-            variables_sizes,
-            self.__disciplines_names,
+            variable_sizes,
+            self.__discipline_names,
             n_groups,
         )
 
         data["disciplines"] = self._create_groups_menu_html(
-            self.__disciplines_names, data["children"], data["groups"]
+            self.__discipline_names, data["children"], data["groups"]
         )
 
         data["self_coupled_disciplines"] = self_coupled_disciplines or []
@@ -89,13 +89,13 @@ class N2JSON:
     @staticmethod
     def _create_variables_html(
         names: Iterable[str],
-        variables_sizes: Mapping[str, int] | None = None,
+        variable_sizes: Mapping[str, int] | None = None,
     ) -> str:
         """Generate the HTML representation of variables from their names and sizes.
 
         Args:
             names: The names of the variables.
-            variables_sizes: The sizes of the variables.
+            variable_sizes: The sizes of the variables.
                 If None, display only the names.
 
         Return:
@@ -104,9 +104,7 @@ class N2JSON:
         variables = [
             {
                 "name": name,
-                "size": None
-                if variables_sizes is None
-                else variables_sizes.get(name, 1),
+                "size": None if variable_sizes is None else variable_sizes.get(name, 1),
             }
             for name in sorted(names)
         ]
@@ -132,7 +130,7 @@ class N2JSON:
         source: str,
         destination: str,
         coupling_names: Iterable[str],
-        variables_sizes: Mapping[str, int],
+        variable_sizes: Mapping[str, int],
     ) -> str:
         """Generate the HTML representation of a bi-disciplinary coupling.
 
@@ -140,7 +138,7 @@ class N2JSON:
             source: The name of the source discipline.
             destination: The name of the destination discipline.
             coupling_names: The names of the coupling variables.
-            variables_sizes: The sizes of the variables.
+            variable_sizes: The sizes of the variables.
 
         Returns:
             The HTML block describing this bi-disciplinary coupling.
@@ -154,7 +152,7 @@ class N2JSON:
             source=source,
             destination=destination,
             coupling_variables=cls._create_variables_html(
-                coupling_names, variables_sizes
+                coupling_names, variable_sizes
             ),
         )
 
@@ -162,22 +160,22 @@ class N2JSON:
     def _create_discipline_html(
         cls,
         discipline: MDODiscipline,
-        variables_sizes: Mapping[str, int],
+        variable_sizes: Mapping[str, int],
     ) -> str:
         """Generate the HTML representation of a discipline.
 
         Args:
             discipline: The discipline.
-            variables_sizes: The sizes of the variables.
+            variable_sizes: The sizes of the variables.
 
         Returns:
             The HTML block describing the discipline.
         """
-        html_inputs_names = cls._create_variables_html(
-            discipline.get_input_data_names(), variables_sizes
+        html_input_names = cls._create_variables_html(
+            discipline.get_input_data_names(), variable_sizes
         )
-        html_outputs_names = cls._create_variables_html(
-            discipline.get_output_data_names(), variables_sizes
+        html_output_names = cls._create_variables_html(
+            discipline.get_output_data_names(), variable_sizes
         )
         return Template(
             "The inputs of <b>{{ discipline }}</b>:"
@@ -186,8 +184,8 @@ class N2JSON:
             "{{ outputs }}"
         ).render(
             discipline=discipline.name,
-            inputs=html_inputs_names,
-            outputs=html_outputs_names,
+            inputs=html_input_names,
+            outputs=html_output_names,
         )
 
     @classmethod
@@ -234,13 +232,13 @@ class N2JSON:
         data = []
         n_groups = len(groups)
         for group_index, disciplines_indices in enumerate(children):
-            disciplines_names = [
+            discipline_names = [
                 disciplines[discipline_index - n_groups]
                 for discipline_index in disciplines_indices
             ]
             data.append(
                 {
-                    "disciplines": sorted(disciplines_names),
+                    "disciplines": sorted(discipline_names),
                     "group_index": group_index,
                     "group_name": groups[group_index],
                 }
@@ -291,7 +289,7 @@ class N2JSON:
         self,
         couplings: Iterable[tuple[MDODiscipline, MDODiscipline, Sequence[str]]],
         n_nodes: int,
-        variables_sizes: Mapping[str, int],
+        variable_sizes: Mapping[str, int],
         disciplines: Sequence[str],
         n_groups: int,
     ) -> list[dict[str, int | str]]:
@@ -300,7 +298,7 @@ class N2JSON:
         Args:
             couplings: The couplings.
             n_nodes: The number of nodes.
-            variables_sizes: The sizes of the variables.
+            variable_sizes: The sizes of the variables.
             disciplines: The names of the disciplines.
             n_groups: The number of groups.
 
@@ -323,7 +321,7 @@ class N2JSON:
                         "target": target_index,
                         "value": len(variables),
                         "description": self._create_coupling_html(
-                            source.name, target.name, variables, variables_sizes
+                            source.name, target.name, variables, variable_sizes
                         ),
                     }
                 )
@@ -343,7 +341,7 @@ class N2JSON:
     def _create_nodes(
         self,
         group: Mapping[str, int],
-        variables_sizes: Mapping[str, int],
+        variable_sizes: Mapping[str, int],
         disciplines: Sequence[str],
         n_groups: int,
         children: Sequence[Sequence[int]],
@@ -352,7 +350,7 @@ class N2JSON:
 
         Args:
             group: The indices of the groups to which the disciplines belong.
-            variables_sizes: The sizes of the variables.
+            variable_sizes: The sizes of the variables.
             disciplines: The names of the disciplines.
             n_groups: The number of groups.
             children: The indices of the disciplines for the different groups.
@@ -371,9 +369,7 @@ class N2JSON:
             {
                 "name": discipline.name,
                 "group": group[discipline.name],
-                "description": self._create_discipline_html(
-                    discipline, variables_sizes
-                ),
+                "description": self._create_discipline_html(discipline, variable_sizes),
                 "is_group": False,
             }
             for discipline in self.__disciplines
@@ -391,13 +387,13 @@ class N2JSON:
             for group_index in range(n_groups)
         ]
 
-        groups_names = [
+        group_names = [
             self._DEFAULT_GROUP_TEMPLATE.format(group_index)
             for group_index in range(1, n_groups)
         ]
-        groups_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES] + groups_names
+        group_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES] + group_names
 
-        return groups_nodes + disciplines_nodes, groups_names
+        return groups_nodes + disciplines_nodes, group_names
 
     def _compute_groups(
         self,
@@ -439,32 +435,30 @@ class N2JSON:
                 index += 1
                 indices.append(child)
         self.__disciplines = [self.__disciplines[index] for index in indices]
-        self.__disciplines_names = [
-            self.__disciplines_names[index] for index in indices
-        ]
+        self.__discipline_names = [self.__discipline_names[index] for index in indices]
 
         new_children = [[child + n_groups for child in group] for group in new_children]
         return groups, n_groups, new_children
 
-    def _compute_variables_sizes(self) -> dict[str, int]:
+    def _compute_variable_sizes(self) -> dict[str, int]:
         """Compute the sizes of the coupling variables.
 
         Returns:
             The names of the coupling variables bound to their sizes.
         """
-        variables_sizes = {}
+        variable_sizes = {}
         for discipline in self.__disciplines:
             for name in discipline.get_input_data_names():
-                if name not in variables_sizes or variables_sizes[name] == self.__NA:
+                if name not in variable_sizes or variable_sizes[name] == self.__NA:
                     default_value = discipline.default_inputs.get(name)
                     if default_value is not None:
                         size = default_value.size
                     else:
                         size = self.__NA
-                    variables_sizes[name] = size
+                    variable_sizes[name] = size
 
-        return variables_sizes
+        return variable_sizes
 
-    def _get_disciplines_names(self) -> list[str]:
+    def _get_discipline_names(self) -> list[str]:
         """Return the names of the disciplines."""
         return [discipline.name for discipline in self.__disciplines]

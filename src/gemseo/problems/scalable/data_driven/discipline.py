@@ -110,10 +110,10 @@ class ScalableDiscipline(MDODiscipline):
         """
         self._init_jacobian(inputs, outputs, with_zeros=True)
         jac = self.scalable_model.scalable_derivatives(self.local_data)
-        inputs_names = self.scalable_model.inputs_names
+        input_names = self.scalable_model.input_names
         jac = {
             fname: split_array_to_dict_of_arrays(
-                jac[fname], self.scalable_model.sizes, inputs_names
+                jac[fname], self.scalable_model.sizes, input_names
             )
             for fname in self.get_output_data_names()
         }

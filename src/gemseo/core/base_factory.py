@@ -37,7 +37,7 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.source_parsing import get_default_options_values
+from gemseo.utils.source_parsing import get_default_option_values
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
@@ -288,7 +288,6 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
                 return True
         return False
 
-    # TODO: API: rename classes to class_names
     @property
     def class_names(self) -> list[str]:
         """The sorted names of the available classes."""
@@ -373,7 +372,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         """
         return get_options_doc(self.get_class(name).__init__)
 
-    def get_default_options_values(
+    def get_default_option_values(
         self, name: str
     ) -> dict[str, str | int | float | bool]:
         """Return the constructor kwargs default values of a class.
@@ -384,7 +383,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Returns:
             The mapping from the argument names to their default values.
         """
-        return get_default_options_values(self.get_class(name))
+        return get_default_option_values(self.get_class(name))
 
     def get_options_grammar(
         self,
@@ -407,7 +406,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Returns:
             The JSON grammar.
         """
-        default_option_values = self.get_default_options_values(name)
+        default_option_values = self.get_default_option_values(name)
         option_descriptions = {
             # The parsed docstrings contain carriage returns
             # in the descriptions of the arguments for a better HTML rendering
@@ -448,7 +447,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         """
         return self.get_class(name).get_sub_options_grammar(**options)
 
-    def get_default_sub_options_values(
+    def get_default_sub_option_values(
         self,
         name: str,
         **options: str,
@@ -463,7 +462,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Returns:
             The JSON grammar.
         """
-        return self.get_class(name).get_default_sub_options_values(**options)
+        return self.get_class(name).get_default_sub_option_values(**options)
 
     def __str__(self) -> str:
         return f"Factory of {self._CLASS.__name__} objects"

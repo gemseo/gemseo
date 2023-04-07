@@ -73,7 +73,7 @@ class BinhKorn(OptimizationProblem):
             f_type="obj",
             jac=self.__compute_binhkorn_jac,
             expr="(4*x**2+ 4*y**2, (x-5.)**2 + (y-5.)**2)",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         ineq1 = MDOFunction(
             self.__compute_ineq_constraint1,
@@ -81,7 +81,7 @@ class BinhKorn(OptimizationProblem):
             f_type="ineq",
             jac=self.__compute_ineq_constraint1_jac,
             expr="(x-5.)**2 + y**2 <= 25.",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         self.add_ineq_constraint(ineq1)
 
@@ -91,7 +91,7 @@ class BinhKorn(OptimizationProblem):
             f_type="ineq",
             jac=self.__compute_ineq_constraint2_jac,
             expr="(x-8.)**2 + (y+3)**2 >= 7.7",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         self.add_ineq_constraint(ineq2)
 

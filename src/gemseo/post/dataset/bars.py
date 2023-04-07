@@ -51,7 +51,7 @@ class BarPlot(DatasetPlot):
     ) -> list[Figure]:
         # radar solid grid lines
         all_data, _, sizes = self.dataset.get_all_data(False)
-        variables_names = self.dataset.columns_names
+        variable_names = self.dataset.column_names
         dimension = sum(sizes.values())
         series_names = self.dataset.row_names
 
@@ -99,7 +99,7 @@ class BarPlot(DatasetPlot):
                 )
 
         axes.set_xticks(discretization)
-        axes.set_xticklabels(variables_names)
+        axes.set_xticklabels(variable_names)
         axes.set_xlabel(self.xlabel)
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title, fontsize=self.font_size * 1.2)

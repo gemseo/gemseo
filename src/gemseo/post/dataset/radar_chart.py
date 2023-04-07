@@ -76,7 +76,7 @@ class RadarChart(DatasetPlot):
         axes.tick_params(labelsize=self.font_size)
 
         all_data, _, sizes = self.dataset.get_all_data(False)
-        variables_names = self.dataset.columns_names
+        variable_names = self.dataset.column_names
         if self.rmin is None:
             self.rmin = all_data.min()
 
@@ -124,7 +124,7 @@ class RadarChart(DatasetPlot):
             plt.gca().add_artist(circle)
 
         theta_degree = rad2deg(theta[:-1])
-        axes.set_thetagrids(theta_degree, variables_names)
+        axes.set_thetagrids(theta_degree, variable_names)
         if self._param.radial_ticks:
             labels = []
             for label, angle in zip(axes.get_xticklabels(), theta_degree):

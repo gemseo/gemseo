@@ -66,7 +66,7 @@ class X2(OptimizationProblem):
             f_type="obj",
             jac=self.__compute_x2_jac,
             expr="x**2",
-            args=["x", "a", "b", "c", "d"],
+            input_names=["x", "a", "b", "c", "d"],
         )
 
     @staticmethod

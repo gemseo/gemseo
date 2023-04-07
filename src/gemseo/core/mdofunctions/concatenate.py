@@ -40,7 +40,7 @@ class Concatenate(MDOFunction):
                 If ``None``, the function will have no type.
         """  # noqa: D205, D212, D415
         self.__functions = functions
-        func_output_names = [func.outvars for func in self.__functions]
+        func_output_names = [func.output_names for func in self.__functions]
         if [] in func_output_names:
             output_names = []
         else:
@@ -56,7 +56,7 @@ class Concatenate(MDOFunction):
             f_type,
             self._jac_to_wrap,
             dim=sum(func.dim for func in self.__functions),
-            outvars=output_names,
+            output_names=output_names,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:

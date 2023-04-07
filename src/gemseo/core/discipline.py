@@ -602,7 +602,7 @@ class MDODiscipline(Serializable):
         cache_type: CacheType = CacheType.SIMPLE,
         cache_tolerance: float = 0.0,
         cache_hdf_file: str | Path | None = None,
-        cache_hdf_node_name: str | None = None,
+        cache_hdf_node_path: str | None = None,
         is_memory_shared: bool = True,
     ) -> None:
         """Set the type of cache to use and the tolerance level.
@@ -629,8 +629,9 @@ class MDODiscipline(Serializable):
             cache_hdf_file: The path to the HDF file to store the data;
                 this argument is mandatory when the
                 :attr:`.MDODiscipline.CacheType.HDF5` policy is used.
-            cache_hdf_node_name: The name of the HDF file node
-                to store the discipline data.
+            cache_hdf_node_path: The name of the HDF file node
+                to store the discipline data,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
                 If None, :attr:`.MDODiscipline.name` is used.
             is_memory_shared: Whether to store the data with a shared memory dictionary,
                 which makes the cache compatible with multiprocessing.
@@ -646,13 +647,13 @@ class MDODiscipline(Serializable):
         if self.cache.__class__.__name__ != cache_type or not (
             cache_type == self.CacheType.HDF5
             and cache_hdf_file == self.cache.hdf_file.hdf_file_path
-            and cache_hdf_node_name == self.cache.hdf_node_name
+            and cache_hdf_node_path == self.cache.hdf_node_path
         ):
             self.cache = self.__create_new_cache(
                 cache_type,
                 tolerance=cache_tolerance,
                 hdf_file_path=cache_hdf_file,
-                hdf_node_path=cache_hdf_node_name or self.name,
+                hdf_node_path=cache_hdf_node_path or self.name,
                 is_memory_shared=is_memory_shared,
             )
         else:
@@ -664,7 +665,7 @@ class MDODiscipline(Serializable):
                 ),
                 cache_type,
                 cache_hdf_file,
-                cache_hdf_node_name,
+                cache_hdf_node_path,
             )
 
     def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:

@@ -67,7 +67,7 @@ class OptimizationResult:
     optimum_index: int | None = None
     """The zero-based position of the optimum in the optimization history."""
 
-    constraints_values: Mapping[str, ndarray] | None = None
+    constraint_values: Mapping[str, ndarray] | None = None
     """The values of the constraints at the optimum."""
 
     constraints_grad: Mapping[str, ndarray] | None = None
@@ -77,7 +77,7 @@ class OptimizationResult:
     __CGRAD_TAG_LEN = len(__CGRAD_TAG)
     __C_TAG = "constr:"
     __C_TAG_LEN = len(__C_TAG)
-    __CONSTRAINTS_VALUES = "constraints_values"
+    __CONSTRAINTS_VALUES = "constraint_values"
     __CONSTRAINTS_GRAD = "constraints_grad"
     __NOT_DICT_KEYS = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
 
@@ -115,7 +115,7 @@ class OptimizationResult:
         msg.indent()
         strings.append(msg)
         msg = MultiLineString()
-        if self.constraints_values:
+        if self.constraint_values:
             not_ = "" if self.is_feasible else "not "
             msg.indent()
             msg.indent()
@@ -126,10 +126,10 @@ class OptimizationResult:
         msg.indent()
         msg.indent()
         msg.add("Objective: {}", self.f_opt)
-        if self.constraints_values and len(self.constraints_values) < 20:
+        if self.constraint_values and len(self.constraint_values) < 20:
             msg.add("Standardized constraints:")
             msg.indent()
-            for name, value in sorted(self.constraints_values.items()):
+            for name, value in sorted(self.constraint_values.items()):
                 msg.add("{} = {}", name, value)
         strings.append(msg)
         return strings
@@ -142,7 +142,7 @@ class OptimizationResult:
 
         The keys are the names of the optimization result fields,
         except for the constraint values and gradients.
-        The key ``"constr:y"`` maps to ``result.constraints_values["y"]``
+        The key ``"constr:y"`` maps to ``result.constraint_values["y"]``
         while ``"constr_grad:y"`` maps to ``result.constraints_grad["y"]``.
 
         Returns:
@@ -152,7 +152,7 @@ class OptimizationResult:
             k: v for k, v in self.__dict__.items() if k not in self.__NOT_DICT_KEYS
         }
         for mapping, prefix in [
-            (self.constraints_values, self.__C_TAG),
+            (self.constraint_values, self.__C_TAG),
             (self.constraints_grad, self.__CGRAD_TAG),
         ]:
             if mapping is not None:
@@ -170,7 +170,7 @@ class OptimizationResult:
                 The keys are the names of the optimization result fields,
                 except for the constraint values and gradients.
                 The value associated with the key ``"constr:y"``
-                will be stored in ``result.constraints_values["y"]``
+                will be stored in ``result.constraint_values["y"]``
                 while the value associated with the key ``"constr_grad:y"``
                 will be stored in ``result.constraints_grad["y"]``.
 

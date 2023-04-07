@@ -209,7 +209,7 @@ where:
         """
         design_space = AerostructureDesignSpace()
         design_space.set_current_value(design_space.get_current_value().real)
-        sizes = design_space.variables_sizes
+        sizes = design_space.variable_sizes
         disciplines_scal = []
         for discipline in disciplines:
             discipline.set_cache_policy(cache_type=discipline.CacheType.MEMORY_FULL)

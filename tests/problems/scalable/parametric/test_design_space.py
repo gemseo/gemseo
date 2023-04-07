@@ -45,15 +45,15 @@ def test_tm_design_space(varnames):
     :param list(str) varnames: list of variable names.
     """
     xsh, xl_0, xl_1, y_0, y_1 = varnames
-    variables_sizes = {xsh: 2, xl_0: 2, xl_1: 3, y_0: 3, y_1: 2}
-    n_shared = variables_sizes[xsh]
-    n_local = [variables_sizes[xl_0], variables_sizes[xl_1]]
-    n_coupling = [variables_sizes[y_0], variables_sizes[y_1]]
+    variable_sizes = {xsh: 2, xl_0: 2, xl_1: 3, y_0: 3, y_1: 2}
+    n_shared = variable_sizes[xsh]
+    n_local = [variable_sizes[xl_0], variable_sizes[xl_1]]
+    n_coupling = [variable_sizes[y_0], variable_sizes[y_1]]
     default_inputs = {xsh: array([0.6, 0.7])}
     design_space = TMDesignSpace(n_shared, n_local, n_coupling, default_inputs)
-    assert set(variables_sizes.keys()) == set(design_space.names)
+    assert set(variable_sizes.keys()) == set(design_space.names)
     for name, size in design_space.sizes.items():
-        assert variables_sizes[name] == size
+        assert variable_sizes[name] == size
         assert (design_space.lower_bounds[name] == zeros(size)).all()
         assert (design_space.upper_bounds[name] == ones(size)).all()
         if name in default_inputs:

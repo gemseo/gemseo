@@ -96,7 +96,7 @@ def pow2_problem() -> OptimizationProblem:
         f_type="obj",
         jac=power2.pow2_jac,
         expr="x[0]**2+x[1]**2+x[2]**2",
-        args=["x"],
+        input_names=["x"],
     )
     return problem
 
@@ -153,7 +153,7 @@ def test_add_constraints(pow2_problem):
         f_type="ineq",
         jac=Power2.ineq_constraint1_jac,
         expr="0.5 -x[0] ** 3",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_ineq_constraint(ineq1, value=-1)
     assert problem.get_ineq_constraints_number() == 1
@@ -208,7 +208,7 @@ def test_getmsg_ineq_constraints(pow2_problem):
         name="ineq_std",
         f_type="ineq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(ineq_std)
     expected.append("ineq_std(x): cstr + cst <= 0.0")
@@ -218,7 +218,7 @@ def test_getmsg_ineq_constraints(pow2_problem):
         name="ineq_lo_posval",
         f_type="ineq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(ineq_lo_posval, value=1.0)
     expected.append("ineq_lo_posval(x): cstr + cst <= 1.0")
@@ -228,7 +228,7 @@ def test_getmsg_ineq_constraints(pow2_problem):
         name="ineq_lo_negval",
         f_type="ineq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(ineq_lo_negval, value=-1.0)
     expected.append("ineq_lo_negval(x): cstr + cst <= -1.0")
@@ -238,7 +238,7 @@ def test_getmsg_ineq_constraints(pow2_problem):
         name="ineq_up_negval",
         f_type="ineq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(ineq_up_negval, value=-1.0, positive=True)
     expected.append("ineq_up_negval(x): cstr + cst >= -1.0")
@@ -248,7 +248,7 @@ def test_getmsg_ineq_constraints(pow2_problem):
         name="ineq_up_posval",
         f_type="ineq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(ineq_up_posval, value=1.0, positive=True)
     expected.append("ineq_up_posval(x): cstr + cst >= 1.0")
@@ -275,7 +275,7 @@ def test_getmsg_eq_constraints(pow2_problem):
         name="eq_std",
         f_type="eq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(eq_std)
     expected.append("eq_std(x): cstr + cst == 0.0")
@@ -285,7 +285,7 @@ def test_getmsg_eq_constraints(pow2_problem):
         name="eq_posval",
         f_type="eq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(eq_posval, value=1.0)
     expected.append("eq_posval(x): cstr + cst == 1.0")
@@ -294,7 +294,7 @@ def test_getmsg_eq_constraints(pow2_problem):
         name="eq_negval",
         f_type="eq",
         expr="cstr + cst",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_constraint(eq_negval, value=-1.0)
     expected.append("eq_negval(x): cstr + cst == -1.0")
@@ -330,7 +330,7 @@ def test_constraints_dim(pow2_problem):
         f_type="ineq",
         jac=Power2.ineq_constraint1_jac,
         expr="0.5 -x[0] ** 3",
-        args=["x"],
+        input_names=["x"],
     )
     problem.add_ineq_constraint(ineq1, value=-1)
     with pytest.raises(ValueError):
@@ -353,7 +353,9 @@ def test_check():
 
 def test_missing_constjac(pow2_problem):
     problem = pow2_problem
-    ineq1 = MDOFunction(sum, name="sum", f_type="ineq", expr="sum(x)", args=["x"])
+    ineq1 = MDOFunction(
+        sum, name="sum", f_type="ineq", expr="sum(x)", input_names=["x"]
+    )
     problem.add_ineq_constraint(ineq1, value=-1)
     problem.preprocess_functions()
     with pytest.raises(ValueError):
@@ -424,7 +426,7 @@ def test_differentiation_method(pow2_problem):
 def test_get_dv_names():
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP")
-    assert problem.design_space.variables_names == ["x"]
+    assert problem.design_space.variable_names == ["x"]
 
 
 def test_get_best_infeasible_point():
@@ -612,8 +614,8 @@ def test_evaluate_functions_only_gradients():
         normalize=False,
         no_db_no_norm=True,
         eval_obj=False,
-        constraints_names=[],
-        jacobians_names=["ineq1", "ineq2", "eq"],
+        constraint_names=[],
+        jacobian_names=["ineq1", "ineq2", "eq"],
     )
     assert not func
     assert grad.keys() == {"ineq1", "ineq2", "eq"}
@@ -634,7 +636,6 @@ def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm):
         x_vect=array([1.0, 1.0, 1.0]),
         normalize=False,
         no_db_no_norm=no_db_no_norm,
-        eval_observables=True,
     )
     assert out[0]["pow2"] == pytest.approx(3.0)
     assert out[0]["design norm"] == pytest.approx(sqrt(3.0))
@@ -643,7 +644,7 @@ def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm):
 def test_evaluate_functions_non_preprocessed(constrained_problem):
     """Check the evaluation of non-preprocessed functions."""
     values, jacobians = constrained_problem.evaluate_functions(
-        normalize=False, no_db_no_norm=True
+        normalize=False, no_db_no_norm=True, eval_observables=False
     )
     assert set(values.keys()) == {"f", "g", "h"}
     assert values["f"] == pytest.approx(2.0)
@@ -678,10 +679,10 @@ def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect):
 @pytest.mark.parametrize("preprocess_functions", [False, True])
 @pytest.mark.parametrize("no_db_no_norm", [False, True])
 @pytest.mark.parametrize(
-    ["constraints_names", "keys"], [[None, {"g", "h"}], [["h"], {"h"}]]
+    ["constraint_names", "keys"], [[None, {"g", "h"}], [["h"], {"h"}]]
 )
 def test_evaluate_constraints_subset(
-    constrained_problem, preprocess_functions, no_db_no_norm, constraints_names, keys
+    constrained_problem, preprocess_functions, no_db_no_norm, constraint_names, keys
 ):
     """Check the evaluation of a subset of constraints."""
     if preprocess_functions:
@@ -691,13 +692,14 @@ def test_evaluate_constraints_subset(
         array([0, 0]),
         eval_obj=False,
         no_db_no_norm=no_db_no_norm,
-        constraints_names=constraints_names,
+        eval_observables=False,
+        constraint_names=constraint_names,
     )
     assert values.keys() == keys
 
 
 @pytest.mark.parametrize(
-    ["observables_names", "eval_observables", "keys"],
+    ["observable_names", "eval_observables", "keys"],
     [
         [None, False, {"f", "g", "h"}],
         [None, True, {"f", "g", "h", "a", "b"}],
@@ -706,19 +708,19 @@ def test_evaluate_constraints_subset(
     ],
 )
 def test_evaluate_observables_subset(
-    constrained_problem, observables_names, eval_observables, keys
+    constrained_problem, observable_names, eval_observables, keys
 ):
     """Check the evaluation of a subset of observables."""
     values, _ = constrained_problem.evaluate_functions(
         array([0, 0]),
         eval_observables=eval_observables,
-        observables_names=observables_names,
+        observable_names=observable_names,
     )
     assert values.keys() == keys
 
 
 @pytest.mark.parametrize(
-    ["jacobians_names", "eval_jac", "keys"],
+    ["jacobian_names", "eval_jac", "keys"],
     [
         [None, False, set()],
         [None, True, {"f", "g", "h"}],
@@ -726,12 +728,13 @@ def test_evaluate_observables_subset(
         [["h", "b"], True, {"h", "b"}],
     ],
 )
-def test_evaluate_jacobians_subset(
-    constrained_problem, jacobians_names, eval_jac, keys
-):
+def test_evaluate_jacobians_subset(constrained_problem, jacobian_names, eval_jac, keys):
     """Check the evaluation of the Jacobian matrices for a subset of the functions."""
     _, jacobians = constrained_problem.evaluate_functions(
-        array([0, 0]), eval_jac, jacobians_names=jacobians_names
+        x_vect=array([0, 0]),
+        eval_jac=eval_jac,
+        eval_observables=False,
+        jacobian_names=jacobian_names,
     )
     assert jacobians.keys() == keys
 
@@ -747,22 +750,23 @@ def test_evaluate_unknown_jacobians(constrained_problem, jacobian_names, message
         match=f"{message} not among the names of the functions: {', '.join(jacobian_names)}.",
     ):
         constrained_problem.evaluate_functions(
-            array([0, 0]), jacobians_names=jacobian_names
+            array([0, 0]), jacobian_names=jacobian_names
         )
 
 
 @pytest.mark.parametrize("eval_jac", [False, True])
 @pytest.mark.parametrize(
-    ["jacobians_names", "keys"], [[["h"], {"h"}], [list(), set()], [None, set()]]
+    ["jacobian_names", "keys"], [[["h"], {"h"}], [list(), set()], [None, set()]]
 )
-def test_evaluate_jacobians_alone(constrained_problem, eval_jac, jacobians_names, keys):
+def test_evaluate_jacobians_alone(constrained_problem, eval_jac, jacobian_names, keys):
     """Check the evaluation of Jacobian matrices alone."""
     values, jacobians = constrained_problem.evaluate_functions(
-        array([0, 0]),
-        eval_jac,
-        False,
-        constraints_names=[],
-        jacobians_names=jacobians_names,
+        x_vect=array([0, 0]),
+        eval_jac=eval_jac,
+        eval_obj=False,
+        eval_observables=False,
+        constraint_names=[],
+        jacobian_names=jacobian_names,
     )
     assert not values
     assert jacobians.keys() == keys
@@ -991,13 +995,16 @@ def test_is_mono_objective():
     design_space.add_variable("")
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(
-        lambda x: array([1.0, 2.0]), name="func", f_type="obj", outvars=["y1", "y2"]
+        lambda x: array([1.0, 2.0]),
+        name="func",
+        f_type="obj",
+        output_names=["y1", "y2"],
     )
 
     assert not problem.is_mono_objective
 
     problem.objective = MDOFunction(
-        lambda x: x, name="func", f_type="obj", outvars=["y1"]
+        lambda x: x, name="func", f_type="obj", output_names=["y1"]
     )
 
     assert problem.is_mono_objective
@@ -1154,9 +1161,9 @@ def test_get_number_of_unsatisfied_constraints(
     )
 
 
-def test_get_scalar_constraints_names(constrained_problem):
+def test_get_scalar_constraint_names(constrained_problem):
     """Check the computation of the scalar constraints names."""
-    scalar_names = constrained_problem.get_scalar_constraints_names()
+    scalar_names = constrained_problem.get_scalar_constraint_names()
     assert set(scalar_names) == {
         "g",
         f"h{DesignSpace.SEP}0",
@@ -1315,9 +1322,9 @@ def test_function_string_representation_from_hdf():
     # design_space.add_variable("x0", l_b=0.0, u_b=1.0, value=0.5)
     # design_space.add_variable("x1", l_b=0.0, u_b=1.0, value=0.5)
     # problem = OptimizationProblem(design_space)
-    # problem.objective = MDOFunction(lambda x: x[0] + x[1], "f", args=["x0", "x1"])
+    # problem.objective = MDOFunction(lambda x: x[0] + x[1], "f", input_names=["x0", "x1"])
     # problem.constraints.append(
-    #     MDOFunction(lambda x: x[0] + x[1], "g", args=["x0", "x1"])
+    #     MDOFunction(lambda x: x[0] + x[1], "g", input_names=["x0", "x1"])
     # )
     # problem.to_hdf("opt_problem_to_check_string_representation.hdf5")
 
@@ -1359,7 +1366,7 @@ def function() -> mock.Mock:
 @pytest.mark.parametrize(["expects_normalized"], [(True,), (False,)])
 def test_get_function_dimension_no_dim(function, design_space, expects_normalized):
     """Check the implicitly defined output dimension of a problem function."""
-    function.has_dim = mock.Mock(return_value=False)
+    function.dim = 0
     function.expects_normalized_inputs = expects_normalized
     design_space.has_current_value = mock.Mock(return_value=True)
     problem = OptimizationProblem(design_space)
@@ -1376,7 +1383,7 @@ def test_get_function_dimension_no_dim(function, design_space, expects_normalize
 
 def test_get_function_dimension_unavailable(function, design_space):
     """Check the unavailable output dimension of a problem function."""
-    function.has_dim = mock.Mock(return_value=False)
+    function.dim = 0
     design_space.has_current_value = mock.Mock(return_value=False)
     problem = OptimizationProblem(design_space)
     problem.objective = function

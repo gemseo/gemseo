@@ -534,7 +534,7 @@ class Dataset:
                 "to the data dimension ({}).".format(total, dimension)
             )
 
-    def __check_variables_sizes(
+    def __check_variable_sizes(
         self,
         variables: list[str],
         sizes: dict[str, int],
@@ -716,7 +716,7 @@ class Dataset:
         """
         self.__check_new_group(group)
         self.__check_data_consistency(data)
-        self.__check_variables_sizes(variables, sizes, data.shape[1])
+        self.__check_variable_sizes(variables, sizes, data.shape[1])
         if variables is None or sizes is None:
             variables, sizes, _ = self.__get_default_group_variables(
                 group, data.shape[1], pattern
@@ -998,7 +998,7 @@ class Dataset:
         self.metadata[name] = value
 
     @property
-    def columns_names(self) -> list[str | ColumnName]:
+    def column_names(self) -> list[str | ColumnName]:
         """The names of the columns of the dataset."""
         return self.get_column_names()
 
@@ -1240,21 +1240,22 @@ class Dataset:
         outputs: Iterable[str] | None = None,
         cache_type: CacheType = CacheType.MEMORY_FULL,
         cache_hdf_file: str | None = None,
-        cache_hdf_node_name: str | None = None,
+        cache_hdf_node_path: str | None = None,
         **options,
     ) -> AbstractCache:
         """Export the dataset to a cache.
 
         Args:
             inputs: The names of the inputs to cache.
-                If None, use all inputs.
+                If ``None``, use all inputs.
             outputs: The names of the outputs to cache.
-                If None, use all outputs.
+                If ``None``, use all outputs.
             cache_type: The type of cache to use.
             cache_hdf_file: The name of the HDF file to store the data.
                 Required if the type of the cache is 'HDF5Cache'.
-            cache_hdf_node_name: The name of the HDF node to store the discipline.
-                If None, use the name of the dataset.
+            cache_hdf_node_path: The name of the HDF node to store the discipline,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                If ``None``, use the name of the dataset.
 
         Returns:
             A cache containing the dataset.
@@ -1266,12 +1267,12 @@ class Dataset:
             outputs = self._cached_outputs
 
         create_cache = CacheFactory().create
-        cache_hdf_node_name = cache_hdf_node_name or self.name
+        cache_hdf_node_path = cache_hdf_node_path or self.name
         if cache_type == self.CacheType.HDF5:
             cache = create_cache(
                 cache_type,
                 hdf_file_path=cache_hdf_file,
-                hdf_node_path=cache_hdf_node_name,
+                hdf_node_path=cache_hdf_node_path,
                 name=self.name,
                 **options,
             )

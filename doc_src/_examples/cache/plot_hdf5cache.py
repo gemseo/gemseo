@@ -55,7 +55,7 @@ configure_logger()
 #     The method :meth:`.DOEScenario.set_optimization_history_backup`
 #     is recommended as an alternative.
 
-cache = HDF5Cache("my_cache.hdf5", "node1")
+cache = HDF5Cache(hdf_file_path="my_cache.hdf5", hdf_node_path="node1")
 
 # %%
 # It is possible to see the principal attributes of the cache by printing it,

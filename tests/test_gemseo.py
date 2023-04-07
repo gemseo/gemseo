@@ -552,7 +552,7 @@ def test_get_discipline_options_schema():
             "jac_approx_type",
             "linearization_mode",
             "cache_hdf_file",
-            "cache_hdf_node_name",
+            "cache_hdf_node_path",
         ]:
             assert opts in props
         get_discipline_options_schema(disc, pretty_print=True)
@@ -565,8 +565,8 @@ def test_get_discipline_options_defaults():
         assert len(defaults) > 0
 
 
-def test_get_default_sub_options_values():
-    """Test that the default sub options values are retrieved correctly."""
+def test_get_default_sub_option_values():
+    """Test that the default sub option values are retrieved correctly."""
     defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
 

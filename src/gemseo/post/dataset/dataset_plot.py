@@ -342,7 +342,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             The figures.
         """
 
-    def _get_variables_names(
+    def _get_variable_names(
         self,
         dataframe_columns: Iterable[tuple],
     ) -> list[str]:

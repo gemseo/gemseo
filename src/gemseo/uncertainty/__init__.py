@@ -129,7 +129,7 @@ def get_available_sensitivity_analyses() -> list[str]:
 
 def create_statistics(
     dataset: Dataset,
-    variables_names: Iterable[str] | None = None,
+    variable_names: Iterable[str] | None = None,
     tested_distributions: Sequence[str] | None = None,
     fitting_criterion: str = "BIC",
     selection_criterion: str = "best",
@@ -143,7 +143,7 @@ def create_statistics(
 
     Args:
         dataset: A dataset.
-        variables_names: The variables of interest.
+        variable_names: The variables of interest.
             If None, consider all the variables from dataset.
         tested_distributions: The names of
             the tested distributions.
@@ -205,12 +205,12 @@ def create_statistics(
     )
 
     if tested_distributions is None:
-        statistical_analysis = EmpStats(dataset, variables_names, name)
+        statistical_analysis = EmpStats(dataset, variable_names, name)
     else:
         statistical_analysis = ParamStats(
             dataset,
             tested_distributions,
-            variables_names,
+            variable_names,
             fitting_criterion,
             level,
             selection_criterion,

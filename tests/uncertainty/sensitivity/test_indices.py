@@ -131,7 +131,7 @@ class MockMorrisAnalysisIndices(MorrisAnalysis):
         }
 
     @property
-    def inputs_names(self) -> list[str]:
+    def input_names(self) -> list[str]:
         """The names of the inputs."""
         return ["x1"]
 
@@ -276,13 +276,13 @@ def test_plot_comparison(
     assert plot.title == "foo"
 
 
-def test_inputs_names(mock_sensitivity_analysis):
+def test_input_names(mock_sensitivity_analysis):
     """Check the value of the attribute input_names.
 
     Args:
         mock_sensitivity_analysis: The sensitivity analysis.
     """
-    assert mock_sensitivity_analysis.inputs_names == ["x1", "x2"]
+    assert mock_sensitivity_analysis.input_names == ["x1", "x2"]
 
 
 @pytest.mark.parametrize("output", ["y1", ("y1", 0), ("y2", 0)])
@@ -308,7 +308,7 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
     assert dataset.row_names == ["x1", "x2[0]", "x2[1]"]
     assert dataset.variables == ["m1(y1)", "m1(y2)", "m2(y1)", "m2(y2)"]
     assert dataset.groups == ["m1", "m2"]
-    assert dataset.columns_names == [
+    assert dataset.column_names == [
         "m1(y1)",
         "m1(y2)[0]",
         "m1(y2)[1]",

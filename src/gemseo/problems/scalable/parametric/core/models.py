@@ -75,14 +75,14 @@ class TMMainModel:
         """
         self.name = "MainModel"
         self.default_inputs = default_inputs
-        self.inputs_sizes = {name: len(val) for name, val in default_inputs.items()}
-        self.inputs_names = sorted(self.inputs_sizes.keys())
-        self.outputs_sizes = {
+        self.input_sizes = {name: len(val) for name, val in default_inputs.items()}
+        self.input_names = sorted(self.input_sizes.keys())
+        self.output_sizes = {
             get_constraint_name(index): len(value)
             for index, value in enumerate(c_constraint)
         }
-        self.outputs_sizes[OBJECTIVE_NAME] = 1
-        self.outputs_names = sorted(self.outputs_sizes.keys())
+        self.output_sizes[OBJECTIVE_NAME] = 1
+        self.output_names = sorted(self.output_sizes.keys())
         self.coefficients = c_constraint
         self.n_submodels = len(c_constraint)
 
@@ -99,7 +99,7 @@ class TMMainModel:
         if x_shared is None:
             x_shared = self.default_inputs[X_SHARED_NAME]
         if coupling is None:
-            names = set(self.inputs_names) - {X_SHARED_NAME}
+            names = set(self.input_names) - {X_SHARED_NAME}
             coupling = {name: self.default_inputs[name] for name in names}
         if jacobian:
             result = self._compute_jacobian(x_shared, coupling)
@@ -188,11 +188,11 @@ class TMSubModel:
         self.c_coupling = c_coupling
         self.default_inputs = default_inputs
         self._check_consistency()
-        self.inputs_sizes = {name: len(val) for name, val in default_inputs.items()}
-        self.inputs_names = sorted(self.inputs_sizes.keys())
+        self.input_sizes = {name: len(val) for name, val in default_inputs.items()}
+        self.input_names = sorted(self.input_sizes.keys())
         output = get_coupling_name(index)
-        self.outputs_sizes = {output: len(c_local)}
-        self.outputs_names = sorted(self.outputs_sizes.keys())
+        self.output_sizes = {output: len(c_local)}
+        self.output_names = sorted(self.output_sizes.keys())
 
     def _check_consistency(self) -> None:
         """Check consistency of model and default inputs."""

@@ -203,7 +203,7 @@ def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value):
             value=value,
         )
 
-    assert "varname" not in design_space.variables_names
+    assert "varname" not in design_space.variable_names
 
 
 def test_creation_4():
@@ -279,7 +279,7 @@ def test_set_current_value_with_malformed_current_x(design_space):
 def test_read_from_csv():
     """Check that a variable name is correct when reading a CSV file."""
     ds = DesignSpace.from_csv(CURRENT_DIR / "design_space_4.csv")
-    assert ds.variables_names == ["x_shared"]
+    assert ds.variable_names == ["x_shared"]
 
 
 def test_integer_variable_set_current_x(design_space):
@@ -311,7 +311,7 @@ def test_integer_variable_round_vect(design_space):
 
 
 @pytest.mark.parametrize("copy", [True, False])
-def test_filter_by_variables_names(design_space, copy):
+def test_filter_by_variable_names(design_space, copy):
     """Check that the design space can be filtered by variables dimensions."""
     design_space_with_x5 = design_space.filter("x5", copy=copy)
     if not copy:
@@ -388,12 +388,12 @@ def test_active_bounds():
 
 
 @pytest.mark.parametrize("index,expected", [(0, "x"), (1, "z!0"), (2, "z!1")])
-def test_get_indexed_variables_names(index, expected):
-    """Check the variables names obtained with get_indexed_variables_names()."""
+def test_get_indexed_variable_names(index, expected):
+    """Check the variables names obtained with get_indexed_variable_names()."""
     design_space = DesignSpace()
     design_space.add_variable("x")
     design_space.add_variable("z", size=2)
-    assert design_space.get_indexed_variables_names()[index] == expected
+    assert design_space.get_indexed_variable_names()[index] == expected
 
 
 @pytest.mark.parametrize(
@@ -503,12 +503,12 @@ def test_norm_policy():
     with pytest.raises(ValueError, match="Variable 'foo' is not known."):
         design_space._add_norm_policy("foo")
 
-    size = design_space.variables_sizes.pop("x_1")
+    size = design_space.variable_sizes.pop("x_1")
     with pytest.raises(ValueError, match="The size of variable 'x_1' is not set."):
         design_space._add_norm_policy("x_1")
 
-    design_space.variables_sizes["x_1"] = size
-    design_space.variables_types.pop("x_1")
+    design_space.variable_sizes["x_1"] = size
+    design_space.variable_types.pop("x_1")
     with pytest.raises(
         ValueError, match="The components types of variable 'x_1' are not set."
     ):
@@ -518,13 +518,13 @@ def test_norm_policy():
     assert not design_space.normalize["x_c"]
 
     design_space.add_variable("x_e", l_b=array([0.0]), u_b=array([0.0]))
-    design_space.variables_types["x_e"] = array(["toto"])
+    design_space.variable_types["x_e"] = array(["toto"])
     with pytest.raises(
         ValueError, match="The normalization policy for type toto is not implemented."
     ):
         design_space._add_norm_policy("x_e")
 
-    design_space.variables_types.pop("x_e")
+    design_space.variable_types.pop("x_e")
     with pytest.raises(
         ValueError, match="The components types of variable 'x_e' are not set."
     ):
@@ -681,7 +681,7 @@ def check_ds(ref_ds, read_ds, f_path):
     :param read_ds:
     """
     assert f_path.exists()
-    assert read_ds.variables_names == ref_ds.variables_names
+    assert read_ds.variable_names == ref_ds.variable_names
 
     err = read_ds.get_lower_bounds() - ref_ds.get_lower_bounds()
     assert norm(err) == pytest.approx(0.0)
@@ -692,14 +692,14 @@ def check_ds(ref_ds, read_ds, f_path):
     err = read_ds.get_current_value() - ref_ds.get_current_value()
     assert norm(err) == pytest.approx(0.0)
 
-    type_read = [t for name in read_ds.variables_names for t in read_ds.get_type(name)]
+    type_read = [t for name in read_ds.variable_names for t in read_ds.get_type(name)]
 
-    type_ref = [t for name in read_ds.variables_names for t in ref_ds.get_type(name)]
+    type_ref = [t for name in read_ds.variable_names for t in ref_ds.get_type(name)]
 
     assert type_read == type_ref
 
-    for name in ref_ds.variables_names:
-        assert name in read_ds.variables_names
+    for name in ref_ds.variable_names:
+        assert name in read_ds.variable_names
 
     ref_str = str(ref_ds)
     assert ref_str == str(read_ds)
@@ -798,7 +798,7 @@ def test_contains(design_space):
 
 def test_len(design_space):
     """Check the length of a design space."""
-    assert len(design_space) == len(design_space.variables_names)
+    assert len(design_space) == len(design_space.variable_names)
 
 
 def test_getitem(design_space):
@@ -859,7 +859,7 @@ def test_gradient_unnormalization(design_space):
 
 def test_vartype_passed_as_bytes(design_space):
     """Check that a variable type passed as bytes is properly decoded."""
-    assert design_space.variables_types["x20"] == FLOAT
+    assert design_space.variable_types["x20"] == FLOAT
 
 
 @pytest.mark.parametrize(

@@ -105,10 +105,10 @@ class PostOptimalAnalysis:
         # Get the optimal solution
         self.x_opt = self.opt_problem.design_space.get_current_value()
         # Get the objective name
-        outvars = self.opt_problem.objective.outvars
-        if len(outvars) != 1:
+        output_names = self.opt_problem.objective.output_names
+        if len(output_names) != 1:
             raise ValueError("The objective must be single-valued.")
-        self.outvars = outvars
+        self.output_names = output_names
         # Set the tolerance on inequality constraints
         if ineq_tol is None:
             self.ineq_tol = self.opt_problem.ineq_tolerance
@@ -131,7 +131,7 @@ class PostOptimalAnalysis:
             threshold: The tolerance on the validity assumption.
         """
         # Check the Jacobians
-        func_names = self.opt_problem.get_constraints_names()
+        func_names = self.opt_problem.get_constraint_names()
         self._check_jacobians(total_jac, func_names, parameters)
         self._check_jacobians(partial_jac, func_names, parameters)
 
@@ -224,17 +224,19 @@ class PostOptimalAnalysis:
             The Jacobian of the Lagrangian.
         """
         # Check the outputs
-        nondifferentiable_outputs = set(outputs) - set(self.outvars)
+        nondifferentiable_outputs = set(outputs) - set(self.output_names)
         if nondifferentiable_outputs:
             nondifferentiable_outputs = ", ".join(nondifferentiable_outputs)
             raise ValueError(
-                f"Only the post-optimal Jacobian of {self.outvars[0]} can be computed, "
+                f"Only the post-optimal Jacobian of {self.output_names[0]} can be computed, "
                 f"not the one(s) of {nondifferentiable_outputs}."
             )
 
         # Check the inputs and Jacobians consistency
-        func_names = self.outvars + [
-            out_var for cstr in self.opt_problem.constraints for out_var in cstr.outvars
+        func_names = self.output_names + [
+            output_name
+            for constraint in self.opt_problem.constraints
+            for output_name in constraint.output_names
         ]
         PostOptimalAnalysis._check_jacobians(functions_jac, func_names, inputs)
 
@@ -313,10 +315,10 @@ class PostOptimalAnalysis:
         act_ineq_jac = self._get_act_ineq_jac(functions_jac, inputs)
         eq_jac = self._get_eq_jac(functions_jac, inputs)
 
-        jac = {self.outvars[0]: dict(), self.MULT_DOT_CONSTR_JAC: dict()}
+        jac = {self.output_names[0]: dict(), self.MULT_DOT_CONSTR_JAC: dict()}
         for input_name in inputs:
             # Contribution of the objective
-            jac_obj_arr = functions_jac[self.outvars[0]][input_name]
+            jac_obj_arr = functions_jac[self.output_names[0]][input_name]
             jac_cstr_arr = zeros_like(jac_obj_arr)
 
             # Contributions of the inequality constraints
@@ -333,7 +335,7 @@ class PostOptimalAnalysis:
             if not self.opt_problem.minimize_objective:
                 jac_cstr_arr *= -1.0
             jac[self.MULT_DOT_CONSTR_JAC][input_name] = jac_cstr_arr
-            jac[self.outvars[0]][input_name] = jac_obj_arr + jac_cstr_arr
+            jac[self.output_names[0]][input_name] = jac_obj_arr + jac_cstr_arr
 
         return jac
 

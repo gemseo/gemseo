@@ -70,8 +70,8 @@ class ParetoFront(OptPostProcessor):
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
 
-        all_funcs = self.opt_problem.get_all_functions_names()
-        all_dv_names = self.opt_problem.design_space.variables_names
+        all_funcs = self.opt_problem.get_all_function_name()
+        all_dv_names = self.opt_problem.design_space.variable_names
 
         sample_values, all_labels = self.__compute_names_and_values(
             all_dv_names, all_funcs, objectives
@@ -192,7 +192,7 @@ class ParetoFront(OptPostProcessor):
              func: The function name.
              objectives: The objectives names.
         """
-        if func in self.opt_problem.design_space.variables_names:
+        if func in self.opt_problem.design_space.variable_names:
             objectives.remove(func)
             design_variables.append(func)
 

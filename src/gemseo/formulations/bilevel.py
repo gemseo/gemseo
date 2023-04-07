@@ -106,7 +106,7 @@ class BiLevel(MDOFormulation):
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
         )
-        self._shared_dv = list(design_space.variables_names)
+        self._shared_dv = list(design_space.variable_names)
         self._mda1 = None
         self._mda2 = None
         self.reset_x0_before_opt = reset_x0_before_opt
@@ -200,14 +200,14 @@ class BiLevel(MDOFormulation):
         # Output couplings of scenario are given to MDA for speedup
         if output_functions:
             opt_problem = scenario.formulation.opt_problem
-            sc_outvars = opt_problem.objective.outvars
-            sc_constraints = opt_problem.get_constraints_names()
-            sc_out_coupl = sc_outvars + sc_constraints
+            sc_output_names = opt_problem.objective.output_names
+            sc_constraints = opt_problem.get_constraint_names()
+            sc_out_coupl = sc_output_names + sc_constraints
         else:
             sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
 
         # Add private variables from disciplinary scenario design space
-        adapter_outputs = sc_out_coupl + scenario.design_space.variables_names
+        adapter_outputs = sc_out_coupl + scenario.design_space.variable_names
         return adapter_outputs
 
     def _compute_adapter_inputs(
@@ -238,7 +238,7 @@ class BiLevel(MDOFormulation):
             & set(set(couplings) | shared_dv | set(mda1_outputs))
         )
         if use_non_shared_vars:
-            nonshared_var = scenario.design_space.variables_names
+            nonshared_var = scenario.design_space.variable_names
             adapter_inputs = list(
                 set(adapter_inputs) | set(top_inputs) & set(nonshared_var)
             )
@@ -282,7 +282,7 @@ class BiLevel(MDOFormulation):
         return MDAFactory().get_options_grammar(main_mda_name)
 
     @classmethod
-    def get_default_sub_options_values(
+    def get_default_sub_option_values(
         cls, **options: str
     ) -> Mapping[str, str | int | float | bool | None] | None:
         """
@@ -295,7 +295,7 @@ class BiLevel(MDOFormulation):
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
-        return MDAFactory().get_default_options_values(main_mda_name)
+        return MDAFactory().get_default_option_values(main_mda_name)
 
     def _build_mdas(
         self,
@@ -422,7 +422,7 @@ class BiLevel(MDOFormulation):
             couplings = self.mda2.strong_couplings
             design_space = self.opt_problem.design_space
             for coupling in couplings:
-                if coupling in design_space.variables_names:
+                if coupling in design_space.variable_names:
                     design_space.remove_variable(coupling)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102

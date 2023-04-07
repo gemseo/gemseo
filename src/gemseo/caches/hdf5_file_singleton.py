@@ -95,7 +95,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 :attr:`.AbstractFullCache._OUTPUTS_GROUP`
                 or :attr:`.AbstractFullCache._JACOBIAN_GROUP`.
             index: The index of the entry in the cache.
-            hdf_node_path: The name of the HDF group to store the entries.
+            hdf_node_path: The name of the HDF group to store the entries,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
             h5_open_file: The opened HDF file.
                 This improves performance
                 but is incompatible with multiprocess/treading.
@@ -153,7 +154,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         Args:
             index:  The index of the entry.
             group: The name of the group.
-            hdf_node_path: The name of the HDF group where the entries are stored.
+            hdf_node_path: The name of the HDF group where the entries are stored,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
             h5_open_file: The opened HDF file.
                 This improves performance
                 but is incompatible with multiprocess/treading.
@@ -199,7 +201,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         """Return whether a group exists.
 
         Args:
-            hdf_node_path: The name of the HDF group where the entries are stored.
+            hdf_node_path: The name of the HDF group where the entries are stored,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
             h5_open_file: The opened HDF file.
                 This improves performance
                 but is incompatible with multiprocess/treading.
@@ -227,7 +230,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         Args:
             index:  The index of the entry.
             group: The name of the group.
-            hdf_node_path: The name of the HDF group where the entries are stored.
+            hdf_node_path: The name of the HDF group where the entries are stored,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
 
         Returns:
             Whether the entry has data for this group.
@@ -244,7 +248,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
         Args:
             hashes_to_indices: The indices associated to the hashes.
-            hdf_node_path: The name of the HDF group where the entries are stored.
+            hdf_node_path: The name of the HDF group where the entries are stored,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
 
         Returns:
             The maximum index.
@@ -282,7 +287,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         """Clear a node.
 
         Args:
-            hdf_node_path: The name of the HDF group to clear.
+            hdf_node_path: The name of the HDF group to clear,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
         """
         with h5py.File(self.hdf_file_path, "a") as h5file:
             del h5file[hdf_node_path]

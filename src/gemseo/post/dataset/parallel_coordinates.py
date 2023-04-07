@@ -106,7 +106,7 @@ class ParallelCoordinates(DatasetPlot):
 
         fig, axes = self._get_figure_and_axes(fig, axes)
         axes = parallel_coordinates(dataframe, cluster, cols=columns, ax=axes, **kwargs)
-        axes.set_xticklabels(self._get_variables_names(columns))
+        axes.set_xticklabels(self._get_variable_names(columns))
         if lower != -inf or upper != inf:
             default_title = f"Cobweb plot based on the classifier: {cluster[1]}"
         else:

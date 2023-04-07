@@ -63,11 +63,11 @@ class RadarChart(OptPostProcessor):
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
         if constraint_names is None:
-            constraint_names = self.opt_problem.get_constraints_names()
+            constraint_names = self.opt_problem.get_constraint_names()
         else:
             constraint_names = self.opt_problem.get_function_names(constraint_names)
             invalid_names = sorted(
-                set(constraint_names) - set(self.opt_problem.get_constraints_names())
+                set(constraint_names) - set(self.opt_problem.get_constraint_names())
             )
             if invalid_names:
                 raise ValueError(
@@ -86,7 +86,7 @@ class RadarChart(OptPostProcessor):
                 f"nor equal to the tag {self.OPTIMUM}."
             )
 
-        constraints_values, constraints_names, _ = self.database.get_history_array(
+        constraint_values, constraint_names, _ = self.database.get_history_array(
             constraint_names, add_dv=False
         )
 
@@ -96,15 +96,15 @@ class RadarChart(OptPostProcessor):
         else:
             title_suffix = ""
 
-        constraints_values = constraints_values[iteration, :].ravel()
+        constraint_values = constraint_values[iteration, :].ravel()
 
         dataset = Dataset("Constraints")
-        values = vstack((constraints_values, zeros(len(constraints_values))))
+        values = vstack((constraint_values, zeros(len(constraint_values))))
         dataset.add_group(
             dataset.DEFAULT_GROUP,
             values,
-            constraints_names,
-            {name: 1 for name in constraints_names},
+            constraint_names,
+            {name: 1 for name in constraint_names},
         )
         dataset.row_names = ["computed constraints", "limit constraint"]
 

@@ -162,12 +162,12 @@ class TMProblem:
         for model in self.models:
             msg.append(f".... {model.name}")
             msg.append("........ Inputs:")
-            for name in model.inputs_names:
-                size = model.inputs_sizes[name]
+            for name in model.input_names:
+                size = model.input_sizes[name]
                 msg.append(f"............ {name} ({size})")
             msg.append("........ Outputs:")
-            for name in model.outputs_names:
-                size = model.outputs_sizes[name]
+            for name in model.output_names:
+                size = model.output_sizes[name]
                 msg.append(f"............ {name} ({size})")
         return "\n".join(msg)
 

@@ -142,13 +142,13 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         dataset: Dataset,
-        variables_names: Iterable[str] | None = None,
+        variable_names: Iterable[str] | None = None,
         name: str | None = None,
     ) -> None:
         """
         Args:
             dataset: A dataset.
-            variables_names: The variables of interest.
+            variable_names: The variables of interest.
                 Default: consider all the variables available in the dataset.
             name: A name for the object.
                 Default: use the concatenation of the class and dataset names.
@@ -160,7 +160,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         LOGGER.info(msg)
         self.dataset = dataset
         self.n_samples = dataset.n_samples
-        self.names = variables_names or dataset.variables
+        self.names = variable_names or dataset.variables
         self.n_variables = len(self.names)
 
     def __str__(self) -> str:

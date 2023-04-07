@@ -61,7 +61,7 @@ class MDOLinearFunction(MDOFunction):
         coefficients: ArrayType,
         name: str,
         f_type: str | None = None,
-        args: Sequence[str] | None = None,
+        input_names: Sequence[str] | None = None,
         value_at_zero: OutputType = 0.0,
         output_names: Sequence[str] | None = None,
         expr: str | None = None,
@@ -73,7 +73,7 @@ class MDOLinearFunction(MDOFunction):
             f_type: The type of the linear function among
                 :attr:`.MDOFunction.FunctionType`.
                 If ``None``, the linear function will have no type.
-            args: The names of the inputs of the linear function.
+            input_names: The names of the inputs of the linear function.
                 If ``None``, the inputs of the linear function will have no names.
             value_at_zero: The value :math:`b` of the linear function output at zero.
             output_names: The names of the outputs of the function.
@@ -87,14 +87,16 @@ class MDOLinearFunction(MDOFunction):
         self.__initial_expression = expr
         if expr is None:
             # Generate the arguments strings
-            new_args = self.__class__.generate_args(input_dim, args)
+            new_input_names = self.__class__.generate_input_names(
+                input_dim, input_names
+            )
             # Generate the expression string
             if output_dim == 1:
-                expr = self._generate_1d_expr(new_args)
+                expr = self._generate_1d_expr(new_input_names)
             else:
-                expr = self._generate_nd_expr(new_args)
+                expr = self._generate_nd_expr(new_input_names)
         else:
-            new_args = args
+            new_input_names = input_names
 
         super().__init__(
             self._func_to_wrap,
@@ -102,9 +104,9 @@ class MDOLinearFunction(MDOFunction):
             f_type=f_type,
             jac=self._jac_to_wrap,
             expr=expr,
-            args=new_args,
+            input_names=new_input_names,
             dim=output_dim,
-            outvars=output_names,
+            output_names=output_names,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> OutputType:
@@ -181,11 +183,11 @@ class MDOLinearFunction(MDOFunction):
         else:
             raise ValueError("Value at zero must be an ndarray or a number.")
 
-    def _generate_1d_expr(self, args: Sequence[str]) -> str:
+    def _generate_1d_expr(self, input_names: Sequence[str]) -> str:
         """Generate the literal expression of the linear function in scalar form.
 
         Args:
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
 
         Returns:
             The literal expression of the linear function in scalar form.
@@ -210,7 +212,7 @@ class MDOLinearFunction(MDOFunction):
                 if abs(coefficient) != 1.0:
                     strings.append(f"{pattern.format(abs(coefficient))}*")
                 # Add argument string
-                strings.append(args[index])
+                strings.append(input_names[index])
 
         # Add the offset expression
         value_at_zero = pattern.format(self._value_at_zero[0])
@@ -224,16 +226,16 @@ class MDOLinearFunction(MDOFunction):
 
         return "".join(strings)
 
-    def _generate_nd_expr(self, args: Sequence[str]) -> str:
+    def _generate_nd_expr(self, input_names: Sequence[str]) -> str:
         """Generate the literal expression of the linear function in matrix form.
 
         Args:
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
 
         Returns:
             The literal expression of the linear function in matrix form.
         """
-        max_args_len = max(len(arg) for arg in args)
+        max_input_name_len = max(len(input_name) for input_name in input_names)
         out_dim, in_dim = self._coefficients.shape
         strings = []
         for i in range(max(out_dim, in_dim)):
@@ -249,7 +251,9 @@ class MDOLinearFunction(MDOFunction):
             else:
                 strings.append(" " + " ".join([" " * 3] * in_dim) + " ")
             # vector line
-            strings.append(f"[{args[i]}]" if i < in_dim else " " * (max_args_len + 2))
+            strings.append(
+                f"[{input_names[i]}]" if i < in_dim else " " * (max_input_name_len + 2)
+            )
             # sign
             strings.append(" + " if i == 0 else "   ")
             # value at zero
@@ -264,7 +268,7 @@ class MDOLinearFunction(MDOFunction):
             -self._coefficients,
             f"-{self.name}",
             self.f_type,
-            self.args,
+            self.input_names,
             -self._value_at_zero,
             expr=self.__initial_expression,
         )
@@ -274,7 +278,7 @@ class MDOLinearFunction(MDOFunction):
             self._coefficients,
             self.name,
             self.f_type,
-            self.args,
+            self.input_names,
             self._value_at_zero + value,
             expr=self.__initial_expression,
         )
@@ -310,7 +314,7 @@ class MDOLinearFunction(MDOFunction):
         return self.__class__(
             self.coefficients[:, active_indexes],
             f"{self.name}_restriction",
-            args=[self.args[i] for i in active_indexes],
+            input_names=[self.input_names[i] for i in active_indexes],
             value_at_zero=(
                 matmul(frozen_coefficients, frozen_values) + self._value_at_zero
             ),

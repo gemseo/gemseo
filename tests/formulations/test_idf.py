@@ -43,7 +43,7 @@ def test_build_func_from_disc():
         SobieskiStructure("complex128"),
     ]
     idf = IDF(disciplines, "y_4", pb.design_space)
-    x_names = idf.get_optim_variables_names()
+    x_names = idf.get_optim_variable_names()
     x_dict = pb.get_default_inputs(x_names)
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 

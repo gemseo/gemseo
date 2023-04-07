@@ -323,24 +323,24 @@ def test_generate_groups_menu_html(n2_json):
     assert html == expected_html
 
 
-def test_get_disciplines_names(n2_json):
-    """Check the private static method get_disciplines_names.
+def test_get_discipline_names(n2_json):
+    """Check the private static method get_discipline_names.
 
     Args:
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
-    assert n2_json._get_disciplines_names() == ["D3", "D1", "D2"]
+    assert n2_json._get_discipline_names() == ["D3", "D1", "D2"]
 
 
-def test_compute_variables_sizes(n2_json):
-    """Check the private static method compute_variables_sizes.
+def test_compute_variable_sizes(n2_json):
+    """Check the private static method compute_variable_sizes.
 
     Args:
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
-    assert n2_json._compute_variables_sizes() == {"y12": "n/a", "y21": "n/a"}
+    assert n2_json._compute_variable_sizes() == {"y12": "n/a", "y21": "n/a"}
 
 
 def test_compute_groups(n2_json):

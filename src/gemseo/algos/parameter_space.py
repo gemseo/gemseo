@@ -175,7 +175,7 @@ class ParameterSpace(DesignSpace):
         Returns:
             True is the variable is deterministic.
         """
-        deterministic = set(self.variables_names) - set(self.uncertain_variables)
+        deterministic = set(self.variable_names) - set(self.uncertain_variables)
         return variable in deterministic
 
     def __update_parameter_space(
@@ -187,7 +187,7 @@ class ParameterSpace(DesignSpace):
         Args:
             variable: The name of the random variable.
         """
-        if variable not in self.variables_names:
+        if variable not in self.variable_names:
             l_b = self.distributions[variable].math_lower_bound
             u_b = self.distributions[variable].math_upper_bound
             value = self.distributions[variable].mean
@@ -318,7 +318,7 @@ class ParameterSpace(DesignSpace):
         if as_dict:
             sample = [
                 split_array_to_dict_of_arrays(
-                    data_array, self.variables_sizes, self.uncertain_variables
+                    data_array, self.variable_sizes, self.uncertain_variables
                 )
                 for data_array in sample
             ]
@@ -395,7 +395,7 @@ class ParameterSpace(DesignSpace):
                 if not isinstance(value, ndarray):
                     raise TypeError(error_msg)
 
-                if value.shape[-1] != self.variables_sizes[variable]:
+                if value.shape[-1] != self.variable_sizes[variable]:
                     raise ValueError(error_msg)
 
                 if (value > 1.0).any() or (value < 0.0).any():
@@ -404,13 +404,13 @@ class ParameterSpace(DesignSpace):
     def __str__(self) -> str:
         table = super().get_pretty_table()
         distribution = []
-        for variable in self.variables_names:
+        for variable in self.variable_names:
             if variable in self.uncertain_variables:
                 dist = self.distributions[variable]
                 for _ in range(dist.dimension):
                     distribution.append(str(dist))
             else:
-                for _ in range(self.variables_sizes[variable]):
+                for _ in range(self.variable_sizes[variable]):
                     distribution.append(self._BLANK)
 
         table.add_column(self._INITIAL_DISTRIBUTION, distribution)
@@ -439,7 +439,7 @@ class ParameterSpace(DesignSpace):
         mean = []
         std = []
         rnge = []
-        for variable in self.variables_names:
+        for variable in self.variable_names:
             if variable in self.uncertain_variables:
                 dist = self.distributions[variable]
                 tmp_mean = dist.mean
@@ -456,7 +456,7 @@ class ParameterSpace(DesignSpace):
                     rnge.append(tmp_range[dim])
                     support.append(tmp_support[dim])
             else:
-                for _ in range(self.variables_sizes[variable]):
+                for _ in range(self.variable_sizes[variable]):
                     distribution.append(self._BLANK)
                     transformation.append(self._BLANK)
                     mean.append(self._BLANK)
@@ -516,8 +516,8 @@ class ParameterSpace(DesignSpace):
         return self.__unnormalize_vect(x_vect, no_check)
 
     def __unnormalize_vect(self, x_vect, no_check):
-        data_names = self.variables_names
-        data_sizes = self.variables_sizes
+        data_names = self.variable_names
+        data_sizes = self.variable_sizes
         x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
         x_u = self.evaluate_cdf(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
@@ -584,8 +584,8 @@ class ParameterSpace(DesignSpace):
         return self.__normalize_vect(x_vect)
 
     def __normalize_vect(self, x_vect):
-        data_names = self.variables_names
-        data_sizes = self.variables_sizes
+        data_names = self.variable_names
+        data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
         x_n = self.evaluate_cdf(dict_sample)
@@ -601,7 +601,7 @@ class ParameterSpace(DesignSpace):
         """The deterministic variables."""
         return [
             variable
-            for variable in self.variables_names
+            for variable in self.variable_names
             if variable not in self.uncertain_variables
         ]
 
@@ -724,7 +724,7 @@ class ParameterSpace(DesignSpace):
         self,
         name: str,
     ) -> DesignSpace.DesignVariable | RandomVariable:
-        if name not in self.variables_names:
+        if name not in self.variable_names:
             raise KeyError(f"Variable '{name}' is not known.")
 
         if self.is_uncertain(name):

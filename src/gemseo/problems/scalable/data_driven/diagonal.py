@@ -155,11 +155,9 @@ class ScalableDiagonalModel(ScalableModel):
         :rtype: dict
         """
         input_value = input_value or self.default_inputs
-        input_value = concatenate_dict_of_arrays_to_array(
-            input_value, self.inputs_names
-        )
+        input_value = concatenate_dict_of_arrays_to_array(input_value, self.input_names)
         scal_func = self.model.get_scalable_function
-        return {fname: scal_func(fname)(input_value) for fname in self.outputs_names}
+        return {fname: scal_func(fname)(input_value) for fname in self.output_names}
 
     def scalable_derivatives(self, input_value=None):
         """Evaluate the scalable derivatives.
@@ -170,11 +168,9 @@ class ScalableDiagonalModel(ScalableModel):
         :rtype: dict
         """
         input_value = input_value or self.default_inputs
-        input_value = concatenate_dict_of_arrays_to_array(
-            input_value, self.inputs_names
-        )
+        input_value = concatenate_dict_of_arrays_to_array(input_value, self.input_names)
         scal_der = self.model.get_scalable_derivative
-        return {fname: scal_der(fname)(input_value) for fname in self.outputs_names}
+        return {fname: scal_der(fname)(input_value) for fname in self.output_names}
 
     def build_model(self) -> ScalableDiagonalApproximation:
         """Build model with original sizes for input and output variables.
@@ -193,9 +189,9 @@ class ScalableDiagonalModel(ScalableModel):
         """Builds all the required functions from the original dataset."""
         t_scaled = {}
         f_scaled = {}
-        for function_name in self.outputs_names:
+        for function_name in self.output_names:
             t_sc, f_sc = self.model.build_scalable_function(
-                function_name, self.data, self.inputs_names
+                function_name, self.data, self.input_names
             )
             t_scaled[function_name] = t_sc
             f_scaled[function_name] = f_sc
@@ -226,8 +222,8 @@ class ScalableDiagonalModel(ScalableModel):
         :rtype: ndarray
         """
         matrix = None
-        for output_name in self.outputs_names:
-            row = hstack([dependency[output_name][inpt] for inpt in self.inputs_names])
+        for output_name in self.output_names:
+            row = hstack([dependency[output_name][inpt] for inpt in self.input_names])
             matrix = row if matrix is None else vstack((matrix, row))
         return matrix.T
 
@@ -253,8 +249,8 @@ class ScalableDiagonalModel(ScalableModel):
         :param bool png: if True, the file format is PNG. Otherwise, use PDF.
             Default: False.
         """
-        inputs_positions = self.__get_variables_locations(self.inputs_names)
-        outputs_positions = self.__get_variables_locations(self.outputs_names)
+        inputs_positions = self.__get_variables_locations(self.input_names)
+        outputs_positions = self.__get_variables_locations(self.output_names)
         dependency = self.model.io_dependency
         dependency_matrix = self.__convert_dependency_to_array(dependency)
         is_binary_matrix = array_equal(
@@ -267,9 +263,9 @@ class ScalableDiagonalModel(ScalableModel):
         fig, axes = plt.subplots()
         axes.matshow(dependency_matrix, cmap="Greys", vmin=0)
         axes.set_yticks(inputs_positions)
-        axes.set_yticklabels(self.inputs_names)
+        axes.set_yticklabels(self.input_names)
         axes.set_xticks(outputs_positions)
-        axes.set_xticklabels(self.outputs_names, ha="left", rotation="vertical")
+        axes.set_xticklabels(self.output_names, ha="left", rotation="vertical")
         axes.tick_params(axis="both", which="both", length=0)
         for pos in inputs_positions[1:]:
             axes.axhline(y=pos - 0.5, color="r", linewidth=0.5)
@@ -335,7 +331,7 @@ class ScalableDiagonalModel(ScalableModel):
         :param bool png: if True, the file format is PNG. Otherwise, use PDF.
             Default: False.
         """
-        function_names = varnames or self.outputs_names
+        function_names = varnames or self.output_names
         x_vals = arange(0.0, 1.0 + step, step)
         fnames = []
         for func in function_names:
@@ -380,8 +376,8 @@ class ScalableDiagonalModel(ScalableModel):
         """
         npseed(self.parameters["seed"])
         io_dependency = self.parameters["group_dep"] or {}
-        for function_name in self.outputs_names:
-            input_names = io_dependency.get(function_name, self.inputs_names)
+        for function_name in self.output_names:
+            input_names = io_dependency.get(function_name, self.input_names)
             io_dependency[function_name] = input_names
 
         if self.parameters.get("inpt_dep") is None:
@@ -393,7 +389,7 @@ class ScalableDiagonalModel(ScalableModel):
         # If an output function does not have any dependency with inputs,
         # add a random dependency if independent outputs are forbidden
         if self.parameters["force_input_dependency"]:
-            for function_name in self.outputs_names:
+            for function_name in self.output_names:
                 for function_component in range(self.sizes.get(function_name)):
                     self.__complete_random_dep(
                         io_dep, function_name, function_component, io_dependency
@@ -402,7 +398,7 @@ class ScalableDiagonalModel(ScalableModel):
         # If an input parameter does not have any dependency with output
         # functions, add a random dependency if unused inputs are not allowed
         if not self.parameters["allow_unused_inputs"]:
-            for input_name in self.inputs_names:
+            for input_name in self.input_names:
                 for input_component in range(self.sizes.get(input_name)):
                     self.__complete_random_dep(
                         io_dep, input_name, input_component, io_dependency
@@ -424,13 +420,13 @@ class ScalableDiagonalModel(ScalableModel):
             "either -1 or a real number between 0 and 1."
         )
         r_io_dependency = {}
-        for function_name in self.outputs_names:
+        for function_name in self.output_names:
             fill_factor = self.parameters["fill_factor"].get(function_name, 0.7)
             if fill_factor != -1.0 and (fill_factor < 0.0 or fill_factor > 1):
                 raise TypeError(error_msg)
             function_size = self.sizes.get(function_name)
             r_io_dependency[function_name] = {}
-            for input_name in self.inputs_names:
+            for input_name in self.input_names:
                 input_size = self.sizes.get(input_name)
                 if input_name in io_dependency[function_name]:
                     if 0 <= fill_factor <= 1:
@@ -455,7 +451,7 @@ class ScalableDiagonalModel(ScalableModel):
         :rtype: dict(int)
         """
         out_map = {}
-        for function_name in self.outputs_names:
+        for function_name in self.output_names:
             original_function_size = self.original_sizes.get(function_name)
             function_size = self.sizes.get(function_name)
             out_map[function_name] = randint(original_function_size, size=function_size)
@@ -474,7 +470,7 @@ class ScalableDiagonalModel(ScalableModel):
             Default: None.
         :type io_dep: dict(list(str))
         """
-        is_input = dataname in self.inputs_names
+        is_input = dataname in self.input_names
         if is_input:
             varnames = []
             for function_name, inputs in io_dep.items():

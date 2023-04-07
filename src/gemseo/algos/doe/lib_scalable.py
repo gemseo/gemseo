@@ -113,10 +113,10 @@ class DiagonalDOE(DOELibrary):
         if reverse is None:
             reverse = []
 
-        sizes = options[self._VARIABLES_SIZES]
+        sizes = options[self._VARIABLE_SIZES]
         name_by_index = {}
         start = 0
-        for name in options[self._VARIABLES_NAMES]:
+        for name in options[self._VARIABLE_NAMES]:
             for index in range(start, start + sizes[name]):
                 name_by_index[index] = name
             start += sizes[name]

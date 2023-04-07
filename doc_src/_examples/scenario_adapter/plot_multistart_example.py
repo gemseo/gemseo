@@ -66,7 +66,7 @@ scenario.add_constraint("cstr", "ineq")
 # %%
 # Create the scenario adapter
 # ---------------------------
-dv_names = scenario.formulation.opt_problem.design_space.variables_names
+dv_names = scenario.formulation.opt_problem.design_space.variable_names
 adapter = MDOScenarioAdapter(
     scenario, dv_names, ["obj", "cstr"], set_x0_before_opt=True
 )

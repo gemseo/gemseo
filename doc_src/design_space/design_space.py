@@ -40,7 +40,7 @@ design_space.add_variable("x6", value=ones(1))
 design_space.add_variable(
     "x7", size=2, var_type="integer", value=array([0, 1]), l_b=-ones(2), u_b=ones(2)
 )
-print(design_space.get_indexed_variables_names())
+print(design_space.get_indexed_variable_names())
 print(design_space)
 print("normalize", design_space.normalize)
 design_space.remove_variable("x4")
@@ -88,7 +88,7 @@ print("normalize", design_space.normalize)
 print("active", design_space.get_active_bounds())
 print("active", design_space.get_active_bounds(array([1, 10, 1, 1])))
 
-print(design_space.get_indexed_variables_names())
+print(design_space.get_indexed_variable_names())
 
 print(design_space.get_current_value())
 design_space.to_complex()

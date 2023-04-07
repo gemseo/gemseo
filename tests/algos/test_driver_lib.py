@@ -115,9 +115,9 @@ def test_require_grad():
 
     with concretize_classes(MyDriver):
         with pytest.raises(ValueError, match="Algorithm toto is not available."):
-            MyDriver().is_algo_requires_grad("toto")
+            MyDriver().requires_gradient("toto")
 
-        assert MyDriver().is_algo_requires_grad("SLSQP")
+        assert MyDriver().requires_gradient("SLSQP")
 
 
 def test_new_iteration_callback_xvect(caplog):

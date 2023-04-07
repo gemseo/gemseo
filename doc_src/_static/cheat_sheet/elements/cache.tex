@@ -30,7 +30,7 @@ Cache inputs and outputs in an HDF5 file:
 from gemseo.core.cache import HDF5Cache
 in_data = {'x':array([1.]), 'y':array([2.,3.])}
 out_data = {'z': array([-6])}
-cache = HDF5Cache('file.h5', 'node')
+cache = HDF5Cache(hdf_file_path='file.h5', hdf_node_path='node')
 cache[in_data] = out_data
 \end{python}
 Get cached data:

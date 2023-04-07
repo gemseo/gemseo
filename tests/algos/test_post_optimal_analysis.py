@@ -86,9 +86,9 @@ class TestPostOptimalAnalysis(unittest.TestCase):
                 "f",
                 jac=lambda xy: 2.0 * xy,
                 expr="x^2+y^2+p^2",
-                args=["x", "y"],
+                input_names=["x", "y"],
                 dim=1,
-                outvars=["f"],
+                output_names=["f"],
             )
         else:
             obj_func = MDOFunction(
@@ -96,9 +96,9 @@ class TestPostOptimalAnalysis(unittest.TestCase):
                 "f",
                 jac=lambda xy: -2.0 * xy,
                 expr="-x^2-y^2-p^2",
-                args=["x", "y"],
+                input_names=["x", "y"],
                 dim=1,
-                outvars=["f"],
+                output_names=["f"],
             )
         opt_problem.objective = obj_func
         ineq_func = MDOFunction(
@@ -106,7 +106,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             "g",
             jac=lambda _: array([-1.0, -1.0]),
             expr="p-x-y",
-            args=["x", "y"],
+            input_names=["x", "y"],
             dim=1,
         )
         opt_problem.add_ineq_constraint(ineq_func)
@@ -115,7 +115,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             "h",
             jac=lambda _: array([p, -1.0]),
             expr="p*x-y",
-            args=["x", "y"],
+            input_names=["x", "y"],
             dim=1,
         )
         opt_problem.add_eq_constraint(eq_func)
@@ -137,7 +137,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
 
         # Pass a multi-named objective
         opt_problem = self.get_problem()
-        opt_problem.objective.outvars = ["f", "f"]
+        opt_problem.objective.output_names = ["f", "f"]
         self.assertRaises(ValueError, PostOptimalAnalysis, opt_problem)
 
     def test_invalid_output(self):
