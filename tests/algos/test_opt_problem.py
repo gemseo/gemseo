@@ -26,6 +26,7 @@ from unittest import mock
 
 import numpy as np
 import pytest
+from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
@@ -42,6 +43,7 @@ from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
@@ -1767,3 +1769,28 @@ def test_nan_get_violation_criteria(cstr_type):
 
     opt = problem.get_optimum()
     assert opt[0] == 1.0
+
+
+def test_is_multi_objective():
+    assert not BinhKorn().is_mono_objective
+
+    design_space = create_design_space()
+    design_space.add_variable("x", 1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: array([x, x]), "two")
+    with pytest.raises(
+        ValueError, match="Cannot determine the dimension of the objective."
+    ):
+        problem.is_mono_objective
+
+    problem.objective(1.0)
+    assert not problem.is_mono_objective
+
+    problem.objective._dim = 0
+    with pytest.raises(
+        ValueError, match="Cannot determine the dimension of the objective."
+    ):
+        problem.is_mono_objective
+
+    problem.objective.output_names = ["x", "x"]
+    assert not problem.is_mono_objective
