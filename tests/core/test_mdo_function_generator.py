@@ -21,7 +21,9 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
@@ -58,7 +60,7 @@ def test_get_values_array_from_dict():
 def test_get_function():
     """"""
     sr = SobieskiMission()
-    gen = MDOFunctionGenerator(sr)
+    gen = MDODisciplineAdapterGenerator(sr)
     gen.get_function(None, None)
     args = [["x_shared"], ["y_4"]]
     gen.get_function(*args)
@@ -74,13 +76,13 @@ def test_get_function():
 
 def test_instanciation():
     """"""
-    MDOFunctionGenerator(None)
+    MDODisciplineAdapterGenerator(None)
 
 
 def test_range_discipline():
     """"""
     sr = SobieskiMission()
-    gen = MDOFunctionGenerator(sr)
+    gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     x_shared = sr.default_inputs["x_shared"]
     range_ = range_f_z(x_shared).real
@@ -93,7 +95,7 @@ def test_range_discipline():
 def test_grad_ko():
     """"""
     sr = SobieskiMission()
-    gen = MDOFunctionGenerator(sr)
+    gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     x_shared = sr.default_inputs["x_shared"]
     range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-4)
@@ -106,7 +108,7 @@ def test_grad_ko():
 def test_wrong_default_inputs():
     sr = SobieskiMission()
     sr.default_inputs = {"y_34": array([1])}
-    gen = MDOFunctionGenerator(sr)
+    gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
         range_f_z(array([1.0]))
@@ -120,7 +122,7 @@ def test_wrong_jac():
         sr.jac["y_4"]["x_shared"] = sr.jac["y_4"]["x_shared"][:, :1]
 
     sr._compute_jacobian = _compute_jacobian_short
-    gen = MDOFunctionGenerator(sr)
+    gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
         range_f_z.jac(sr.default_inputs["x_shared"])
@@ -134,7 +136,7 @@ def test_wrong_jac2():
         sr.jac["y_4"]["x_shared"] = ones((1, 20))
 
     sr._compute_jacobian = _compute_jacobian_long
-    gen = MDOFunctionGenerator(sr)
+    gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
         range_f_z.jac(sr.default_inputs["x_shared"])

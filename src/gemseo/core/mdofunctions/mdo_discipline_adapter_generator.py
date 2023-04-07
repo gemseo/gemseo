@@ -17,7 +17,7 @@
 #                        documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A class to creat MDOFunctions from MDODisciplines."""
+"""A class to create :class:`.MDOFunction` objects from an :class:`.MDODiscipline`."""
 from __future__ import annotations
 
 import logging
@@ -25,16 +25,13 @@ from numbers import Number
 from typing import Callable
 from typing import Mapping
 from typing import Sequence
-from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.make_function import MakeFunction
+from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
 
-if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,20 +39,17 @@ OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
-class MDOFunctionGenerator:
-    """Generator of :class:`.MDOFunction` objects from a :class:`.MDODiscipline`.
+class MDODisciplineAdapterGenerator:
+    """Generator of :class:`.MDOFunction` objects executing a :class:`.MDODiscipline`.
 
-    It creates a :class:`.MDOFunction`
+    It creates a :class:`.MDODisciplineAdapter`
     evaluating some of the outputs of the discipline
     from some of its
 
     It uses closures to generate functions instances from a discipline execution.
     """
 
-    def __init__(
-        self,
-        discipline: MDODiscipline,
-    ) -> None:
+    def __init__(self, discipline: MDODiscipline) -> None:
         """
         Args:
             discipline: The discipline from which the generator builds the functions.
@@ -68,8 +62,8 @@ class MDOFunctionGenerator:
         output_names: Sequence[str],
         default_inputs: Mapping[str, ndarray] | None = None,
         differentiable: bool = True,
-    ) -> MDOFunction:
-        """Build a function from a discipline input and output lists.
+    ) -> MDODisciplineAdapter:
+        """Build a function executing a discipline for some inputs and outputs.
 
         Args:
             input_names: The names of the inputs of the discipline
@@ -127,4 +121,4 @@ class MDOFunctionGenerator:
             self.discipline.add_differentiated_inputs(input_names)
             self.discipline.add_differentiated_outputs(output_names)
 
-        return MakeFunction(input_names, output_names, default_inputs, self)
+        return MDODisciplineAdapter(input_names, output_names, default_inputs, self)

@@ -23,8 +23,10 @@ import re
 from typing import Mapping
 
 import pytest
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.mdofunctions.make_function import MakeFunction
+from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from numpy import array
@@ -37,7 +39,7 @@ INPUT_VECTOR = array([1.0, 1.0])
 def create_disciplinary_function(
     default_inputs: Mapping[str, ndarray] | None = None,
     names_to_sizes: Mapping[str, int] | None = None,
-) -> MakeFunction:
+) -> MDODisciplineAdapter:
     """Create a disciplinary function.
 
     Args:
@@ -55,17 +57,17 @@ def create_disciplinary_function(
     discipline = AutoPyDiscipline(my_func, py_jac=my_jac)
     discipline.add_differentiated_inputs(["x", "y"])
     discipline.add_differentiated_outputs(["z"])
-    return MakeFunction(
+    return MDODisciplineAdapter(
         ["x", "y"],
         ["z"],
         default_inputs,
-        MDOFunctionGenerator(discipline),
+        MDODisciplineAdapterGenerator(discipline),
         names_to_sizes=names_to_sizes,
     )
 
 
 @pytest.fixture
-def disciplinary_function() -> MakeFunction:
+def disciplinary_function() -> MDODisciplineAdapter:
     """A disciplinary function."""
     return create_disciplinary_function()
 
@@ -90,7 +92,7 @@ def test_error(disciplinary_function):
 
 def test_discipline_local_data(disciplinary_function):
     """Check that input sizes can be guessed from the discipline's local data."""
-    disciplinary_function._MakeFunction__discipline.local_data.update(
+    disciplinary_function._MDODisciplineAdapter__discipline.local_data.update(
         {"x": array([1.0])}
     )
     check_func_and_jac_evaluation(disciplinary_function)
@@ -98,7 +100,7 @@ def test_discipline_local_data(disciplinary_function):
 
 def test_discipline_default_inputs(disciplinary_function):
     """Check that input sizes can be guessed from the discipline's default inputs."""
-    disciplinary_function._MakeFunction__discipline.default_inputs.update(
+    disciplinary_function._MDODisciplineAdapter__discipline.default_inputs.update(
         {"x": array([1.0])}
     )
     check_func_and_jac_evaluation(disciplinary_function)

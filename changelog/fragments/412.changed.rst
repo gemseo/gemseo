@@ -1,0 +1,4 @@
+API changes:
+
+- Rename :class:`.MakeFunction` to :class:`.MDODisciplineAdapter`.
+- Rename :class:`.MDOFunctionGenerator` to :class:`.MDODisciplineAdapterGenerator`.

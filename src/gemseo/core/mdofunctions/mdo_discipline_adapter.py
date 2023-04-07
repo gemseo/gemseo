@@ -36,7 +36,9 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+    from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+        MDODisciplineAdapterGenerator,
+    )
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,15 +46,15 @@ OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
-class MakeFunction(MDOFunction):
-    """A function executing and linearizing a discipline for some inputs and outputs."""
+class MDODisciplineAdapter(MDOFunction):
+    """An :class:`.MDOFunction` executing a discipline for some inputs and outputs."""
 
     def __init__(
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
         default_inputs: Mapping[str, ndarray] | None,
-        mdo_function: MDOFunctionGenerator,
+        mdo_function: MDODisciplineAdapterGenerator,
         names_to_sizes: dict[str, int] | None = None,
     ) -> None:
         """

@@ -24,7 +24,9 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
@@ -178,11 +180,11 @@ def test_mdo_function_comparison():
     grammar_type = MDODiscipline.GrammarType.SIMPLE
 
     with_df = False
-    fct_gen = MDOFunctionGenerator(A(with_df, grammar_type))
+    fct_gen = MDODisciplineAdapterGenerator(A(with_df, grammar_type))
     fct = fct_gen.get_function(["a"], ["b"])
 
     with_df = True
-    fct_gen = MDOFunctionGenerator(A(with_df, grammar_type))
+    fct_gen = MDODisciplineAdapterGenerator(A(with_df, grammar_type))
     fct_with_df = fct_gen.get_function([to_df_key("x", "a")], [to_df_key("y", "b")])
 
     x = np.array([1.0])
@@ -216,11 +218,11 @@ def test_mdo_function_array_dispatch():
     """Compare results of data frames against NumPy arrays with MDOFunction array
     dispatch."""
     with_df = False
-    fct_gen = MDOFunctionGenerator(A2(with_df))
+    fct_gen = MDODisciplineAdapterGenerator(A2(with_df))
     fct = fct_gen.get_function(["a", "c"], ["b", "d"])
 
     with_df = True
-    fct_gen = MDOFunctionGenerator(A2(with_df))
+    fct_gen = MDODisciplineAdapterGenerator(A2(with_df))
     fct_with_df = fct_gen.get_function(
         [to_df_key("x", "a"), to_df_key("x", "c")],
         [to_df_key("y", "b"), to_df_key("y", "d")],

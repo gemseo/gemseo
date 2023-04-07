@@ -36,7 +36,7 @@ class SingleInstancePerAttributeId(type):
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
-    # function.MDOFunctionGenerator should have self as first parameter"
+    # function.MDODisciplineAdapterGenerator should have self as first parameter"
     def __call__(cls, *args, **kwargs):  # noqa:D102
         # id = memory address of the object, which is unique
         if not args:

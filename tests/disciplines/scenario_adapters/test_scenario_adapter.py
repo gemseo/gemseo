@@ -30,7 +30,9 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import (
     MDOObjectiveScenarioAdapter,
@@ -99,7 +101,7 @@ def test_adapter(scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
-    gen = MDOFunctionGenerator(adapter)
+    gen = MDODisciplineAdapterGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
     f_x1 = func(x_shared)
@@ -116,7 +118,7 @@ def test_adapter_set_x0_before_opt(scenario):
     inputs = ["x_1", "x_2", "x_3", "x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_x0_before_opt=True)
-    gen = MDOFunctionGenerator(adapter)
+    gen = MDODisciplineAdapterGenerator(adapter)
     x_shared = array([0.25, 1.0, 1.0, 0.5, 0.09, 60000, 1.4, 2.5, 70, 1500])
     func = gen.get_function(inputs, outputs)
     f_x3 = func(x_shared)
