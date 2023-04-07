@@ -37,15 +37,14 @@ the original data have zero mean and unit standard deviation.
 
 Warnings:
 
-    When :math:`\text{std}(z)=0`,
+    When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)\neq 0`,
     we use :math:`\bar{z}=\frac{z}{\text{mean}(z)}-1`.
+    When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)=0`,
+    we use :math:`\bar{z}=z`.
 """
 from __future__ import annotations
 
-from numpy import mean
-from numpy import nan_to_num
 from numpy import ndarray
-from numpy import std
 from numpy import where
 
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
@@ -70,7 +69,8 @@ class StandardScaler(Scaler):
         super().__init__(name, offset, coefficient)
 
     def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
-        std_ = std(data, 0)
-        is_constant = std_ == 0
-        self.coefficient = where(is_constant, nan_to_num(1 / data[0]), 1.0 / std_)
-        self.offset = where(is_constant, -1.0, -mean(data, 0) / std_)
+        _mean = data.mean(0)
+        _std = data.std(0)
+        is_constant = _std == 0
+        self.coefficient = where(is_constant, 1 / where(_mean == 0, 1, _mean), 1 / _std)
+        self.offset = where(is_constant, where(_mean == 0, 0, -1), -_mean / _std)
