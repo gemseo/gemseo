@@ -112,10 +112,10 @@ class EmpiricalStatistics(Statistics):
     def __init__(  # noqa: D107
         self,
         dataset: Dataset,
-        variables_names: Iterable[str] | None = None,
+        variable_names: Iterable[str] | None = None,
         name: str | None = None,
     ) -> None:
-        super().__init__(dataset, variables_names, name or dataset.name)
+        super().__init__(dataset, variable_names, name or dataset.name)
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         return {name: np_max(self.dataset[name], 0) for name in self.names}

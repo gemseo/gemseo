@@ -134,11 +134,11 @@ class MDOScenarioAdapter(MDODiscipline):
         self._update_grammars()
         self._dv_in_names = None
         if set_x0_before_opt:
-            dv_names = set(self.scenario.formulation.design_space.variables_names)
+            dv_names = set(self.scenario.formulation.design_space.variable_names)
             self._dv_in_names = list(dv_names & set(self._input_names))
 
         # Set the initial bounds as default bounds
-        self._bounds_names = []
+        self._bound_names = []
         if set_bounds_before_opt:
             dspace = scenario.design_space
             lower_bounds = dspace.array_to_dict(dspace.get_lower_bounds())
@@ -151,7 +151,7 @@ class MDOScenarioAdapter(MDODiscipline):
             ]:
                 bounds = {name + suffix: val for name, val in bounds.items()}
                 self.default_inputs.update(bounds)
-                self._bounds_names.extend(bounds.keys())
+                self._bound_names.extend(bounds.keys())
 
         # Optimization functions are redefined at each run
         # since default inputs of top
@@ -213,7 +213,7 @@ class MDOScenarioAdapter(MDODiscipline):
         missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
 
         if missing_outputs:
-            dv_names = opt_problem.design_space.variables_names
+            dv_names = opt_problem.design_space.variable_names
             miss_dvs = set(dv_names) & set(missing_outputs)
             if miss_dvs:
                 dv_gram = JSONGrammar("dvs")
@@ -259,7 +259,7 @@ class MDOScenarioAdapter(MDODiscipline):
         base_dict.update(
             {
                 self.get_cstr_mult_name(cstr_name): zeros(1)
-                for cstr_name in problem.get_constraints_names()
+                for cstr_name in problem.get_constraint_names()
             }
         )
 
@@ -335,7 +335,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Set the bounds of the sub-scenario
         if self._set_bounds_before_opt:
-            for name in design_space.variables_names:
+            for name in design_space.variable_names:
                 # Set the lower bound
                 lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
                 lower_bound = self.local_data[name + lower_suffix]
@@ -371,7 +371,9 @@ class MDOScenarioAdapter(MDODiscipline):
         if last_eval_not_opt:
             # Revaluate all functions at optimum
             # To re execute all disciplines and get the right data
-            opt_problem.evaluate_functions(x_opt, normalize=False, no_db_no_norm=True)
+            opt_problem.evaluate_functions(
+                x_opt, normalize=False, no_db_no_norm=True, eval_observables=False
+            )
 
         # Retrieves top-level discipline outputs
         self._retrieve_top_level_outputs()
@@ -471,15 +473,15 @@ class MDOScenarioAdapter(MDODiscipline):
                 or if there is non-differentiable outputs.
         """
         opt_problem = self.scenario.formulation.opt_problem
-        objective_names = self.scenario.formulation.opt_problem.objective.outvars
+        objective_names = self.scenario.formulation.opt_problem.objective.output_names
         if len(objective_names) != 1:
             raise ValueError("The objective must be single-valued.")
 
         # Check the required inputs
         if inputs is None:
-            inputs = set(self._input_names + self._bounds_names)
+            inputs = set(self._input_names + self._bound_names)
         else:
-            not_inputs = set(inputs) - set(self._input_names) - set(self._bounds_names)
+            not_inputs = set(inputs) - set(self._input_names) - set(self._bound_names)
             if not_inputs:
                 raise ValueError(
                     "The following are not inputs of the adapter: {}.".format(
@@ -487,7 +489,7 @@ class MDOScenarioAdapter(MDODiscipline):
                     )
                 )
         # N.B the adapter is assumed constant w.r.t. bounds
-        bound_inputs = set(inputs) & set(self._bounds_names)
+        bound_inputs = set(inputs) & set(self._bound_names)
 
         # Check the required outputs
         if outputs is None:
@@ -557,8 +559,10 @@ class MDOScenarioAdapter(MDODiscipline):
         # Gather the names of the functions to differentiate
         opt_problem = self.scenario.formulation.opt_problem
         if func_names is None:
-            func_names = opt_problem.objective.outvars + [
-                out_var for cstr in opt_problem.constraints for out_var in cstr.outvars
+            func_names = opt_problem.objective.output_names + [
+                output_name
+                for constraint in opt_problem.constraints
+                for output_name in constraint.output_names
             ]
 
         # Identify the disciplines that compute the functions
@@ -599,15 +603,13 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def add_outputs(
         self,
-        outputs_names: Iterable[str],
+        output_names: Iterable[str],
     ) -> None:
         """Add outputs to the scenario adapter.
 
         Args:
-            outputs_names: The names of the outputs to be added.
+            output_names: The names of the outputs to be added.
         """
-        names_to_add = [
-            name for name in outputs_names if name not in self._output_names
-        ]
+        names_to_add = [name for name in output_names if name not in self._output_names]
         self._output_names.extend(names_to_add)
         self._update_grammars()

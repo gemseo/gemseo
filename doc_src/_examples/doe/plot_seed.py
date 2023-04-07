@@ -110,7 +110,7 @@ print(scenario._lib.seed)
 # Basic
 # ~~~~~
 # Let us consider a :class:`.MDOFunction` representing the function :math:`y=x^2`:
-function = MDOFunction(lambda x: x**2, "f", args=["x"], outvars=["y"])
+function = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
 
 # %%
 # and defined over the unit interval :math:`x\in[0,1]`:

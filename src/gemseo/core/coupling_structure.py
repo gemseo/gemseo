@@ -506,14 +506,14 @@ class MDOCouplingStructure:
             source_position = self.disciplines.index(source)
             destination_position = self.disciplines.index(destination)
             if show_data_names:
-                variables_names = plt.text(
+                variable_names = plt.text(
                     destination_position + 0.5,
                     n_disciplines - source_position - 0.5,
                     "\n".join(variables),
                     verticalalignment="center",
                     horizontalalignment="center",
                 )
-                self._check_size_text(variables_names, fig, n_disciplines)
+                self._check_size_text(variable_names, fig, n_disciplines)
             else:
                 circle = plt.Circle(
                     (

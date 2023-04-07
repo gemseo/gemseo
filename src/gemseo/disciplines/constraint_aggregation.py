@@ -42,7 +42,7 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
-class ConstrAggegationDisc(MDODiscipline):
+class ConstraintAggregation(MDODiscipline):
     """A discipline that aggregates the constraints computed by other disciplines.
 
     An efficient alternative to constraint aggregation in the optimization problem

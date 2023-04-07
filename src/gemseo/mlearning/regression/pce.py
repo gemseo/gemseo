@@ -255,7 +255,7 @@ class PCERegressor(MLRegressionAlgo):
         )
 
         if use_quadrature and not data:
-            self.input_names = probability_space.variables_names
+            self.input_names = probability_space.variable_names
 
         if data:
             missing = set(self.input_names) - set(probability_space.uncertain_variables)
@@ -286,7 +286,7 @@ class PCERegressor(MLRegressionAlgo):
                 f"are not instances of OTDistribution."
             )
 
-        self.__variable_sizes = probability_space.variables_sizes
+        self.__variable_sizes = probability_space.variable_sizes
         self.__input_dimension = sum(
             self.__variable_sizes[name] for name in self.input_names
         )

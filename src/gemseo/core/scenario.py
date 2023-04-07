@@ -342,13 +342,13 @@ class Scenario(MDODiscipline):
         )
         self.formulation_name = formulation
 
-    def get_optim_variables_names(self) -> list[str]:
+    def get_optim_variable_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
 
         Returns:
             The optimization variables of the scenario.
         """
-        return self.formulation.get_optim_variables_names()
+        return self.formulation.get_optim_variable_names()
 
     def get_optimum(self) -> OptimizationResult | None:
         """Return the optimization results.

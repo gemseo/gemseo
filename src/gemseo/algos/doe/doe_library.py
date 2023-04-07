@@ -95,8 +95,8 @@ class DOELibrary(DriverLibrary):
     N_PROCESSES = "n_processes"
     WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
     DIMENSION = "dimension"
-    _VARIABLES_NAMES = "variables_names"
-    _VARIABLES_SIZES = "variables_sizes"
+    _VARIABLE_NAMES = "variable_names"
+    _VARIABLE_SIZES = "variable_sizes"
     SEED = "seed"
     _NORMALIZE_DS = False
 
@@ -123,8 +123,8 @@ class DOELibrary(DriverLibrary):
         super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
         options[self.DIMENSION] = self.problem.dimension
-        options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
-        options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
+        options[self._VARIABLE_NAMES] = self.problem.design_space.variable_names
+        options[self._VARIABLE_SIZES] = self.problem.design_space.variable_sizes
 
         self.unit_samples = self._generate_samples(**options)
 
@@ -159,7 +159,7 @@ class DOELibrary(DriverLibrary):
             self.unit_samples, no_check=True
         )
 
-        variable_types = self.problem.design_space.variables_types
+        variable_types = self.problem.design_space.variable_types
         unique_variable_types = {t[0] for t in variable_types.values()}
 
         if len(unique_variable_types) > 1:
@@ -454,8 +454,8 @@ class DOELibrary(DriverLibrary):
             whose rows are the samples and columns the variables.
         """
         options = self.__get_algorithm_options(options, size, variables_space.dimension)
-        options[self._VARIABLES_NAMES] = variables_space.variables_names
-        options[self._VARIABLES_SIZES] = variables_space.variables_sizes
+        options[self._VARIABLE_NAMES] = variables_space.variable_names
+        options[self._VARIABLE_SIZES] = variables_space.variable_sizes
         doe = self._generate_samples(**options)
         if unit_sampling:
             return doe

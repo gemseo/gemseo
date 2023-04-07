@@ -103,14 +103,14 @@ class OptHistoryView(OptPostProcessor):
 
     def _plot(
         self,
-        variables_names: Sequence[str] | None = None,
+        variable_names: Sequence[str] | None = None,
         obj_min: float | None = None,
         obj_max: float | None = None,
         obj_relative: bool = False,
     ) -> None:
         """
         Args:
-            variables_names: The names of the variables to display.
+            variable_names: The names of the variables to display.
                 If None, use all design variables.
             obj_max: The maximum value for the objective in the plot.
                 If None, use the maximum value of the objective history.
@@ -126,11 +126,11 @@ class OptHistoryView(OptPostProcessor):
         eq_cstr_names = [c.name for c in eq_cstr]
 
         obj_history, x_history, n_iter = self._get_history(
-            self._standardized_obj_name, variables_names
+            self._standardized_obj_name, variable_names
         )
 
         # design variables
-        self._create_variables_plot(x_history, variables_names)
+        self._create_variables_plot(x_history, variable_names)
 
         # objective function
         self._create_obj_plot(
@@ -176,7 +176,7 @@ class OptHistoryView(OptPostProcessor):
     def _get_history(
         self,
         function_name: str,
-        variables_names: Sequence[str],
+        variable_names: Sequence[str],
     ) -> tuple[ndarray, ndarray, int]:
         """Access the optimization history of a function and the design variables.
 
@@ -184,7 +184,7 @@ class OptHistoryView(OptPostProcessor):
 
         Args:
             function_name: The name of the function.
-            variables_names: The names of the variables to display.
+            variable_names: The names of the variables to display.
 
         Returns:
             The function values,
@@ -195,13 +195,13 @@ class OptHistoryView(OptPostProcessor):
         f_hist = array(f_hist).real
         x_hist = array(x_hist).real
 
-        if variables_names is not None:
+        if variable_names is not None:
             # select only the interesting columns
             blocks = []
             column = 0
-            for var in self.opt_problem.design_space.variables_names:
-                if var in variables_names:
-                    size = self.opt_problem.design_space.variables_sizes[var]
+            for var in self.opt_problem.design_space.variable_names:
+                if var in variable_names:
+                    size = self.opt_problem.design_space.variable_sizes[var]
                     blocks.append(x_hist[:, column : column + size])
                     column += size
             # concatenate the blocks
@@ -242,20 +242,20 @@ class OptHistoryView(OptPostProcessor):
     def _normalize_x_hist(
         self,
         x_history: ndarray,
-        variables_names: Sequence[str],
+        variable_names: Sequence[str],
     ) -> ndarray:
         """Normalize the design variables history.
 
         Args:
             x_history: The history for the design variables.
-            variables_names: The names of the variables to display.
+            variable_names: The names of the variables to display.
 
         Returns:
             The normalized design variables array.
         """
         x_hist_n = x_history.copy()
-        lower_bounds = self.opt_problem.design_space.get_lower_bounds(variables_names)
-        upper_bounds = self.opt_problem.design_space.get_upper_bounds(variables_names)
+        lower_bounds = self.opt_problem.design_space.get_lower_bounds(variable_names)
+        upper_bounds = self.opt_problem.design_space.get_upper_bounds(variable_names)
         norm_coeff = 1 / (np_abs(upper_bounds - lower_bounds))
         for i in range(x_history.shape[0]):
             x_hist_n[i, :] = (x_hist_n[i, :] - lower_bounds) * norm_coeff
@@ -264,19 +264,19 @@ class OptHistoryView(OptPostProcessor):
     def _create_variables_plot(
         self,
         x_history: ndarray,
-        variables_names: Sequence[str],
+        variable_names: Sequence[str],
     ) -> None:
         """Create the design variables plot.
 
         Args:
              x_history: The history for the design variables.
-             variables_names: The names of the variables to display.
+             variable_names: The names of the variables to display.
         """
         n_iterations = len(x_history)
         if n_iterations < 2:
             return
         n_variables = x_history.shape[1]
-        norm_x_history = self._normalize_x_hist(x_history, variables_names)
+        norm_x_history = self._normalize_x_hist(x_history, variable_names)
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = self._get_grid_layout()
@@ -292,7 +292,7 @@ class OptHistoryView(OptPostProcessor):
             aspect="auto",
         )
         ax1.set_yticks(arange(n_variables))
-        ax1.set_yticklabels(self._get_design_variable_names(variables_names))
+        ax1.set_yticklabels(self._get_design_variable_names(variable_names))
         ax1.set_xlabel(self.x_label)
         # ax1.invert_yaxis()
 

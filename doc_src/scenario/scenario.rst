@@ -195,12 +195,12 @@ by means of the :meth:`~gemseo.create_scenario` API function:
 2.g. Get the names of design variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can use the :meth:`.Scenario.get_optim_variables_names` method of the :class:`.Scenario`
+We can use the :meth:`.Scenario.get_optim_variable_names` method of the :class:`.Scenario`
 to access formulation design variables names in a convenient way:
 
 .. code::
 
-   print(scenario.get_optim_variables_names)
+   print(scenario.get_optim_variable_names)
 
 which yields:
 

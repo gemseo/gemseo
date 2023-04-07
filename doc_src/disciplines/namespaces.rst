@@ -70,7 +70,7 @@ In terms of API this would result in the following example:
     Scenarios can be created with disciplines handling namespaces.
     The main limitation is that not all wrappers and MDO test problems are
     compatible with namespaces, which requires the modifications described at the end of this page.
-    Currently, the :class:`.AutoPyDiscipline` and :class:`.ConstrAggegationDisc` support namespaces
+    Currently, the :class:`.AutoPyDiscipline` and :class:`.ConstraintAggregation` support namespaces
     and can be used as examples.
 
 Coupling control in MDAs

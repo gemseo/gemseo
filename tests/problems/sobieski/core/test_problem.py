@@ -407,11 +407,9 @@ def test_constraints(problem):
         g_2,
         g_3,
     ) = problem._SobieskiProblem__compute_mda(x_optimum, true_cstr=True)
-    constraints_values = problem.get_sobieski_constraints(
-        g_1, g_2, g_3, true_cstr=False
-    )
-    for i in range(constraints_values.shape[0]):
-        assert constraints_values[i].real <= 0.0
+    constraint_values = problem.get_sobieski_constraints(g_1, g_2, g_3, true_cstr=False)
+    for i in range(constraint_values.shape[0]):
+        assert constraint_values[i].real <= 0.0
 
 
 def test_ineq_constraints(problem):
@@ -508,8 +506,8 @@ def test_x0_optimum(problem, dtype):
         g_2,
         g_3,
     ) = problem._SobieskiProblem__compute_mda(x0, true_cstr=True)
-    constraints_values = problem.get_sobieski_constraints(g_1, g_2, g_3)
-    assert (constraints_values <= 1e-6).all()
+    constraint_values = problem.get_sobieski_constraints(g_1, g_2, g_3)
+    assert (constraint_values <= 1e-6).all()
     assert y_4[0].real == pytest.approx(y_4_ref, abs=1e0)
 
 
@@ -535,7 +533,7 @@ def test_original_design_variables_order(design_variables, use_original_order):
 
     problem = SobieskiProblem()
     problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
-    variables_names = design_variables + coupling_variables
-    assert problem.design_space.variables_names == variables_names
-    assert problem.design_space_with_physical_naming.variables_names == variables_names
-    assert problem.design_space_with_physical_naming.variables_names == variables_names
+    variable_names = design_variables + coupling_variables
+    assert problem.design_space.variable_names == variable_names
+    assert problem.design_space_with_physical_naming.variable_names == variable_names
+    assert problem.design_space_with_physical_naming.variable_names == variable_names

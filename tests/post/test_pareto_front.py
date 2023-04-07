@@ -80,7 +80,7 @@ def test_pareto(
         "ParetoFront",
         save=False,
         file_path="power",
-        objectives=problem.get_all_functions_names(),
+        objectives=problem.get_all_function_name(),
         **kwargs,
     )
     post.figures
@@ -112,7 +112,7 @@ def test_pareto_incorrect_objective_list():
             problem,
             "ParetoFront",
             save=False,
-            objectives=problem.get_all_functions_names(),
+            objectives=problem.get_all_function_name(),
             objectives_labels=["fake_label"],
             file_path="power",
         )

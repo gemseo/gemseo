@@ -605,7 +605,7 @@ def test_cache_h5(tmp_wd):
     sm.execute({"x_shared": xs + 1e12})
     assert t0 != sm.exec_time
     # Read again the hashes
-    sm.cache = HDF5Cache(hdf_file, sm.name)
+    sm.cache = HDF5Cache(hdf_file_path=hdf_file, hdf_node_path=sm.name)
 
     with pytest.raises(ImportError):
         sm.set_cache_policy(cache_type="toto")
@@ -665,7 +665,7 @@ def test_cache_h5_jac(tmp_wd):
     jac_4 = sm.linearize(input_data, compute_all_jacobians=True, execute=False)
     assert check_jac_equals(jac_3, jac_4)
 
-    sm.cache = HDF5Cache(hdf_file, sm.name)
+    sm.cache = HDF5Cache(hdf_file_path=hdf_file, hdf_node_path=sm.name)
 
 
 def test_replace_h5_cache(tmp_wd):
@@ -1054,12 +1054,12 @@ def test_hdf5cache_twice(tmp_wd, caplog):
     """Check what happens when the cache policy is set twice at HDF5Cache."""
     discipline = MDODiscipline()
     discipline.set_cache_policy(
-        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="foo"
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_path="foo"
     )
     cache_id = id(discipline.cache)
 
     discipline.set_cache_policy(
-        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="foo"
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_path="foo"
     )
     assert id(discipline.cache) == cache_id
     _, log_level, log_message = caplog.record_tuples[0]
@@ -1071,7 +1071,7 @@ def test_hdf5cache_twice(tmp_wd, caplog):
     )
 
     discipline.set_cache_policy(
-        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_name="bar"
+        "HDF5Cache", cache_hdf_file="cache.hdf", cache_hdf_node_path="bar"
     )
     assert id(discipline.cache) != cache_id
 

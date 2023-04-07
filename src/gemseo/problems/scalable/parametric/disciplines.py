@@ -41,24 +41,24 @@ class TMDiscipline(MDODiscipline):
     """Abstract base class for disciplines in the TM problem."""
 
     @property
-    def inputs_sizes(self):
+    def input_sizes(self):
         """Sizes of the model inputs."""
-        return self.model.inputs_sizes
+        return self.model.input_sizes
 
     @property
-    def outputs_sizes(self):
+    def output_sizes(self):
         """Sizes of the model outputs."""
-        return self.model.outputs_sizes
+        return self.model.output_sizes
 
     @property
-    def inputs_names(self):
+    def input_names(self):
         """Names of the model inputs."""
-        return self.model.inputs_names
+        return self.model.input_names
 
     @property
-    def outputs_names(self):
+    def output_names(self):
         """Names of the model outputs."""
-        return self.model.outputs_names
+        return self.model.output_names
 
 
 class TMMainDiscipline(TMDiscipline):
@@ -91,8 +91,8 @@ class TMMainDiscipline(TMDiscipline):
         """
         self.model = TMMainModel(c_constraint, default_inputs)
         super().__init__(self.model.name)
-        self.input_grammar.update(self.model.inputs_names)
-        self.output_grammar.update(self.model.outputs_names)
+        self.input_grammar.update(self.model.input_names)
+        self.output_grammar.update(self.model.output_names)
         self.default_inputs = default_inputs
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
@@ -164,8 +164,8 @@ class TMSubDiscipline(TMDiscipline):
         """
         self.model = TMSubModel(index, c_shared, c_local, c_coupling, default_inputs)
         super().__init__(name=self.model.name)
-        self.input_grammar.update(self.model.inputs_names)
-        self.output_grammar.update(self.model.outputs_names)
+        self.input_grammar.update(self.model.input_names)
+        self.output_grammar.update(self.model.output_names)
         self.default_inputs = default_inputs
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 

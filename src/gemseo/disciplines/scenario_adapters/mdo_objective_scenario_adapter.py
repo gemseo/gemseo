@@ -47,7 +47,7 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
             raise ValueError("The objective function must be single-valued.")
 
         # Overwrite the adapter local data
-        objective = opt_problem.objective.outvars[0]
+        objective = opt_problem.objective.output_names[0]
         if objective in self._output_names:
             self.local_data[objective] = atleast_1d(f_opt)
 
@@ -71,6 +71,6 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
         # disciplines, but the gradients of the constraints can.
         # The objective function is assumed independent of non-optimization
         # variables.
-        obj_name = self.scenario.formulation.opt_problem.objective.outvars[0]
+        obj_name = self.scenario.formulation.opt_problem.objective.output_names[0]
         mult_cstr_jac_key = PostOptimalAnalysis.MULT_DOT_CONSTR_JAC
         self.jac[obj_name] = dict(self.jac[mult_cstr_jac_key])

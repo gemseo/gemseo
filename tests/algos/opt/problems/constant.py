@@ -54,7 +54,7 @@ class Constant(OptimizationProblem):
             name="constant",
             f_type="obj",
             jac=self.__compute_constant_jac,
-            args=["x"],
+            input_names=["x"],
         )
 
     def __compute_constant(self, x_dv: ndarray) -> ndarray:

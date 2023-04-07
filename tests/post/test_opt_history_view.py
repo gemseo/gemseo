@@ -81,7 +81,7 @@ def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
         "OptHistoryView",
         show=False,
         save=False,
-        variables_names=["x"],
+        variable_names=["x"],
         file_path="power2_2",
         obj_min=0.0,
         obj_max=5.0,

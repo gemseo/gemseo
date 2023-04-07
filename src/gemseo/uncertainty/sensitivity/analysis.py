@@ -242,7 +242,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         return scenario
 
     @property
-    def inputs_names(self) -> list[str]:
+    def input_names(self) -> list[str]:
         """The names of the inputs."""
         return self.dataset.get_names(self.dataset.INPUT_GROUP)
 
@@ -490,7 +490,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             output_name, output_component = output
 
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(
+        input_names = self._sort_and_filter_input_parameters(
             (output_name, output_component), inputs
         )
         if standardize:
@@ -499,14 +499,14 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             main_indices = self.main_indices
 
         data = []
-        for input_name in inputs_names:
+        for input_name in input_names:
             data.append(
                 [main_index[input_name] for main_index in main_indices[output_name]]
             )
 
         data = array(data)[:, :, 0]
         dataset.set_from_array(data, [output_name], sizes={output_name: data.shape[1]})
-        dataset.row_names = inputs_names
+        dataset.row_names = input_names
         mesh = linspace(0, 1, data.shape[1]) if mesh is None else mesh
         dataset.set_metadata("mesh", mesh)
         mesh_dimension = len(dataset.metadata["mesh"].shape)
@@ -580,18 +580,18 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         outputs = self._outputs_to_tuples(outputs)
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
-        data = {name: [] for name in inputs_names}
+        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
+        data = {name: [] for name in input_names}
         if standardize:
             main_indices = self.standardize_indices(self.main_indices)
         else:
             main_indices = self.main_indices
 
         for output in outputs:
-            for name in inputs_names:
+            for name in input_names:
                 data[name].append(main_indices[output[0]][output[1]][name])
 
-        for name in inputs_names:
+        for name in input_names:
             dataset.add_variable(name, vstack(data[name]))
 
         dataset.row_names = [
@@ -670,8 +670,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         outputs = self._outputs_to_tuples(outputs)
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
-        data = {name: [] for name in inputs_names}
+        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
+        data = {name: [] for name in input_names}
         if standardize:
             main_indices = self.standardize_indices(self.main_indices)
         else:
@@ -679,10 +679,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         for output in outputs:
             for name, value in main_indices[output[0]][output[1]].items():
-                if name in inputs_names:
+                if name in input_names:
                     data[name].append(value)
 
-        for name in inputs_names:
+        for name in input_names:
             dataset.add_variable(name, vstack(data[name]))
 
         dataset.row_names = [
@@ -788,8 +788,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             indices = [indices]
         methods = [self] + indices
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(output, inputs)
-        for name in inputs_names:
+        input_names = self._sort_and_filter_input_parameters(output, inputs)
+        for name in input_names:
             data = abs(
                 array(
                     [
@@ -865,10 +865,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         sizes = self.dataset.sizes
 
-        rows_names = []
-        for input_name in self.inputs_names:
+        row_names = []
+        for input_name in self.input_names:
             for input_component in range(sizes[input_name]):
-                rows_names.append(
+                row_names.append(
                     repr_variable(
                         input_name, input_component, size=self.dataset.sizes[input_name]
                     )
@@ -883,9 +883,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 variables.append(output)
                 sizes[output] = len(components)
                 for component in components:
-                    data.append(
-                        [component[name].tolist() for name in self.inputs_names]
-                    )
+                    data.append([component[name].tolist() for name in self.input_names])
                     data[-1] = [item for sublist in data[-1] for item in sublist]
             data = array(data).T
             dataset.add_group(
@@ -894,7 +892,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 variables=[f"{method}({v})" for v in variables],
                 sizes={f"{method}({v})": s for v, s in sizes.items()},
             )
-        dataset.row_names = rows_names
+        dataset.row_names = row_names
         return dataset
 
     @staticmethod

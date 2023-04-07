@@ -204,7 +204,7 @@ def test_adapter_set_bounds(scenario):
 def test_chain(scenario):
     """"""
     mda = scenario.formulation.mda
-    inputs = list(mda.get_input_data_names()) + scenario.design_space.variables_names
+    inputs = list(mda.get_input_data_names()) + scenario.design_space.variable_names
     outputs = ["x_1", "x_2", "x_3"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
 
@@ -272,7 +272,7 @@ def test_compute_jacobian_exceptions(scenario):
         adapter._compute_jacobian(outputs=["y_4", "g_2", "g_1"])
 
     # Pass a multi-valued objective
-    scenario.formulation.opt_problem.objective.outvars = ["y_4"] * 2
+    scenario.formulation.opt_problem.objective.output_names = ["y_4"] * 2
     with pytest.raises(ValueError, match="The objective must be single-valued."):
         adapter._compute_jacobian()
 
@@ -310,22 +310,22 @@ def build_prop_scenario():
 
 def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_threshold):
     opt_problem = adapter.scenario.formulation.opt_problem
-    outvars = opt_problem.objective.outvars
-    constraints = opt_problem.get_constraints_names()
+    output_names = opt_problem.objective.output_names
+    constraints = opt_problem.get_constraint_names()
 
     # Test the Jacobian accuracy as objective Jacobian
     assert adapter.check_jacobian(
-        inputs=inputs, outputs=outvars, threshold=objective_threshold
+        inputs=inputs, outputs=output_names, threshold=objective_threshold
     )
 
     # Test the Jacobian accuracy as Lagrangian Jacobian (should be better)
     disc_jac_approx = DisciplineJacApprox(adapter)
-    outputs = outvars + constraints
+    outputs = output_names + constraints
     func_approx_jac = disc_jac_approx.compute_approx_jac(outputs, inputs)
     post_opt_analysis = adapter.post_optimal_analysis
     lagr_jac = post_opt_analysis.compute_lagrangian_jac(func_approx_jac, inputs)
     assert disc_jac_approx.check_jacobian(
-        lagr_jac, outvars, inputs, adapter, threshold=lagrangian_threshold
+        lagr_jac, output_names, inputs, adapter, threshold=lagrangian_threshold
     )
 
 
@@ -376,21 +376,21 @@ def check_obj_scenario_adapter(
     dim = scenario.design_space.dimension
     problem = scenario.formulation.opt_problem
     objective = problem.objective
-    outvars = objective.outvars
+    output_names = objective.output_names
     problem.objective = MDOFunction(
         lambda _: 123.456,
         objective.name,
         MDOFunction.FunctionType.OBJ,
         lambda _: zeros(dim),
         "123.456",
-        objective.args,
+        objective.input_names,
         objective.dim,
-        outvars,
+        output_names,
     )
     adapter = MDOObjectiveScenarioAdapter(scenario, ["x_shared"], outputs)
 
     adapter.execute()
-    local_value = adapter.local_data[outvars[0]]
+    local_value = adapter.local_data[output_names[0]]
     assert (
         minimize
         and allclose(local_value, array(123.456))

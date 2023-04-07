@@ -99,7 +99,7 @@ class TestMDOFormulation(unittest.TestCase):
             f_type="ineq",
             jac=math.cos,
             expr="sin(x)",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         f.opt_problem.objective = g
 
@@ -183,7 +183,7 @@ class TestMDOFormulation(unittest.TestCase):
         ff = f.mask_x_swap_order(
             ["x_shared"],
             x_vect=np.zeros(19),
-            all_data_names=design_space.variables_names,
+            all_data_names=design_space.variable_names,
         )
         assert (ff == np.zeros(4)).all()
 
@@ -201,9 +201,9 @@ class TestMDOFormulation(unittest.TestCase):
         s1 = MDOScenario([sm], "IDF", "y_4", ds1)
         with concretize_classes(MDOFormulation):
             f2 = MDOFormulation([sm, s1], "y_4", ds2)
-        assert "x" in f2.design_space.variables_names
+        assert "x" in f2.design_space.variable_names
         f2._remove_sub_scenario_dv_from_ds()
-        assert "x" not in f2.design_space.variables_names
+        assert "x" not in f2.design_space.variable_names
 
     def test_get_obj(self):
         """"""

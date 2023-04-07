@@ -409,7 +409,7 @@ class DriverLibrary(AlgorithmLibrary):
         """
         opt_result_str = result._strings
         LOGGER.info("%s", opt_result_str[0])
-        if result.constraints_values:
+        if result.constraint_values:
             if result.is_feasible:
                 LOGGER.info("%s", opt_result_str[1])
             else:
@@ -625,22 +625,24 @@ class DriverLibrary(AlgorithmLibrary):
             status=status,
             n_obj_call=problem.objective.n_calls,
             is_feasible=is_feas,
-            constraints_values=c_opt,
+            constraint_values=c_opt,
             constraints_grad=c_opt_grad,
             optimum_index=optimum_index,
         )
 
-    # TODO: API: rename to requires_gradient?
-    def is_algo_requires_grad(self, algo_name: str):
-        """Returns True if the algorithm requires a gradient evaluation.
+    def requires_gradient(self, driver_name: str) -> bool:
+        """Check if a driver requires the gradient.
 
         Args:
-            algo_name: The name of the algorithm.
-        """
-        if algo_name not in self.descriptions:
-            raise ValueError(f"Algorithm {algo_name} is not available.")
+            driver_name: The name of the driver.
 
-        return self.descriptions[algo_name].require_gradient
+        Returns:
+            Whether the driver requires the gradient.
+        """
+        if driver_name not in self.descriptions:
+            raise ValueError(f"Algorithm {driver_name} is not available.")
+
+        return self.descriptions[driver_name].require_gradient
 
     def get_x0_and_bounds_vects(self, normalize_ds):
         """Return x0 and bounds.

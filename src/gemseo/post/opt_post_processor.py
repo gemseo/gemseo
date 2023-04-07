@@ -364,7 +364,7 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             variables = self.opt_problem.get_design_variable_names()
 
         x_names = []
-        x_sizes = self.opt_problem.design_space.variables_sizes
+        x_sizes = self.opt_problem.design_space.variable_sizes
         for variable in variables:
             x_size = x_sizes[variable]
             x_names.extend(
@@ -391,9 +391,9 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         design_space = self.opt_problem.design_space
         y_labels = []
         if variable_names is None:
-            variable_names = design_space.variables_names
+            variable_names = design_space.variable_names
         for variable_name in variable_names:
-            size = design_space.variables_sizes[variable_name]
+            size = design_space.variable_sizes[variable_name]
             name = variable_name
             if size > 1:
                 name += " (0)"

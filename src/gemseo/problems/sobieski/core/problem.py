@@ -294,18 +294,18 @@ class SobieskiProblem:
 
     def get_bounds_by_name(
         self,
-        variables_names: Sequence[str],
+        variable_names: Sequence[str],
     ) -> tuple[ndarray, ndarray]:
         """Return the lower and upper bounds of variables.
 
         Args:
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The lower and upper bounds of the variables;
             the array components keep the order of the variables.
         """
-        return self.__base.get_bounds_by_name(variables_names)
+        return self.__base.get_bounds_by_name(variable_names)
 
     def __set_indata(
         self,

@@ -99,7 +99,7 @@ class _OATSensitivity(MDODiscipline):
                 f"strictly comprised between 0 and 0.5; got {step}."
             )
         super().__init__()
-        input_names = parameter_space.variables_names
+        input_names = parameter_space.variable_names
         self.input_grammar.update(input_names)
         self.__output_names = get_all_outputs(scenario.disciplines)
         output_names = [

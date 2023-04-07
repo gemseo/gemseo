@@ -94,7 +94,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             self.__evaluation_cost_type = dict()
         elif isinstance(evaluation_cost_type, str):
             self.__evaluation_cost_type = {
-                name: evaluation_cost_type for name in problem.get_all_functions_names()
+                name: evaluation_cost_type for name in problem.get_all_function_name()
             }
         else:
             self.__evaluation_cost_type = evaluation_cost_type
@@ -133,7 +133,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
     def __add_variables(self) -> None:
         """Add the design variables to the pSeven problem."""
         design_space = self.__problem.design_space
-        for var_name in design_space.variables_names:
+        for var_name in design_space.variable_names:
             var_indexes = design_space.get_variables_indexes([var_name])
             lower_bound = self.__lower_bounds[var_indexes]
             upper_bound = self.__upper_bounds[var_indexes]
@@ -160,7 +160,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             self.add_objective(objective.name, hints)
 
         # Add the objectives gradients
-        if self.__use_gradient and objective.has_jac():
+        if self.__use_gradient and objective.has_jac:
             self.enable_objectives_gradient()
 
     def __add_constraints(self) -> None:
@@ -181,7 +181,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         # Add the constraints gradients
         if self.__use_gradient:
             differentiable = all(
-                constraint.has_jac() for constraint in problem.constraints
+                constraint.has_jac for constraint in problem.constraints
             )
             if problem.has_constraints() and differentiable:
                 self.enable_constraints_gradient()
@@ -341,7 +341,7 @@ class Outputs(NamedTuple):
     """The mask of the output values to be passed to pSeven."""
     values: dict[str, float | ndarray]
     """The function values computed by GEMSEO."""
-    jacobians_values: dict[str, ndarray]
+    jacobian_values: dict[str, ndarray]
     """The Jacobians computed by GEMSEO."""
 
 
@@ -374,25 +374,25 @@ class Worker:
         objective_dimension = dimensions[self.__problem.objective.name]
 
         # Get the names of the constraints to evaluate.
-        constraints_names = list()
+        constraint_names = list()
         mask_index = objective_dimension
-        for name in self.__problem.get_constraints_names():
+        for name in self.__problem.get_constraint_names():
             dimension = dimensions[name]
             if True in mask[mask_index : mask_index + dimension]:
-                constraints_names.append(name)
+                constraint_names.append(name)
 
             mask_index += dimension
 
         # Get the names of the functions to differentiate
-        jacobians_names = list()
+        jacobian_names = list()
         if self.__use_gradient:
             for function in [self.__problem.objective] + self.__problem.constraints:
                 dimension = self.__problem.dimension * dimensions[function.name]
                 if (
-                    function.has_jac()
+                    function.has_jac
                     and True in mask[mask_index : mask_index + dimension]
                 ):
-                    jacobians_names.append(function.name)
+                    jacobian_names.append(function.name)
 
                 mask_index += dimension
 
@@ -400,8 +400,9 @@ class Worker:
         values, jacobians = self.__problem.evaluate_functions(
             x,
             eval_obj=True in mask[:objective_dimension],
-            constraints_names=constraints_names,
-            jacobians_names=jacobians_names,
+            eval_observables=False,
+            constraint_names=constraint_names,
+            jacobian_names=jacobian_names,
             normalize=self.__problem.preprocess_options.get(
                 "is_function_input_normalized", False
             ),
@@ -442,7 +443,7 @@ class Worker:
             if function.name in jacobians:
                 output_values.extend(jacobians[function.name].flatten().tolist())
                 output_mask.extend([True] * size)
-            elif self.__use_gradient and function.has_jac():
+            elif self.__use_gradient and function.has_jac:
                 output_values.extend([None] * size)
                 output_mask.extend([False] * size)
 

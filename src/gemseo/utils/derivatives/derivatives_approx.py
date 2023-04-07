@@ -331,9 +331,9 @@ class DisciplineJacApprox:
         Returns:
             Whether the analytical Jacobian is correct.
         """
-        inputs_indices = input_indices = outputs_indices = None
+        input_names_to_indices = input_indices = output_names_to_indices = None
         if indices is not None:
-            input_indices, inputs_indices = self._compute_variables_indices(
+            input_indices, input_names_to_indices = self._compute_variable_indices(
                 indices,
                 inputs,
                 {name: len(self.discipline.default_inputs[name]) for name in inputs},
@@ -355,26 +355,26 @@ class DisciplineJacApprox:
         succeed = True
 
         if indices is not None:
-            outputs_sizes = {
+            output_sizes = {
                 output_name: output_jacobian[next(iter(output_jacobian))].shape[0]
                 for output_name, output_jacobian in approximated_jacobian.items()
             }
-            output_indices, outputs_indices = self._compute_variables_indices(
-                indices, outputs, outputs_sizes
+            output_indices, output_names_to_indices = self._compute_variable_indices(
+                indices, outputs, output_sizes
             )
 
-        if inputs_indices is None:
-            inputs_indices = Ellipsis
+        if input_names_to_indices is None:
+            input_names_to_indices = Ellipsis
 
-        if outputs_indices is None:
-            outputs_indices = Ellipsis
+        if output_names_to_indices is None:
+            output_names_to_indices = Ellipsis
 
         for output_name, output_jacobian in approximated_jacobian.items():
             for input_name, approx_jac in output_jacobian.items():
                 computed_jac = analytic_jacobian[output_name][input_name]
                 if indices is not None:
-                    row_idx = atleast_2d(outputs_indices[output_name]).T
-                    col_idx = inputs_indices[input_name]
+                    row_idx = atleast_2d(output_names_to_indices[output_name]).T
+                    col_idx = input_names_to_indices[input_name]
                     computed_jac = computed_jac[row_idx, col_idx]
                     approx_jac = approx_jac[row_idx, col_idx]
 
@@ -438,10 +438,10 @@ class DisciplineJacApprox:
         return succeed
 
     @staticmethod
-    def _compute_variables_indices(
+    def _compute_variable_indices(
         indices: Mapping[str, int | Sequence[int] | Ellipsis | slice],
-        variables_names: Iterable[str],
-        variables_sizes: Mapping[str, int],
+        variable_names: Iterable[str],
+        variable_sizes: Mapping[str, int],
     ) -> list[int]:
         """Return indices.
 
@@ -455,16 +455,16 @@ class DisciplineJacApprox:
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The indices of the variables.
         """
         indices_sequence = []
-        variables_indices = {}
+        names_to_indices = {}
         variable_position = 0
-        for variable_name in variables_names:
-            variable_size = variables_sizes[variable_name]
+        for variable_name in variable_names:
+            variable_size = variable_sizes[variable_name]
             variable_indices = list(range(variable_size))
             indices_sequence.append(indices.get(variable_name, variable_indices))
 
@@ -477,7 +477,7 @@ class DisciplineJacApprox:
             if indices_sequence[-1] in [Ellipsis, None]:
                 indices_sequence[-1] = variable_indices
 
-            variables_indices[variable_name] = indices_sequence[-1]
+            names_to_indices[variable_name] = indices_sequence[-1]
             indices_sequence[-1] = [
                 variable_index + variable_position
                 for variable_index in indices_sequence[-1]
@@ -485,7 +485,7 @@ class DisciplineJacApprox:
             variable_position += variable_size
 
         indices_sequence = [item for sublist in indices_sequence for item in sublist]
-        return indices_sequence, variables_indices
+        return indices_sequence, names_to_indices
 
     @staticmethod
     def __concatenate_jacobian_per_output_names(

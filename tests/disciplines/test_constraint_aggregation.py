@@ -22,7 +22,7 @@ import pytest
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.disciplines.constraints_aggregation import ConstrAggegationDisc
+from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
@@ -73,7 +73,7 @@ def test_aggregation_discipline(disc_constr):
     ref_sol = scenario.formulation.opt_problem.solution
 
     disc_agg = create_discipline(
-        "ConstrAggegationDisc", constraint_names=["constr"], aggregation_function="KS"
+        "ConstraintAggregation", constraint_names=["constr"], aggregation_function="KS"
     )
     disc_agg.default_inputs = {"constr": array([1.0, 2.0])}
     assert disc_agg.check_jacobian(input_data={"constr": array([1.0, 2.0])})
@@ -98,7 +98,7 @@ def test_aggregation_discipline(disc_constr):
 def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
     """Checks the Jacobian of the AggregationDiscipline."""
     disc_agg = create_discipline(
-        "ConstrAggegationDisc",
+        "ConstraintAggregation",
         constraint_names=["constr"],
         aggregation_function=aggregation_function,
         indices=indices,
@@ -113,7 +113,7 @@ def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
 def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
     """Checks the Jacobian of the AggregationDiscipline with scale effect."""
     disc_agg = create_discipline(
-        "ConstrAggegationDisc",
+        "ConstraintAggregation",
         constraint_names=["constr"],
         aggregation_function=aggregation_function,
         scale=scale,
@@ -125,16 +125,16 @@ def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
 def test_evaluation_function_as_enum():
     """Check the use of EvaluationFunction."""
     discipline = create_discipline(
-        "ConstrAggegationDisc",
+        "ConstraintAggregation",
         constraint_names=["constr"],
-        aggregation_function=ConstrAggegationDisc.EvaluationFunction.KS,
+        aggregation_function=ConstraintAggregation.EvaluationFunction.KS,
     )
     discipline.default_inputs = {"constr": array([1.0, 2.0])}
     discipline.execute()
     output_data_with_enum = discipline.get_output_data()
 
     discipline = create_discipline(
-        "ConstrAggegationDisc",
+        "ConstraintAggregation",
         constraint_names=["constr"],
         aggregation_function="KS",
     )

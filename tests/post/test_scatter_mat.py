@@ -57,7 +57,7 @@ def test_scatter(tmp_wd, pyplot_close_all):
         problem,
         "ScatterPlotMatrix",
         file_path="scatter1",
-        variable_names=problem.get_all_functions_names(),
+        variable_names=problem.get_all_function_name(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -78,7 +78,7 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
         problem,
         "ScatterPlotMatrix",
         file_path="scatter2",
-        variable_names=problem.get_all_functions_names(),
+        variable_names=problem.get_all_function_name(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:

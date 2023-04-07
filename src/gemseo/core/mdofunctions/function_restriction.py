@@ -37,7 +37,7 @@ class FunctionRestriction(MDOFunction):
         name: str | None = None,
         f_type: str | None = None,
         expr: str | None = None,
-        args: Sequence[str] | None = None,
+        input_names: Sequence[str] | None = None,
     ) -> None:
         """
         Args:
@@ -48,13 +48,13 @@ class FunctionRestriction(MDOFunction):
                 If ``None``,
                 create a default name
                 based on the name of the current function
-                and on the argument `args`.
+                and on the argument `input_names`.
             mdo_function: The function to restrict.
             f_type: The type of the function after restriction.
                 If ``None``, the function will have no type.
             expr: The expression of the function after restriction.
                 If ``None``, the function will have no expression.
-            args: The names of the inputs of the function after restriction.
+            input_names: The names of the inputs of the function after restriction.
                 If ``None``, the inputs of the function will have no names.
 
         Raises:
@@ -72,21 +72,21 @@ class FunctionRestriction(MDOFunction):
         self.__name = name
         self.__f_type = f_type
         self.__expr = expr
-        self.__args = args
+        self.__input_names = input_names
 
         self._active_indexes = array(
             [i for i in range(self.__input_dim) if i not in self.__frozen_indexes]
         )
 
         # Build the name of the restriction
-        if self.__name is None and self.__args is not None:
+        if self.__name is None and self.__input_names is not None:
             self.__name = "{}_wrt_{}".format(
-                self.__mdo_function.name, "_".join(self.__args)
+                self.__mdo_function.name, "_".join(self.__input_names)
             )
         elif name is None:
             self.__name = f"{self.__mdo_function.name}_restriction"
 
-        if self.__mdo_function.has_jac():
+        if self.__mdo_function.has_jac:
             jac = self._jac_to_wrap
         else:
             jac = self.__mdo_function.jac
@@ -96,10 +96,10 @@ class FunctionRestriction(MDOFunction):
             self.__name,
             self.__f_type,
             expr=self.__expr,
-            args=self.__args,
+            input_names=self.__input_names,
             jac=jac,
             dim=self.__mdo_function.dim,
-            outvars=self.__mdo_function.outvars,
+            output_names=self.__mdo_function.output_names,
             force_real=self.__mdo_function.force_real,
         )
 

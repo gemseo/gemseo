@@ -87,7 +87,7 @@ def test_iteration_error(problem):
         ),
     ):
         post.execute(
-            save=False, constraint_names=problem.get_constraints_names(), iteration=1000
+            save=False, constraint_names=problem.get_constraint_names(), iteration=1000
         )
 
 

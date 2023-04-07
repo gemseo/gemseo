@@ -59,7 +59,7 @@ class ConsistencyCstr(MDOFunction):
         self.__coupl_func = FunctionFromDiscipline(
             self.__output_couplings, self.__formulation
         )
-        self.__dv_names_of_disc = self.__coupl_func.args
+        self.__dv_names_of_disc = self.__coupl_func.input_names
 
         if self.__formulation.normalize_constraints:
             self.__norm_fact = self.__formulation._get_normalization_factor(
@@ -68,7 +68,7 @@ class ConsistencyCstr(MDOFunction):
         else:
             self.__norm_fact = 1.0
 
-        self.__dv_len = self.__formulation.design_space.variables_sizes
+        self.__dv_len = self.__formulation.design_space.variable_sizes
 
         expr = ""
         for out_c in self.__output_couplings:
@@ -77,10 +77,10 @@ class ConsistencyCstr(MDOFunction):
         super().__init__(
             self._func_to_wrap,
             self.__coupl_func.name,
-            args=self.__dv_names_of_disc,
+            input_names=self.__dv_names_of_disc,
             expr=expr,
             jac=self._jac_to_wrap,
-            outvars=self.__coupl_func.outvars,
+            output_names=self.__coupl_func.output_names,
             f_type=MDOFunction.ConstraintType.EQ,
         )
 
@@ -117,7 +117,7 @@ class ConsistencyCstr(MDOFunction):
             # coupling, at the right place.
             n_outs = coupl_jac.shape[0]
             x_jac_2d = zeros((n_outs, len(x_vect)), dtype=x_vect.dtype)
-            x_names = self.__formulation.get_optim_variables_names()
+            x_names = self.__formulation.get_optim_variable_names()
             o_min = 0
             o_max = 0
             for out in self.__output_couplings:

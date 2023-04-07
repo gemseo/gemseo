@@ -56,7 +56,7 @@ def test_add_random_variable():
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     assert not space.is_deterministic("y")
     assert space.is_uncertain("y")
-    assert space.variables_names == ["x", "y"]
+    assert space.variable_names == ["x", "y"]
     assert space.uncertain_variables == ["y"]
     assert space.deterministic_variables == ["x"]
     assert "y" in space.distributions
@@ -76,7 +76,7 @@ def test_to_design_space(mixed_space):
     """Check the conversion of a ParameterSpace into a DesignSpace."""
     design_space = mixed_space.to_design_space()
     assert isinstance(design_space, DesignSpace)
-    assert design_space.variables_names == ["x1", "x2", "y"]
+    assert design_space.variable_names == ["x1", "x2", "y"]
     for name in ["x1", "x2"]:
         assert design_space.get_type(name) == mixed_space.get_type(name)
         assert design_space.get_size(name) == mixed_space.get_size(name)
@@ -104,20 +104,20 @@ def test_extract_deterministic_space(mixed_space):
     """Check the extraction of the deterministic part."""
     deterministic_space = mixed_space.extract_deterministic_space()
     assert isinstance(deterministic_space, DesignSpace)
-    assert deterministic_space.variables_names == ["x1", "x2"]
+    assert deterministic_space.variable_names == ["x1", "x2"]
 
 
 def test_extract_uncertain_space(mixed_space):
     """Check the extraction of the uncertain part."""
     uncertain_space = mixed_space.extract_uncertain_space()
-    assert uncertain_space.variables_names == ["y"]
+    assert uncertain_space.variable_names == ["y"]
     assert uncertain_space.uncertain_variables == ["y"]
 
 
 def test_extract_uncertain_space_as_design_space(mixed_space):
     """Check the extraction of the uncertain part as a design space."""
     uncertain_space = mixed_space.extract_uncertain_space(as_design_space=True)
-    assert uncertain_space.variables_names == ["y"]
+    assert uncertain_space.variable_names == ["y"]
     assert isinstance(uncertain_space, DesignSpace)
     assert (
         uncertain_space.get_lower_bound("y")[0]
@@ -141,10 +141,10 @@ def test_remove_variable():
     space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.remove_variable("x2")
-    assert space.variables_names == ["x1", "y1", "y2"]
+    assert space.variable_names == ["x1", "y1", "y2"]
     assert space.uncertain_variables == ["y1", "y2"]
     space.remove_variable("y1")
-    assert space.variables_names == ["x1", "y2"]
+    assert space.variable_names == ["x1", "y2"]
     assert space.uncertain_variables == ["y2"]
     assert "y1" not in space.distributions
 

@@ -112,7 +112,7 @@ class SOM(OptPostProcessor):
         """  # noqa: D205, D212, D415
         criteria = [
             self.opt_problem.get_objective_name()
-        ] + self.opt_problem.get_constraints_names()
+        ] + self.opt_problem.get_constraint_names()
         all_data = self.database.get_all_data_names()
         # Ensure that the data is available in the database
         for criterion in criteria:

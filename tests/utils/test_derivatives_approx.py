@@ -180,7 +180,7 @@ def test_opt_step():
 
 
 @pytest.mark.parametrize(
-    "indices,expected_sequence,expected_variables_indices",
+    "indices,expected_sequence,expected_variable_indices",
     [
         ({"y": None}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
         ({"y": Ellipsis}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
@@ -190,16 +190,16 @@ def test_opt_step():
         ({}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
     ],
 )
-def test_compute_io_indices(indices, expected_sequence, expected_variables_indices):
+def test_compute_io_indices(indices, expected_sequence, expected_variable_indices):
     """Check that input and output indices are correctly computed from indices."""
     (
         indices_sequence,
-        variables_indices,
-    ) = DisciplineJacApprox._compute_variables_indices(
+        variable_indices,
+    ) = DisciplineJacApprox._compute_variable_indices(
         indices, ["x", "y"], {"y": 3, "x": 2}
     )
     assert indices_sequence == expected_sequence
-    assert variables_indices == expected_variables_indices
+    assert variable_indices == expected_variable_indices
 
 
 def test_load_and_dump(tmp_wd):

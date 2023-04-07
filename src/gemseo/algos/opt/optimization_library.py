@@ -225,17 +225,19 @@ class OptimizationLibrary(DriverLibrary):
         self.__kkt_abs_tol = options.get(self._KKT_TOL_ABS, None)
         self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
+        require_gradient = self.descriptions[self.algo_name].require_gradient
         if (
             self.__kkt_abs_tol is not None or self.__kkt_rel_tol is not None
-        ) and self.descriptions[self.algo_name].require_gradient:
+        ) and require_gradient:
             problem.add_callback(
                 self._check_kkt_from_database, each_new_iter=False, each_store=True
             )
         # First, evaluate all functions at x_0. Some algorithms don't do this
         self.problem.design_space.initialize_missing_current_values()
         self.problem.evaluate_functions(
-            eval_jac=self.is_algo_requires_grad(algo_name),
+            eval_jac=require_gradient,
             eval_obj=True,
+            eval_observables=False,
             normalize=options.get(
                 self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
             ),
@@ -301,7 +303,7 @@ class OptimizationLibrary(DriverLibrary):
         check_kkt = True
         function_names = [
             self.problem.get_objective_name()
-        ] + self.problem.get_constraints_names()
+        ] + self.problem.get_constraint_names()
         database = self.problem.database
         for function_name in function_names:
             if (

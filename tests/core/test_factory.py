@@ -110,7 +110,7 @@ def test_parse_docstrings(reset_factory, tmp_wd):
         assert "disciplines" in doc
         assert "maximize_objective" in doc
 
-        opt_vals = factory.get_default_options_values(formulation_name)
+        opt_vals = factory.get_default_option_values(formulation_name)
         assert len(opt_vals) >= 1
 
         grammar = factory.get_options_grammar(formulation_name, write_schema=True)

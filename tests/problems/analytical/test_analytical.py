@@ -72,8 +72,8 @@ class TestAnalyticalFunctions(unittest.TestCase):
         self.run_and_test_problem(problem, "L-BFGS-B")
         problem = Rosenbrock(initial_guess=zeros(2))
         problem = Rosenbrock(scalar_var=True)
-        assert "x1" in problem.design_space.variables_names
-        assert "x" not in problem.design_space.variables_names
+        assert "x1" in problem.design_space.variable_names
+        assert "x" not in problem.design_space.variable_names
 
     def test_power2(self):
         """"""

@@ -253,7 +253,7 @@ class ScalabilityStudy:
         LOGGER.info("%s", msg)
 
     @property
-    def disciplines_names(self):
+    def discipline_names(self):
         """Get discipline names.
 
         :return: list of discipline names
@@ -292,11 +292,11 @@ class ScalabilityStudy:
         """Check if discipline is a string comprised in the list of disciplines names."""
         if not isinstance(discipline, str):
             raise TypeError("The argument discipline should be a string")
-        disciplines_names = self.disciplines_names
-        if discipline not in disciplines_names:
+        discipline_names = self.discipline_names
+        if discipline not in discipline_names:
             raise ValueError(
                 "The argument discipline should be a string comprised in the list %s",
-                disciplines_names,
+                discipline_names,
             )
 
     def __check_output(self, discipline, varname: str):
@@ -304,15 +304,15 @@ class ScalabilityStudy:
         self.__check_discipline(discipline)
         if not isinstance(varname, str):
             raise TypeError(f"{varname} is not a string.")
-        outputs_names = next(
+        output_names = next(
             dataset.get_names(dataset.OUTPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )
-        if varname not in outputs_names:
+        if varname not in output_names:
             raise ValueError(
                 "'{}' is not an output of {}; available outputs are: {}".format(
-                    varname, discipline, outputs_names
+                    varname, discipline, output_names
                 )
             )
 
@@ -321,7 +321,7 @@ class ScalabilityStudy:
         self.__check_discipline(discipline)
         if not isinstance(inputs, list):
             raise TypeError("The argument 'inputs' must be a list of string.")
-        inputs_names = next(
+        input_names = next(
             dataset.get_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
@@ -329,10 +329,10 @@ class ScalabilityStudy:
         for inpt in inputs:
             if not isinstance(inpt, str):
                 raise TypeError(f"{inpt} is not a string.")
-            if inpt not in inputs_names:
+            if inpt not in input_names:
                 raise ValueError(
                     "'{}' is not a discipline input; available inputs are: {}".format(
-                        inpt, inputs_names
+                        inpt, input_names
                     )
                 )
 

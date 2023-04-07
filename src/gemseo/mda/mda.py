@@ -184,7 +184,7 @@ class MDA(MDODiscipline):
         self._initialize_grammars()
         self._check_consistency()
         self.__check_linear_solver_options()
-        self._check_couplings_types()
+        self._check_coupling_types()
         self._log_convergence = log_convergence
 
     def _initialize_grammars(self) -> None:
@@ -336,7 +336,7 @@ class MDA(MDODiscipline):
                 if input_name in self_inputs:
                     self.default_inputs[input_name] = input_value
 
-    def _check_couplings_types(self) -> None:
+    def _check_coupling_types(self) -> None:
         """Check that the coupling variables are of type array in the grammars.
 
         Raises:

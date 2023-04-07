@@ -59,11 +59,11 @@ groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
 
 n_samples = 5
 inputs = rand(n_samples, dim_x1 + dim_x2)
-inputs_names = ["x_1", "x_2"]
+input_names = ["x_1", "x_2"]
 outputs = rand(n_samples, dim_y1)
-outputs_names = ["y_1"]
+output_names = ["y_1"]
 data = concatenate((inputs, outputs), 1)
-data_names = inputs_names + outputs_names
+data_names = input_names + output_names
 
 # %%
 # Create a dataset

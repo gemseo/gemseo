@@ -93,7 +93,7 @@ class MDOFunction(Serializable):
     - the literal expression to be used for the string representation of the object,
       e.g. :code:`expr="2*x"`,
     - the names of the inputs and outputs of the function,
-      e.g. :code:`args=["x"]` and :code:`outvars=["y"]`.
+      e.g. :code:`input_names=["x"]` and :code:`output_names=["y"]`.
 
     .. warning::
 
@@ -105,7 +105,7 @@ class MDOFunction(Serializable):
 
     After the initialization,
     all of these arguments can be overloaded with setters,
-    e.g. :attr:`.MDOFunction.args`.
+    e.g. :attr:`.MDOFunction.input_names`.
 
     The original function and Jacobian function
     can be accessed with the properties :attr:`.MDOFunction.func`
@@ -160,14 +160,14 @@ class MDOFunction(Serializable):
         "name",
         "f_type",
         "expr",
-        "args",
+        "input_names",
         "dim",
         "special_repr",
     ]
     """The names of the attributes to be serialized."""
 
-    DEFAULT_ARGS_BASE: str = "x"
-    """The default name base for the inputs."""
+    DEFAULT_BASE_INPUT_NAME: str = "x"
+    """The default base name for the inputs."""
 
     INDEX_PREFIX: str = "!"
     """The character used to separate a name base and a prefix, e.g. ``"x!1``."""
@@ -215,7 +215,7 @@ class MDOFunction(Serializable):
     _name: str
     """The name of the function."""
 
-    _args: list[str]
+    _input_names: list[str]
     """The names of the inputs of the function."""
 
     _expr: str
@@ -224,7 +224,7 @@ class MDOFunction(Serializable):
     _dim: int
     """The dimension of the output space of the function."""
 
-    _outvars: list[str]
+    _output_names: list[str]
     """The names of the outputs of the function."""
 
     __INPUT_NAME_PATTERN: Final[str] = "x"
@@ -237,9 +237,9 @@ class MDOFunction(Serializable):
         f_type: FunctionType = FunctionType.NONE,
         jac: WrappedJacobianType | None = None,
         expr: str = "",
-        args: Iterable[str] | None = None,
+        input_names: Iterable[str] | None = None,
         dim: int = 0,
-        outvars: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
         force_real: bool = False,
         special_repr: str = "",
     ) -> None:
@@ -252,12 +252,12 @@ class MDOFunction(Serializable):
             jac: The original Jacobian function to be actually called.
                 If ``None``, the function will not have an original Jacobian function.
             expr: The expression of the function, e.g. `"2*x"`, if any.
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
                 If ``None``, the inputs of the function will have no names.
             dim: The dimension of the output space of the function.
                 If 0, the dimension of the output space of the function
                 will be deduced from the evaluation of the function.
-            outvars: The names of the outputs of the function.
+            output_names: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
             force_real: Whether to cast the output values to real.
             special_repr: The string representation of the function.
@@ -270,11 +270,10 @@ class MDOFunction(Serializable):
         self._func = NotImplementedCallable()
         self._jac = NotImplementedCallable()
         self._name = ""
-        self._args = []
+        self._input_names = []
         self._expr = ""
         self._dim = 0
-        # TODO: API: rename to _output_variables
-        self._outvars = []
+        self._output_names = []
         self._init_shared_memory_attrs()
         # Use setters to check values
         self.func = func
@@ -282,10 +281,9 @@ class MDOFunction(Serializable):
         self.name = name
         self.f_type = f_type
         self.expr = expr
-        self.args = args
+        self.input_names = input_names
         self.dim = dim
-        # TODO: API: rename to output_variables
-        self.outvars = outvars
+        self.output_names = output_names
         self.last_eval = None
         self.force_real = force_real
         self.special_repr = special_repr or ""
@@ -436,19 +434,19 @@ class MDOFunction(Serializable):
         self._jac = jac or NotImplementedCallable()
 
     @property
-    def args(self) -> list[str]:
+    def input_names(self) -> list[str]:
         """The names of the inputs of the function.
 
         Use a copy of the original names.
         """
-        return self._args
+        return self._input_names
 
-    @args.setter
-    def args(self, args: Iterable[str] | None) -> None:
-        if args is None:
-            self._args = []
+    @input_names.setter
+    def input_names(self, input_names: Iterable[str] | None) -> None:
+        if input_names is None:
+            self._input_names = []
         else:
-            self._args = list(args)
+            self._input_names = list(input_names)
 
     @property
     def expr(self) -> str:
@@ -469,19 +467,19 @@ class MDOFunction(Serializable):
         self._dim = dim or 0
 
     @property
-    def outvars(self) -> list[str]:
+    def output_names(self) -> list[str]:
         """The names of the outputs of the function.
 
         Use a copy of the original names.
         """
-        return self._outvars
+        return self._output_names
 
-    @outvars.setter
-    def outvars(self, outvars: Iterable[str]) -> None:
-        if outvars is None:
-            self._outvars = []
+    @output_names.setter
+    def output_names(self, output_names: Iterable[str]) -> None:
+        if output_names is None:
+            self._output_names = []
         else:
-            self._outvars = list(outvars)
+            self._output_names = list(output_names)
 
     def is_constraint(self) -> bool:
         """Check if the function is a constraint.
@@ -503,17 +501,17 @@ class MDOFunction(Serializable):
             if self.expr:
                 left = self.expr
             else:
-                name = "#".join(self.outvars) or self.name
-                left = f"{name}({pretty_str(self.args, sort=False)})"
+                name = "#".join(self.output_names) or self.name
+                left = f"{name}({pretty_str(self.input_names, sort=False)})"
 
             sign = "==" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
         strings = [self.name]
-        if self.has_args():
-            strings.append(f"({pretty_str(self.args, sort=False)})")
+        if self.input_names:
+            strings.append(f"({pretty_str(self.input_names, sort=False)})")
 
-        if not self.has_expr():
+        if not self.expr:
             return "".join(strings)
 
         strings.append(" = ")
@@ -526,6 +524,7 @@ class MDOFunction(Serializable):
         strings[-1] = strings[-1][:-1]
         return "".join(strings)
 
+    @property
     def has_jac(self) -> bool:
         """Check if the function has an implemented Jacobian function.
 
@@ -535,46 +534,6 @@ class MDOFunction(Serializable):
         return self.jac is not None and not isinstance(
             self._jac, NotImplementedCallable
         )
-
-    def has_dim(self) -> bool:
-        """Check if the dimension of the output space of the function is defined.
-
-        Returns:
-            Whether the dimension of the output space of the function is defined.
-        """
-        return bool(self.dim)
-
-    def has_outvars(self) -> bool:
-        """Check if the outputs of the function have names.
-
-        Returns:
-            Whether the outputs of the function have names.
-        """
-        return bool(self.outvars)
-
-    def has_expr(self) -> bool:
-        """Check if the function has an expression.
-
-        Returns:
-            Whether the function has an expression.
-        """
-        return bool(self.expr)
-
-    def has_args(self) -> bool:
-        """Check if the inputs of the function have names.
-
-        Returns:
-            Whether the inputs of the function have names.
-        """
-        return bool(self.args)
-
-    def has_f_type(self) -> bool:
-        """Check if the function has a type.
-
-        Returns:
-            Whether the function has a type.
-        """
-        return bool(self.f_type)
 
     def __add__(self, other_f: MDOFunction) -> MDOFunction:
         """Operator defining the sum of the function and another one.
@@ -635,23 +594,23 @@ class MDOFunction(Serializable):
         Returns:
             The opposite of the function.
         """
-        jac = self._min_jac if self.has_jac() else None
+        jac = self._min_jac if self.has_jac else None
 
-        if self.has_expr():
+        if self.expr:
             expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
             name = "-" + self.name.translate({ord("-"): "+", ord("+"): "-"})
         else:
-            expr = f"-{self.name}({pretty_str(self.args, sort=False)})"
+            expr = f"-{self.name}({pretty_str(self.input_names, sort=False)})"
             name = f"-{self.name}"
 
         return MDOFunction(
             self._min_pt,
             name,
             jac=jac,
-            args=self.args,
+            input_names=self.input_names,
             f_type=self.f_type,
             dim=self.dim,
-            outvars=self.outvars,
+            output_names=self.output_names,
             expr=expr,
         )
 
@@ -720,7 +679,7 @@ class MDOFunction(Serializable):
             second_operand = -value
 
         function = self + value
-        name = f"{self.name}({pretty_str(self.args, sort=False)})"
+        name = f"{self.name}({pretty_str(self.input_names, sort=False)})"
         function.name = self._compute_operation_expression(
             self.name, operator, second_operand
         )
@@ -854,6 +813,9 @@ class MDOFunction(Serializable):
                 :attr:`.MDOFunction.DICT_REPR_ATTR`.
         """
         serializable_attributes = MDOFunction.DICT_REPR_ATTR
+        args = attributes.pop("args", None)
+        if args is not None:
+            attributes["input_names"] = args
         for attribute in attributes:
             if attribute not in serializable_attributes:
                 raise ValueError(
@@ -889,14 +851,14 @@ class MDOFunction(Serializable):
         SetPtFromDatabase(database, design_space, self, normalize, jac, x_tolerance)
 
     @classmethod
-    def generate_args(
-        cls, input_dim: int, args: Sequence[str] | None = None
+    def generate_input_names(
+        cls, input_dim: int, input_names: Sequence[str] | None = None
     ) -> Sequence[str]:
         """Generate the names of the inputs of the function.
 
         Args:
             input_dim: The dimension of the input space of the function.
-            args: The initial names of the inputs of the function.
+            input_names: The initial names of the inputs of the function.
                 If there is only one name,
                 e.g. ``["var"]``,
                 use this name as a base name
@@ -910,27 +872,28 @@ class MDOFunction(Serializable):
         Returns:
             The names of the inputs of the function.
         """
-        args = args or []
-        n_args = len(args)
-        if n_args == input_dim:
-            return args
+        input_names = input_names or []
+        n_input_names = len(input_names)
+        if n_input_names == input_dim:
+            return input_names
 
-        return cls._generate_args(
-            args[0] if n_args == 1 else cls.__INPUT_NAME_PATTERN, input_dim
+        return cls._generate_input_names(
+            input_names[0] if n_input_names == 1 else cls.__INPUT_NAME_PATTERN,
+            input_dim,
         )
 
     @classmethod
-    def _generate_args(cls, args_base: str, input_dim: int) -> list[str]:
-        """Generate the names of the inputs from a base name and their indices.
+    def _generate_input_names(cls, base_input_name: str, input_dim: int) -> list[str]:
+        """Generate the names of the inputs from a base input name and their indices.
 
         Args:
-            args_base: The base name.
+            base_input_name: The base input name.
             input_dim: The number of scalar inputs.
 
         Returns:
             The names of the inputs.
         """
-        return [f"{args_base}{cls.INDEX_PREFIX}{i}" for i in range(input_dim)]
+        return [f"{base_input_name}{cls.INDEX_PREFIX}{i}" for i in range(input_dim)]
 
     @property
     def expects_normalized_inputs(self) -> bool:

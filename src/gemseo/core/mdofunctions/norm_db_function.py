@@ -80,9 +80,9 @@ class NormDBFunction(MDOFunction):
             jac=self._jac_to_wrap,
             f_type=orig_func.f_type,
             expr=orig_func.expr,
-            args=orig_func.args,
+            input_names=orig_func.input_names,
             dim=orig_func.dim,
-            outvars=orig_func.outvars,
+            output_names=orig_func.output_names,
             special_repr=orig_func.special_repr,
         )
 

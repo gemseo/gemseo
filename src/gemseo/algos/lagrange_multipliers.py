@@ -202,7 +202,7 @@ class LagrangeMultipliers:
 
         # Check that the point satisfies other constraints
         values, _ = self.opt_problem.evaluate_functions(
-            x_vect, eval_obj=False, normalize=False
+            x_vect, eval_obj=False, eval_observables=False, normalize=False
         )
         if not self.opt_problem.is_point_feasible(values):
             LOGGER.warning("Infeasible point, Lagrange multipliers may not exist.")
@@ -224,7 +224,7 @@ class LagrangeMultipliers:
         dim_act = sum(len(where(bnd)[0]) for bnd in act_bounds.values())
         if dim_act == 0:
             return None, []
-        act_array = concatenate([act_bounds[var] for var in dspace.variables_names])
+        act_array = concatenate([act_bounds[var] for var in dspace.variable_names])
 
         bnd_jac = zeros((dim_act, x_dim))
 
@@ -234,7 +234,7 @@ class LagrangeMultipliers:
         else:
             act_jac = 1.0
         bnd_jac[arange(dim_act), act_array] = act_jac
-        indexed_varnames = array(dspace.get_indexed_variables_names())
+        indexed_varnames = array(dspace.get_indexed_variable_names())
         act_b_names = indexed_varnames[act_array].tolist()
         return bnd_jac, act_b_names
 
@@ -479,7 +479,7 @@ class LagrangeMultipliers:
         multipliers = dict()
 
         # Bound-constraints
-        indexed_varnames = problem.design_space.get_indexed_variables_names()
+        indexed_varnames = problem.design_space.get_indexed_variable_names()
         multipliers[self.LOWER_BOUNDS] = dict.fromkeys(indexed_varnames, 0.0)
         multipliers[self.UPPER_BOUNDS] = dict.fromkeys(indexed_varnames, 0.0)
 
@@ -524,8 +524,8 @@ class LagrangeMultipliers:
         # Bound-constraints multipliers
         mult_arrays[self.LOWER_BOUNDS] = dict()
         mult_arrays[self.UPPER_BOUNDS] = dict()
-        for name in design_space.variables_names:
-            indexed_varnames = design_space.get_indexed_variables_names()
+        for name in design_space.variable_names:
+            indexed_varnames = design_space.get_indexed_variable_names()
             var_low_mult = array(
                 [
                     multipliers_init[self.LOWER_BOUNDS][comp_name]

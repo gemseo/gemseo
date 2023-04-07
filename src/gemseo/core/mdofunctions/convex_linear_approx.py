@@ -70,7 +70,7 @@ class ConvexLinearApprox(MDOFunction):
             )
 
         # Get the function Jacobian matrix
-        if not self.__mdo_function.has_jac():
+        if not self.__mdo_function.has_jac:
             raise AttributeError(
                 "Function Jacobian unavailable for convex linearization."
             )
@@ -91,7 +91,7 @@ class ConvexLinearApprox(MDOFunction):
             self.__mdo_function.f_type,
             self._jac_to_wrap,
             dim=self.__mdo_function.dim,
-            outvars=self.__mdo_function.outvars,
+            output_names=self.__mdo_function.output_names,
             force_real=self.__mdo_function.force_real,
         )
 

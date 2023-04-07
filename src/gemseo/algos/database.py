@@ -969,13 +969,13 @@ class Database:
         if not missing_names:
             return {}, None
 
-        missing_names_values = {name: output_values[name] for name in missing_names}
+        missing_name_values = {name: output_values[name] for name in missing_names}
         all_output_idx_mapping = dict(zip(output_values, range(len(output_values))))
         missing_names_idx_mapping = {
             name: all_output_idx_mapping[name] for name in missing_names
         }
 
-        return missing_names_values, missing_names_idx_mapping
+        return missing_name_values, missing_names_idx_mapping
 
     @staticmethod
     def _add_hdf_name_output(
@@ -1266,36 +1266,36 @@ class Database:
         """
         return ["x_" + str(i) for i in range(1, n_dv + 1)]
 
-    def _format_design_variables_names(
+    def _format_design_variable_names(
         self,
-        design_variables_names: None | str | Iterable[str],
+        design_variable_names: None | str | Iterable[str],
         dimension: int,
     ) -> list[str] | tuple[str]:
         """Format the design variables names to be displayed in the history.
 
         Args:
-            design_variables_names: The names of design variables.
-            dimension: The dimension for default names if ``design_variables_names``
+            design_variable_names: The names of design variables.
+            dimension: The dimension for default names if ``design_variable_names``
                 is ``None``.
 
         Returns:
             The formatted names of the design variables.
 
         Raises:
-            TypeError: If the type of ``design_variables_names`` is finally not iterable.
+            TypeError: If the type of ``design_variable_names`` is finally not iterable.
         """
-        if design_variables_names is None:
-            design_variables_names = self.set_dv_names(dimension)
-        elif isinstance(design_variables_names, str):
-            design_variables_names = [design_variables_names]
-        elif not isinstance(design_variables_names, list) and not isinstance(
-            design_variables_names, tuple
+        if design_variable_names is None:
+            design_variable_names = self.set_dv_names(dimension)
+        elif isinstance(design_variable_names, str):
+            design_variable_names = [design_variable_names]
+        elif not isinstance(design_variable_names, list) and not isinstance(
+            design_variable_names, tuple
         ):
             raise TypeError(
-                "The argument design_variables_names must be a list or a tuple whereas "
-                "a {} is provided".format(type(design_variables_names))
+                "The argument design_variable_names must be a list or a tuple whereas "
+                "a {} is provided".format(type(design_variable_names))
             )
-        return design_variables_names
+        return design_variable_names
 
     def __set_variable_component_name(
         self, name: str, component: int, size: int
@@ -1351,7 +1351,7 @@ class Database:
     def get_history_array(
         self,
         functions: Iterable[str] | None = None,
-        design_variables_names: str | Iterable[str] | None = None,
+        design_variable_names: str | Iterable[str] | None = None,
         add_missing_tag: bool = False,
         missing_tag: str | float = "NA",
         add_dv: bool = True,
@@ -1364,7 +1364,7 @@ class Database:
 
         Args:
             functions: The names of the outputs that must be returned.
-            design_variables_names: The names of the design variables.
+            design_variable_names: The names of the design variables.
             add_missing_tag: If ``True``,
                 add the tag specified in ``missing_tag``
                 for data that are not available.
@@ -1398,8 +1398,8 @@ class Database:
         variables_flat_names = f_flat_names
         f_history = array(f_flat_values).real
         if add_dv:
-            x_names = self._format_design_variables_names(
-                design_variables_names, len(x_history[0])
+            x_names = self._format_design_variable_names(
+                design_variable_names, len(x_history[0])
             )
             x_flat_names, x_flat_values = self.__split_history(x_history, x_names)
             variables_flat_names = f_flat_names + x_flat_names
@@ -1444,22 +1444,22 @@ class Database:
         self,
         functions: Iterable[str] | None = None,
         file_path: str | Path = "opt_hist.xml",
-        design_variables_names: str | Iterable[str] | None = None,
+        design_variable_names: str | Iterable[str] | None = None,
     ) -> None:
         """Export the database to a XML file for ggobi tool.
 
         Args:
             functions: The names of output functions.
             file_path: The path to the XML file.
-            design_variables_names: The names of the input design variables.
+            design_variable_names: The names of the input design variables.
         """
-        values_array, variables_names, functions = self.get_history_array(
-            functions, design_variables_names, add_missing_tag=True
+        values_array, variable_names, functions = self.get_history_array(
+            functions, design_variable_names, add_missing_tag=True
         )
         LOGGER.info("Export to ggobi for functions: %s", str(functions))
         LOGGER.info("Export to ggobi file: %s", file_path)
         save_data_arrays_to_xml(
-            variables_names=variables_names,
+            variable_names=variable_names,
             values_array=values_array,
             file_path=file_path,
         )

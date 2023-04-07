@@ -240,13 +240,13 @@ which results in:
 
 .. note::
 
-   We can get a list of the variable names with theirs indices by means of the :meth:`.DesignSpace.get_indexed_variables_names` method:
+   We can get a list of the variable names with theirs indices by means of the :meth:`.DesignSpace.get_indexed_variable_names` method:
 
    .. code::
 
-      indexed_variables_names = design_space.get_indexed_variables_names()
+      indexed_variable_names = design_space.get_indexed_variable_names()
 
-   and :code:`print(indexed_variables_names)`:
+   and :code:`print(indexed_variable_names)`:
 
    .. code::
 

@@ -37,10 +37,10 @@ class Concatenater(MDODiscipline):
     Example:
         >>> from gemseo import create_discipline
         >>> sellar_system_disc = create_discipline('SellarSystem')
-        >>> constraints_names = ['c1', 'c2']
+        >>> constraint_names = ['c1', 'c2']
         >>> output_name = ['c']
         >>> concatenation_disc = create_discipline(
-        ...     'Concatenater', constraints_names, output_name
+        ...     'Concatenater', constraint_names, output_name
         ... )
         >>> disciplines = [sellar_system_disc, concatenation_disc]
         >>> chain = create_discipline('MDOChain', disciplines=disciplines)

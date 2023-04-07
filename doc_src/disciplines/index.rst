@@ -187,7 +187,7 @@ or the HDF5 cache strategy with a user-defined name as node name (here :code:`no
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_name='node')
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_path='node')
 
 .. note::
 

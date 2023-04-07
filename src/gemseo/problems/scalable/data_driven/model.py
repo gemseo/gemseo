@@ -83,7 +83,7 @@ class ScalableModel:
         :return: default inputs.
         :rtype: dict
         """
-        return {name: full(self.sizes[name], 0.5) for name in self.inputs_names}
+        return {name: full(self.sizes[name], 0.5) for name in self.input_names}
 
     def scalable_function(self, input_value=None):
         """Evaluate the scalable function.
@@ -158,7 +158,7 @@ class ScalableModel:
         return self.data.sizes
 
     @property
-    def outputs_names(self):
+    def output_names(self):
         """Outputs names.
 
         :return: names of the outputs.
@@ -167,7 +167,7 @@ class ScalableModel:
         return sorted(self.data.get_names(self.data.OUTPUT_GROUP))
 
     @property
-    def inputs_names(self):
+    def input_names(self):
         """Inputs names.
 
         :return: names of the inputs.

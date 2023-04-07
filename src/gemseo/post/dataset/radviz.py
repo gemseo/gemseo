@@ -93,7 +93,7 @@ class Radar(DatasetPlot):
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
 
-        dataframe.columns = self._get_variables_names(dataframe)
+        dataframe.columns = self._get_variable_names(dataframe)
         fig, axes = self._get_figure_and_axes(fig, axes)
         radviz(dataframe, label, ax=axes)
         axes.set_xlabel(self.xlabel)

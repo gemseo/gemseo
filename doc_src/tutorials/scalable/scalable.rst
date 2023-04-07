@@ -111,12 +111,12 @@ A scalable discipline is a discipline version for which inputs and outputs can t
 .. code::
 
    # Set the size of input and output variables at 5
-   # - Number of n_x = number_of_inputs*variables_sizes
-   # - Number of n_y = number_of_outputs*variables_sizes
-   variables_sizes = 5
+   # - Number of n_x = number_of_inputs*variable_sizes
+   # - Number of n_y = number_of_outputs*variable_sizes
+   variable_sizes = 5
    input_names = sellar.get_input_data_names()
    output_names = sellar.get_output_data_names()
-   sizes = {name: variables_sizes for name in input_names + output_names}
+   sizes = {name: variable_sizes for name in input_names + output_names}
 
 The :code:`sizes` of the inputs are specified in a dictionary at the construction of the :class:`.ScalableDiscipline` instance.
 
@@ -154,7 +154,7 @@ for all inputs of the discipline ("x\_shared", "x\_local", and "y\_2").
 
    from numpy import arange
 
-   input_data = {name: arange(variables_sizes) / float(variables_sizes)
+   input_data = {name: arange(variable_sizes) / float(variable_sizes)
 	             for name in input_names}
    print(scalable_sellar.execute(input_data)['y_1'])
 
@@ -170,14 +170,14 @@ Arbitrary input dimensions arrays can be provided. Here, only three components f
 
 .. code::
 
-    variables_sizes = 3
-    sizes = {name: variables_sizes for name in input_names + output_names}
+    variable_sizes = 3
+    sizes = {name: variable_sizes for name in input_names + output_names}
     scalable_sellar = create_discipline('ScalableDiscipline',
                                         hdf_file_path='sellar.hdf5',
                                         hdf_node_path='Sellar1',
                                         sizes=sizes,
                                         fill_factor=fill_factor)
-    input_data = {name: arange(variables_sizes) / float(variables_sizes)
+    input_data = {name: arange(variable_sizes) / float(variable_sizes)
                   for name in input_names}
 
     print(scalable_sellar.execute(input_data)['y_1'])

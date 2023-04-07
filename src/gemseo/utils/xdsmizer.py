@@ -394,16 +394,16 @@ class XDSMizer:
         opt_pb = self.scenario.formulation.opt_problem
 
         # fct names such as -y4
-        functions_names = opt_pb.get_all_functions_names()
+        function_name = opt_pb.get_all_function_name()
 
         # output variables used by the fonction (eg y4)
-        fct_varnames = [f.outvars for f in opt_pb.get_all_functions()]
+        fct_varnames = [f.output_names for f in opt_pb.get_all_functions()]
         function_varnames = []
         for fvars in fct_varnames:
             function_varnames.extend(fvars)
 
-        to_user = functions_names
-        to_opt = self.scenario.get_optim_variables_names()
+        to_user = function_name
+        to_opt = self.scenario.get_optim_variable_names()
 
         user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
         opt_pattern = "{}^(1:N)" if self.scenario.name == "Sampling" else "{}^*"
@@ -414,7 +414,7 @@ class XDSMizer:
         for atom in self.atoms:
             if atom is not self.root_atom:
                 varnames = set(atom.discipline.get_input_data_names()) & set(
-                    self.scenario.get_optim_variables_names()
+                    self.scenario.get_optim_variable_names()
                 )
                 if varnames:
                     add_edge(OPT_ID, self.to_id[atom], varnames)
@@ -422,7 +422,7 @@ class XDSMizer:
                 varnames = set(atom.discipline.get_output_data_names()) & set(
                     function_varnames
                 )
-                # print set(disc.get_output_data_names()), set(functions_names)
+                # print set(disc.get_output_data_names()), set(function_name)
                 if varnames:
                     add_edge(self.to_id[atom], OPT_ID, varnames)
 

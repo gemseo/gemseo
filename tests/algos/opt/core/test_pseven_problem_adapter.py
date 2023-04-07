@@ -97,9 +97,9 @@ def test_indirect(p7_problem, size):
     [("Rosenbrock", ["x!0", "x!1"]), ("Power2", ["x!0", "x!1", "x!2"])],
     indirect=["p7_problem"],
 )
-def test_variables_names(p7_problem, names):
+def test_variable_names(p7_problem, names):
     """Check the names of the variables."""
-    assert p7_problem.variables_names() == names
+    assert p7_problem.variable_names() == names
 
 
 @pytest.mark.parametrize(
@@ -171,9 +171,9 @@ def test_size_c(p7_problem, number):
     [("Rosenbrock", []), ("Power2", ["ineq1", "ineq2", "eq"])],
     indirect=["p7_problem"],
 )
-def test_constraints_names(p7_problem, names):
+def test_constraint_names(p7_problem, names):
     """Check the constraints names."""
-    assert p7_problem.constraints_names() == names
+    assert p7_problem.constraint_names() == names
 
 
 def test_constraints_bounds(p7_rosenbrock, p7_power2, power2):
@@ -360,7 +360,7 @@ def test_function_without_dimension():
 @pytest.mark.parametrize(
     ["gemseo_type", "pseven_type"], [("float", "Continuous"), ("integer", "Integer")]
 )
-def test_variables_types(gemseo_type, pseven_type):
+def test_variable_types(gemseo_type, pseven_type):
     """Check the pSeven variables types."""
     design_space = DesignSpace()
     design_space.add_variable("x", var_type=gemseo_type, value=7)

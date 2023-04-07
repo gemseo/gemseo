@@ -103,7 +103,7 @@ class TestMDFFormulation(FormulationsBaseTest):
 
     def test_getsuboptions(self):
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)
-        self.assertRaises(ValueError, MDF.get_default_sub_options_values)
+        self.assertRaises(ValueError, MDF.get_default_sub_option_values)
 
 
 def test_grammar_type():

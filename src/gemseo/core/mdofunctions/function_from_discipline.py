@@ -64,7 +64,7 @@ class FunctionFromDiscipline(MDOFunction):
             x_names: The names of the design variables.
                 If None, use self.get_x_names_of_disc(discipline).
             all_data_names: The reference data names for masking x.
-                If None, use self.get_optim_variables_names().
+                If None, use self.get_optim_variable_names().
             differentiable: If True, then inputs and outputs are added
                 to the list of variables to be differentiated.
         """  # noqa: D205, D212, D415
@@ -99,10 +99,10 @@ class FunctionFromDiscipline(MDOFunction):
             jac=self._jac_to_wrap,
             name=self.__out_x_func.name,
             f_type=MDOFunction.FunctionType.OBJ,
-            args=self.__x_names,
+            input_names=self.__x_names,
             expr=self.__out_x_func.expr,
             dim=self.__out_x_func.dim,
-            outvars=self.__out_x_func.outvars,
+            output_names=self.__out_x_func.output_names,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:

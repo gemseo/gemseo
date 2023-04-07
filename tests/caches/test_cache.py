@@ -121,7 +121,7 @@ def test_jac_and_outputs_caching(
 
 
 def test_hdf_cache_read(tmp_wd):
-    cache = HDF5Cache("dummy.h5", "DummyCache")
+    cache = HDF5Cache(hdf_file_path="dummy.h5", hdf_node_path="DummyCache")
 
     with pytest.raises(ValueError):
         cache.to_ggobi(
@@ -139,7 +139,7 @@ def test_hdf_cache_read(tmp_wd):
     cache.cache_outputs({"i": n * arange(3), "j": array([1.0])}, {"o": n * arange(4)})
 
     assert len(cache) == n
-    cache_read = HDF5Cache("dummy.h5", "DummyCache")
+    cache_read = HDF5Cache(hdf_file_path="dummy.h5", hdf_node_path="DummyCache")
 
     assert len(cache_read) == n
 
@@ -167,8 +167,8 @@ def test_hdf_cache_read(tmp_wd):
 
 
 def test_update_caches(tmp_wd):
-    c1 = HDF5Cache("out11.h5", "DummyCache")
-    c2 = HDF5Cache("out21.h5", "DummyCache")
+    c1 = HDF5Cache(hdf_file_path="out11.h5", hdf_node_path="DummyCache")
+    c2 = HDF5Cache(hdf_file_path="out21.h5", hdf_node_path="DummyCache")
 
     c1.cache_outputs({"i": 10 * arange(3)}, {"o": arange(4)})
 
@@ -185,7 +185,7 @@ def test_update_caches(tmp_wd):
 
 
 def test_collision(tmp_wd):
-    c1 = HDF5Cache("out7.h5", "DummyCache")
+    c1 = HDF5Cache(hdf_file_path="out7.h5", hdf_node_path="DummyCache")
     input_data = {"i": arange(3)}
     output_data = {"o": arange(3)}
     c1.cache_outputs(input_data, output_data)
@@ -305,7 +305,7 @@ def test_read_hashes(tmp_wd):
 
 
 def test_read_group(tmp_wd):
-    cache = HDF5Cache("out3.h5")
+    cache = HDF5Cache(hdf_file_path="out3.h5")
     cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
     cache._read_input_output_data([1], {"x": arange(3), "y": arange(2)})
 
@@ -537,7 +537,7 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     HDF5Cache.update_file_format(deprecated_cache_path)
 
     cache_path = Path("cache.h5")
-    cache = HDF5Cache(cache_path)
+    cache = HDF5Cache(hdf_file_path=cache_path)
     cache.cache_outputs({"x": array([1.0])}, {"y": array([2.0])})
 
     file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION

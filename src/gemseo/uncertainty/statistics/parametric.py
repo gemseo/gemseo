@@ -199,7 +199,7 @@ class ParametricStatistics(Statistics):
         self,
         dataset: Dataset,
         distributions: Sequence[DistributionName],
-        variables_names: Iterable[str] | None = None,
+        variable_names: Iterable[str] | None = None,
         fitting_criterion: FittingCriterion = FittingCriterion.BIC,
         level: float = 0.05,
         selection_criterion: SelectionCriterion = SelectionCriterion.BEST,
@@ -220,7 +220,7 @@ class ParametricStatistics(Statistics):
             selection_criterion: The selection criterion
                 to select a distribution from a list of candidates.
         """  # noqa: D205,D212,D415
-        super().__init__(dataset, variables_names, name)
+        super().__init__(dataset, variable_names, name)
         self.fitting_criterion = fitting_criterion
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
@@ -288,14 +288,12 @@ class ParametricStatistics(Statistics):
 
         return distribution_names_to_criterion_values, criterion_value_is_p_value
 
-    # TODO: API: remove n_legend_cols as it is not used.
     def plot_criteria(
         self,
         variable: str,
         title: str | None = None,
         save: bool = False,
         show: bool = True,
-        n_legend_cols: int = 4,
         directory: str | Path = ".",
         index: int = 0,
         fig_size: FigSizeType = (6.4, 3.2),
@@ -307,7 +305,6 @@ class ParametricStatistics(Statistics):
             title: A plot title.
             save: If True, save the plot on the disk.
             show: If True, show the plot.
-            n_legend_cols: The number of text columns in the upper legend.
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
             fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
@@ -370,12 +367,12 @@ class ParametricStatistics(Statistics):
         save_show_figure(fig, show, file_path)
 
     def _select_best_distributions(
-        self, distributions_names: Sequence[DistributionName]
+        self, distribution_names: Sequence[DistributionName]
     ) -> dict[str, DistributionType | list[DistributionType]]:
         """Select the best distributions for the different variables.
 
         Args:
-            distributions_names: The distribution names.
+            distribution_names: The distribution names.
 
         Returns:
             The best distributions for the different variables.
@@ -384,16 +381,16 @@ class ParametricStatistics(Statistics):
         distributions = {}
         select_from_measures = OTDistributionFitter.select_from_measures
         for variable in self.names:
-            distribution_names = []
+            selected_distribution_names = []
             marginal_distributions = []
             for component, all_distributions in enumerate(
                 self._all_distributions[variable]
             ):
-                distribution_name = distributions_names[
+                distribution_name = distribution_names[
                     select_from_measures(
                         [
                             all_distributions[distribution]["criterion"]
-                            for distribution in distributions_names
+                            for distribution in distribution_names
                         ],
                         self.fitting_criterion,
                         self.level,
@@ -401,7 +398,7 @@ class ParametricStatistics(Statistics):
                     )
                 ]
                 best_dist = all_distributions[distribution_name]["fitted_distribution"]
-                distribution_names.append(distribution_name)
+                selected_distribution_names.append(distribution_name)
                 marginal_distributions.append(best_dist)
                 LOGGER.info(
                     "| The best distribution for %s[%s] is %s.",
@@ -413,7 +410,7 @@ class ParametricStatistics(Statistics):
             self.__distributions[variable] = [
                 {"name": distribution_name, "value": marginal_distribution}
                 for distribution_name, marginal_distribution in zip(
-                    distribution_names, marginal_distributions
+                    selected_distribution_names, marginal_distributions
                 )
             ]
             if len(marginal_distributions) == 1:

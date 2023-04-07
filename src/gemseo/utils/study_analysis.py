@@ -94,7 +94,7 @@ class XLSStudyParser:
     DESIGN_VARIABLES = "Design variables"
     FORMULATION = "Formulation"
     OPTIONS = "Options"
-    OPTIONS_VALUES = "Options values"
+    OPTION_VALUES = "Options values"
     __SPACE: Final[str] = MultiLineString.INDENTATION
 
     def __init__(self, xls_study_path: str) -> None:
@@ -170,13 +170,10 @@ class XLSStudyParser:
         self.inputs = set(all_inputs)
         self.outputs = set(all_outputs)
 
-    # TODO: API: change return_none to raise_error and return empty list instead of None
     @staticmethod
     def _get_frame_series_values(
-        frame: DataFrame,
-        series_name: str,
-        return_none: bool | None = False,
-    ) -> list[str] | None:
+        frame: DataFrame, series_name: str, raise_error: bool = True
+    ) -> list[str]:
         """Return the data of a named column.
 
         Removes empty data.
@@ -184,20 +181,21 @@ class XLSStudyParser:
         Args:
             frame: The pandas frame of the sheet.
             series_name: The name of the series.
-            return_none: If the series does not exist, returns None
-                instead of raising a ValueError.
+            raise_error: Whether to raise a ``ValueError``
+                when the series does not exist;
+                otherwise, return an empty list.
 
         Returns:
             The names of the columns, if the series exist.
 
         Raises:
-            ValueError: If the sheet has no name.
+            ValueError: If the sheet has no name and ``raise_error`` is ``True``.
         """
         series = frame.get(series_name)
         if series is None:
-            if return_none:
-                return None
-            raise ValueError(f"The sheet has no series named '{series_name}'")
+            if raise_error:
+                raise ValueError(f"The sheet has no series named '{series_name}'.")
+            return []
         # Remove empty data
         # pylint: disable=comparison-with-itself
         return [val for val in series.tolist() if val == val]
@@ -258,9 +256,9 @@ class XLSStudyParser:
                     missing_column_msg.format(frame_name, self.FORMULATION)
                 )
 
-            options = self._get_frame_series_values(frame, self.OPTIONS, True)
-            options_values = self._get_frame_series_values(
-                frame, self.OPTIONS_VALUES, True
+            options = self._get_frame_series_values(frame, self.OPTIONS, False)
+            option_values = self._get_frame_series_values(
+                frame, self.OPTION_VALUES, False
             )
 
             if len(formulation) != 1:
@@ -271,10 +269,10 @@ class XLSStudyParser:
                 )
 
             if options is not None:
-                if len(options) != len(options_values):
+                if len(options) != len(option_values):
                     raise ValueError(
                         "Options {} and Options values {} "
-                        "must have the same length.".format(options, options_values)
+                        "must have the same length.".format(options, option_values)
                     )
 
             formulation = formulation[0]
@@ -286,7 +284,7 @@ class XLSStudyParser:
                 self.DESIGN_VARIABLES: design_variables,
                 self.FORMULATION: formulation,
                 self.OPTIONS: options,
-                self.OPTIONS_VALUES: options_values,
+                self.OPTION_VALUES: option_values,
             }
 
             self.scenarios[frame_name] = scn
@@ -561,7 +559,7 @@ class StudyAnalysis:
         option_names = scenario_description[XLSStudyParser.OPTIONS]
         options = {}
         if option_names is not None:
-            option_values = scenario_description[XLSStudyParser.OPTIONS_VALUES]
+            option_values = scenario_description[XLSStudyParser.OPTION_VALUES]
             for option_name, option_value in zip(option_names, option_values):
                 if isinstance(option_value, str):
                     try:

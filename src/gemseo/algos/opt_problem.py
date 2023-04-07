@@ -112,7 +112,7 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
-from gemseo.disciplines.constraints_aggregation import ConstrAggegationDisc
+from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
@@ -227,7 +227,7 @@ class OptimizationProblem(BaseProblem):
     constraint_names: dict[str, list[str]]
     """The standardized constraint names bound to the original ones."""
 
-    AggregationFunction = ConstrAggegationDisc.EvaluationFunction
+    AggregationFunction = ConstraintAggregation.EvaluationFunction
 
     _AGGREGATION_FUNCTION_MAP: Final[str] = {
         AggregationFunction.IKS: aggregate_iks,
@@ -445,8 +445,8 @@ class OptimizationProblem(BaseProblem):
         if value is None:
             value = 0.0
         str_repr = func.name
-        if func.has_args():
-            arguments = ", ".join(func.args)
+        if func.input_names:
+            arguments = ", ".join(func.input_names)
             str_repr += f"({arguments})"
 
         if cstr_type == MDOFunction.ConstraintType.EQ:
@@ -456,7 +456,7 @@ class OptimizationProblem(BaseProblem):
         else:
             sign = " <= "
 
-        if func.has_expr():
+        if func.expr:
             str_repr += ": "
             expr = func.expr
             n_char = len(str_repr)
@@ -524,8 +524,8 @@ class OptimizationProblem(BaseProblem):
         self.constraints.append(cstr_func)
         if not has_default_name:
             cstr_func.name = func_name
-            if cstr_func.outvars:
-                output_names = "#".join(cstr_func.outvars)
+            if cstr_func.output_names:
+                output_names = "#".join(cstr_func.output_names)
                 cstr_repr = cstr_repr.replace(func_name, output_names)
                 cstr_func.expr = cstr_func.expr.replace(func_name, output_names)
                 cstr_func.special_repr = f"{func_name}: {cstr_repr}"
@@ -823,7 +823,7 @@ class OptimizationProblem(BaseProblem):
         """
         return len(self.constraints)
 
-    def get_constraints_names(self) -> list[str]:
+    def get_constraint_names(self) -> list[str]:
         """Retrieve the names of the constraints.
 
         Returns:
@@ -846,7 +846,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The names of the design variables.
         """
-        return self.design_space.variables_names
+        return self.design_space.variable_names
 
     def get_all_functions(self) -> list[MDOFunction]:
         """Retrieve all the functions of the optimization problem.
@@ -858,7 +858,7 @@ class OptimizationProblem(BaseProblem):
         """
         return [self.objective] + self.constraints + self.observables
 
-    def get_all_functions_names(self) -> list[str]:
+    def get_all_function_name(self) -> list[str]:
         """Retrieve the names of all the function of the optimization problem.
 
         These functions are the constraints, the objective function and the observables.
@@ -1023,7 +1023,7 @@ class OptimizationProblem(BaseProblem):
         """
         n_cstr = 0
         for constraint in self.constraints:
-            if not constraint.has_dim():
+            if not constraint.dim:
                 raise ValueError(
                     "Constraint dimension not available yet, "
                     "please call function {} once".format(constraint)
@@ -1079,18 +1079,17 @@ class OptimizationProblem(BaseProblem):
         """Clear all the listeners."""
         self.database.clear_listeners()
 
-    # TODO: API: set the default value of eval_observables to True.
     def evaluate_functions(
         self,
         x_vect: ndarray = None,
         eval_jac: bool = False,
         eval_obj: bool = True,
-        eval_observables: bool = False,
+        eval_observables: bool = True,
         normalize: bool = True,
         no_db_no_norm: bool = False,
-        constraints_names: Iterable[str] | None = None,
-        observables_names: Iterable[str] | None = None,
-        jacobians_names: Iterable[str] | None = None,
+        constraint_names: Iterable[str] | None = None,
+        observable_names: Iterable[str] | None = None,
+        jacobian_names: Iterable[str] | None = None,
     ) -> tuple[dict[str, float | ndarray], dict[str, ndarray]]:
         """Compute the functions of interest, and possibly their derivatives.
 
@@ -1106,39 +1105,39 @@ class OptimizationProblem(BaseProblem):
                 if None, the initial point x_0 is used.
             eval_jac: Whether to compute the Jacobian matrices
                 of the functions of interest.
-                If ``True`` and ``jacobians_names`` is ``None`` then
+                If ``True`` and ``jacobian_names`` is ``None`` then
                 compute the Jacobian matrices (or gradients) of the functions that are
-                selected for evaluation (with ``eval_obj``, ``constraints_names``,
-                ``eval_observables`` and``observables_names``).
-                If ``False`` and ``jacobians_names`` is ``None`` then no Jacobian
+                selected for evaluation (with ``eval_obj``, ``constraint_names``,
+                ``eval_observables`` and``observable_names``).
+                If ``False`` and ``jacobian_names`` is ``None`` then no Jacobian
                 matrix is evaluated.
-                If ``jacobians_names`` is not ``None`` then the value of
+                If ``jacobian_names`` is not ``None`` then the value of
                 ``eval_jac`` is ignored.
             eval_obj: Whether to consider the objective function
                 as a function of interest.
             eval_observables: Whether to evaluate the observables.
-                If ``True`` and ``observables_names`` is ``None`` then all the
+                If ``True`` and ``observable_names`` is ``None`` then all the
                 observables are evaluated.
-                If ``False`` and ``observables_names`` is ``None`` then no observable
+                If ``False`` and ``observable_names`` is ``None`` then no observable
                 is evaluated.
-                If ``observables_names`` is not ``None`` then the value of
+                If ``observable_names`` is not ``None`` then the value of
                 ``eval_observables`` is ignored.
             normalize: Whether to consider the input vector ``x_vect`` normalized.
             no_db_no_norm: If True, then do not use the pre-processed functions,
                 so we have no database, nor normalization.
-            constraints_names: The names of the constraints to evaluate.
+            constraint_names: The names of the constraints to evaluate.
                 If ``None`` then all the constraints are evaluated.
-            observables_names: The names of the observables to evaluate.
+            observable_names: The names of the observables to evaluate.
                 If ``None`` and ``eval_observables`` is ``True`` then all the
                 observables are evaluated.
                 If ``None`` and ``eval_observables`` is ``False`` then no observable is
                 evaluated.
-            jacobians_names: The names of the functions whose Jacobian matrices
+            jacobian_names: The names of the functions whose Jacobian matrices
                 (or gradients) to compute.
                 If ``None`` and ``eval_jac`` is ``True`` then
                 compute the Jacobian matrices (or gradients) of the functions that are
-                selected for evaluation (with ``eval_obj``, ``constraints_names``,
-                ``eval_observables`` and``observables_names``).
+                selected for evaluation (with ``eval_obj``, ``constraint_names``,
+                ``eval_observables`` and``observable_names``).
                 If ``None`` and ``eval_jac`` is ``False`` then no Jacobian matrix is
                 computed.
 
@@ -1147,15 +1146,15 @@ class OptimizationProblem(BaseProblem):
             as well as their Jacobian matrices if ``eval_jac`` is ``True``.
 
         Raises:
-            ValueError: If a name in ``jacobians_names`` is not the name of
+            ValueError: If a name in ``jacobian_names`` is not the name of
                 a function of the problem.
         """
         # Get the functions to be evaluated
         from_original_functions = not self.__functions_are_preprocessed or no_db_no_norm
         functions = self.__get_functions(
             eval_obj,
-            constraints_names,
-            observables_names,
+            constraint_names,
+            observable_names,
             eval_observables,
             from_original_functions,
         )
@@ -1175,12 +1174,12 @@ class OptimizationProblem(BaseProblem):
                     LOGGER.error("Failed to evaluate function %s", function.name)
                     raise
 
-        if not eval_jac and jacobians_names is None:
+        if not eval_jac and jacobian_names is None:
             return outputs, {}
 
         # Evaluate the Jacobians
-        if jacobians_names is not None:
-            unknown_names = set(jacobians_names) - set(self.get_all_functions_names())
+        if jacobian_names is not None:
+            unknown_names = set(jacobian_names) - set(self.get_all_function_name())
             if unknown_names:
                 if len(unknown_names) > 1:
                     message = "These names are"
@@ -1193,9 +1192,9 @@ class OptimizationProblem(BaseProblem):
                 )
 
             functions = self.__get_functions(
-                self.objective.name in jacobians_names,
-                [name for name in jacobians_names if name in self.constraint_names],
-                [name for name in jacobians_names if name in self.__observable_names],
+                self.objective.name in jacobian_names,
+                [name for name in jacobian_names if name in self.constraint_names],
+                [name for name in jacobian_names if name in self.__observable_names],
                 True,
                 from_original_functions,
             )
@@ -1255,8 +1254,8 @@ class OptimizationProblem(BaseProblem):
     def __get_functions(
         self,
         eval_obj: bool,
-        constraints_names: Iterable[str] | None,
-        observables_names: Iterable[str] | None,
+        constraint_names: Iterable[str] | None,
+        observable_names: Iterable[str] | None,
         eval_observables: bool,
         from_original_functions: bool,
     ) -> list[MDOFunction]:
@@ -1264,9 +1263,9 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             eval_obj: Whether to return the objective function.
-            constraints_names: The names of the constraints to return.
+            constraint_names: The names of the constraints to return.
                 If ``None`` then all the constraints are evaluated.
-            observables_names: The names of the observables to return.
+            observable_names: The names of the observables to return.
                 If ``None`` and ``eval_observables`` is True then all the observables
                 are returned.
                 If ``None`` and ``eval_observables`` is False then no observable is
@@ -1288,8 +1287,8 @@ class OptimizationProblem(BaseProblem):
         else:
             functions = [self.objective]
 
-        if constraints_names is not None:
-            for name in constraints_names:
+        if constraint_names is not None:
+            for name in constraint_names:
                 functions.append(self.__get_constraint(name, from_original_functions))
 
         elif use_nonproc_functions:
@@ -1297,8 +1296,8 @@ class OptimizationProblem(BaseProblem):
         else:
             functions += self.constraints
 
-        if observables_names is not None:
-            for name in observables_names:
+        if observable_names is not None:
+            for name in observable_names:
                 functions.append(self.__get_observable(name, from_original_functions))
 
         elif eval_observables and use_nonproc_functions:
@@ -1331,7 +1330,7 @@ class OptimizationProblem(BaseProblem):
             # Keep the rounding option only if there is an integer design variable
             round_ints = any(
                 np_any(var_type == DesignSpace.DesignVariableType.INTEGER)
-                for var_type in self.design_space.variables_types.values()
+                for var_type in self.design_space.variable_types.values()
             )
         # Avoids multiple wrappings of functions when multiple executions
         # are performed, in bi-level scenarios for instance
@@ -1494,7 +1493,7 @@ class OptimizationProblem(BaseProblem):
             coefficients,
             orig_func.name,
             orig_func.f_type,
-            orig_func.args,
+            orig_func.input_names,
             value_at_zero,
         )
 
@@ -1890,7 +1889,7 @@ class OptimizationProblem(BaseProblem):
             msg.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add("with respect to {}", pretty_str(self.design_space.variables_names))
+        msg.add("with respect to {}", pretty_str(self.design_space.variable_names))
         if self.has_constraints():
             msg.add("subject to constraints:")
             msg.indent()
@@ -2136,8 +2135,8 @@ class OptimizationProblem(BaseProblem):
             cache_output_as_input = False
 
         # Add database inputs
-        input_names = self.design_space.variables_names
-        names_to_sizes = self.design_space.variables_sizes
+        input_names = self.design_space.variable_names
+        names_to_sizes = self.design_space.variable_sizes
         input_history = array(self.database.get_x_history())
         n_samples = len(input_history)
         positions = []
@@ -2373,7 +2372,7 @@ class OptimizationProblem(BaseProblem):
     @property
     def is_mono_objective(self) -> bool:
         """Whether the optimization problem is mono-objective."""
-        return len(self.objective.outvars) == 1
+        return len(self.objective.output_names) == 1
 
     def get_functions_dimensions(
         self, names: Iterable[str] | None = None
@@ -2390,7 +2389,7 @@ class OptimizationProblem(BaseProblem):
             and the values are the functions dimensions.
         """
         if names is None:
-            names = [self.objective.name] + self.get_constraints_names()
+            names = [self.objective.name] + self.get_constraint_names()
 
         return {name: self.get_function_dimension(name) for name in names}
 
@@ -2416,7 +2415,7 @@ class OptimizationProblem(BaseProblem):
             raise ValueError(f"The problem has no function named {name}.")
 
         # Get the dimension of the function output
-        if function.has_dim():
+        if function.dim:
             return function.dim
 
         if self.design_space.has_current_value():
@@ -2443,7 +2442,7 @@ class OptimizationProblem(BaseProblem):
         """
         n_unsatisfied = 0
         values, _ = self.evaluate_functions(
-            design_variables, eval_obj=False, normalize=False
+            design_variables, eval_obj=False, eval_observables=False, normalize=False
         )
         for constraint in self.constraints:
             value = atleast_1d(values[constraint.name])
@@ -2455,22 +2454,22 @@ class OptimizationProblem(BaseProblem):
             n_unsatisfied += sum(value > tolerance)
         return n_unsatisfied
 
-    def get_scalar_constraints_names(self) -> list[str]:
+    def get_scalar_constraint_names(self) -> list[str]:
         """Return the names of the scalar constraints.
 
         Returns:
             The names of the scalar constraints.
         """
-        constraints_names = list()
+        constraint_names = list()
         for constraint in self.constraints:
             dimension = self.get_function_dimension(constraint.name)
             if dimension == 1:
-                constraints_names.append(constraint.name)
+                constraint_names.append(constraint.name)
             else:
-                constraints_names.extend(
+                constraint_names.extend(
                     [constraint.get_indexed_name(index) for index in range(dimension)]
                 )
-        return constraints_names
+        return constraint_names
 
     def reset(
         self,
@@ -2533,7 +2532,7 @@ class OptimizationProblem(BaseProblem):
         return self.__get_function(
             name,
             from_original_constraints,
-            self.get_constraints_names(),
+            self.get_constraint_names(),
             self.nonproc_constraints,
             self.constraints,
             self.CONSTRAINTS_GROUP,

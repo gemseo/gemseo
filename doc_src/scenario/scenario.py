@@ -56,7 +56,7 @@ scenario = create_scenario(
 
 ###
 
-print(scenario.get_optim_variables_names())
+print(scenario.get_optim_variable_names())
 print(scenario.design_space)
 scenario.xdsmize(monitor=True, log_workflow_status=True)
 

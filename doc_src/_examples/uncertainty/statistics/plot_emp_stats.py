@@ -91,7 +91,7 @@ print(analysis.compute_minimum())
 # ------------------------------------------------------------
 # We can only reduce the statistical analysis to the range variable:
 analysis = create_statistics(
-    dataset, variables_names=["y_4"], name="SobieskiMission.range"
+    dataset, variable_names=["y_4"], name="SobieskiMission.range"
 )
 print(analysis)
 

@@ -316,7 +316,7 @@ def _create_mdofunc(
         constr_fct.f_type,
         compute_jac_fct,
         new_expr,
-        constr_fct.args,
+        constr_fct.input_names,
         1,
         new_output_names,
         constr_fct.force_real,
