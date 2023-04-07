@@ -24,9 +24,8 @@ from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 from numpy import allclose
 from numpy import arange
 from numpy import array
-from numpy import mean as npmean
 from numpy import ndarray
-from numpy import std as npstd
+from numpy import zeros
 from numpy.testing import assert_almost_equal
 
 
@@ -44,60 +43,96 @@ def test_constructor():
 
 def test_fit(data):
     """Test fit method."""
-    mean = npmean(data, 0)
-    std = npstd(data, 0)
+    _mean = data.mean(0)
+    _std = data.std(0)
     scaler = StandardScaler()
     scaler.fit(data)
-    assert allclose(scaler.offset, -mean / std)
-    assert allclose(scaler.coefficient, 1 / std)
+    assert allclose(scaler.offset, -_mean / _std)
+    assert allclose(scaler.coefficient, 1 / _std)
 
 
 def test_transform(data):
     """Test transform method."""
-    mean = npmean(data, 0)
-    std = npstd(data, 0)
+    _mean = data.mean(0)
+    _std = data.std(0)
     scaler = StandardScaler()
     another_scaler = StandardScaler(offset=3, coefficient=2)
     scaler.fit(data)
     another_scaler.fit(data)  # fit() should overload parameters
     scaled_data = scaler.transform(data)
     other_scaled_data = another_scaler.transform(data)
-    assert allclose(scaled_data, (data - mean) / std)
-    assert allclose(other_scaled_data, (data - mean) / std)
+    assert allclose(scaled_data, (data - _mean) / _std)
+    assert allclose(other_scaled_data, (data - _mean) / _std)
 
 
 def test_inverse_transform(data):
     """Test inverse_transform method."""
-    mean = npmean(data, 0)
-    std = npstd(data, 0)
+    _mean = data.mean(0)
+    _std = data.std(0)
     scaler = StandardScaler()
     another_scaler = StandardScaler(offset=3, coefficient=2)
     scaler.fit(data)
     another_scaler.fit(data)  # fit() should overload parameters
     unscaled_data = scaler.inverse_transform(data)
     other_unscaled_data = another_scaler.inverse_transform(data)
-    assert allclose(unscaled_data, mean + std * data)
-    assert allclose(other_unscaled_data, mean + std * data)
+    assert allclose(unscaled_data, _mean + _std * data)
+    assert allclose(other_unscaled_data, _mean + _std * data)
+
+
+def _test_transformer(data, transformed_data, coefficient, offset):
+    """Test the StandardScaler transformer.
+
+    Args:
+        data: The data to be transformed.
+        transformed_data: The expected transformed data.
+        coefficient: The expected coefficient.
+        offset: The expected offset.
+    """
+    transformer = StandardScaler()
+    assert_almost_equal(transformer.fit_transform(data), transformed_data)
+    assert_almost_equal(transformer.inverse_transform(transformed_data), data)
+    assert_almost_equal(transformer.coefficient, coefficient)
+    assert_almost_equal(transformer.offset, offset)
 
 
 @pytest.mark.parametrize(
-    ["data", "transformed_data"],
-    [
-        (
-            array([[1.0, 2.0, 6.0], [2.0, 2.0, 2.0]]),
-            array([[-1.0, 0.0, 1.0], [1.0, 0.0, -1.0]]),
-        ),
-        (
-            array([[1.0, 2.0, 6.0], [2.0, 5.0, 2.0]]),
-            array([[-1.0, -1.0, 1.0], [1.0, 1.0, -1.0]]),
-        ),
-        (array([[2.0], [4.0]]), array([[-1.0], [1.0]])),
-        (array([[1.0], [1.0]]), array([[0.0], [0.0]])),
-    ],
+    "data",
+    [array([[2.0], [2.0]]), array([[0.0], [0.0]])],
 )
-def test_constant(data, transformed_data):
-    """Check scaling with a constant feature."""
-    transformer = StandardScaler()
-    transformer.fit(data)
-    assert_almost_equal(transformer.fit_transform(data), transformed_data)
-    assert_almost_equal(transformer.inverse_transform(transformed_data), data)
+def test_with_only_constant(data):
+    """Check scaling with only constant features."""
+    if data[0] == 0:
+        offset = array([0])
+        coefficient = array([1])
+    else:
+        offset = array([-1])
+        coefficient = 1 / data[0]
+    transformed_data = offset + coefficient * data
+    _test_transformer(data, transformed_data, coefficient, offset)
+
+
+def test_with_constant(data):
+    """Check scaling with constant features."""
+    offset = zeros(4)
+    coefficient = zeros(4)
+    data = array([[1.0, 2.0, 0.0, 6.0], [2.0, 2.0, 0.0, 2.0]])
+    std = data[:, [0, 3]].std(0)
+    offset[[0, 3]] = -data[:, [0, 3]].mean(0) / std
+    coefficient[[0, 3]] = 1 / std
+    offset[[1, 2]] = array([-1, 0])
+    coefficient[[1, 2]] = array([1 / data[0, 1], 1])
+    transformed_data = offset + coefficient * data
+    _test_transformer(data, transformed_data, coefficient, offset)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [array([[1.0, 2.0, 6.0], [2.0, 5.0, 2.0]]), array([[2.0], [4.0]])],
+)
+def test_without_constant(data):
+    """Check scaling without constant feature."""
+    std = data.std(0)
+    offset = -data.mean(0) / std
+    coefficient = 1 / std
+    transformed_data = offset + coefficient * data
+    _test_transformer(data, transformed_data, coefficient, offset)

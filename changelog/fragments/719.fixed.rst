@@ -1,0 +1,1 @@
+:class:`.MinMaxScaler` and :class:`.StandardScaler` handle constant data without ``RuntimeWarning``.

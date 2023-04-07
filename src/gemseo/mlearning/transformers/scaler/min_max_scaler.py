@@ -36,12 +36,13 @@ such that the minimum of the original data corresponds to 0 and the maximum to 1
 
 Warnings:
 
-    When :math:`\text{min}(z)=\text{max}(z)`,
+    When :math:`\text{min}(z)=\text{max}(z)\neq 0`,
     we use :math:`\bar{z}=\frac{z}{\text{min}(z)}-0.5`.
+    When :math:`\text{min}(z)=\text{max}(z)=0`,
+    we use :math:`\bar{z}=z+0.5`.
 """
 from __future__ import annotations
 
-from numpy import nan_to_num
 from numpy import ndarray
 from numpy import where
 
@@ -70,5 +71,5 @@ class MinMaxScaler(Scaler):
         l_b = data.min(0)
         delta = data.max(0) - l_b
         is_constant = delta == 0
-        self.coefficient = where(is_constant, nan_to_num(1 / l_b), 1 / delta)
-        self.offset = where(is_constant, -0.5, -l_b / delta)
+        self.coefficient = where(is_constant, 1 / where(l_b == 0, 1, l_b), 1 / delta)
+        self.offset = where(is_constant, where(l_b == 0, 0.5, -0.5), -l_b / delta)
