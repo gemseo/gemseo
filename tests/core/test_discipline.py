@@ -31,7 +31,7 @@ from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -135,7 +135,7 @@ def test_check_input_data_exception_chain(sobieski_chain):
     """Test the check input data exception."""
     chain, indata = sobieski_chain
     del indata["x_1"]
-    with pytest.raises(InvalidDataException):
+    with pytest.raises(InvalidDataError):
         chain.check_input_data(indata)
 
 
@@ -153,20 +153,20 @@ def test_check_input_data_exception(grammar_type):
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
 
-    with pytest.raises(InvalidDataException, match=".*Missing required names: x_1"):
+    with pytest.raises(InvalidDataError, match=".*Missing required names: x_1"):
         struct.check_input_data(indata)
 
     struct.execute(indata)
 
     del struct.default_inputs["x_1"]
-    with pytest.raises(InvalidDataException, match=".*Missing required names: x_1"):
+    with pytest.raises(InvalidDataError, match=".*Missing required names: x_1"):
         struct.execute(indata)
 
 
 def test_outputs():
     """Test the execution of a MDODiscipline."""
     struct = SobieskiStructure()
-    with pytest.raises(InvalidDataException):
+    with pytest.raises(InvalidDataError):
         struct.check_output_data()
     indata = SobieskiProblem().get_default_inputs()
     struct.execute(indata)

@@ -25,31 +25,31 @@ from numpy import average
 from numpy import bool_
 
 
-class TerminationCriterion(Exception):
+class TerminationCriterion(Exception):  # noqa: N818
     """Stop driver for some reason."""
 
 
-class FunctionIsNan(TerminationCriterion):
+class FunctionIsNan(TerminationCriterion):  # noqa: N818
     """Stops driver when a function has NaN value or NaN Jacobian."""
 
 
-class DesvarIsNan(TerminationCriterion):
+class DesvarIsNan(TerminationCriterion):  # noqa: N818
     """Stops driver when the design variables are nan."""
 
 
-class MaxIterReachedException(TerminationCriterion):
+class MaxIterReachedException(TerminationCriterion):  # noqa: N818
     """Exception raised when the maximum number of iterations is reached."""
 
 
-class MaxTimeReached(TerminationCriterion):
+class MaxTimeReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the maximum execution time is reached."""
 
 
-class FtolReached(TerminationCriterion):
+class FtolReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the f_tol_rel or f_tol_abs criteria is reached."""
 
 
-class XtolReached(TerminationCriterion):
+class XtolReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the x_tol_rel or x_tol_abs criteria is reached."""
 
 

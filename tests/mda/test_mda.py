@@ -27,7 +27,7 @@ import pytest
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -181,7 +181,7 @@ def test_array_couplings(mda_class, grammar_type):
     a_disc.input_grammar.update_from_data({"y1": 2.0})
     assert not a_disc.input_grammar.is_array("y1")
 
-    with pytest.raises(InvalidDataException):
+    with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})
 
     with pytest.raises(TypeError, match="must be of type array"):

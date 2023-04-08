@@ -41,7 +41,7 @@ from matplotlib.gridspec import GridSpec
 
 from gemseo.algos.database import Database
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
@@ -270,12 +270,12 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             **options: The options of the post-processor.
 
         Raises:
-            InvalidDataException: If an option is invalid according to the grammar.
+            InvalidDataError: If an option is invalid according to the grammar.
         """
         try:
             self.opt_grammar.validate(options)
-        except InvalidDataException:
-            raise InvalidDataException(
+        except InvalidDataError:
+            raise InvalidDataError(
                 f"Invalid options for post-processor {self.__class__.__name__}; "
                 f"got {pretty_repr(options)}."
             )

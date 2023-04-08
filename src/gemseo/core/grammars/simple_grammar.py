@@ -27,7 +27,7 @@ from numpy import ndarray
 
 from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -216,7 +216,7 @@ class SimpleGrammar(BaseGrammar):
         if error_message.lines:
             LOGGER.error(error_message)
             if raise_exception:
-                raise InvalidDataException(str(error_message))
+                raise InvalidDataError(str(error_message))
 
     def update_from_data(  # noqa: D102
         self,
