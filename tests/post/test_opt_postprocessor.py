@@ -23,7 +23,7 @@ import re
 import matplotlib.pyplot as plt
 import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -66,7 +66,7 @@ def test_fig_size(problem):
 def test_check_options(problem):
     """Check that an error is raised when using an option that is not in the grammar."""
     with pytest.raises(
-        InvalidDataException,
+        InvalidDataError,
         match=re.escape(
             "Invalid options for post-processor NewOptPostProcessor; "
             "got bar=True, foo='True'."

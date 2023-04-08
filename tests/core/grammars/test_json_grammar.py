@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 from gemseo.core.discipline_data import Data
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from numpy import array
@@ -309,7 +309,7 @@ def test_validate_error(raise_exception, data, error_msg, caplog):
     g = new_grammar(DATA_PATH / "grammar_2.json")
 
     if raise_exception:
-        with pytest.raises(InvalidDataException, match=error_msg):
+        with pytest.raises(InvalidDataError, match=error_msg):
             g.validate(data)
     else:
         g.validate(data, raise_exception=raise_exception)

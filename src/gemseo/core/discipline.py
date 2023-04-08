@@ -55,7 +55,7 @@ from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.defaults import Defaults
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
@@ -1896,7 +1896,7 @@ class MDODiscipline(Serializable):
         """
         try:
             self.input_grammar.validate(input_data, raise_exception)
-        except InvalidDataException as err:
+        except InvalidDataError as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid input data")
                 + f" in discipline {self.name}",
@@ -1914,7 +1914,7 @@ class MDODiscipline(Serializable):
         """
         try:
             self.output_grammar.validate(self._local_data, raise_exception)
-        except InvalidDataException as err:
+        except InvalidDataError as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid output data")
                 + f" in discipline {self.name}",

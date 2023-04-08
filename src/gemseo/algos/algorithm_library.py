@@ -36,7 +36,7 @@ from numpy import ndarray
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.source_parsing import get_options_doc
@@ -246,7 +246,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         try:
             self.opt_grammar.validate(options)
-        except InvalidDataException:
+        except InvalidDataError:
             raise ValueError(f"Invalid options for algorithm {self.opt_grammar.name}.")
 
         for option_name in list(options.keys()):  # Copy keys on purpose

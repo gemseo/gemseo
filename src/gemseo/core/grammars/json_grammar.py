@@ -45,7 +45,7 @@ from numpy import ndarray
 from gemseo.core.discipline_data import Data
 from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.core.grammars.simple_grammar import NamesToTypes
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -220,7 +220,7 @@ class JSONGrammar(BaseGrammar):
     ) -> None:
         """
         Raises:
-            InvalidDataException: If the passed data is not a dictionary,
+            InvalidDataError: If the passed data is not a dictionary,
                 or if the data is not consistent with the grammar.
         """  # noqa: D205, D212, D415
         error_message = MultiLineString()
@@ -244,7 +244,7 @@ class JSONGrammar(BaseGrammar):
                 error_message.add(", error: {}", error.args[0])
             LOGGER.error(error_message)
             if raise_exception:
-                raise InvalidDataException(str(error_message))
+                raise InvalidDataError(str(error_message))
 
     def update_from_data(
         self,

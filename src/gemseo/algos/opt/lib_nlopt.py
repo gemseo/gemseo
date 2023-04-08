@@ -45,10 +45,6 @@ LOGGER = logging.getLogger(__name__)
 NLoptOptionsType = Union[bool, int, float]
 
 
-class NloptRoundOffException(Exception):
-    """NLopt roundoff error."""
-
-
 @dataclass
 class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the NLopt library."""

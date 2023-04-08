@@ -24,7 +24,7 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 
 PATH_TO_PARENT_DIRECTORY = Path(__file__).parent
@@ -60,7 +60,7 @@ print(repr(grammar_1))
 # On validation, the allowed type is only the one from the second grammar.
 try:
     grammar_1.validate({"name2": 0})
-except InvalidDataException:
+except InvalidDataError:
     pass
 
 grammar_1.validate({"name2": "a string"})

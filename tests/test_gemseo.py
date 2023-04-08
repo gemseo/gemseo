@@ -75,7 +75,7 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -425,7 +425,7 @@ def test_create_discipline():
         "data.linearization_mode must be one of "
         r"\['auto', 'direct', 'reverse', 'adjoint'\]"
     )
-    with pytest.raises(InvalidDataException, match=msg):
+    with pytest.raises(InvalidDataError, match=msg):
         create_discipline("SobieskiMission", **options_fail)
 
 

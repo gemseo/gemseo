@@ -20,7 +20,7 @@ from typing import Any
 from typing import Mapping
 
 import pytest
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from numpy import array
 from numpy import ndarray
@@ -347,7 +347,7 @@ def test_validate_error(data, error_msg, raise_exception, caplog):
         "g", names_to_types={"name1": None, "name2": int}, required_names=["name1"]
     )
     if raise_exception:
-        with pytest.raises(InvalidDataException, match=error_msg):
+        with pytest.raises(InvalidDataError, match=error_msg):
             g.validate(data)
     else:
         g.validate(data, raise_exception=False)

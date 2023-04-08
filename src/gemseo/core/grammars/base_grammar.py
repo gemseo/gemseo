@@ -191,7 +191,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             raise_exception: Whether to raise an exception when the validation fails.
 
         Raises:
-            InvalidDataException: If the validation fails and ``raise_exception`` is
+            InvalidDataError: If the validation fails and ``raise_exception`` is
                 ``True``.
         """
 
