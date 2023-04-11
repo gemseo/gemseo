@@ -34,10 +34,12 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.derivatives.complex_step import ComplexStep
-from gemseo.utils.derivatives.derivatives_approx import comp_best_step
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
 from numpy import array
 from numpy import complex128
 from numpy import float64
@@ -166,7 +168,7 @@ def test_opt_step():
                 f_p = func(mult * (x + step))
                 f_x = func(mult * x)
                 f_m = func(mult * (x - step))
-                trunc_error, cancel_error, opt_step = comp_best_step(
+                trunc_error, cancel_error, opt_step = compute_best_step(
                     f_p, f_x, f_m, step
                 )
                 if trunc_error is None:
@@ -311,7 +313,7 @@ def test_wrong_step(dtype):
 
 
 def test_factory():
-    factory = GradientApproximationFactory()
+    factory = GradientApproximatorFactory()
     assert "ComplexStep" in factory.gradient_approximators
     assert factory.is_available("ComplexStep")
 

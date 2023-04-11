@@ -30,6 +30,7 @@ from numpy.typing import NDArray
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.ode.ode_result import ODEResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
 class ODEProblem(BaseProblem):
@@ -113,7 +114,7 @@ class ODEProblem(BaseProblem):
     def check_jacobian(
         self,
         state_vector: ArrayLike,
-        method: str = "FirstOrderFD",
+        approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-6,
         error_max: float = 1e-8,
     ) -> None:
@@ -124,8 +125,7 @@ class ODEProblem(BaseProblem):
 
         Args:
             state_vector: The state vector at which the jacobian is checked.
-            method: The method used to approximate the gradients,
-                either "FirstOrderFD" or "ComplexStep".
+            approximation_mode: The approximation mode.
             step: The step used to approximate the gradients.
             error_max: The error threshold above which the jacobian is deemed to
                 be incorrect.
@@ -140,4 +140,6 @@ class ODEProblem(BaseProblem):
         """
         if self.jac is not None:
             function = MDOFunction(self._func, "f", jac=self._jac)
-            function.check_grad(asarray(state_vector), method, step, error_max)
+            function.check_grad(
+                asarray(state_vector), approximation_mode, step, error_max
+            )

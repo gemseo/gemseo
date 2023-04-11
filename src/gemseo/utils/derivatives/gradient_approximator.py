@@ -15,69 +15,58 @@
 """Gradient approximation."""
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Sequence
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
-from numpy import finfo
 from numpy import float64
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.base_factory import BaseFactory
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
-EPSILON = finfo(float).eps
 
-
-class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
+class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A gradient approximator."""
 
     f_pointer: Callable[[ndarray], ndarray]
     """The pointer to the function to derive."""
 
-    ALIAS = None
+    _APPROXIMATION_MODE: ClassVar[ApproximationMode]
+    """The approximation mode that a derived class implements."""
 
     def __init__(
         self,
         f_pointer: Callable[[ndarray], ndarray],
-        step: float = 1e-6,
-        parallel: bool = False,
+        step: float | complex | ndarray | None = None,
         design_space: DesignSpace | None = None,
         normalize: bool = True,
-        **parallel_args: int | bool | float,
+        parallel: bool = False,
+        **parallel_args: Any,
     ) -> None:
         """
         Args:
             f_pointer: The pointer to the function to derive.
             step: The default differentiation step.
-            parallel: Whether to differentiate the function in parallel.
             design_space: The design space
                 containing the upper bounds of the input variables.
-                If None, consider that the input variables are unbounded.
-            normalize: If True, then the functions are normalized.
+                If ``None``, consider that the input variables are unbounded.
+            normalize: Whether to normalize the function.
+            parallel: Whether to differentiate the function in parallel.
             **parallel_args: The parallel execution options,
                 see :mod:`gemseo.core.parallel_execution`.
         """  # noqa:D205 D212 D415
         self.f_pointer = f_pointer
-        self.__par_args = parallel_args
-        self.__parallel = parallel
-        self._step = None
+        self._parallel_args = parallel_args
+        self._parallel = parallel
         self.step = step
         self._design_space = design_space
         self._normalize = normalize
         self._function_kwargs = {}
-
-    @property
-    def _parallel(self) -> bool:
-        """Whether to differentiate the function in parallel."""
-        return self.__parallel
-
-    @property
-    def _par_args(self) -> int | bool | float:
-        """The parallel execution options."""
-        return self.__par_args
 
     @property
     def step(self) -> float:
@@ -131,6 +120,7 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
 
         return array(grad, dtype=float64).T
 
+    @abstractmethod
     def _compute_parallel_grad(
         self,
         input_values: ndarray,
@@ -151,8 +141,8 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The approximated gradient.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def _compute_grad(
         self,
         input_values: ndarray,
@@ -174,7 +164,6 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The approximated gradient.
         """
-        raise NotImplementedError
 
     def generate_perturbations(
         self,
@@ -209,6 +198,7 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
 
         return self._generate_perturbations(x_vect, x_indices, step)
 
+    @abstractmethod
     def _generate_perturbations(
         self,
         input_values: ndarray,
@@ -230,7 +220,6 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
             * The differentiation step,
               either one global step or one step by input component.
         """
-        raise NotImplementedError
 
     def _wrap_function(
         self,
@@ -245,57 +234,3 @@ class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
             The value of the function output.
         """
         return self.f_pointer(f_input_values, **self._function_kwargs)
-
-
-class GradientApproximationFactory(BaseFactory):
-    """A factory to create gradient approximators."""
-
-    _CLASS = GradientApproximator
-    _MODULE_NAMES = ("gemseo.utils.derivatives",)
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.__aliases = {
-            self.get_class(class_name).ALIAS: class_name
-            for class_name in self.class_names
-        }
-
-    def create(
-        self,
-        name: str,
-        f_pointer: Callable,
-        step: float | None = None,
-        parallel: bool = False,
-        **parallel_args,
-    ) -> GradientApproximator:
-        """Create a gradient approximator.
-
-        Args:
-            name: Either the name of the class implementing the gradient approximator
-                or its alias.
-            f_pointer: The pointer to the function to differentiate.
-            step: The differentiation step.
-                If None, use a default differentiation step.
-            parallel: Whether to differentiate the function in parallel.
-            **parallel_args: The parallel execution options,
-                see :mod:`gemseo.core.parallel_execution`.
-
-        Returns:
-            The gradient approximator.
-        """
-        if name in self.__aliases:
-            name = self.__aliases[name]
-
-        if step is None:
-            return super().create(
-                name, f_pointer=f_pointer, parallel=parallel, **parallel_args
-            )
-
-        return super().create(
-            name, f_pointer=f_pointer, step=step, parallel=parallel, **parallel_args
-        )
-
-    @property
-    def gradient_approximators(self) -> list[str]:
-        """The gradient approximators."""
-        return self.class_names

@@ -73,8 +73,8 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
-from gemseo.core.derivatives import derivation_modes
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import MultiLineString
 
@@ -189,7 +189,7 @@ class DriverLibrary(AlgorithmLibrary):
     and put your file in gemseo.algos.doe or gemseo.algo.opt packages.
     """
 
-    ApproximationMode = derivation_modes.ApproximationMode
+    ApproximationMode = ApproximationMode
 
     class _DifferentiationMethod(StrEnum):
         """The additional differentiation methods."""

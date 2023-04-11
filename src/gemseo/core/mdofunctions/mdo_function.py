@@ -50,11 +50,12 @@ from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
-from gemseo.utils.derivatives.complex_step import ComplexStep
-from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -155,6 +156,8 @@ class MDOFunction(Serializable):
         """The type of function is not set."""
 
     FunctionType = merge_enums("FunctionType", StrEnum, _FunctionType, ConstraintType)
+
+    ApproximationMode = ApproximationMode
 
     DICT_REPR_ATTR: list[str] = [
         "name",
@@ -691,7 +694,7 @@ class MDOFunction(Serializable):
     def check_grad(
         self,
         x_vect: ArrayType,
-        method: str = "FirstOrderFD",
+        approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-6,
         error_max: float = 1e-8,
     ) -> None:
@@ -699,8 +702,7 @@ class MDOFunction(Serializable):
 
         Args:
             x_vect: The vector at which the function is checked.
-            method: The method used to approximate the gradients,
-                either "FirstOrderFD" or "ComplexStep".
+            approximation_mode: The approximation mode.
             step: The step for the approximation of the gradients.
             error_max: The maximum value of the error.
 
@@ -711,15 +713,9 @@ class MDOFunction(Serializable):
                 are inconsistent
                 or if the analytical gradients are wrong.
         """
-        if method == "FirstOrderFD":
-            gradient_approximator = FirstOrderFD(self, step)
-        elif method == "ComplexStep":
-            gradient_approximator = ComplexStep(self, step)
-        else:
-            raise ValueError(
-                f"Unknown approximation method {method},"
-                "use 'FirstOrderFD' or 'ComplexStep'."
-            )
+        gradient_approximator = GradientApproximatorFactory().create(
+            approximation_mode, self, step=step
+        )
 
         approximation = gradient_approximator.f_gradient(x_vect).real
         reference = self._jac(x_vect).real

@@ -106,7 +106,6 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
-from gemseo.core.derivatives import derivation_modes
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
@@ -114,8 +113,10 @@ from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.derivatives.complex_step import ComplexStep
-from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.string_tools import MultiLineString
@@ -243,7 +244,7 @@ class OptimizationProblem(BaseProblem):
         LINEAR = "linear"
         NON_LINEAR = "non-linear"
 
-    ApproximationMode = derivation_modes.ApproximationMode
+    ApproximationMode = ApproximationMode
 
     class _DifferentiationMethod(StrEnum):
         """The additional differentiation methods."""
@@ -258,11 +259,6 @@ class OptimizationProblem(BaseProblem):
         _DifferentiationMethod,
         doc="The differentiation methods.",
     )
-
-    __DIFFERENTIATION_CLASSES: Final[str] = {
-        ApproximationMode.COMPLEX_STEP: ComplexStep,
-        ApproximationMode.FINITE_DIFFERENCES: FirstOrderFD,
-    }
 
     DESIGN_VAR_NAMES: Final[str] = "x_names"
     DESIGN_VAR_SIZE: Final[str] = "x_size"
@@ -1448,7 +1444,7 @@ class OptimizationProblem(BaseProblem):
         else:
             func = NormFunction(func, is_function_input_normalized, round_ints, self)
 
-        if self.differentiation_method in self.__DIFFERENTIATION_CLASSES:
+        if self.differentiation_method in set(self.ApproximationMode):
             self.__add_fd_jac(func, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
@@ -1519,18 +1515,16 @@ class OptimizationProblem(BaseProblem):
         if not self.design_space.has_current_value():
             raise ValueError("The design space has no current value.")
 
-        differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
-            self.differentiation_method
-        )
-        if differentiation_class is None:
+        if self.differentiation_method not in set(self.ApproximationMode):
             return
 
-        differentiation_object = differentiation_class(
+        differentiation_object = GradientApproximatorFactory().create(
+            self.differentiation_method,
             func.evaluate,
             step=self.fd_step,
-            parallel=self.__parallel_differentiation,
             design_space=self.design_space,
             normalize=normalize,
+            parallel=self.__parallel_differentiation,
             **self.__parallel_differentiation_options,
         )
         func.jac = differentiation_object.f_gradient

@@ -50,7 +50,6 @@ from strenum import StrEnum
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
-from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.base_grammar import BaseGrammar
@@ -60,6 +59,7 @@ from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
 from gemseo.utils.enumeration import merge_enums
@@ -128,7 +128,7 @@ class MDODiscipline(Serializable):
         NONE = ""
         """No cache is used."""
 
-    ApproximationMode = derivation_modes.ApproximationMode
+    ApproximationMode = ApproximationMode
 
     LinearizationMode = merge_enums(
         "LinearizationMode",
