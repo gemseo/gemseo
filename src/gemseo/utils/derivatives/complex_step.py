@@ -21,23 +21,21 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Callable
+from typing import Final
 from typing import Sequence
 
 from numpy import complex128
-from numpy import finfo
 from numpy import ndarray
 from numpy import where
 from numpy import zeros
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.derivatives.derivation_modes import ApproximationMode
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
-
-EPSILON = finfo(float).eps
 
 
 class ComplexStep(GradientApproximator):
@@ -57,22 +55,25 @@ class ComplexStep(GradientApproximator):
     ACM Transactions on Mathematical Software (TOMS) 29.3 (2003): 245-262.
     """
 
-    ALIAS = ApproximationMode.COMPLEX_STEP
+    _APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP
+
+    __DEFAULT_STEP: Final[complex] = 1e-20
+    """The default value for the step."""
 
     def __init__(  # noqa:D107
         self,
         f_pointer: Callable[[ndarray], ndarray],
-        step: complex = 1e-20,
-        parallel: bool = False,
+        step: complex | None = None,
         design_space: DesignSpace | None = None,
         normalize: bool = True,
+        parallel: bool = False,
         **parallel_args: int | bool | float,
     ) -> None:
         if design_space is not None:
             design_space.to_complex()
         super().__init__(
             f_pointer,
-            step=step,
+            step=self.__DEFAULT_STEP if step is None else step,
             parallel=parallel,
             design_space=design_space,
             normalize=True,
@@ -110,7 +111,7 @@ class ComplexStep(GradientApproximator):
     ) -> ndarray:
         self._function_kwargs = kwargs
         functions = [self._wrap_function] * n_perturbations
-        parallel_execution = CallableParallelExecution(functions, **self._par_args)
+        parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
 
         perturbated_inputs = [
             input_values + input_perturbations[:, perturbation_index]

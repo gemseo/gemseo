@@ -101,8 +101,8 @@ def test_grad_ko():
     range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-4)
     with pytest.raises(ValueError):
         range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-20)
-    with pytest.raises(ValueError):
-        range_f_z.check_grad(x_shared, method="toto")
+    with pytest.raises(ImportError):
+        range_f_z.check_grad(x_shared, approximation_mode="toto")
 
 
 def test_wrong_default_inputs():

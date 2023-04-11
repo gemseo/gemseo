@@ -207,7 +207,7 @@ def test_real_complex(complex_real_mdo_func_aggregation, indices):
     complex_mdo_func_agg = aggregation_function(complex_mdo_function, indices=indices)
     real_mdo_func_agg = aggregation_function(real_mdo_function, indices=indices)
     input_data = array([0.5, 0.6, 0.2])
-    complex_mdo_func_agg.check_grad(x_vect=input_data, method="ComplexStep")
+    complex_mdo_func_agg.check_grad(x_vect=input_data, approximation_mode="ComplexStep")
     assert pytest.approx(complex_mdo_func_agg(input_data)) == real_mdo_func_agg(
         input_data
     )

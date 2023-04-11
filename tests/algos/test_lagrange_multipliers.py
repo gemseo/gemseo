@@ -31,7 +31,7 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.utils.derivatives.derivatives_approx import comp_best_step
+from gemseo.utils.derivatives.error_estimators import compute_best_step
 from numpy import array
 
 DS_FILE = Path(__file__).parent / "sobieski_design_space.csv"
@@ -139,7 +139,7 @@ def test_lagrangian_validation_ineq_normalize():
     eps = 1e-4
     obj_ref = obj(0.0)
 
-    _, _, opt_step = comp_best_step(obj(eps), obj_ref, obj(-eps), eps, 1e-8)
+    _, _, opt_step = compute_best_step(obj(eps), obj_ref, obj(-eps), eps, 1e-8)
     df_anal = obj_grad(0.0)
 
     df_fd = (obj(opt_step) - obj(-opt_step)) / (2 * opt_step)

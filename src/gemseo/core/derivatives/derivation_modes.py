@@ -38,15 +38,3 @@ class DerivationMode(StrEnum):
 
     AUTO = "auto"
     """Automatic switch between direct, reverse or adjoint depending on data sizes."""
-
-
-class ApproximationMode(StrEnum):
-    """The approximation derivation modes."""
-
-    COMPLEX_STEP = "complex_step"
-    """The complex step method used to approximate the Jacobians by perturbing each
-    variable with a small complex number."""
-
-    FINITE_DIFFERENCES = "finite_differences"
-    """The finite differences method used to approximate the Jacobians by perturbing each
-    variable with a small real number."""

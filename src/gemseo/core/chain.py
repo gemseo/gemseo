@@ -34,7 +34,6 @@ from strenum import StrEnum
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
-from gemseo.core.derivatives.derivation_modes import ApproximationMode
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -44,6 +43,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 
 LOGGER = logging.getLogger(__name__)

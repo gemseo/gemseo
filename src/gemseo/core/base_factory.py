@@ -32,6 +32,7 @@ from inspect import isabstract
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
+from typing import NamedTuple
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
@@ -71,6 +72,16 @@ class _FactoryMultitonMeta(ABCMeta, GoogleDocstringInheritanceMeta):
     def clear_cache(cls) -> None:
         """Clear the cache."""
         cls.__cache.clear()
+
+
+class _ClassInfo(NamedTuple):
+    """Information about a class exposed via the factory."""
+
+    class_: type
+    """The class."""
+
+    library_name: str
+    """The name of the library (the module) that contains the class."""
 
 
 class BaseFactory(metaclass=_FactoryMultitonMeta):
@@ -126,29 +137,25 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
     """The name of the setuptools entry point for declaring plugins."""
 
-    __names_to_classes: dict[str, type]
-    """The class names bound to the classes."""
-
-    __names_to_library_names: dict[str, str]
-    """The class names bound to the names of the module the contains it."""
+    _names_to_class_info: dict[str, _ClassInfo]
+    """The class names bound to the class information."""
 
     failed_imports: dict[str, str]
     """The class names bound to the import errors."""
 
     def __init__(self) -> None:  # noqa: D107
-        self.__names_to_classes = {}
-        self.__names_to_library_names = {}
+        self._names_to_class_info = {}
         self.failed_imports = {}
         self.update()
 
     @property
     @abstractmethod
-    def _CLASS(self) -> type:  # noqa: 802
+    def _CLASS(self) -> type:  # noqa: N802
         """The base class that the factory can build."""
 
     @property
     @abstractmethod
-    def _MODULE_NAMES(self) -> list[str]:  # noqa: 802
+    def _MODULE_NAMES(self) -> list[str]:  # noqa: N802
         """The fully qualified names of the modules to search."""
 
     def update(self) -> None:
@@ -187,8 +194,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
 
         for name, cls in names_to_classes.items():
             if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
-                self.__names_to_classes[name] = cls
-                self.__names_to_library_names[name] = cls.__module__.split(".")[0]
+                self._names_to_class_info[name] = _ClassInfo(
+                    cls, cls.__module__.split(".")[0]
+                )
 
     def __log_import_failure(self, pkg_name: str) -> None:
         """Log import failures.
@@ -291,7 +299,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     @property
     def class_names(self) -> list[str]:
         """The sorted names of the available classes."""
-        return sorted(self.__names_to_classes.keys())
+        return sorted(self._names_to_class_info.keys())
 
     def is_available(self, name: str) -> bool:
         """Return whether a class can be instantiated.
@@ -302,7 +310,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Returns:
             Whether the class can be instantiated.
         """
-        return name in self.__names_to_classes
+        return name in self._names_to_class_info
 
     def get_library_name(self, name: str) -> str:
         """Return the name of the library related to the name of a class.
@@ -313,7 +321,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Returns:
             The name of the library.
         """
-        return self.__names_to_library_names[name]
+        return self._names_to_class_info[name].library_name
 
     def get_class(self, name: str) -> type:
         """Return a class from its name.
@@ -327,13 +335,13 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Raises:
             ImportError: If the class is not available.
         """
-        class_ = self.__names_to_classes.get(name)
-        if class_ is None:
-            names = ", ".join(sorted(self.__names_to_classes.keys()))
+        class_info = self._names_to_class_info.get(name)
+        if class_info is None:
+            names = ", ".join(self.class_names)
             raise ImportError(
                 f"The class {name} is not available; the available ones are: {names}.",
             )
-        return class_
+        return class_info.class_
 
     def create(
         self,
@@ -477,7 +485,8 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         )
 
         names_to_import_statuses = {}
-        for cls in self.__names_to_classes.values():
+        for class_info in self._names_to_class_info.values():
+            cls = class_info.class_
             msg = ""
             try:
                 class_docstring_lines = cls.__doc__.split("\n")
