@@ -1,0 +1,9 @@
+Parametric :class:`~gemseo.problems.scalable.parametric.scalable_problem.ScalableProblem`:
+
+- The configuration of the scalable disciplines is done with :class:`ScalableDisciplineSettings`.
+- The method :meth:`~gemseo.problems.scalable.parametric.scalable_problem.ScalableProblem.create_quadratic_programming_problem` returns the corresponding quadratic programming (QP) problem as an :class:`OptimizationProblem`.
+- The argument ``alpha`` (default: 0.5) defines the share of feasible design space.
+- API changes:
+
+  - The API and the variable names are based on the paper :cite:`azizalaoui:hal-04002825`.
+  - The module :mod:`gemseo.problems.scalable.parametric.study` has been removed.

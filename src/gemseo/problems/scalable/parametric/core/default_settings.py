@@ -12,5 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The scalable problem without GEMSEO objects."""
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""The default settings of the scalable problem."""
 from __future__ import annotations
+
+from typing import Final
+
+DEFAULT_N_DISCIPLINES: Final[int] = 2
+r"""The default number :math:`N` of scalable disciplines."""
+
+DEFAULT_D_0: Final[int] = 1
+r"""The default size of the shared design variable :math:`x_0`."""
+
+DEFAULT_D_I: Final[int] = 1
+r"""The default size of the local design variable :math:`x_i`."""
+
+DEFAULT_P_I: Final[int] = 1
+r"""The default size of the coupling variable :math:`y_i`."""

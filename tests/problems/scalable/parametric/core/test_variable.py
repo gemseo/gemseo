@@ -12,5 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The scalable problem without GEMSEO objects."""
+"""Test for the module variable."""
 from __future__ import annotations
+
+from gemseo.problems.scalable.parametric.core.variable import Variable
+from numpy import array
+
+
+def test_variable():
+    """Check the named tuple Variable."""
+    variable = Variable("foo", 123, array([-1.0]), array([3.0]), array([0.6]))
+    assert variable.name == "foo"
+    assert variable.size == 123
+    assert variable.lower_bound == array([-1.0])
+    assert variable.upper_bound == array([3.0])
+    assert variable.default_value == array([0.6])

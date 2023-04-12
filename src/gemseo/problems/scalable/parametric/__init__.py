@@ -12,85 +12,55 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""
-Scalable module from Tedford and Martins (2010)
-***********************************************
+r"""A parametric scalable problem.
 
-The modules located in the **scalable_tm** directory offer a set of
-classes relative to the scalable problem introduced in the paper:
+Based on :cite:`TedfordMartins2010`,
+the scalable MDO problem proposed in :cite:`azizalaoui:hal-04002825`
+aims to minimize the objective :math:`x_0^Tx_0 + \sum_{i=1}^N y_i^Ty_i`
+whilst satisfying the constraints :math:`t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0`.
 
-    Tedford NP, Martins JRRA (2010), Benchmarking
-    multidisciplinary design optimization algorithms,
-    Optimization and Engineering, 11(1):159-183.
+.. seealso:: :class:`~.disciplines.main_discipline.MainDiscipline`
 
-Overview
-~~~~~~~~
+:math:`y_1,\ldots,y_N` are computed by :math:`N` strongly coupled disciplines
+as :math:`y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j`
+where :math:`a_i`, :math:`D_{i,0}`, :math:`D_{i,i}` and :math:`C_{i,j}`
+are realizations of random matrices whose coefficients are independent random variables
+identically distributed as the uniform distribution over :math:`[0,1]`.
 
-This scalable problem aims to minimize an objective function
-quadratically depending on shared design parameters and coupling variables,
-under inequality constraints linearly depending on these coupling variables.
+.. seealso:: :class:`~.disciplines.scalable_discipline.ScalableDiscipline`
 
-System discipline
------------------
+The design vector :math:`x=(x_0,x_1,\ldots,x_N)`
+belongs to the design space :math:`[0,1]^{d_0}\times[0,1]^{d_1}\ldots[0,1]^{d_N}`.
 
-A system discipline computes the constraints and the objective
-in function of the shared design parameters and coupling variables.
+.. seealso:: :class:`~.scalable_design_space.ScalableDesignSpace`
 
-Strongly coupled disciplines
-----------------------------
+The implementation proposes a core that is not based on |g| objects
+(only NumPy and SciPy capabilities) to experiment the scalable problem outside |g|
+as well as |g| versions of these core elements.
 
-The coupling variables are the outputs of strongly coupled disciplines.
-
-Each strongly coupled discipline computes a set of coupling variables
-linearly depending on local design parameters, shared design parameters,
-coupling variables from other strongly coupled disciplines,
-and belonging to the unit hypercube.
-
-Scalability
------------
-
-This problem is said "scalable"
+This problem is said to be *scalable*
 because several sizing features can be chosen by the user:
 
-- the number of local design parameters for each discipline,
-- the number of shared design parameters,
-- the number of coupling variables for each discipline,
-- the number of disciplines.
+- the number of scalable disciplines :math:`N`,
+- the number of shared design variables :math:`x_0`,
+- the number of local design variables :math:`x_i` for each scalable discipline,
+- the number of coupling variables :math:`y_i` for each scalable discipline.
 
-A given sizing configuration is called "scaling strategy"
-and this scalable module is particularly useful to compare different MDO
-formulations with respect to the scaling strategy.
+The scalable problem is particularly useful to compare different MDO formulations
+with respect to the sizing configuration.
 
-Implementation
-~~~~~~~~~~~~~~
-
-The scalable problem
---------------------
-
-The :class:`.TMScalableProblem` class instantiates the disciplines of the
-problem, that are :class:`.TMMainDiscipline` and several :class:`.TMSubDiscipline`,
-as well as the  :class:`.DesignSpace`.
-These instantiated objects can be used in a :class:`.Scenario`,
-e.g. :class:`.MDOScenario` or :class:`.DOEScenario`.
-
-The scalable study
-------------------
-
-The :class:`.TMScalableStudy` class instantiates a :class:`.TMScalableProblem`
-for a particular scaling strategy
-where the number of local design parameters is the same for all disciplines
-as well as the number of coupling variables.
-It provides a method to run MDO formulations and graphical capabilities
-to analyze the results.
-
-The parametric scalable study
------------------------------
-
-The :class:`.TMParamSS` class instantiates several :class:`.TMScalableStudy`
-associated with different scaling strategies, e.g. different numbers of local
-design parameters or different numbers of coupling variables.
-It provides a method to run MDO formulations and save results on the disk.
-The :class:`.TMParamSSPost` provides graphical capabilities to post-process
-these saved results.
+The class :class:`~.scalable_problem.ScalableProblem` helps to define a scalable problem
+from :class:`~.core.scalable_discipline_settings.ScalableDisciplineSettings`,
+a number of shared design variables and a level of feasibility.
+It also proposes a method :meth:`~.scalable_problem.ScalableProblem.create_scenario`
+to create a scenario for an :class:`.MDOFormulation`
+and a method :meth:`.ScalableProblem.create_quadratic_programming_problem`
+to rewrite the MDO problem as a quadratic :class:`.OptimizationProblem`.
+Lastly,
+the problem can be made uncertain by adding a centered random vector
+per coupling equation:
+:math:`Y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j+U_i`.
+These random vectors :math:`U_1,\ldots,U_N` are independent
+and the covariance matrix of :math:`U_i` is denoted :math:`\Sigma_i`.
 """
 from __future__ import annotations
