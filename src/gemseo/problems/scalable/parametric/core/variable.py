@@ -12,5 +12,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The scalable problem without GEMSEO objects."""
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""A variable."""
 from __future__ import annotations
+
+from typing import NamedTuple
+
+from numpy.typing import NDArray
+
+
+class Variable(NamedTuple):
+    """A variable."""
+
+    name: str
+    """The name of the variable."""
+
+    size: int
+    """The size of the variable."""
+
+    lower_bound: NDArray[float]
+    """The lower bound of the variable."""
+
+    upper_bound: NDArray[float]
+    """The upper bound of the variable."""
+
+    default_value: NDArray[float]
+    """The default_value of the variable."""
