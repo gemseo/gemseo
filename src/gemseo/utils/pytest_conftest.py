@@ -81,7 +81,11 @@ def pytest_sessionfinish(session) -> None:
     """Remove file pollution from fortran code."""
     # take care of pytest_sessionstart side effects
     for file_ in Path(".").glob("fort.*"):
-        file_.unlink()
+        try:
+            file_.unlink()
+        except PermissionError:
+            # On windows the file may be opened and not released by another component.
+            pass
 
 
 @pytest.fixture(autouse=True)
