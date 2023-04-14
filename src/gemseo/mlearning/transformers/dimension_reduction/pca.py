@@ -37,6 +37,8 @@ from sklearn.decomposition import PCA as SKLPCA
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
@@ -47,36 +49,50 @@ class PCA(DimensionReduction):
         self,
         name: str = "PCA",
         n_components: int | None = None,
+        scale: bool = False,
         **parameters: float | int | str | bool | None,
     ) -> None:
         """
         Args:
+            scale: Whether to scale the data before applying the PCA.
             **parameters: The optional parameters for sklearn PCA constructor.
         """
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = SKLPCA(n_components, **parameters)
+        self.__scaler = StandardScaler() if scale else Scaler()
+        self.__data_is_scaled = scale
 
     def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
-        self.algo.fit(data)
+        self.algo.fit(self.__scaler.fit_transform(data))
         self.parameters["n_components"] = self.algo.n_components_
 
     @DimensionReduction._use_2d_array
     def transform(self, data: ndarray) -> ndarray:
-        return self.algo.transform(data)
+        return self.algo.transform(self.__scaler.transform(data))
 
     @DimensionReduction._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
-        return self.algo.inverse_transform(data)
+        return self.__scaler.inverse_transform(self.algo.inverse_transform(data))
 
     @DimensionReduction._use_2d_array
     def compute_jacobian(self, data: ndarray) -> ndarray:
-        return tile(self.algo.components_, (len(data), 1, 1))
+        return tile(
+            self.algo.components_, (len(data), 1, 1)
+        ) @ self.__scaler.compute_jacobian(data)
 
     @DimensionReduction._use_2d_array
     def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
-        return tile(self.algo.components_.T, (len(data), 1, 1))
+        _data = self.algo.inverse_transform(data)
+        return self.__scaler.compute_jacobian_inverse(_data) @ tile(
+            self.algo.components_.T, (len(data), 1, 1)
+        )
 
     @property
     def components(self) -> ndarray:
         """The principal components."""
         return sqrt(self.algo.singular_values_) * self.algo.components_.T
+
+    @property
+    def data_is_scaled(self) -> bool:
+        """Whether the transformer scales the data before reducing its dimension."""
+        return self.__data_is_scaled
