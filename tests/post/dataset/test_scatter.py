@@ -53,7 +53,7 @@ TEST_PARAMETERS = {
     ),
     "with_2d_output": ({"x": "x", "y": "z"}, {}, ["Scatter_2d_output"]),
     "with_2d_output_given_component": (
-        {"x": "x", "y": "z", "y_comp": 1},
+        {"x": "x", "y": ("z", 1)},
         {},
         ["Scatter_2d_output_given_component"],
     ),
@@ -63,7 +63,7 @@ TEST_PARAMETERS = {
         ["Scatter_2d_input"],
     ),
     "with_2d_input_given_component": (
-        {"x": "z", "y": "y", "x_comp": 1},
+        {"x": ("z", 1), "y": "y"},
         {},
         ["Scatter_2d_input_given_component"],
     ),

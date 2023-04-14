@@ -57,6 +57,8 @@ from pathlib import Path
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
+VariableType = Union[str, tuple[str, int]]
+
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Abstract class for plotting a dataset."""
@@ -498,3 +500,18 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise ValueError("The axes associated with the given figure are missing.")
 
         return fig, axes
+
+    @staticmethod
+    def _force_variable_to_tuple(variable: VariableType) -> tuple[str, int]:
+        """Return a variable as a tuple ``(variable_name, variable_component)``.
+
+        Args:
+            variable: The original variable.
+
+        Returns:
+            The variable as ``(variable_name, variable_component)``.
+        """
+        if isinstance(variable, str):
+            variable = (variable, 0)
+
+        return variable
