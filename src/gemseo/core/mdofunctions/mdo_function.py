@@ -726,16 +726,16 @@ class MDOFunction(Serializable):
             flatten_diff = reference.flatten().shape != approximation.flatten().shape
             if not shapes_are_1d or (shapes_are_1d and flatten_diff):
                 raise ValueError(
-                    "Inconsistent function jacobian shape; "
+                    f"The Jacobian matrix computed by {self} has a wrong shape; "
                     f"got: {reference.shape} while expected: {approximation.shape}."
                 )
 
         if self.rel_err(reference, approximation, error_max) > error_max:
-            LOGGER.error("Function jacobian is wrong %s", self)
+            LOGGER.error("The Jacobian matrix computed by %s is wrong.", self)
             LOGGER.error("Error =\n%s", self.filt_0(reference - approximation))
             LOGGER.error("Analytic jacobian=\n%s", self.filt_0(reference))
             LOGGER.error("Approximate step gradient=\n%s", self.filt_0(approximation))
-            raise ValueError(f"Function jacobian is wrong {self}.")
+            raise ValueError(f"The Jacobian matrix computed by {self} is wrong.")
 
     @staticmethod
     def rel_err(a_vect: ArrayType, b_vect: ArrayType, error_max: float) -> float:
