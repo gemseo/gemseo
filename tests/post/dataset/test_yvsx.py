@@ -58,7 +58,7 @@ TEST_PARAMETERS = {
     ),
     "with_2d_output": ({"x": "x", "y": "z"}, {}, ["YvsX_2d_output"]),
     "with_2d_output_given_component": (
-        {"x": "x", "y": "z", "y_comp": 1},
+        {"x": "x", "y": ("z", 1)},
         {},
         ["YvsX_2d_output_given_component"],
     ),
@@ -68,7 +68,7 @@ TEST_PARAMETERS = {
         ["YvsX_2d_input"],
     ),
     "with_2d_input_given_component": (
-        {"x": "z", "y": "y", "x_comp": 1},
+        {"x": ("z", 1), "y": "y"},
         {},
         ["YvsX_2d_input_given_component"],
     ),

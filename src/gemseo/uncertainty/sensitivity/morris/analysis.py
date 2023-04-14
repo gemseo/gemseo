@@ -87,6 +87,7 @@ from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_outputs
+from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
@@ -376,7 +377,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def plot(
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         save: bool = True,

@@ -63,6 +63,7 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
+from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
@@ -361,7 +362,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         ]
         return [item for sublist in result for item in sublist]
 
-    def sort_parameters(self, output: str | tuple[str, int]) -> list[str]:
+    def sort_parameters(self, output: VariableType) -> list[str]:
         """Return the parameters sorted in descending order.
 
         Args:
@@ -402,7 +403,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def plot(
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         save: bool = True,
@@ -433,7 +434,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def plot_field(
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         mesh: ndarray | None = None,
         inputs: Iterable[str] | None = None,
         standardize: bool = False,
@@ -739,7 +740,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     def plot_comparison(
         self,
         indices: list[SensitivityAnalysis],
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         use_bar_plot: bool = True,

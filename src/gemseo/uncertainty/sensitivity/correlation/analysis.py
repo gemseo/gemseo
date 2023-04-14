@@ -42,6 +42,7 @@ from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
@@ -355,7 +356,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     def plot(  # noqa: D102
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         save: bool = True,

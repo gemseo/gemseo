@@ -76,4 +76,4 @@ ZvsXY(dataset, x="x", x_comp=0, y="x", y_comp=1, z="rosen").execute(
     save=False, show=True
 )
 
-YvsX(dataset, x="x", x_comp=0, y="rosen").execute(save=False, show=True)
+YvsX(dataset, x=("x", 0), y="rosen").execute(save=False, show=True)

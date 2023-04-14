@@ -60,19 +60,19 @@ other_dataset.set_from_array(data_array, variables=["x", "y", "z"], sizes=sizes)
 TEST_PARAMETERS = {
     "default_z0": ({"x": "x", "y": "y", "z": "z"}, {}, ["ZvsXY_z0"]),
     "default_z1": (
-        {"x": "x", "y": "y", "z": "z", "z_comp": 1},
+        {"x": "x", "y": "y", "z": ("z", 1)},
         {},
         ["ZvsXY_z1"],
     ),
     "default_x0": ({"x": "z", "y": "y", "z": "z"}, {}, ["ZvsXY_x0"]),
     "default_x1": (
-        {"x": "z", "x_comp": 1, "y": "y", "z": "z"},
+        {"x": ("z", 1), "y": "y", "z": "z"},
         {},
         ["ZvsXY_x1"],
     ),
     "default_y0": ({"x": "x", "y": "z", "z": "z"}, {}, ["ZvsXY_y0"]),
     "default_y1": (
-        {"x": "x", "y": "z", "y_comp": 1, "z": "z"},
+        {"x": "x", "y": ("z", 1), "z": "z"},
         {},
         ["ZvsXY_y1"],
     ),

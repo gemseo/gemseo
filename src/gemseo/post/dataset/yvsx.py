@@ -30,37 +30,35 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import VariableType
 
 
 class YvsX(DatasetPlot):
     """Plot curve y versus x."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        x: str,
-        y: str,
-        x_comp: int = 0,
-        y_comp: int = 0,
-    ) -> None:
+    def __init__(self, dataset: Dataset, x: VariableType, y: VariableType) -> None:
         """
         Args:
-            x: The name of the variable on the x-axis.
-            y: The name of the variable on the y-axis.
-            x_comp: The component of x.
-            y_comp: The component of y.
+            x: The name of the variable on the x-axis,
+                with its optional component if not ``0``,
+                e.g. ``("foo", 3)`` for the fourth component of the variable ``"foo"``.
+            y: The name of the variable on the y-axis,
+                with its optional component if not ``0``,
+                e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
         """  # noqa: D205, D212, D415
-        super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
+        super().__init__(
+            dataset,
+            x=self._force_variable_to_tuple(x),
+            y=self._force_variable_to_tuple(y),
+        )
 
     def _plot(
         self,
         fig: None | Figure = None,
         axes: None | Axes = None,
     ) -> list[Figure]:
-        x = self._param.x
-        x_comp = self._param.x_comp
-        y = self._param.y
-        y_comp = self._param.y_comp
+        x, x_comp = self._param.x
+        y, y_comp = self._param.y
         color = self.color or "blue"
         style = self.linestyle or "o"
         x_data = self.dataset[x][:, x_comp]
