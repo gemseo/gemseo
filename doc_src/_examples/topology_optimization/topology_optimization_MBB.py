@@ -22,13 +22,11 @@ Solve a 2D MBB topology optimization problem
 """
 from __future__ import annotations
 
-import matplotlib.pyplot as plt
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.problems.topo_opt.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
-from matplotlib import colors
 
 configure_logger()
 # %%
@@ -103,28 +101,14 @@ scenario.execute(input_data={"max_iter": 200, "algo": "NLOPT_MMA"})
 scenario.post_process(
     "BasicHistory",
     variable_names=["compliance"],
-    save=True,
-    show=False,
-    file_name=problem_name + "_history.png",
+    file_name=f"{problem_name}_history.png",
 )
-
-# %%
-# .. image:: /_images/topology_optimization/MBB_history.png
 
 # %%
 # Plot the solution
-plt.ion()  # Ensure that redrawing is possible
-fig, ax = plt.subplots()
-im = ax.imshow(
-    -scenario.optimization_result.x_opt.reshape((n_x, n_y)).T,
-    cmap="gray",
-    interpolation="none",
-    norm=colors.Normalize(vmin=-1, vmax=0),
+scenario.post_process(
+    "TopologyView",
+    n_x=n_x,
+    n_y=n_y,
+    file_name=f"{problem_name}_solution.png",
 )
-fig.show()
-im.set_array(-scenario.optimization_result.x_opt.reshape((n_x, n_y)).T)
-fig.canvas.draw()
-plt.savefig(problem_name + "_solution.png")
-
-# %%
-# .. image:: /_images/topology_optimization/MBB_solution.png

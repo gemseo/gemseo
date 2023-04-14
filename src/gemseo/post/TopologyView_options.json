@@ -1,0 +1,38 @@
+{
+    "name": "TopologyView_options",
+    "required": ["n_x","n_y"],
+    "properties": {
+        "n_x": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "n_y": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "observable": {
+            "type": "string"
+        },
+        "iterations": {
+            "anyOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                }
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

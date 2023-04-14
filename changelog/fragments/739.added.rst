@@ -1,0 +1,1 @@
+:class:`.TopologyView` allows to visualize the solution of a 2D topology optimization problem.
