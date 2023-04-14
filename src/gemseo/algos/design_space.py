@@ -352,12 +352,10 @@ class DesignSpace(collections.abc.MutableMapping):
             if dimension in bad_dimensions:
                 self.remove_variable(variable)
                 raise ValueError(
-                    "Dimension {} of variable '{}' is not known.".format(
-                        dimension, variable
-                    )
+                    f"Dimension {dimension} of variable '{variable}' is not known."
                 )
             types.append(self.variable_types[variable][dimension])
-            self.variable_types[variable] = array(types)
+        self.variable_types[variable] = array(types)
 
         idx = keep_dimensions
         self.normalize[variable] = self.normalize[variable][idx]

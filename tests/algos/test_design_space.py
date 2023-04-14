@@ -330,11 +330,12 @@ def test_filter_with_an_unknown_variable(design_space):
         design_space.filter("unknown_x")
 
 
-def test_filter_by_variables_dimensions(design_space):
+@pytest.mark.parametrize("indices", [[0], [0, 1]])
+def test_filter_by_variables_dimensions(design_space, indices):
     """Check that the design space can be filtered by variables dimensions."""
-    design_space.filter_dim("x5", [0])
-    with pytest.raises(ValueError, match="Dimension 1 of variable 'x5' is not known."):
-        design_space.filter_dim("x5", [1])
+    design_space.filter_dim("x5", indices)
+    with pytest.raises(ValueError, match="Dimension 2 of variable 'x5' is not known."):
+        design_space.filter_dim("x5", [2])
 
 
 def test_extend():
