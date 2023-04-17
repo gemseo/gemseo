@@ -23,7 +23,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.yvsx import YvsX
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure

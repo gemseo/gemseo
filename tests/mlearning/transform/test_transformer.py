@@ -23,7 +23,7 @@ from unittest import mock
 
 import pytest
 from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import ndarray

@@ -26,7 +26,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 

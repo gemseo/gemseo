@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.post.obj_constr_hist import ObjConstrHist
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
     "standardized": (True, ["ObjConstrHist_standardized"]),

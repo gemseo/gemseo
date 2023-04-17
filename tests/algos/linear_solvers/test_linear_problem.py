@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import diag
 from numpy import eye
 from numpy import ones

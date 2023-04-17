@@ -19,10 +19,10 @@ from pathlib import Path
 
 import pytest
 from gemseo import create_discipline
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.deserialize_and_run import _parse_inputs
 from gemseo.utils.deserialize_and_run import _run_discipline_save_outputs
 from gemseo.utils.deserialize_and_run import main
-from gemseo.utils.testing import compare_dict_of_arrays
 
 
 @pytest.fixture

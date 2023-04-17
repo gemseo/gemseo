@@ -26,8 +26,7 @@ from gemseo.algos.opt.lib_scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-
-from tests.algos.opt.opt_lib_test_base import OptLibraryTestBase
+from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 
 class TestScipyGlobalOpt(TestCase):

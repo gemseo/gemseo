@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.utils.pytest_conftest import *  # noqa: F401,F403
+from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 MARK = "doc_examples"
 

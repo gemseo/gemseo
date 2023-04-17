@@ -27,7 +27,7 @@ from gemseo.formulations.mdf import MDF
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
 from tests.formulations.not_mdo_formulations.formulation_A import ANotMDOFormulation

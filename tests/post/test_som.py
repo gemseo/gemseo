@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 pytestmark = pytest.mark.skipif(
     not PostFactory().is_available("SOM"),

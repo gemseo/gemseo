@@ -30,7 +30,7 @@ from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import allclose
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})

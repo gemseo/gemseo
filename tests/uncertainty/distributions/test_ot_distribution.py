@@ -36,7 +36,7 @@ from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import allclose
 from numpy import array
 from numpy import inf

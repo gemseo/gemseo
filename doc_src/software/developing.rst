@@ -149,45 +149,6 @@ Finally,
 make sure that `graphviz`_ is installed
 (for rendering graphs).
 
-.. _matlab_requirements:
-
-MATLAB requirements
-~~~~~~~~~~~~~~~~~~~
-
-MATLAB is a proprietary and optional dependency of |g|,
-if it is not available, the corresponding features
-will not be available without any other consequences.
-
-The MATLAB Python API is not defined as a dependency of |g|,
-it has to be installed manually in a tox environment.
-The Python API usually needs to be built
-and installed since it is not done by default during the MATLAB installation.
-
-For testing with `tox`_,
-set the environment variable :envvar:`MATLAB_PYTHON_WRAPPER`
-to point to the path to a ``pip`` installable version of the MATLAB Python API,
-with eventually a conditional dependency on the Python version:
-
-.. code-block:: console
-
-   export MATLAB_PYTHON_WRAPPER="<path or URL to MATLAB Python API package> ; python_version<'3.9'"
-
-pSeven requirements
-~~~~~~~~~~~~~~~~~~~
-
-pSeven is a proprietary and optional dependency of |g|,
-if it is not available, the corresponding features
-will not be available without any other consequences.
-
-Like the MATLAB Python API,
-the pSeven one shall be installed manually in a tox environment.
-
-For testing with `tox`_,
-set the environment variable :envvar:`PSEVEN_PYTHON_WRAPPER`
-to point to the path to a ``pip`` installable pSeven Python API.
-Set the environment variable :envvar:`DATADVD_LICENSE_FILE`
-for the pSeven license.
-
 How to use tox
 ++++++++++++++
 

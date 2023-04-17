@@ -27,8 +27,8 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.testing import compare_dict_of_arrays
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import ndarray
 from numpy import pi

@@ -26,7 +26,7 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import allclose
 from numpy import array
 from numpy import pi

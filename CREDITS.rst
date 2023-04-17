@@ -70,9 +70,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pandas-logo.svg
         :target: https://pandas.pydata.org/
 
-`pdfo <https://www.pdfo.net>`_
-    BSD 3-Clause
-
 `pyDOE2 <https://github.com/clicumu/pyDOE2>`_
     BSD 3-Clause
 
@@ -111,9 +108,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
 
     .. image:: /_static/dependencies/scipy-logo.png
         :target: https://www.scipy.org/
-
-`snopt-python <https://github.com/snopt/snopt-python>`_
-    MIT
 
 `SymPy <https://www.sympy.org/>`_
     BSD 3-Clause

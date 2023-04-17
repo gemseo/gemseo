@@ -18,14 +18,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from unittest import mock  # noqa: F401
-
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
 # - the expected file names without extension to be compared

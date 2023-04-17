@@ -28,7 +28,7 @@ from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
-from gemseo.utils.testing import compare_dict_of_arrays
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
 from numpy import linspace
 from numpy import newaxis

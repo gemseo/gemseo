@@ -1,0 +1,10 @@
+API changes:
+- Removed the obsolete ``snopt`` wrapper.
+- Removed the obsolete ``gemseo.core.jacobian_assembly`` module.
+- Moved the :class:`.MatlabDiscipline` to the plugin `gemseo-matlab <https://gitlab.com/gemseo/dev/gemseo-matlab>`_.
+- Moved the ``PDFO`` wrapper to the plugin `gemseo-pdfo <https://gitlab.com/gemseo/dev/gemseo-pdfo>`_.
+- Moved the library of optimization algorithms :class:`.PSevenOpt` to the plugin `gemseo-pseven <https://gitlab.com/gemseo/dev/gemseo-pseven>`_.
+- Moved ``gemseo.utils.testing.compare_dict_of_arrays`` to :mod:`gemseo.utils.comparisons.compare_dict_of_arrays`.
+- Moved ``gemseo.utils.testing.image_comparison`` to :mod:`gemseo.utils.testing.helpers.image_comparison`.
+- Moved ``gemseo.utils.pytest_conftest`` to :mod:`gemseo.utils.testing.pytest_conftest`.
+- Moved ``gemseo.utils.testing.pytest_conftest.concretize_classes`` to :mod:`gemseo.utils.testing.helpers.concretize_classes`.

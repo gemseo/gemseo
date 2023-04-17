@@ -24,7 +24,7 @@ from pathlib import Path
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 

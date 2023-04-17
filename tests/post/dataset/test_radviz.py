@@ -23,7 +23,7 @@ from __future__ import annotations
 import pytest
 from gemseo.post.dataset.radviz import Radar
 from gemseo.problems.dataset.iris import IrisDataset
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 
 

@@ -27,7 +27,7 @@ from gemseo.post.post_factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
