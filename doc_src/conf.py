@@ -295,6 +295,9 @@ html_context["plugins"] = {
     "gemseo-umdo": "Capability for MDO under uncertainty",
     "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
     "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
+    "gemseo-pdfo": "GEMSEO plugin for the PDFO library.",
+    "gemseo-pseven": "GEMSEO plugin for the pSeven library.",
+    "gemseo-matlab": "GEMSEO plugin for MATLAB.",
 }
 html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
 ###############################################################################
