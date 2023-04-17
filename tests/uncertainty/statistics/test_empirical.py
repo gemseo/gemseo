@@ -24,7 +24,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.statistics import Statistics
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import array
 from numpy import concatenate
 from numpy import linspace

@@ -17,9 +17,11 @@
 #                       initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Common tools for testing opt libraries."""
 from __future__ import annotations
 
 import numpy as np
+
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
@@ -27,7 +29,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
 class OptLibraryTestBase:
-    """"""
+    """Main testing class."""
 
     @staticmethod
     def relative_norm(x, x_ref):

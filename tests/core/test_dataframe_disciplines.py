@@ -30,7 +30,7 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
-from gemseo.utils.testing import compare_dict_of_arrays
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
 from pandas import DataFrame
 

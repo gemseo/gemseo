@@ -30,12 +30,12 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 from numpy import array
 from numpy import inf
 from scipy.optimize.optimize import rosen
 from scipy.optimize.optimize import rosen_der
 
-from .opt_lib_test_base import OptLibraryTestBase
 from .problems.x2 import X2
 
 

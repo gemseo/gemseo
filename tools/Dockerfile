@@ -2,8 +2,6 @@ ARG FEDORA_VERSION=34
 
 FROM fedora:$FEDORA_VERSION
 
-ARG TOX_VERSION=4.4.7
-
 RUN  dnf -y update \
   && dnf -y install pipx \
   && dnf -y install python38 \
@@ -12,6 +10,8 @@ RUN  dnf -y update \
   && dnf -y install git \
   && dnf -y install graphviz \
   && dnf clean all
+
+ARG TOX_VERSION=4.4.7
 
 RUN  pipx install 'tox<4' \
   && pipx install 'tox<4' --suffix 3 \

@@ -29,7 +29,7 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import array
 
 

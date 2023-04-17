@@ -49,13 +49,13 @@ from numpy import vstack
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.core.discipline_data import Data
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.testing import compare_dict_of_arrays
 
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset

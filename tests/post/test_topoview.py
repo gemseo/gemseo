@@ -19,7 +19,7 @@ from gemseo import create_scenario
 from gemseo.problems.topo_opt.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")

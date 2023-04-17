@@ -27,7 +27,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.uncertainty.sensitivity.correlation import analysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy.testing import assert_equal
 
 

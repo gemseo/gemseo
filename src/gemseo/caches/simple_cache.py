@@ -29,8 +29,8 @@ from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
-from gemseo.utils.testing import compare_dict_of_arrays
 
 
 class SimpleCache(AbstractCache):

@@ -31,8 +31,8 @@ from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.pytest_conftest import concretize_classes
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import linspace
 from numpy import pi

@@ -34,7 +34,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.pce import CleaningOptions
 from gemseo.mlearning.regression.pce import PCERegressor
-from gemseo.utils.testing import compare_dict_of_arrays
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
 from numpy import pi
 from numpy.testing import assert_almost_equal

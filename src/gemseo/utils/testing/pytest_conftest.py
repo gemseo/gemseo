@@ -22,7 +22,6 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any
-from typing import Final
 from typing import Generator
 
 import matplotlib.pyplot as plt
@@ -31,8 +30,6 @@ import pytest
 from packaging import version
 
 from gemseo.core.base_factory import BaseFactory
-
-__ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 
 
 def __tmp_wd(tmp_path):
@@ -137,26 +134,6 @@ if "GEMSEO_KEEP_IMAGE_COMPARISONS" not in os.environ:
         return baseline_dir, result_dir
 
     matplotlib.testing.decorators._image_directories = _image_directories
-
-
-@contextlib.contextmanager
-def concretize_classes(*classes: type) -> None:
-    """Context manager forcing classes to be concrete.
-
-    Args:
-        *classes: The classes.
-    """
-    classes_to___abstractmethods__ = {}
-    for cls in classes:
-        if hasattr(cls, __ABSTRACTMETHODS__):
-            classes_to___abstractmethods__[cls] = cls.__abstractmethods__
-            del cls.__abstractmethods__
-
-    try:
-        yield
-    finally:
-        for cls, __abstractmethods__ in classes_to___abstractmethods__.items():
-            cls.__abstractmethods__ = __abstractmethods__
 
 
 # Fixtures to deal with the Excel disciplines.

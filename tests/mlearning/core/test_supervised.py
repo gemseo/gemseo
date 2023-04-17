@@ -31,7 +31,7 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
     DimensionReduction,
 )
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import array_equal

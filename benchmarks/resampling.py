@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 import argparse
-import cProfile  # noqa: F401
 import sys
 
 from gemseo.algos.design_space import DesignSpace

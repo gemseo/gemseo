@@ -23,7 +23,7 @@ from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasur
 from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,
 )
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import array
 
 

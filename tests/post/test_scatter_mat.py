@@ -29,7 +29,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import ones
 from numpy import power

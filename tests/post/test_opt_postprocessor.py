@@ -27,7 +27,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 
 
 @pytest.fixture(scope="module")

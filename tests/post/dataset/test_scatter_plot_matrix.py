@@ -24,10 +24,8 @@ import re
 
 import pytest
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
-
-from .test_andrews_curves import dataset  # noqa: F401
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -59,7 +57,7 @@ TEST_PARAMETERS = {
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
 def test_plot(
-    dataset,  # noqa: F811
+    dataset,
     kwargs,
     properties,
     baseline_images,
@@ -74,7 +72,7 @@ def test_plot(
     plot.execute(save=False, properties=properties, fig=fig, axes=axes)
 
 
-def test_plot_error(dataset):  # noqa: F811
+def test_plot_error(dataset):
     """Check that an error is raised when the classifier is not variable name."""
     with pytest.raises(
         ValueError,

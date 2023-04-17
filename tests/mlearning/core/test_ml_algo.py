@@ -29,7 +29,7 @@ from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import array_equal

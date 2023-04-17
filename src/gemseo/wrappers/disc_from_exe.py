@@ -40,7 +40,7 @@ from numpy import array
 from numpy import ndarray
 from strenum import StrEnum
 
-from gemseo.core.data_processor import DataProcessor  # noqa: F401
+from gemseo.core.data_processor import DataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
 

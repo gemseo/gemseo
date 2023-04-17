@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 import argparse
-import cProfile  # noqa: F401
 import pickle
 import sys
 from collections import defaultdict
@@ -120,4 +119,3 @@ if __name__ == "__main__":
 
     runner._set_args(args)
     runner.bench_func(bench_name, bench.run)
-    # cProfile.run("bench.run()", filename="perf.stats")

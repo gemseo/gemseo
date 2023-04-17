@@ -31,8 +31,7 @@ several options are available:
   use :ref:`Excel discipline<xls_discipline>`.
 
 - If your program is a MATLAB function, there is a generic interface
-  that allows to connect it to |g| as an :class:`.MDODiscipline`,
-  without writing code in a dedicated plugin.
+  that allows to connect it to |g| as an :class:`.MDODiscipline`.
   See :ref:`the generic MATLAB wrapper<discipline_matlab>`.
 
 - For Scilab functions, `a plugin is available <https://gitlab.com/gemseo/dev/gemseo-scilab>`_.

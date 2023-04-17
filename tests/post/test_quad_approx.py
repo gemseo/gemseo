@@ -20,8 +20,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.post.quad_approx import QuadApprox
-from gemseo.utils.testing import image_comparison
-
+from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
     "standardized": (

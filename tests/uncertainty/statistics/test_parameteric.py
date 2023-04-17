@@ -28,7 +28,7 @@ from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import inf
 from numpy import vstack

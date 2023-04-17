@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from base_benchmark import BaseBenchmark
 from data_factory import DataFactory
-from gemseo.utils.testing import compare_dict_of_arrays
+from gemseo.utils.comparisons import compare_dict_of_arrays
 
 
 class Benchmark(BaseBenchmark):

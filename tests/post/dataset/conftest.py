@@ -12,5 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Matlab wrapper."""
 from __future__ import annotations
+
+import pytest
+from gemseo.core.dataset import Dataset
+from numpy import array
+
+
+@pytest.fixture(scope="module")
+def dataset():
+    """Dataset: A dataset containing 4 samples of variables x, y and z and cluster c."""
+    dataset = Dataset()
+    sample1 = [0.0, 0.0, 0.0, 1]
+    sample2 = [1.0, 1.0, -1.0, 2]
+    sample3 = [2.0, 2.0, -2.0, 2]
+    sample4 = [3.0, 3.0, -3.0, 1]
+    dataset.set_from_array(
+        array([sample1, sample2, sample3, sample4]), ["x", "y", "z", "c"]
+    )
+    return dataset

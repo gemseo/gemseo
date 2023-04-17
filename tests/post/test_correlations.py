@@ -29,7 +29,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 PARENT_PATH = Path(__file__).parent
 POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"

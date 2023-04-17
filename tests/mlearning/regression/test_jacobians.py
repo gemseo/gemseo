@@ -37,7 +37,7 @@ from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 
