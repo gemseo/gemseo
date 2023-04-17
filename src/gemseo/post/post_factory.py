@@ -57,16 +57,18 @@ class PostFactory(BaseFactory):
 
     def create(
         self,
+        class_name: str,
         opt_problem: OptimizationProblem,
-        post_name: str,
+        **options: OptPostProcessorOptionType,
     ) -> OptPostProcessor:
         """Create a post-processor from its class name.
 
         Args:
+            class_name: The name of the post-processor.
             opt_problem: The optimization problem to be post-processed.
-            post_name: The name of the post-processor.
+            **options: The options of the post-processor.
         """
-        return super().create(post_name, opt_problem=opt_problem)
+        return super().create(class_name, opt_problem=opt_problem, **options)
 
     def execute(
         self,
@@ -102,7 +104,7 @@ class PostFactory(BaseFactory):
         """
         if isinstance(opt_problem, str):
             opt_problem = OptimizationProblem.from_hdf(opt_problem)
-        post = self.create(opt_problem, post_name)
+        post = self.create(post_name, opt_problem)
         post.execute(
             save=save,
             show=show,
