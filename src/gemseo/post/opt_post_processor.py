@@ -350,60 +350,36 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             **options: The post-processor options.
         """
 
-    def _generate_x_names(self, variables: Iterable[str] | None = None) -> list[str]:
-        """Create the design variables names for the plot.
+    def _get_design_variable_names(
+        self, variables: Iterable[str] = (), simplify: bool = False
+    ) -> list[str]:
+        """Create the names of the components of design variables as ``"name[i]"``.
 
         Args:
-            variables: The variables to create the names. If ``None``, use all
-                the design variables.
+            variables: The design variables of interest.
+                If ``None``, use all the design variables.
+            simplify: Whether to use ``"[i]"`` when ``i>0`` instead of ``"name[i]"``.
 
         Returns:
-            The design variables names.
+            The names of the components of the design variables.
         """
         if not variables:
-            variables = self.opt_problem.get_design_variable_names()
+            variables = self.opt_problem.design_space.variable_names
 
-        x_names = []
-        x_sizes = self.opt_problem.design_space.variable_sizes
+        design_variable_names = []
+        design_variable_sizes = self.opt_problem.design_space.variable_sizes
         for variable in variables:
-            x_size = x_sizes[variable]
-            x_names.extend(
-                [repr_variable(variable, index, size=x_size) for index in range(x_size)]
+            design_variable_size = design_variable_sizes[variable]
+            design_variable_names.extend(
+                [
+                    repr_variable(
+                        variable, index, size=design_variable_size, simplify=simplify
+                    )
+                    for index in range(design_variable_size)
+                ]
             )
 
-        return x_names
-
-    # TODO: this method and _generate_x_names could be merged.
-    def _get_design_variable_names(
-        self, variable_names: Iterable[str] | None = None, simplify_names: bool = True
-    ) -> list[str]:
-        """Define the names of the design variables.
-
-        Args:
-            variable_names: The names of the design variables.
-                If ``None``, use all the design variables.
-            simplify_names: Whether to simplify the names of variables
-                with several components.
-
-        Returns:
-            The names of the design variables.
-        """
-        design_space = self.opt_problem.design_space
-        y_labels = []
-        if variable_names is None:
-            variable_names = design_space.variable_names
-        for variable_name in variable_names:
-            size = design_space.variable_sizes[variable_name]
-            name = variable_name
-            if size > 1:
-                name += " (0)"
-            y_labels.append(name)
-            for i in range(1, size):
-                if simplify_names:
-                    y_labels.append(f"({i})")
-                else:
-                    y_labels.append(f"{variable_name} ({i})")
-        return y_labels
+        return design_variable_names
 
     @staticmethod
     def _get_grid_layout() -> GridSpec:

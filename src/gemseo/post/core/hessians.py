@@ -117,8 +117,8 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         self,
         funcname: str,
         first_iter: int = 0,
-        last_iter: int = 0,
-        at_most_niter: int = -1,
+        last_iter: int | None = None,
+        at_most_niter: int | None = None,
         func_index: int | None = None,
         normalize_design_space: bool = False,
         design_space: DesignSpace | None = None,
@@ -129,9 +129,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             funcname: The name of the function for which to get the gradient.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
-                If 0, consider all the iterations.
+                If ``None``, consider all the iterations.
             at_most_niter: The maximum number of iterations to be considered.
-                If -1, consider all the iterations.
+                If ``None``, consider all the iterations.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
                 If ``None`` and if the output is multidimensional, an error is raised.
@@ -155,7 +155,6 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 is not consistent with the shape of the history of the gradient
                 or the optimization history size is insufficient.
         """
-        # TODO: use None as default value for last_iter and at_most_iter
         grad_hist, x_hist = self.history.get_func_grad_history(funcname, x_hist=True)
         if normalize_design_space:
             (
@@ -164,7 +163,6 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             ) = self._normalize_x_g(x_hist, grad_hist, design_space)
 
         grad_hist_length = len(grad_hist)
-        assert grad_hist_length == len(x_hist)  # TODO: remove it
 
         if grad_hist_length < 2:
             raise ValueError(
@@ -177,10 +175,16 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             grad_hist = grad_hist[:, newaxis]
 
         x_hist = array(x_hist)
-        if x_hist.shape != (grad_hist.shape[0], grad_hist.shape[-1]):
-            # TODO: add shapes in the exception message
+        x_hist_shape = x_hist.shape
+        grad_hist_shape = grad_hist.shape
+        grad_hist_shape_from_grad_hist = (grad_hist.shape[0], grad_hist.shape[-1])
+        if x_hist_shape != grad_hist_shape_from_grad_hist:
             raise ValueError(
-                "Inconsistent gradient and design variables optimization history."
+                "The shape of the design variable history "
+                f"(n_iter,n_x)=({x_hist_shape}) "
+                "and the shape of the gradient history "
+                f"(n_iter,[n_y,]n_x)=({grad_hist_shape}) "
+                "are not consistent."
             )
 
         # Function is a vector, Jacobian is a 2D matrix
@@ -204,33 +208,26 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
             grad_hist = grad_hist[:, func_index, :]
 
-        if last_iter == 0:
-            x_hist = x_hist[first_iter:, :]
-            grad_hist = grad_hist[first_iter:, :]
-        else:
-            x_hist = x_hist[first_iter:last_iter, :]
-            grad_hist = grad_hist[first_iter:last_iter, :]
+        if not last_iter:
+            last_iter = len(x_hist)
 
-        n_iterations = x_hist.shape[0]
-        if 0 < at_most_niter < n_iterations:
+        x_hist = x_hist[first_iter:last_iter, :]
+        grad_hist = grad_hist[first_iter:last_iter, :]
+        n_iterations = len(x_hist)
+        if at_most_niter and 0 < at_most_niter < n_iterations:
             x_hist = x_hist[n_iterations - at_most_niter :, :]
             grad_hist = grad_hist[n_iterations - at_most_niter :, :]
 
         n_iterations, input_dimension = x_hist.shape
-        if n_iterations < 2 or input_dimension == 0:
-            # TODO: split into two tests
+        if n_iterations < 2:
             raise ValueError(
-                "Insufficient optimization history size, "
-                f"niter={n_iterations} nparam={input_dimension}."
+                f"The number of iterations ({n_iterations}) "
+                "must greater than or equal to 2."
             )
 
         self.x_ref = x_hist[-1]
         self.fgrad_ref = grad_hist[-1]
-        if last_iter == 0:
-            self.f_ref = array(self.history.get_func_history(funcname))[-1]
-        else:
-            self.f_ref = array(self.history.get_func_history(funcname))[:last_iter][-1]
-
+        self.f_ref = array(self.history.get_func_history(funcname))[:last_iter][-1]
         return x_hist, grad_hist, n_iterations, input_dimension
 
     @staticmethod
@@ -337,9 +334,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         funcname: str,
         save_diag: bool = False,
         first_iter: int = 0,
-        last_iter: int = -1,
+        last_iter: int | None = -1,
         b_mat0: ndarray | None = None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         return_x_grad: bool = False,
         func_index: int | None = None,
         save_matrix: bool = False,
@@ -356,8 +353,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             save_diag: Whether to return the approximations of the Hessian's diagonal.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
+                If ``None``, consider all the iterations.
             b_mat0: The initial approximation of the Hessian matrix.
             at_most_niter: The maximum number of iterations to be considered.
+                If ``None``, consider all the iterations.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
             func_index: The index of the output of interest
@@ -500,9 +499,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         funcname: str,
         save_diag: int = False,
         first_iter: int = 0,
-        last_iter: int = -1,
+        last_iter: int | None = -1,
         h_mat0: ndarray | None = None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         return_x_grad: bool = False,
         func_index: int | None = None,
         save_matrix: bool = False,
@@ -521,11 +520,13 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             save_diag: Whether to return the list of diagonal approximations.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
+                If ``None``, consider all the iterations.
             h_mat0: The initial approximation of the inverse of the Hessian matrix.
                 If None,
                 use :math:`H_0=\frac{\Delta g_k^T\Delta x_k}
                 {\Delta g_k^T\Delta g_k}I_d`.
-            at_most_niter: The maximum number of iterations to take.
+            at_most_niter: The maximum number of iterations to be considered.
+                If ``None``, consider all the iterations.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
             func_index: The output index of the function
@@ -850,9 +851,9 @@ class LSTSQApprox(HessianApproximation):
         funcname: str,
         save_diag: bool = False,
         first_iter: int = 0,
-        last_iter: int = -1,
+        last_iter: int | None = -1,
         b_mat0: ndarray | None = None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         return_x_grad: bool = False,
         scaling: bool = False,
         func_index: int = -1,

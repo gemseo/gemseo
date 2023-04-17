@@ -70,9 +70,9 @@ class RobustnessQuantifier:
         self,
         funcname: str,
         first_iter: int = 0,
-        last_iter: int = 0,
+        last_iter: int | None = None,
         b0_mat=None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         func_index=None,
     ):
         """Build the BFGS approximation for the Hessian.
@@ -80,9 +80,11 @@ class RobustnessQuantifier:
         Args:
             funcname: The name of the function.
             first_iter: The index of the first iteration.
-            last_iter: The index of the last iteration.
+            last_iter: The last iteration of the history to be considered.
+                If ``None``, consider all the iterations.
             b0_mat: The Hessian matrix at the first iteration.
-            at_most_niter: The maximum number of iterations to take
+            at_most_niter: The maximum number of iterations to be considered.
+                If ``None``, consider all the iterations.
             func_index: The component of the function.
 
         Returns:

@@ -1,0 +1,6 @@
+API changes:
+- :meth:`.RobustnessQuantifier.compute_approximation` uses ``None`` as default value for ``at_most_niter``.
+- :meth:`.HessianApproximation.get_x_grad_history` uses ``None`` as default value for ``last_iter`` and ``at_most_niter``.
+- :meth:`.HessianApproximation.build_approximation` uses ``None`` as default value for ``at_most_niter``.
+- :meth:`.HessianApproximation.build_inverse_approximation` uses ``None`` as default value for ``at_most_niter``.
+- :meth:`.LSTSQApprox.build_approximation` uses ``None`` as default value for ``at_most_niter``.

@@ -73,7 +73,7 @@ class GradientSensitivity(OptPostProcessor):
             design_value = self.opt_problem.database.get_x_by_iter(iteration)
 
         fig = self.__generate_subplots(
-            self._generate_x_names(),
+            self._get_design_variable_names(),
             design_value,
             self.__get_output_gradients(
                 design_value,
