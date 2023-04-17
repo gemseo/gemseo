@@ -327,15 +327,6 @@ class MDA(MDODiscipline):
             if input_value is not None:
                 self.local_data[input_name] = input_value
 
-    # TODO: API: remove since it is done when updating the grammar.
-    def _set_default_inputs(self) -> None:
-        """Compute the default inputs from the disciplines' ones."""
-        self_inputs = self.get_input_data_names()
-        for discipline in self.disciplines:
-            for input_name, input_value in discipline.default_inputs.items():
-                if input_name in self_inputs:
-                    self.default_inputs[input_name] = input_value
-
     def _check_coupling_types(self) -> None:
         """Check that the coupling variables are of type array in the grammars.
 

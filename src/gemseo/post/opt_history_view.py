@@ -292,7 +292,7 @@ class OptHistoryView(OptPostProcessor):
             aspect="auto",
         )
         ax1.set_yticks(arange(n_variables))
-        ax1.set_yticklabels(self._get_design_variable_names(variable_names))
+        ax1.set_yticklabels(self._get_design_variable_names(variable_names, True))
         ax1.set_xlabel(self.x_label)
         # ax1.invert_yaxis()
 
@@ -643,7 +643,7 @@ class OptHistoryView(OptPostProcessor):
         axe.set_title("Hessian diagonal approximation")
         axe.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         axe.set_yticks(arange(self.opt_problem.dimension))
-        axe.set_yticklabels(self._get_design_variable_names())
+        axe.set_yticklabels(self._get_design_variable_names(simplify=True))
         n_iterations = len(self.database)
         axe.set_xticks([i for i in range(n_iterations)])
         axe.set_xticklabels([i for i in range(1, n_iterations + 1)])

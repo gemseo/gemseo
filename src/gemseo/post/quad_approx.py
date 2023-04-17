@@ -144,7 +144,7 @@ class QuadApprox(OptPostProcessor):
             norm=SymLogNorm(linthresh=linear_threshold, vmin=-vmax, vmax=vmax),
         )
         ticks = arange(self.opt_problem.dimension)
-        design_variable_names = self._get_design_variable_names()
+        design_variable_names = self._get_design_variable_names(simplify=True)
         ax1.set_xticks(ticks)
         ax1.set_xticklabels(design_variable_names, rotation=45)
         ax1.set_yticks(ticks)
@@ -207,9 +207,7 @@ class QuadApprox(OptPostProcessor):
         upper_bounds = self.opt_problem.design_space.get_upper_bounds()
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
 
-        for i, design_variable_name in enumerate(
-            self._get_design_variable_names(simplify_names=False)
-        ):
+        for i, design_variable_name in enumerate(self._get_design_variable_names()):
             ax_i = plt.subplot(nrows, ncols, i + 1)
             f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
             self.materials_for_plotting[i] = f_vals

@@ -127,7 +127,7 @@ def pretty_str(
     return __stringify(obj, delimiter, key_value_separator, str, sort, use_and)
 
 
-def repr_variable(name: str, index: int, size: int = 0) -> str:
+def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) -> str:
     """Return the string representation of a variable.
 
     Args:
@@ -135,11 +135,17 @@ def repr_variable(name: str, index: int, size: int = 0) -> str:
         index: The component of the variable.
         size: The size of the variable if known.
             Use ``0`` if unknown.
+        simplify: Whether to return ``"[i]"`` when ``i>0`` instead of ``"name[i]"``.
 
     Returns:
         The string representation of the variable.
     """
-    return name if size == 1 else f"{name}[{index}]"
+    if size == 1:
+        return name
+    elif simplify and index != 0:
+        return f"[{index}]"
+    else:
+        return f"{name}[{index}]"
 
 
 class MultiLineString:

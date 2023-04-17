@@ -214,7 +214,7 @@ class Correlations(OptPostProcessor):
             The sorted expanded variable names.
         """
         variable_names.sort(key=partial(self.func_order, func_names))
-        x_names = self._generate_x_names()
+        x_names = self._get_design_variable_names()
         return variable_names[: -len(x_names)] + x_names
 
     @staticmethod

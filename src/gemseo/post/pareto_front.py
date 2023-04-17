@@ -125,11 +125,15 @@ class ParetoFront(OptPostProcessor):
                 functions=objectives, add_dv=False
             )
         elif not objectives:
-            design_variables_labels = self._generate_x_names(variables=design_variables)
+            design_variables_labels = self._get_design_variable_names(
+                variables=design_variables
+            )
             all_data_names = design_variables
             objective_labels = []
         else:
-            design_variables_labels = self._generate_x_names(variables=design_variables)
+            design_variables_labels = self._get_design_variable_names(
+                variables=design_variables
+            )
             all_data_names = objectives + design_variables
             _, objective_labels, _ = self.database.get_history_array(
                 functions=objectives, add_dv=False

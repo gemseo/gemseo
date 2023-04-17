@@ -156,3 +156,9 @@ def test_repr_variable_default_settings():
 def test_repr_variable_custom_settings(size, expected):
     """Check repr_variable() with custom settings."""
     assert repr_variable("x", 0, size=size) == expected
+
+
+@pytest.mark.parametrize("index,expected", [(0, "x[0]"), (1, "[1]")])
+def test_repr_variable_simplify(index, expected):
+    """Check repr_variable() with argument simplify."""
+    assert repr_variable("x", index, simplify=True) == expected

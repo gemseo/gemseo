@@ -111,15 +111,6 @@ class MDOChain(MDODiscipline):
             )
             self.output_grammar.update(discipline.output_grammar)
 
-    # TODO: API: remove since it is done when updating the grammar.
-    def _update_default_inputs(self) -> None:
-        """Compute the default inputs from the disciplines' ones."""
-        self_inputs = self.get_input_data_names()
-        for discipline in self.disciplines:
-            for input_name, input_value in discipline.default_inputs.items():
-                if input_name in self_inputs:
-                    self.default_inputs[input_name] = input_value
-
     def _run(self) -> None:
         for discipline in self.disciplines:
             self.local_data.update(discipline.execute(self.local_data))
@@ -375,15 +366,6 @@ class MDOParallelChain(MDODiscipline):
         for discipline in self.disciplines:
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
-
-    # TODO: API: remove since it is done when updating the grammar.
-    def _update_default_inputs(self) -> None:
-        """Compute the default inputs from the disciplines' ones."""
-        input_names = self.get_input_data_names()
-        for disc in self.disciplines:
-            for disc_input_name, disc_input_value in disc.default_inputs.items():
-                if disc_input_name in input_names:
-                    self.default_inputs[disc_input_name] = disc_input_value
 
     def _get_input_data_copies(self) -> list[DisciplineData]:
         """Return copies of the input data, one per discipline.

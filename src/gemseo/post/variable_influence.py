@@ -149,7 +149,7 @@ class VariableInfluence(OptPostProcessor):
             n_variables += 1
 
         influential_variables = absolute_sensitivity_indices[:n_variables]
-        x_names = self._generate_x_names()
+        x_names = self._get_design_variable_names()
         LOGGER.info(
             "   %s; %s",
             func,
@@ -210,7 +210,7 @@ class VariableInfluence(OptPostProcessor):
         )
 
         axes = atleast_2d(axes)
-        x_labels = self._generate_x_names()
+        x_labels = self._get_design_variable_names()
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
