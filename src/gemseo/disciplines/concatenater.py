@@ -62,8 +62,8 @@ class Concatenater(MDODiscipline):
                 related to the different input variables.
         """  # noqa: D205 D212 D415
         super().__init__()
-        self.input_grammar.update(input_variables)
-        self.output_grammar.update([output_variable])
+        self.input_grammar.update_from_names(input_variables)
+        self.output_grammar.update_from_names([output_variable])
         self.__output_variable = output_variable
         self.__coefficients = dict.fromkeys(input_variables, 1.0)
         if input_coefficients:

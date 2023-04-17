@@ -243,8 +243,8 @@ class XLSDiscipline(MDODiscipline):
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
         self.input_names = self.__read_sheet_col("Inputs")
         self.output_names = self.__read_sheet_col("Outputs")
-        self.input_grammar.update(self.input_names)
-        self.output_grammar.update(self.output_names)
+        self.input_grammar.update_from_names(self.input_names)
+        self.output_grammar.update_from_names(self.output_names)
 
     def _init_defaults(self) -> None:
         """Initialize the default input values.

@@ -33,7 +33,7 @@ class _MyDisciplineA(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["A"])
+        self.input_grammar.update_from_names(["A"])
         self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
 
@@ -43,7 +43,7 @@ class _MyDisciplineB(MDODiscipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
-        self.output_grammar.update(["B"])
+        self.output_grammar.update_from_names(["B"])
 
 
 def test_bug142():

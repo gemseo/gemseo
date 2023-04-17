@@ -158,8 +158,8 @@ class XLSStudyParser:
 
             all_outputs += outputs
             disc = MDODiscipline(disc_name)
-            disc.input_grammar.update(inputs)
-            disc.output_grammar.update(outputs)
+            disc.input_grammar.update_from_names(inputs)
+            disc.output_grammar.update_from_names(outputs)
             string.indent()
             string.add("Inputs: {}", pretty_str(inputs))
             string.add("Outputs: {}", pretty_str(outputs))

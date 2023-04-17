@@ -222,7 +222,7 @@ class DriverLibrary(AlgorithmLibrary):
 
     _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar(
         "DriverLibOptions",
-        schema_path=Path(__file__).parent / "driver_lib_options.json",
+        file_path=Path(__file__).parent / "driver_lib_options.json",
     )
 
     __RESET_ITERATION_COUNTERS_OPTION: Final[str] = "reset_iteration_counters"

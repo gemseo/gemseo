@@ -409,8 +409,8 @@ def test_linearize_errors():
     class LinDisc(MDODiscipline):
         def __init__(self):
             super().__init__()
-            self.input_grammar.update(["x"])
-            self.output_grammar.update(["y"])
+            self.input_grammar.update_from_names(["x"])
+            self.output_grammar.update_from_names(["y"])
 
         def _run(self):
             self.local_data["y"] = array([2.0])
@@ -495,8 +495,8 @@ def test_check_jacobian_2():
     class LinDisc(MDODiscipline):
         def __init__(self):
             super().__init__()
-            self.input_grammar.update(["x"])
-            self.output_grammar.update(["y"])
+            self.input_grammar.update_from_names(["x"])
+            self.output_grammar.update_from_names(["y"])
             self.default_inputs = {"x": x}
             self.jac_key = "x"
             self.jac_len = 2
@@ -553,8 +553,8 @@ def test_execute_rerun_errors():
             self.local_data["b"] = array([1.0])
 
     d = MyDisc()
-    d.input_grammar.update(["a"])
-    d.output_grammar.update(["b"])
+    d.input_grammar.update_from_names(["a"])
+    d.output_grammar.update_from_names(["b"])
     d.execute({"a": [1]})
     d.status = d.ExecutionStatus.RUNNING
     with pytest.raises(ValueError):

@@ -200,7 +200,7 @@ class MDA(MDODiscipline):
 
     def _add_residuals_norm_to_output_grammar(self) -> None:
         """Add RESIDUALS_NORM to the output grammar."""
-        self.output_grammar.update([self.RESIDUALS_NORM])
+        self.output_grammar.update_from_names([self.RESIDUALS_NORM])
 
     @property
     def log_convergence(self) -> bool:

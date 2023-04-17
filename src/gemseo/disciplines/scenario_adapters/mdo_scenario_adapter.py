@@ -217,7 +217,7 @@ class MDOScenarioAdapter(MDODiscipline):
             miss_dvs = set(dv_names) & set(missing_outputs)
             if miss_dvs:
                 dv_gram = JSONGrammar("dvs")
-                dv_gram.update(miss_dvs)
+                dv_gram.update_from_names(miss_dvs)
                 self.output_grammar.update(dv_gram)
 
         try:

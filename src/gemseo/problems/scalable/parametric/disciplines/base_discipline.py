@@ -56,6 +56,6 @@ class BaseDiscipline(MDODiscipline):
             *core_discipline_parameters, **default_input_values
         )
         super().__init__(self._discipline.name)
-        self.input_grammar.update(self._discipline.input_names)
-        self.output_grammar.update(self._discipline.output_names)
+        self.input_grammar.update_from_names(self._discipline.input_names)
+        self.output_grammar.update_from_names(self._discipline.output_names)
         self.default_inputs = default_input_values

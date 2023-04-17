@@ -121,7 +121,7 @@ class AutoPyDiscipline(MDODiscipline):
         self.use_arrays = use_arrays
         self.py_jac = py_jac
         self.input_names = getfullargspec(py_func)[0]
-        self.input_grammar.update(self.input_names)
+        self.input_grammar.update_from_names(self.input_names)
         self.output_names = []
         for node in ast.walk(ast.parse(getsource(py_func).strip())):
             if isinstance(node, ast.Return):
@@ -139,7 +139,7 @@ class AutoPyDiscipline(MDODiscipline):
                 else:
                     self.output_names = temp_output_names
 
-        self.output_grammar.update(self.output_names)
+        self.output_grammar.update_from_names(self.output_names)
 
         if not use_arrays:
             self.data_processor = AutoDiscDataProcessor(self.output_names)

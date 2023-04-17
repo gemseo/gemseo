@@ -58,7 +58,7 @@ def generate_bench_many_io() -> JSONGrammar:
         A JSON grammar.
     """
     grammar = JSONGrammar("manyinpt")
-    grammar.update(["t"])
+    grammar.update_from_names(["t"])
     return grammar
 
 

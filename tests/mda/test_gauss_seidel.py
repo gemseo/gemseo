@@ -105,8 +105,8 @@ def test_over_relaxation(over_relax_factor):
 class SelfCoupledDisc(MDODiscipline):
     def __init__(self, plus_y=False):
         MDODiscipline.__init__(self)
-        self.input_grammar.update(["y", "x"])
-        self.output_grammar.update(["y", "o"])
+        self.input_grammar.update_from_names(["y", "x"])
+        self.output_grammar.update_from_names(["y", "o"])
         self.default_inputs["y"] = array([0.25])
         self.default_inputs["x"] = array([0.0])
         self.coeff = 1.0

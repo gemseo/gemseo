@@ -88,8 +88,8 @@ class SellarSystem(MDODiscipline):
     def __init__(self):
         super().__init__()
         # Initialize the grammars to define inputs and outputs
-        self.input_grammar.update(["x", "z", "y_1", "y_2"])
-        self.output_grammar.update(["obj", "c_1", "c_2"])
+        self.input_grammar.update_from_names(["x", "z", "y_1", "y_2"])
+        self.output_grammar.update_from_names(["obj", "c_1", "c_2"])
         # Default inputs define what data to use when the inputs are not
         # provided to the execute method
         self.default_inputs = {
@@ -117,8 +117,8 @@ class SellarSystem(MDODiscipline):
 class Sellar1(MDODiscipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["x", "z", "y_2"])
-        self.output_grammar.update(["y_1"])
+        self.input_grammar.update_from_names(["x", "z", "y_2"])
+        self.output_grammar.update_from_names(["y_1"])
         self.default_inputs = {
             "x": ones(1),
             "z": array([4.0, 3.0]),
@@ -140,8 +140,8 @@ class Sellar1(MDODiscipline):
 class Sellar2(MDODiscipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["z", "y_1"])
-        self.output_grammar.update(["y_2"])
+        self.input_grammar.update_from_names(["z", "y_1"])
+        self.output_grammar.update_from_names(["y_2"])
         self.default_inputs = {
             "z": array([4.0, 3.0]),
             "y_1": ones(1),

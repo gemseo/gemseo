@@ -526,8 +526,8 @@ def complex_step_scenario() -> MDOScenario:
 
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.update(["x"])
-            self.output_grammar.update(["y"])
+            self.input_grammar.update_from_names(["x"])
+            self.output_grammar.update_from_names(["y"])
 
         def _run(self) -> None:
             self.local_data["y"] = self.local_data["x"]
@@ -629,8 +629,8 @@ def scenario_with_non_float_variables() -> MDOScenario:
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
 
     discipline = AnalyticDiscipline({"y": "x"})
-    discipline.input_grammar.update(["z"])
-    discipline.input_grammar.update(["w"])
+    discipline.input_grammar.update_from_names(["z"])
+    discipline.input_grammar.update_from_names(["w"])
     discipline.default_inputs["z"] = "some_str"
     discipline.default_inputs["w"] = array(1, dtype=int64)
 

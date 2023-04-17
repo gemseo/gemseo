@@ -52,8 +52,8 @@ class Splitter(MDODiscipline):
         self.__slicing_structure = output_names_to_input_indices
 
         super().__init__()
-        self.input_grammar.update([input_name])
-        self.output_grammar.update(output_names_to_input_indices.keys())
+        self.input_grammar.update_from_names([input_name])
+        self.output_grammar.update_from_names(output_names_to_input_indices.keys())
 
     def _run(self) -> None:
         input_data = self.local_data[self.__input_name]

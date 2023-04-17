@@ -285,8 +285,8 @@ def test_variable_types(doe, var_type1, var_type2):
     class Disc(MDODiscipline):
         def __init__(self):
             super().__init__("foo")
-            self.input_grammar.update(("x", "y"))
-            self.output_grammar.update(("z",))
+            self.input_grammar.update_from_names(("x", "y"))
+            self.output_grammar.update_from_names(("z",))
 
         def execute(self, input_data):
             assert (

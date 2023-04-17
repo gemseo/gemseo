@@ -512,8 +512,8 @@ class DisciplineMain(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["alpha"])
-        self.output_grammar.update(["beta"])
+        self.input_grammar.update_from_names(["alpha"])
+        self.output_grammar.update_from_names(["beta"])
 
     def _run(self) -> None:
         (alpha,) = self.get_inputs_by_name(["alpha"])
@@ -530,8 +530,8 @@ class DisciplineMainWithJacobian(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["alpha"])
-        self.output_grammar.update(["beta"])
+        self.input_grammar.update_from_names(["alpha"])
+        self.output_grammar.update_from_names(["beta"])
 
     def _run(self) -> None:
         (alpha,) = self.get_inputs_by_name(["alpha"])
@@ -552,8 +552,8 @@ class DisciplineSub1(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["x"])
-        self.output_grammar.update(["f"])
+        self.input_grammar.update_from_names(["x"])
+        self.output_grammar.update_from_names(["f"])
 
     def _run(self) -> None:
         (x,) = self.get_inputs_by_name(["x"])
@@ -567,8 +567,8 @@ class DisciplineSub2(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["x", "beta"])
-        self.output_grammar.update(["g"])
+        self.input_grammar.update_from_names(["x", "beta"])
+        self.output_grammar.update_from_names(["g"])
         self.default_inputs = {"x": array([0.0]), "beta": array([0.0])}
 
     def _run(self) -> None:
