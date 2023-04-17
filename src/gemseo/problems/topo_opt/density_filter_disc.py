@@ -18,17 +18,15 @@
 """A discipline for topology optimization density filter."""
 from __future__ import annotations
 
-from numpy import array
-from numpy import atleast_2d
 from numpy import ceil
 from numpy import maximum
 from numpy import minimum
 from numpy import newaxis
 from numpy import ones
-from numpy import tile
 from numpy import zeros
 from numpy.linalg import norm
-from scipy.sparse import coo_matrix
+from scipy.sparse import csr_array
+from scipy.sparse import diags
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -70,10 +68,10 @@ class DensityFilter(MDODiscipline):
 
     def _run(self) -> None:
         x = self.get_inputs_by_name("x")[:, newaxis]
-        self.local_data["xPhys"] = array(self.filter_matrix * x).flatten()
+        self.local_data["xPhys"] = (self.filter_matrix @ x).flatten()
         self._is_linearized = True
         self._init_jacobian(with_zeros=True)
-        self.jac["xPhys"] = {"x": atleast_2d(array(self.filter_matrix))}
+        self.jac["xPhys"] = {"x": self.filter_matrix}
 
     def _create_filter_matrix(self) -> None:
         """Create the filter matrix."""
@@ -101,8 +99,8 @@ class DensityFilter(MDODiscipline):
                         sh[cc] = maximum(0.0, fac)
                         cc += 1
         # Finalize assembly and convert to csc format
-        h_mat = coo_matrix(
+        h_mat = csr_array(
             (sh, (ih, jh)), shape=(self.n_x * self.n_y, self.n_x * self.n_y)
-        ).tocsc()
-        hs_mat = tile(array(h_mat.sum(1)), (1, self.n_x * self.n_y))
-        self.filter_matrix = h_mat / hs_mat
+        )
+        hs_mat = diags(1 / h_mat.sum(1))
+        self.filter_matrix = hs_mat @ h_mat
