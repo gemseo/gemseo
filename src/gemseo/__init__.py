@@ -569,7 +569,7 @@ def get_post_processing_options_schema(
 
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
-    post_proc = PostFactory().create(problem, post_proc_name)
+    post_proc = PostFactory().create(post_proc_name, problem)
     return _get_schema(post_proc.opt_grammar, output_json, pretty_print)
 
 
