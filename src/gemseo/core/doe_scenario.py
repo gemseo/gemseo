@@ -111,7 +111,7 @@ class DOEScenario(Scenario):
     def _update_input_grammar(self) -> None:  # noqa: D102
         super()._update_input_grammar()
         if self.grammar_type == self.GrammarType.SIMPLE:
-            self.input_grammar.update(
+            self.input_grammar.update_from_types(
                 {
                     self.EVAL_JAC: bool,
                     "n_samples": int,

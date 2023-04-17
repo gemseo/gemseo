@@ -258,11 +258,11 @@ class DiscFromExe(MDODiscipline):
 
         self._input_data, self._in_pos = parse_template(self._in_lines, True)
         input_names = self._input_data.keys()
-        self.input_grammar.update(input_names)
+        self.input_grammar.update_from_names(input_names)
 
         names_to_values, self._out_pos = parse_template(self._out_lines, False)
         output_names = names_to_values.keys()
-        self.output_grammar.update(output_names)
+        self.output_grammar.update_from_names(output_names)
         LOGGER.debug(
             "Initialize discipline from template. Input grammar: %s", input_names
         )

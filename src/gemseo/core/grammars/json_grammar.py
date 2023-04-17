@@ -43,7 +43,6 @@ from numpy import generic
 from numpy import ndarray
 
 from gemseo.core.discipline_data import Data
-from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
@@ -79,7 +78,7 @@ class JSONGrammar(BaseGrammar):
     __schema_builder: MutableMappingSchemaBuilder
     """The internal schema object."""
 
-    __JSON_TO_PYTHON_TYPES: Final[str, type] = {
+    __JSON_TO_PYTHON_TYPES: Final[dict[str, type]] = {
         "array": ndarray,
         "string": str,
         "integer": int,
@@ -94,22 +93,22 @@ class JSONGrammar(BaseGrammar):
     def __init__(
         self,
         name: str,
-        schema_path: str | Path | None = None,
+        file_path: str | Path = "",
         descriptions: Mapping[str, str] | None = None,
         **kwargs: Any,
     ) -> None:
         """
         Args:
-            schema_path: The path to a JSON schema file.
+            file_path: The path to a JSON schema file.
                 If ``None``, do not initialize the grammar from a JSON schema file.
-            descriptions: The descriptions of the elements read from ``schema_path``,
+            descriptions: The descriptions of the elements read from ``file_path``,
                 in the form: ``{element_name: element_meaning}``.
                 If ``None``, use the descriptions available in the JSON schema if any.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        if schema_path is not None:
-            self.update_from_file(schema_path)
+        if file_path:
+            self.update_from_file(file_path)
             self.set_descriptions(descriptions)
 
     def __delitem__(
@@ -132,7 +131,7 @@ class JSONGrammar(BaseGrammar):
     def __copy__(self) -> JSONGrammar:
         grammar = self._copy_base()
         # Updating is much faster than deep copying a schema builder.
-        grammar.__update(self.__schema_builder, False)
+        grammar.__schema_builder.add_schema(self.__schema_builder, True)
         grammar.__schema = self.__schema.copy()
         grammar.__validator = copy(self.__validator)
         return grammar
@@ -152,7 +151,7 @@ class JSONGrammar(BaseGrammar):
 
     def update(
         self,
-        grammar: JSONGrammar | Iterable[str] | DictSchemaType,
+        grammar: JSONGrammar,
         exclude_names: Iterable[str] = (),
         merge: bool = False,
     ) -> None:
@@ -160,38 +159,24 @@ class JSONGrammar(BaseGrammar):
 
         Args:
             merge: Whether to merge or update the grammar.
+
+        Raises:
+            TypeError: If the grammar is not a :class:`JSONGrammar`.
         """  # noqa:D417
-        if isinstance(grammar, JSONGrammar):
-            if exclude_names:
-                schema_builder = deepcopy(grammar.__schema_builder)
-                for name in exclude_names:
-                    if name in schema_builder:
-                        del schema_builder[name]
-            else:
-                schema_builder = grammar.__schema_builder
-            self.__update(schema_builder, merge)
-            self._update_namespaces_from_grammar(grammar)
-            self._defaults.update(grammar._defaults, exclude=exclude_names)
-        elif isinstance(grammar, BaseGrammar):
-            raise TypeError(
-                f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
-            )
-        elif isinstance(grammar, Mapping):
-            if exclude_names:
-                schema = dict(grammar)
-                for name in exclude_names:
-                    schema.pop(name)
-            else:
-                schema = grammar
-            self.__update(schema, merge)
-        elif isinstance(grammar, Iterable) and not isinstance(grammar, str):
-            if not grammar:
-                return
-            for name in grammar:
-                if name not in exclude_names:
-                    self.__schema_builder.add_object({name: [0.0]}, not merge)
+        if not isinstance(grammar, JSONGrammar):
+            msg = f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
+            raise TypeError(msg)
+
+        if exclude_names:
+            schema_builder = deepcopy(grammar.__schema_builder)
+            for name in exclude_names:
+                if name in schema_builder:
+                    del schema_builder[name]
         else:
-            raise TypeError(f"Cannot update from a {type(grammar)}.")
+            schema_builder = grammar.__schema_builder
+        self.__schema_builder.add_schema(schema_builder, not merge)
+        self._update_namespaces_from_grammar(grammar)
+        self._defaults.update(grammar._defaults, exclude=exclude_names)
         self.__init_dependencies()
 
     def clear(self) -> None:  # noqa: D102
@@ -215,7 +200,7 @@ class JSONGrammar(BaseGrammar):
 
     def validate(
         self,
-        data: MutableData,
+        data: Data,
         raise_exception: bool = True,
     ) -> None:
         """
@@ -245,6 +230,21 @@ class JSONGrammar(BaseGrammar):
             LOGGER.error(error_message)
             if raise_exception:
                 raise InvalidDataError(str(error_message))
+
+    def update_from_names(
+        self,
+        names: Iterable[str],
+        merge: bool = False,
+    ) -> None:
+        """
+        Args:
+            merge: Whether to merge or update the grammar.
+        """  # noqa: D205, D212, D415
+        if not names:
+            return
+        for name in names:
+            self.__schema_builder.add_object({name: [0.0]}, not merge)
+        self.__init_dependencies()
 
     def update_from_data(
         self,
@@ -301,7 +301,7 @@ class JSONGrammar(BaseGrammar):
 
     def restrict_to(  # noqa: D102
         self,
-        names: Sequence[str],
+        names: Iterable[str],
     ) -> None:
         super().restrict_to(names)
         self._check_name(*names)
@@ -311,7 +311,7 @@ class JSONGrammar(BaseGrammar):
 
     def to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         grammar = SimpleGrammar(self.name)
-        grammar.update(self.__get_names_to_types())
+        grammar.update_from_types(self.__get_names_to_types())
         for name in self.keys() - self.required_names:
             grammar.required_names.remove(name)
         grammar._defaults.update(self._defaults)
@@ -322,18 +322,6 @@ class JSONGrammar(BaseGrammar):
         return self.__schema_builder.required
 
     # API not in the base class.
-
-    def __update(
-        self,
-        schema: DictSchemaType,
-        merge: bool,
-    ) -> None:
-        """Update the elements from a schema.
-
-        Args:
-            merge: Whether to merge or update the grammar.
-        """  # noqa:D417
-        self.__schema_builder.add_schema(schema, not merge)
 
     def update_from_file(self, path: str | Path, merge: bool = False) -> None:
         """Update the grammar from a schema file.
@@ -353,16 +341,23 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_schema(json.loads(path.read_text()), not merge)
         self.__init_dependencies()
 
-    def write(
-        self,
-        path: Path | str | None = None,
-    ) -> None:
-        """Write the grammar schema to a file.
+    def update_from_schema(self, schema: DictSchemaType, merge: bool = False) -> None:
+        """Update the grammar from a json schema.
+
+        Args:
+            schema: The schema to update from.
+            merge: Whether to merge or update the grammar.
+        """
+        self.__schema_builder.add_schema(schema, not merge)
+        self.__init_dependencies()
+
+    def to_file(self, path: Path | str = "") -> None:
+        """Write the grammar ,schema to a json file.
 
         Args:
             path: The file path.
-                If ``None``,
-                then write to a file named after the grammar and with .json extension.
+                If empty,
+                write to a file named after the grammar and with .json extension.
         """
         if path is None:
             path = Path(self.name).with_suffix(".json")
@@ -383,7 +378,7 @@ class JSONGrammar(BaseGrammar):
         return self.__schema_builder.to_json(*args, **kwargs)
 
     @property
-    def schema(self) -> dict[str, DictSchemaType]:
+    def schema(self) -> DictSchemaType:
         """The dictionary representation of the schema."""
         if not self.__schema:
             self.__schema = self.__schema_builder.to_schema()

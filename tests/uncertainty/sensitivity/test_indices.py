@@ -61,8 +61,8 @@ class Ishigami1D(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["x1", "x2", "x3"])
-        self.output_grammar.update(["out"])
+        self.input_grammar.update_from_names(["x1", "x2", "x3"])
+        self.output_grammar.update_from_names(["out"])
 
     def _run(self):
         x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])

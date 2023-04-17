@@ -234,8 +234,8 @@ def test_load_and_dump(tmp_wd):
 class ToyDiscipline(MDODiscipline):
     def __init__(self, dtype=float64):
         super().__init__()
-        self.input_grammar.update(["x1", "x2"])
-        self.output_grammar.update(["y1", "y2"])
+        self.input_grammar.update_from_names(["x1", "x2"])
+        self.output_grammar.update_from_names(["y1", "y2"])
         self.default_inputs = {
             "x1": array([1.0], dtype=dtype),
             "x2": array([1.0, 1.0], dtype=dtype),

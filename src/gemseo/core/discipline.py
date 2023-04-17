@@ -757,12 +757,12 @@ class MDODiscipline(Serializable):
         self.input_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_input",
-            schema_path=input_grammar_file,
+            file_path=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_output",
-            schema_path=output_grammar_file,
+            file_path=output_grammar_file,
         )
 
     def _run(self) -> None:

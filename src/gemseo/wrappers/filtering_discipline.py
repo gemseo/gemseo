@@ -64,8 +64,8 @@ class FilteringDiscipline(MDODiscipline):
         elif not keep_out:
             output_names = list(set(original_output_names) - set(output_names))
 
-        self.input_grammar.update(input_names)
-        self.output_grammar.update(output_names)
+        self.input_grammar.update_from_names(input_names)
+        self.output_grammar.update_from_names(output_names)
         self.default_inputs = self.__filter_inputs(self.discipline.default_inputs)
         removed_inputs = set(original_input_names) - set(input_names)
         diff_inputs = set(self.discipline._differentiated_inputs) - removed_inputs

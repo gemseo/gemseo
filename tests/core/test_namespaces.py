@@ -262,7 +262,7 @@ def test_mda_with_namespaces(grammar_type):
 def test_json_grammar_grammar_add_namespace():
     """Tests JSONGrammar namespaces handling."""
     g = JSONGrammar("g")
-    g.update(["name1", "name2"])
+    g.update_from_names(["name1", "name2"])
     g.required_names.add("name1")
     g.add_namespace("name1", "ns")
     assert "ns" + namespaces_separator + "name1" in g

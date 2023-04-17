@@ -112,8 +112,8 @@ class ConstraintAggregation(MDODiscipline):
         super().__init__(name)
         self.__method_name = aggregation_function
         self.__meth_options = options
-        self.input_grammar.update(constraint_names)
-        self.output_grammar.update(
+        self.input_grammar.update_from_names(constraint_names)
+        self.output_grammar.update_from_names(
             [
                 f"{aggregation_function}_{constraint_name}"
                 for constraint_name in constraint_names

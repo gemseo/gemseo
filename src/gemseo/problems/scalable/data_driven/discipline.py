@@ -90,8 +90,8 @@ class ScalableDiscipline(MDODiscipline):
 
         :param Dataset data: learning dataset.
         """
-        self.input_grammar.update(data.get_names(data.INPUT_GROUP))
-        self.output_grammar.update(data.get_names(data.OUTPUT_GROUP))
+        self.input_grammar.update_from_names(data.get_names(data.INPUT_GROUP))
+        self.output_grammar.update_from_names(data.get_names(data.OUTPUT_GROUP))
 
     def _run(self) -> None:
         """Runs the scalable discipline and stores the output values."""

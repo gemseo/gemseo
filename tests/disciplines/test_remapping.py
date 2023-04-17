@@ -30,8 +30,8 @@ class NewDiscipline(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__(name="foo")
-        self.input_grammar.update(["in_1", "in_2"])
-        self.output_grammar.update(["out_1", "out_2"])
+        self.input_grammar.update_from_names(["in_1", "in_2"])
+        self.output_grammar.update_from_names(["out_1", "out_2"])
         self.default_inputs = {"in_1": array([1.0]), "in_2": array([2.0, 3.0])}
 
     def _run(self) -> None:

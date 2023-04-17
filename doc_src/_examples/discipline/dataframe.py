@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo.core.discipline import MDODiscipline
-from numpy import ndarray
 from pandas import DataFrame
 
 # %%
@@ -67,8 +66,8 @@ configure_logger()
 class DataFrameDiscipline(MDODiscipline):
     def __init__(self):
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
-        self.input_grammar.update({"df~x": ndarray})
-        self.output_grammar.update({"df~y": ndarray})
+        self.input_grammar.update_from_names(["df~x"])
+        self.output_grammar.update_from_names(["df~y"])
         self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
 
     def _run(self):

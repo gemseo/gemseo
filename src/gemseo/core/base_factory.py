@@ -434,7 +434,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
                 grammar.required_names.remove(opt)
 
         if write_schema:
-            grammar.write(schema_path)
+            grammar.to_file(schema_path)
 
         return grammar
 

@@ -25,7 +25,6 @@ import logging
 from abc import abstractmethod
 from copy import copy
 from typing import Any
-from typing import Container
 from typing import Iterable
 from typing import KeysView
 from typing import MutableMapping
@@ -167,13 +166,13 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     @abstractmethod
     def update(
         self,
-        grammar: BaseGrammar | Iterable[str],
-        exclude_names: Container[str] = (),
+        grammar: BaseGrammar,
+        exclude_names: Iterable[str] = (),
     ) -> None:
-        """Update the grammar.
+        """Update the grammar from another grammar.
 
         Args:
-            grammar: The grammar or names to update from.
+            grammar: The grammar to update from.
             exclude_names: The names of the elements that shall not be updated.
         """
 
@@ -236,6 +235,19 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
 
         Raises:
             TypeError: If a value has a bad type.
+        """
+
+    @abstractmethod
+    def update_from_names(
+        self,
+        names: Iterable[str],
+    ) -> None:
+        """Update the grammar from names.
+
+        The updated elements of the grammar will bind the names to Numpy arrays.
+
+        Args:
+            names: The names to update from.
         """
 
     def restrict_to(

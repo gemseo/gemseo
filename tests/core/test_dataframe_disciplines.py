@@ -32,7 +32,6 @@ from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
 from gemseo.utils.testing import compare_dict_of_arrays
 from numpy import array
-from numpy import ndarray
 from pandas import DataFrame
 
 from .test_discipline_data import to_df_key
@@ -197,13 +196,13 @@ class A2(A):
     def __init__(self, with_df):
         super().__init__(with_df, MDODiscipline.GrammarType.SIMPLE)
         if self.with_df:
-            self.input_grammar.update({to_df_key("x", "c"): ndarray})
+            self.input_grammar.update_from_names([to_df_key("x", "c")])
             self.default_inputs["x"]["c"] = array([0.0])
-            self.output_grammar.update({to_df_key("y", "d"): ndarray})
+            self.output_grammar.update_from_names([to_df_key("y", "d")])
         else:
-            self.input_grammar.update({"c": ndarray})
+            self.input_grammar.update_from_names(["c"])
             self.default_inputs["c"] = array([0.0])
-            self.output_grammar.update({"d": ndarray})
+            self.output_grammar.update_from_names(["d"])
 
     def _run(self):
         super()._run()

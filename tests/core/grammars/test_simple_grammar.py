@@ -172,24 +172,21 @@ def create_defaults(names_to_types: Mapping[str, type]) -> dict[str, Any]:
 
 
 @double_names_to_types
-@exclude_names
-def test_update_with_dict(names_to_types1, names_to_types2, exclude_names):
+def test_update_from_types(names_to_types1, names_to_types2):
     """Verify update with a dict."""
     g1 = SimpleGrammar("g1", names_to_types=names_to_types1)
     defaults = create_defaults(names_to_types1)
     g1.defaults.update(defaults)
 
-    g1.update(names_to_types2, exclude_names=exclude_names)
+    g1.update_from_types(names_to_types2)
 
     assert g1.defaults == defaults
 
-    exclude_names = set(exclude_names)
-
-    assert set(g1) == set(names_to_types1) | (set(names_to_types2) - exclude_names)
+    assert set(g1) == set(names_to_types1) | set(names_to_types2)
     assert g1.required_names == set(g1)
 
     for name in g1:
-        if name in set(names_to_types2) - exclude_names:
+        if name in names_to_types2:
             assert g1[name] == names_to_types2[name]
         else:
             assert g1[name] == names_to_types1[name]
@@ -249,7 +246,7 @@ def test_update_with_grammar(
 def test_update_dict_with_mapping():
     """Verify update with mapping."""
     g = SimpleGrammar("g")
-    g.update({"name": dict})
+    g.update_from_types({"name": dict})
     assert g["name"] == collections.abc.Mapping
 
 
@@ -262,24 +259,21 @@ def test_update_dict_with_mapping():
     ],
 )
 @parametrized_names_to_types
-@exclude_names
-def test_update_with_names(names_to_types, names, exclude_names):
+def test_update_with_names(names_to_types, names):
     """Verify update with names."""
     g = SimpleGrammar("g", names_to_types=names_to_types)
     defaults = create_defaults(names_to_types)
     g.defaults.update(defaults)
 
-    g.update(names, exclude_names=exclude_names)
+    g.update_from_names(names)
 
     assert g.defaults == defaults
 
-    exclude_names = set(exclude_names)
-
-    assert set(g) == set(names_to_types) | (set(names) - exclude_names)
+    assert set(g) == set(names_to_types) | set(names)
     assert g.required_names == set(g)
 
     for name in g:
-        if name in set(names) - exclude_names:
+        if name in names:
             assert g[name] == ndarray
         else:
             assert g[name] == names_to_types[name]
@@ -291,11 +285,7 @@ def test_update_error():
 
     msg = "The element name must be a type or None: it is 0."
     with pytest.raises(TypeError, match=msg):
-        g1.update({"name": 0})
-
-    msg = r"Cannot update from a <class 'str'>\."
-    with pytest.raises(TypeError, match=msg):
-        g1.update("name")
+        g1.update_from_types({"name": 0})
 
 
 @parametrized_names_to_types
@@ -503,7 +493,7 @@ def test_rename_error():
 def test_copy():
     """Verify copy."""
     g = SimpleGrammar("g")
-    g.update(["name"])
+    g.update_from_names(["name"])
     g.defaults["name"] = 1.0
     g_copy = g.copy()
     assert g_copy["name"] is g["name"]

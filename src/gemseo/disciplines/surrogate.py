@@ -174,8 +174,12 @@ class SurrogateDiscipline(MDODiscipline):
             output_names: The names of the inputs to consider.
                 If ``None``, use all the inputs of the regression model.
         """
-        self.input_grammar.update(input_names or self.regression_model.input_names)
-        self.output_grammar.update(output_names or self.regression_model.output_names)
+        self.input_grammar.update_from_names(
+            input_names or self.regression_model.input_names
+        )
+        self.output_grammar.update_from_names(
+            output_names or self.regression_model.output_names
+        )
 
     def _set_default_inputs(
         self,

@@ -36,6 +36,7 @@ from typing import Any
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
+from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -57,7 +58,7 @@ from pathlib import Path
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
-VariableType = Union[str, tuple[str, int]]
+VariableType = Union[str, Tuple[str, int]]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):

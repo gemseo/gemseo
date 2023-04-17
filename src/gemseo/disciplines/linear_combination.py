@@ -71,8 +71,8 @@ class LinearCombination(MDODiscipline):
         self.__offset = offset
         self.__coefficients = input_coefficients
         self.__output_name = output_name
-        self.input_grammar.update(list(input_names))
-        self.output_grammar.update([output_name])
+        self.input_grammar.update_from_names(input_names)
+        self.output_grammar.update_from_names([output_name])
         self.__coefficients = {name: 1.0 for name in self.get_input_data_names()}
         if input_coefficients:
             self.__coefficients.update(input_coefficients)
