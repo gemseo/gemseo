@@ -23,8 +23,7 @@ from itertools import accumulate
 from typing import Sequence
 
 from numpy import concatenate
-from numpy import eye
-from numpy import zeros
+from scipy.sparse import csr_array
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -103,6 +102,9 @@ class Concatenater(MDODiscipline):
         # Instead of manually accumulating, we use the accumulate() iterator.
         jac = self.jac[self.__output_variable]
         for name, size, start in zip(names, sizes, accumulate(sizes, initial=0)):
-            val = zeros([total_size, size])
-            val[start : (start + size), :] = self.__coefficients[name] * eye(size)
-            jac[name] = val
+            row = range(start, start + size)
+            col = range(size)
+            jac[name] = csr_array(
+                ([self.__coefficients[name]] * size, (row, col)),
+                shape=(total_size, size),
+            )

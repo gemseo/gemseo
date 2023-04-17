@@ -20,10 +20,9 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from numpy import atleast_2d
-from numpy import diag
 from numpy import ones
 from numpy import ones_like
+from scipy.sparse import diags
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -86,8 +85,8 @@ class MaterialModelInterpolation(MDODiscipline):
         )
         dyoung_modulus_dxphys[self.empty_elements] = 0
         dyoung_modulus_dxphys[self.full_elements] = 0
-        self.jac["E"] = {"xPhys": atleast_2d(diag(dyoung_modulus_dxphys))}
+        self.jac["E"] = {"xPhys": diags(dyoung_modulus_dxphys).toarray()}
         drho_dxphys = ones_like(xphys)
         drho_dxphys[self.empty_elements] = 0
         drho_dxphys[self.full_elements] = 0
-        self.jac["rho"] = {"xPhys": atleast_2d(diag(drho_dxphys))}
+        self.jac["rho"] = {"xPhys": diags(drho_dxphys).toarray()}

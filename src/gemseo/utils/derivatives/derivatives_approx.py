@@ -29,6 +29,8 @@ from typing import Sequence
 from typing import Sized
 from typing import TYPE_CHECKING
 
+from scipy.sparse import spmatrix
+
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.gradient_approximator_factory import (
@@ -395,6 +397,8 @@ class DisciplineJacApprox:
                     )
                     LOGGER.error(msg)
                 else:
+                    if isinstance(computed_jac, spmatrix):
+                        computed_jac = computed_jac.toarray()
                     success_loc = allclose(
                         computed_jac, approx_jac, atol=threshold, rtol=threshold
                     )

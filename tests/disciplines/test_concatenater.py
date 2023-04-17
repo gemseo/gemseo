@@ -93,7 +93,7 @@ def test_concatenation_discipline_linearization(
         if var == "c_1":
             c_c1[start:end, :] = coefficients[var] * diag(ones(2))
         start += input_data[var].size
-    assert_array_equal(jac["c"]["c_1"], c_c1)
+    assert_array_equal(jac["c"]["c_1"].toarray(), c_c1)
 
     c_c2 = zeros([5, 3])
     start = 0
@@ -102,7 +102,7 @@ def test_concatenation_discipline_linearization(
             end = start + 3
             c_c2[start:end, :] = coefficients[var] * diag(ones(3))
         start += input_data[var].size
-    assert_array_equal(jac["c"]["c_2"], c_c2)
+    assert_array_equal(jac["c"]["c_2"].toarray(), c_c2)
 
 
 def test_check_gradient(
