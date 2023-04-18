@@ -119,11 +119,15 @@ class OrbitalDynamics(ODEProblem):
     force."""
 
     def __init__(
-        self, eccentricity: float = 0.5, state_vector: NDArray[float] | None = None
+        self,
+        eccentricity: float = 0.5,
+        use_jacobian: bool = True,
+        state_vector: NDArray[float] | None = None,
     ) -> None:
         r"""
         Args:
             eccentricity: The eccentricity of the particle trajectory.
+            use_jacobian: Whether to use the analytical expression of the Jacobian.
             state_vector: The state vector
                 :math:`s(t)=(x(t), y(t), \dot{x(t)}, \dot{y(t)})`
                 of the system.
@@ -141,9 +145,10 @@ class OrbitalDynamics(ODEProblem):
             ]
         )
 
+        jac = _compute_rhs_jacobian if use_jacobian else None
         super().__init__(
             func=_compute_rhs,
-            jac=_compute_rhs_jacobian,
+            jac=jac,
             initial_state=initial_state,
             initial_time=0,
             final_time=0.5,
