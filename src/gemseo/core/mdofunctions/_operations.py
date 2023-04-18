@@ -119,6 +119,9 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             input_names=input_names,
             dim=self._first_operand.dim,
             output_names=self._first_operand.output_names,
+            original_name=first_operand.original_name
+            if self._second_operand_is_number
+            else "",
         )
 
     def _compute_expr(self) -> str:

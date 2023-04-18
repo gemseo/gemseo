@@ -225,9 +225,6 @@ class OptimizationProblem(BaseProblem):
     may be more relevant to log the expression and the values of the original objective.
     """
 
-    constraint_names: dict[str, list[str]]
-    """The standardized constraint names bound to the original ones."""
-
     AggregationFunction = ConstraintAggregation.EvaluationFunction
 
     _AGGREGATION_FUNCTION_MAP: Final[str] = {
@@ -356,7 +353,6 @@ class OptimizationProblem(BaseProblem):
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = parallel_differentiation_options
         self.__eval_obs_jac = False
-        self.constraint_names = {}
         self.__observable_names = set()
 
     def __raise_exception_if_functions_are_already_preprocessed(self):
@@ -376,6 +372,16 @@ class OptimizationProblem(BaseProblem):
         if self.max_iter in [None, 0] or self.current_iter in [None, 0]:
             return False
         return self.current_iter >= self.max_iter
+
+    @property
+    def constraint_names(self) -> dict[str, list[str]]:
+        """The standardized constraint names bound to the original ones."""
+        names = {}
+        for constraint in self.constraints:
+            if constraint.original_name not in names:
+                names[constraint.original_name] = []
+            names[constraint.original_name].append(constraint.name)
+        return names
 
     @property
     def parallel_differentiation(self) -> bool:
@@ -526,11 +532,6 @@ class OptimizationProblem(BaseProblem):
                 cstr_func.expr = cstr_func.expr.replace(func_name, output_names)
                 cstr_func.special_repr = f"{func_name}: {cstr_repr}"
 
-        if func_name not in self.constraint_names:
-            self.constraint_names[func_name] = [cstr_func.name]
-        else:
-            self.constraint_names[func_name].append(cstr_func.name)
-
     def add_eq_constraint(
         self,
         cstr_func: MDOFunction,
@@ -671,7 +672,6 @@ class OptimizationProblem(BaseProblem):
             self.add_observable(constr)
         self.objective = penalized_objective
         self.constraints = []
-        self.constraint_names = {}
 
     def add_observable(
         self,

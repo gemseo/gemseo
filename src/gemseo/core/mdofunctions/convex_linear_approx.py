@@ -93,6 +93,7 @@ class ConvexLinearApprox(MDOFunction):
             dim=self.__mdo_function.dim,
             output_names=self.__mdo_function.output_names,
             force_real=self.__mdo_function.force_real,
+            original_name=mdo_function.original_name,
         )
 
     def __get_steps(self, x_new: ArrayType) -> tuple[ArrayType, ArrayType]:

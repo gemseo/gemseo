@@ -60,6 +60,7 @@ class RestrictedFunction(MDOFunction):
             input_names=orig_function.input_names,
             dim=orig_function.dim,
             output_names=orig_function.output_names,
+            original_name=orig_function.original_name,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:

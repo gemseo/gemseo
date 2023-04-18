@@ -230,6 +230,13 @@ class MDOFunction(Serializable):
     _output_names: list[str]
     """The names of the outputs of the function."""
 
+    __original_name: str
+    """The original name of the function.
+
+    By default, it is the same as :attr:`.name`. When the value of :attr:`.name` changes,
+    :attr:`.original_name` stores its former value.
+    """
+
     __INPUT_NAME_PATTERN: Final[str] = "x"
     """The pattern to define a variable name, as ``"x!1"``."""
 
@@ -245,6 +252,7 @@ class MDOFunction(Serializable):
         output_names: Iterable[str] | None = None,
         force_real: bool = False,
         special_repr: str = "",
+        original_name: str = "",
     ) -> None:
         """
         Args:
@@ -265,10 +273,13 @@ class MDOFunction(Serializable):
             force_real: Whether to cast the output values to real.
             special_repr: The string representation of the function.
                 If empty, use :meth:`.default_repr`.
+            original_name: The original name of the function.
+                If empty, use the same name than the ``name`` input.
         """  # noqa: D205, D212, D415
         super().__init__()
 
         # Initialize attributes
+        self.__original_name = original_name if original_name else name
         self._f_type = ""
         self._func = NotImplementedCallable()
         self._jac = NotImplementedCallable()
@@ -290,7 +301,12 @@ class MDOFunction(Serializable):
         self.last_eval = None
         self.force_real = force_real
         self.special_repr = special_repr or ""
-        self.has_default_name = False
+        self.has_default_name = True if self.name else False
+
+    @property
+    def original_name(self) -> str:
+        """The original name of the function."""
+        return self.__original_name
 
     @property
     def n_calls(self) -> int:
@@ -615,6 +631,7 @@ class MDOFunction(Serializable):
             dim=self.dim,
             output_names=self.output_names,
             expr=expr,
+            original_name=self.original_name,
         )
 
     def __truediv__(self, other: MDOFunction | Number) -> MDOFunction:
