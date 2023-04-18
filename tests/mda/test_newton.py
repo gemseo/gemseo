@@ -19,9 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
 import re
+from unittest import mock
 
 import pytest
+from gemseo import create_mda
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
@@ -46,6 +49,7 @@ from numpy import ones
 from .test_gauss_seidel import SelfCoupledDisc
 
 TRESHOLD_MDA_TOL = 1e-6
+SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
 @pytest.mark.parametrize("coupl_scaling", [True, False])
@@ -129,9 +133,8 @@ def test_raphson_sellar_sparse_complex():
 
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
-    y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
@@ -162,9 +165,8 @@ def test_raphson_sellar():
 
     assert mda.residual_history[-1] < 1e-6
 
-    y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_raphson_sellar_linop():
@@ -182,9 +184,8 @@ def test_broyden_sellar():
     mda.execute()
     assert mda.residual_history[-1] < 1e-5
 
-    y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-3
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
     mda.warm_start = True
     mda.execute({X_SHARED: mda.default_inputs[X_SHARED] + 0.1})
@@ -197,9 +198,8 @@ def test_hybrid_sellar():
 
     mda.execute()
 
-    y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_lm_sellar():
@@ -210,9 +210,8 @@ def test_lm_sellar():
     )
     mda.execute()
 
-    y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_dfsane_sellar():
@@ -220,9 +219,8 @@ def test_dfsane_sellar():
     mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.DF_SANE)
     mda.execute()
 
-    y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-3
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
     """Test the execution of quasi-Newton with fake method."""
     with pytest.raises(
@@ -341,3 +339,118 @@ def test_weak_and_strong_couplings_two_cycles():
         linearization_mode="adjoint",
         threshold=1e-3,
     )
+
+
+@pytest.mark.parametrize(
+    "mda_linear_solver, mda_linear_solver_options, "
+    "newton_linear_solver_name, newton_linear_solver_options",
+    [
+        ("DEFAULT", None, "DEFAULT", None),
+        ("DEFAULT", {"atol": 1e-6}, "DEFAULT", None),
+        ("DEFAULT", None, "DEFAULT", {"atol": 1e-3}),
+        ("BICG", None, "DEFAULT", None),
+        ("DEFAULT", None, "BICG", None),
+    ],
+)
+def test_pass_dedicated_newton_options(
+    mda_linear_solver,
+    mda_linear_solver_options,
+    newton_linear_solver_name,
+    newton_linear_solver_options,
+):
+    """Test that the linear solver type and options for the Adjoint method and the newton
+    method can be controlled independently in a newton based MDA. A mock is used to
+    unitary test the arguments passed to the Newton step.
+
+    Args:
+        mda_linear_solver: The linear solver name to solve the MDA Adjoint matrix.
+        mda_linear_solver_options: The options for MDA matrix linear solver.
+        newton_linear_solver_name: The linear solver name to solve the Newton method.
+        newton_linear_solver_options: The options for Newton linear solver.
+
+    Returns:
+    """
+    newton_linear_solver_options = {"atol": 1e-6}
+    mda = create_mda(
+        "MDANewtonRaphson",
+        disciplines=[Sellar1(), Sellar2()],
+        linear_solver=mda_linear_solver,
+        linear_solver_options=mda_linear_solver_options,
+        newton_linear_solver_name=newton_linear_solver_name,
+        newton_linear_solver_options=newton_linear_solver_options,
+    )
+    mda.assembly.compute_newton_step = mock.Mock(
+        return_value={
+            "y_1": array([-0.1935616 + 0.0j]),
+            "y_2": array([0.7964384 + 0.0j]),
+        }
+    )
+    mda.execute()
+    newton_step_args = mda.assembly.compute_newton_step.call_args
+    assert mda.linear_solver == mda_linear_solver
+    if mda_linear_solver_options is None:
+        assert mda.linear_solver_options == {}
+    else:
+        assert mda.linear_solver_options == mda_linear_solver_options
+    assert newton_step_args.args[3] == newton_linear_solver_name
+    del newton_step_args.kwargs["matrix_type"]
+    if newton_linear_solver_options is not None:
+        assert newton_step_args.kwargs == newton_linear_solver_options
+
+
+@pytest.mark.parametrize(
+    "newton_linear_solver_name, newton_linear_solver_options",
+    [
+        ("DEFAULT", {"atol": 1e-4}),
+        ("DEFAULT", None),
+        ("BICGSTAB", None),
+        ("GMRES", None),
+    ],
+)
+def test_mda_newton_convergence_passing_dedicated_newton_options(
+    newton_linear_solver_name,
+    newton_linear_solver_options,
+):
+    """Test that Newton MDA converges toward expected value for various linear solver
+    algorithms for the Newton method.
+
+    Args:
+        newton_linear_solver_name: The linear solver name to solve the Newton method.
+        newton_linear_solver_options: The options for Newton linear solver.
+
+    Returns:
+    """
+    mda = create_mda(
+        "MDANewtonRaphson",
+        disciplines=[Sellar1(), Sellar2()],
+        newton_linear_solver_name=newton_linear_solver_name,
+        newton_linear_solver_options=newton_linear_solver_options,
+    )
+    mda.execute()
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+
+    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
+    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+
+
+def test_mda_newton_serialization(tmp_wd):
+    """Test serialization and deserialization of a Newton based MDA.
+
+    Returns:
+    """
+    options = {"atol": 1e-6}
+    mda = create_mda(
+        "MDANewtonRaphson",
+        disciplines=[Sellar1(), Sellar2()],
+        newton_linear_solver_options=options,
+    )
+    out = mda.execute()
+    out_file = "mda_newton.pkl"
+    with open(out_file, "wb") as file:
+        pickle.dump(mda, file)
+
+    with open(out_file, "rb") as file:
+        mda_d = pickle.load(file)
+    for k, v in out.items():
+        assert k in mda_d.local_data
+        assert (v == mda_d.local_data[k]).all()

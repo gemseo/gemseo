@@ -140,6 +140,13 @@ class MDANewtonRaphson(MDARoot):
        x_{k+1} = x_k - \alpha f'(x_k)^{-1} f(x_k)
     """
 
+    __newton_linear_solver_name: str
+    """The name of the linear solver for the Newton method: can be "DEFAULT", "GMRES" or
+    "BICGSTAB"."""
+
+    __newton_linear_solver_options: Mapping[str, Any] | None
+    """The options of the Newton linear solver."""
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -155,10 +162,14 @@ class MDANewtonRaphson(MDARoot):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver_options: Mapping[str, Any] = None,
+        newton_linear_solver_name: str = "DEFAULT",
+        newton_linear_solver_options: Mapping[str, Any] | None = None,
     ) -> None:
         """
         Args:
             relax_factor: The relaxation factor in the Newton step.
+            newton_linear_solver: The name of the linear solver for the Newton method.
+            newton_linear_solver_options: The options for the Newton linear solver.
         """  # noqa:D205 D212 D415
         super().__init__(
             disciplines,
@@ -176,6 +187,8 @@ class MDANewtonRaphson(MDARoot):
         )
         self.relax_factor = self.__check_relax_factor(relax_factor)
         self.linear_solver = linear_solver
+        self.__newton_linear_solver_name = newton_linear_solver_name
+        self.__newton_linear_solver_options = newton_linear_solver_options or {}
 
     @staticmethod
     def __check_relax_factor(
@@ -202,9 +215,9 @@ class MDANewtonRaphson(MDARoot):
             self.local_data,
             self.all_couplings,
             self.relax_factor,
-            self.linear_solver,
+            self.__newton_linear_solver_name,
             matrix_type=self.matrix_type,
-            **self.linear_solver_options,
+            **self.__newton_linear_solver_options,
         )
 
         # Update all the couplings with the Newton step.
