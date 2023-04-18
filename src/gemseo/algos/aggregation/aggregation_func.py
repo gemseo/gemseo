@@ -320,4 +320,5 @@ def _create_mdofunc(
         1,
         new_output_names,
         constr_fct.force_real,
+        original_name=constr_fct.original_name,
     )

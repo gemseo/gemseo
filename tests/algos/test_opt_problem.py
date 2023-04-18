@@ -1616,10 +1616,11 @@ def test_objective_name():
         (-1.0, False, "c + 1.0"),
     ],
 )
-def test_constraint_name(has_default_name, value, positive, cstr_type, name):
+def test_constraint_names(has_default_name, value, positive, cstr_type, name):
     """Check the name of a constraint."""
     problem = OptimizationProblem(DesignSpace())
-    constraint_function = MDOFunction(lambda x: x, "c")
+    original_name = "c"
+    constraint_function = MDOFunction(lambda x: x, original_name)
     constraint_function.has_default_name = has_default_name
     problem.add_constraint(
         constraint_function,
@@ -1628,12 +1629,38 @@ def test_constraint_name(has_default_name, value, positive, cstr_type, name):
         cstr_type=cstr_type,
     )
     cstr_name = problem.constraints[0].name
+
+    assert problem.constraint_names[original_name] == [cstr_name]
+
     if not has_default_name:
         assert cstr_name == "c"
     else:
         assert cstr_name == name
 
-    assert problem.constraint_names["c"] == [cstr_name]
+
+def test_constraint_names_with_aggregation():
+    """Check the name of the constraints when some are aggregated."""
+    problem = OptimizationProblem(DesignSpace())
+    nb_constr = 5
+    for i in range(nb_constr):
+        original_name = f"c{i}"
+        problem.add_constraint(
+            MDOFunction(lambda x: x, original_name),
+            cstr_type=MDOFunction.FunctionType.INEQ,
+        )
+
+    idx_aggr = [0, 3]
+    for i in idx_aggr:
+        problem.aggregate_constraint(
+            i, method=OptimizationProblem.AggregationFunction.MAX
+        )
+
+    for i in range(nb_constr):
+        name = f"c{i}"
+        if i in idx_aggr:
+            assert problem.constraint_names[name] == [f"max_c{i}"]
+        else:
+            assert problem.constraint_names[name] == [name]
 
 
 def test_observables_normalization():
