@@ -36,7 +36,7 @@ from numpy.linalg import norm
 from numpy.typing import NDArray
 
 
-@pytest.mark.parametrize(
+parametrized_algo_names = pytest.mark.parametrize(
     "algo_name",
     [
         "RK45",
@@ -47,22 +47,15 @@ from numpy.typing import NDArray
         "LSODA",
     ],
 )
+
+
+@parametrized_algo_names
 def test_factory(algo_name):
     """Test the factory for ODE solvers."""
     assert ODESolversFactory().is_available(algo_name)
 
 
-@pytest.mark.parametrize(
-    "algo_name",
-    [
-        "RK45",
-        "RK23",
-        "DOP853",
-        "Radau",
-        "BDF",
-        "LSODA",
-    ],
-)
+@parametrized_algo_names
 def test_scipy_ode_algos(algo_name):
     """Test the wrapper for SciPy ODE solvers."""
     algos = ScipyODEAlgos()
@@ -192,17 +185,7 @@ def test_ode_problem_2d_wrong_jacobian():
         raise ValueError("Jacobian should not be considered correct.")
 
 
-@pytest.mark.parametrize(
-    "algo_name",
-    [
-        "RK45",
-        "RK23",
-        "DOP853",
-        "Radau",
-        "BDF",
-        "LSODA",
-    ],
-)
+@parametrized_algo_names
 def test_van_der_pol(algo_name):
     """Solve Van der Pol with the jacobian analytical expression."""
     problem = VanDerPol()
@@ -216,17 +199,7 @@ def test_van_der_pol(algo_name):
     problem.check()
 
 
-@pytest.mark.parametrize(
-    "algo_name",
-    [
-        "RK45",
-        "RK23",
-        "DOP853",
-        "Radau",
-        "BDF",
-        "LSODA",
-    ],
-)
+@parametrized_algo_names
 def test_van_der_pol_finite_differences(algo_name):
     """Solve Van der Pol using finite differences for the jacobian."""
     problem = VanDerPol(use_jacobian=False)
@@ -261,9 +234,10 @@ def test_van_der_pol_jacobian_explicit_expression():
         ("RK45", 0.8),
     ],
 )
-def test_orbital(algo_name, eccentricity):
+@pytest.mark.parametrize("use_jacobian", [True, False])
+def test_orbital(algo_name, eccentricity, use_jacobian):
     """Solve the orbital problem."""
-    problem = OrbitalDynamics(eccentricity=eccentricity)
+    problem = OrbitalDynamics(eccentricity=eccentricity, use_jacobian=use_jacobian)
     ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
     assert problem.result.is_converged
 
