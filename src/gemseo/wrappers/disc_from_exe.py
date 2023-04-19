@@ -217,7 +217,6 @@ class DiscFromExe(MDODiscipline):
             raise TypeError("The write_input_file_method must be callable.")
 
         self.__lock = Lock()
-        self.__folders_iter = None
         self.folders_iter = folders_iter
         self.output_folder_basepath = output_folder_basepath
         self.__check_base_path_on_windows()
