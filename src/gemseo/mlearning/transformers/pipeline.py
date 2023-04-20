@@ -27,7 +27,6 @@ from __future__ import annotations
 from typing import Sequence
 
 from numpy import eye
-from numpy import matmul
 from numpy import ndarray
 
 from gemseo.mlearning.transformers.transformer import Transformer
@@ -133,7 +132,7 @@ class Pipeline(Transformer):
         """
         jacobian = eye(data.shape[-1])
         for transformer in self.transformers:
-            jacobian = matmul(transformer.compute_jacobian(data), jacobian)
+            jacobian = transformer.compute_jacobian(data) @ jacobian
             data = transformer.transform(data)
         return jacobian
 
@@ -151,6 +150,6 @@ class Pipeline(Transformer):
         """
         jacobian = eye(data.shape[-1])
         for transformer in self.transformers[::-1]:
-            jacobian = matmul(transformer.compute_jacobian_inverse(data), jacobian)
+            jacobian = transformer.compute_jacobian_inverse(data) @ jacobian
             data = transformer.inverse_transform(data)
         return jacobian

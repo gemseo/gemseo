@@ -18,7 +18,6 @@ from __future__ import annotations
 from typing import Sequence
 
 from numpy import array
-from numpy import matmul
 from numpy import ndarray
 from numpy import zeros
 from numpy import zeros_like
@@ -121,9 +120,9 @@ class MDOQuadraticFunction(MDOFunction):
         Returns:
             The value of the gradient of the quadratic function.
         """
-        return matmul(
-            self._quad_coeffs + self._quad_coeffs.T, x_vect
-        ) + self._linear_part.jac(x_vect)
+        return (
+            self._quad_coeffs + self._quad_coeffs.T
+        ) @ x_vect + self._linear_part.jac(x_vect)
 
     @property
     def quad_coeffs(self) -> ArrayType:

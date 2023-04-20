@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from numpy import matmul
 from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
@@ -76,7 +75,7 @@ def compute_linear_approximation(
         f"{function.name}_linearized" if name is None else name,
         f_type,
         input_names if input_names else function.input_names,
-        func_val - matmul(coefficients, x_vect),
+        func_val - coefficients @ x_vect,
     )
 
 
@@ -131,13 +130,13 @@ def compute_quadratic_approximation(
         raise AttributeError("Jacobian unavailable.")
 
     gradient = function.jac(x_vect)
-    hess_dot_vect = matmul(hessian_approx, x_vect)
+    hess_dot_vect = hessian_approx @ x_vect
 
     return MDOQuadraticFunction(
         quad_coeffs=0.5 * hessian_approx,
         linear_coeffs=gradient - hess_dot_vect,
         value_at_zero=(
-            matmul(0.5 * hess_dot_vect - gradient, x_vect) + function.evaluate(x_vect)
+            (0.5 * hess_dot_vect - gradient).T @ x_vect + function.evaluate(x_vect)
         ),
         name=f"{function.name}_quadratized",
         input_names=input_names if input_names else function.input_names,

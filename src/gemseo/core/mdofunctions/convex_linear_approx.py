@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from numpy import absolute
 from numpy import atleast_2d
-from numpy import matmul
 from numpy import multiply
 from numpy import ndarray
 from numpy import ones_like
@@ -125,8 +124,8 @@ class ConvexLinearApprox(MDOFunction):
         step, inv_step = self.__get_steps(x_new)
         value = (
             self.__mdo_function.evaluate(merged_vect)
-            + matmul(self.__direct_coeffs, step)
-            + matmul(self.__recipr_coeffs, inv_step)
+            + self.__direct_coeffs @ step
+            + self.__recipr_coeffs @ inv_step
         )
         if self.__mdo_function._dim == 1:
             return value[0]

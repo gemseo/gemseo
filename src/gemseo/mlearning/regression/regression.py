@@ -68,7 +68,6 @@ from typing import Iterable
 from typing import NoReturn
 
 from numpy import eye
-from numpy import matmul
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
@@ -240,14 +239,14 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 else:
                     jac = eye(input_data.shape[1])
 
-                jac = matmul(predict_jac(self, input_data, *args, **kwargs), jac)
+                jac = predict_jac(self, input_data, *args, **kwargs) @ jac
                 output_data = self.predict_raw(input_data)
 
                 outputs = self.learning_set.OUTPUT_GROUP
                 if outputs in self.transformer:
-                    jac = matmul(
-                        self.transformer[outputs].compute_jacobian_inverse(output_data),
-                        jac,
+                    jac = (
+                        self.transformer[outputs].compute_jacobian_inverse(output_data)
+                        @ jac
                     )
                 return jac
 

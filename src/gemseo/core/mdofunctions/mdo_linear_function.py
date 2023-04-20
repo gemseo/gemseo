@@ -21,7 +21,6 @@ from typing import Sequence
 
 from numpy import array
 from numpy import atleast_2d
-from numpy import matmul
 from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
@@ -117,7 +116,7 @@ class MDOLinearFunction(MDOFunction):
         Args:
             x_vect: The design variables values.
         """
-        value = matmul(self._coefficients, x_vect) + self._value_at_zero
+        value = self._coefficients @ x_vect + self._value_at_zero
         if value.size == 1:
             value = value[0]
         return value
@@ -315,8 +314,6 @@ class MDOLinearFunction(MDOFunction):
             self.coefficients[:, active_indexes],
             f"{self.name}_restriction",
             input_names=[self.input_names[i] for i in active_indexes],
-            value_at_zero=(
-                matmul(frozen_coefficients, frozen_values) + self._value_at_zero
-            ),
+            value_at_zero=frozen_coefficients @ frozen_values + self._value_at_zero,
             expr=self.__initial_expression,
         )
