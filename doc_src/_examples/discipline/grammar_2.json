@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "name": "grammar_2",
+    "properties": {
+        "name2": {
+            "type": "string"
+        },
+        "name3": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false
+}

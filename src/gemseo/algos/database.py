@@ -471,7 +471,13 @@ class Database:
                 outf_l.append(val)
                 if x_hist:
                     x_history.append(x_vect.wrapped)
-        outf = array(outf_l)
+        try:
+            outf = array(outf_l)
+        except ValueError:
+            # For Numpy > 1.24 that no longer automatically handle containers that
+            # cannot produce an array with a consistent shape.
+            outf = array(outf_l, dtype=object)
+
         if x_hist:
             return outf, x_history
 
@@ -1396,7 +1402,12 @@ class Database:
         )
         f_flat_names, f_flat_values = self.__split_history(f_history, f_names)
         variables_flat_names = f_flat_names
-        f_history = array(f_flat_values).real
+        try:
+            f_history = array(f_flat_values).real
+        except ValueError:
+            # For Numpy > 1.24 that no longer automatically handle containers that
+            # cannot produce an array with a consistent shape.
+            f_history = array(f_flat_values, dtype=object).real
         if add_dv:
             x_names = self._format_design_variable_names(
                 design_variable_names, len(x_history[0])
