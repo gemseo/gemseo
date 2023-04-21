@@ -78,8 +78,8 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
     enable_delay: bool | float
     """If ``True``, wait one second before computation.
 
-    If a positive number, wait the corresponding number of seconds. If ``False``, compute
-    directly.
+    If a positive number, wait the corresponding number of seconds. If ``False``,
+    compute directly.
     """
 
     def __init__(

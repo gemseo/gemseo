@@ -17,7 +17,7 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Generate N2 and XDSM into files (and/or web page) from an Excel of the MDO problem."""
+"""Generate N2 and XDSM files from an Excel of the MDO problem."""
 from __future__ import annotations
 
 import logging
@@ -446,13 +446,13 @@ class StudyAnalysis:
 
     .. table:: Scenario1
 
-        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-        |Design variables| Objective function |  Constraints   |  Disciplines   |  Formulation   |  Options       | Options values |
-        +================+====================+================+================+================+================+================+
-        |      in1       |       out1         |     out2       |     Disc1      |     MDF        |  tolerance     |     0.1        |
-        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-        |                |                    |                |     Disc2      |                | main_mda_name  |   MDAJacobi    |
-        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
+        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+        | Design variables | Objective function | Constraints | Disciplines | Formulation |    Options    | Options values |
+        +==================+====================+=============+=============+=============+===============+================+
+        |       in1        |       out1         |    out2     |    Disc1    |    MDF      |   tolerance   |       0.1      |
+        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+        |                  |                    |             |    Disc2    |             | main_mda_name |   MDAJacobi    |
+        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
 
     All the objective functions and constraints must be outputs of a discipline,
     not necessarily the one of the current sheet.

@@ -221,8 +221,6 @@ def test_dfsane_sellar():
 
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
     assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-3
-
-    """Test the execution of quasi-Newton with fake method."""
     with pytest.raises(
         ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
     ):
@@ -358,9 +356,9 @@ def test_pass_dedicated_newton_options(
     newton_linear_solver_name,
     newton_linear_solver_options,
 ):
-    """Test that the linear solver type and options for the Adjoint method and the newton
-    method can be controlled independently in a newton based MDA. A mock is used to
-    unitary test the arguments passed to the Newton step.
+    """Test that the linear solver type and options for the Adjoint method and the
+    newton method can be controlled independently in a newton based MDA. A mock is used
+    to unitary test the arguments passed to the Newton step.
 
     Args:
         mda_linear_solver: The linear solver name to solve the MDA Adjoint matrix.

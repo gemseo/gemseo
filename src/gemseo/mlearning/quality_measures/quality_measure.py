@@ -46,20 +46,18 @@ MeasureType = Union[float, ndarray, Dict[str, ndarray]]
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract quality measure to assess a machine learning algorithm.
 
-    This measure can be minimized (e.g. :class:`.MSEMeasure`)
-    or maximized (e.g. :class:`.R2Measure`).
+    This measure can be minimized (e.g. :class:`.MSEMeasure`) or maximized (e.g.
+    :class:`.R2Measure`).
 
-    It can be evaluated from the learning dataset, from a test dataset
-    or using resampling techniques such as boostrap, cross-validation or leave-one-out.
+    It can be evaluated from the learning dataset, from a test dataset or using
+    resampling techniques such as boostrap, cross-validation or leave-one-out.
 
-    The machine learning algorithm is usually trained.
-    If not but required by the evaluation technique,
-    the quality measure will train it.
+    The machine learning algorithm is usually trained. If not but required by the
+    evaluation technique, the quality measure will train it.
 
-    Lastly,
-    the transformers of the algorithm fitted from the learning dataset
-    can be used as is by the resampling methods
-    or re-fitted for each algorithm trained on a subset of the learning dataset.
+    Lastly, the transformers of the algorithm fitted from the learning dataset can be
+    used as is by the resampling methods or re-fitted for each algorithm trained on a
+    subset of the learning dataset.
     """
 
     algo: MLAlgo

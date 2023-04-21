@@ -46,23 +46,20 @@ class ConstraintsHistory(OptPostProcessor):
 
     A blue line represents the values of a constraint w.r.t. the iterations.
 
-    A background color indicates
-    whether the constraint is satisfied (green), active (white) or violated (red).
+    A background color indicates whether the constraint is satisfied (green), active
+    (white) or violated (red).
 
-    An horizontal black line indicates the value for which
-    an inequality constraint is active or an equality constraint is satisfied,
-    namely :math:`0`.
-    An horizontal black dashed line indicates the value below which
-    an inequality constraint is satisfied *with a tolerance level*,
-    namely :math:`\varepsilon`.
+    An horizontal black line indicates the value for which an inequality constraint is
+    active or an equality constraint is satisfied, namely :math:`0`. An horizontal black
+    dashed line indicates the value below which an inequality constraint is satisfied
+    *with a tolerance level*, namely :math:`\varepsilon`.
 
-    For an equality constraint,
-    the horizontal dashed black lines indicate the values between which
-    the constraint is satisfied *with a tolerance level*,
-    namely :math:`-\varepsilon` and :math:`\varepsilon`.
+    For an equality constraint, the horizontal dashed black lines indicate the values
+    between which the constraint is satisfied *with a tolerance level*, namely
+    :math:`-\varepsilon` and :math:`\varepsilon`.
 
-    A vertical black line indicates the last iteration (or pseudo-iteration)
-    where the constraint is (or should be) active.
+    A vertical black line indicates the last iteration (or pseudo-iteration) where the
+    constraint is (or should be) active.
     """
 
     def __init__(self, opt_problem: OptimizationProblem) -> None:  # noqa:D107

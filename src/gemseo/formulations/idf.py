@@ -50,15 +50,13 @@ LOGGER = logging.getLogger(__name__)
 class IDF(MDOFormulation):
     """The Individual Discipline Feasible (IDF) formulation.
 
-    This formulation draws an optimization architecture
-    where the coupling variables of strongly coupled disciplines is made consistent
-    by adding equality constraints on the coupling variables at top level,
-    the optimization problem
-    with respect to the local, global design variables and coupling variables
-    is made at the top level.
+    This formulation draws an optimization architecture where the coupling variables of
+    strongly coupled disciplines is made consistent by adding equality constraints on
+    the coupling variables at top level, the optimization problem with respect to the
+    local, global design variables and coupling variables is made at the top level.
 
-    The disciplinary analysis is made at each optimization iteration
-    while the multidisciplinary analysis is made at the optimum.
+    The disciplinary analysis is made at each optimization iteration while the
+    multidisciplinary analysis is made at the optimum.
     """
 
     def __init__(

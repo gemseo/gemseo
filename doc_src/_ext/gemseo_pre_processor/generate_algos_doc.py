@@ -435,7 +435,8 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
 
 class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
-    """Generator of the reST documentation of a post-processor from a Jinja2 template."""
+    """Generator of the reST documentation of a post-processor from a Jinja2
+    template."""
 
     def __init__(
         self,

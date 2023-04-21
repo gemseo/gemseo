@@ -45,13 +45,12 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 class ConstraintAggregation(MDODiscipline):
     """A discipline that aggregates the constraints computed by other disciplines.
 
-    An efficient alternative to constraint aggregation in the optimization problem
-    is to aggregate the constraint in a discipline.
+    An efficient alternative to constraint aggregation in the optimization problem is to
+    aggregate the constraint in a discipline.
 
-    This can be included in a MDO formulation,
-    and in particular in an MDA,
-    so only one adjoint calculation can be performed for the aggregated
-    constraint instead of one adjoint per original constraint dimension.
+    This can be included in a MDO formulation, and in particular in an MDA, so only one
+    adjoint calculation can be performed for the aggregated constraint instead of one
+    adjoint per original constraint dimension.
 
     See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
     """

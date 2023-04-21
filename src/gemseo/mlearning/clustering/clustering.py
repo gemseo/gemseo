@@ -19,19 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """This module contains the base classes for clustering algorithms.
 
-The :mod:`~gemseo.mlearning.clustering.clustering` module
-implements the concept of clustering models,
-a kind of unsupervised machine learning algorithm
-where the goal is to group data into clusters.
-Wherever possible,
-these methods should be able to predict the class of the new data,
-as well as the probability of belonging to each class.
+The :mod:`~gemseo.mlearning.clustering.clustering` module implements the concept of
+clustering models, a kind of unsupervised machine learning algorithm where the goal is to
+group data into clusters. Wherever possible, these methods should be able to predict the
+class of the new data, as well as the probability of belonging to each class.
 
-This concept is implemented
-through the :class:`.MLClusteringAlgo` class,
-which inherits from the :class:`.MLUnsupervisedAlgo` class,
-and through the :class:`.MLPredictiveClusteringAlgo` class
-which inherits from :class:`.MLClusteringAlgo`.
+This concept is implemented through the :class:`.MLClusteringAlgo` class, which inherits
+from the :class:`.MLUnsupervisedAlgo` class, and through the
+:class:`.MLPredictiveClusteringAlgo` class which inherits from
+:class:`.MLClusteringAlgo`.
 """
 from __future__ import annotations
 

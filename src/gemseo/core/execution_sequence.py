@@ -651,8 +651,8 @@ class ExecutionSequenceFactory:
     """A factory class for ExecutionSequence objects.
 
     Allow to create AtomicExecutionSequence, SerialExecutionSequence,
-    ParallelExecutionSequence and LoopExecutionSequence. Main |g| workflow is intended to
-    be expressed with those four ExecutionSequence types
+    ParallelExecutionSequence and LoopExecutionSequence. Main |g| workflow is intended
+    to be expressed with those four ExecutionSequence types
     """
 
     @staticmethod

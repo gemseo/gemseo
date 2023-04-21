@@ -19,13 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An abstract class to plot data from a :class:`.Dataset`.
 
-The :mod:`~gemseo.post.dataset.dataset_plot` module
-implements the abstract :class:`.DatasetPlot` class
-whose purpose is to build a graphical representation of a :class:`.Dataset`
-and to display it on screen or save it to a file.
+The :mod:`~gemseo.post.dataset.dataset_plot` module implements the abstract
+:class:`.DatasetPlot` class whose purpose is to build a graphical representation of a
+:class:`.Dataset` and to display it on screen or save it to a file.
 
-This abstract class has to be overloaded by concrete ones
-implementing at least method :meth:`!DatasetPlot._run`.
+This abstract class has to be overloaded by concrete ones implementing at least method
+:meth:`!DatasetPlot._run`.
 """
 from __future__ import annotations
 

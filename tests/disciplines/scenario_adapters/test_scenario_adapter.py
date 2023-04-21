@@ -126,7 +126,8 @@ def test_adapter_set_x0_before_opt(scenario):
 
 
 def test_adapter_set_and_reset_x0(scenario):
-    """Test that set and reset x_0 cannot be done at MDOScenarioAdapter instantiation."""
+    """Test that set and reset x_0 cannot be done at MDOScenarioAdapter
+    instantiation."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
     msg = "Inconsistent options for MDOScenarioAdapter."

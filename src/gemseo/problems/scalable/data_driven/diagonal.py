@@ -444,8 +444,8 @@ class ScalableDiagonalModel(ScalableModel):
         return r_io_dependency
 
     def __generate_random_output_map(self):
-        """Generate the dependency between the original and new output components for the
-        different outputs.
+        """Generate the dependency between the original and new output components for
+        the different outputs.
 
         :return: component dependencies
         :rtype: dict(int)
@@ -497,8 +497,8 @@ class ScalableDiagonalModel(ScalableModel):
 
 class ScalableDiagonalApproximation:
     """Methodology that captures the trends of a physical problem, and extends it into a
-    problem that has scalable input and outputs dimensions The original and the resulting
-    scalable problem have the same interface:
+    problem that has scalable input and outputs dimensions The original and the
+    resulting scalable problem have the same interface:
 
     all inputs and outputs have the same names; only their dimensions vary.
     """
@@ -640,8 +640,8 @@ class ScalableDiagonalApproximation:
         input_size: int,
         output_size: int,
     ) -> None:
-        """Extrapolate a 1D function to arbitrary input and output dimensions. Generate a
-        function that produces an output with a given size from an input with a given
+        """Extrapolate a 1D function to arbitrary input and output dimensions. Generate
+        a function that produces an output with a given size from an input with a given
         size, and its derivative.
 
         :param str function_name: name of the output function

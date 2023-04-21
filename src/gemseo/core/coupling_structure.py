@@ -194,8 +194,8 @@ class MDOCouplingStructure:
     def _compute_strong_couplings(self) -> None:
         """Determine the strong couplings.
 
-        These are the outputs of the strongly coupled disciplines that are also inputs of
-        the strongly coupled disciplines.
+        These are the outputs of the strongly coupled disciplines that are also inputs
+        of the strongly coupled disciplines.
         """
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline

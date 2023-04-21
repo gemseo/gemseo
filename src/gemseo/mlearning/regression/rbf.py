@@ -401,10 +401,10 @@ class RBFRegressor(MLRegressionAlgo):
     def function(self) -> str:
         """The name of the kernel function.
 
-        The name is possibly different from self.parameters['function'], as it
-        is mapped (scipy). Examples:
+        The name is possibly different from self.parameters['function'], as it is mapped
+        (scipy). Examples:
 
-        'inverse'              -> 'inverse_multiquadric'
-        'InverSE MULtiQuadRIC' -> 'inverse_multiquadric'
+        'inverse'              -> 'inverse_multiquadric' 'InverSE MULtiQuadRIC' ->
+        'inverse_multiquadric'
         """
         return self.algo.function

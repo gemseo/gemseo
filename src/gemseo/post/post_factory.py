@@ -36,11 +36,11 @@ LOGGER = logging.getLogger(__name__)
 class PostFactory(BaseFactory):
     """Post-processing factory to run optimization post-processors.
 
-    List the available post-processors on the current configuration
-    and execute them on demand.
+    List the available post-processors on the current configuration and execute them on
+    demand.
 
-    Work both from memory, from a ran optimization problem,
-    and from disk, from a serialized optimization problem.
+    Work both from memory, from a ran optimization problem, and from disk, from a
+    serialized optimization problem.
     """
 
     _CLASS = OptPostProcessor

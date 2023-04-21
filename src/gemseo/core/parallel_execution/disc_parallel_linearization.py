@@ -31,8 +31,8 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 class _Functor:
     """A functor to call a discipline linearization.
 
-    When called, the :attr:`.MDODiscipline.local_data` and :attr:`.MDODiscipline.jac` are
-    returned.
+    When called, the :attr:`.MDODiscipline.local_data` and :attr:`.MDODiscipline.jac`
+    are returned.
     """
 
     def __init__(self, discipline: MDODiscipline) -> None:

@@ -179,13 +179,13 @@ def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
 def test_func_order():
     """Test the func_order static method used to sort the function names.
 
-    When the variables (functions and design variables) are sorted using
-    `func_order` as the key, the output should have all the elements ordered
-    following the pattern of `func_names`. Design variables are to be sent
-    to the end of the list, their order is not important.
+    When the variables (functions and design variables) are sorted using `func_order` as
+    the key, the output should have all the elements ordered following the pattern of
+    `func_names`. Design variables are to be sent to the end of the list, their order is
+    not important.
 
-    In this test, the variables are shuffled randomly to simulate the way a user
-    enters the data.
+    In this test, the variables are shuffled randomly to simulate the way a user enters
+    the data.
     """
     variables = [
         "y_1_2",

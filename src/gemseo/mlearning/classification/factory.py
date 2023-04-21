@@ -19,11 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create classification models.
 
-This module contains a factory to instantiate a :class:`.MLClassificationAlgo`
-from its class name.
+This module contains a factory to instantiate a :class:`.MLClassificationAlgo` from its
+class name.
 
-It also provides a list of available classification models
-and allows testing if a classification model type is available.
+It also provides a list of available classification models and allows testing if a
+classification model type is available.
 """
 from __future__ import annotations
 

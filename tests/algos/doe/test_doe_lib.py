@@ -185,13 +185,11 @@ def doe_database(request) -> Database:
 def test_transformation(doe_database, var):
     """Check that the transformation of variables works correctly.
 
-    For the deterministic variables,
-    the transformation is affine,
-    based on the bounds of the variables.
+    For the deterministic variables, the transformation is affine, based on the bounds
+    of the variables.
 
-    For the uncertain variables,
-    the transformation is probabilistic,
-    based on inverse transformation sampling.
+    For the uncertain variables, the transformation is probabilistic, based on inverse
+    transformation sampling.
     """
     assert doe_database[array([var])]["func"] == array([var])
 

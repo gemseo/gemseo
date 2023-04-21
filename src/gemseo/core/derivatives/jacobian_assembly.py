@@ -202,8 +202,8 @@ class JacobianAssembly:
         the assembled Jacobian when defined as an array."""
 
         column_slice: slice
-        """The column slice indicating where to position the disciplinary Jacobian within
-        the assembled Jacobian when defined as an array."""
+        """The column slice indicating where to position the disciplinary Jacobian
+        within the assembled Jacobian when defined as an array."""
 
         row_index: int
         """The row index of the disciplinary Jacobian within the assembled Jacobian when
