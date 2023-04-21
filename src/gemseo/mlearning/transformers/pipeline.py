@@ -19,8 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A pipeline to chain transformers.
 
-The :class:`.Pipeline` class chains a sequence of tranformers, and provides global fit(),
-transform(), fit_transform() and inverse_transform() methods.
+The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
+fit(), transform(), fit_transform() and inverse_transform() methods.
 """
 from __future__ import annotations
 

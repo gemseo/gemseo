@@ -185,8 +185,8 @@ class DriverLibrary(AlgorithmLibrary):
 
     Lists available methods in the library for the proposed problem to be solved.
 
-    To integrate an optimization package, inherit from this class
-    and put your file in gemseo.algos.doe or gemseo.algo.opt packages.
+    To integrate an optimization package, inherit from this class and put your file in
+    gemseo.algos.doe or gemseo.algo.opt packages.
     """
 
     ApproximationMode = ApproximationMode

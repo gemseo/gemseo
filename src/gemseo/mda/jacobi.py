@@ -130,10 +130,10 @@ class MDAJacobi(MDA):
     def _compute_input_couplings(self) -> None:
         """Compute all the coupling variables that are inputs of the MDA.
 
-        This must be overloaded here because the Jacobi algorithm induces a delay between
-        the couplings, the strong couplings may be fully resolved but the weak ones may
-        need one more iteration. The base MDA class uses strong couplings only which is
-        not satisfying here if all disciplines are not strongly coupled.
+        This must be overloaded here because the Jacobi algorithm induces a delay
+        between the couplings, the strong couplings may be fully resolved but the weak
+        ones may need one more iteration. The base MDA class uses strong couplings only
+        which is not satisfying here if all disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines

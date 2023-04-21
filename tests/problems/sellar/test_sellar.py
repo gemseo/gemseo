@@ -190,8 +190,8 @@ class TestSellarScenarios(unittest.TestCase):
 
     @staticmethod
     def build_and_run_scenario(formulation, algo, lin_method="complex_step"):
-        """Create a scenario with given formulation, solver and linearization method, and
-        solve it.
+        """Create a scenario with given formulation, solver and linearization method,
+        and solve it.
 
         :param formulation: param algo:
         :param lin_method: Default value = 'complex_step')

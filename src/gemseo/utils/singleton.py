@@ -26,8 +26,8 @@ from os.path import realpath
 class SingleInstancePerAttributeId(type):
     """A multiton that depends on the id of a passed object.
 
-    Subclasses are only instantiated when the discipline instance passed as input of
-    the constructor is different from already created instances.
+    Subclasses are only instantiated when the discipline instance passed as input of the
+    constructor is different from already created instances.
 
     The test if the instances are equal is made with the id(obj1)==id(obj2) operator
     """
@@ -56,8 +56,8 @@ class SingleInstancePerAttributeId(type):
 class SingleInstancePerFileAttribute(type):
     """A multiton that depends on the file passed.
 
-    Subclasses are only instantiated when the discipline instance passed as
-    input of the constructor is different from already created instances.
+    Subclasses are only instantiated when the discipline instance passed as input of the
+    constructor is different from already created instances.
 
     The test if the instances are equal is made with the obj1 == obj2 operator
     """

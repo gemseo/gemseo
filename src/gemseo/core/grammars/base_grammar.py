@@ -48,8 +48,8 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     """An abstract base class for grammars with a dictionary-like interface.
 
     A grammar considers a certain type of data defined by mandatory and optional names
-    bound to types. A name-type pair is referred to as a grammar *element*. A grammar can
-    validate a data from these elements.
+    bound to types. A name-type pair is referred to as a grammar *element*. A grammar
+    can validate a data from these elements.
     """
 
     name: str

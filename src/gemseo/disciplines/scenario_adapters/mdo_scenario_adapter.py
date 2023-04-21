@@ -50,8 +50,8 @@ class MDOScenarioAdapter(MDODiscipline):
     """An adapter class for MDO Scenario.
 
     The specified input variables update the default input data of the top level
-    discipline while the output ones filter the output data from the top level discipline
-    outputs.
+    discipline while the output ones filter the output data from the top level
+    discipline outputs.
     """
 
     scenario: Scenario

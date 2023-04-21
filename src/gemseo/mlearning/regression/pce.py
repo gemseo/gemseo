@@ -144,7 +144,7 @@ class PCERegressor(MLRegressionAlgo):
 
     See Also:
 
-        API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
+    API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
     """
 
     SHORT_ALGO_NAME: ClassVar[str] = "PCE"

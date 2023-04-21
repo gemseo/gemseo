@@ -68,7 +68,6 @@ def discipline_mocked_js(tmpdir) -> JobSchedulerDisciplineWrapper:
     Returns:
         The wrapped discipline
     """
-
     return JobSchedulerDisciplineWrapper(
         create_discipline("SobieskiMission"),
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",

@@ -156,10 +156,10 @@ class MultiLineString:
     where the string evaluation cost may be avoided when the logging level dismisses a
     logging message.
 
-    A __add__ method is defined to allow the "+" operator between two instances,
-    that implements the concatenation of two MultiLineString.
-    If the other instance is not MultiLineString, it is first converted to string
-    using its __str__ method and then added as a new line in the result.
+    A __add__ method is defined to allow the "+" operator between two instances, that
+    implements the concatenation of two MultiLineString. If the other instance is not
+    MultiLineString, it is first converted to string using its __str__ method and then
+    added as a new line in the result.
     """
 
     INDENTATION = " " * 3

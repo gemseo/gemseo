@@ -224,8 +224,8 @@ def test_import_regression_model(dataset, tmp_wd):
 def test_import_regression_model_with_old_class_name():
     """Test import of a regression model with an old class name.
 
-    An instance of LinearRegression has been saved with GEMSEO 3.2.2;
-    GEMSEO 3.0 renamed LinearRegression to LinearRegressor.
+    An instance of LinearRegression has been saved with GEMSEO 3.2.2; GEMSEO 3.0 renamed
+    LinearRegression to LinearRegressor.
 
     This test checks the use of the mapping MLFactory.__OLD_TO_NEW_NAMES.
     """

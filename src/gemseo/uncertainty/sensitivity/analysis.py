@@ -19,14 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstract class for the computation and analysis of sensitivity indices.
 
-The purpose of a sensitivity analysis is to
-qualify or quantify how the model's uncertain inputs impact its outputs.
+The purpose of a sensitivity analysis is to qualify or quantify how the model's uncertain
+inputs impact its outputs.
 
-This analysis relies on :class:`.SensitivityAnalysis`
-computed from a :class:`.MDODiscipline` representing the model,
-a :class:`.ParameterSpace` describing the uncertain parameters
-and options associated with a particular concrete class
-inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
+This analysis relies on :class:`.SensitivityAnalysis` computed from a
+:class:`.MDODiscipline` representing the model, a :class:`.ParameterSpace` describing the
+uncertain parameters and options associated with a particular concrete class inheriting
+from :class:`.SensitivityAnalysis` which is an abstract one.
 """
 from __future__ import annotations
 
@@ -79,24 +78,22 @@ SecondOrderIndicesType = Dict[str, List[Dict[str, Dict[str, ndarray]]]]
 class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Sensitivity analysis.
 
-    The :class:`.SensitivityAnalysis` class provides both
-    the values of :attr:`.SensitivityAnalysis.indices`
-    and their graphical representations, from either
-    the :meth:`.SensitivityAnalysis.plot` method,
-    the :meth:`.SensitivityAnalysis.plot_radar` method or
-    the :meth:`.SensitivityAnalysis.plot_bar` method.
+    The :class:`.SensitivityAnalysis` class provides both the values of
+    :attr:`.SensitivityAnalysis.indices` and their graphical representations, from either
+    the :meth:`.SensitivityAnalysis.plot` method, the
+    :meth:`.SensitivityAnalysis.plot_radar` method or the
+    :meth:`.SensitivityAnalysis.plot_bar` method.
 
-    It is also possible to use :meth:`.SensitivityAnalysis.sort_parameters`
-    to get the parameters sorted according to :attr:`.SensitivityAnalysis.main_method`.
-    The :attr:`.SensitivityAnalysis.main_indices` are indices computed with the latter.
+    It is also possible to use :meth:`.SensitivityAnalysis.sort_parameters` to get the
+    parameters sorted according to :attr:`.SensitivityAnalysis.main_method`. The
+    :attr:`.SensitivityAnalysis.main_indices` are indices computed with the latter.
 
-    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows
-    to compare the current :class:`.SensitivityAnalysis` with another one.
+    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows to compare the
+    current :class:`.SensitivityAnalysis` with another one.
     """
 
     default_output: list[str]
     """The default outputs of interest."""
-
     dataset: Dataset
     """The dataset containing the discipline evaluations."""
 

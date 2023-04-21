@@ -19,23 +19,21 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Design space.
 
-A design space is used to represent the optimization's unknowns,
-a.k.a. design variables.
+A design space is used to represent the optimization's unknowns, a.k.a. design variables.
 
-A :class:`.DesignSpace` describes this design space at a given state,
-in terms of names, sizes, types, bounds and current values of the design variables.
+A :class:`.DesignSpace` describes this design space at a given state, in terms of names,
+sizes, types, bounds and current values of the design variables.
 
-Variables can easily be added to the :class:`.DesignSpace`
-using the :meth:`.DesignSpace.add_variable` method
-or removed using the :meth:`.DesignSpace.remove_variable` method.
+Variables can easily be added to the :class:`.DesignSpace` using the
+:meth:`.DesignSpace.add_variable` method or removed using the
+:meth:`.DesignSpace.remove_variable` method.
 
 We can also filter the design variables using the :meth:`.DesignSpace.filter` method.
 
-Getters and setters are also available
-to get or set the value of a given variable property.
+Getters and setters are also available to get or set the value of a given variable
+property.
 
-Lastly,
-an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
+Lastly, an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
 """
 from __future__ import annotations
 

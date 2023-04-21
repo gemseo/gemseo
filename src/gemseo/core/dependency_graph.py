@@ -45,10 +45,10 @@ LOGGER = logging.getLogger(__name__)
 class DependencyGraph:
     """Graph of dependencies between disciplines.
 
-    This class can create the sequence of execution of the disciplines.
-    This is done by determining the strongly connected components (scc) of the graph.
-    The disciplines in the components of a scc have the same order
-    as in the passed disciplines passed when instantiating the class.
+    This class can create the sequence of execution of the disciplines. This is done by
+    determining the strongly connected components (scc) of the graph. The disciplines in
+    the components of a scc have the same order as in the passed disciplines passed when
+    instantiating the class.
 
     The couplings between the disciplines can also be computed.
     """

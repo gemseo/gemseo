@@ -38,9 +38,9 @@ NamesToTypes = Mapping[str, Optional[type]]
 class SimpleGrammar(BaseGrammar):
     """A grammar only based on names and types with a dictionary-like interface.
 
-    The grammar could be empty, in that case the data validation always pass. If the type
-    bound to a name is ``None`` then the type of the corresponding data name is always
-    valid.
+    The grammar could be empty, in that case the data validation always pass. If the
+    type bound to a name is ``None`` then the type of the corresponding data name is
+    always valid.
     """
 
     __names_to_types: dict[str, type | None]

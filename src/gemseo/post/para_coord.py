@@ -36,7 +36,7 @@ from gemseo.utils.string_tools import repr_variable
 
 
 class ParallelCoordinates(OptPostProcessor):
-    """Parallel coordinates among design variables, outputs functions and constraints."""
+    """Parallel coordinates plot."""
 
     DEFAULT_FIG_SIZE = (10.0, 5.0)
 

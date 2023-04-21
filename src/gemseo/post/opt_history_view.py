@@ -69,8 +69,7 @@ LOGGER = logging.getLogger(__name__)
 class OptHistoryView(OptPostProcessor):
     """The **OptHistoryView** post processing performs separated plots.
 
-    The design
-    variables history, the objective function history, the history of hessian
+    The design variables history, the objective function history, the history of hessian
     approximation of the objective, the inequality constraint history, the equality
     constraint history, and constraints histories.
 

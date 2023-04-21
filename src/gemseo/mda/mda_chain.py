@@ -408,7 +408,7 @@ class MDAChain(MDA):
         parallel_disciplines: Sequence[MDODiscipline],
         mdachain_parallel_options: dict[str, int | float | str] | None,
     ) -> MDOParallelChain:
-        """Create a :class:`.MDOParallelChain` with the provided disciplines and options.
+        """Create a :class:`.MDOParallelChain`.
 
         Args:
             parallel_disciplines: The parallel disciplines.
@@ -496,8 +496,7 @@ class MDAChain(MDA):
     ) -> None:
         """Set the normed_residual.
 
-        Has no effect,
-        since the normed residuals are defined by inner-MDAs residuals
+        Has no effect, since the normed residuals are defined by inner-MDAs residuals
         (see associated property).
 
         Here for compatibility with mother class.

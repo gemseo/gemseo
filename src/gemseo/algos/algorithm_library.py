@@ -68,16 +68,13 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
 class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Abstract class for algorithms libraries interfaces.
 
-    An algorithm library solves a numerical problem
-    (optim, doe, linear problem) using a particular algorithm
-    from a particular family of numerical methods.
+    An algorithm library solves a numerical problem (optim, doe, linear problem) using a
+    particular algorithm from a particular family of numerical methods.
 
-    Provide the available methods in the library for the proposed
-    problem to be solved.
+    Provide the available methods in the library for the proposed problem to be solved.
 
-    To integrate an optimization package, inherit from this class
-    and put your module in gemseo.algos.doe or gemseo.algo.opt,
-    or gemseo.algos.linear_solver packages.
+    To integrate an optimization package, inherit from this class and put your module in
+    gemseo.algos.doe or gemseo.algo.opt, or gemseo.algos.linear_solver packages.
     """
 
     descriptions: dict[str, AlgorithmDescription]

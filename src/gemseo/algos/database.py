@@ -1508,17 +1508,13 @@ class Database:
 class HashableNdarray:
     """HashableNdarray wrapper for ndarray objects.
 
-    Instances of ndarray are not HashableNdarray,
-    meaning they cannot be added to sets,
-    nor used as keys in dictionaries.
-    This is by design, ndarray objects are mutable,
+    Instances of ndarray are not HashableNdarray, meaning they cannot be added to sets,
+    nor used as keys in dictionaries. This is by design, ndarray objects are mutable,
     and therefore cannot reliably implement the __hash__() method.
 
-    The HashableNdarray class allows a way around this limitation.
-    It implements the required methods for HashableNdarray
-    objects in terms of an encapsulated ndarray object.
-    This can be either a copied instance (which is safer)
-    or the original object
+    The HashableNdarray class allows a way around this limitation. It implements the
+    required methods for HashableNdarray objects in terms of an encapsulated ndarray
+    object. This can be either a copied instance (which is safer) or the original object
     (which requires the user to be careful enough not to modify it).
     """
 

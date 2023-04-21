@@ -27,8 +27,8 @@ class DerivationMode(StrEnum):
     """The derivation modes."""
 
     DIRECT = "direct"
-    """The direct Jacobian accumulation, chain rule from inputs to outputs, or derivation
-    of an MDA that solves one system per input."""
+    """The direct Jacobian accumulation, chain rule from inputs to outputs, or
+    derivation of an MDA that solves one system per input."""
 
     REVERSE = "reverse"
     """The reverse Jacobian accumulation, chain rule from outputs to inputs."""

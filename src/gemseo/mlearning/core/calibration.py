@@ -18,36 +18,24 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Calibration of a machine learning algorithm.
 
-A machine learning algorithm depends on hyper-parameters,
-e.g. the number of clusters for a clustering algorithm,
-the regularization constant for a regression model,
-the kernel for a Gaussian process regression, ...
-Its ability to generalize the information learned during the training stage,
-and thus to avoid over-fitting,
-which is an over-reliance on the learning data set,
-depends on the values of these hyper-parameters.
-Thus,
-the hyper-parameters minimizing the learning quality measure are rarely
-those minimizing the generalization one.
-Classically,
-the generalization one decreases before growing again as the model becomes more complex,
-while the learning error keeps decreasing.
-This phenomenon is called the curse of dimensionality.
+A machine learning algorithm depends on hyper-parameters, e.g. the number of clusters for
+a clustering algorithm, the regularization constant for a regression model, the kernel
+for a Gaussian process regression, ... Its ability to generalize the information learned
+during the training stage, and thus to avoid over-fitting, which is an over-reliance on
+the learning data set, depends on the values of these hyper-parameters. Thus, the hyper-
+parameters minimizing the learning quality measure are rarely those minimizing the
+generalization one. Classically, the generalization one decreases before growing again as
+the model becomes more complex, while the learning error keeps decreasing. This
+phenomenon is called the curse of dimensionality.
 
-In this module,
-the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-parameters
-in order to minimize this measure of the generalization quality
-over a calibration parameter space.
-This class relies on the :class:`.MLAlgoAssessor` class
-which is a discipline (:class:`.MDODiscipline`)
-built from a machine learning algorithm (:class:`.MLAlgo`),
-a dataset (:class:`.Dataset`),
-a quality measure (:class:`.MLQualityMeasure`)
-and various options for the data scaling,
-the quality measure
-and the machine learning algorithm.
-The inputs of this discipline are hyper-parameters of the machine learning algorithm
-while the output is the quality criterion.
+In this module, the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-
+parameters in order to minimize this measure of the generalization quality over a
+calibration parameter space. This class relies on the :class:`.MLAlgoAssessor` class
+which is a discipline (:class:`.MDODiscipline`) built from a machine learning algorithm
+(:class:`.MLAlgo`), a dataset (:class:`.Dataset`), a quality measure
+(:class:`.MLQualityMeasure`) and various options for the data scaling, the quality
+measure and the machine learning algorithm. The inputs of this discipline are hyper-
+parameters of the machine learning algorithm while the output is the quality criterion.
 """
 from __future__ import annotations
 

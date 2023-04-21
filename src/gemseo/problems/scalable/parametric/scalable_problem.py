@@ -46,12 +46,11 @@ from gemseo.problems.scalable.parametric.scalable_design_space import (
 class ScalableProblem(_ScalableProblem):
     r"""The scalable problem.
 
-    It builds a set of strongly coupled scalable disciplines
-    completed by a system discipline
-    computing the objective function and the constraints.
+    It builds a set of strongly coupled scalable disciplines completed by a system
+    discipline computing the objective function and the constraints.
 
-    These disciplines are defined on an unit design space,
-    i.e. design variables belongs to :math:`[0, 1]`.
+    These disciplines are defined on an unit design space, i.e. design variables belongs
+    to :math:`[0, 1]`.
     """
 
     _MAIN_DISCIPLINE_CLASS = MainDiscipline

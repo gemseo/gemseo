@@ -46,13 +46,11 @@ LOGGER = logging.getLogger(__name__)
 class CustomDOE(DOELibrary):
     """A design of experiments from samples provided as a file or an array.
 
-    The samples are provided
-    either as a file in text or csv format
-    or as a sequence of sequences of numbers,
-    e.g. a 2D numpy array.
+    The samples are provided either as a file in text or csv format or as a sequence of
+    sequences of numbers, e.g. a 2D numpy array.
 
-    A csv file format is assumed to have a header
-    whereas a text file (extension .txt) does not.
+    A csv file format is assumed to have a header whereas a text file (extension .txt)
+    does not.
     """
 
     COMMENTS_KEYWORD: ClassVar[str] = "comments"
