@@ -178,7 +178,10 @@ class AlgoOptionsDoc:
         self.algo_type = algo_type
         self.long_algo_type = long_algo_type
         self.factory = algo_factory
-        self.algos_names = self.factory.class_names
+        if hasattr(self.factory, "class_names"):
+            self.algos_names = self.factory.class_names
+        else:
+            self.algos_names = self.factory.libraries
         self.get_class = self.factory.get_class
         self.get_library_name = self.factory.get_library_name
         self.__get_options_schema = self.__default_options_schema_getter

@@ -1976,9 +1976,9 @@ def wrap_discipline_in_job_scheduler(
         >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
         >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
         >>> mda = create_mda(disciplines)
-        >>> wrapped_mda= wrapp_discipline_in_job_scheduler(mda, scheduler_name="SLURM",
-        >>>                                                workdir_path="workdir",
-        >>>                                                cpus_per_task=24)
+        >>> wrapped_mda= wrap_discipline_in_job_scheduler(mda, scheduler_name="SLURM",
+        >>>                                               workdir_path="workdir",
+        >>>                                               cpus_per_task=24)
         >>> scn=create_scenario(mda, "DisciplinaryOpt", "obj", SellarDesignSpace(),
         >>>                     scenario_type="DOE")
         >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes":10})
@@ -1992,10 +1992,10 @@ def wrap_discipline_in_job_scheduler(
 
         >>> from gemseo.core.discipline import MDODiscipline
         >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
-        >>> wrapped_discs=[wrapp_discipline_in_job_scheduler(disc,
-        >>>                                                  workdir_path="workdir",
-        >>>                                                  cpus_per_task=24,
-        >>>                                                  scheduler_name="SLURM"),
+        >>> wrapped_discs=[wrap_discipline_in_job_scheduler(disc,
+        >>>                                                 workdir_path="workdir",
+        >>>                                                 cpus_per_task=24,
+        >>>                                                 scheduler_name="SLURM"),
         >>>                for disc in disciplines]
         >>> scn=create_scenario(wrapped_discs, "MDF", "obj", SellarDesignSpace(),
         >>>                     scenario_type="DOE")

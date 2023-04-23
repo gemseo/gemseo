@@ -180,13 +180,13 @@ class SobolAnalysis(SensitivityAnalysis):
     class Method(StrEnum):
         """The names of the sensitivity methods."""
 
-        FIRST = "FIRST"
+        FIRST = "first"
         """The first-order Sobol' index."""
 
-        TOTAL = "TOTAL"
+        TOTAL = "total"
         """The total-order Sobol' index."""
 
-    __SECOND: Final[str] = "SECOND"
+    __SECOND: Final[str] = "second"
     __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"

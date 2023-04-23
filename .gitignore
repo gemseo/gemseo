@@ -22,7 +22,7 @@ doc_src/_examples/**/*.*
 !doc_src/_examples/**/*.xlsx
 !doc_src/_examples/**/README.rst
 !doc_src/_examples/LICENSE.txt
-!doc_src/_examples/design_space/design_space.txt
+!doc_src/_examples/design_space/design_space.csv
 !doc_src/_examples/doe/doe.txt
 /doc
 

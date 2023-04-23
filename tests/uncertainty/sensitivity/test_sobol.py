@@ -91,24 +91,24 @@ def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
 def test_algo(discipline, uncertain_space):
     """Check that algorithm can be passed either as a str or an Algorithm."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
-    indices = analysis.compute_indices(algo=analysis.Algorithm.JANSEN)["FIRST"]["y"][0]
+    indices = analysis.compute_indices(algo=analysis.Algorithm.JANSEN)["first"]["y"][0]
     assert compare_dict_of_arrays(
-        indices, analysis.compute_indices(algo="Jansen")["FIRST"]["y"][0]
+        indices, analysis.compute_indices(algo="Jansen")["first"]["y"][0]
     )
 
 
-@pytest.mark.parametrize("method", ["TOTAL", SobolAnalysis.Method.TOTAL])
+@pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.TOTAL])
 def test_method(sobol, method):
     """Check the use of the main method."""
-    assert sobol.main_method == "FIRST"
+    assert sobol.main_method == "first"
     assert compare_dict_of_arrays(
-        sobol.main_indices["y"][0], sobol.indices["FIRST"]["y"][0], 0.1
+        sobol.main_indices["y"][0], sobol.indices["first"]["y"][0], 0.1
     )
 
     sobol.main_method = method
-    assert sobol.main_method == "TOTAL"
+    assert sobol.main_method == "total"
     assert compare_dict_of_arrays(
-        sobol.main_indices["y"][0], sobol.indices["TOTAL"]["y"][0], 0.1
+        sobol.main_indices["y"][0], sobol.indices["total"]["y"][0], 0.1
     )
 
     sobol.main_method = SobolAnalysis.Method.FIRST
@@ -169,11 +169,11 @@ def test_plot(
     "order,reference",
     [
         (
-            "FIRST",
+            "first",
             {"x1": array([-0.06]), "x23": array([-0.10, -0.53])},
         ),
         (
-            "SECOND",
+            "second",
             {
                 "x1": {"x1": array([[0.0]]), "x23": array([[0.79, 1.45]])},
                 "x23": {
@@ -183,7 +183,7 @@ def test_plot(
             },
         ),
         (
-            "TOTAL",
+            "total",
             {"x1": array([0.63]), "x23": array([0.48, 0.38])},
         ),
     ],
@@ -211,7 +211,7 @@ def test_second_order(discipline, uncertain_space, compute_second_order):
         [discipline], uncertain_space, 100, compute_second_order=compute_second_order
     )
     analysis.compute_indices()
-    assert bool(analysis.indices["SECOND"]) is compute_second_order
+    assert bool(analysis.indices["second"]) is compute_second_order
     assert bool(analysis.second_order_indices) is compute_second_order
     assert len(analysis.dataset) == (96 if compute_second_order else 100)
 
@@ -269,15 +269,15 @@ def test_output_standard_deviations(sobol):
 
 
 @pytest.mark.parametrize("use_variance", [False, True])
-@pytest.mark.parametrize("order", ["FIRST", "SECOND", "TOTAL"])
+@pytest.mark.parametrize("order", ["first", "second", "total"])
 def test_unscale_indices(sobol, use_variance, order):
     """Check SobolAnalysis.unscaled_indices()."""
     orders_to_indices = {
-        "FIRST": sobol.first_order_indices,
-        "SECOND": sobol.second_order_indices,
-        "TOTAL": sobol.total_order_indices,
+        "first": sobol.first_order_indices,
+        "second": sobol.second_order_indices,
+        "total": sobol.total_order_indices,
     }
-    is_second_order = order == "SECOND"
+    is_second_order = order == "second"
     indices = orders_to_indices[order]
 
     def f(x):

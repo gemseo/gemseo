@@ -95,6 +95,8 @@ print(jacobian_data)
 # %%
 # Lastly,
 # we can change the approximation type to complex step and compare the results:
-discipline.set_jacobian_approximation(jac_approx_type=discipline.COMPLEX_STEP)
+discipline.set_jacobian_approximation(
+    jac_approx_type=discipline.ApproximationMode.COMPLEX_STEP
+)
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
 print(jacobian_data)

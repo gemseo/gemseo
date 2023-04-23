@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_dataset
-from gemseo.uncertainty.api import create_statistics
+from gemseo.uncertainty import create_statistics
 from numpy import vstack
 from numpy.random import exponential
 from numpy.random import normal

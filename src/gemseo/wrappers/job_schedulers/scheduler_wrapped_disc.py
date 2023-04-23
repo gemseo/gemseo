@@ -46,7 +46,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
     TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
 
     _discipline: MDODiscipline
-    """The discipline to wrapp in the job scheduler."""
+    """The discipline to wrap in the job scheduler."""
     _job_template_path: Path
     """The path to the template to be used to make a submission to the job scheduler
     command."""
@@ -74,7 +74,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
     ) -> None:
         """
         Args:
-            discipline: The discipline to wrapp in the job scheduler.
+            discipline: The discipline to wrap in the job scheduler.
             workdir_path: The path to the workdir where the files will be generated.
             scheduler_run_command: The command to call the job scheduler and submit
                 the generated script.
