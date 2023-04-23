@@ -87,7 +87,7 @@ sphinx_gallery_conf = {
     "doc_module": "gemseo",
     # objects to exclude from implicit backreferences. The default option
     # is an empty set, i.e. exclude nothing.
-    "exclude_implicit_doc": {r"gemseo\.api\.configure_logger"},
+    "exclude_implicit_doc": {r"gemseo\.configure_logger"},
 }
 
 ################################################################################
@@ -120,6 +120,7 @@ autodoc_mock_imports = [
     "jep",
     "scilab2py",
     "pyfmi",
+    "pdfo",
 ]
 
 ################################################################################
@@ -138,9 +139,7 @@ templates_path = ["templates"]
 # The suffix of source filenames.
 source_suffix = ".rst"
 
-nitpick_ignore_regex = [
-    ("py:.*"),
-]
+nitpick_ignore_regex = []
 
 todo_include_todos = True
 
@@ -300,6 +299,7 @@ html_context["plugins"] = {
     "gemseo-matlab": "GEMSEO plugin for MATLAB.",
 }
 html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
+
 ###############################################################################
 # Settings for inheritance_diagram
 

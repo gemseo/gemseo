@@ -11,6 +11,6 @@
 An API for machine learning
 ===========================
 
-.. automodule:: gemseo.mlearning.api
+.. automodule:: gemseo.mlearning
    :members:
    :noindex:

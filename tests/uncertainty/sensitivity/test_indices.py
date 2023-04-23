@@ -366,7 +366,7 @@ def ishigami() -> SobolAnalysis:
     sobol_analysis = SobolAnalysis(
         [Ishigami1D()], space, 100, compute_second_order=False
     )
-    sobol_analysis.main_method = "TOTAL"
+    sobol_analysis.main_method = "total"
     sobol_analysis.compute_indices()
     return sobol_analysis
 

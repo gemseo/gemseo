@@ -36,7 +36,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.uncertainty.api import create_statistics
+from gemseo.uncertainty import create_statistics
 
 configure_logger()
 

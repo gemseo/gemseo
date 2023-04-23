@@ -25,6 +25,6 @@ Machine learning
    API <machine_learning/core/machine_learning_api>
    machine_learning/core/unsupervised_learning
    machine_learning/core/supervised_learning
-   machine_learning/qual_measure/quality_measures
-   machine_learning/qual_measure/calibration_and_selection
+   machine_learning/quality_measures/quality_measures
+   machine_learning/quality_measures/calibration_and_selection
    machine_learning/transform/transformer
