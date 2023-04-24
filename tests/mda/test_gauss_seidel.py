@@ -31,6 +31,8 @@ from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import isclose
 
+from ..core.test_chain import two_virtual_disciplines  # noqa W0611 F811
+
 
 @image_comparison(["sobieski"])
 def test_sobieski(tmp_wd, pyplot_close_all):
@@ -180,3 +182,11 @@ def test_plot_residual_history(
             f"{len(mda.residual_history)}, plotting all the residual history."
             in caplog.text
         )
+
+
+def test_virtual_exe_mda(two_virtual_disciplines):  # noqa F811
+    """Test a MDA with disciplines in virtual execution mode."""
+    chain = MDAGaussSeidel(two_virtual_disciplines)
+    chain.execute()
+    assert chain.local_data["x"] == 1.0
+    assert chain.local_data["y"] == 2.0
