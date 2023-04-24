@@ -21,8 +21,6 @@
 The :class:`.XDSMizer` generates a JSON file.
 
 The latter is used by the
-
-
 `XDSMjs javascript library <https://github.com/OneraHub/XDSMjs>`_
 to produce an interactive web XDSM
 and by the pyxdsm python library

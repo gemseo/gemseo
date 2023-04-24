@@ -212,7 +212,8 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_drag(sweep, thick_airfoils, displ) -> float:
-        r"""Compute the coupling
+        r"""Compute the coupling.
+
         :math:`drag=0.1*((sweep/360)^2 + 200 + thick\\_airfoils^2
         - thick\\_airfoils - 4*displ)`
 
