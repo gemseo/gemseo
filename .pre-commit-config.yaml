@@ -56,7 +56,7 @@ repos:
       ]
 
 - repo: https://github.com/myint/docformatter
-  rev: v1.6.2
+  rev: v1.6.3
   hooks:
     - id: docformatter
       args: [
@@ -90,7 +90,7 @@ repos:
         - pep8-naming==0.13.3
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.42.1
+  rev: 3.0.1
   hooks:
     - id: commitizen
       stages: [commit-msg]
