@@ -1,7 +1,10 @@
-.tox
-*.pyc
-src/gemseo.egg-info
+/.tox
+/.pytest_cache/
+/src/gemseo.egg-info
+/htmlcov
+/doc
 
+*.pyc
 .project
 .pydevproject
 .settings
@@ -18,16 +21,13 @@ doc_src/algorithms/**/*.*
 doc_src/tutorials_sg
 doc_src/_examples/**/*.*
 !doc_src/_examples/**/*.py
+!doc_src/_examples/**/*.json
 !doc_src/_examples/**/*.sh
 !doc_src/_examples/**/*.xlsx
 !doc_src/_examples/**/README.rst
 !doc_src/_examples/LICENSE.txt
 !doc_src/_examples/design_space/design_space.csv
 !doc_src/_examples/doe/doe.txt
-/doc
-
-htmlcov
 
 coverage.xml
 .coverage*
-/.pytest_cache/
