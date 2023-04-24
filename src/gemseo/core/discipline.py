@@ -193,6 +193,10 @@ class MDODiscipline(Serializable):
     GRAMMAR_DIRECTORY: ClassVar[str | None] = None
     """The directory in which to search for the grammar files if not the class one."""
 
+    virtual_execution: ClassVar[bool] = False
+    """Whether to skip the :meth:`._run` method during execution and return the
+    default_outputs, whatever the inputs."""
+
     N_CPUS = cpu_count()
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
@@ -254,8 +258,8 @@ class MDODiscipline(Serializable):
 
         self.run_solves_residuals = False
 
-        self._differentiated_inputs = []  # : outputs to differentiate
-        # : inputs to be used for differentiation
+        self._differentiated_inputs = []  # : inputs to differentiate
+        # : outputs to be used for differentiation
         self._differentiated_outputs = []
         self._n_calls = None  # : number of calls to execute()
         self._exec_time = None  # : cumulated execution time
@@ -953,15 +957,18 @@ class MDODiscipline(Serializable):
         self._check_status_before_run()
         self.status = self.ExecutionStatus.RUNNING
 
-        try:
-            # Effectively run the discipline, the _run method has to be
-            # Defined by the subclasses
-            self._run()
-        except Exception:
-            self.status = self.ExecutionStatus.FAILED
-            # Update the status but
-            # raise the same exception
-            raise
+        if not self.virtual_execution:
+            try:
+                # Effectively run the discipline, the _run method has to be
+                # Defined by the subclasses
+                self._run()
+            except Exception:
+                self.status = self.ExecutionStatus.FAILED
+                # Update the status but
+                # raise the same exception
+                raise
+        else:
+            self.store_local_data(**self.default_outputs)
 
         self.status = self.ExecutionStatus.DONE
 

@@ -48,6 +48,7 @@ from numpy import allclose
 from numpy import array
 from numpy import complex128
 from numpy import ndarray
+from numpy import ones
 
 
 def check_jac_equals(
@@ -1172,3 +1173,31 @@ def test_self_coupled(self_coupled_disc, name, group, value):
     d = self_coupled_disc.cache.to_dataset()
     assert allclose(d[name], value)
     assert d._groups[name] == group
+
+
+def test_virtual_exe():
+    """Tests the discipline virtual execution."""
+    disc_1 = MDODiscipline("d1")
+    disc_1.input_grammar.update_from_names(["x"])
+    disc_1.default_inputs = {"x": ones([1])}
+    disc_1.output_grammar.update_from_names(["y"])
+    disc_1.output_grammar.defaults = {"y": ones([1])}
+
+    with pytest.raises(NotImplementedError):
+        disc_1.execute()
+
+    disc_1.status = disc_1.ExecutionStatus.PENDING
+    disc_1.virtual_execution = True
+
+    disc_1.execute()
+
+    assert disc_1.local_data["y"] == ones([1])
+
+    # Test with missing defaults
+    disc_1.default_outputs.clear()
+    # Ok with the cache
+    disc_1.execute()
+
+    disc_1.cache.clear()
+    with pytest.raises(InvalidDataError, match="Missing required names: y."):
+        disc_1.execute()

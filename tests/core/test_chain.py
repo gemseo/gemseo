@@ -25,6 +25,7 @@ import unittest
 from itertools import permutations
 
 import pytest
+from gemseo import MDODiscipline
 from gemseo.core.chain import MDOAdditiveChain
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
@@ -37,6 +38,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.sobieski.process.mdo_chain import SobieskiChain
 from numpy import allclose
+from numpy import array
 from numpy import ones
 
 DIRNAME = os.path.dirname(__file__)
@@ -222,3 +224,36 @@ def test_warm_started_mdo_chain_variables(variable_names):
         MDOWarmStartedChain(
             [SobieskiMission()], variable_names_to_warm_start=variable_names
         )
+
+
+@pytest.fixture
+def two_virtual_disciplines() -> list[MDODiscipline]:
+    """Create two dummy disciplines that have no _run method and can only be executed in
+    virtual mode.
+
+    Returns:
+        The two disciplines.
+    """
+    disc_1 = MDODiscipline("d1")
+    disc_1.input_grammar.update_from_names(["x"])
+    disc_1.output_grammar.update_from_names(["y"])
+    disc_1.default_inputs = {"x": array([1.0])}
+    disc_1.default_outputs = {"y": array([2.0])}
+    disc_1.virtual_execution = True
+
+    disc_2 = MDODiscipline("d2")
+    disc_2.input_grammar.update_from_names(["y"])
+    disc_2.output_grammar.update_from_names(["z"])
+    disc_2.default_inputs = {"y": array([3.0])}
+    disc_2.default_outputs = {"z": array([4.0])}
+    disc_2.virtual_execution = True
+
+    return [disc_1, disc_2]
+
+
+def test_virtual_exe_chain(two_virtual_disciplines):
+    """Test a chain with disciplines in virtual execution mode."""
+    chain = MDOChain(two_virtual_disciplines)
+    chain.execute()
+    assert chain.local_data["z"] == 4.0
+    assert chain.local_data["y"] == 2.0
