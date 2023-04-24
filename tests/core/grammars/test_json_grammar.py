@@ -772,3 +772,10 @@ def test_from_types_unsupported():
         KeyError, match="Unsupported python type for a JSON Grammar: <class 'complex'>"
     ):
         grammar.update_from_types({"x": complex})
+
+
+@pytest.mark.parametrize("file_path", ["bar", Path("bar")])
+def test_pathlike(file_path):
+    """Check that a JSONGrammar can use PathLike."""
+    grammar = JSONGrammar("foo", DATA_PATH / "grammar_pathlike.json")
+    grammar.validate({"file_path": file_path})
