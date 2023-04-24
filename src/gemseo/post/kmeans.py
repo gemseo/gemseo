@@ -23,7 +23,6 @@ import logging
 from pathlib import Path
 
 from numpy import array
-from numpy import int as np_int
 from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
@@ -78,7 +77,7 @@ class KMeans(OptPostProcessor):
         algorithm = cluster.MiniBatchKMeans(n_clusters=n_clusters)
         # predict cluster memberships
         algorithm.fit(x_vars_sc)
-        y_pred = algorithm.labels_.astype(np_int)
+        y_pred = algorithm.labels_.astype(int)
         for x_vars, y_vars in zip(x_history, y_pred):
             self.database.store(x_vars, {"KM_cluster": int(y_vars)})
             self.materials_for_plotting[tuple(x_vars.real)] = y_vars
