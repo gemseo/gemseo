@@ -27,7 +27,9 @@ from copy import copy
 from typing import Any
 from typing import Iterable
 from typing import KeysView
+from typing import Mapping
 from typing import MutableMapping
+from typing import Optional
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline_data import Data
@@ -37,6 +39,8 @@ from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import update_namespaces
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
+
+NamesToTypes = Mapping[str, Optional[type]]
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -174,6 +178,20 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         Args:
             grammar: The grammar to update from.
             exclude_names: The names of the elements that shall not be updated.
+        """
+
+    @abstractmethod
+    def update_from_types(
+        self,
+        names_to_types: NamesToTypes,
+        merge: bool = False,
+    ) -> None:
+        """Update the grammar from names bound to types.
+
+        Args:
+            names_to_types: The mapping defining the data names as keys,
+                and data types as values.
+            merge: Whether to merge or update the grammar.
         """
 
     @abstractmethod

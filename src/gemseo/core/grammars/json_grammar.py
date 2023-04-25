@@ -44,9 +44,9 @@ from numpy import ndarray
 
 from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.base_grammar import NamesToTypes
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
-from gemseo.core.grammars.simple_grammar import NamesToTypes
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.string_tools import MultiLineString
 
@@ -87,6 +87,18 @@ class JSONGrammar(BaseGrammar):
         "float": Number,
     }
     """The binding from JSON types to Python types."""
+
+    __PYTHON_TO_JSON_TYPES: Final[type, str] = {
+        ndarray: "array",
+        list: "array",
+        tuple: "array",
+        str: "string",
+        int: "integer",
+        bool: "boolean",
+        Number: "number",
+        float: "number",
+    }
+    """The binding from Python types to JSON types."""
 
     __NUMERIC_TYPE_NAMES: Final[tuple[str]] = ("number", "float", "integer")
 
@@ -262,6 +274,31 @@ class JSONGrammar(BaseGrammar):
         if not data:
             return
         self.__schema_builder.add_object(self.__cast_array_to_list(data), not merge)
+        self.__init_dependencies()
+
+    def update_from_types(  # noqa: D102
+        self,
+        names_to_types: NamesToTypes,
+        merge: bool = False,
+    ) -> None:
+        if not names_to_types:
+            return
+
+        try:
+            properties = {
+                element_name: {"type": self.__PYTHON_TO_JSON_TYPES[element_type]}
+                for element_name, element_type in names_to_types.items()
+            }
+        except KeyError as error:
+            raise KeyError(f"Unsupported python type for a JSON Grammar: {error}")
+
+        schema = {
+            "$schema": "http://json-schema.org/draft-04/schema",
+            "type": "object",
+            "properties": properties,
+            "required": list(names_to_types.keys()),
+        }
+        self.__schema_builder.add_schema(schema, not merge)
         self.__init_dependencies()
 
     def is_array(  # noqa: D102

@@ -4,4 +4,4 @@ API changes:
 - To update a :class:`JSONGrammar` from a JSON schema, the ``update`` method is now replaced by the method ``update_from_schema``.
 - Renamed :meth:`.JSONGrammar.write` to :meth:`JSONGrammar.to_file`.
 - Renamed the argument ``schema_path`` to ``file_path`` for the :class:`JSONGrammar` constructor.
-- To update a :class:`SimpleGrammar` from a names and types, the ``update`` method is now replaced by the method ``update_from_types``.
+- To update a :class:`SimpleGrammar` or a :class:`JSONGrammar` from a names and types, the ``update`` method is now replaced by the method ``update_from_types``.

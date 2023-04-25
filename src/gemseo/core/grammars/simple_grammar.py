@@ -21,18 +21,16 @@ from typing import Any
 from typing import Iterable
 from typing import Iterator
 from typing import Mapping
-from typing import Optional
 
 from numpy import ndarray
 
 from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.base_grammar import NamesToTypes
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
-
-NamesToTypes = Mapping[str, Optional[type]]
 
 
 class SimpleGrammar(BaseGrammar):
@@ -213,16 +211,18 @@ class SimpleGrammar(BaseGrammar):
     def update_from_types(
         self,
         names_to_types: NamesToTypes,
+        merge: bool = False,
     ) -> None:
-        """Update the grammar from names bound to types.
-
-        For consistency with :class:`.__init__` behavior,
-        it is assumed that all of them are required.
-
-        Args:
-            names_to_types: The mapping defining the data names as keys,
-                and data types as values.
         """
+        Note:
+            For consistency with :class:`.__init__` behavior, it is assumed that all
+            of them are required.
+
+        Raises:
+            ValueError: When merge is True, since it is not yet supported for SimpleGrammar.
+        """  # noqa: D205, D212, D415
+        if merge:
+            raise ValueError("Merge is not supported yet for SimpleGrammar.")
         self.__update(names_to_types, names_to_types.keys())
 
     def is_array(  # noqa: D102
