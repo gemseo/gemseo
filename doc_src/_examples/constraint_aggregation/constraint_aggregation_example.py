@@ -24,7 +24,6 @@ from copy import deepcopy
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.design_space import DesignVariableType
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
 
@@ -49,9 +48,15 @@ concat = Concatenater(constraint_names, "g")
 # Build the design space
 ds = DesignSpace()
 ds.add_variable(
-    "x", l_b=0.0, u_b=1, value=1.0 / N / 2.0, var_type=DesignVariableType.FLOAT
+    "x",
+    l_b=0.0,
+    u_b=1,
+    value=1.0 / N / 2.0,
+    var_type=DesignSpace.DesignVariableType.FLOAT,
 )
-ds.add_variable("y", l_b=0.0, u_b=1, value=1, var_type=DesignVariableType.FLOAT)
+ds.add_variable(
+    "y", l_b=0.0, u_b=1, value=1, var_type=DesignSpace.DesignVariableType.FLOAT
+)
 
 ds_new = deepcopy(ds)
 # %%
