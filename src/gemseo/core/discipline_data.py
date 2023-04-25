@@ -18,6 +18,9 @@
 from __future__ import annotations
 
 from copy import copy
+from pathlib import Path
+from pathlib import PurePosixPath
+from pathlib import PureWindowsPath
 from typing import Any
 from typing import Generator
 from typing import Iterable
@@ -29,6 +32,8 @@ from pandas import DataFrame
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.portable_path import to_os_specific
+
 
 Data = Mapping[str, Any]
 MutableData = MutableMapping[str, Any]
@@ -149,6 +154,11 @@ class DisciplineData(
             if data is None:
                 self.__data = {}
             else:
+                if not isinstance(data, MutableMapping):
+                    raise TypeError(
+                        f"Invalid type for data, got {type(data)},"
+                        " while expected a MutableMapping."
+                    )
                 self.__check_keys(*data)
                 self.__data = data
 
@@ -315,3 +325,24 @@ class DisciplineData(
             if self.SEPARATOR in key:
                 msg = f"The key {key} shall not contain {self.SEPARATOR}."
                 raise KeyError(msg)
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        state_data = state[f"_{DisciplineData.__name__}__data"]
+        for item_name, item_value in self.__data.items():
+            if isinstance(item_value, Path):
+                # This is needed to handle the case where serialization and
+                # deserialization are not made on the same platform.
+                state_data[item_name] = to_os_specific(item_value)
+
+        return state
+
+    def __setstate__(
+        self,
+        state: Mapping[str, Any],
+    ) -> None:
+        self.__dict__.update(state)
+        state_data = state[f"_{DisciplineData.__name__}__data"]
+        for item_name, item_value in state_data.items():
+            if isinstance(item_value, (PureWindowsPath, PurePosixPath)):
+                self.__data[item_name] = Path(item_value)

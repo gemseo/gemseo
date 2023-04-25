@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pickle
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -23,6 +24,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.deserialize_and_run import _parse_inputs
 from gemseo.utils.deserialize_and_run import _run_discipline_save_outputs
 from gemseo.utils.deserialize_and_run import main
+from gemseo.utils.path_discipline import PathDiscipline
 
 
 @pytest.fixture
@@ -147,3 +149,30 @@ def test_main():
     """Test the main entry point."""
     with pytest.raises(SystemExit):
         main()
+
+
+def test_path_serialization(tmp_path):
+    """Test the execution of a serialized discipline that contains Paths."""
+
+    path_to_discipline = tmp_path / "discipline.pckl"
+    discipline = PathDiscipline(tmp_path)
+    discipline.to_pickle(path_to_discipline)
+    path_to_outputs = tmp_path / "outputs.pckl"
+    path_to_input_data = tmp_path / "inputs.pckl"
+
+    with open(path_to_input_data, "wb") as outf:
+        pickler = pickle.Pickler(outf, protocol=2)
+        pickler.dump(discipline.default_inputs)
+
+    completed = subprocess.run(
+        f"gemseo-deserialize-run {tmp_path} {path_to_discipline} "
+        f"{path_to_input_data} {path_to_outputs}",
+        shell=True,
+        capture_output=True,
+        cwd=tmp_path,
+    )
+
+    assert completed.returncode == 0
+
+    out = discipline.execute()
+    assert out["y"] == 1
