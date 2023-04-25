@@ -22,9 +22,12 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
 import re
 import sys
 from pathlib import Path
+from pathlib import PurePosixPath
+from pathlib import PureWindowsPath
 
 import pytest
 from gemseo.caches.hdf5_cache import HDF5Cache
@@ -1201,3 +1204,55 @@ def test_virtual_exe():
     disc_1.cache.clear()
     with pytest.raises(InvalidDataError, match="Missing required names: y."):
         disc_1.execute()
+
+
+class DisciplineWithPaths(MDODiscipline):
+    def __init__(self):
+        super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        self.input_grammar.update_from_types({"path": Path})
+        self.output_grammar.update_from_types({"out_path": Path})
+        self.local_path = Path(".")
+
+    def _run(self):
+        self.local_data["out_path"] = self.local_data["path"]
+
+
+def __is_path_correct(local_path: (Path, PurePosixPath, PureWindowsPath)) -> None:
+    """Test the types of paths depending on the platform.
+
+    Args:
+        local_path: The path to test.
+
+    Raises:
+        AssertionError: if the path type is invalid.
+    """
+    if platform.platform().startswith("Windows"):
+        assert isinstance(local_path, PureWindowsPath)
+    else:
+        assert isinstance(local_path, PurePosixPath)
+
+
+def test_path_serialization(tmp_path):
+    """Test the serialization of Paths in disciplines."""
+    discipline = DisciplineWithPaths()
+    disc_path = tmp_path / "mydisc.pckl"
+    discipline.execute({"path": tmp_path})
+    discipline.to_pickle(disc_path)
+    deserialized = MDODiscipline.from_pickle(disc_path)
+
+    assert isinstance(deserialized.local_path, Path)
+    assert isinstance(deserialized.local_data["path"], Path)
+    assert isinstance(deserialized.local_data["out_path"], Path)
+
+    for local_path in [
+        discipline.__getstate__()["local_path"],
+        discipline.__getstate__()["_local_data"]["path"],
+    ]:
+        __is_path_correct(local_path)
+
+    data = deserialized.local_data
+    __is_path_correct(data.__getstate__()["_DisciplineData__data"]["path"])
+
+    state = data.__getstate__()
+    data.__setstate__(state)
+    assert isinstance(data["path"], Path)

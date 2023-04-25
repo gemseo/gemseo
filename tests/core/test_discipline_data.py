@@ -255,3 +255,10 @@ def test_restrict():
     data["other_name"] = 0
     data.restrict("name", "non-existing-name")
     assert data.keys() == {"name"}
+
+
+def test_wrong_data_type():
+    """Tests that the type of the initial data is well checked."""
+    data = ("a",)
+    with pytest.raises(TypeError, match=f"Invalid type for data, got {type(data)}."):
+        DisciplineData(data)

@@ -22,11 +22,16 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from multiprocessing.sharedctypes import Synchronized
+from pathlib import Path
+from pathlib import PurePosixPath
+from pathlib import PureWindowsPath
 from typing import Any
 from typing import ClassVar
 from typing import Mapping
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+
+from gemseo.utils.portable_path import to_os_specific
 
 
 class Serializable(metaclass=GoogleDocstringInheritanceMeta):
@@ -50,14 +55,6 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
     """
 
     def __getstate__(self) -> dict[str, Any]:
-        """Used by pickle to define what to serialize.
-
-        Subclasses shall overload this method only if they include a new attribute
-        that is both not serializable and not ``Synchronized``.
-
-        Returns:
-            The attributes to be serialized.
-        """
         state = {}
         for attribute_name in self.__dict__.keys() - self._ATTR_NOT_TO_SERIALIZE:
             attribute_value = self.__dict__[attribute_name]
@@ -66,6 +63,10 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
                 # Don't serialize shared memory object,
                 # this is meaningless, save the value instead.
                 attribute_value = attribute_value.value
+            elif isinstance(attribute_value, Path):
+                # This is needed to handle the case where serialization and
+                # deserialization are not made on the same platform.
+                attribute_value = to_os_specific(attribute_value)
 
             state[attribute_name] = attribute_value
 
@@ -75,19 +76,15 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
         self,
         state: Mapping[str, Any],
     ) -> None:
-        """Used by pickle to deserialize the class.
-
-        Subclasses shall overload this method to include new attributes that are not
-        serializable nor ``Synchronized`` and need to be recreated manually.
-
-        Subclasses shall also overload ``_init_shared_attributes`` to initialize all the
-        ``Synchronized`` attributes of the subclass.
-        """
         # Initialize all Synchronized attributes first.
         self._init_shared_memory_attrs()
         for attribute_name, attribute_value in state.items():
             if attribute_name not in self.__dict__.keys():
                 self.__dict__[attribute_name] = attribute_value
+                # This is needed to handle the case where serialization and
+                # deserialization are not made on the same platform.
+                if isinstance(attribute_value, (PureWindowsPath, PurePosixPath)):
+                    self.__dict__[attribute_name] = Path(attribute_value)
             elif isinstance(self.__dict__[attribute_name], Synchronized):
                 # Set the value of Synchronized attributes instead of deserializing the
                 # entire object.

@@ -24,8 +24,10 @@ from numpy import ndarray
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import Data
 from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.core.parallel_execution.callable_parallel_execution import IS_WIN
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 
 
 class _Functor:
@@ -56,14 +58,35 @@ class _Functor:
         return self.__disc.local_data, jac
 
 
-class DiscParallelLinearization(DiscParallelExecution):
+class DiscParallelLinearization(CallableParallelExecution):
     """Linearize disciplines in parallel."""
 
-    @staticmethod
-    def _get_callables(  # noqa:D102
+    _disciplines: Sequence[MDODiscipline]
+    """The disciplines to linearize."""
+
+    def __init__(
+        self,
         disciplines: Sequence[MDODiscipline],
-    ) -> list[Callable]:
-        return [_Functor(d) for d in disciplines]
+        n_processes: int = CallableParallelExecution.N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0.0,
+        exceptions_to_re_raise: tuple[type[Exception]] = (),
+    ) -> None:
+        """
+        Args:
+            disciplines: The disciplines to execute.
+        """  # noqa:D205 D212 D415
+        super().__init__(
+            workers=[_Functor(d) for d in disciplines],
+            n_processes=n_processes,
+            use_threading=use_threading,
+            wait_time_between_fork=wait_time_between_fork,
+            exceptions_to_re_raise=exceptions_to_re_raise,
+        )
+        # Because accessing a method of an object provides a new callable object for
+        # every access, we shall check unicity on the disciplines.
+        self._check_unicity(disciplines)
+        self._disciplines = disciplines
 
     def execute(  # noqa: D102
         self,

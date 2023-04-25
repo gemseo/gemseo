@@ -46,7 +46,7 @@ class DiscParallelExecution(CallableParallelExecution):
             disciplines: The disciplines to execute.
         """  # noqa:D205 D212 D415
         super().__init__(
-            self._get_callables(disciplines),
+            workers=[d.execute for d in disciplines],
             n_processes=n_processes,
             use_threading=use_threading,
             wait_time_between_fork=wait_time_between_fork,
@@ -56,18 +56,6 @@ class DiscParallelExecution(CallableParallelExecution):
         # every access, we shall check unicity on the disciplines.
         self._check_unicity(disciplines)
         self._disciplines = disciplines
-
-    @staticmethod
-    def _get_callables(disciplines: Sequence[MDODiscipline]) -> list[Callable]:
-        """Return the methods to call.
-
-        Args:
-            disciplines: The disciplines.
-
-        Returns:
-            The callables.
-        """
-        return [d.execute for d in disciplines]
 
     def execute(  # noqa: D102
         self,
