@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from numbers import Number
 from pathlib import Path
 
 import pytest
@@ -704,3 +705,70 @@ def test_copy():
     # schema builder is deeply copied.
     assert g_copy.defaults["name"] is g.defaults["name"]
     assert list(g_copy.required_names)[0] is list(g.required_names)[0]
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        [1.0, "s"],
+        [[1, 2], ["a", "b"], (1, 2), ("a", "b")],
+        [array([1, 2]), [1.0, 2.0]],
+        [False, True, 1],
+    ],
+)
+def test_update_from_types(data):
+    """Test the consistency between the python types and the data validation."""
+    data_dict = {str(i): value for i, value in enumerate(data)}
+    names_to_types = {name: type(value) for name, value in data_dict.items()}
+    grammar = JSONGrammar("test")
+    grammar.update_from_types(names_to_types)
+    grammar.validate(data_dict)
+
+
+def test_update_from_types_two_elements():
+    """Tests an update from types with two elements of different types."""
+    grammar = JSONGrammar("test")
+    grammar.update_from_types({"i": int, "x": float})
+    assert grammar.required_names == {"i", "x"}
+    assert grammar.schema["properties"] == {
+        "i": {"type": "integer"},
+        "x": {"type": "number"},
+    }
+
+
+def test_empty_types():
+    """Test update_from_types with empty payload."""
+    grammar = JSONGrammar("test")
+    grammar.update_from_types({})
+    assert not grammar
+
+
+@pytest.mark.parametrize(
+    "py_type, json_type",
+    [
+        [int, "integer"],
+        [float, "number"],
+        [ndarray, "array"],
+        [list, "array"],
+        [str, "string"],
+        [bool, "boolean"],
+        [Number, "number"],
+    ],
+)
+def test_update_from_types_basic(py_type, json_type):
+    """Tests with all supported basic types."""
+    names_to_types = {"name": py_type}
+    grammar = JSONGrammar("test")
+    grammar.update_from_types(names_to_types)
+    assert grammar.required_names == {"name"}
+    assert grammar.schema["properties"] == {
+        "name": {"type": json_type},
+    }
+
+
+def test_from_types_unsupported():
+    grammar = JSONGrammar("test")
+    with pytest.raises(
+        KeyError, match="Unsupported python type for a JSON Grammar: <class 'complex'>"
+    ):
+        grammar.update_from_types({"x": complex})

@@ -250,6 +250,13 @@ def test_update_dict_with_mapping():
     assert g["name"] == collections.abc.Mapping
 
 
+def test_update_dict_with_merge():
+    """Verify that merge is not supported."""
+    g = SimpleGrammar("g")
+    with pytest.raises(ValueError, match="Merge is not supported yet."):
+        g.update_from_types({}, merge=True)
+
+
 @pytest.mark.parametrize(
     "names",
     [
