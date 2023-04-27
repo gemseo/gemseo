@@ -29,7 +29,7 @@ block = Block(
             "nlopt",
             url="https://nlopt.readthedocs.io/en/latest/",
         ),
-        WebLink("scipy", url="https://www.scipy.org/"),
+        WebLink("SciPy", url="https://scipy.org/"),
     ],
     examples="examples/optimization_problem/index.html",
     info="optimization.html",

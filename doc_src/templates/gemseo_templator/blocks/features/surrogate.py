@@ -25,7 +25,7 @@ block = Block(
     ),
     url="algorithms/surrogate_algos.html",
     dependencies=[
-        WebLink("OpenTURNS", url="http://www.openturns.org/"),
+        WebLink("OpenTURNS", url="https://openturns.github.io/www/"),
         WebLink(
             "scikit-learn",
             url="https://scikit-learn.org/stable/",

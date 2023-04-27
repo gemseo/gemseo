@@ -1,7 +1,7 @@
 {
     "name": "OT_RANDOM_options",
     "description": "Random DOE from the OpenTURNS library",
-    "id": "http://www.openturns.org/",
+    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.RandomGenerator.html",
     "required": ["n_samples"],
     "properties": {
         "n_samples":{

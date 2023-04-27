@@ -20,7 +20,7 @@
 """OpenTURNS-based joint probability distribution.
 
 :class:`.OTComposedDistribution` is a :class:`.ComposedDistribution`
-based on the `OpenTURNS <http://www.openturns.org/>`_ library.
+based on the `OpenTURNS <https://openturns.github.io/www/>`_ library.
 """
 from __future__ import annotations
 

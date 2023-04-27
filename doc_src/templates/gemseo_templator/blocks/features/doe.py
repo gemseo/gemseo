@@ -25,7 +25,7 @@ block = Block(
     ),
     url="algorithms/doe_algos.html",
     dependencies=[
-        WebLink("OpenTURNS", url="http://www.openturns.org/"),
+        WebLink("OpenTURNS", url="https://openturns.github.io/www/"),
         WebLink("pyDOE", url="https://pythonhosted.org/pyDOE/"),
     ],
     examples="examples/doe/index.html",

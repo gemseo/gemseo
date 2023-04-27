@@ -21,8 +21,8 @@
 
 The :class:`.SPDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
-SP stands for `scipy <https://docs.scipy.org/doc/scipy/reference/
-tutorial/stats.html>`_ which is the library it relies on.
+SP stands for `scipy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_
+which is the library it relies on.
 
 The :class:`.SPDistribution` of a given uncertain variable is built
 from mandatory arguments:

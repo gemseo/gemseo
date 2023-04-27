@@ -24,7 +24,7 @@ block = Block(
         "From an Excel workbook, "
         '"specify your disciplines, design space, objective and constraints, '
         '"select an MDO formulation and plot both coupling structure '
-        '(<a href="mdo/coupling.html#n2-chart">N2 chart</a>) '
+        '(<a href="mdo/coupling.html#n2-chart-visualization">N2 chart</a>) '
         '"and MDO process '
         '(<a href="mdo/mdo_formulations.html#xdsm-visualization">XDSM</a>), '
         "even before wrapping any software."

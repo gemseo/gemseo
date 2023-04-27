@@ -15,7 +15,7 @@
 """OpenTURNS-based capabilities for probability distributions.
 
 This package interfaces capabilities
-from the `OpenTURNS <http://www.openturns.org/>`_ library.
+from the `OpenTURNS <https://openturns.github.io/www/>`_ library.
 
 Interfaced distributions
 ------------------------

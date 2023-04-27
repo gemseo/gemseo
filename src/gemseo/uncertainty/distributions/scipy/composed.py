@@ -20,8 +20,7 @@
 """SciPy-based joint probability distribution.
 
 :class:`.SPComposedDistribution` is a :class:`.ComposedDistribution`
-based on the `SciPy <https://docs.scipy.org/doc/scipy/reference/
-tutorial/stats.html>`_ library.
+based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ library.
 
 .. warning::
 

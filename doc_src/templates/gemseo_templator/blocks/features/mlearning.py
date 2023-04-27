@@ -39,7 +39,7 @@ block = Block(
         ),
     ],
     dependencies=[
-        WebLink("OpenTURNS", url="http://www.openturns.org/"),
+        WebLink("OpenTURNS", url="https://openturns.github.io/www/"),
         WebLink("scikit-learn", url="https://scikit-learn.org/stable/"),
     ],
     examples="examples/mlearning/index.html",
