@@ -146,7 +146,7 @@ def test_get_bounds_tuple(problem):
 
 
 def test_poly_approx(problem, dtype):
-    """test polynomial function approximation."""
+    """Test polynomial function approximation."""
     # Reference value from octave computation for polyApprox function
     ff_reference = 1.02046767  # Octave computation
     mach_ini = 1.6

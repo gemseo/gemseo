@@ -671,7 +671,7 @@ class ScalableDiagonalApproximation:
         outputs_to_original_ones = self.output_dependency[function_name]
 
         def scalable_function(input_data):
-            """n-dimensional to size_output-dimensional extrapolated function.
+            """N-dimensional to size_output-dimensional extrapolated function.
 
             :param list(float) input_data: vector of inputs
             :returns: size_output extrapolated output
@@ -688,7 +688,7 @@ class ScalableDiagonalApproximation:
             return result
 
         def scalable_derivative(input_data):
-            """n-dimensional to size_output-dimensional extrapolated function Jacobian.
+            """N-dimensional to size_output-dimensional extrapolated function Jacobian.
 
             :param list(float) input_data: vector of inputs
             :returns: size_output - sizeof input_vars extrapolated output
