@@ -66,6 +66,9 @@ class _FactoryMultitonMeta(ABCMeta, GoogleDocstringInheritanceMeta):
         key = (cls._CLASS,) + tuple(cls._MODULE_NAMES)
         # Either return an instance that match an already existing key
         # or create and return a new instance.
+        obj = cls.__cache.get(key)
+        if obj is not None:
+            return obj
         return cls.__cache.setdefault(key, type.__call__(cls))
 
     @classmethod
