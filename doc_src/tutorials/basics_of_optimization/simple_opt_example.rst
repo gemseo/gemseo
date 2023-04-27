@@ -114,7 +114,7 @@ which yields:
 
    The solution of P is (x*,f(x*)) = ([-5, -5], -10.0).
 
-2. Optimization based on a quasi-Newton method by means of the library `scipy <https://www.scipy.org/>`_
+2. Optimization based on a quasi-Newton method by means of the library `scipy <https://scipy.org/>`_
 ********************************************************************************************************
 
 Let :math:`(P)` be a simple optimization problem:
@@ -131,7 +131,7 @@ Let :math:`(P)` be a simple optimization problem:
    \right.
 
 In this subsection, we will see how to use **|g|** to solve this problem :math:`(P)` by means of an optimizer
-directly used from the library `scipy <https://www.scipy.org/>`_.
+directly used from the library `SciPy <https://scipy.org/>`_.
 
 2.a. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,7 +198,7 @@ Let :math:`(P)` be a simple optimization problem:
    \right.
 
 In this subsection, we will see how to use **|g|** to solve this problem :math:`(P)` by means of an optimizer
-from `scipy <https://www.scipy.org/>`_ called through the optimization interface of **|g|**.
+from `SciPy <https://scipy.org/>`_ called through the optimization interface of **|g|**.
 
 3.a. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -287,7 +287,7 @@ which yields:
 
 .. seealso::
 
-   You can found the `scipy <https://www.scipy.org/>`_ implementation of the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ algorithm `by clicking here <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.
+   You can found the `SciPy <https://scipy.org/>`_ implementation of the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ algorithm `by clicking here <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.
 
 .. tip::
 

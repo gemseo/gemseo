@@ -132,7 +132,7 @@ print(
 # %%
 # .. seealso::
 #
-#    You can found the `SciPy <https://www.scipy.org/>`_ implementation of the
+#    You can find the `SciPy <https://scipy.org/>`_ implementation of the
 #    `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 #    algorithm `by clicking here
 #    <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.  # noqa

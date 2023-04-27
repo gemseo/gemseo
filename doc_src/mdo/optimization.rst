@@ -90,7 +90,8 @@ with normalized design space, we have:
                                       normalize_design_space=True)
     print "Optimum = " + str(opt)
 
-Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the extenal `library scipy <https://www.scipy.org/>`_
+Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the external
+library `SciPy <https://scipy.org/>`_
 and interfaced with |g| through the class :class:`~gemseo.algos.opt.lib_scipy.ScipyOpt`.
 
 The list of available algorithms depend on the local setup of |g|, and the installed
@@ -152,7 +153,7 @@ DOE algorithms
 
 |g| is interfaced with two packages that provide DOE algorithms:
 `pyDOE <https://pythonhosted.org/pyDOE/>`_, and
-`OpenTURNS <http://www.openturns.org/>`_.
+`OpenTURNS <https://openturns.github.io/www/>`_.
 To list the available DOE algorithms in the current |g| configuration, use
 :meth:`gemseo.get_available_doe_algorithms`.
 

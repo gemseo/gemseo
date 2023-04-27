@@ -146,7 +146,7 @@ thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' opti
    In this tutorial, the design is based on :term:`LHS` from
    `pyDOE <https://pythonhosted.org/pyDOE/>`_, however,
    several other designs are available, based on the package or
-   `OpenTURNS <http://www.openturns.org/>`_. Some examples of these
+   `OpenTURNS <https://openturns.github.io/www/>`_. Some examples of these
    designs are plotted in :ref:`doe_algos`.
 
    To list the available DOE algorithms in the current |g| configuration, use

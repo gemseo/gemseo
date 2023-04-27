@@ -24,7 +24,7 @@ block = Block(
     ),
     url="algorithms/linear_solver_algos.html",
     dependencies=[
-        WebLink("scipy", url="https://www.scipy.org/"),
+        WebLink("SciPy", url="https://scipy.org/"),
     ],
     options="algorithms/linear_solver_algos.html",
 )

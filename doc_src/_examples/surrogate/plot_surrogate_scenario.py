@@ -147,7 +147,7 @@ mission_dataset = scenario.to_dataset(opt_naming=False)
 #    In this tutorial, the :term:`DOE` is based on `pyDOE
 #    <https://pythonhosted.org/pyDOE/>`_, however, several other designs are
 #    available, based on the package or `OpenTURNS
-#    <http://www.openturns.org/>`_. Some examples of these designs are plotted
+#    <https://openturns.github.io/www/>`_. Some examples of these designs are plotted
 #    in :ref:`doe_algos`.  To list the available :term:`DOE` algorithms in the
 #    current |g| configuration, use
 #    :meth:`gemseo.get_available_doe_algorithms`.
@@ -238,10 +238,10 @@ scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
 #   based on the `Scikit-learn # <http://scikit-learn.org/stable/>`_ library,
 #   for that use the :class:`.RandomForestRegressor` class.
 # - RBF models (Radial Basis Functions),
-#   using the `SciPy  <http://www.scipy.org/>`_ library,
+#   using the `SciPy  <http://scipy.org/>`_ library,
 #   for that use the :class:`.RBFRegressor` class.
 # - PCE models (Polynomial Chaos Expansion),
-#   based on the `OpenTURNS  <http://www.openturns.org/>`_ library,
+#   based on the `OpenTURNS  <https://openturns.github.io/www/>`_ library,
 #   for that use the :class:`.PCERegressor` class.
 #
 # To understand the detailed behavior of the models, please go to the

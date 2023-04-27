@@ -21,7 +21,7 @@
 
 The :class:`.OTDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
-OT stands for `OpenTURNS <http://www.openturns.org/>`_
+OT stands for `OpenTURNS <https://openturns.github.io/www/>`_
 which is the library it relies on.
 
 The :class:`.OTDistribution` of a given uncertain variable is built

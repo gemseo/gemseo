@@ -22,7 +22,7 @@ block = Block(
     description="Define and solve an ordinary differential equation.",
     url="algorithms/ode_algos.html",
     dependencies=[
-        WebLink("SciPy", url="https://www.scipy.org/"),
+        WebLink("SciPy", url="https://scipy.org/"),
     ],
     options="algorithms/ode_algos.html",
 )
