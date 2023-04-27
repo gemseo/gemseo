@@ -22,6 +22,7 @@ from typing import Sequence
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
+from scipy.sparse import spmatrix
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -80,6 +81,8 @@ class MDOLinearFunction(MDOFunction):
             expr: The expression of the linear function.
         """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
+        if isinstance(coefficients, spmatrix):
+            coefficients = coefficients.tocsr()
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
         self.value_at_zero = value_at_zero
@@ -131,7 +134,7 @@ class MDOLinearFunction(MDOFunction):
         Args:
             _: This argument is not used.
         """
-        if self._coefficients.shape[0] == 1:
+        if self._coefficients.shape[0] == 1 and isinstance(self._coefficients, ndarray):
             return self._coefficients[0, :]
         return self._coefficients
 
@@ -151,9 +154,9 @@ class MDOLinearFunction(MDOFunction):
     def coefficients(self, coefficients: Number | ArrayType) -> None:
         if isinstance(coefficients, Number):
             self._coefficients = atleast_2d(coefficients)
-        elif isinstance(coefficients, ndarray) and coefficients.ndim == 2:
+        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 2:
             self._coefficients = coefficients
-        elif isinstance(coefficients, ndarray) and coefficients.ndim == 1:
+        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 1:
             self._coefficients = coefficients.reshape((1, -1))
         else:
             raise ValueError(
@@ -195,7 +198,12 @@ class MDOLinearFunction(MDOFunction):
         strings = []
         # Build the expression of the linear combination
         first_non_zero_index = -1
-        for index, coefficient in enumerate(self._coefficients[0, :]):
+        if isinstance(self._coefficients, ndarray):
+            iterable = enumerate(self._coefficients[0, :])
+        else:
+            iterable = zip(self._coefficients.indices, self._coefficients.data)
+
+        for index, coefficient in iterable:
             if coefficient != 0.0:
                 if first_non_zero_index == -1:
                     first_non_zero_index = index
@@ -242,9 +250,13 @@ class MDOLinearFunction(MDOFunction):
                 strings.append("\n")
             # matrix line
             if i < out_dim:
+                if isinstance(self._coefficients, ndarray):
+                    ith_row = self._coefficients[i, :]
+                else:
+                    ith_row = self._coefficients.getrow(i).toarray().flatten()
+
                 coefficients = (
-                    self.COEFF_FORMAT_ND.format(coefficient)
-                    for coefficient in self._coefficients[i, :]
+                    self.COEFF_FORMAT_ND.format(coefficient) for coefficient in ith_row
                 )
                 strings.append(f"[{' '.join(coefficients)}]")
             else:
@@ -301,8 +313,6 @@ class MDOLinearFunction(MDOFunction):
             raise ValueError(
                 "Arrays of frozen indexes and values must have same shape."
             )
-
-        frozen_coefficients = self.coefficients[:, frozen_indexes]
         active_indexes = array(
             [
                 index
@@ -310,10 +320,13 @@ class MDOLinearFunction(MDOFunction):
                 if index not in frozen_indexes
             ]
         )
+        frozen_coefficients = self.coefficients[:, frozen_indexes]
+        new_value_at_zero = frozen_coefficients @ frozen_values + self._value_at_zero
+        new_coefficients = self.coefficients[:, active_indexes]
         return self.__class__(
-            self.coefficients[:, active_indexes],
+            new_coefficients,
             f"{self.name}_restriction",
             input_names=[self.input_names[i] for i in active_indexes],
-            value_at_zero=frozen_coefficients @ frozen_values + self._value_at_zero,
+            value_at_zero=new_value_at_zero,
             expr=self.__initial_expression,
         )
