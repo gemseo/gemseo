@@ -25,4 +25,6 @@ block = Block(
         WebLink("SciPy", url="https://scipy.org/"),
     ],
     options="algorithms/ode_algos.html",
+    info="ode.html",
+    examples="examples/ode/index.html",
 )
