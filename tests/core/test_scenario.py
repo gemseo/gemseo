@@ -295,7 +295,7 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
     )
 
     mdf_variable_grammar_scenario.optimization_result = opt_results
-    optimum = mdf_variable_grammar_scenario.get_optimum()
+    optimum = mdf_variable_grammar_scenario.optimization_result
 
     assert_equal(optimum.x_opt, x_opt)
     assert_equal(optimum.f_opt, f_opt)
@@ -310,7 +310,7 @@ def test_get_optimization_results_empty(mdf_scenario):
     Test the case when the Optimization results are not available (e.g. when the execute
     method has not been executed).
     """
-    assert mdf_scenario.get_optimum() is None
+    assert mdf_scenario.optimization_result is None
 
 
 def test_adapter(tmp_wd, idf_scenario):

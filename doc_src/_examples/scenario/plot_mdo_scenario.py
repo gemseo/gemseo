@@ -118,15 +118,12 @@ scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
-# extract them by invoking the :meth:`.Scenario.get_optimum` method. It
-# returns a dictionary containing the optimum results for the
-# scenario under consideration:
+# access them with :attr:`.Scenario.optimization_result`:
 
-opt_results = scenario.get_optimum()
+optimization_result = scenario.optimization_result
 print(
-    "The solution of P is (x*,f(x*)) = ({}, {})".format(
-        opt_results.x_opt, opt_results.f_opt
-    ),
+    "The solution of P is "
+    f"(x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
 )
 
 # %%

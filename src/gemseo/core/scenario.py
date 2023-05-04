@@ -346,15 +346,6 @@ class Scenario(MDODiscipline):
         """
         return self.formulation.get_optim_variable_names()
 
-    def get_optimum(self) -> OptimizationResult | None:
-        """Return the optimization results.
-
-        Returns:
-            The optimal solution found by the scenario if executed,
-            ``None`` otherwise.
-        """
-        return self.optimization_result
-
     def save_optimization_history(
         self,
         file_path: str | Path,
