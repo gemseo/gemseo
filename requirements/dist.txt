@@ -56,11 +56,11 @@ requests==2.29.0
     # via
     #   requests-toolbelt
     #   twine
-requests-toolbelt==0.10.1
+requests-toolbelt==1.0.0
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.3.4
+rich==13.3.5
     # via twine
 secretstorage==3.3.3
     # via keyring
