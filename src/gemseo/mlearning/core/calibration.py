@@ -299,7 +299,7 @@ class MLAlgoCalibration:
         self.scenario.add_observable(self.algo_assessor.LEARNING)
         self.scenario.execute(input_data)
         x_opt = self.scenario.design_space.get_current_value(as_dict=True)
-        f_opt = self.scenario.get_optimum().f_opt
+        f_opt = self.scenario.optimization_result.f_opt
         self.dataset = self.scenario.to_dataset(by_group=False, opt_naming=False)
         algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
         self.optimal_parameters = x_opt

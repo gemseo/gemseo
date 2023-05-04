@@ -65,7 +65,7 @@ def generate_parallel_doe(
             "algo_options": {"n_processes": 2},
         }
     )
-    return scenario.get_optimum().to_dict()["f_opt"]
+    return scenario.optimization_result.f_opt
 
 
 @pytest.fixture

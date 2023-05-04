@@ -42,7 +42,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
-opt_results = scenario.get_optimum()
+opt_results = scenario.optimization_result
 print(f"The solution of P is (x*, f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
 
 
@@ -75,7 +75,7 @@ design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * np.ones(1))
 scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 
-opt_results = scenario.get_optimum()
+opt_results = scenario.optimization_result
 print(
     "The solution of P is (x*,f(x*)) = ({}, {})".format(
         opt_results.x_opt, opt_results.f_opt

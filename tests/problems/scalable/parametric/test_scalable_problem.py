@@ -126,7 +126,7 @@ def test_create_quadratic_optimization_problem(scalable_problem):
 
     assert_almost_equal(
         execute_algo(qp_problem, algo_name="NLOPT_SLSQP", max_iter=100).x_opt,
-        scenario.get_optimum().x_opt,
+        scenario.optimization_result.x_opt,
     )
 
 
