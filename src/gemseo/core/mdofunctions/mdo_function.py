@@ -521,16 +521,20 @@ class MDOFunction(Serializable):
                 left = self.expr
             else:
                 name = "#".join(self.output_names) or self.name
-                left = f"{name}({pretty_str(self.input_names, sort=False)})"
+                if self.input_names:
+                    left = f"{name}({pretty_str(self.input_names, sort=False)})"
+                else:
+                    left = f"{name}"
 
             sign = "==" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
-        strings = [self.name]
         if self.input_names:
-            strings.append(f"({pretty_str(self.input_names, sort=False)})")
+            strings = [f"{self.name}({pretty_str(self.input_names, sort=False)})"]
+        else:
+            strings = [self.name]
 
-        if not self.expr:
+        if not self.expr or strings[-1] == self.expr:
             return "".join(strings)
 
         strings.append(" = ")
@@ -616,11 +620,12 @@ class MDOFunction(Serializable):
         jac = self._min_jac if self.has_jac else None
 
         if self.expr:
-            expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
             name = "-" + self.name.translate({ord("-"): "+", ord("+"): "-"})
+            expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
         else:
-            expr = f"-{self.name}({pretty_str(self.input_names, sort=False)})"
-            name = f"-{self.name}"
+            name = expr = f"-{self.name}"
+            if self.input_names:
+                expr = f"-{self.name}({pretty_str(self.input_names, sort=False)})"
 
         return MDOFunction(
             self._min_pt,

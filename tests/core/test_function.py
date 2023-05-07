@@ -676,3 +676,39 @@ def test_concatenate(f_out, g_out, h_out):
         "h",
     )
     assert f.output_names == h_out
+
+
+@pytest.mark.parametrize(
+    "f_type,input_names,expr,neg,expected",
+    [
+        (MDOFunction.FunctionType.NONE, None, "", False, "f"),
+        (MDOFunction.FunctionType.NONE, None, "2*x", False, "f = 2*x"),
+        (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", False, "f(y, x) = 2*x"),
+        (MDOFunction.FunctionType.NONE, ["y", "x"], "", False, "f(y, x)"),
+        (MDOFunction.FunctionType.NONE, None, "", True, "-f"),
+        (MDOFunction.FunctionType.NONE, None, "2*x", True, "-f = -2*x"),
+        (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", True, "-f(y, x) = -2*x"),
+        (MDOFunction.FunctionType.NONE, ["y", "x"], "", True, "-f(y, x)"),
+        (MDOFunction.FunctionType.INEQ, None, "", False, "f <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, None, "2*x", False, "2*x <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", False, "2*x <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, ["y", "x"], "", False, "f(y, x) <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, None, "", True, "-f <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, None, "2*x", True, "-2*x <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", True, "-2*x <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, ["y", "x"], "", True, "-f(y, x) <= 0.0"),
+    ],
+)
+def test_default_repr(f_type, input_names, expr, neg, expected):
+    """Check default_repr.
+
+    Special cases:
+    - input names or not,
+    - expression or not,
+    - inequality type or not,
+    - negation operator or not.
+    """
+    f = MDOFunction(lambda x: x, "f", f_type=f_type, input_names=input_names, expr=expr)
+    if neg:
+        f = -f
+    assert f.default_repr == expected
