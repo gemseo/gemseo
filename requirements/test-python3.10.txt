@@ -108,7 +108,7 @@ pytz==2023.3
     # via pandas
 pyxdsm==2.2.2
     # via gemseo (setup.py)
-requests==2.29.0
+requests==2.30.0
     # via gemseo (setup.py)
 scikit-learn==1.2.2
     # via gemseo (setup.py)
@@ -135,7 +135,7 @@ typing-extensions==4.5.0
     # via gemseo (setup.py)
 tzdata==2023.3
     # via pandas
-urllib3==1.26.15
+urllib3==2.0.2
     # via requests
 xdsmjs==2.0.0
     # via gemseo (setup.py)

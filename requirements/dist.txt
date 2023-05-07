@@ -52,7 +52,7 @@ pyproject-hooks==1.0.0
     # via build
 readme-renderer==37.3
     # via twine
-requests==2.29.0
+requests==2.30.0
     # via
     #   requests-toolbelt
     #   twine
@@ -72,7 +72,7 @@ tomli==2.0.1
     #   pyproject-hooks
 twine==4.0.2
     # via -r requirements/dist.in
-urllib3==1.26.15
+urllib3==2.0.2
     # via
     #   requests
     #   twine
