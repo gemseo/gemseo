@@ -32,6 +32,7 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.splitter import Splitter
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
@@ -257,3 +258,13 @@ def test_virtual_exe_chain(two_virtual_disciplines):
     chain.execute()
     assert chain.local_data["z"] == 4.0
     assert chain.local_data["y"] == 2.0
+
+
+def test_jacobian_of_chain_including_splitter():
+    """Test the jacobian of an MDOChain including a splitter."""
+    splitter_disc = Splitter(
+        input_name="x", output_names_to_input_indices={"x_1": [0], "x_2": [1]}
+    )
+    analytic_disc = AnalyticDiscipline({"y": "x_1+x_2"})
+    chain = MDOChain([splitter_disc, analytic_disc])
+    assert chain.check_jacobian(input_data={"x": array([0.0, 0.0])})
