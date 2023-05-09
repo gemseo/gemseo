@@ -24,9 +24,6 @@ from typing import Mapping
 
 import pytest
 from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
-)
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from numpy import array
@@ -61,7 +58,7 @@ def create_disciplinary_function(
         ["x", "y"],
         ["z"],
         default_inputs,
-        MDODisciplineAdapterGenerator(discipline),
+        discipline,
         names_to_sizes=names_to_sizes,
     )
 

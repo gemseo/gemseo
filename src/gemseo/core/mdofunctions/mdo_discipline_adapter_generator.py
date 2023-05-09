@@ -96,22 +96,16 @@ class MDODisciplineAdapterGenerator:
 
         if not self.discipline.is_all_inputs_existing(input_names):
             raise ValueError(
-                "Some elements of {} are not inputs of the discipline {}; "
-                "available inputs are: {}.".format(
-                    input_names,
-                    self.discipline.name,
-                    self.discipline.get_input_data_names(),
-                )
+                f"Some elements of {input_names} "
+                f"are not inputs of the discipline {self.discipline.name}; "
+                f"available inputs are: {self.discipline.get_input_data_names()}."
             )
 
         if not self.discipline.is_all_outputs_existing(output_names):
             raise ValueError(
-                "Some elements of {} are not outputs of the discipline {}; "
-                "available outputs are: {}.".format(
-                    output_names,
-                    self.discipline.name,
-                    ", ".join(self.discipline.get_output_data_names()),
-                )
+                f"Some elements of {output_names} "
+                f"are not outputs of the discipline {self.discipline.name}; "
+                f"available outputs are: {self.discipline.get_output_data_names()}."
             )
 
         # adds inputs and outputs to the list of variables to be
@@ -120,4 +114,6 @@ class MDODisciplineAdapterGenerator:
             self.discipline.add_differentiated_inputs(input_names)
             self.discipline.add_differentiated_outputs(output_names)
 
-        return MDODisciplineAdapter(input_names, output_names, default_inputs, self)
+        return MDODisciplineAdapter(
+            input_names, output_names, default_inputs, self.discipline
+        )
