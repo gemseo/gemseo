@@ -28,6 +28,7 @@ from typing import Sequence
 
 from numpy import ndarray
 from numpy import zeros
+from scipy.sparse import spmatrix
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
@@ -264,7 +265,7 @@ class MDOChain(MDODiscipline):
                 jacobian_copy[output_name] = output_jacobian_copy
                 for input_name, derivatives in output_jacobian.items():
                     output_jacobian_copy[input_name] = derivatives.copy()
-            elif isinstance(output_jacobian, ndarray):
+            elif isinstance(output_jacobian, (ndarray, spmatrix)):
                 jacobian_copy[output_name] = output_jacobian.copy()
 
         return jacobian_copy
