@@ -1,4 +1,5 @@
 API changes:
 
 - Rename :class:`.MakeFunction` to :class:`.MDODisciplineAdapter`.
+- In :class:`.MDODisciplineAdapter`, replace the argument ``mdo_function`` of type :class:`.MDODisciplineAdapterGenerator` by the argument ``discipline`` of type :class:`.MDODiscipline`.
 - Rename :class:`.MDOFunctionGenerator` to :class:`.MDODisciplineAdapterGenerator`.

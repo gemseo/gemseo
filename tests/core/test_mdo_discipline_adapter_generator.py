@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
@@ -67,10 +69,24 @@ def test_get_function():
     args = ["x_shared", "y_4"]
     gen.get_function(*args)
     args = [["toto"], ["y_4"]]
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Some elements of ['toto'] are not inputs "
+            "of the discipline SobieskiMission; "
+            "available inputs are: ['y_14', 'x_shared', 'y_24', 'y_34']."
+        ),
+    ):
         gen.get_function(*args)
     args = [["x_shared"], ["toto"]]
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Some elements of ['toto'] are not outputs "
+            "of the discipline SobieskiMission; "
+            "available outputs are: ['y_4']."
+        ),
+    ):
         gen.get_function(*args)
 
 
