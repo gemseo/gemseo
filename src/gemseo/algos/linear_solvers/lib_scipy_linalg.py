@@ -313,43 +313,43 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         """
         # Try LGMRES first
         best_sol, info = lgmres(A=lhs, b=rhs, **options)
-        min_res = self.problem.compute_residuals(True, current_x=best_sol)
+        best_res = self.problem.compute_residuals(True, current_x=best_sol)
 
         if self._check_solver_info(info, options):
-            # If converged, stop
             return best_sol, info
-        else:
-            # Otherwise try GMRES
-            min_res = self.problem.compute_residuals(True, current_x=best_sol)
-            for k in self.LGMRES_SPEC_OPTS:  # Adapt options
-                if k in options:
-                    del options[k]
 
-            if min_res < 1.0:
-                options["x0"] = best_sol
+        # If not converged, try GMRES
 
-            sol, info = gmres(A=lhs, b=rhs, **options)
+        # Adapt options
+        for k in self.LGMRES_SPEC_OPTS:
+            if k in options:
+                del options[k]
+
+        if best_res < 1.0:
+            options["x0"] = best_sol
+
+        sol, info = gmres(A=lhs, b=rhs, **options)
+        res = self.problem.compute_residuals(True, current_x=sol)
+
+        if res < best_res:
+            best_sol = sol
+            options["x0"] = best_sol
+
+        if self._check_solver_info(info, options):  # pragma: no cover
+            return best_sol, info
+
+        info = 1
+        self.problem.is_converged = False
+
+        # Attempt direct solver when possible
+        if isinstance(lhs, (ndarray, spmatrix)):
+            a_fact = splu(lhs)
+            sol = a_fact.solve(rhs)
             res = self.problem.compute_residuals(True, current_x=sol)
 
-            if res < min_res:
+            if res < options["tol"]:  # pragma: no cover
                 best_sol = sol
-                options["x0"] = best_sol
-
-            if self._check_solver_info(info, options):  # pragma: no cover
-                return best_sol, info
-
-        # In this case previous runs failed, trying direct method
-        # based on super LU
-        a_fact = splu(lhs)
-        sol = a_fact.solve(rhs)
-        res = self.problem.compute_residuals(True, current_x=best_sol)
-
-        if res < options["tol"]:  # pragma: no cover
-            best_sol = sol
-            info = 0
-            self.problem.is_converged = True
-        else:
-            info = 1
-            self.problem.is_converged = False
+                info = 0
+                self.problem.is_converged = True
 
         return best_sol, info

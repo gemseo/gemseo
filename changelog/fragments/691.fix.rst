@@ -1,0 +1,1 @@
+Modify the default linear solver calling sequence to prevent the use of the splu function on SciPy LinearOperator objects.
