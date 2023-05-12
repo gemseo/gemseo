@@ -23,18 +23,13 @@ from __future__ import annotations
 import logging
 import re
 import subprocess
-import sys
 from ast import literal_eval
 from copy import deepcopy
-from multiprocessing import Lock
-from multiprocessing import Value
-from os import listdir
 from pathlib import Path
 from typing import Callable
 from typing import Mapping
 from typing import MutableSequence
 from typing import Sequence
-from uuid import uuid1
 
 from numpy import array
 from numpy import ndarray
@@ -43,14 +38,14 @@ from strenum import StrEnum
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.run_folder_manager import FoldersIter
+from gemseo.utils.run_folder_manager import RunFolderManager
 
 LOGGER = logging.getLogger(__name__)
 
 NUMERICS = [str(j) for j in range(10)]
 INPUT_REGEX = r"GEMSEO_INPUT\{(.*)\}"
 OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
-
-FoldersIter = StrEnum("FoldersIter", "NUMBERED UUID")
 """Folders iteration type."""
 
 Parser = StrEnum("Parser", "KEY_VALUE TEMPLATE CUSTOM_CALLABLE")
@@ -105,6 +100,9 @@ class DiscFromExe(MDODiscipline):
       and :func:`.parse_outfile_method` arguments of the constructor.
     """
 
+    _run_folder_manager: RunFolderManager
+    """The object generating unique names for run directories.."""
+
     input_template: str
     """The path to the input template file."""
 
@@ -127,9 +125,6 @@ class DiscFromExe(MDODiscipline):
         [str, Mapping[str, ndarray], Mapping[str, tuple[int]], Sequence[int]], str
     ]
     """The function used to write the input template file."""
-
-    output_folder_basepath: str
-    """The base path of the execution directories."""
 
     data_processor: DataProcessor
     """A data processor to be used before the execution of the discipline."""
@@ -176,7 +171,7 @@ class DiscFromExe(MDODiscipline):
                 of the already existing ``f"output_folder_basepath{i}"`` folders.
                 Otherwise, a unique number based on the UUID function is
                 generated. This last option shall be used if multiple MDO
-                processes are run in the same work directory.
+                processes are run in the same work folder.
             parse_outfile_method: The optional method that can be provided
                 by the user to parse the output template file.
                 If ``None``,
@@ -189,11 +184,16 @@ class DiscFromExe(MDODiscipline):
             parse_out_separator: The separator used for the output parser.
             use_shell: If ``True``, run the command using the default shell.
                 Otherwise, run directly the command.
+            output_folder_basepath: The base path of the execution directories.
+
 
         Raises:
             TypeError: If the provided ``write_input_file_method`` is not callable.
         """  # noqa:D205 D212 D415
         super().__init__(name=name)
+        self._run_folder_manager = RunFolderManager(
+            output_folder_basepath, folders_iter, use_shell
+        )
         self.input_template = input_template
         self.output_template = output_template
         self.input_filename = input_filename
@@ -215,38 +215,12 @@ class DiscFromExe(MDODiscipline):
         self.write_input_file = write_input_file_method or write_input_file
         if not callable(self.write_input_file):
             raise TypeError("The write_input_file_method must be callable.")
-
-        self.__lock = Lock()
-        self.folders_iter = folders_iter
-        self.output_folder_basepath = output_folder_basepath
-        self.__check_base_path_on_windows()
         self._out_pos = None
         self._input_data = None
-        self._output_data = None
         self._in_lines = None
         self._out_lines = None
-        self._counter = Value("i", self._get_max_outdir())
         self.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
-
-    def __check_base_path_on_windows(self) -> None:
-        """Check that the base path can be used.
-
-        Raises:
-            ValueError: When the users use the shell under Windows
-            and the base path is located on a network location.
-        """
-        if sys.platform.startswith("win") and self.__use_shell:
-            output_folder_base_path = Path(self.output_folder_basepath).resolve()
-            if not output_folder_base_path.parts[0].startswith("\\\\"):
-                return
-
-            raise ValueError(
-                "A network base path and use_shell cannot be used together"
-                " under Windows, as cmd.exe cannot change the current directory"
-                " to a UNC path."
-                " Please try use_shell=False or use a local base path."
-            )
 
     def __parse_templates_and_set_grammars(self) -> None:
         """Parse the templates and set the grammar of the discipline."""
@@ -273,7 +247,7 @@ class DiscFromExe(MDODiscipline):
         }
 
     def _run(self) -> None:
-        out_dir = Path(self.output_folder_basepath) / self.generate_uid()
+        out_dir = self._run_folder_manager.get_unique_run_folder_path()
         out_dir.mkdir()
         self.write_input_file(
             out_dir / self.input_filename,
@@ -306,51 +280,6 @@ class DiscFromExe(MDODiscipline):
             )
 
         self.local_data.update(self.parse_outfile(self._out_pos, out_lines))
-
-    def generate_uid(self) -> str:
-        """Generate a unique identifier for the execution directory.
-
-        Generate a unique identifier for the current execution.
-        If the folders_iter strategy is :attr:`~.FoldersIter.NUMBERED`,
-        the successive iterations are named by an integer 1, 2, 3 etc.
-        This is multiprocess safe.
-        Otherwise, a unique number based on the UUID function is generated.
-        This last option shall be used if multiple MDO processes are run
-        in the same workdir.
-
-        Returns:
-            An unique string identifier (either a number or a UUID).
-        """
-        if self.folders_iter == FoldersIter.NUMBERED:
-            with self.__lock:
-                self._counter.value += 1
-                return str(self._counter.value)
-        elif self.folders_iter == FoldersIter.UUID:
-            return str(uuid1()).split("-")[-1]
-        else:
-            raise ValueError(
-                f"{self.folders_iter} is not a valid method "
-                "for creating the execution directories."
-            )
-
-    def _list_out_dirs(self) -> list[str]:
-        """Return the directories in the output folder path.
-
-        Returns:
-             The list of the directories in the output folder path.
-        """
-        return listdir(self.output_folder_basepath)
-
-    def _get_max_outdir(self) -> int:
-        """Get the maximum current index of output folders.
-
-        Returns:
-             The maximum index in the output folders.
-        """
-        outs = list(self._list_out_dirs())
-        if not outs:
-            return 0
-        return max(literal_eval(n) for n in outs)
 
 
 def parse_template(

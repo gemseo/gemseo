@@ -1,0 +1,1 @@
+Added a new :class:`.RunFolderManager` to generate unique run directory names for :class:`.DiscFromExe`, either as successive integers or as uuid's.

@@ -23,12 +23,10 @@ import sys
 from copy import deepcopy
 from os.path import dirname
 from os.path import join
-from unittest import mock
 
 import pytest
 from gemseo import create_discipline
-from gemseo.wrappers.disc_from_exe import DiscFromExe
-from gemseo.wrappers.disc_from_exe import FoldersIter
+from gemseo.utils.run_folder_manager import FoldersIter
 from gemseo.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.wrappers.disc_from_exe import parse_outfile
 from gemseo.wrappers.disc_from_exe import parse_template
@@ -50,18 +48,15 @@ def xfail_if_windows_unc_issue(tmp_wd, use_shell=True):
 @pytest.mark.skipif(
     not sys.platform.startswith("win"), reason="This test is only relevant on Windows."
 )
-@pytest.mark.xfail(reason="cmd.exe cannot perform the cd command on UNC network path.")
 def test_disc_from_exe_network_path_windows():
-    """Test that a network location cannot be userd as a workdir under Windows."""
-
-    def _mock_list_out_dir(self) -> list[str]:
-        """Mock of _list_out_dir.
-
-        This mock method is needed as an existing workdir is needed by _list_out_dir.
-        """
-        return []
-
-    with mock.patch.object(DiscFromExe, "_list_out_dirs", new=_mock_list_out_dir):
+    """Test that a network location cannot be used as a workdir under Windows."""
+    with pytest.raises(
+        ValueError,
+        match="A network base path and use_shell cannot be used together"
+        " under Windows, as cmd.exe cannot change the current folder"
+        " to a UNC path."
+        " Please try use_shell=False or use a local base path.",
+    ):
         create_discipline(
             "DiscFromExe",
             input_template=join(DIRNAME, "input.json.template"),
@@ -98,9 +93,12 @@ def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
     out = disc.execute(indata)
     assert abs(out["out"] - (indata["a"] + indata["b"] + indata["c"])) < 1e-8
 
-    indata = {"a": array([1]), "c": array([3]), "b": array([2])}
+    indata = {"a": array([1.0]), "c": array([3.0]), "b": array([2.0])}
     out = disc.execute(indata)
     assert abs(out["out"] - (indata["a"] + indata["b"] + indata["c"])) < 1e-8
+    disc.set_jacobian_approximation(jac_approx_n_processes=2)
+    out_jac = disc.linearize(indata, compute_all_jacobians=True)
+    assert abs(out_jac["out"]["a"] - 1) < 1e-8
 
 
 def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
@@ -155,6 +153,7 @@ def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
         (FoldersIter.UUID, FoldersIter.UUID),
         (FoldersIter.NUMBERED, FoldersIter.NUMBERED),
         ("NUMBERED", FoldersIter.NUMBERED),
+        ("FAIL", None),
     ],
 )
 def test_disc_from_exe_cfgobj_folder_iter_str(
@@ -162,7 +161,6 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
 ):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
-
     disc = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
@@ -174,7 +172,14 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
         output_filename="output.cfg",
         folders_iter=folders_iter[0],
     )
-    assert disc.folders_iter == folders_iter[1]
+    if folders_iter[0] in tuple(FoldersIter):
+        assert disc._run_folder_manager._folders_iter == folders_iter[1]
+    else:
+        with pytest.raises(
+            ValueError,
+            match="is not a valid method for creating the execution folders.",
+        ):
+            disc._run_folder_manager.get_unique_run_folder_path()
 
 
 @pytest.mark.parametrize(
