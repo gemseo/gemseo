@@ -1,0 +1,1 @@
+:class:`.DiscFromExe` is now composed of a :class:`.RunFolderManager` to handle run directories.
