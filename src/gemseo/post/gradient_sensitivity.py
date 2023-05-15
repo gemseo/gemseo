@@ -51,7 +51,7 @@ class GradientSensitivity(OptPostProcessor):
         Args:
             iteration: The iteration to plot the sensitivities.
                 Can use either positive or negative indexing,
-                e.g. ``4`` for the 5-th iteration
+                e.g. ``5`` for the 5-th iteration
                 or ``-2`` for the penultimate one.
                 If ``None``, use the iteration of the optimum.
             scale_gradients: If True, normalize each gradient
@@ -70,7 +70,7 @@ class GradientSensitivity(OptPostProcessor):
         if iteration is None:
             design_value = self.opt_problem.solution.x_opt
         else:
-            design_value = self.opt_problem.database.get_x_by_iter(iteration)
+            design_value = self.opt_problem.database.get_x_vect(iteration)
 
         fig = self.__generate_subplots(
             self._get_design_variable_names(),
@@ -136,7 +136,7 @@ class GradientSensitivity(OptPostProcessor):
             if compute_missing_gradients and gradient_values:
                 gradient_value = gradient_values[function_name]
             else:
-                gradient_value = self.database.get_f_of_x(
+                gradient_value = self.database.get_function_value(
                     self.database.get_gradient_name(function_name), design_value
                 )
             if gradient_value is None:

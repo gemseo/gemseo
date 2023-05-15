@@ -71,7 +71,7 @@ def test_import_gradient_sensitivity(
     assert len(post.output_files) == 1
     assert Path(post.output_files[0]).exists()
 
-    x_0 = problem.database.get_x_by_iter(0)
+    x_0 = problem.database.get_x_vect(1)
     problem.database[x_0].pop("@eq")
     post = factory.execute(
         problem,
@@ -79,7 +79,7 @@ def test_import_gradient_sensitivity(
         scale_gradients=scale_gradients,
         file_path="grad_sens2",
         save=True,
-        iteration=0,
+        iteration=1,
     )
     assert len(post.output_files) == 1
     assert Path(post.output_files[0]).exists()

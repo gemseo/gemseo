@@ -123,7 +123,7 @@ class TestParallelExecution(unittest.TestCase):
             }
         )
         assert (
-            len(scenario.formulation.opt_problem.database.get_func_history("y_1"))
+            len(scenario.formulation.opt_problem.database.get_function_history("y_1"))
             == n_samples
         )
 

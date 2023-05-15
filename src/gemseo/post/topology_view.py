@@ -33,7 +33,7 @@ class TopologyView(OptPostProcessor):
         n_x: int,
         n_y: int,
         observable: str = None,
-        iterations: int | Iterable[int] = None,
+        iterations: int | Iterable[int] | None = None,
     ) -> None:
         """Plot the design variable or an observable field patch plot.
 
@@ -46,16 +46,18 @@ class TopologyView(OptPostProcessor):
                 If ``None``, the last iteration is taken.
         """
         if iterations is None:
-            iterations = [self.database.get_max_iteration()]
+            iterations = [len(self.database)]
         elif isinstance(iterations, int):
             iterations = [iterations]
         for iteration in iterations:
             plt.ion()  # Ensure that redrawing is possible
-            design = self.database.get_x_by_iter(iteration - 1)
+            design = self.database.get_x_vect(iteration)
             fig, ax = plt.subplots()
             if observable:
                 data = (
-                    -self.database.get_f_of_x(observable, design).reshape((n_x, n_y)).T
+                    -self.database.get_function_value(observable, design)
+                    .reshape((n_x, n_y))
+                    .T
                 )
             else:
                 data = -design.reshape((n_x, n_y)).T

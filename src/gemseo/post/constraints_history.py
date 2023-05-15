@@ -94,7 +94,7 @@ class ConstraintsHistory(OptPostProcessor):
 
         constraint_names = self.opt_problem.get_function_names(constraint_names)
         constraint_histories, constraint_names, _ = self.database.get_history_array(
-            constraint_names, add_dv=False
+            function_names=constraint_names, with_x_vect=False
         )
 
         # harmonization of tables format because constraints can be vectorial
@@ -121,11 +121,10 @@ class ConstraintsHistory(OptPostProcessor):
         n_iterations = len(iterations)
         eq_constraint_names = [f.name for f in self.opt_problem.get_eq_constraints()]
         # for each subplot
-        database = self.opt_problem.database
         for constraint_history, constraint_name, axe in zip(
             constraint_histories.T, constraint_names, axes.ravel()
         ):
-            f_name = database.retrieve_variable_name(constraint_name)
+            f_name = constraint_name.split("[")[0]
             is_eq_constraint = f_name in eq_constraint_names
             if is_eq_constraint:
                 cmap = self.eq_cstr_cmap

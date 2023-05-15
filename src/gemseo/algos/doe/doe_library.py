@@ -145,7 +145,7 @@ class DOELibrary(DriverLibrary):
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution.
             for sample in self.samples:
-                self.problem.database.store(sample, {}, add_iter=True)
+                self.problem.database.store(sample, {})
 
         self.init_iter_observer(len(self.unit_samples))
 
@@ -365,7 +365,7 @@ class DOELibrary(DriverLibrary):
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution
             for sample in self.samples:
-                database.store(sample, {}, add_iter=True)
+                database.store(sample, {})
 
             def store_callback(
                 index: int,
@@ -380,7 +380,7 @@ class DOELibrary(DriverLibrary):
                 out, jac = outputs
                 if jac:
                     for key, val in jac.items():
-                        out["@" + key] = val
+                        out[database.get_gradient_name(key)] = val
 
                 database.store(self.samples[index], out)
 

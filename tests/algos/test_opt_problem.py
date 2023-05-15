@@ -569,9 +569,9 @@ def test_export_hdf(tmp_wd):
     problem.to_hdf(file_path, append=True)
     imp_pb = OptimizationProblem.from_hdf(file_path)
     check_pb(imp_pb)
-    val = imp_pb.objective(imp_pb.database.get_x_by_iter(1))
+    val = imp_pb.objective(imp_pb.database.get_x_vect(2))
     assert isinstance(val, float)
-    jac = imp_pb.objective.jac(imp_pb.database.get_x_by_iter(0))
+    jac = imp_pb.objective.jac(imp_pb.database.get_x_vect(1))
     assert isinstance(jac, ndarray)
     with pytest.raises(ValueError):
         imp_pb.objective(array([1.1254]))
@@ -986,7 +986,7 @@ def test_gradient_with_random_variables():
     problem.objective = MDOFunction(lambda x: 3 * x**2, "func", jac=lambda x: 6 * x)
     PyDOE().execute(problem, "fullfact", n_samples=3, eval_jac=True)
 
-    data = problem.database.get_func_grad_history("func")
+    data = problem.database.get_gradient_history("func")
 
     assert array_equal(data, array([0.0, 3.0, 6.0]))
 
@@ -1199,7 +1199,7 @@ def test_approximated_jacobian_wrt_uncertain_variables():
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.objective = MDOFunction(lambda u: u, "func")
     CustomDOE().execute(problem, "CustomDOE", samples=array([[0.0]]), eval_jac=True)
-    grad = problem.database.get_func_grad_history("func")
+    grad = problem.database.get_gradient_history("func")
     assert grad[0, 0] == pytest.approx(1.0, abs=1e-3)
 
 
@@ -1225,7 +1225,6 @@ def test_reset(rosenbrock_lhs):
     )
     problem.reset()
     assert len(problem.database) == 0
-    assert problem.database.get_max_iteration() == 0
     assert not problem._OptimizationProblem__functions_are_preprocessed
     for key, val in problem.design_space.get_current_value(as_dict=True).items():
         assert (start_point[key] == val).all()
@@ -1250,7 +1249,6 @@ def test_reset_database(rosenbrock_lhs):
     problem, start_point = rosenbrock_lhs
     problem.reset(database=False)
     assert len(problem.database) == 3
-    assert problem.database.get_max_iteration() == 3
 
 
 def test_reset_current_iter(rosenbrock_lhs):
@@ -1258,7 +1256,6 @@ def test_reset_current_iter(rosenbrock_lhs):
     problem, start_point = rosenbrock_lhs
     problem.reset(current_iter=False)
     assert len(problem.database) == 0
-    assert problem.database.get_max_iteration() == 3
 
 
 def test_reset_design_space(rosenbrock_lhs):
@@ -1497,7 +1494,8 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
 def test_observable_jac(problem_for_eval_obs_jac, options, eval_obs_jac):
     """Check that the observable derivatives are computed when eval_obs_jac is True."""
     execute_algo(problem_for_eval_obs_jac, eval_obs_jac=eval_obs_jac, **options)
-    assert problem_for_eval_obs_jac.database.contains_dataname("@o") is eval_obs_jac
+    database = problem_for_eval_obs_jac.database
+    assert ("@o" in database.get_function_names(False)) is eval_obs_jac
 
 
 def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
@@ -1678,9 +1676,13 @@ def test_observables_normalization():
     scenario.add_constraint("c_2", "ineq")
     scenario.add_observable("y_1")
     scenario.execute(input_data={"max_iter": 3, "algo": "SLSQP"})
-    total_iter = scenario.formulation.opt_problem.database.get_max_iteration()
-    n_obj_eval = scenario.formulation.opt_problem.database.get_func_history("y_1").size
-    n_obs_eval = scenario.formulation.opt_problem.database.get_func_history("obj").size
+    total_iter = len(scenario.formulation.opt_problem.database)
+    n_obj_eval = scenario.formulation.opt_problem.database.get_function_history(
+        "y_1"
+    ).size
+    n_obs_eval = scenario.formulation.opt_problem.database.get_function_history(
+        "obj"
+    ).size
     assert total_iter == n_obj_eval == n_obs_eval
 
 
@@ -1744,7 +1746,7 @@ def test_get_missing_observable(constrained_problem):
 @pytest.mark.parametrize("name", ["obj", "cstr", "obj"])
 def test_execute_twice(problem_executed_twice, name):
     """Check that the second evaluations of an OptimizationProblem works."""
-    assert len(problem_executed_twice.database.get_func_history(name)) == 2
+    assert len(problem_executed_twice.database.get_function_history(name)) == 2
 
 
 def test_avoid_complex_in_dataset():

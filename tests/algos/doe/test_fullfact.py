@@ -117,7 +117,7 @@ def test_fullfact_levels(
     account."""
 
     doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
-    assert allclose(doe_problem_dim_2.database.get_x_history(), expected)
+    assert allclose(doe_problem_dim_2.database.get_x_vect_history(), expected)
 
 
 @pytest.mark.parametrize(

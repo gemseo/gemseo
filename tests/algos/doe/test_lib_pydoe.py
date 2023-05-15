@@ -173,7 +173,7 @@ def test_integer_lhs():
     problem.design_space.add_variable("y", var_type="integer", l_b=10.0, u_b=15.0)
     DOEFactory().execute(problem, "lhs", n_samples=10)
 
-    for sample in problem.database.get_x_history():
+    for sample in problem.database.get_x_vect_history():
         assert int(sample[-1]) == sample[-1]
 
 

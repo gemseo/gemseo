@@ -19,14 +19,12 @@
                     "type": "null"
                 },
                 {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 {
                     "type": "array",
                     "items": {
-                        "type": "integer",
-                        "minimum": 0
+                        "type": "integer"
                     }
                 }
             ]

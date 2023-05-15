@@ -1,0 +1,44 @@
+API changes:
+- Move :class:`.ProgressBar` and :class:`.TqdmToLogger` to :mod:`gemseo.algos.progress_bar`.
+- Move :class:`.HashableNdarray` to :mod:`gemseo.algos.hashable_ndarray`.
+- Move the HDF methods of :class:`.Database` to :class:`.HDFDatabase`.
+- Remove :attr:`.Database.KEYSSEPARATOR`.
+- Remove :meth:`.Database._format_design_variable_names`.
+- Remove :meth:`.Database.get_value`; use ``output_value = database[input_value]`` instead of ``output_value = database.get_value(input_value)``.
+- Remove :meth:`.Database.contains_x`; use ``input_value in database`` instead of ``database.contains_x(input_value)``.
+- Remove :meth:`.Database.contains_dataname`; use ``output_name in database.output_names`` instead of ``database.contains_dataname(output_name)``.
+- Remove :meth:`.Database.set_dv_names`; use ``database.input_names`` to access the input names.
+- Remove :meth:`.Database.is_func_grad_history_empty`; use :meth:`.database.check_output_history_is_empty` instead with any output name.
+- Rename :meth:`.Database.get_hashed_key` to :meth:`.Database.get_hashable_ndarray`.
+- Rename :meth:`.Database.get_all_data_names` to :meth:`.Database.get_function_names`.
+- Rename :attr:`.Database.missing_value_tag` to :attr:`.Database.MISSING_VALUE_TAG`.
+- Rename :meth:`.Database.get_x_by_iter` to :meth:`.Database.get_input_value`.
+- Rename :meth:`.Database.clean_from_iterate` to :meth:`.Database.clear_from_iteration`.
+- Rename :meth:`.Database.get_max_iteration` to :attr:`.Database.n_new_iterations`.
+- Rename :meth:`.Database.notify_newiter_listeners` to :meth:`.Database.notify_new_iter_listeners`.
+- Rename :meth:`.Database.get_func_history` to :meth:`.Database.get_function_history`.
+- Rename :meth:`.Database.get_func_grad_history` to :meth:`.Database.get_gradient_history`.
+- Rename :meth:`.Database.get_x_history` to :meth:`.Database.get_x_vect_history`.
+- Rename :meth:`.Database.get_last_n_x` to :meth:`.Database.get_last_n_input_values`.
+- Rename :meth:`.Database.get_x_at_iteration` to :meth:`.Database.get_input_value`.
+- Rename :meth:`.Database.get_index_of` to :meth:`.Database.get_iteration`.
+- Rename :meth:`.Database.get_f_of_x` to :meth:`.Database.get_function_value`.
+- Rename the argument ``all_function_names`` to ``function_names`` in :meth:`.Database.to_ggobi`.
+- Rename the argument ``design_variable_names`` to ``input_names`` in :meth:`.Database.to_ggobi`.
+- Rename the argument ``add_dv`` to ``add_input_history`` in :meth:`.Database.get_history_array`.
+- Rename the argument ``values_dict`` to ``output_value`` in :meth:`.Database.store`.
+- Rename the argument ``x_vect`` to ``input_value``.
+- Rename the argument ``listener_func`` to ``function``.
+- Rename the arguments ``funcname``, ``fname`` and ``data_name`` to ``function_name``.
+- Rename the arguments ``functions`` and ``names`` to ``function_names``.
+- Rename the argument ``names`` to ``output_names`` in :meth:`.Database.filter`.
+- Rename the argument ``x_hist`` to ``add_input_history`` in :meth:`.Database.get_function_history` and :meth:`.Database.get_gradient_history`.
+- :meth:`.Database.get_input_value` starts counting the iterations at 1.
+- :meth:`.Database.clear_from_iteration` starts counting the iterations at 1.
+- :class:`.RadarChart`, :class:`.TopologyView` and :class:`.GradientSensitivity` starts counting the iterations at 1.
+- The input history returned by :meth:`.Database.get_gradient_history` and :meth:`.Database.get_function_history` is now a 2D NumPy array.
+- Remove :attr:`.Database.n_new_iteration`.
+- Remove :attr:`.Database.reset_n_new_iteration`.
+- Remove the argument ``reset_iteration_counter`` in :meth:`.Database.clear`.
+- The :class:`.Database` no longer uses the tag ``"Iter"``.
+- The :class:`.Database` no longer uses the notion of ``stacked_data``.

@@ -80,10 +80,9 @@ def test_iteration_error(problem):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The requested iteration 1000 is neither in ({},...,0,...,{}) "
-            "nor equal to the tag {}.".format(
-                -n_iterations + 1, n_iterations - 1, RadarChart.OPTIMUM
-            )
+            "The requested iteration 1000 is neither "
+            f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
+            f"nor equal to the tag {RadarChart.OPTIMUM}."
         ),
     ):
         post.execute(

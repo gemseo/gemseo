@@ -366,7 +366,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Test if the last evaluation is the optimum
         x_opt = design_space.get_current_value()
-        last_x = opt_problem.database.get_x_by_iter(-1)
+        last_x = opt_problem.database.get_x_vect(-1)
         last_eval_not_opt = norm(x_opt - last_x) / (1.0 + norm(last_x)) > 1e-14
         if last_eval_not_opt:
             # Revaluate all functions at optimum

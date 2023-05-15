@@ -155,7 +155,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 is not consistent with the shape of the history of the gradient
                 or the optimization history size is insufficient.
         """
-        grad_hist, x_hist = self.history.get_func_grad_history(funcname, x_hist=True)
+        grad_hist, x_hist = self.history.get_gradient_history(
+            funcname, with_x_vect=True
+        )
         if normalize_design_space:
             (
                 x_hist,
@@ -170,11 +172,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 f"because its gradient history is too small: {grad_hist_length}."
             )
 
-        grad_hist = array(grad_hist)
         if grad_hist.ndim == 1:
             grad_hist = grad_hist[:, newaxis]
 
-        x_hist = array(x_hist)
         x_hist_shape = x_hist.shape
         grad_hist_shape = grad_hist.shape
         grad_hist_shape_from_grad_hist = (grad_hist.shape[0], grad_hist.shape[-1])
@@ -227,7 +227,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
         self.x_ref = x_hist[-1]
         self.fgrad_ref = grad_hist[-1]
-        self.f_ref = array(self.history.get_func_history(funcname))[:last_iter][-1]
+        self.f_ref = array(self.history.get_function_history(funcname))[:last_iter][-1]
         return x_hist, grad_hist, n_iterations, input_dimension
 
     @staticmethod
@@ -261,7 +261,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             scaled_x_hist.append(design_space.normalize_vect(x_value))
             scaled_grad_hist.append(design_space.normalize_grad(grad_value))
 
-        return scaled_x_hist, scaled_grad_hist
+        return array(scaled_x_hist), array(scaled_grad_hist)
 
     @staticmethod
     def get_s_k_y_k(

@@ -159,7 +159,7 @@ def test_adapter_reset_x0_before_opt(scenario):
     # initial_x is reset to the initial design value before optimization;
     # thus the optimization starts from initial_design.
     adapter.execute()
-    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
+    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_vect(1)
     assert np_all(initial_x == initial_design)
 
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
@@ -171,7 +171,7 @@ def test_adapter_reset_x0_before_opt(scenario):
     # initial_x is NOT reset to the initial design value before optimization;
     # thus the optimization starts from the last design value (=new_initial_design).
     adapter.execute()
-    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
+    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_vect(1)
     assert np_all(initial_x == new_initial_design)
     assert not np_all(initial_x == initial_design)
 

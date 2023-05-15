@@ -143,10 +143,7 @@ class OptHistoryView(OptPostProcessor):
         self._create_x_star_plot(x_history, n_iter)
 
         # Hessian plot
-        plot_hessian = not self.database.is_func_grad_history_empty(
-            self._standardized_obj_name
-        )
-        if plot_hessian:
+        if not self.database.check_output_history_is_empty(self._standardized_obj_name):
             self._create_hessian_approx_plot(self.database, self._standardized_obj_name)
 
         # inequality and equality constraints
@@ -190,7 +187,9 @@ class OptHistoryView(OptPostProcessor):
             the design variables values
             and the number of iterations.
         """
-        f_hist, x_hist = self.database.get_func_history(function_name, x_hist=True)
+        f_hist, x_hist = self.database.get_function_history(
+            function_name, with_x_vect=True
+        )
         f_hist = array(f_hist).real
         x_hist = array(x_hist).real
 
@@ -219,7 +218,7 @@ class OptHistoryView(OptPostProcessor):
         Returns:
             The bounds of the constraints and history array.
         """
-        available_data_names = self.database.get_all_data_names()
+        available_data_names = self.database.get_function_names()
         for constraint_name in constraint_names:
             if constraint_name not in available_data_names:
                 constraint_names.remove(constraint_name)
@@ -228,7 +227,7 @@ class OptHistoryView(OptPostProcessor):
         bounds = full(len(constraint_names), sys.float_info.min)
         for constraint_index, constraint_name in enumerate(constraint_names):
             constraint_history = array(
-                self.database.get_func_history(constraint_name)
+                self.database.get_function_history(constraint_name)
             ).real
             constraints_history.append(constraint_history)
             bounds[constraint_index] = max(

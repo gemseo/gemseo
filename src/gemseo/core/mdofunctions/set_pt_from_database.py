@@ -77,7 +77,7 @@ class SetPtFromDatabase:
             x_db = self.__design_space.unnormalize_vect(x_n)
         else:
             x_db = x_n
-        val = self.__database.get_f_of_x(fname, x_db, self.__x_tolerance)
+        val = self.__database.get_function_value(fname, x_db, self.__x_tolerance)
         if val is None:
             msg = (
                 "Function {} evaluation relies only on the database, "
@@ -106,7 +106,7 @@ class SetPtFromDatabase:
         Returns:
             The value of the Jacobian function read in the database.
         """
-        return self.__read_in_db(x_n, f"@{self.__name}")
+        return self.__read_in_db(x_n, self.__database.get_gradient_name(self.__name))
 
     @property
     def expects_normalized_inputs(self) -> bool:

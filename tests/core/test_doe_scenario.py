@@ -349,10 +349,10 @@ def test_lib_serialization(tmp_wd, doe_scenario):
     )
 
     assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
-    assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
+    assert pickled_scenario.formulation.opt_problem.database.get_function_value(
         "y", array([0.5])
     ) == array([1.0])
-    assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
+    assert pickled_scenario.formulation.opt_problem.database.get_function_value(
         "y", array([1.0])
     ) == array([2.0])
 

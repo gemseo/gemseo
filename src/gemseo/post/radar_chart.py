@@ -48,8 +48,8 @@ class RadarChart(OptPostProcessor):
         Args:
             constraint_names: The names of the constraints.
                 If None, use all the constraints.
-            iteration: Either a database index in :math:`-N+1,\ldots,-1,0,1,`ldots,N-1`
-                or the tag :attr:`.OPTIMUM` for the database index
+            iteration: Either an iteration in :math:`-N,\ldots,-1,1,`ldots,N`
+                or the tag :attr:`.OPTIMUM` for the iteration
                 at which the optimum is located,
                 where :math:`N` is the length of the database.
             show_names_radially: Whether to write the names of the constraints
@@ -76,18 +76,15 @@ class RadarChart(OptPostProcessor):
                 )
 
         n_iterations = len(self.database)
-        if (
-            iteration != self.OPTIMUM
-            and not -n_iterations + 1 < iteration < n_iterations - 1
-        ):
+        if iteration != self.OPTIMUM and not 1 <= abs(iteration) <= n_iterations:
             raise ValueError(
                 f"The requested iteration {iteration} is neither "
-                f"in ({-n_iterations + 1},...,0,...,{ n_iterations - 1}) "
+                f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
                 f"nor equal to the tag {self.OPTIMUM}."
             )
 
         constraint_values, constraint_names, _ = self.database.get_history_array(
-            constraint_names, add_dv=False
+            function_names=constraint_names, with_x_vect=False
         )
 
         if iteration == self.OPTIMUM:

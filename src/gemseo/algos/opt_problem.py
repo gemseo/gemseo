@@ -2131,7 +2131,7 @@ class OptimizationProblem(BaseProblem):
         # Add database inputs
         input_names = self.design_space.variable_names
         names_to_sizes = self.design_space.variable_sizes
-        input_history = array(self.database.get_x_history())
+        input_history = array(self.database.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
         if input_values is not None:
@@ -2147,7 +2147,7 @@ class OptimizationProblem(BaseProblem):
             dataset.add_variable(input_name, input_value.real, input_group)
 
         # Add database outputs
-        variable_names = self.database.get_all_data_names(skip_iter=True)
+        variable_names = self.database.get_function_names()
         output_names = [name for name in variable_names if name not in input_names]
 
         self.__add_database_outputs(
@@ -2197,11 +2197,11 @@ class OptimizationProblem(BaseProblem):
                 when the cache is exported to a cache.
         """
         for output_name in output_names:
-            output_history, input_history = self.database.get_func_history(
-                output_name, x_hist=True
+            output_history, input_history = self.database.get_function_history(
+                output_name, with_x_vect=True
             )
             output_history = self.__replace_missing_values(
-                output_history, input_history, array(self.database.get_x_history())
+                output_history, input_history, array(self.database.get_x_vect_history())
             )
 
             dataset.add_variable(
@@ -2232,16 +2232,16 @@ class OptimizationProblem(BaseProblem):
                 when the cache is exported to a cache.
         """
         for output_name in output_names:
-            if self.database.is_func_grad_history_empty(output_name):
+            if self.database.check_output_history_is_empty(output_name):
                 continue
 
-            gradient_history, input_history = self.database.get_func_grad_history(
-                output_name, x_hist=True
+            gradient_history, input_history = self.database.get_gradient_history(
+                output_name, with_x_vect=True
             )
             gradient_history = self.__replace_missing_values(
                 gradient_history,
                 input_history,
-                array(self.database.get_x_history()),
+                array(self.database.get_x_vect_history()),
             )
 
             dataset.add_variable(
@@ -2354,7 +2354,7 @@ class OptimizationProblem(BaseProblem):
 
         if filter_non_feasible:
             x_feasible, _ = self.get_feasible_points()
-            feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
+            feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
             if as_dict:
                 for key, value in data.items():
                     data[key] = value[feasible_indexes, :]
@@ -2499,7 +2499,7 @@ class OptimizationProblem(BaseProblem):
             self.current_iter = 0
 
         if database:
-            self.database.clear(current_iter)
+            self.database.clear()
 
         if design_space:
             self.design_space.set_current_value(self.__initial_current_x)

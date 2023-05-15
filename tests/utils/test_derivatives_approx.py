@@ -353,7 +353,7 @@ def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_
         problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize
     )
 
-    grad = problem.database.get_func_grad_history("my_objective")[0, 0]
+    grad = problem.database.get_gradient_history("my_objective")[0, 0]
     if upper_bound is None:
         assert grad > 4.0
     else:
