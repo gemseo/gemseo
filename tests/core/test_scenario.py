@@ -248,10 +248,10 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     assert (
         norm(
             array(
-                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_vect_history()
             )
             - array(
-                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_vect_history()
             )
         )
         == 0.0

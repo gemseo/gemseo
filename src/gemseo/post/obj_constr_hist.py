@@ -79,8 +79,8 @@ class ObjConstrHist(OptPostProcessor):
         # 1. Plot the objective history versus the iterations with a curve.
         problem = self.opt_problem
         objective_name = problem.get_objective_name()
-        obj_history, x_history = self.database.get_func_history(
-            objective_name, x_hist=True
+        obj_history, x_history = self.database.get_function_history(
+            objective_name, with_x_vect=True
         )
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
         if not problem.minimize_objective and not problem.use_standardized_objective:
@@ -178,7 +178,7 @@ class ObjConstrHist(OptPostProcessor):
 
         if constraint_names:
             constraint_history, constraint_names, _ = self.database.get_history_array(
-                constraint_names, add_dv=False
+                function_names=constraint_names, with_x_vect=False
             )
         else:
             constraint_history, constraint_names = np.array([]), np.array([])

@@ -113,13 +113,12 @@ class NormDBFunction(MDOFunction):
             xn_vect = None
         # For performance, hash once, and reuse in get/store methods
         database = self.__optimization_problem.database
-        hashed_xu = database.get_hashed_key(xu_vect)
+        hashed_xu = database.get_hashable_ndarray(xu_vect)
         # try to retrieve the evaluation
-        value = database.get_f_of_x(self.name, hashed_xu)
+        value = database.get_function_value(self.name, hashed_xu)
 
         if value is None:
-            new_eval = database.is_new_eval(hashed_xu)
-            if new_eval and self.__is_max_iter_reached():
+            if not database.get(hashed_xu) and self.__is_max_iter_reached():
                 raise MaxIterReachedException()
 
             # if not evaluated yet, evaluate
@@ -161,10 +160,11 @@ class NormDBFunction(MDOFunction):
         design_space = self.__optimization_problem.design_space
 
         # try to retrieve the evaluation
-        jac_u = database.get_f_of_x(Database.get_gradient_name(self.name), xu_vect)
+        jac_u = database.get_function_value(
+            Database.get_gradient_name(self.name), xu_vect
+        )
         if jac_u is None:
-            new_eval = database.is_new_eval(xu_vect)
-            if new_eval and self.__is_max_iter_reached():
+            if not database.get(xu_vect) and self.__is_max_iter_reached():
                 raise MaxIterReachedException()
 
             # if not evaluated yet, evaluate

@@ -81,7 +81,7 @@ def kkt_residual_computation(
     Returns:
         The KKT residual norm.
     """
-    res = opt_problem.database.get_f_of_x(opt_problem.KKT_RESIDUAL_NORM, x_vect)
+    res = opt_problem.database.get_function_value(opt_problem.KKT_RESIDUAL_NORM, x_vect)
     if res is not None:
         return res
     lagrange = LagrangeMultipliers(opt_problem)

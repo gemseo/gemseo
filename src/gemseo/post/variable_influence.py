@@ -78,11 +78,11 @@ class VariableInfluence(OptPostProcessor):
         """  # noqa: D205, D212, D415
         function_names = self.opt_problem.get_all_function_name()
         _, x_opt, _, _, _ = self.opt_problem.get_optimum()
-        x_0 = self.database.get_x_by_iter(0)
+        x_0 = self.database.get_x_vect(1)
         absolute_value = log_scale or absolute_value
 
         names_to_sensitivities = {}
-        evaluate = self.database.get_f_of_x
+        evaluate = self.database.get_function_value
         for function_name in function_names:
             grad = evaluate(self.database.get_gradient_name(function_name), x_0)
             if grad is None:

@@ -78,7 +78,7 @@ def is_x_tol_reached(
     if len(database) < n_x:
         return False
 
-    x_values = database.get_last_n_x(n_x)
+    x_values = database.get_last_n_x_vect(n_x)
 
     # Checks that there is at least one feasible point
     if not any(opt_problem.is_point_feasible(database[x_val]) for x_val in x_values):
@@ -119,14 +119,16 @@ def is_f_tol_reached(
         return False
 
     # Checks that there is at least one feasible point
-    x_values = database.get_last_n_x(n_x)
+    x_values = database.get_last_n_x_vect(n_x)
     if not any(opt_problem.is_point_feasible(database[x_val]) for x_val in x_values):
         return False
 
     obj_name = opt_problem.objective.name
     f_values = [
         f_value
-        for f_value in [database.get_f_of_x(obj_name, x_val) for x_val in x_values]
+        for f_value in [
+            database.get_function_value(obj_name, x_val) for x_val in x_values
+        ]
         if f_value is not None
     ]
     if len(f_values) < n_x:

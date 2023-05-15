@@ -414,7 +414,7 @@ class Scenario(MDODiscipline):
                 remove(self._opt_hist_backup_path)
             elif pre_load:
                 opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
-                max_iteration = opt_pb.database.get_max_iteration()
+                max_iteration = len(opt_pb.database)
                 if max_iteration != 0:
                     opt_pb.current_iter = max_iteration
 

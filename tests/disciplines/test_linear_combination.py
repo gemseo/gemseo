@@ -102,6 +102,6 @@ def test_parallel_doe_execution(linear_combination_for_tests):
         eval_jac=True,
         n_processes=2,
     )
-    assert opt_problem.database.get_f_of_x(
-        fname="delta", x_vect=array([1.0, 1.0, 1.0])
+    assert opt_problem.database.get_function_value(
+        "delta", array([1.0, 1.0, 1.0])
     ) == array([0.0])

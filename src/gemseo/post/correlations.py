@@ -86,7 +86,7 @@ class Correlations(OptPostProcessor):
             )
 
         variable_history, variable_names, _ = self.database.get_history_array(
-            func_names, None, True, 0.0
+            function_names=func_names, add_missing_tag=True, missing_tag=0.0
         )
         variable_names = self.__sort_variable_names(variable_names, func_names)
 

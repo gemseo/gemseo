@@ -70,7 +70,7 @@ class KMeans(OptPostProcessor):
         Args:
             n_clusters: The number of clusters.
         """
-        x_history = self.database.get_x_history()
+        x_history = self.database.get_x_vect_history()
         x_vars = array(x_history)
         x_vars_sc = StandardScaler().fit_transform(x_vars)
         # estimate bandwidth for mean shift

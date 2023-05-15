@@ -35,27 +35,21 @@ and :class:`.OptimizationLibrary`.
 """
 from __future__ import annotations
 
-import io
 import logging
-import string
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import List
 from typing import Union
 
-import tqdm
 from numpy import ndarray
 from numpy import ones
 from numpy import where
 from numpy import zeros
 from strenum import StrEnum
-from tqdm.utils import _unicode
-from tqdm.utils import disp_len
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
@@ -66,6 +60,8 @@ from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.progress_bar import ProgressBar
+from gemseo.algos.progress_bar import TqdmToLogger
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import FunctionIsNan
@@ -82,16 +78,6 @@ DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
 LOGGER = logging.getLogger(__name__)
 
 
-class TqdmToLogger(io.StringIO):
-    """Redirect tqdm output to the gemseo logger."""
-
-    def write(self, buf: str) -> None:
-        """Write buffer."""
-        buf = buf.strip(string.whitespace)
-        if buf:
-            LOGGER.info(buf)
-
-
 @dataclass
 class DriverDescription(AlgorithmDescription):
     """The description of a driver."""
@@ -101,83 +87,6 @@ class DriverDescription(AlgorithmDescription):
 
     require_gradient: bool = False
     """Whether the optimization algorithm requires the gradient."""
-
-
-class ProgressBar(tqdm.tqdm):
-    """Extend tqdm progress bar with better time units.
-
-    Use hour, day or week for slower processes.
-    """
-
-    @classmethod
-    def format_meter(  # noqa: D102
-        cls, n: float, total: float, elapsed: float, **kwargs: Any
-    ) -> str:
-        meter = tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
-        if elapsed != 0.0:
-            rate, unit = cls.__convert_rate(n, elapsed)
-            lstr = meter.split(",")
-            lstr[1] = f" {rate:5.2f}{unit}"
-            meter = ",".join(lstr)
-        # remove the unit suffix that is hard coded in tqdm
-        return meter.replace("/s,", ",").replace("/s]", "]")
-
-    @staticmethod
-    def __convert_rate(total, elapsed):
-        rps = float(total) / elapsed
-        if rps >= 0:
-            rate = rps
-            unit = "sec"
-
-        rpm = rps * 60.0
-        if rpm < 60.0:
-            rate = rpm
-            unit = "min"
-
-        rph = rpm * 60.0
-        if rph < 60.0:
-            rate = rph
-            unit = "hour"
-
-        rpd = rph * 24.0
-        if rpd < 24.0:
-            rate = rpd
-            unit = "day"
-
-        return rate, f" it/{unit}"
-
-    def status_printer(
-        self, file: io.TextIOWrapper | io.StringIO
-    ) -> Callable[[str], None]:
-        """Overload the status_printer method to avoid the use of closures.
-
-        Args:
-            file: Specifies where to output the progress messages.
-
-        Returns:
-            The function to print the status in the progress bar.
-        """
-        self._last_len = [0]
-        return self._print_status
-
-    def _print_status(self, s: str) -> None:
-        len_s = disp_len(s)
-        self.fp.write(
-            _unicode("\r{}{}".format(s, (" " * max(self._last_len[0] - len_s, 0))))
-        )
-        self.fp.flush()
-        self._last_len[0] = len_s
-
-    def __getstate__(self) -> dict[str, Any]:
-        state = self.__dict__.copy()
-        # A file-like stream cannot be pickled.
-        del state["fp"]
-        return state
-
-    def __setstate__(self, state) -> None:
-        self.__dict__.update(state)
-        # Set back the file-like stream to its state as done in tqdm.__init__.
-        self.fp = tqdm.utils.DisableOnWriteError(TqdmToLogger(), tqdm_instance=self)
 
 
 class DriverLibrary(AlgorithmLibrary):
@@ -307,7 +216,7 @@ class DriverLibrary(AlgorithmLibrary):
         if x_vect is None:
             value = self.problem.objective.last_eval
         else:
-            value = self.problem.database.get_f_of_x(
+            value = self.problem.database.get_function_value(
                 self.problem.objective.name, x_vect
             )
 
@@ -347,7 +256,7 @@ class DriverLibrary(AlgorithmLibrary):
         # First check if the max_iter is reached and update the progress bar
         if self.__progress_bar is not None and not self.__is_current_iteration_logged:
             self.__set_progress_bar_objective_value(
-                self.problem.database.get_x_by_iter(self.problem.current_iter - 1)
+                self.problem.database.get_x_vect(self.problem.current_iter or -1)
             )
         self.__iter += 1
         self.problem.current_iter = self.__iter
@@ -364,7 +273,7 @@ class DriverLibrary(AlgorithmLibrary):
         if self.__progress_bar is not None:
             if not self.__is_current_iteration_logged:
                 self.__set_progress_bar_objective_value(
-                    self.problem.database.get_x_by_iter(self.problem.current_iter - 1)
+                    self.problem.database.get_x_vect(self.problem.current_iter or -1)
                 )
             self.__progress_bar.leave = False
             self.__progress_bar.close()
@@ -601,7 +510,7 @@ class DriverLibrary(AlgorithmLibrary):
                 status=status,
                 n_obj_call=0,
             )
-        x_0 = problem.database.get_x_by_iter(0)
+        x_0 = problem.database.get_x_vect(1)
         # compute the best feasible or infeasible point
         f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
         if (
@@ -614,7 +523,7 @@ class DriverLibrary(AlgorithmLibrary):
         if x_opt is None:
             optimum_index = None
         else:
-            optimum_index = problem.database.get_index_of(x_opt)
+            optimum_index = problem.database.get_iteration(x_opt) - 1
 
         return OptimizationResult(
             x_0=x_0,

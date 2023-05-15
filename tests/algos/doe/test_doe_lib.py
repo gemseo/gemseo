@@ -71,15 +71,15 @@ def test_evaluate_samples_multiproc(doe):
         eval_jac=True,
     )
     new_pb = Power2()
-    x_history = problem.database.get_x_history()
+    x_history = problem.database.get_x_vect_history()
     assert len(x_history) == n_samples
     for sample in x_history:
         val_ref = new_pb.objective(sample)
-        val_sample = problem.database.get_f_of_x("pow2", sample)
+        val_sample = problem.database.get_function_value("pow2", sample)
         assert val_ref == val_sample
 
         grad_ref = new_pb.objective.jac(sample)
-        grad_sample = problem.database.get_f_of_x("@pow2", sample)
+        grad_sample = problem.database.get_function_value("@pow2", sample)
         assert (grad_ref == grad_sample).all()
 
 
@@ -121,7 +121,7 @@ def test_evaluate_samples_multiproc_with_observables(doe):
 
     database = scenario.formulation.opt_problem.database
     for i, (x, data) in enumerate(database.items()):
-        assert x.wrapped[0] == pytest.approx(float(i))
+        assert x.wrapped_array[0] == pytest.approx(float(i))
         assert data["obj"] == float(i)
         assert data["obs"] == float(i + 1)
 

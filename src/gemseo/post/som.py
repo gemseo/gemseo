@@ -113,7 +113,7 @@ class SOM(OptPostProcessor):
         criteria = [
             self.opt_problem.get_objective_name()
         ] + self.opt_problem.get_constraint_names()
-        all_data = self.database.get_all_data_names()
+        all_data = self.database.get_function_names()
         # Ensure that the data is available in the database
         for criterion in criteria:
             if criterion not in all_data:
@@ -123,7 +123,7 @@ class SOM(OptPostProcessor):
         subplot_number = 0
         self.__compute(n_x, n_y)
         for criterion in criteria:
-            f_hist, _ = self.database.get_complete_history(
+            f_hist, _ = self.database.get_history(
                 ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
             if isinstance(f_hist[0][3], ndarray):
@@ -141,7 +141,7 @@ class SOM(OptPostProcessor):
 
         index = 0
         for criterion in criteria:
-            f_hist, _ = self.database.get_complete_history(
+            f_hist, _ = self.database.get_history(
                 ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
             if isinstance(f_hist[0][3], ndarray):
@@ -249,7 +249,7 @@ class SOM(OptPostProcessor):
             som_grid_nx: The number of neurons in the x direction.
             som_grid_ny: The number of neurons in the y direction.
         """
-        x_history = self.database.get_x_history()
+        x_history = self.database.get_x_vect_history()
         x_vars = array(x_history).real
         self.som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
         som_cluster_index = self.som.project_data(x_vars)
