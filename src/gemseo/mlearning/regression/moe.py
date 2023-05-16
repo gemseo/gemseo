@@ -76,7 +76,8 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
@@ -170,7 +171,7 @@ class MOERegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
@@ -506,28 +507,34 @@ class MOERegressor(MLRegressionAlgo):
         input_data: ndarray,
         output_data: ndarray,
     ) -> None:
-        dataset = Dataset("training_set")
+        dataset = IODataset(dataset_name="training_set")
         dataset.add_group(
-            Dataset.INPUT_GROUP,
+            dataset.INPUT_GROUP,
             input_data,
             [self._LOCAL_INPUT],
             {self._LOCAL_INPUT: input_data.shape[1]},
         )
         dataset.add_group(
-            Dataset.OUTPUT_GROUP,
+            dataset.OUTPUT_GROUP,
             output_data,
             [self._LOCAL_OUTPUT],
             {self._LOCAL_OUTPUT: output_data.shape[1]},
-            cache_as_input=False,
         )
         self._fit_clusters(dataset)
-        self._fit_classifier(dataset)
+        _dataset = IODataset(dataset_name="training_set")
+        _dataset.add_group(
+            dataset.INPUT_GROUP,
+            input_data,
+            [self._LOCAL_INPUT],
+            {self._LOCAL_INPUT: input_data.shape[1]},
+        )
+        _dataset.add_variable(
+            self.LABELS, self.clusterer.labels[:, newaxis], _dataset.OUTPUT_GROUP
+        )
+        self._fit_classifier(_dataset)
         self._fit_regressors(dataset)
 
-    def _fit_clusters(
-        self,
-        dataset: Dataset,
-    ) -> None:
+    def _fit_clusters(self, dataset: Dataset) -> None:
         """Train the clustering algorithm.
 
         The method adds resulting labels as a new output in the dataset.
@@ -554,13 +561,7 @@ class MOERegressor(MLRegressionAlgo):
             with MultiLineString.offset():
                 LOGGER.info("%s", self.clusterer)
 
-        labels = self.clusterer.labels[:, newaxis]
-        dataset.add_variable(self.LABELS, labels, self.LABELS, False)
-
-    def _fit_classifier(
-        self,
-        dataset: Dataset,
-    ) -> None:
+    def _fit_classifier(self, dataset: IODataset) -> None:
         """Train the classification algorithm.
 
         Args:
@@ -588,10 +589,7 @@ class MOERegressor(MLRegressionAlgo):
             with MultiLineString.offset():
                 LOGGER.info("%s", self.classifier)
 
-    def _fit_regressors(
-        self,
-        dataset: Dataset,
-    ) -> None:
+    def _fit_regressors(self, dataset: IODataset) -> None:
         """Train the local regression models on each cluster separately.
 
         Args:

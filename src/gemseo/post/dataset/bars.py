@@ -26,7 +26,7 @@ from matplotlib.figure import Figure
 from numpy import arange
 from numpy import linspace
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -50,10 +50,11 @@ class BarPlot(DatasetPlot):
         axes: None | Axes = None,
     ) -> list[Figure]:
         # radar solid grid lines
-        all_data, _, sizes = self.dataset.get_all_data(False)
-        variable_names = self.dataset.column_names
+        all_data = self.dataset.to_numpy()
+        sizes = self.dataset.variable_names_to_n_components
+        variable_names = self.dataset.get_columns()
         dimension = sum(sizes.values())
-        series_names = self.dataset.row_names
+        series_names = self.dataset.index
 
         if not self.color:
             colormap = plt.cm.get_cmap(self.colormap)

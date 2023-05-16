@@ -102,7 +102,7 @@ from numpy import array
 from numpy import linspace
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
@@ -247,7 +247,7 @@ class ParametricStatistics(Statistics):
         distributions = list(self._all_distributions[variables[0]][0].keys())
         table = PrettyTable(["Variable"] + distributions + ["Selection"])
         for variable in variables:
-            for index in range(self.dataset.sizes[variable]):
+            for index in range(self.dataset.variable_names_to_n_components[variable]):
                 row = (
                     [variable]
                     + [
@@ -340,7 +340,7 @@ class ParametricStatistics(Statistics):
         ax1.set_box_aspect(1)
         ax1.set_xlabel("Probability distributions")
 
-        data = array(self.dataset[variable])
+        data = self.dataset.get_view(variable_names=variable).to_numpy()
         data_min = min(data)
         data_max = max(data)
         x_values = linspace(data_min, data_max, 1000)
@@ -355,7 +355,11 @@ class ParametricStatistics(Statistics):
         ax2.legend()
         ax2.grid(True, "both")
         ax2.set_title("Probability density function")
-        ax2.set_xlabel(repr_variable(variable, index, self.dataset.sizes[variable]))
+        ax2.set_xlabel(
+            repr_variable(
+                variable, index, self.dataset.variable_names_to_n_components[variable]
+            )
+        )
         if title is not None:
             plt.suptitle(title)
 
@@ -440,10 +444,10 @@ class ParametricStatistics(Statistics):
         results = {}
         for variable in self.names:
             LOGGER.info("| Fit different distributions for %s.", variable)
-            dataset = self.dataset[variable]
+            dataset_values = self.dataset.get_view(variable_names=variable).to_numpy()
             results[variable] = [
                 self._fit_marginal_distributions(variable, column, distributions)
-                for column in dataset.T
+                for column in dataset_values.T
             ]
         return results
 
@@ -515,9 +519,13 @@ class ParametricStatistics(Statistics):
         new_thresh = {}
         for name, value in thresh.items():
             if isinstance(value, float):
-                new_thresh[name] = [value] * self.dataset.sizes[name]
+                new_thresh[name] = [
+                    value
+                ] * self.dataset.variable_names_to_n_components[name]
             elif len(value) == 1:
-                new_thresh[name] = [value[0]] * self.dataset.sizes[name]
+                new_thresh[name] = [
+                    value[0]
+                ] * self.dataset.variable_names_to_n_components[name]
             else:
                 new_thresh[name] = value
 

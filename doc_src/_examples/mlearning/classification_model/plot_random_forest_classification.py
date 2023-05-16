@@ -30,7 +30,7 @@ We want to classify the Iris dataset using a Random Forest classifier.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_classification_model
 from numpy import array
 
@@ -40,7 +40,7 @@ configure_logger()
 # %%
 # Load Iris dataset
 # -----------------
-iris = load_dataset("IrisDataset", as_io=True)
+iris = create_benchmark_dataset("IrisDataset", as_io=True)
 
 # %%
 # Create the classification model

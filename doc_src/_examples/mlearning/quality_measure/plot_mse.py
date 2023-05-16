@@ -32,7 +32,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from gemseo import configure_logger
 from gemseo import create_dataset
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from numpy import arange
@@ -84,7 +84,7 @@ print("Test:", test)
 # --------------
 data = hstack([x[:, None], y[:, None]])
 variables = ["x", "y"]
-groups = {"x": Dataset.INPUT_GROUP, "y": Dataset.OUTPUT_GROUP}
+groups = {"x": IODataset.INPUT_GROUP, "y": IODataset.OUTPUT_GROUP}
 dataset = create_dataset("synthetic_data", data[train], variables, groups=groups)
 dataset_test = create_dataset("synthetic_data", data[test], variables, groups=groups)
 

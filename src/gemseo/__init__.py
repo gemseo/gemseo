@@ -135,6 +135,7 @@ from __future__ import annotations
 import logging
 import re
 from collections import namedtuple
+from os import PathLike
 from pathlib import Path
 from typing import Any
 from typing import Iterable
@@ -144,6 +145,7 @@ from typing import TYPE_CHECKING
 
 import pkg_resources as __pkg_resources
 from numpy import ndarray
+from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
@@ -164,7 +166,8 @@ if TYPE_CHECKING:
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.datasets.io_dataset import IODataset
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
     from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -1657,70 +1660,91 @@ def create_cache(
 def create_dataset(
     name: str,
     data: ndarray | str | Path,
-    variables: list[str] | None = None,
-    sizes: dict[str, int] | None = None,
-    groups: dict[str, str] | None = None,
-    by_group: bool = True,
+    variable_names: str | Iterable[str] = (),
+    variable_names_to_n_components: dict[str, int] | None = None,
+    variable_names_to_group_names: dict[str, str] | None = None,
     delimiter: str = ",",
     header: bool = True,
-    default_name: str | None = None,
-) -> Dataset:
+) -> IODataset:
     """Create a dataset from a NumPy array or a data file.
 
     Args:
         name: The name to be given to the dataset.
         data: The data to be stored in the dataset,
             either a NumPy array or a file path.
-        variables: The names of the variables.
-            If ``None`` and `header` is True,
-            read the names from the first line of the file.
-            If ``None`` and `header` is False,
-            use default names
-            based on the patterns the :attr:`.Dataset.DEFAULT_NAMES`
-            associated with the different groups.
-        sizes: The sizes of the variables.
+        variable_names: The names of the variables.
+            If empty, use default names.
+        variable_names_to_n_components: The number of components of the variables.
             If ``None``,
-            assume that all the variables have a size equal to 1.
-        groups: The groups of the variables.
+            assume that all the variables have a single component.
+        variable_names_to_group_names: The groups of the variables.
             If ``None``,
             use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
-        by_group: If True, store the data by group.
-            Otherwise, store them by variables.
         delimiter: The field delimiter.
         header: If True and `data` is a string,
             read the variables names on the first line of the file.
-        default_name: The name of the variable to be used as a pattern
-            when variables is None.
-            If ``None``,
-            use the :attr:`.Dataset.DEFAULT_NAMES` for this group if it exists.
-            Otherwise, use the group name.
 
     Returns:
         The dataset generated from the NumPy array or data file.
 
-    See Also:
-        load_dataset
-    """
-    from gemseo.core.dataset import Dataset
+    Raises:
+        ValueError: If ``data`` is neither a file nor an array.
 
-    dataset = Dataset(name, by_group)
+    See Also:
+        create_benchmark_dataset
+    """
+    from gemseo.datasets.io_dataset import IODataset
+
     if isinstance(data, ndarray):
-        dataset.set_from_array(data, variables, sizes, groups, default_name)
+        dataset = IODataset.from_array(
+            data,
+            variable_names,
+            variable_names_to_n_components,
+            variable_names_to_group_names,
+        )
+    elif isinstance(data, PathLike):
+        data = Path(data)
+        extension = data.suffix
+        if extension == ".csv":
+            dataset = IODataset.from_csv(data, delimiter=delimiter)
+        elif extension == ".txt":
+            dataset = IODataset.from_txt(
+                data,
+                variable_names,
+                variable_names_to_n_components,
+                variable_names_to_group_names,
+                delimiter,
+                header,
+            )
+        else:
+            LOGGER.warning("%s not considered for loading.", str(data))
     else:
-        dataset.set_from_file(data, variables, sizes, groups, delimiter, header)
+        raise ValueError(
+            f"The dataset can be created from file or array, not {type(data)}."
+        )
+
+    dataset.name = name
     return dataset
 
 
-def load_dataset(
-    dataset: str,
+class DatasetType(StrEnum):
+    """The available datasets."""
+
+    BURGER = "BurgersDataset"
+    IRIS = "IrisDataset"
+    ROSENBROCK = "RosenbrockDataset"
+
+
+def create_benchmark_dataset(
+    dataset_type: DatasetType,
     **options: Any,
-) -> Dataset:
+) -> IODataset:
     """Instantiate a dataset.
 
     Typically, benchmark datasets can be found in :mod:`gemseo.core.dataset`.
 
     Args:
-        dataset: The name of the dataset (its class name).
+        dataset_type: The type of the dataset.
         **options: The options for creating the dataset.
 
     Returns:
@@ -1729,9 +1753,15 @@ def load_dataset(
     See Also:
         create_dataset
     """
-    from gemseo.problems.dataset.factory import DatasetFactory
+    from gemseo.problems.dataset.burgers import create_burgers_dataset
+    from gemseo.problems.dataset.iris import create_iris_dataset
+    from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
-    return DatasetFactory().create(dataset, **options)
+    return {
+        DatasetType.BURGER: create_burgers_dataset,
+        DatasetType.IRIS: create_iris_dataset,
+        DatasetType.ROSENBROCK: create_rosenbrock_dataset,
+    }[dataset_type](**options)
 
 
 def compute_doe(

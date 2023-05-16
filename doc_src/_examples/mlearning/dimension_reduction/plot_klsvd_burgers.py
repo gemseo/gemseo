@@ -29,7 +29,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from gemseo import configure_logger
 from gemseo.mlearning.transformers.dimension_reduction.klsvd import KLSVD
-from gemseo.problems.dataset.burgers import BurgersDataset
+from gemseo.problems.dataset.burgers import create_burgers_dataset
 
 configure_logger()
 
@@ -37,11 +37,11 @@ configure_logger()
 # %%
 # Load dataset
 # ~~~~~~~~~~~~
-dataset = BurgersDataset(n_samples=20)
+dataset = create_burgers_dataset(n_samples=20)
 print(dataset)
 
-t = dataset.get_data_by_group(dataset.INPUT_GROUP)[:, 0]
-u_t = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+t = dataset.input_dataset.to_numpy()[:, 0]
+u_t = dataset.output_dataset.to_numpy()
 t_split = 0.87
 
 # %%
@@ -74,7 +74,7 @@ plt.show()
 # Create KLSVD
 # ~~~~~~~~~~~~
 n_modes = 7
-klsvd = KLSVD(dataset.metadata["x"], n_modes)
+klsvd = KLSVD(dataset.misc["x"], n_modes)
 klsvd.fit(u_t)
 u_t_reduced = klsvd.transform(u_t)
 u_t_restored = klsvd.inverse_transform(u_t_reduced)

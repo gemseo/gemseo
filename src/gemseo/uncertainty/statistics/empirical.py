@@ -59,7 +59,7 @@ from numpy import std
 from numpy import var
 from scipy.stats import moment
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.statistics import Statistics
 
 
@@ -118,20 +118,34 @@ class EmpiricalStatistics(Statistics):
         super().__init__(dataset, variable_names, name or dataset.name)
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
-        return {name: np_max(self.dataset[name], 0) for name in self.names}
+        return {
+            name: np_max(self.dataset.get_view(variable_names=name).to_numpy(), 0)
+            for name in self.names
+        }
 
     def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
-        return {name: mean(self.dataset[name], 0) for name in self.names}
+        return {
+            name: mean(self.dataset.get_view(variable_names=name).to_numpy(), 0)
+            for name in self.names
+        }
 
     def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
-        return {name: np_min(self.dataset[name], 0) for name in self.names}
+        return {
+            name: np_min(self.dataset.get_view(variable_names=name).to_numpy(), 0)
+            for name in self.names
+        }
 
     def compute_probability(  # noqa: D102
         self, thresh: Mapping[str, float | ndarray], greater: bool = True
     ) -> dict[str, ndarray]:
         operator = ge if greater else le
         return {
-            name: mean(operator(self.dataset[name], thresh[name]), 0)
+            name: mean(
+                operator(
+                    self.dataset.get_view(variable_names=name).to_numpy(), thresh[name]
+                ),
+                0,
+            )
             for name in self.names
         }
 
@@ -140,21 +154,43 @@ class EmpiricalStatistics(Statistics):
     ) -> dict[str, float]:
         operator = ge if greater else le
         return {
-            name: mean(np_all(operator(self.dataset[name], thresh[name]), 1))
+            name: mean(
+                np_all(
+                    operator(
+                        self.dataset.get_view(variable_names=name).to_numpy(),
+                        thresh[name],
+                    ),
+                    1,
+                )
+            )
             for name in self.names
         }
 
     def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
-        return {name: quantile(self.dataset[name], prob, 0) for name in self.names}
+        return {
+            name: quantile(
+                self.dataset.get_view(variable_names=name).to_numpy(), prob, 0
+            )
+            for name in self.names
+        }
 
     def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
-        return {name: std(self.dataset[name], 0) for name in self.names}
+        return {
+            name: std(self.dataset.get_view(variable_names=name).to_numpy(), 0)
+            for name in self.names
+        }
 
     def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
-        return {name: var(self.dataset[name], 0) for name in self.names}
+        return {
+            name: var(self.dataset.get_view(variable_names=name).to_numpy(), 0)
+            for name in self.names
+        }
 
     def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
-        return {name: moment(self.dataset[name], order) for name in self.names}
+        return {
+            name: moment(self.dataset.get_view(variable_names=name).to_numpy(), order)
+            for name in self.names
+        }
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         lower = self.compute_minimum()

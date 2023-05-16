@@ -27,7 +27,7 @@ from numpy import linspace
 from numpy import pi
 from numpy import rad2deg
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -75,8 +75,9 @@ class RadarChart(DatasetPlot):
         axes.grid(True, color="k", linewidth=0.3, linestyle=":")
         axes.tick_params(labelsize=self.font_size)
 
-        all_data, _, sizes = self.dataset.get_all_data(False)
-        variable_names = self.dataset.column_names
+        all_data = self.dataset.to_numpy()
+        sizes = self.dataset.variable_names_to_n_components
+        variable_names = self.dataset.get_columns()
         if self.rmin is None:
             self.rmin = all_data.min()
 
@@ -89,7 +90,7 @@ class RadarChart(DatasetPlot):
         theta = (2 * pi * linspace(0, 1 - 1.0 / dimension, dimension)).tolist()
         theta.append(theta[0])
 
-        series_names = self.dataset.row_names
+        series_names = self.dataset.index
         if not self.color:
             colormap = plt.cm.get_cmap(self.colormap)
             self.color = [colormap(color) for color in linspace(0, 1, len(all_data))]

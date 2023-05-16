@@ -619,8 +619,8 @@ def test_export_to_dataset_and_entries(
     simple_cache[second_inputs] = (second_outputs, second_jacobian)
     dataset = simple_cache.to_dataset()
     assert len(dataset) == 1
-    assert dataset["x"][0, 0] == 1.0
-    assert dataset["y"][0, 0] == 2.0
+    assert dataset.get_view(variable_names="x").to_numpy()[0, 0] == 1.0
+    assert dataset.get_view(variable_names="y").to_numpy()[0, 0] == 2.0
 
     second_jacobian = second_jacobian or {}
     last_entry = CacheEntry(second_inputs, second_outputs, second_jacobian or {})

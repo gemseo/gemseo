@@ -28,19 +28,19 @@ from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from matplotlib.tri import Triangulation
 
 # %%
 # Load the dataset
 # ----------------
-dataset = RosenbrockDataset(opt_naming=False, n_samples=25)
+dataset = create_rosenbrock_dataset(opt_naming=False, n_samples=25)
 
 # %%
 # Define the measure
 # ------------------
 configure_logger()
-test_dataset = RosenbrockDataset(opt_naming=False)
+test_dataset = create_rosenbrock_dataset(opt_naming=False)
 measure_evaluation_method_name = "test"
 measure_options = {"test_data": test_dataset}
 
@@ -69,7 +69,7 @@ print("optimal criterion:", f_opt)
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
 # %%
 # Visualize the results
@@ -112,7 +112,7 @@ print("optimal criterion:", f_opt)
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
 # %%
 # Visualize the results
@@ -156,7 +156,7 @@ print("optimal criterion:", f_opt)
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
 # %%
 # Visualize the results
@@ -201,7 +201,7 @@ print("optimal criterion:", f_opt)
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
 # %%
 # Visualize the results

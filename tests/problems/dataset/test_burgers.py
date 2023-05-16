@@ -19,31 +19,31 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.problems.dataset.burgers import BurgersDataset
+from gemseo.problems.dataset.burgers import create_burgers_dataset
 from numpy import allclose
 
 
 def test_constructor():
-    dataset = BurgersDataset()
+    dataset = create_burgers_dataset()
     assert dataset.name == "Burgers"
     assert len(dataset) == 30
-    assert "inputs" in dataset.groups
-    assert "outputs" in dataset.groups
+    assert "inputs" in dataset.group_names
+    assert "outputs" in dataset.group_names
 
 
 def test_constructor_categorize():
-    dataset = BurgersDataset(categorize=False)
+    dataset = create_burgers_dataset(categorize=False)
     assert dataset.name == "Burgers"
     assert len(dataset) == 30
-    assert "inputs" not in dataset.groups
-    assert "outputs" not in dataset.groups
+    assert "inputs" not in dataset.group_names
+    assert "outputs" not in dataset.group_names
 
 
 def test_constructor_parameters():
     nu = 0.03
-    dataset = BurgersDataset(n_samples=50, n_x=100, fluid_viscosity=nu)
+    dataset = create_burgers_dataset(n_samples=50, n_x=100, fluid_viscosity=nu)
     assert dataset.name == "Burgers"
     assert len(dataset) == 50
-    assert dataset.n_variables == 2
-    assert dataset.get_data_by_group(dataset.OUTPUT_GROUP).shape[1] == 100
-    assert allclose(dataset.metadata["nu"], nu)
+    assert len(dataset.variable_names) == 2
+    assert dataset.get_view(group_names=dataset.OUTPUT_GROUP).shape == (50, 100)
+    assert allclose(dataset.misc["nu"], nu)

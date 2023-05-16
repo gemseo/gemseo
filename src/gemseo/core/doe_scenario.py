@@ -27,9 +27,9 @@ from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
+from gemseo.datasets.dataset import Dataset
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
@@ -70,7 +70,7 @@ class DOEScenario(Scenario):
             **formulation_options,
         )
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
-        self.__samples = None
+        self.__samples = ()
 
     def _init_algo_factory(self) -> None:
         self._algo_factory = DOEFactory(use_cache=True)
@@ -124,14 +124,12 @@ class DOEScenario(Scenario):
     def to_dataset(  # noqa: D102
         self,
         name: str | None = None,
-        by_group: bool = True,
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,
     ) -> Dataset:
         return self.formulation.opt_problem.to_dataset(
             name=name,
-            by_group=by_group,
             categorize=categorize,
             opt_naming=opt_naming,
             export_gradients=export_gradients,

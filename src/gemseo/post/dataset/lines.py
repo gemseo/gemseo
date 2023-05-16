@@ -25,7 +25,7 @@ from typing import Sequence
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.string_tools import repr_variable
 
@@ -72,16 +72,27 @@ class Lines(DatasetPlot):
         if abscissa_variable is None:
             x_data = range(len(self.dataset))
         else:
-            x_data = self.dataset[abscissa_variable].ravel().tolist()
+            x_data = (
+                self.dataset.get_view(variable_names=abscissa_variable)
+                .to_numpy()
+                .ravel()
+                .tolist()
+            )
 
         variables = self._param.variables
         if variables is None:
-            y_data = self.dataset.get_all_data(False, True)
-            variables = y_data.keys()
-        else:
-            y_data = self.dataset[variables]
+            variables = self.dataset.variable_names
 
-        n_lines = sum(self.dataset.sizes[name] for name in variables)
+        y_data = {
+            variable_name: self.dataset.get_view(variable_names=variable_name)
+            .to_numpy()
+            .T
+            for variable_name in variables
+        }
+
+        n_lines = sum(
+            self.dataset.variable_names_to_n_components[name] for name in variables
+        )
         self._set_color(n_lines)
         self._set_linestyle(n_lines, "-")
         self._set_marker(n_lines, "o")
@@ -89,8 +100,8 @@ class Lines(DatasetPlot):
         fig, axes = self._get_figure_and_axes(fig, axes)
         line_index = -1
         for variable_name, variable_values in y_data.items():
-            variable_size = self.dataset.sizes[variable_name]
-            for variable_component, variable_value in enumerate(variable_values.T):
+            variable_size = self.dataset.variable_names_to_n_components[variable_name]
+            for variable_component, variable_value in enumerate(variable_values):
                 line_index += 1
                 axes.plot(
                     x_data,

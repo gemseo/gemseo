@@ -101,7 +101,7 @@ from typing import Mapping
 from numpy import array
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
@@ -159,8 +159,8 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         msg = f"Create {self.name}, a {class_name} library."
         LOGGER.info(msg)
         self.dataset = dataset
-        self.n_samples = dataset.n_samples
-        self.names = variable_names or dataset.variables
+        self.n_samples = len(dataset)
+        self.names = variable_names or dataset.variable_names
         self.n_variables = len(self.names)
 
     def __str__(self) -> str:

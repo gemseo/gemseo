@@ -114,7 +114,8 @@ from typing import Union
 
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
@@ -142,7 +143,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
     """
 
-    learning_set: Dataset
+    learning_set: IODataset
     """The learning dataset."""
 
     parameters: dict[str, MLAlgoParameterType]
@@ -181,7 +182,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = IDENTITY,
         **parameters: MLAlgoParameterType,
     ) -> None:
@@ -215,12 +216,12 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             }
 
         self.algo = None
-        self.sizes = deepcopy(self.learning_set.sizes)
+        self.sizes = deepcopy(self.learning_set.variable_names_to_n_components)
         self._trained = False
         self._learning_samples_indices = range(len(self.learning_set))
         transformer_keys = set(self.transformer)
-        for group in self.learning_set.groups:
-            names = self.learning_set.get_names(group)
+        for group in self.learning_set.group_names:
+            names = self.learning_set.get_variable_names(group)
             if group in self.transformer and transformer_keys & set(names):
                 raise ValueError(
                     "An MLAlgo cannot have both a transformer "

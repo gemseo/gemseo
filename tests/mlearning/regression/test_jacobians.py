@@ -29,8 +29,9 @@ from __future__ import annotations
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.rbf import RBFRegressor
@@ -44,7 +45,9 @@ from numpy import array
 LEARNING_SIZE = 10
 
 
-def dataset_factory(dataset_name, expressions, design_space_variables, objective_name):
+def dataset_factory(
+    dataset_name, expressions, design_space_variables, objective_name
+) -> IODataset:
     """Return a dataset from a sampled function.
 
     Args:
@@ -108,15 +111,15 @@ DATASETS_DESCRIPTIONS = (
 
 TRANSFORMERS = (
     {},
-    {Dataset.INPUT_GROUP: Scaler(offset=5, coefficient=3)},
-    {Dataset.OUTPUT_GROUP: Scaler(offset=-3, coefficient=0.1)},
+    {IODataset.INPUT_GROUP: Scaler(offset=5, coefficient=3)},
+    {IODataset.OUTPUT_GROUP: Scaler(offset=-3, coefficient=0.1)},
     {
-        Dataset.INPUT_GROUP: Scaler(offset=10, coefficient=4),
-        Dataset.OUTPUT_GROUP: Scaler(offset=-7, coefficient=-8),
+        IODataset.INPUT_GROUP: Scaler(offset=10, coefficient=4),
+        IODataset.OUTPUT_GROUP: Scaler(offset=-7, coefficient=-8),
     },
     {
-        Dataset.INPUT_GROUP: PCA(n_components=1),
-        Dataset.OUTPUT_GROUP: PCA(n_components=1),
+        IODataset.INPUT_GROUP: PCA(n_components=1),
+        IODataset.OUTPUT_GROUP: PCA(n_components=1),
     },
 )
 
@@ -205,7 +208,7 @@ def test_pce(dataset):
     """Test polynomial regression Jacobians."""
     space = ParameterSpace()
 
-    for input_name in dataset.get_names(dataset.INPUT_GROUP):
+    for input_name in dataset.get_variable_names(dataset.INPUT_GROUP):
         space.add_random_variable(input_name, "OTUniformDistribution")
 
     discipline = SurrogateDiscipline(

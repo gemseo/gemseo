@@ -155,12 +155,7 @@ scenario.execute({"n_samples": 30, "algo": "lhs", "algo_options": algo_options})
 # After the execution of the scenario, you may want to export your data to use it
 # elsewhere. The method :meth:`.Scenario.to_dataset` will allow you to export
 # your results to a :class:`.Dataset`, the basic |g| class to store data.
-# From a dataset, you can even obtain a Pandas dataframe with its method
-# :meth:`~.Dataset.export_to_dataframe`:
 dataset = scenario.to_dataset("a_name_for_my_dataset")
-dataframe = dataset.export_to_dataframe(
-    variable_names=["-y_4", "x_1", "x_2", "x_3", "x_shared"]
-)
 
 # %%
 # Plot the optimization history view

@@ -40,7 +40,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
 from numpy import ndarray
-from numpy.testing import assert_equal
 
 
 def build_mdo_scenario(
@@ -289,14 +288,9 @@ def test_export_to_dataset_with_repeated_inputs():
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1.0], [2.0], [1.0]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-    dataset = scenario.to_dataset(by_group=False)
-    assert_equal(
-        dataset.data,
-        {
-            "dv": samples,
-            "obj": samples * 2,
-        },
-    )
+    dataset = scenario.to_dataset()
+    assert (dataset.get_view(variable_names="dv").to_numpy() == samples).all()
+    assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
 
 
 def test_export_to_dataset_normalized_integers():
@@ -307,14 +301,9 @@ def test_export_to_dataset_normalized_integers():
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1], [2], [10]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-    dataset = scenario.to_dataset(by_group=False)
-    assert_equal(
-        dataset.data,
-        {
-            "dv": samples,
-            "obj": samples * 2,
-        },
-    )
+    dataset = scenario.to_dataset()
+    assert (dataset.get_view(variable_names="dv").to_numpy() == samples).all()
+    assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
 
 
 def test_lib_serialization(tmp_wd, doe_scenario):

@@ -28,7 +28,7 @@ applied to classification models.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_classification_model
 from gemseo.mlearning import get_classification_models
 from gemseo.mlearning import get_classification_options
@@ -49,7 +49,7 @@ print(get_classification_options("KNNClassifier"))
 # %%
 # Create classification model
 # ---------------------------
-iris = load_dataset("IrisDataset", as_io=True)
+iris = create_benchmark_dataset("IrisDataset", as_io=True)
 
 model = create_classification_model("KNNClassifier", data=iris)
 model.learn()

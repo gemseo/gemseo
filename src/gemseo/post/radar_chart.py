@@ -25,7 +25,7 @@ from typing import Iterable
 from numpy import vstack
 from numpy import zeros
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
 from gemseo.post.opt_post_processor import OptPostProcessor
 
@@ -95,7 +95,7 @@ class RadarChart(OptPostProcessor):
 
         constraint_values = constraint_values[iteration, :].ravel()
 
-        dataset = Dataset("Constraints")
+        dataset = Dataset(dataset_name="Constraints")
         values = vstack((constraint_values, zeros(len(constraint_values))))
         dataset.add_group(
             dataset.DEFAULT_GROUP,
@@ -103,7 +103,7 @@ class RadarChart(OptPostProcessor):
             constraint_names,
             {name: 1 for name in constraint_names},
         )
-        dataset.row_names = ["computed constraints", "limit constraint"]
+        dataset.index = ["computed constraints", "limit constraint"]
 
         if iteration < 0:
             iteration = n_iterations + iteration

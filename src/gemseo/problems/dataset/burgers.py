@@ -55,8 +55,8 @@ from numpy import newaxis
 from numpy import pi
 from numpy import square
 
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.io_dataset import IODataset
 
 
 class BurgersDiscipline(MDODiscipline):
@@ -66,52 +66,47 @@ class BurgersDiscipline(MDODiscipline):
         self.output_grammar.initialize_from_data_names(["f", "g"])
 
 
-class BurgersDataset(Dataset):
-    """Burgers dataset parametrization."""
+def create_burgers_dataset(
+    n_samples: int = 30,
+    n_x: int = 501,
+    fluid_viscosity: float = 0.1,
+    categorize: bool = True,
+) -> IODataset:
+    """Burgers dataset parametrization.
 
-    def __init__(
-        self,
-        name: str = "Burgers",
-        by_group: bool = True,
-        n_samples: int = 30,
-        n_x: int = 501,
-        fluid_viscosity: float = 0.1,
-        categorize: bool = True,
-    ) -> None:
-        """
-        Args:
-            name: The name of the dataset.
-            by_group: Whether to store the data by group.
-                Otherwise, store them by variables.
-            n_samples: The number of samples.
-            n_x: The number of spatial points.
-            fluid_viscosity: The fluid viscosity.
-            categorize: Whether to distinguish
-                between the different groups of variables.
-        """
-        super().__init__(name, by_group)
+    Args:
+        n_samples: The number of samples.
+        n_x: The number of spatial points.
+        fluid_viscosity: The fluid viscosity.
+        categorize: Whether to distinguish
+            between the different groups of variables.
 
-        time = linspace(0, 2, n_samples)[:, newaxis]
-        space = linspace(0, 2 * pi, n_x)[newaxis, :]
-        visc = fluid_viscosity
+    Returns:
+        The Burgers dataset.
+    """
+    time = linspace(0, 2, n_samples)[:, newaxis]
+    space = linspace(0, 2 * pi, n_x)[newaxis, :]
+    visc = fluid_viscosity
 
-        alpha = space - 4 * time
-        alpha_2 = square(alpha)
-        beta = 4 * visc * (time + 1)
-        gamma = space - 4 * time - 2 * pi
-        gamma_2 = square(gamma)
-        phi = exp(-alpha_2 / beta) + exp(-gamma_2 / beta)
-        phi_deriv = -2 * alpha / beta * exp(-alpha_2 / beta)
-        phi_deriv -= 2 * gamma / beta * exp(-gamma_2 / beta)
-        u_t = -2 * visc / phi * phi_deriv
+    alpha = space - 4 * time
+    alpha_2 = square(alpha)
+    beta = 4 * visc * (time + 1)
+    gamma = space - 4 * time - 2 * pi
+    gamma_2 = square(gamma)
+    phi = exp(-alpha_2 / beta) + exp(-gamma_2 / beta)
+    phi_deriv = -2 * alpha / beta * exp(-alpha_2 / beta)
+    phi_deriv -= 2 * gamma / beta * exp(-gamma_2 / beta)
+    u_t = -2 * visc / phi * phi_deriv
 
-        if categorize:
-            groups = {"t": Dataset.INPUT_GROUP, "u_t": Dataset.OUTPUT_GROUP}
-        else:
-            groups = None
+    if categorize:
+        groups = {"t": IODataset.INPUT_GROUP, "u_t": IODataset.OUTPUT_GROUP}
+    else:
+        groups = None
 
-        data = hstack([time, u_t])
-        self.set_from_array(data, ["t", "u_t"], {"t": 1, "u_t": n_x}, groups=groups)
+    data = hstack([time, u_t])
 
-        self.set_metadata("x", [[node] for node in space[0]])
-        self.set_metadata("nu", visc)
+    dataset = IODataset.from_array(data, ["t", "u_t"], {"t": 1, "u_t": n_x}, groups)
+    dataset.name = "Burgers"
+    dataset.misc["x"] = [[node] for node in space[0]]
+    dataset.misc["nu"] = visc
+    return dataset

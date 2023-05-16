@@ -239,8 +239,8 @@ def test_scenario(scenario_pn, scenario):
     dataset_pn = scenario_pn.to_dataset(opt_naming=False)
     scenario.execute({"algo": "OT_HALTON", "n_samples": 10})
     dataset = scenario.to_dataset(opt_naming=False)
-    data_pn = dataset_pn.get_data_by_names(
-        [
+    data_pn = dataset_pn.get_view(
+        variable_names=[
             "t_c",
             "altitude",
             "mach",
@@ -251,28 +251,26 @@ def test_scenario(scenario_pn, scenario):
             "wingbox_area",
             "cf",
             "throttle",
-        ],
-        False,
-    )
-    data = dataset.get_data_by_names(["x_shared", "x_1", "x_2", "x_3"], False)
+        ]
+    ).to_numpy()
+    data = dataset.get_view(variable_names=["x_shared", "x_1", "x_2", "x_3"]).to_numpy()
     assert_allclose(data, data_pn)
 
-    data = dataset.get_data_by_names(["g_1", "g_2", "g_3"], False)
-    data_pn = dataset_pn.get_data_by_names(
-        [
+    data = dataset.get_view(variable_names=["g_1", "g_2", "g_3"]).to_numpy()
+    data_pn = dataset_pn.get_view(
+        variable_names=[
             "stress",
             "twist_c",
             "dp_dx",
             "esf_c",
             "throttle_c",
             "temperature",
-        ],
-        False,
-    )
+        ]
+    ).to_numpy()
     assert_allclose(data, data_pn)
 
-    data = dataset_pn.get_data_by_names(["y_1", "y_2", "y_3"], False)
-    data_pn = dataset.get_data_by_names(["y_1", "y_2", "y_3"], False)
+    data = dataset_pn.get_view(variable_names=["y_1", "y_2", "y_3"]).to_numpy()
+    data_pn = dataset.get_view(variable_names=["y_1", "y_2", "y_3"]).to_numpy()
     assert_allclose(data, data_pn)
 
 

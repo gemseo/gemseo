@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.knn import KNNClassifier
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
@@ -31,24 +31,24 @@ from numpy import array
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the classification algorithms."""
     input_data = 1.0 * arange(63).reshape((21, 3))
     output_data = array([[0], [1], [2]]).repeat(7, axis=0)
-    dataset_ = Dataset()
-    dataset_.add_group(Dataset.INPUT_GROUP, input_data)
-    dataset_.add_group(Dataset.OUTPUT_GROUP, output_data)
+    dataset_ = IODataset()
+    dataset_.add_group(dataset_.INPUT_GROUP, input_data)
+    dataset_.add_group(dataset_.OUTPUT_GROUP, output_data)
     return dataset_
 
 
 @pytest.fixture
-def dataset_test() -> Dataset:
+def dataset_test() -> IODataset:
     """The dataset used to test the performance classification algorithms."""
     input_data = 1.0 * arange(18).reshape((6, 3))
     output_data = array([[0], [1], [2]]).repeat(2, axis=0)
-    dataset_ = Dataset()
-    dataset_.add_group(Dataset.INPUT_GROUP, input_data)
-    dataset_.add_group(Dataset.OUTPUT_GROUP, output_data)
+    dataset_ = IODataset()
+    dataset_.add_group(dataset_.INPUT_GROUP, input_data)
+    dataset_.add_group(dataset_.OUTPUT_GROUP, output_data)
     return dataset_
 
 

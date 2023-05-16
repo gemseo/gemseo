@@ -25,7 +25,7 @@ Boxplot
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.post.dataset.boxplot import Boxplot
 from numpy import hstack
 from numpy import linspace
@@ -38,17 +38,13 @@ configure_logger()
 # ---------------
 inputs = linspace(-1, 1, 100)[:, None]
 
-dataset = Dataset(name="Foo")
-dataset.add_variable("y1", inputs**2, "outputs", cache_as_input=False)
-dataset.add_variable(
-    "y2", hstack((inputs**3, inputs**4)), "outputs", cache_as_input=False
-)
+dataset = IODataset(dataset_name="Foo")
+dataset.add_output_variable("y1", inputs**2)
+dataset.add_output_variable("y2", hstack((inputs**3, inputs**4)))
 
-other_dataset = Dataset(name="Bar")
-other_dataset.add_variable("y1", -(inputs**2), "outputs", cache_as_input=False)
-other_dataset.add_variable(
-    "y2", hstack((-(inputs**3), -(inputs**4))), "outputs", cache_as_input=False
-)
+other_dataset = IODataset(dataset_name="Bar")
+other_dataset.add_output_variable("y1", -(inputs**2))
+other_dataset.add_output_variable("y2", hstack((-(inputs**3), -(inputs**4))))
 
 # %%
 # Plot y1 and y2

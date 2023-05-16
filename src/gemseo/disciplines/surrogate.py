@@ -26,8 +26,8 @@ from typing import Mapping
 
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.factory import RegressionModelFactory
@@ -113,8 +113,7 @@ class SurrogateDiscipline(MDODiscipline):
             msg = MultiLineString()
             msg.add("Build the surrogate discipline: {}", disc_name)
             msg.indent()
-            msg.add("Dataset name: {}", data.name)
-            msg.add("Dataset size: {}", data.length)
+            msg.add("Dataset size: {}", data.n_samples)
             msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
             LOGGER.info("%s", msg)
         if not name.startswith(self.regression_model.SHORT_ALGO_NAME):

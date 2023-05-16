@@ -35,7 +35,7 @@ from numpy.random import Generator
 from strenum import StrEnum
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
@@ -174,7 +174,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         return self.evaluate_kfolds(
             samples=samples,
-            n_folds=self.algo.learning_set.n_samples,
+            n_folds=len(self.algo.learning_set),
             multioutput=multioutput,
         )
 

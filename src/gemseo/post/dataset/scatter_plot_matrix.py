@@ -56,7 +56,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.plotting import scatter_matrix
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -107,13 +107,13 @@ class ScatterMatrix(DatasetPlot):
         size = self._param.size
         marker = self._param.marker
         if variable_names is None:
-            variable_names = self.dataset.variables
+            variable_names = self.dataset.variable_names
 
-        if classifier is not None and classifier not in self.dataset.variables:
+        if classifier is not None and classifier not in self.dataset.variable_names:
             raise ValueError(
                 f"{classifier} cannot be used as a classifier "
                 f"because it is not a variable name; "
-                f"available ones are: {self.dataset.variables}."
+                f"available ones are: {self.dataset.variable_names}."
             )
 
         if kde:
@@ -121,11 +121,13 @@ class ScatterMatrix(DatasetPlot):
         else:
             diagonal = "hist"
 
-        dataframe = self.dataset.export_to_dataframe(variable_names=variable_names)
+        dataframe = self.dataset.get_view(variable_names=variable_names)
         kwargs = {}
         if classifier is not None:
             palette = dict(enumerate("bgrcmyk"))
-            groups = self.dataset.get_data_by_names([classifier], False)[:, 0:1]
+            groups = self.dataset.get_view(variable_names=[classifier]).to_numpy()[
+                :, 0:1
+            ]
             kwargs["color"] = [palette[group[0] % len(palette)] for group in groups]
             _, variable_name = self._get_label(classifier)
             dataframe = dataframe.drop(labels=variable_name, axis=1)

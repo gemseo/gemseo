@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
@@ -35,12 +35,15 @@ def dataset():
 
     The samples are [0., 1., 1. , 0.] and [1., 0., 0., 1.].
     """
-    dataset = Dataset()
     sample1 = [0.0, 1.0, 1.0, 0.0]
     sample2 = [1.0, 0.0, 0.0, 1.0]
     data_array = array([sample1, sample2])
-    dataset.set_from_array(data_array, variables=["output"], sizes={"output": 4})
-    dataset.metadata["mesh"] = array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+    dataset = Dataset.from_array(
+        data_array,
+        variable_names=["output"],
+        variable_names_to_n_components={"output": 4},
+    )
+    dataset.misc["mesh"] = array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
     return dataset
 
 

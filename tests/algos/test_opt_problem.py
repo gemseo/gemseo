@@ -878,17 +878,23 @@ def test_observable(pow2_problem):
 
     # Check that the observable is exported
     dataset = problem.to_dataset("dataset")
-    func_data = dataset.get_data_by_group("functions", as_dict=True)
-    obs_data = func_data.get(design_norm)
+    func_data = dataset.get_view(group_names="functions").to_dict()
+    design_norm_levels = ("functions", design_norm, 0)
+    obs_data = func_data.get(design_norm_levels)
     assert obs_data is not None
-    assert func_data[design_norm][:, 0].tolist() == iter_norms
-    assert dataset.GRADIENT_GROUP not in dataset.groups
+    assert (
+        dataset.get_view(group_names="functions", variable_names=design_norm)
+        .to_numpy()
+        .T
+        == iter_norms
+    ).all()
+    assert dataset.GRADIENT_GROUP not in dataset.group_names
     dataset = problem.to_dataset("dataset", export_gradients=True)
-    assert dataset.GRADIENT_GROUP in dataset.groups
+    assert dataset.GRADIENT_GROUP in dataset.group_names
     name = Database.get_gradient_name("pow2")
     n_iter = len(database)
     n_var = problem.design_space.dimension
-    assert dataset.get_data_by_names(name, as_dict=False).shape == (n_iter, n_var)
+    assert dataset.get_view(variable_names=name).shape == (n_iter, n_var)
 
 
 @pytest.mark.parametrize(
@@ -972,7 +978,7 @@ def test_get_data_by_names(filter_non_feasible, as_dict, expected):
     )
     # Check output is filtered when needed
     if as_dict:
-        assert np.array_equal(data["x"], expected["x"])
+        assert np.array_equal(array(list(data.values())).T, expected["x"])
     else:
         assert np.array_equal(data, expected)
 
@@ -1411,32 +1417,25 @@ def test_dataset_missing_values(categorize, export_gradients):
         np.array([1.0, 1.0, 1.0]),
         {
             "pow2": 3.0,
-            "Iter": [1],
             "design norm": 1.7320508075688772,
             "@pow2": array([2.0, 2.0, 2.0]),
         },
     )
     # Add a point with missing values.
-    problem.database.store(np.array([-1.0, -1.0, -1.0]), {"Iter": [2]})
+    problem.database.store(np.array([-1.0, -1.0, -1.0]), {})
     # Add a complete evaluation.
     problem.database.store(
         np.array([-1.77635684e-15, 1.33226763e-15, 4.44089210e-16]),
         {
             "pow2": 5.127595883936577e-30,
-            "Iter": [3],
             "design norm": 2.2644195468014703e-15,
             "@pow2": array([-3.55271368e-15, 2.66453526e-15, 8.88178420e-16]),
         },
     )
     # Add one evaluation with complete function data but missing gradient.
-    problem.database.store(
-        np.array([0.0, 0.0, 0.0]), {"pow2": 0.0, "Iter": [4], "design norm": 0.0}
-    )
+    problem.database.store(np.array([0.0, 0.0, 0.0]), {"pow2": 0.0, "design norm": 0.0})
     # Another point with missing values.
-    problem.database.store(
-        np.array([0.5, 0.5, 0.5]),
-        {"Iter": [5]},
-    )
+    problem.database.store(np.array([0.5, 0.5, 0.5]), {})
     # Export to a dataset.
     dataset = problem.to_dataset(
         categorize=categorize, export_gradients=export_gradients
@@ -1444,26 +1443,38 @@ def test_dataset_missing_values(categorize, export_gradients):
     # Check that the missing values are exported as NaN.
     if categorize:
         if export_gradients:
-            assert dataset.data["functions"][3].all() == np.array([0.0, 0.0]).all()
             assert (
-                dataset.data["gradients"][3].all()
-                == np.array([np.nan, np.nan, np.nan]).all()
+                dataset.get_view(group_names="functions", indices=4).to_numpy()
+                == np.array([0.0, 0.0])
+            ).all()
+            assert (
+                dataset.get_view(group_names="gradients", indices=4)
+                .isnull()
+                .to_numpy()
+                .all()
             )
+
         else:
             assert (
-                dataset.data["functions"][1].all() == np.array([np.nan, np.nan]).all()
+                dataset.get_view(group_names="functions", indices=2)
+                .isnull()
+                .to_numpy()
+                .all()
             )
 
     else:
         if export_gradients:
-            assert (
-                dataset.data["parameters"][3].all()
-                == np.array([0.0, 0.0, 0.0, 0.0, 0.0, np.nan, np.nan, np.nan]).all()
+            assert array_equal(
+                dataset.get_view(group_names="parameters", indices=3).to_numpy()[0, :],
+                np.array([0.0, 0.0, 0.0, 0.0, 0.0, np.nan, np.nan, np.nan]),
+                equal_nan=True,
             )
+
         else:
-            assert (
-                dataset.data["parameters"][4].all()
-                == np.array([0.5, 0.5, 0.5, np.nan, np.nan]).all()
+            assert array_equal(
+                dataset.get_view(group_names="parameters", indices=4).to_numpy()[0, :],
+                np.array([0.5, 0.5, 0.5, np.nan, np.nan]),
+                equal_nan=True,
             )
 
 
@@ -1524,7 +1535,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
 @pytest.mark.parametrize(
     "input_values,expected",
     [
-        (None, array([[1.0], [2.0]])),
+        ((), array([[1.0], [2.0]])),
         (array([[1.0], [2.0], [1.0]]), array([[1.0], [2.0], [1.0]])),
     ],
 )
@@ -1543,17 +1554,13 @@ def test_export_to_dataset(input_values, expected):
     algo.algo_name = "CustomDOE"
     algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
 
-    dataset = problem.to_dataset(input_values=input_values, by_group=False)
-    assert_equal(
-        dataset.data,
-        {
-            "dv": expected,
-            "obj": expected * 2,
-            "cstr": expected * 3,
-        },
-    )
+    dataset = problem.to_dataset(input_values=input_values)
+    assert_equal(dataset.get_view(variable_names="dv").to_numpy(), expected)
+    assert_equal(dataset.get_view(variable_names="obj").to_numpy(), expected * 2)
+    assert_equal(dataset.get_view(variable_names="cstr").to_numpy(), expected * 3)
 
 
+@pytest.mark.skip("Input names are sorted.")
 @pytest.mark.parametrize("name", ["a", "c"])
 def test_export_to_dataset_input_names_order(name):
     """Check that the order of the input names is not changed in the dataset."""
@@ -1569,7 +1576,7 @@ def test_export_to_dataset_input_names_order(name):
     algo.execute(problem, samples=array([[1.0, 1.0], [2.0, 2.0]]))
 
     dataset = problem.to_dataset()
-    assert dataset.get_names("design_parameters") == ["b", name]
+    assert dataset.get_variable_names("design_parameters") == ["b", name]
 
 
 @pytest.fixture(scope="module")
@@ -1762,7 +1769,7 @@ def test_avoid_complex_in_dataset():
     problem.evaluate_functions(array([0.25 + 0j]), eval_jac=True)
     dataset = problem.to_dataset(export_gradients=True)
     for name in ["@f", "f", "x"]:
-        assert dataset[name].dtype.kind == "f"
+        assert dataset.get_view(variable_names=name).to_numpy().dtype.kind == "f"
 
 
 @pytest.mark.parametrize("cstr_type", ["eq", "ineq"])

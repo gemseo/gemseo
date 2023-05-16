@@ -1,0 +1,23 @@
+:class:`.Dataset` inherits from :class:`DataFrame` and uses multi-indexing columns.
+Some methods have been added to improve the use of multi-index.
+Two derived classes (:class:`.IODataset` and :class:`.OptimizationDataset`) can be considered for specific usages.
+
+API change:
+
+- :class:`.Dataset` can be imported from ``src.gemseo.datasets.dataset``.
+- :class:`.Dataset` no longer has the ``get_data_by_group``, ``get_all_data`` and ``get_data_by_names`` methods. Use :meth:`~.Dataset.get_view`` instead.
+    It returns a sliced :class:`.Dataset`, to focus on some parts.
+    Different formats can be used to extract data using pandas default methods.
+- :class:`.Dataset` no longer has the ``export_to_dataframe`` method, since it is a ``DataFrame`` itself.
+- :class:`.Dataset` no longer has the ``length``; use ``len(dataset)`` instead.
+- :class:`.Dataset` no longer has the ``is_empty`` method. Use pandas attribute ``empty`` instead.
+- :class:`.Dataset` no longer has the :method:`.export_to_cache` method.
+- :class:`.Dataset` no longer has the ``row_names`` attribute. Use ``index`` instead.
+- :meth:`~.gemseo.load_dataset` is renamed: :meth:`~gemseo.create_benchmark_dataset`.
+    Can be used to create a Burgers, Iris or Rosenbrock dataset.
+- :class:`.BurgerDataset` no longer exists. Create a Burger dataset with :function:`.create_burgers_dataset`.
+- :class:`.IrisDataset` no longer exists. Create an Iris dataset with :function:`.create_iris_dataset`.
+- :class:`.RosenbrockDataset` no longer exists. Create a Rosenbrock dataset with :function:`.create_rosenbrock_dataset`.
+- :mod:`.problems.dataset.factory` no longer exists.
+- :meth:`~.Scenario.to_dataset` no longer has the ``by_group`` argument.
+- :meth:`.AbstractCache.to_dataset` no longer has the ``by_group`` and ``name`` arguments.

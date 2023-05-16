@@ -77,7 +77,7 @@ from typing import TYPE_CHECKING
 from gemseo.uncertainty.distributions.distribution import Distribution
 
 if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
 
 from numpy import array, ndarray
 
@@ -672,10 +672,10 @@ class ParameterSpace(DesignSpace):
             uncertain = {}
 
         if groups is None:
-            groups = dataset.groups
+            groups = dataset.group_names
         for group in groups:
-            for name in dataset.get_names(group):
-                data = dataset.get_data_by_names(name)[name]
+            for name in dataset.get_variable_names(group):
+                data = dataset.get_view(variable_names=name).to_numpy()
                 l_b = data.min(0)
                 u_b = data.max(0)
                 value = (l_b + u_b) / 2

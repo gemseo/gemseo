@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
@@ -30,17 +30,13 @@ from numpy import array
 @pytest.fixture
 def learning_data() -> Dataset:
     """The dataset used to train the clustering algorithms."""
-    dataset = Dataset()
-    dataset.set_from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
-    return dataset
+    return Dataset.from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
 
 
 @pytest.fixture
 def test_data() -> Dataset:
     """The dataset used to test the performance clustering algorithms."""
-    dataset = Dataset()
-    dataset.set_from_array(array([[1, 0.5]]), ["x", "y"])
-    return dataset
+    return Dataset.from_array(array([[1, 0.5]]), ["x", "y"])
 
 
 class NewAlgo(MLClusteringAlgo):

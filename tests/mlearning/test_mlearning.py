@@ -27,8 +27,8 @@ import pytest
 from gemseo import create_dataset
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import create_classification_model
 from gemseo.mlearning import create_clustering_model
@@ -143,7 +143,9 @@ def test_create_mlearning_model(dataset, classification_data, cluster_data):
     model = create_mlearning_model("LinearRegressor", dataset)
     assert model.algo is not None
     data, variables, groups = classification_data
-    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    dataset = create_dataset(
+        "dataset_name", data, variables, variable_names_to_group_names=groups
+    )
     model = create_classification_model("KNNClassifier", dataset)
     assert model.algo is not None
     data, variables = cluster_data
@@ -176,7 +178,9 @@ def test_create_regression_model(dataset):
 def test_create_classification_model(classification_data):
     """Test creation of classification model."""
     data, variables, groups = classification_data
-    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    dataset = create_dataset(
+        "dataset_name", data, variables, variable_names_to_group_names=groups
+    )
     model = create_classification_model("KNNClassifier", dataset)
     assert model.algo is not None
 
@@ -204,7 +208,9 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
     loaded_model = import_mlearning_model(dirname)
     assert hasattr(loaded_model, "parameters")
     data, variables, groups = classification_data
-    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    dataset = create_dataset(
+        "dataset_name", data, variables, variable_names_to_group_names=groups
+    )
     model = create_mlearning_model("RandomForestClassifier", dataset)
     model.learn()
     dirname = model.to_pickle()
@@ -221,6 +227,11 @@ def test_import_regression_model(dataset, tmp_wd):
     assert hasattr(loaded_model, "parameters")
 
 
+@pytest.mark.skip(
+    reason="Pickle objects were created by GEMSEO<5.0.0, using old Dataset classes. "
+    "A compatibility issue has been created: "
+    "https://gitlab.com/gemseo/dev/gemseo/-/issues/768",
+)
 def test_import_regression_model_with_old_class_name():
     """Test import of a regression model with an old class name.
 
@@ -241,7 +252,9 @@ def test_import_regression_model_with_old_class_name():
 def test_import_classification_model(classification_data, tmp_wd):
     """Test import of classification model."""
     data, variables, groups = classification_data
-    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    dataset = create_dataset(
+        "dataset_name", data, variables, variable_names_to_group_names=groups
+    )
     model = create_classification_model("KNNClassifier", dataset)
     model.learn()
     dirname = model.to_pickle()

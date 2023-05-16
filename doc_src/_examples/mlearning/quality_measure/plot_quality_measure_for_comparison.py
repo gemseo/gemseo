@@ -34,8 +34,8 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from gemseo import configure_logger
-from gemseo import load_dataset
-from gemseo.core.dataset import Dataset
+from gemseo import create_benchmark_dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
@@ -69,10 +69,9 @@ y = data_gen(x)
 data = hstack((x[:, None], y[:, None]))
 variables = ["x", "y"]
 sizes = {"x": 1, "y": 1}
-groups = {"x": Dataset.INPUT_GROUP, "y": Dataset.OUTPUT_GROUP}
+groups = {"x": IODataset.INPUT_GROUP, "y": IODataset.OUTPUT_GROUP}
 
-dataset = Dataset("dataset_name")
-dataset.set_from_array(data, variables, sizes, groups)
+dataset = IODataset.from_array(data, variables, sizes, groups)
 
 # %%
 # Plot 1D data
@@ -176,9 +175,9 @@ plt.show()
 # %%
 # Load dataset
 # ~~~~~~~~~~~~
-dataset = load_dataset("RosenbrockDataset", opt_naming=False)
-x = dataset.get_data_by_group(dataset.INPUT_GROUP)
-y = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
+x = dataset.input_dataset.to_numpy()
+y = dataset.output_dataset.to_numpy()
 Y = y.reshape((10, 10))
 
 refinement = 100

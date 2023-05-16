@@ -34,6 +34,7 @@ from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 configure_logger()
 
@@ -71,9 +72,8 @@ scenario = create_scenario(
     discipline, "DisciplinaryOpt", "z", design_space, scenario_type="DOE"
 )
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
-
 dataset = scenario.to_dataset(opt_naming=False)
-dataset.plot("ScatterMatrix", save=False, show=True)
+ScatterMatrix(dataset).execute(save=False, show=True)
 
 # %%
 # Sample with reverse mode for :math:`y`
@@ -91,6 +91,5 @@ scenario = create_scenario(
 scenario.execute(
     {"algo": "DiagonalDOE", "n_samples": 10, "algo_options": {"reverse": ["y"]}}
 )
-
 dataset = scenario.to_dataset(opt_naming=False)
-dataset.plot("ScatterMatrix", save=False, show=True)
+ScatterMatrix(dataset).execute(save=False, show=True)

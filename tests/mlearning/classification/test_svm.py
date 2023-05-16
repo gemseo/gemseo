@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_classification_model
 from gemseo.mlearning.classification.svm import SVMClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
@@ -47,7 +47,7 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the SVMClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 1))
@@ -55,11 +55,11 @@ def dataset() -> Dataset:
     output_data[1::4, 0] = 2
     output_data[2::4, 0] = 3
     output_data = output_data.astype(int)
-    dataset_ = Dataset()
+    dataset_ = IODataset()
     dataset_.add_group(
-        Dataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
+        IODataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
     )
-    dataset_.add_group(Dataset.OUTPUT_GROUP, output_data, ["y_1"], {"y_1": 1})
+    dataset_.add_group(IODataset.OUTPUT_GROUP, output_data, ["y_1"], {"y_1": 1})
     return dataset_
 
 

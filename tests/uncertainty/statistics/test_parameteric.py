@@ -23,7 +23,7 @@ import re
 
 import openturns as ot
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
@@ -52,8 +52,7 @@ def dataset() -> Dataset:
     normal_rand = normal(size=n_samples)
     weibull_rand = weibull(1.5, size=n_samples)
     exponential_rand = exponential(size=n_samples)
-    data = Dataset()
-    data.set_from_array(
+    data = Dataset.from_array(
         vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T,
         ["x_1", "x_2", "x_3"],
         {"x_1": 1, "x_2": 1, "x_3": 2},
@@ -85,12 +84,12 @@ def test_str(statistics):
 
 def test_n_samples(dataset, statistics):
     """Check n_samples."""
-    assert statistics.n_samples == dataset.n_samples
+    assert statistics.n_samples == len(dataset)
 
 
 def test_n_variables(dataset, statistics):
     """Check n_variables."""
-    assert statistics.n_variables == dataset.n_variables
+    assert statistics.n_variables == len(dataset.variable_names)
 
 
 @pytest.mark.parametrize(
@@ -276,8 +275,7 @@ def test_tolerance_interval_wrong_confidence(statistics, dataset, confidence):
 def test_tolerance_interval(generate_samples, distribution):
     """Check compute_tolerance_intervals() with different distributions."""
     seed(0)
-    dataset = Dataset()
-    dataset.set_from_array(generate_samples(100).reshape((-1, 1)))
+    dataset = Dataset.from_array(generate_samples(100).reshape((-1, 1)))
     statistics = ParametricStatistics(dataset, [distribution])
     tolerance_interval = statistics.compute_tolerance_interval(
         0.1, side=ToleranceInterval.ToleranceIntervalSide.BOTH
@@ -307,8 +305,7 @@ def test_tolerance_interval(generate_samples, distribution):
 def test_abvalue_normal():
     """Check that A-value is lower than B-value."""
     seed(0)
-    dataset = Dataset()
-    dataset.set_from_array(normal(size=100).reshape((-1, 1)))
+    dataset = Dataset.from_array(normal(size=100).reshape((-1, 1)))
     stats = ParametricStatistics(dataset, ["Normal"])
     assert stats.compute_a_value()["x_0"][0] <= stats.compute_b_value()["x_0"][0]
 

@@ -26,7 +26,7 @@ Lines
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from numpy import cos
 from numpy import linspace
@@ -45,8 +45,8 @@ outputs_2 = cos(2 * pi * inputs)
 
 dataset = Dataset()
 dataset.add_variable("x", inputs, "inputs")
-dataset.add_variable("y1", outputs_1, "outputs", cache_as_input=False)
-dataset.add_variable("y2", outputs_2, "outputs", cache_as_input=False)
+dataset.add_variable("y1", outputs_1, "outputs")
+dataset.add_variable("y2", outputs_2, "outputs")
 
 # %%
 # Plot y1 and y2

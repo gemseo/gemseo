@@ -21,13 +21,13 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
 from numpy import linspace
@@ -40,7 +40,7 @@ from numpy import newaxis
 )
 def test_resampling_based_measure(method):
     """Check that a resampling-based measure does not re-train the algo (but a copy)."""
-    dataset = RosenbrockDataset(opt_naming=False)
+    dataset = create_rosenbrock_dataset(opt_naming=False)
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     getattr(measure, method)()
@@ -48,26 +48,26 @@ def test_resampling_based_measure(method):
 
 
 @pytest.fixture(scope="module")
-def learning_dataset() -> Dataset:
+def learning_dataset() -> IODataset:
     """A learning dataset with 20 points equispaced along the different features."""
     data = linspace(0.0, 1.0, 20)[:, newaxis]
-    dataset = Dataset()
+    dataset = IODataset()
     for name in ["x1", "x2"]:
-        dataset.add_variable(name, data, group="inputs")
+        dataset.add_variable(name, data, "inputs")
     for name in ["y1", "y2"]:
-        dataset.add_variable(name, data, group="outputs")
+        dataset.add_variable(name, data, "outputs")
     return dataset
 
 
 @pytest.fixture(scope="module")
-def test_dataset() -> Dataset:
+def test_dataset() -> IODataset:
     """A test dataset with 5 points equispaced along the different features."""
     data = linspace(0.0, 1.0, 5)[:, newaxis]
-    dataset = Dataset()
+    dataset = IODataset()
     for name in ["x1", "x2"]:
-        dataset.add_variable(name, data, group="inputs")
+        dataset.add_variable(name, data, "inputs")
     for name in ["y1", "y2"]:
-        dataset.add_variable(name, data, group="outputs")
+        dataset.add_variable(name, data, "outputs")
     return dataset
 
 

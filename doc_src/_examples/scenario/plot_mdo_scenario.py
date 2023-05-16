@@ -153,10 +153,7 @@ print(f"Available algorithms: {post_list}")
 # After the execution of the scenario, you may want to export your data to use it
 # elsewhere. The :meth:`.Scenario.to_dataset` will allow you to export your
 # results to a :class:`.Dataset`, the basic |g| class to store data.
-# From a dataset, you can even obtain a Pandas dataframe with its method
-# :meth:`~.Dataset.export_to_dataframe`:
 dataset = scenario.to_dataset("a_name_for_my_dataset")
-dataframe = dataset.export_to_dataframe()
 
 # %%
 # You can also look at the examples:

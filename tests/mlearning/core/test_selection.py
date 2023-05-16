@@ -23,7 +23,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegressor
@@ -33,22 +33,26 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)
     data = np.vstack((data, np.sin(data), np.cos(data))).T
     variables = ["x_1", "x_2"]
-    sizes = {"x_1": 1, "x_2": 2}
-    groups = {"x_1": Dataset.INPUT_GROUP, "x_2": Dataset.OUTPUT_GROUP}
-    sample = Dataset()
-    sample.set_from_array(data, variables, sizes, groups)
+    variable_names_to_n_components = {"x_1": 1, "x_2": 2}
+    variable_names_to_group_names = {
+        "x_1": IODataset.INPUT_GROUP,
+        "x_2": IODataset.OUTPUT_GROUP,
+    }
+    sample = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
     return sample
 
 
 def test_init(dataset):
     """Test construction."""
     selector = MLAlgoSelection(dataset, MSEMeasure)
-    assert selector.dataset == dataset
+    assert selector.dataset.equals(dataset)
     assert selector.measure == MSEMeasure
     assert not selector.candidates
     assert not selector.measure_options["multioutput"]

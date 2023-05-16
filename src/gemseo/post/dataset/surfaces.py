@@ -22,7 +22,7 @@
 A :class:`.Surfaces` plot represents samples
 of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
 Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
-:math:`z` as a parameter and the mesh as a metadata.
+:math:`z` as a parameter and the mesh as a misc.
 """
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ import matplotlib.tri as mtri
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -52,7 +52,7 @@ class Surfaces(DatasetPlot):
     ) -> None:
         """
         Args:
-            mesh: The name of the dataset metadata corresponding to the mesh.
+            mesh: The name of the dataset misc corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot. If None, plot all samples.
             add_points: If True then display the samples over the surface plot.
@@ -79,12 +79,14 @@ class Surfaces(DatasetPlot):
         mesh = self._param.mesh
         variable = self._param.variable
         samples = self._param.samples
-        x_data = self.dataset.metadata[mesh][:, 0]
-        y_data = self.dataset.metadata[mesh][:, 1]
+        x_data = self.dataset.misc[mesh][:, 0]
+        y_data = self.dataset.misc[mesh][:, 1]
+        data = self.dataset.get_view(variable_names=variable).to_numpy()
+
         if samples is not None:
-            samples = self.dataset[variable][samples, :]
+            samples = data[samples, :]
         else:
-            samples = self.dataset[variable]
+            samples = data
 
         options = {"cmap": self.colormap}
         levels = self._param.levels
@@ -92,7 +94,7 @@ class Surfaces(DatasetPlot):
             options["levels"] = levels
 
         figs = []
-        for sample, sample_name in zip(samples, self.dataset.row_names):
+        for sample, sample_name in zip(samples, self.dataset.index):
             fig = plt.figure(figsize=self.fig_size)
             axes = fig.add_subplot(1, 1, 1)
             triangle = mtri.Triangulation(x_data, y_data)

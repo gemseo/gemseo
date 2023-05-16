@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_clustering_model
 from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
@@ -72,7 +72,7 @@ def samples() -> tuple[ndarray, ndarray, list[int]]:
 
 
 @pytest.fixture
-def dataset(samples) -> Dataset:
+def dataset(samples) -> IODataset:
     """The dataset used to train the GaussianMixture.
 
     It consists of three clusters from normal distributions.
@@ -95,8 +95,8 @@ def dataset(samples) -> Dataset:
 
     variables = ["x_1", "x_2"]
 
-    sample = Dataset("dataset_name")
-    sample.set_from_array(data, variables)
+    sample = IODataset.from_array(data, variables)
+    sample.name = "dataset_name"
 
     return sample
 

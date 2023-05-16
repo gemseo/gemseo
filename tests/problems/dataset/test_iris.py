@@ -19,14 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.problems.dataset.iris import IrisDataset
+from gemseo.problems.dataset.iris import create_iris_dataset
 
 
 def test_constructor():
-    dataset = IrisDataset()
+    dataset = create_iris_dataset()
     assert dataset.name == "Iris"
     assert len(dataset) == 150
-    assert "inputs" not in dataset.groups
+    assert "inputs" not in dataset.group_names
 
-    dataset = IrisDataset(as_io=True)
-    assert "outputs" in dataset.groups
+    dataset = create_iris_dataset(as_io=True)
+    assert "outputs" in dataset.group_names

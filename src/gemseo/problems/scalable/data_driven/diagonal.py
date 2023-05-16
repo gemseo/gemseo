@@ -113,7 +113,7 @@ class ScalableDiagonalModel(ScalableModel):
         if isinstance(fill_factor, Number):
             fill_factor = {
                 function_name: fill_factor
-                for function_name in data.get_names(data.OUTPUT_GROUP)
+                for function_name in data.get_variable_names(data.OUTPUT_GROUP)
             }
         elif not isinstance(fill_factor, dict):
             raise TypeError(
@@ -539,9 +539,11 @@ class ScalableDiagonalApproximation:
         :param list(str) input_names: names of the input variables
         :param int degree: degree of interpolation (Default value = 3)
         """
-        x2_scaled = nan_to_num(dataset.get_data_by_group(dataset.INPUT_GROUP) ** 2)
+        x2_scaled = nan_to_num(
+            dataset.get_view(group_names=dataset.INPUT_GROUP).to_numpy() ** 2
+        )
         t_scaled = [atleast_1d(sqrt(mean(val.real))) for val in x2_scaled]
-        f_scaled = dataset[function_name].real
+        f_scaled = dataset.get_view(variable_names=function_name).to_numpy().real
 
         # sort t_scaled and f_scaled following the t_scaled ascending order
         indices = argsort([val[0] for val in t_scaled])

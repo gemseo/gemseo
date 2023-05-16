@@ -55,9 +55,10 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
@@ -94,7 +95,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     default_output: list[str]
     """The default outputs of interest."""
-    dataset: Dataset
+
+    dataset: IODataset
     """The dataset containing the discipline evaluations."""
 
     Method: ClassVar[type[StrEnum]]
@@ -242,7 +244,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     @property
     def input_names(self) -> list[str]:
         """The names of the inputs."""
-        return self.dataset.get_names(self.dataset.INPUT_GROUP)
+        return self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
 
     @abstractmethod
     def compute_indices(
@@ -487,7 +489,6 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             output_name, output_component = output
 
-        dataset = Dataset()
         input_names = self._sort_and_filter_input_parameters(
             (output_name, output_component), inputs
         )
@@ -503,11 +504,11 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             )
 
         data = array(data)[:, :, 0]
-        dataset.set_from_array(data, [output_name], sizes={output_name: data.shape[1]})
-        dataset.row_names = input_names
+        dataset = Dataset.from_array(data, [output_name], {output_name: data.shape[1]})
+        dataset.index = input_names
         mesh = linspace(0, 1, data.shape[1]) if mesh is None else mesh
-        dataset.set_metadata("mesh", mesh)
-        mesh_dimension = len(dataset.metadata["mesh"].shape)
+        dataset.misc["mesh"] = mesh
+        mesh_dimension = len(dataset.misc["mesh"].shape)
         if mesh_dimension == 1:
             plot = Curves(dataset, mesh="mesh", variable=output_name)
             plot.title = title
@@ -592,8 +593,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         for name in input_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [
-            repr_variable(*output, size=self.dataset.sizes[output[0]])
+        dataset.index = [
+            repr_variable(
+                *output, size=self.dataset.variable_names_to_n_components[output[0]]
+            )
             for output in outputs
         ]
         plot = BarPlot(dataset, n_digits=2)
@@ -683,8 +686,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         for name in input_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [
-            repr_variable(*output, size=self.dataset.sizes[output[0]])
+        dataset.index = [
+            repr_variable(
+                *output, size=self.dataset.variable_names_to_n_components[output[0]]
+            )
             for output in outputs
         ]
         plot = RadarChart(dataset)
@@ -797,9 +802,11 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 )
             )
             dataset.add_variable(name, data)
-        data = dataset.data[dataset.PARAMETER_GROUP]
-        dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, newaxis]
-        dataset.row_names = [method.main_method for method in methods]
+        data = dataset.get_view(group_names=dataset.PARAMETER_GROUP).to_numpy()
+        dataset.update_data(
+            data / data.max(axis=1)[:, newaxis], group_names=dataset.PARAMETER_GROUP
+        )
+        dataset.index = [method.main_method for method in methods]
         if use_bar_plot:
             plot = BarPlot(dataset, n_digits=2)
         else:
@@ -861,18 +868,20 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The sensitivity indices.
         """
-        sizes = self.dataset.sizes
+        sizes = self.dataset.variable_names_to_n_components
 
         row_names = []
         for input_name in self.input_names:
             for input_component in range(sizes[input_name]):
                 row_names.append(
                     repr_variable(
-                        input_name, input_component, size=self.dataset.sizes[input_name]
+                        input_name,
+                        input_component,
+                        size=self.dataset.variable_names_to_n_components[input_name],
                     )
                 )
 
-        dataset = Dataset(by_group=False)
+        dataset = Dataset()
         for method, indices in self.indices.items():
             variables = []
             sizes = {}
@@ -887,10 +896,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             dataset.add_group(
                 method,
                 data,
-                variables=[f"{method}({v})" for v in variables],
-                sizes={f"{method}({v})": s for v, s in sizes.items()},
+                [f"{v}" for v in variables],
+                {f"{v}": s for v, s in sizes.items()},
             )
-        dataset.row_names = row_names
+        dataset.index = row_names
         return dataset
 
     @staticmethod

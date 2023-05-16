@@ -41,8 +41,8 @@ In |g|'s, the data used to build the surrogate model is taken from a
 :meth:`.AbstractFullCache.to_dataset` method,
 from a database, using the :meth:`.OptimizationProblem.to_dataset` method,
 or from a NumPy array or
-a text file using the :meth:`.Dataset.set_from_array` and
-:meth:`.Dataset.set_from_file`.
+a text file using the :meth:`.Dataset.from_array` and
+:meth:`.Dataset.from_txt`.
 
 Then, the surrogate discipline can be used as any other discipline in a
 :class:`.MDOScenario`, a :class:`.DOEScenario`, or a :class:`.MDA`.
@@ -53,7 +53,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from numpy import array
 from numpy import hstack
@@ -84,8 +84,7 @@ data = vstack(
         hstack((array([2.0]), array([2.0]))),
     )
 )
-synthetic_dataset = Dataset()
-synthetic_dataset.set_from_array(data, variables, sizes, groups)
+synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 
 # %%
 # If you do not have available data,the following paragraphs of Step 1 concern you.

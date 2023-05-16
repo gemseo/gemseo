@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
 from matplotlib.lines import Line2D
 from numpy import nonzero
@@ -46,9 +46,9 @@ configure_logger()
 # Load dataset (Burgers)
 # ----------------------
 n_samples = 50
-dataset = load_dataset("BurgersDataset", n_samples=n_samples)
-inputs = dataset.get_data_by_group(dataset.INPUT_GROUP)
-outputs = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+dataset = create_benchmark_dataset("BurgersDataset", n_samples=n_samples)
+inputs = dataset.input_dataset.to_numpy()
+outputs = dataset.output_dataset.to_numpy()
 
 # %%
 # Mixture of experts (MoE)

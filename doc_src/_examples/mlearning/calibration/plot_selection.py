@@ -25,7 +25,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 
@@ -45,9 +45,9 @@ n = 20
 x = np.sort(np.random.random(n))
 y = x**2 + np.random.normal(0, 0.05, n)
 
-dataset = Dataset()
-dataset.add_variable("x", x[:, None], Dataset.INPUT_GROUP)
-dataset.add_variable("y", y[:, None], Dataset.OUTPUT_GROUP, cache_as_input=False)
+dataset = IODataset()
+dataset.add_variable("x", x[:, None], dataset.INPUT_GROUP)
+dataset.add_variable("y", y[:, None], dataset.OUTPUT_GROUP)
 
 # %%
 # Build selector

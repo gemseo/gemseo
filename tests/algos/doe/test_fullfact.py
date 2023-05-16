@@ -62,7 +62,10 @@ def test_fullfact_values(doe_library_class, algo_name, expected):
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "func")
     doe_library_class().execute(problem, algo_name, n_samples=n_samples)
-    assert array_equal(problem.to_dataset("data")["x"], expected)
+    assert array_equal(
+        problem.to_dataset("data").get_view(variable_names="x").to_numpy(),
+        expected,
+    )
 
 
 @pytest.mark.parametrize(
@@ -77,7 +80,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "func")
     doe_library_class().execute(problem, algo_name, n_samples=n_samples)
-    data = problem.to_dataset("data")["x"]
+    data = problem.to_dataset().get_view(variable_names="x").to_numpy()
     if n_samples < 2**size:
         expected_min = expected_max = 1.0
         expected_shape = (1, size)

@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from numpy import linspace
 from numpy import newaxis
@@ -24,12 +24,12 @@ from numpy import sin
 
 
 @pytest.fixture(scope="module")
-def algo_for_transformer():
+def algo_for_transformer() -> IODataset:
     """A GP regression of f(x) = x*sin(x)**2 over [0, 2*pi] with 20 points."""
-    dataset = Dataset()
+    dataset = IODataset()
     x = linspace(0, 2 * pi, 20)[:, newaxis]
-    dataset.add_variable("x", x, group="inputs")
-    dataset.add_variable("y", x * sin(x) ** 2, group="outputs")
+    dataset.add_variable("x", x, "inputs")
+    dataset.add_variable("y", x * sin(x) ** 2, "outputs")
     algo = GaussianProcessRegressor(
         dataset,
         transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER,

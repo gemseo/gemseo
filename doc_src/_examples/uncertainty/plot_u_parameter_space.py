@@ -31,6 +31,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 configure_logger()
 
@@ -109,12 +110,12 @@ dataset = scenario.to_dataset(name="samples")
 
 # %%
 # and visualize it in a tabular way:
-print(dataset.export_to_dataframe())
+print(dataset)
 
 # %%
 # or with a graphical post-processing,
 # e.g. a scatter plot matrix:
-dataset.plot("ScatterMatrix")
+ScatterMatrix(dataset).execute(save=False, show=True)
 
 # %%
 # Sample a discipline over the uncertain space
@@ -138,4 +139,4 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # for all evaluations,
 # contrary to the previous case where we were considering the whole parameter space:
 dataset = scenario.to_dataset(name="samples")
-print(dataset.export_to_dataframe())
+print(dataset)

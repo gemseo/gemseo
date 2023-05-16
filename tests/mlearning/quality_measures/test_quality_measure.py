@@ -23,7 +23,7 @@ from __future__ import annotations
 from unittest.mock import Mock
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
@@ -33,9 +33,9 @@ from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The learning dataset."""
-    data = Dataset("the_dataset")
+    data = IODataset(dataset_name="the_dataset")
     data.add_variable("x", array([[1]]))
     return data
 

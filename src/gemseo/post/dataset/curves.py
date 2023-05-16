@@ -22,7 +22,7 @@
 A :class:`.Curves` plot represents samples of a functional variable
 :math:`y(x)` discretized over a 1D mesh. Both evaluations of :math:`y`
 and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
-and the mesh as a metadata.
+and the mesh as a misc.
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ from typing import Sequence
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -47,7 +47,7 @@ class Curves(DatasetPlot):
     ) -> None:
         """
         Args:
-            mesh: The name of the dataset metadata corresponding to the mesh.
+            mesh: The name of the dataset misc corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot.
                 If None, plot all the samples.
@@ -62,15 +62,16 @@ class Curves(DatasetPlot):
         def lines_gen():
             """Linestyle generator."""
             yield "-"
-            for i in range(1, self.dataset.n_samples):
+            for i in range(1, len(self.dataset)):
                 yield 0, (i, 1, 1, 1)
 
         variable = self._param.variable
         samples = self._param.samples
+        data = self.dataset.get_view(variable_names=variable).to_numpy()
         if samples is not None:
-            output = self.dataset[variable][samples, :].T
+            output = data[samples, :].T
         else:
-            output = self.dataset[variable].T
+            output = data.T
             samples = range(output.shape[1])
         n_samples = output.shape[1]
 
@@ -83,11 +84,11 @@ class Curves(DatasetPlot):
         fig, axes = self._get_figure_and_axes(fig, axes)
         for output, line_style, color, sample in zip(*data):
             axes.plot(
-                self.dataset.metadata[mesh],
+                self.dataset.misc[mesh],
                 output,
                 linestyle=line_style,
                 color=color,
-                label=self.dataset.row_names[sample],
+                label=self.dataset.index[sample],
             )
         axes.set_xlabel(self.xlabel or mesh)
         axes.set_ylabel(self.ylabel or f"{variable}({mesh})")

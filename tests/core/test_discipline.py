@@ -47,7 +47,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import allclose
 from numpy import array
 from numpy import complex128
 from numpy import ndarray
@@ -1166,7 +1165,7 @@ def self_coupled_disc() -> MDODiscipline:
     "name, group, value",
     [
         ("x", "inputs", array([1])),
-        ("x[out]", "outputs", array([2])),
+        ("x", "outputs", array([2])),
     ],
 )
 def test_self_coupled(self_coupled_disc, name, group, value):
@@ -1174,8 +1173,15 @@ def test_self_coupled(self_coupled_disc, name, group, value):
     each variable belongs to the prescribed group."""
     self_coupled_disc.execute()
     d = self_coupled_disc.cache.to_dataset()
-    assert allclose(d[name], value)
-    assert d._groups[name] == group
+    assert (
+        d.get_view(variable_names=name, group_names=group).to_numpy() == value
+    ).all()
+    assert (
+        d.get_view(variable_names=name, group_names=group).get_group_names(name)[0]
+        == group
+    )
+    assert group in d.get_group_names(name)
+    assert len(d.get_group_names(name)) > 1
 
 
 def test_virtual_exe():

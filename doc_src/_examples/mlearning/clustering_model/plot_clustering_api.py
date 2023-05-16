@@ -32,7 +32,7 @@ applied to clustering models.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_clustering_model
 from gemseo.mlearning import get_clustering_models
 from gemseo.mlearning import get_clustering_options
@@ -53,7 +53,7 @@ print(get_clustering_options("GaussianMixture"))
 # %%
 # Create clustering model
 # -----------------------
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
 model = create_clustering_model("KMeans", data=iris, n_clusters=3)
 model.learn()

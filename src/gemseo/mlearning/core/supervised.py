@@ -63,7 +63,7 @@ and :math:`\\Omega` is a regularization term that limits the parameters
 from over-fitting, typically some norm of its argument.
 
 The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
-through the :class:`.MLSupervisedAlgo` class based on a :class:`.Dataset`.
+through the :class:`.MLSupervisedAlgo` class based on a :class:`.IODataset`.
 """
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ from numpy import atleast_2d
 from numpy import hstack
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import DefaultTransformerType
 from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -119,12 +119,12 @@ class MLSupervisedAlgo(MLAlgo):
 
     SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
     DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType(
-        {Dataset.INPUT_GROUP: MinMaxScaler()}
+        {IODataset.INPUT_GROUP: MinMaxScaler()}
     )
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
@@ -138,8 +138,8 @@ class MLSupervisedAlgo(MLAlgo):
                 If ``None``, consider all the output variables of the learning dataset.
         """
         super().__init__(data, transformer=transformer, **parameters)
-        self.input_names = input_names or data.get_names(data.INPUT_GROUP)
-        self.output_names = output_names or data.get_names(data.OUTPUT_GROUP)
+        self.input_names = input_names or data.get_variable_names(data.INPUT_GROUP)
+        self.output_names = output_names or data.get_variable_names(data.OUTPUT_GROUP)
         self.__groups_to_names = {
             data.INPUT_GROUP: self.input_names,
             data.OUTPUT_GROUP: self.output_names,
@@ -174,8 +174,9 @@ class MLSupervisedAlgo(MLAlgo):
     def input_dimension(self) -> int:
         """The input space dimension."""
         if not self.__input_dimension and self.learning_set is not None:
+            variable_to_size = self.learning_set.variable_names_to_n_components
             self.__input_dimension = sum(
-                self.learning_set.sizes[name] for name in self.input_names
+                variable_to_size[name] for name in self.input_names
             )
 
         return self.__input_dimension
@@ -184,8 +185,9 @@ class MLSupervisedAlgo(MLAlgo):
     def output_dimension(self) -> int:
         """The output space dimension."""
         if not self.__output_dimension and self.learning_set is not None:
+            variable_to_size = self.learning_set.variable_names_to_n_components
             self.__output_dimension = sum(
-                self.learning_set.sizes[name] for name in self.output_names
+                variable_to_size[name] for name in self.output_names
             )
 
         return self.__output_dimension
@@ -250,7 +252,7 @@ class MLSupervisedAlgo(MLAlgo):
                 if as_dict:
                     return split_array_to_dict_of_arrays(
                         output_data,
-                        self.learning_set.sizes,
+                        self.learning_set.variable_names_to_n_components,
                         self.output_names,
                     )
 
@@ -383,7 +385,7 @@ class MLSupervisedAlgo(MLAlgo):
                             input_data = self._transform_data_from_variable_names(
                                 input_data,
                                 self.input_names,
-                                self.learning_set.sizes,
+                                self.learning_set.variable_names_to_n_components,
                                 self._input_variables_to_transform,
                                 False,
                             )
@@ -492,10 +494,16 @@ class MLSupervisedAlgo(MLAlgo):
         if indices is None:
             indices = Ellipsis
 
-        input_data = dataset.get_data_by_names(self.input_names, False)[indices]
-        output_data = dataset.get_data_by_names(self.output_names, False)[indices]
+        input_data = dataset.get_view(
+            group_names=dataset.INPUT_GROUP, variable_names=self.input_names
+        ).to_numpy()[indices]
+        output_data = dataset.get_view(
+            group_names=dataset.OUTPUT_GROUP, variable_names=self.output_names
+        ).to_numpy()[indices]
         self.input_space_center = split_array_to_dict_of_arrays(
-            input_data.mean(0), self.learning_set.sizes, self.input_names
+            input_data.mean(0),
+            self.learning_set.variable_names_to_n_components,
+            self.input_names,
         )
 
         if fit_transformers:
@@ -560,7 +568,9 @@ class MLSupervisedAlgo(MLAlgo):
         transformed_data = []
         for name in self.__groups_to_names[self.__get_group_name(input_group)]:
             if name not in names:
-                transformed_data.append(dataset.get_data_by_names([name], False))
+                transformed_data.append(
+                    dataset.get_view(variable_names=name).to_numpy()
+                )
                 continue
 
             transformed_data.append(
@@ -627,7 +637,7 @@ class MLSupervisedAlgo(MLAlgo):
             NotImplementedError: When the output transformer needs to be fitted
                 from both input and output data.
         """
-        data = self.learning_set.get_data_by_names(names, False)[indices]
+        data = self.learning_set.get_view(variable_names=(names)).to_numpy()[indices]
         if not transformer.CROSSED:
             return transformer.fit_transform(data)
 
@@ -640,7 +650,10 @@ class MLSupervisedAlgo(MLAlgo):
             )
 
         return transformer.fit_transform(
-            data, self.learning_set.get_data_by_names(self.output_names, False)[indices]
+            data,
+            self.learning_set.get_view(variable_names=self.output_names).to_numpy()[
+                indices
+            ],
         )
 
     @abstractmethod
@@ -707,8 +720,8 @@ class MLSupervisedAlgo(MLAlgo):
         """
         input_dimension = 0
         output_dimension = 0
-        input_names = self.input_names + [Dataset.INPUT_GROUP]
-        output_names = self.output_names + [Dataset.OUTPUT_GROUP]
+        input_names = self.input_names + [IODataset.INPUT_GROUP]
+        output_names = self.output_names + [IODataset.OUTPUT_GROUP]
 
         for key in self.transformer:
             transformer = self.transformer.get(key)
@@ -716,16 +729,20 @@ class MLSupervisedAlgo(MLAlgo):
                 if isinstance(transformer, DimensionReduction):
                     input_dimension += transformer.n_components
                 else:
-                    input_dimension += self.learning_set.sizes.get(
-                        key, self.input_dimension
+                    input_dimension += (
+                        self.learning_set.variable_names_to_n_components.get(
+                            key, self.input_dimension
+                        )
                     )
 
             if key in output_names:
                 if isinstance(transformer, DimensionReduction):
                     output_dimension += transformer.n_components
                 else:
-                    output_dimension += self.learning_set.sizes.get(
-                        key, self.output_dimension
+                    output_dimension += (
+                        self.learning_set.variable_names_to_n_components.get(
+                            key, self.output_dimension
+                        )
                     )
 
         input_dimension = input_dimension or self.input_dimension
@@ -740,7 +757,9 @@ class MLSupervisedAlgo(MLAlgo):
         for name in self.input_names + self.output_names:
             transformer = self.transformer.get(name)
             if transformer is None or not isinstance(transformer, DimensionReduction):
-                self._transformed_variable_sizes[name] = self.learning_set.sizes[name]
+                self._transformed_variable_sizes[
+                    name
+                ] = self.learning_set.variable_names_to_n_components[name]
             else:
                 self._transformed_variable_sizes[name] = transformer.n_components
 
@@ -758,14 +777,20 @@ class MLSupervisedAlgo(MLAlgo):
     @property
     def input_data(self) -> ndarray:
         """The input data matrix."""
-        data = self.learning_set.get_data_by_names(self.input_names, False)
-        return data[self.learning_samples_indices]
+        return self.learning_set.get_view(
+            group_names=self.learning_set.INPUT_GROUP,
+            variable_names=self.input_names,
+            indices=self.learning_samples_indices,
+        ).to_numpy()
 
     @property
     def output_data(self) -> ndarray:
         """The output data matrix."""
-        data = self.learning_set.get_data_by_names(self.output_names, False)
-        return data[self.learning_samples_indices]
+        return self.learning_set.get_view(
+            group_names=self.learning_set.OUTPUT_GROUP,
+            variable_names=self.output_names,
+            indices=self.learning_samples_indices,
+        ).to_numpy()
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
         objects = super()._get_objects_to_save()
