@@ -146,7 +146,7 @@ print(dataset)
 # Access observables by name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the observable data by variable names:
-print(dataset.get_data(variable_names=["y_1", "y2"]))
+print(dataset.get_view(variable_names=["y_1", "y2"]))
 
 # %%
 # Use the observables in a post-processing method
