@@ -52,7 +52,7 @@ TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
-@pytest.mark.parametrize("coupl_scaling", [True, False])
+@pytest.mark.parametrize("coupl_scaling", ["n_coupling_variables", "no_scaling"])
 def test_raphson_sobieski(coupl_scaling):
     """Test the execution of Gauss-Seidel on Sobieski."""
     disciplines = [
@@ -62,7 +62,7 @@ def test_raphson_sobieski(coupl_scaling):
         SobieskiMission(),
     ]
     mda = MDANewtonRaphson(disciplines)
-    mda.set_residuals_scaling_options(scale_residuals_with_coupling_size=coupl_scaling)
+    mda.scaling = coupl_scaling
     mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
     mda.reset_history_each_run = True
     mda.execute()
