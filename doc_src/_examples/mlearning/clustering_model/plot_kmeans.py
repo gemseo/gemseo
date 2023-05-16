@@ -47,7 +47,7 @@ configure_logger()
 iris = create_benchmark_dataset("IrisDataset")
 
 # Extract inputs as a new dataset
-data = iris.get_data(group_names=iris.PARAMETER_GROUP).to_numpy()
+data = iris.get_view(group_names=iris.PARAMETER_GROUP).to_numpy()
 variables = iris.get_variable_names(iris.PARAMETER_GROUP)
 print(variables)
 

@@ -83,15 +83,15 @@ samples = choice(len(iris), size=10, replace=False)
 # %%
 # We can easily access the 10 samples previously selected,
 # either globally
-data = iris.get_data(indices=samples)
+data = iris.get_view(indices=samples)
 
 # %%
 # or only the parameters:
-print(iris.get_data(group_names=iris.PARAMETER_GROUP, indices=samples))
+print(iris.get_view(group_names=iris.PARAMETER_GROUP, indices=samples))
 
 # %%
 # or only the labels:
-print(iris.get_data(group_names="labels", indices=samples))
+print(iris.get_view(group_names="labels", indices=samples))
 
 # %%
 # Plot the dataset
