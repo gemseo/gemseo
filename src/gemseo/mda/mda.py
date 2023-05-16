@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from enum import auto
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any
@@ -30,10 +31,13 @@ from typing import Mapping
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
+from numpy import abs
 from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 from numpy.linalg import norm
+from numpy.typing import NDArray
+from strenum import LowercaseStrEnum
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -85,6 +89,12 @@ class MDA(MDODiscipline):
     warm_start: bool
     """Whether the second iteration and ongoing start from the previous solution."""
 
+    scaling: ResidualScaling
+    """The scaling method applied to MDA residuals for convergence monitoring."""
+
+    _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
+    """The data required to perform the scaling of the MDA residuals."""
+
     norm0: float | None
     """The reference residual, if any."""
 
@@ -108,6 +118,55 @@ class MDA(MDODiscipline):
 
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
+
+    class ResidualScaling(LowercaseStrEnum):
+        """The scaling method applied to MDA residuals for convergence monitoring."""
+
+        NO_SCALING = auto()
+        r"""The residual is not scaled and the MDA is considered converged when,
+
+        .. math::
+            \|R_k\|_2 \leq \text{tol}.
+        """
+
+        INITIAL_RESIDUAL_NORM = auto()
+        r"""The residual is scaled by the norm of the initial residual if it is not null,
+        and not scaled otherwise. The MDA is considered converged when,
+
+        .. math::
+            \frac{ \|R_k\|_2 }{ \|R_0\|_2 } \leq \text{tol}.
+        """
+
+        INITIAL_SUBRESIDUAL_NORM = auto()
+        r"""The residual is scaled by considering the convergence of each sub-residual
+        individually. The MDA is considered converged when,
+
+        .. math::
+            \max_i \left| \frac{\|r^i_k\|_2}{\|r^i_0\|_2} \right| \leq \text{tol}.
+        """
+
+        N_COUPLING_VARIABLES = auto()
+        r"""The residual is scaled by the number of coupling variables. The MDA is
+        considered converged when,
+
+        .. math::
+            \frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.
+        """
+
+        INITIAL_RESIDUAL_COMPONENT = auto()
+        r"""The residual is scaled component-wise with the initial residual if not null,
+        and not scaled otherwise. The MDA is considered converged when,
+
+        .. math::
+            \max_i \left| \frac{(R_k)_i}{(R_0)_i} \right| \leq \text{tol}.
+        """
+
+        SCALED_INITIAL_RESIDUAL_COMPONENT = auto()
+        r"""The residual is not scaled and the MDA is considered converged when.
+
+        .. math::
+            \frac{1}{\sqrt{n_\text{coupl.}}} \| R_k \div R_0 \|_2 \leq \text{tol}.
+        """
 
     def __init__(
         self,
@@ -164,8 +223,9 @@ class MDA(MDODiscipline):
         self._starting_indices = []
         self.reset_history_each_run = False
         self.warm_start = warm_start
-        self._scale_residuals_with_coupling_size = False
-        self._scale_residuals_with_first_norm = True
+
+        self.scaling = self.ResidualScaling.INITIAL_RESIDUAL_NORM
+        self._scaling_data = None
 
         # Don't erase coupling values before calling _compute_jacobian
 
@@ -430,22 +490,64 @@ class MDA(MDODiscipline):
             self.residual_history = []
             self._starting_indices = []
 
-        normed_residual = norm((current_couplings - new_couplings).real)
+        residual = (current_couplings - new_couplings).real
 
-        if self._scale_residuals_with_first_norm:
-            if self._scale_residuals_with_coupling_size:
-                if self.norm0 is not None:
-                    self.normed_residual = normed_residual / self.norm0
-                else:
-                    self.normed_residual = normed_residual / new_couplings.size**0.5
-            else:
-                if self.norm0 is None:
-                    self.norm0 = normed_residual
-                if self.norm0 == 0:
-                    self.norm0 = 1
-                self.normed_residual = normed_residual / self.norm0
-        else:
+        if self.scaling == self.ResidualScaling.NO_SCALING:
+            normed_residual = norm(residual)
+
             self.normed_residual = normed_residual
+
+        elif self.scaling == self.ResidualScaling.INITIAL_RESIDUAL_NORM:
+            normed_residual = norm(residual)
+
+            if self._scaling_data is None:
+                self._scaling_data = normed_residual + (normed_residual == 0)
+
+            self.normed_residual = normed_residual / self._scaling_data
+
+        elif self.scaling == self.ResidualScaling.N_COUPLING_VARIABLES:
+            normed_residual = norm(residual)
+
+            if self._scaling_data is None:
+                self._scaling_data = new_couplings.size**0.5
+
+            self.normed_residual = normed_residual / self._scaling_data
+
+        elif self.scaling == self.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
+            if self._scaling_data is None:
+                self._scaling_data = list()
+
+                index = 0
+                for output in self.get_outputs_by_name(self._input_couplings):
+                    current_slice = slice(index, index + output.size)
+                    initial_norm = norm(residual[current_slice])
+                    self._scaling_data.append(
+                        (current_slice, initial_norm + (initial_norm == 0))
+                    )
+                    index += output.size
+
+            normalized_norms = list()
+            for index, initial_norm in self._scaling_data:
+                normalized_norms.append(norm(residual[index]) / initial_norm)
+
+            self.normed_residual = max(normalized_norms)
+
+        elif self.scaling == self.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
+            if self._scaling_data is None:
+                self._scaling_data = residual + (residual == 0)
+
+            self.normed_residual = abs(residual / self._scaling_data).max()
+
+        elif self.scaling == self.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
+            if self._scaling_data is None:
+                self._scaling_data = residual + (residual == 0)
+
+            self.normed_residual = norm(residual / self._scaling_data)
+            self.normed_residual /= new_couplings.size**0.5
+
+        else:
+            # Use the strEnum casting to raise an explicit error
+            self.ResidualScaling(self.scaling)
 
         if log_normed_residual:
             LOGGER.info(
@@ -638,27 +740,6 @@ class MDA(MDODiscipline):
         super()._set_cache_tol(cache_tol)
         for disc in self.disciplines:
             disc.cache_tol = cache_tol or 0.0
-
-    def set_residuals_scaling_options(
-        self,
-        scale_residuals_with_coupling_size: bool = False,
-        scale_residuals_with_first_norm: bool = True,
-    ) -> None:
-        """Set the options for the residuals scaling.
-
-        Args:
-            scale_residuals_with_coupling_size: Whether to activate the scaling of the MDA
-                residuals by the number of coupling variables.
-                This divides the residuals obtained by the norm of the difference
-                between iterates by the square root of the coupling vector size.
-
-            scale_residuals_with_first_norm: Whether to scale the residuals by the first
-                residual norm, except if `:attr:.norm0` is set by the user.
-                If `:attr:.norm0` is set to a value, it deactivates
-                the residuals scaling by the design variables size.
-        """
-        self._scale_residuals_with_coupling_size = scale_residuals_with_coupling_size
-        self._scale_residuals_with_first_norm = scale_residuals_with_first_norm
 
     def plot_residual_history(
         self,

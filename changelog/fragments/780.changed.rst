@@ -1,0 +1,3 @@
+API changes:
+- Remove the attributes _scale_residuals_with_coupling_size and _scale_residuals_with_first_norm and add the scaling and _scaling_data attributes.
+- Remove the method set_residuals_scaling_options.
