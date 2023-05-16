@@ -31,7 +31,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.dataset.dataset_plot import DatasetPlot

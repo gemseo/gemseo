@@ -35,7 +35,7 @@ from numpy import delete as npdelete
 from numpy import ndarray
 from numpy import unique
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
@@ -89,7 +89,7 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def evaluate_test(
         self,
-        test_data: Dataset,
+        test_data: IODataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         as_dict: bool = False,
@@ -102,9 +102,15 @@ class MLErrorMeasure(MLQualityMeasure):
         self._train_algo(samples)
         return self._post_process_measure(
             self._compute_measure(
-                test_data.get_data_by_names(self.algo.output_names, False),
+                test_data.get_view(
+                    group_names=test_data.OUTPUT_GROUP,
+                    variable_names=self.algo.output_names,
+                ).to_numpy(),
                 self.algo.predict(
-                    test_data.get_data_by_names(self.algo.input_names, False)
+                    test_data.get_view(
+                        group_names=test_data.INPUT_GROUP,
+                        variable_names=self.algo.input_names,
+                    ).to_numpy()
                 ),
                 multioutput,
             ),
@@ -253,4 +259,6 @@ class MLErrorMeasure(MLQualityMeasure):
         if not multioutput:
             return {self.__OUTPUT_NAME_SEPARATOR.join(names): data}
 
-        return split_array_to_dict_of_arrays(data, self.algo.learning_set.sizes, names)
+        return split_array_to_dict_of_arrays(
+            data, self.algo.learning_set.variable_names_to_n_components, names
+        )

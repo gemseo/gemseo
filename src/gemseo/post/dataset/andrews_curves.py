@@ -61,7 +61,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -85,20 +85,15 @@ class AndrewsCurves(DatasetPlot):
         axes: None | Axes = None,
     ) -> list[Figure]:
         classifier = self._param.classifier
-        if classifier not in self.dataset.variables:
+        if classifier not in self.dataset.variable_names:
             raise ValueError(
                 "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variables)
+                + ", ".join(self.dataset.variable_names)
             )
 
-        dataframe = self.dataset.export_to_dataframe()
+        dataframe = self.dataset
         label, varname = self._get_label(classifier)
         fig, axes = self._get_figure_and_axes(fig, axes)
-        if self.dataset.strings_encoding[label]:
-            for comp, codes in self.dataset.strings_encoding[label].items():
-                column = (self.dataset.get_group(label), label, str(comp))
-                for key, value in codes.items():
-                    dataframe.loc[dataframe[column] == key, column] = value
         andrews_curves(dataframe, varname, ax=axes)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)

@@ -49,12 +49,12 @@ from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.scenario import Scenario
 from gemseo.core.scenario import ScenarioInputDataType
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
@@ -300,7 +300,7 @@ class MLAlgoCalibration:
         self.scenario.execute(input_data)
         x_opt = self.scenario.design_space.get_current_value(as_dict=True)
         f_opt = self.scenario.optimization_result.f_opt
-        self.dataset = self.scenario.to_dataset(by_group=False, opt_naming=False)
+        self.dataset = self.scenario.to_dataset(opt_naming=False)
         algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
         self.optimal_parameters = x_opt
         self.optimal_criterion = f_opt
@@ -320,9 +320,9 @@ class MLAlgoCalibration:
         """
         if self.dataset is not None:
             if name == self.algo_assessor.CRITERION and self.maximize_objective:
-                return -self.dataset.data["-" + name]
+                return -self.dataset.get_view(variable_names="-" + name).to_numpy()
             else:
-                return self.dataset.data[name]
+                return self.dataset.get_view(variable_names=name).to_numpy()
 
     @property
     def algos(self) -> MLAlgo:

@@ -50,8 +50,8 @@ from itertools import product
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.scenario import ScenarioInputDataType
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo

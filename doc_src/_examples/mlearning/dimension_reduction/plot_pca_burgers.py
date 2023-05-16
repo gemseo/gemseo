@@ -29,7 +29,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from gemseo import configure_logger
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
-from gemseo.problems.dataset.burgers import BurgersDataset
+from gemseo.problems.dataset.burgers import create_burgers_dataset
 from numpy import eye
 
 configure_logger()
@@ -38,11 +38,11 @@ configure_logger()
 # %%
 # Load dataset
 # ~~~~~~~~~~~~
-dataset = BurgersDataset(n_samples=20)
+dataset = create_burgers_dataset(n_samples=20)
 print(dataset)
 
-t = dataset.get_data_by_group(dataset.INPUT_GROUP)[:, 0]
-u_t = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+t = dataset.input_dataset.to_numpy()[:, 0]
+u_t = dataset.output_dataset.to_numpy()
 t_split = 0.87
 
 # %%

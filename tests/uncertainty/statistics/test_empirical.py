@@ -21,7 +21,7 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.utils.testing.helpers import concretize_classes
@@ -56,12 +56,12 @@ def x_1_statistics(dataset):
 
 def test_n_samples(dataset, statistics):
     """Check that the number of samples corresponds to the length of the dataset."""
-    assert statistics.n_samples == dataset.length
+    assert statistics.n_samples == len(dataset)
 
 
 def test_n_variables(dataset, statistics):
     """Check that the number of variables is equal to the one in the dataset."""
-    assert statistics.n_variables == dataset.n_variables
+    assert statistics.n_variables == len(dataset.variable_names)
 
 
 def test_n_variables_x_1(x_1_statistics):
@@ -71,7 +71,7 @@ def test_n_variables_x_1(x_1_statistics):
 
 def test_variables(dataset, statistics):
     """Check that the variables are the variables of the dataset."""
-    assert statistics.names == dataset.variables
+    assert statistics.names == dataset.variable_names
 
 
 def test_variables_x_1(x_1_statistics):

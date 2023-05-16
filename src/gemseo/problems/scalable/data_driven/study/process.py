@@ -52,10 +52,10 @@ import numbers
 from copy import deepcopy
 from pathlib import Path
 from typing import Sequence
-from typing import Sized
 
 from numpy import inf
 
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.logging_tools import LoggingContext
@@ -224,23 +224,26 @@ class ScalabilityStudy:
         msg.add("Results: {}", results)
         LOGGER.info("%s", msg)
 
-    def add_discipline(self, data: Sized) -> None:
+    def add_discipline(self, data: IODataset) -> None:
         """This method adds a disciplinary dataset from a dataset.
 
         :param Dataset data: dataset provided as a dataset.
         """
         self._group_dep[data.name] = {}
-        self._all_data = data.get_all_data()
+        self._all_data = data.get_view().to_numpy()
         self.datasets.append(data)
-        for output_name in data.get_names(data.OUTPUT_GROUP):
+        for output_name in data.get_variable_names(data.OUTPUT_GROUP):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
         inputs = ", ".join(
-            [f"{name}({data.sizes[name]})" for name in data.get_names(data.INPUT_GROUP)]
+            [
+                f"{name}({data.variable_names_to_n_components[name]})"
+                for name in data.get_variable_names(data.INPUT_GROUP)
+            ]
         )
         outputs = ", ".join(
             [
-                f"{name}({data.sizes[name]})"
-                for name in data.get_names(data.OUTPUT_GROUP)
+                f"{name}({data.variable_names_to_n_components[name]})"
+                for name in data.get_variable_names(data.OUTPUT_GROUP)
             ]
         )
         msg = MultiLineString()
@@ -306,7 +309,7 @@ class ScalabilityStudy:
         if not isinstance(varname, str):
             raise TypeError(f"{varname} is not a string.")
         output_names = next(
-            dataset.get_names(dataset.OUTPUT_GROUP)
+            dataset.get_variable_names(dataset.OUTPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )
@@ -323,7 +326,7 @@ class ScalabilityStudy:
         if not isinstance(inputs, list):
             raise TypeError("The argument 'inputs' must be a list of string.")
         input_names = next(
-            dataset.get_names(dataset.INPUT_GROUP)
+            dataset.get_variable_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )

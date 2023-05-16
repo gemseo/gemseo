@@ -52,7 +52,7 @@ or classification ones.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.radviz import Radar
@@ -66,9 +66,9 @@ configure_logger()
 # Load Iris dataset
 # -----------------
 # We can easily load this dataset
-# by means of the high-level function :func:`~gemseo.load_dataset`:
+# by means of the high-level function :func:`~gemseo.create_benchmark_dataset`:
 
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
 # %%
 # and get some information about it
@@ -78,30 +78,20 @@ print(iris)
 # Manipulate the dataset
 # ----------------------
 # We randomly select 10 samples to display.
-
-shown_samples = choice(iris.length, size=10, replace=False)
-
-# %%
-# If the pandas library is installed, we can export the iris dataset to a
-# dataframe and print(it.
-dataframe = iris.export_to_dataframe()
-print(dataframe)
+samples = choice(len(iris), size=10, replace=False)
 
 # %%
-# We can also easily access the 10 samples previously selected,
+# We can easily access the 10 samples previously selected,
 # either globally
-data = iris.get_all_data(False)
-print(data[0][shown_samples, :])
+data = iris.get_data(indices=samples)
 
 # %%
 # or only the parameters:
-parameters = iris.get_data_by_group("parameters")
-print(parameters[shown_samples, :])
+print(iris.get_data(group_names=iris.PARAMETER_GROUP, indices=samples))
 
 # %%
 # or only the labels:
-labels = iris.get_data_by_group("labels")
-print(labels[shown_samples, :])
+print(iris.get_data(group_names="labels", indices=samples))
 
 # %%
 # Plot the dataset

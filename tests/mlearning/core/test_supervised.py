@@ -24,7 +24,8 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
@@ -41,14 +42,16 @@ from numpy.testing import assert_equal
 
 
 @pytest.fixture
-def io_dataset() -> Dataset:
+def io_dataset() -> IODataset:
     """The dataset used to train the supervised machine learning algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
-    sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
-    groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-    dataset = Dataset("dataset_name")
-    dataset.set_from_array(data, variables, sizes, groups)
+    variable_names_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
+    variable_names_to_group_names = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    dataset = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
+    dataset.name = "dataset_name"
     return dataset
 
 
@@ -58,8 +61,8 @@ def test_constructor(io_dataset):
         ml_algo = MLSupervisedAlgo(io_dataset)
 
     assert ml_algo.algo is None
-    assert ml_algo.input_names == io_dataset.get_names("inputs")
-    assert ml_algo.output_names == io_dataset.get_names("outputs")
+    assert ml_algo.input_names == io_dataset.get_variable_names("inputs")
+    assert ml_algo.output_names == io_dataset.get_variable_names("outputs")
 
 
 @pytest.mark.parametrize(
@@ -195,13 +198,13 @@ def test_format_sample(io_dataset):
 
 
 @pytest.fixture(scope="module")
-def dataset_for_transform() -> Dataset:
+def dataset_for_transform() -> IODataset:
     """A dataset to check that DataFormatter format_transform()."""
-    data = Dataset()
-    data.add_variable("x1", array([[0.0], [2.0]]), group=Dataset.INPUT_GROUP)
-    data.add_variable("x2", array([[0.0], [2.0]]), group=Dataset.INPUT_GROUP)
-    data.add_variable("y1", array([[0.0], [4.0]]), group=Dataset.OUTPUT_GROUP)
-    data.add_variable("y2", array([[0.0], [4.0]]), group=Dataset.OUTPUT_GROUP)
+    data = IODataset()
+    data.add_variable("x1", array([[0.0], [2.0]]), data.INPUT_GROUP)
+    data.add_variable("x2", array([[0.0], [2.0]]), data.INPUT_GROUP)
+    data.add_variable("y1", array([[0.0], [4.0]]), data.OUTPUT_GROUP)
+    data.add_variable("y2", array([[0.0], [4.0]]), data.OUTPUT_GROUP)
     return data
 
 
@@ -279,20 +282,22 @@ def test_format_transform(
     formatted_identity_function = format_function(predict)
 
     # 5. Check the value
-    input_data = dataset_for_transform.get_all_data()[0]["inputs"]
+    input_data = dataset_for_transform.get_view(group_names="inputs").to_numpy()
     assert_equal(formatted_identity_function(algo, input_data), expected)
 
 
 @pytest.fixture(scope="module")
 def dataset() -> Dataset:
     """A learning dataset for the function y=x."""
-    data = Dataset()
-    data.add_variable("x", array([[1.0], [2.0]]), group=Dataset.INPUT_GROUP)
-    data.add_variable("y", array([[1.0], [2.0]]), group=Dataset.OUTPUT_GROUP)
+    data = IODataset()
+    data.add_variable("x", array([[1.0], [2.0]]), data.INPUT_GROUP)
+    data.add_variable("y", array([[1.0], [2.0]]), data.OUTPUT_GROUP)
     return data
 
 
-@pytest.mark.parametrize("name", [Dataset.INPUT_GROUP, Dataset.OUTPUT_GROUP, "x", "y"])
+@pytest.mark.parametrize(
+    "name", [IODataset.INPUT_GROUP, IODataset.OUTPUT_GROUP, "x", "y"]
+)
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_fit_transformers_option(dataset, name, fit_transformers):
     """Check that the fit_transformers option is correctly used."""

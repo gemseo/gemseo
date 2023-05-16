@@ -26,7 +26,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
@@ -74,8 +74,8 @@ class ColorEvolution(DatasetPlot):
         fig: None | Figure = None,
         axes: None | Axes = None,
     ) -> list[Figure]:
-        variables = self._param.variables or self.dataset.variables
-        data = self.dataset.get_data_by_names(variables, False).T
+        variables = self._param.variables or self.dataset.variable_names
+        data = self.dataset.get_view(variable_names=variables).to_numpy().T
 
         if self._param.use_log:
             maximum = abs(data).max()
@@ -91,7 +91,7 @@ class ColorEvolution(DatasetPlot):
             alpha=self._param.opacity,
             **self._param.options,
         )
-        names = self.dataset.get_column_names(variables)
+        names = self.dataset.get_columns(variables)
         axes.set_yticks(arange(len(names)))
         axes.set_yticklabels(names)
         axes.set_xlabel(self.xlabel)

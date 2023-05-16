@@ -45,7 +45,7 @@ from typing import Sequence
 from numpy import ndarray
 from sklearn.metrics import silhouette_score
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,

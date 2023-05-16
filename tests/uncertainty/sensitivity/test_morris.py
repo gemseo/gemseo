@@ -31,7 +31,6 @@ from numpy import allclose
 from numpy import array
 from numpy import pi
 from numpy.testing import assert_almost_equal
-from numpy.testing import assert_equal
 
 FUNCTION = {
     "name": "my_function",
@@ -341,8 +340,8 @@ def test_morris_multiple_disciplines():
     morris = MorrisAnalysis([d1, d2, d3], space, 5)
     morris.compute_indices()
 
-    assert morris.dataset.get_names("inputs") == ["x1", "x2", "x3"]
-    assert morris.dataset.get_names("outputs") == [
+    assert morris.dataset.get_variable_names("inputs") == ["x1", "x2", "x3"]
+    assert morris.dataset.get_variable_names("outputs") == [
         "fd!f!x1",
         "fd!f!x2",
         "fd!f!x3",
@@ -360,7 +359,7 @@ def test_save_load(morris, tmp_wd):
     """Check saving and loading a MorrisAnalysis."""
     morris.to_pickle("foo.pkl")
     new_morris = MorrisAnalysis.from_pickle("foo.pkl")
-    assert_equal(new_morris.dataset.data, morris.dataset.data)
+    assert new_morris.dataset.equals(morris.dataset)
     assert new_morris.default_output == morris.default_output
     assert new_morris.n_replicates == morris.n_replicates
     assert new_morris.outputs_bounds == morris.outputs_bounds

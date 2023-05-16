@@ -64,7 +64,7 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
@@ -82,7 +82,7 @@ class LinearRegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
@@ -227,13 +227,13 @@ class LinearRegressor(MLRegressionAlgo):
         """
         intercept = self.intercept
         if as_dict:
-            if Dataset.OUTPUT_GROUP in self.transformer:
+            if IODataset.OUTPUT_GROUP in self.transformer:
                 raise ValueError(
                     "Intercept is only representable in dictionary "
                     "form if the transformers do not change the "
                     "dimensions of the output variables."
                 )
-            varsizes = self.learning_set.sizes
+            varsizes = self.learning_set.variable_names_to_n_components
             intercept = split_array_to_dict_of_arrays(
                 intercept, varsizes, self.output_names
             )
@@ -252,7 +252,7 @@ class LinearRegressor(MLRegressionAlgo):
         Returns:
             The converted data.
         """
-        varsizes = self.learning_set.sizes
+        varsizes = self.learning_set.variable_names_to_n_components
         data = [
             split_array_to_dict_of_arrays(row, varsizes, self.input_names)
             for row in data

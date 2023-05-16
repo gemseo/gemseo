@@ -40,8 +40,8 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
@@ -156,8 +156,10 @@ class CorrelationAnalysis(SensitivityAnalysis):
         if isinstance(output_names, str):
             output_names = [output_names]
 
-        input_samples = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
-        output_names_to_output_samples = self.dataset.get_data_by_names(output_names)
+        input_samples = Sample(
+            self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
+        )
+
         self.__correlation = {}
         # For each correlation method
         new_methods = [self.Method.KENDALL, self.Method.SSRC]
@@ -167,8 +169,8 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
             # The version of OpenTURNS offers this correlation method.
             get_indices = self.__METHODS_TO_FUNCTIONS[method]
-            input_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
-            sizes = self.dataset.sizes
+            input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
+            sizes = self.dataset.variable_names_to_n_components
             self.__correlation[method] = {
                 output_name: [
                     split_array_to_dict_of_arrays(
@@ -182,10 +184,15 @@ class CorrelationAnalysis(SensitivityAnalysis):
                         input_names,
                     )
                     # For each component of the output variable
-                    for output_component_samples in output_samples.T
+                    for output_component_samples in self.dataset.get_view(
+                        group_names=self.dataset.OUTPUT_GROUP,
+                        variable_names=output_name,
+                    )
+                    .to_numpy()
+                    .T
                 ]
                 # For each output variable
-                for output_name, output_samples in output_names_to_output_samples.items()
+                for output_name in output_names
             }
 
         return self.indices
@@ -374,7 +381,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         all_indices = tuple(self.Method)
         dataset = Dataset()
         for input_name in self._filter_names(
-            self.dataset.get_names(self.dataset.INPUT_GROUP), inputs
+            self.dataset.get_variable_names(self.dataset.INPUT_GROUP), inputs
         ):
             # Store all the sensitivity indices
             # related to the tuple (output_name, output_index, input_name)
@@ -391,10 +398,12 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ),
             )
 
-        dataset.row_names = all_indices
+        dataset.index = all_indices
         plot = RadarChart(dataset)
         output_name = repr_variable(
-            output_name, output_index, size=self.dataset.sizes[output_name]
+            output_name,
+            output_index,
+            size=self.dataset.variable_names_to_n_components[output_name],
         )
         plot.title = title or f"Correlation indices for the output {output_name}"
         plot.rmin = -1.0

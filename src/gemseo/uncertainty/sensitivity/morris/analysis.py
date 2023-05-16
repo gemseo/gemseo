@@ -312,7 +312,9 @@ class MorrisAnalysis(SensitivityAnalysis):
             normalize: Whether to normalize the indices
                 with the empirical bounds of the outputs.
         """  # noqa: D205 D212 D415
-        fd_data = self.dataset.get_data_by_group(self.dataset.OUTPUT_GROUP, True)
+        fd_data = self.dataset.get_view(group_names=self.dataset.OUTPUT_GROUP).to_dict(
+            orient="list"
+        )
         output_names = outputs or self.default_output
         if isinstance(output_names, str):
             output_names = [output_names]
@@ -323,7 +325,8 @@ class MorrisAnalysis(SensitivityAnalysis):
         self.min = {name: {} for name in output_names}
         self.max = {name: {} for name in output_names}
         for fd_name, value in fd_data.items():
-            output_name, input_name = _OATSensitivity.get_io_names(fd_name)
+            value = array([value]).T
+            output_name, input_name = _OATSensitivity.get_io_names(fd_name[1])
             if output_name in output_names:
                 lower = self.outputs_bounds[output_name][0]
                 upper = self.outputs_bounds[output_name][1]
@@ -405,7 +408,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
-        names = self.dataset.get_names(self.dataset.INPUT_GROUP)
+        names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
         names = self._filter_names(names, inputs)
         x_val = [self.mu_star[output[0]][output[1]][name] for name in names]
         y_val = [self.sigma[output[0]][output[1]][name] for name in names]

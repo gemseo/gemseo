@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
@@ -31,12 +31,11 @@ from numpy import array
 @pytest.fixture(scope="module")
 def dataset():
     """Dataset: A dataset containing two samples of the variables x1, x2 and x3."""
-    dataset = Dataset()
     sample1 = [0.0, 0.5, 1.0]
     sample2 = [0.2, 0.5, 0.8]
     sample3 = [1.0, 0.5, 0.0]
-    dataset.set_from_array(
-        array([sample1, sample2, sample3]), variables=["x1", "x2", "x3"]
+    dataset = Dataset.from_array(
+        array([sample1, sample2, sample3]), variable_names=["x1", "x2", "x3"]
     )
     return dataset
 

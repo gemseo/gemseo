@@ -34,7 +34,6 @@ from numpy import ndarray
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_almost_equal
-from numpy.testing import assert_equal
 
 
 @pytest.fixture(scope="module")
@@ -200,7 +199,7 @@ def test_save_load(sobol, tmp_wd):
     """Check saving and loading a SobolAnalysis."""
     sobol.to_pickle("foo.pkl")
     new_sobol = SobolAnalysis.from_pickle("foo.pkl")
-    assert_equal(new_sobol.dataset.data, sobol.dataset.data)
+    assert new_sobol.dataset.equals(sobol.dataset)
     assert new_sobol.default_output == sobol.default_output
 
 
@@ -253,7 +252,12 @@ def test_output_variances(sobol):
     dataset = sobol.dataset
     assert compare_dict_of_arrays(
         sobol.output_variances,
-        {name: dataset[name][: len(dataset) // 5].var(0) for name in ["y", "z"]},
+        {
+            name: dataset.get_view(variable_names=name)
+            .to_numpy()[: len(dataset) // 5]
+            .var(0)
+            for name in ["y", "z"]
+        },
         tolerance=0.1,
     )
 
@@ -263,7 +267,12 @@ def test_output_standard_deviations(sobol):
     dataset = sobol.dataset
     assert compare_dict_of_arrays(
         sobol.output_standard_deviations,
-        {name: dataset[name][: len(dataset) // 5].std(0) for name in ["y", "z"]},
+        {
+            name: dataset.get_view(variable_names=name)
+            .to_numpy()[: len(dataset) // 5]
+            .std(0)
+            for name in ["y", "z"]
+        },
         tolerance=0.1,
     )
 

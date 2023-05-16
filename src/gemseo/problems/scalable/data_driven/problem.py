@@ -67,6 +67,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
@@ -80,7 +81,7 @@ class ScalableProblem:
 
     def __init__(
         self,
-        datasets,
+        datasets: Iterable[IODataset],
         design_variables,
         objective_function,
         eq_constraints=None,
@@ -104,15 +105,16 @@ class ScalableProblem:
         self.disciplines = [dataset.name for dataset in datasets]
         self.data = {dataset.name: dataset for dataset in datasets}
         self.inputs = {
-            dataset.name: dataset.get_names(dataset.INPUT_GROUP) for dataset in datasets
+            dataset.name: dataset.get_variable_names(dataset.INPUT_GROUP)
+            for dataset in datasets
         }
         self.outputs = {
-            dataset.name: dataset.get_names(dataset.OUTPUT_GROUP)
+            dataset.name: dataset.get_variable_names(dataset.OUTPUT_GROUP)
             for dataset in datasets
         }
         self.varsizes = {}
         for dataset in datasets:
-            self.varsizes.update(dataset.sizes)
+            self.varsizes.update(dataset.variable_names_to_n_components)
         self.design_variables = design_variables
         self.objective_function = objective_function
         self.ineq_constraints = ineq_constraints

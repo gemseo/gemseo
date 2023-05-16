@@ -84,7 +84,7 @@ class ParallelCoordinates(OptPostProcessor):
         fig.colorbar(s_m, ax=axes)
         return fig
 
-    def _plot(self, **options: OptPostProcessorOptionType) -> None:
+    def _plot(self, **burgers_dataset: OptPostProcessorOptionType) -> None:
         problem = self.opt_problem
         variable_history, variable_names, _ = self.database.get_history_array(
             function_names=problem.get_all_function_name()

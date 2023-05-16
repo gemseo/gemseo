@@ -33,7 +33,7 @@ import matplotlib.tri as mtri
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
 
@@ -99,9 +99,9 @@ class ZvsXY(DatasetPlot):
 
         self._set_color(n_series)
 
-        x_data = self.dataset[x][:, x_comp]
-        y_data = self.dataset[y][:, y_comp]
-        z_data = self.dataset[z][:, z_comp]
+        x_data = self.dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
+        y_data = self.dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
+        z_data = self.dataset.get_view(variable_names=z).to_numpy()[:, z_comp]
 
         fig, axes = self._get_figure_and_axes(fig, axes)
 
@@ -123,18 +123,24 @@ class ZvsXY(DatasetPlot):
 
         if other_datasets:
             for index, dataset in enumerate(other_datasets):
-                x_data = dataset[x][:, x_comp]
-                y_data = dataset[y][:, y_comp]
+                x_data = dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
+                y_data = dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
                 axes.scatter(x_data, y_data, color=self.color[index + 1])
 
         if not self.xlabel:
-            self.xlabel = self._get_component_name(x, x_comp, self.dataset.sizes)
+            self.xlabel = self._get_component_name(
+                x, x_comp, self.dataset.variable_names_to_n_components
+            )
 
         if not self.ylabel:
-            self.ylabel = self._get_component_name(y, y_comp, self.dataset.sizes)
+            self.ylabel = self._get_component_name(
+                y, y_comp, self.dataset.variable_names_to_n_components
+            )
 
         if not self.zlabel:
-            self.zlabel = self._get_component_name(z, z_comp, self.dataset.sizes)
+            self.zlabel = self._get_component_name(
+                z, z_comp, self.dataset.variable_names_to_n_components
+            )
 
         if not self.title:
             self.title = self.zlabel

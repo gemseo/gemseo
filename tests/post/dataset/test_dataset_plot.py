@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.utils.testing.helpers import concretize_classes
@@ -37,8 +37,9 @@ def test_empty_dataset():
 
 
 def test_get_label():
-    dataset = Dataset()
-    dataset.set_from_array(array([[1, 2]]), variables=["x"], sizes={"x": 2})
+    dataset = Dataset.from_array(
+        array([[1, 2]]), variable_names=["x"], variable_names_to_n_components={"x": 2}
+    )
     with concretize_classes(DatasetPlot):
         post = DatasetPlot(dataset)
     label, varname = post._get_label(["parameters", "x", 0])
@@ -56,8 +57,9 @@ def test_get_label():
 @pytest.fixture
 def plot():
     """A simple dataset plot from a dataset with a single value: x=[1]."""
-    dataset = Dataset()
-    dataset.set_from_array(array([[1]]), variables=["x"], sizes={"x": 1})
+    dataset = Dataset.from_array(
+        array([[1]]), variable_names=["x"], variable_names_to_n_components={"x": 1}
+    )
     with concretize_classes(DatasetPlot):
         return DatasetPlot(dataset)
 

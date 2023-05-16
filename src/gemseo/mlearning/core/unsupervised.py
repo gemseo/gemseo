@@ -36,7 +36,7 @@ from typing import Sequence
 from numpy import hstack
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
@@ -69,17 +69,17 @@ class MLUnsupervisedAlgo(MLAlgo):
         super().__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )
-        self.var_names = var_names or data.variables
+        self.var_names = var_names or data.variable_names
 
     def _learn(
         self,
         indices: Sequence[int] | None,
         fit_transformers: bool,
     ) -> None:
-        if set(self.var_names) == set(self.learning_set.variables):
+        if set(self.var_names) == set(self.learning_set.variable_names):
             data = []
-            for group in self.learning_set.groups:
-                sub_data = self.learning_set.get_data_by_group(group)
+            for group in self.learning_set.group_names:
+                sub_data = self.learning_set.get_view(group_names=group).to_numpy()
                 if fit_transformers and group in self.transformer:
                     sub_data = self.transformer[group].fit_transform(sub_data)
                 data.append(sub_data)
@@ -87,7 +87,7 @@ class MLUnsupervisedAlgo(MLAlgo):
         else:
             data = []
             for name in self.var_names:
-                sub_data = self.learning_set.get_data_by_names([name], False)
+                sub_data = self.learning_set.get_view(variable_names=name).to_numpy()
                 if fit_transformers and name in self.transformer:
                     sub_data = self.transformer[name].fit_transform(sub_data)
                 data.append(sub_data)

@@ -129,7 +129,7 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # corresponding :class:`.OptimizationProblem`:
 opt_problem = scenario.formulation.opt_problem
 # %%
-# We can easily build a dataset from this :class:`.OptimizationProblem`:
+# We can easily build an :class:`.OptimizationDataset` from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the functions
 # (default option):
 dataset = opt_problem.to_dataset("sellar_problem")
@@ -145,12 +145,8 @@ print(dataset)
 # %%
 # Access observables by name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# We can get the observable data by name,
-# either as a dictionary indexed by the observable names (default option):
-print(dataset.get_data_by_names(["y_1", "y2"]))
-# %%
-# or as an array:
-print(dataset.get_data_by_names(["y_1", "y2"], False))
+# We can get the observable data by variable names:
+print(dataset.get_data(variable_names=["y_1", "y2"]))
 
 # %%
 # Use the observables in a post-processing method

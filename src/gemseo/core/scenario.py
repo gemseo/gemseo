@@ -40,12 +40,12 @@ from numpy import ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.datasets.dataset import Dataset
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
@@ -621,8 +621,7 @@ class Scenario(MDODiscipline):
 
     def to_dataset(
         self,
-        name: str | None = None,
-        by_group: bool = True,
+        name: str = "",
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,
@@ -638,17 +637,7 @@ class Scenario(MDODiscipline):
 
         Args:
             name: The name to be given to the dataset.
-                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
-            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
-                in the sense of one unique NumPy array per group.
-                If ``categorize`` is ``False``,
-                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
-                If ``categorize`` is ``True``,
-                the groups can be either
-                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
-                if ``opt_naming`` is ``True``,
-                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
-                If ``by_group`` is ``False``, store the data by variable names.
+                If empty, use the name of the :attr:`.OptimizationProblem.database`.
             categorize: Whether to distinguish
                 between the different groups of variables.
                 Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
@@ -666,7 +655,6 @@ class Scenario(MDODiscipline):
         """
         return self.formulation.opt_problem.to_dataset(
             name=name,
-            by_group=by_group,
             categorize=categorize,
             opt_naming=opt_naming,
             export_gradients=export_gradients,

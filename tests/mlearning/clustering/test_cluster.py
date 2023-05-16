@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from numpy import arange
 
@@ -33,8 +33,8 @@ def dataset() -> Dataset:
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
-    dataset_ = Dataset("dataset_name")
-    dataset_.set_from_array(data, variables, sizes)
+    dataset_ = Dataset(dataset_name="dataset_name")
+    dataset_.from_array(data, variables, sizes)
     return dataset_
 
 

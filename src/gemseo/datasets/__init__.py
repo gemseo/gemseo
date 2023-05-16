@@ -12,25 +12,5 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A factory for datasets."""
+"""The datasets."""
 from __future__ import annotations
-
-from gemseo.core.base_factory import BaseFactory
-from gemseo.core.dataset import Dataset
-
-
-class DatasetFactory(BaseFactory):
-    """A factory for :class:`.Dataset`."""
-
-    _CLASS = Dataset
-    _MODULE_NAMES = ("gemseo.problems.dataset",)
-
-    @property
-    def datasets(self) -> list[str]:
-        """The names of the available datasets."""
-        return self.class_names

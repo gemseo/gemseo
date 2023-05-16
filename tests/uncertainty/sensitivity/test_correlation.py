@@ -28,7 +28,6 @@ from gemseo.uncertainty.sensitivity.correlation import analysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.testing.helpers import image_comparison
-from numpy.testing import assert_equal
 
 
 @pytest.fixture
@@ -127,7 +126,7 @@ def test_save_load(correlation, tmp_wd):
     new_correlation = CorrelationAnalysis.from_pickle("foo.pkl")
     correlation.compute_indices()
     new_correlation.compute_indices()
-    assert_equal(new_correlation.dataset.data, correlation.dataset.data)
+    assert new_correlation.dataset.equals(correlation.dataset)
     assert new_correlation.default_output == correlation.default_output
 
 

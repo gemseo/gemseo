@@ -23,7 +23,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.parameter_space import RandomVariable
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -326,16 +326,21 @@ def test_evaluate_cdf_raising_errors():
 
 
 @pytest.fixture
-def io_dataset() -> Dataset:
+def io_dataset() -> IODataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)
     outputs = arange(20).reshape(10, 2)
     data = concatenate([inputs, outputs], axis=1)
     variables = ["in_1", "in_2", "out_1"]
-    sizes = {"in_1": 2, "in_2": 3, "out_1": 2}
-    groups = {"in_1": "inputs", "in_2": "inputs", "out_1": "outputs"}
-    dataset = Dataset()
-    dataset.set_from_array(data, variables, sizes, groups)
+    variable_names_to_n_components = {"in_1": 2, "in_2": 3, "out_1": 2}
+    variable_names_to_group_names = {
+        "in_1": "inputs",
+        "in_2": "inputs",
+        "out_1": "outputs",
+    }
+    dataset = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
     return dataset
 
 
@@ -351,11 +356,14 @@ def test_init_from_dataset_default(io_dataset):
         assert (parameter_space[name].var_type == "float").all()
         assert name in parameter_space.deterministic_variables
     assert parameter_space["in_1"].size == 2
-    ref = io_dataset["in_1"].min(0)
+    ref = io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
     assert (parameter_space["in_1"].l_b == ref).all()
-    ref = io_dataset["in_1"].max(0)
+    ref = io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
     assert (parameter_space["in_1"].u_b == ref).all()
-    ref = (io_dataset["in_1"].max(0) + io_dataset["in_1"].min(0)) / 2.0
+    ref = (
+        io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
+        + io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
+    ) / 2.0
     assert (parameter_space["in_1"].value == ref).all()
     assert parameter_space["in_2"].size == 3
     assert parameter_space["out_1"].size == 2

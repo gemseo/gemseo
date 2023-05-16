@@ -23,7 +23,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
@@ -138,12 +139,12 @@ def create_mlearning_model(
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
-minmax_inputs = {Dataset.INPUT_GROUP: MinMaxScaler()}
+minmax_inputs = {IODataset.INPUT_GROUP: MinMaxScaler()}
 
 
 def create_regression_model(
     name: str,
-    data: Dataset,
+    data: IODataset,
     transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
     **parameters,
 ) -> MLRegressionAlgo:
@@ -173,19 +174,19 @@ def create_regression_model(
     if (
         name == "PCERegressor"
         and isinstance(transformer, dict)
-        and Dataset.INPUT_GROUP in transformer
+        and IODataset.INPUT_GROUP in transformer
     ):
         LOGGER.warning(
             "Remove input data transformation because "
             "PCERegressor does not support transformers."
         )
-        del transformer[Dataset.INPUT_GROUP]
+        del transformer[IODataset.INPUT_GROUP]
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
 def create_classification_model(
     name: str,
-    data: Dataset,
+    data: IODataset,
     transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
     **parameters,
 ) -> MLClassificationAlgo:

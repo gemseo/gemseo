@@ -63,7 +63,7 @@ from typing import Iterable
 from typing import Sequence
 from typing import TYPE_CHECKING
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 
 if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace

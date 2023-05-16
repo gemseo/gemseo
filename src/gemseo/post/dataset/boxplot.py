@@ -35,7 +35,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -82,7 +82,7 @@ class Boxplot(DatasetPlot):
             boxplot_options=boxplot_options,
         )
         self.__n_datasets = 1 + len(datasets)
-        self.__names = self.dataset.get_column_names(variables)
+        self.__names = self.dataset.get_columns(variables)
         self.__origin = 0
 
     def _plot(
@@ -93,7 +93,7 @@ class Boxplot(DatasetPlot):
         fig, axes = self._get_figure_and_axes(fig, axes)
         variables = self._param.variables
         if variables is None:
-            variables = self.dataset.variables
+            variables = self.dataset.variable_names
 
         self._set_color(self.__n_datasets)
         self.__draw_boxplot(self.dataset, axes, variables, self.color[0])
@@ -137,11 +137,11 @@ class Boxplot(DatasetPlot):
             color: The color for the boxplot.
         """
         if self._param.center or self._param.scale:
-            dataset = dataset.get_normalized_dataset(
+            dataset = dataset.get_normalized(
                 use_min_max=False, center=self._param.center, scale=self._param.scale
             )
         boxplot = axes.boxplot(
-            dataset.get_data_by_names(variables, False),
+            dataset.get_view(variable_names=variables).to_numpy(),
             vert=self._param.use_vertical_bars,
             notch=self._param.add_confidence_interval,
             showfliers=self._param.add_outliers,

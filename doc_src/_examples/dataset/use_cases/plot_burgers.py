@@ -27,7 +27,7 @@ Dataset consisting of solutions to Burgers' equation.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.curves import Curves
 
 configure_logger()
@@ -36,21 +36,23 @@ configure_logger()
 # Load Burgers' dataset
 # -----------------------
 # We can easily load this dataset
-# by means of the high-level function :func:`~gemseo.load_dataset`:
-dataset = load_dataset("BurgersDataset")
+# by means of the high-level function :func:`~gemseo.create_benchmark_dataset`:
+dataset = create_benchmark_dataset("BurgersDataset")
 print(dataset)
 
 # %%
 # Show the input and output data
 # ------------------------------
-print(dataset.get_data_by_group("inputs"))
-print(dataset.get_data_by_group("outputs"))
+print(dataset.input_dataset)
+print(dataset.output_dataset)
 
 # %%
 # Load customized dataset
 # -----------------------
 # Load the data with custom parameters and input-output naming.
-dataset = load_dataset("BurgersDataset", n_samples=20, n_x=700, fluid_viscosity=0.03)
+dataset = create_benchmark_dataset(
+    "BurgersDataset", n_samples=20, n_x=700, fluid_viscosity=0.03
+)
 print(dataset)
 
 # %%

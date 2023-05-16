@@ -90,6 +90,7 @@ from typing import Final
 from typing import Iterable
 
 from numpy import array
+from numpy import atleast_1d
 from numpy import concatenate
 from numpy import ndarray
 from numpy import vstack
@@ -113,8 +114,8 @@ from openturns import Point
 from openturns import StandardDistributionPolynomialFactory
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
@@ -153,7 +154,7 @@ class PCERegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset | None,
+        data: IODataset | None,
         probability_space: ParameterSpace,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
@@ -229,7 +230,7 @@ class PCERegressor(MLRegressionAlgo):
                 raise ValueError("LARS is not applicable with the quadrature rule.")
 
             if data is None:
-                data = Dataset()
+                data = IODataset()
 
         else:
             if data is None:
@@ -254,10 +255,10 @@ class PCERegressor(MLRegressionAlgo):
             cleaning_options=cleaning_options,
         )
 
-        if use_quadrature and not data:
+        if use_quadrature and data.empty:
             self.input_names = probability_space.variable_names
 
-        if data:
+        if not data.empty:
             missing = set(self.input_names) - set(probability_space.uncertain_variables)
             if missing:
                 raise ValueError(
@@ -269,7 +270,7 @@ class PCERegressor(MLRegressionAlgo):
         if [
             key
             for key in self.transformer.keys()
-            if key in self.input_names or key == Dataset.INPUT_GROUP
+            if key in self.input_names or key == IODataset.INPUT_GROUP
         ]:
             raise ValueError("PCERegressor does not support input transformers.")
 
@@ -277,7 +278,7 @@ class PCERegressor(MLRegressionAlgo):
         input_names = [
             input_name
             for input_name in self.input_names
-            if not isinstance(distributions[input_name], OTDistribution)
+            if not isinstance(distributions.get(input_name, None), OTDistribution)
         ]
         if input_names:
             raise ValueError(
@@ -307,8 +308,12 @@ class PCERegressor(MLRegressionAlgo):
                 )
             else:
                 self.__quadrature_points_with_weights = (
-                    self.learning_set.get_data_by_group(self.learning_set.INPUT_GROUP),
-                    self.learning_set.get_data_by_names([self.__WEIGHT], False).ravel(),
+                    self.learning_set.get_view(
+                        group_names=self.learning_set.INPUT_GROUP
+                    ).to_numpy(),
+                    self.learning_set.get_view(variable_names=self.__WEIGHT)
+                    .to_numpy()
+                    .ravel(),
                 )
         else:
             self.__quadrature_points_with_weights = None
@@ -491,8 +496,15 @@ class PCERegressor(MLRegressionAlgo):
         self.learning_set.add_variable(self.__WEIGHT, weights[:, None])
 
         output_names = list(discipline.get_output_data_names())
+        input_names = list(discipline.get_input_data_names())
         outputs = [[] for _ in output_names]
-        for input_data in self.learning_set:
+        for input_data in self.learning_set.get_view(
+            group_names=self.learning_set.INPUT_GROUP, variable_names=input_names
+        ).to_numpy():
+            input_data = {
+                input_names[i]: atleast_1d(input_data[i])
+                for i in range(len(input_data))
+            }
             output_data = discipline.execute(input_data)
             for index, name in enumerate(output_names):
                 outputs[index].append(output_data[name])
@@ -504,7 +516,6 @@ class PCERegressor(MLRegressionAlgo):
             ),
             output_names,
             {k: v.size for k, v in discipline.get_output_data().items()},
-            cache_as_input=False,
         )
         self.output_names = output_names
         return quadrature_points, weights

@@ -3,6 +3,7 @@
 /src/gemseo.egg-info
 /htmlcov
 /doc
+/sandbox
 
 *.pyc
 .project

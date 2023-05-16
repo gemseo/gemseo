@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
@@ -42,7 +42,7 @@ ATOL = 1e-12
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
@@ -53,7 +53,7 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture
-def dataset_test() -> Dataset:
+def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()

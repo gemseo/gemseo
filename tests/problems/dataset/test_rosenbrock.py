@@ -19,28 +19,28 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 
 def test_constructor():
-    dataset = RosenbrockDataset()
+    dataset = create_rosenbrock_dataset()
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
-    assert "inputs" not in dataset.groups
-    assert "design_parameters" in dataset.groups
+    assert "inputs" not in dataset.group_names
+    assert "designs" in dataset.group_names
 
 
 def test_constructor_categorize():
-    dataset = RosenbrockDataset(categorize=False)
+    dataset = create_rosenbrock_dataset(categorize=False)
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
-    assert "inputs" not in dataset.groups
-    assert "design_parameters" not in dataset.groups
+    assert "inputs" not in dataset.group_names
+    assert "designs" not in dataset.group_names
 
 
 def test_constructor_optnaming():
-    dataset = RosenbrockDataset(opt_naming=False)
+    dataset = create_rosenbrock_dataset(opt_naming=False)
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
-    assert "inputs" in dataset.groups
-    assert "design_parameters" not in dataset.groups
+    assert "inputs" in dataset.group_names
+    assert "designs" not in dataset.group_names

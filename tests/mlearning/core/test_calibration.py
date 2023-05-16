@@ -22,19 +22,20 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def dataset() -> RosenbrockDataset:
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
-    return RosenbrockDataset(opt_naming=False)
+    return create_rosenbrock_dataset(opt_naming=False)
 
 
 def test_discipline_multioutput_fail(dataset):

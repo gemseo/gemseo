@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import create_sensitivity_analysis
@@ -32,7 +32,6 @@ from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from numpy import pi
 from numpy.random import normal
-from numpy.testing import assert_equal
 
 
 def test_available_distribution():
@@ -72,8 +71,7 @@ def test_create_sensitivity():
 def test_create_statistics():
     n_samples = 100
     normal_rand = normal(size=n_samples).reshape((-1, 1))
-    dataset = Dataset()
-    dataset.set_from_array(normal_rand)
+    dataset = Dataset.from_array(normal_rand)
     stat = create_statistics(dataset)
     assert isinstance(stat, EmpiricalStatistics)
     stat = create_statistics(dataset, tested_distributions=["Normal", "Exponential"])
@@ -96,5 +94,5 @@ def test_load_sensitivity_analysis(tmp_wd):
 
     new_analysis = load_sensitivity_analysis("foo.pkl")
     assert new_analysis.__class__.__name__ == new_analysis.__class__.__name__
-    assert_equal(new_analysis.dataset.data, analysis.dataset.data)
+    assert new_analysis.dataset.equals(analysis.dataset)
     assert new_analysis.default_output == analysis.default_output

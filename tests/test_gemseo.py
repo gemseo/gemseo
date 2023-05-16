@@ -27,6 +27,7 @@ import pytest
 from gemseo import AlgorithmFeatures
 from gemseo import compute_doe
 from gemseo import configure
+from gemseo import create_benchmark_dataset
 from gemseo import create_cache
 from gemseo import create_design_space
 from gemseo import create_discipline
@@ -65,19 +66,18 @@ from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
 from gemseo import get_surrogate_options_schema
 from gemseo import import_discipline
-from gemseo import load_dataset
 from gemseo import monitor_scenario
 from gemseo import print_configuration
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo import write_design_space
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverLibrary
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda import MDA
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -457,7 +457,7 @@ def test_create_scalable():
     def f_2(x_1, x_2, x_3):
         return sin(2 * np_pi * x_1) * cos(2 * np_pi * x_2) - x_3
 
-    data = Dataset("sinus")
+    data = IODataset(dataset_name="sinus")
     x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, newaxis]
     data.add_variable("x1", x1_val, data.INPUT_GROUP)
     data.add_variable("x2", x2_val, data.INPUT_GROUP)
@@ -628,10 +628,20 @@ def test_get_available_caches():
     assert set(caches) <= {"HDF5Cache", "MemoryFullCache", "SimpleCache"}
 
 
-def test_load_dataset():
-    """Test the load_dataset method with the `BurgersDataset`."""
-    burgers = load_dataset("BurgersDataset")
-    assert burgers.length == 30
+@pytest.mark.parametrize(
+    "dataset_name,expected_n_samples",
+    [("BurgersDataset", 30), ("IrisDataset", 150), ("RosenbrockDataset", 100)],
+)
+def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples):
+    """Test the load_dataset method with the `BurgersDataset`.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        dataset_name: The dataset to consider.
+        expected_n_samples: The expected number of samples.
+    """
+    dataset = create_benchmark_dataset(dataset_name)
+    assert len(dataset) == expected_n_samples
 
 
 def test_print_configuration(capfd):

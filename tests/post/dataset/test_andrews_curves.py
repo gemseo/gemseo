@@ -21,11 +21,27 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
+from numpy import array
 
 pytestmark = [pytest.mark.xfail(reason="fail with Python3 and coverage")]
+
+
+@pytest.fixture(scope="module")
+def dataset():
+    """Dataset: A dataset containing 4 samples of variables x, y and z and cluster c."""
+    sample1 = [0.0, 0.0, 0.0, 1]
+    sample2 = [1.0, 1.0, -1.0, 2]
+    sample3 = [2.0, 2.0, -2.0, 2]
+    sample4 = [3.0, 3.0, -3.0, 1]
+    dataset = Dataset.from_array(
+        array([sample1, sample2, sample3, sample4]), ["x", "y", "z", "c"]
+    )
+    return dataset
+
 
 # the test parameters, it maps a test name to the inputs and references outputs:
 # - the kwargs to be passed to ParallelCoordinates._plot

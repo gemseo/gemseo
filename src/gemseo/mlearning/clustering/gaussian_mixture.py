@@ -77,7 +77,7 @@ from typing import NoReturn
 from numpy import ndarray
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
 

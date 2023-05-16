@@ -41,7 +41,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
@@ -75,7 +75,7 @@ class RMSEMeasure(MSEMeasure):
 
     def evaluate_test(
         self,
-        test_data: Dataset,
+        test_data: IODataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         as_dict: bool = False,

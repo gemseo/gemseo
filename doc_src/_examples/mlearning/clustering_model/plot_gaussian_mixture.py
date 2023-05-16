@@ -28,9 +28,10 @@ Load Iris dataset and create clusters.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import load_dataset
-from gemseo.core.dataset import Dataset
+from gemseo import create_benchmark_dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning import create_clustering_model
+from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from numpy import array
 
 configure_logger()
@@ -40,15 +41,14 @@ configure_logger()
 # Create dataset
 # --------------
 # We import the Iris benchmark dataset through the API.
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
 # Extract inputs as a new dataset
-data = iris.get_data_by_group(iris.PARAMETER_GROUP)
-variables = iris.get_names(iris.PARAMETER_GROUP)
+data = iris.get_data(group_names=iris.PARAMETER_GROUP).to_numpy()
+variables = iris.get_variable_names(iris.PARAMETER_GROUP)
 print(variables)
 
-dataset = Dataset("sepal_and_petal")
-dataset.set_from_array(data, variables)
+dataset = Dataset.from_array(data, variables)
 
 # %%
 # Create clustering model
@@ -76,7 +76,5 @@ print(output_value)
 # Plot clusters
 # -------------
 # Show cluster labels
-dataset.add_variable(
-    "gm_specy", model.labels.reshape((-1, 1)), group="labels", cache_as_input=False
-)
-dataset.plot("ScatterMatrix", kde=True, classifier="gm_specy")
+dataset.add_variable("gm_specy", model.labels.reshape((-1, 1)), "labels")
+ScatterMatrix(dataset, kde=True, classifier="gm_specy").execute(save=False, show=True)

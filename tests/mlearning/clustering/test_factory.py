@@ -22,16 +22,17 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.factory import ClusteringModelFactory
-from gemseo.problems.dataset.iris import IrisDataset
+from gemseo.problems.dataset.iris import create_iris_dataset
 
 N_CLUSTERS = 3
 
 
 @pytest.fixture
-def dataset() -> IrisDataset:
+def dataset() -> IODataset:
     """The dataset used to train the clustering algorithms."""
-    return IrisDataset()
+    return create_iris_dataset(as_io=True, as_numeric=True)
 
 
 def test_constructor():

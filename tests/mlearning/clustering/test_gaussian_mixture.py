@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning import import_clustering_model
 from gemseo.mlearning.clustering.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
@@ -94,8 +94,8 @@ def dataset(samples) -> Dataset:
 
     variables = ["x_1", "x_2"]
 
-    sample = Dataset("dataset_name")
-    sample.set_from_array(data, variables)
+    sample = Dataset.from_array(data, variables)
+    sample.name = "dataset_name"
     return sample
 
 

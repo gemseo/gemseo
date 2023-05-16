@@ -28,8 +28,8 @@ from pickle import load
 
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.pce import CleaningOptions
@@ -58,13 +58,13 @@ def probability_space() -> ParameterSpace:
 
 
 @pytest.fixture(scope="module")
-def dataset(discipline, probability_space) -> Dataset:
+def dataset(discipline, probability_space) -> IODataset:
     """The learning dataset associated with the linear discipline."""
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y1", probability_space)
     scenario.add_observable("y2")
     scenario.execute({"algo": "fullfact", "n_samples": 9})
     dataset = scenario.to_dataset(opt_naming=False)
-    dataset.add_variable("weight", array([[1]] * 9))
+    dataset.add_variable("weight", 1)
     return dataset
 
 
@@ -85,7 +85,7 @@ def ishigami_probability_space() -> ParameterSpace:
 
 
 @pytest.fixture(scope="module")
-def ishigami_dataset(ishigami_discipline, ishigami_probability_space) -> Dataset:
+def ishigami_dataset(ishigami_discipline, ishigami_probability_space) -> IODataset:
     """The learning dataset associated with the Ishigami discipline."""
     scenario = DOEScenario(
         [ishigami_discipline], "DisciplinaryOpt", "y", ishigami_probability_space
@@ -103,7 +103,7 @@ def pce(dataset, probability_space) -> PCERegressor:
 
 
 @pytest.fixture(scope="module")
-def quadrature_points(discipline, probability_space) -> Dataset:
+def quadrature_points(discipline, probability_space) -> IODataset:
     """The quadrature points computed by a PCERegressor with degree equal to 1."""
     model = PCERegressor(
         None, probability_space, use_quadrature=True, discipline=discipline
@@ -284,7 +284,7 @@ def test_learn_linear_model_with_quadrature_and_discipline(
     the algorithms.
     """
     pce = PCERegressor(
-        None if dataset_is_none else Dataset(),
+        None if dataset_is_none else IODataset(),
         probability_space,
         discipline=discipline,
         degree=1,

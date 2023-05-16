@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from numpy import arange
 
@@ -29,12 +29,12 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape((10, 3))
-    dataset_ = Dataset()
-    dataset_.add_group(Dataset.INPUT_GROUP, data[:, :2])
-    dataset_.add_group(Dataset.OUTPUT_GROUP, data[:, [2]])
+    dataset_ = IODataset()
+    dataset_.add_group(dataset_.INPUT_GROUP, data[:, :2])
+    dataset_.add_group(dataset_.OUTPUT_GROUP, data[:, [2]])
     return dataset_
 
 

@@ -45,11 +45,10 @@ Otherwise, the model uses default values.
 """
 from __future__ import annotations
 
+from numpy import array
 from numpy import full
-from numpy import where
-from numpy import zeros
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 
 
 class ScalableModel:
@@ -57,7 +56,10 @@ class ScalableModel:
 
     ABBR = "sm"
 
-    def __init__(self, data, sizes=None, **parameters) -> None:
+    data: IODataset
+    """The learning dataset."""
+
+    def __init__(self, data: IODataset, sizes=None, **parameters) -> None:
         """Constructor.
 
         :param Dataset data: learning dataset.
@@ -111,38 +113,26 @@ class ScalableModel:
         :return: lower bounds, upper bounds.
         :rtype: dict, dict
         """
-        inputs = self.data.get_data_by_group(self.data.INPUT_GROUP, True)
-        outputs = self.data.get_data_by_group(self.data.OUTPUT_GROUP, True)
-        lower_bounds = {name: value.min(0) for name, value in inputs.items()}
-        lower_bounds.update({name: value.min(0) for name, value in outputs.items()})
-        upper_bounds = {name: value.max(0) for name, value in inputs.items()}
-        upper_bounds.update({name: value.max(0) for name, value in outputs.items()})
+        inputs = self.data.get_view(group_names=self.data.INPUT_GROUP).to_dict("list")
+        outputs = self.data.get_view(group_names=self.data.OUTPUT_GROUP).to_dict("list")
+        lower_bounds = {
+            column[1]: array(value).min(0) for column, value in inputs.items()
+        }
+        lower_bounds.update(
+            {column[1]: array(value).min(0) for column, value in outputs.items()}
+        )
+        upper_bounds = {
+            column[1]: array(value).max(0) for column, value in inputs.items()
+        }
+        upper_bounds.update(
+            {column[1]: array(value).max(0) for column, value in outputs.items()}
+        )
 
         return lower_bounds, upper_bounds
 
     def normalize_data(self) -> None:
         """Normalize dataset from lower and upper bounds."""
-        normalized_data = Dataset()
-        inputs = self.data.get_data_by_group(self.data.INPUT_GROUP, True)
-        for name in self.data.get_names(self.data.INPUT_GROUP):
-            data = inputs[name] - self.lower_bounds[name]
-            data /= self.upper_bounds[name] - self.lower_bounds[name]
-            normalized_data.add_variable(name, data, self.data.INPUT_GROUP)
-        outputs = self.data.get_data_by_group(self.data.OUTPUT_GROUP, True)
-        for name in self.data.get_names(self.data.OUTPUT_GROUP):
-            indices = where(self.lower_bounds[name] == self.upper_bounds[name])[0]
-            data = zeros(outputs[name].shape)
-            if len(indices) != 0:
-                data[:, indices] = zeros((data.shape[0], len(indices))) + 0.5
-                self.lower_bounds[name][indices] = zeros(len(indices)) + 0.5
-                self.upper_bounds[name][indices] = zeros(len(indices)) + 0.5
-            indices = where(self.lower_bounds[name] != self.upper_bounds[name])[0]
-            value = outputs[name][:, indices]
-            lower_bound = self.lower_bounds[name][indices]
-            upper_bound = self.upper_bounds[name][indices]
-            data[:, indices] = (value - lower_bound) / (upper_bound - lower_bound)
-            normalized_data.add_variable(name, data, self.data.OUTPUT_GROUP)
-        self.data = normalized_data
+        self.data = self.data.get_normalized()
 
     def build_model(self):
         """Build model with original sizes for input and output variables."""
@@ -155,7 +145,7 @@ class ScalableModel:
         :return: original sizes of variables.
         :rtype: dict
         """
-        return self.data.sizes
+        return self.data.variable_names_to_n_components
 
     @property
     def output_names(self):
@@ -164,7 +154,7 @@ class ScalableModel:
         :return: names of the outputs.
         :rtype: list(str)
         """
-        return sorted(self.data.get_names(self.data.OUTPUT_GROUP))
+        return self.data.get_variable_names(self.data.OUTPUT_GROUP)
 
     @property
     def input_names(self):
@@ -173,7 +163,7 @@ class ScalableModel:
         :return: names of the inputs.
         :rtype: list(str)
         """
-        return sorted(self.data.get_names(self.data.INPUT_GROUP))
+        return self.data.get_variable_names(self.data.INPUT_GROUP)
 
     def _set_sizes(self, sizes):
         """Set the new sizes of input and output variables.
@@ -183,7 +173,7 @@ class ScalableModel:
         :rtype: dict
         """
         for group in [self.data.INPUT_GROUP, self.data.OUTPUT_GROUP]:
-            for name in self.data.get_names(group):
+            for name in self.data.get_variable_names(group):
                 original_size = self.original_sizes.get(name)
                 sizes[name] = sizes.get(name, original_size)
         return sizes

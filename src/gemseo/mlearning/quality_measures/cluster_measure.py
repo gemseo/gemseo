@@ -33,7 +33,7 @@ from numpy import delete as npdelete
 from numpy import ndarray
 from numpy import unique
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
@@ -84,13 +84,15 @@ class MLClusteringMeasure(MLQualityMeasure):
             The value of the quality measure.
         """
 
-    def _get_data(self) -> dict[str, ndarray]:
+    def _get_data(self) -> ndarray:
         """Get data.
 
         Returns:
-            The learning data indexed by the names of the variables.
+            The learning data.
         """
-        return self.algo.learning_set.get_data_by_names(self.algo.var_names, False)
+        return self.algo.learning_set.get_view(
+            variable_names=self.algo.var_names
+        ).to_numpy()
 
 
 class MLPredictiveClusteringMeasure(MLClusteringMeasure):
@@ -114,7 +116,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         multioutput: bool = True,
     ) -> MeasureType:
         self._train_algo(samples)
-        data = test_data.get_data_by_names(self.algo.var_names, False)
+        data = test_data.get_view(variable_names=self.algo.var_names).to_numpy()
         return self._compute_measure(data, self.algo.predict(data), multioutput)
 
     def evaluate_kfolds(

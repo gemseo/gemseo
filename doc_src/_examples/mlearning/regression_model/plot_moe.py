@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from gemseo import configure_logger
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
 from numpy import array
 from numpy import hstack
@@ -54,7 +54,7 @@ configure_logger()
 # A prebuilt dataset for the Rosenbrock function with two inputs is given
 # as a dataset parametrization, based on a full factorial DOE of the input
 # space with 100 points.
-dataset = load_dataset("RosenbrockDataset", opt_naming=False)
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 
 # %%
 # Print information
@@ -67,7 +67,7 @@ print(dataset)
 # Show dataset
 # ~~~~~~~~~~~~
 # The dataset object can present the data in tabular form.
-print(dataset.export_to_dataframe())
+print(dataset)
 
 # %%
 # Mixture of experts (MoE)
@@ -117,8 +117,8 @@ input_dim = int(sqrt(n_samples))
 assert input_dim**2 == n_samples  # Check that n_samples is a square number
 
 colors = ["b", "r", "g", "o", "y"]
-inputs = dataset.get_data_by_group(dataset.INPUT_GROUP)
-outputs = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+inputs = dataset.input_dataset.to_numpy()
+outputs = dataset.output_dataset.to_numpy()
 x = inputs[:input_dim, 0]
 y = inputs[:input_dim, 0]
 

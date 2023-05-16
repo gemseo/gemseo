@@ -48,7 +48,7 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -159,7 +159,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         param = namedtuple(f"{self.__class__.__name__}Parameters", kwargs.keys())
         self._param = param(**kwargs)
 
-        if dataset.is_empty():
+        if dataset.empty:
             raise ValueError("Dataset is empty.")
 
         self.color = ""
@@ -358,7 +358,9 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         new_columns = []
         for column in dataframe_columns:
-            name = self._get_component_name(column[1], column[2], self.dataset.sizes)
+            name = self._get_component_name(
+                column[1], column[2], self.dataset.variable_names_to_n_components
+            )
             new_columns.append(name)
 
         return new_columns
@@ -403,7 +405,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         if isinstance(variable, str):
             label = variable
-            variable = (self.dataset.get_group(variable), variable, "0")
+            variable = (self.dataset.get_group_names(variable)[0], variable, 0)
         elif hasattr(variable, "__len__") and len(variable) == 3:
             is_string = isinstance(variable[0], str)
             is_string = is_string and isinstance(variable[1], str)

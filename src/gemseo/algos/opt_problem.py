@@ -105,12 +105,14 @@ from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.dataset import Dataset
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -2063,13 +2065,12 @@ class OptimizationProblem(BaseProblem):
 
     def to_dataset(
         self,
-        name: str | None = None,
-        by_group: bool = True,
+        name: str = "",
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,
-        input_values: Iterable[ndarray] | None = None,
-    ) -> Dataset:
+        input_values: Iterable[ndarray] = (),
+    ) -> OptimizationDataset | IODataset:
         """Export the database of the optimization problem to a :class:`.Dataset`.
 
         The variables can be classified into groups:
@@ -2081,17 +2082,7 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             name: The name to be given to the dataset.
-                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
-            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
-                in the sense of one unique NumPy array per group.
-                If ``categorize`` is ``False``,
-                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
-                If ``categorize`` is ``True``,
-                the groups can be either
-                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
-                if ``opt_naming`` is ``True``,
-                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
-                If ``by_group`` is ``False``, store the data by variable names.
+                If empty, use the name of the :attr:`.OptimizationProblem.database`.
             categorize: Whether to distinguish
                 between the different groups of variables.
                 Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
@@ -2104,29 +2095,27 @@ class OptimizationProblem(BaseProblem):
                 (objective function, constraints and observables)
                 if the latter are available in the database of the optimization problem.
             input_values: The input values to be considered.
-                If ``None``, consider all the input values of the database.
+                If empty, consider all the input values of the database.
 
         Returns:
             A dataset built from the database of the optimization problem.
         """
-        if name is None:
-            name = self.database.name
-
-        dataset = Dataset(name, by_group)
-
+        dataset_name = name or self.database.name
         # Set the different groups
-        input_group = output_group = gradient_group = dataset.DEFAULT_GROUP
-        cache_output_as_input = True
         if categorize:
             if opt_naming:
+                dataset = OptimizationDataset(dataset_name=dataset_name)
                 input_group = dataset.DESIGN_GROUP
                 output_group = dataset.FUNCTION_GROUP
                 gradient_group = dataset.GRADIENT_GROUP
             else:
+                dataset = IODataset(dataset_name=dataset_name)
                 input_group = dataset.INPUT_GROUP
                 output_group = dataset.OUTPUT_GROUP
                 gradient_group = dataset.GRADIENT_GROUP
-            cache_output_as_input = False
+        else:
+            dataset = Dataset(dataset_name=dataset_name)
+            input_group = output_group = gradient_group = dataset.DEFAULT_GROUP
 
         # Add database inputs
         input_names = self.design_space.variable_names
@@ -2134,11 +2123,10 @@ class OptimizationProblem(BaseProblem):
         input_history = array(self.database.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
-        if input_values is not None:
-            for input_value in input_values:
-                positions.extend(
-                    where((input_history == input_value).all(axis=1))[0].tolist()
-                )
+        offset = int(opt_naming)
+        for input_value in input_values:
+            _positions = where((input_history == input_value).all(axis=1))[0]
+            positions.extend((_positions + offset).tolist())
 
         input_history = split_array_to_dict_of_arrays(
             input_history, names_to_sizes, input_names
@@ -2155,7 +2143,6 @@ class OptimizationProblem(BaseProblem):
             output_names,
             n_samples,
             output_group,
-            cache_output_as_input,
         )
 
         # Add database output gradients
@@ -2165,16 +2152,9 @@ class OptimizationProblem(BaseProblem):
                 output_names,
                 n_samples,
                 gradient_group,
-                cache_output_as_input,
             )
 
-        if positions:
-            dataset.data = {
-                name: value[positions, :] for name, value in dataset.data.items()
-            }
-            dataset.length = len(positions)
-
-        return dataset
+        return dataset.get_view(indices=positions)
 
     def __add_database_outputs(
         self,
@@ -2182,7 +2162,6 @@ class OptimizationProblem(BaseProblem):
         output_names: Iterable[str],
         n_samples: int,
         output_group: str,
-        cache_output_as_input: bool,
     ) -> None:
         """Add the database outputs to the dataset.
 
@@ -2193,8 +2172,6 @@ class OptimizationProblem(BaseProblem):
                 points where the evaluation failed.
             output_group: The dataset group where the variables will
                 be added.
-            cache_output_as_input: If True, cache these data as inputs
-                when the cache is exported to a cache.
         """
         for output_name in output_names:
             output_history, input_history = self.database.get_function_history(
@@ -2208,7 +2185,6 @@ class OptimizationProblem(BaseProblem):
                 output_name,
                 output_history.reshape((n_samples, -1)).real,
                 output_group,
-                cache_as_input=cache_output_as_input,
             )
 
     def __add_database_output_gradients(
@@ -2217,7 +2193,6 @@ class OptimizationProblem(BaseProblem):
         output_names: Iterable[str],
         n_samples: int,
         gradient_group: str,
-        cache_output_as_input: bool,
     ) -> None:
         """Add the database output gradients to the dataset.
 
@@ -2228,11 +2203,11 @@ class OptimizationProblem(BaseProblem):
                 points where the evaluation failed.
             gradient_group: The dataset group where the variables will
                 be added.
-            cache_output_as_input: If True, cache these data as inputs
-                when the cache is exported to a cache.
         """
         for output_name in output_names:
-            if self.database.check_output_history_is_empty(output_name):
+            if self.database.check_output_history_is_empty(
+                Database.get_gradient_name(output_name)
+            ):
                 continue
 
             gradient_history, input_history = self.database.get_gradient_history(
@@ -2248,7 +2223,6 @@ class OptimizationProblem(BaseProblem):
                 Database.get_gradient_name(output_name),
                 gradient_history.reshape(n_samples, -1).real,
                 gradient_group,
-                cache_as_input=cache_output_as_input,
             )
 
     @staticmethod
@@ -2350,14 +2324,17 @@ class OptimizationProblem(BaseProblem):
             The data related to the variables.
         """
         dataset = self.to_dataset("OptimizationProblem")
-        data = dataset.get_data_by_names(names, as_dict)
+        if as_dict:
+            data = dataset.get_view(variable_names=names).to_dict(orient="list")
+        else:
+            data = dataset.get_view(variable_names=names).to_numpy()
 
         if filter_non_feasible:
             x_feasible, _ = self.get_feasible_points()
             feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
             if as_dict:
                 for key, value in data.items():
-                    data[key] = value[feasible_indexes, :]
+                    data[key] = array(value)[feasible_indexes]
             else:
                 data = data[feasible_indexes, :]
 

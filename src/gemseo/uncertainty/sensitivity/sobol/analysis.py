@@ -260,10 +260,24 @@ class SobolAnalysis(SensitivityAnalysis):
         sample_size = len(dataset) // (
             2 + input_dimension * (1 + (compute_second_order and input_dimension > 2))
         )
+
+        # Variance computation.
+        _output_variances = (
+            dataset.get_view(group_names=dataset.OUTPUT_GROUP)
+            .to_numpy()[:sample_size]
+            .var(0)
+        )
         self.output_variances = {
-            k: v[:sample_size].var(0)
-            for k, v in dataset.get_data_by_group(dataset.OUTPUT_GROUP, True).items()
+            column[1]: []
+            for column in dataset.get_view(group_names=dataset.OUTPUT_GROUP).columns
         }
+        for i, column in enumerate(
+            dataset.get_view(group_names=dataset.OUTPUT_GROUP).columns
+        ):
+            self.output_variances[column[1]].extend([_output_variances[i]])
+
+        self.output_variances = {k: array(v) for k, v in self.output_variances.items()}
+
         self.output_standard_deviations = {
             k: v**0.5 for k, v in self.output_variances.items()
         }
@@ -283,9 +297,13 @@ class SobolAnalysis(SensitivityAnalysis):
         if isinstance(output_names, str):
             output_names = [output_names]
 
-        inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
-        outputs = self.dataset.get_data_by_names(output_names)
-        input_dimension = self.dataset.dimension[self.dataset.INPUT_GROUP]
+        inputs = Sample(
+            self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
+        )
+
+        input_dimension = self.dataset.group_names_to_n_components[
+            self.dataset.INPUT_GROUP
+        ]
 
         # If eval_second_order is set to False, the input design is of size N(2+n_X).
         # If eval_second_order is set to False,
@@ -300,7 +318,10 @@ class SobolAnalysis(SensitivityAnalysis):
             sub_sample_size = int(n_samples / (input_dimension + 2))
 
         self.__output_names_to_sobol_algos = {}
-        for output_name, output_data in outputs.items():
+        for output_name in output_names:
+            output_data = self.dataset.get_view(
+                group_names=self.dataset.OUTPUT_GROUP, variable_names=output_name
+            ).to_numpy()
             algos = self.__output_names_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
                 algos.append(
@@ -326,8 +347,8 @@ class SobolAnalysis(SensitivityAnalysis):
         Returns:
             The first-, second- or total-order indices.
         """
-        input_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
-        names_to_sizes = self.dataset.sizes
+        input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
+        names_to_sizes = self.dataset.variable_names_to_n_components
         indices = {
             output_name: [
                 split_array_to_dict_of_arrays(
@@ -502,8 +523,8 @@ class SobolAnalysis(SensitivityAnalysis):
                     ]
                 }
         """
-        input_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
-        names_to_sizes = self.dataset.sizes
+        input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
+        names_to_sizes = self.dataset.variable_names_to_n_components
         intervals = {}
         for output_name, sobol_algos in self.__output_names_to_sobol_algos.items():
             intervals[output_name] = []

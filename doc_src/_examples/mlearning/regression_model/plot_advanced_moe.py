@@ -24,7 +24,7 @@ Advanced mixture of experts
 """
 from __future__ import annotations
 
-from gemseo import load_dataset
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
@@ -33,7 +33,7 @@ from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasu
 # %%
 # In this example,
 # we seek to estimate the Rosenbrock function from the :class:`.RosenbrockDataset`.
-dataset = load_dataset("RosenbrockDataset", opt_naming=False)
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 
 # %%
 # For that purpose,

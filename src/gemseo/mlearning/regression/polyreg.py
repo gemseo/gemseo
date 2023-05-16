@@ -88,7 +88,7 @@ from numpy import where
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegressor
@@ -102,7 +102,7 @@ class PolynomialRegressor(LinearRegressor):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         degree: int,
         transformer: TransformerType = LinearRegressor.IDENTITY,
         input_names: Iterable[str] | None = None,

@@ -43,44 +43,51 @@ from numpy import hstack
 from numpy import linspace
 from numpy import meshgrid
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 
 
-class RosenbrockDataset(Dataset):
-    """Rosenbrock dataset parametrization."""
+def create_rosenbrock_dataset(
+    n_samples: int = 100, opt_naming: bool = True, categorize: bool = True
+) -> IODataset | OptimizationDataset:
+    """Rosenbrock dataset parametrization.
 
-    def __init__(
-        self,
-        name: str = "Rosenbrock",
-        by_group: bool = True,
-        n_samples: int = 100,
-        categorize: bool = True,
-        opt_naming: bool = True,
-    ) -> None:
-        """
-        Args:
-            name: The name of the dataset.
-            by_group: Whether to store the data by group.
-                Otherwise, store them by variables.
-            n_samples: The number of samples.
-            categorize: Whether to distinguish
-                between the different groups of variables.
-            opt_naming: Whether to use an optimization naming.
-        """
-        super().__init__(name, by_group)
-        root_n_samples = int(n_samples**0.5)
-        x_i = linspace(-2.0, 2.0, root_n_samples)
-        x_i, y_i = meshgrid(x_i, x_i)
-        x_i = x_i.reshape((-1, 1))
-        y_i = y_i.reshape((-1, 1))
-        z_i = 100 * (y_i - x_i**2) ** 2 + (1 - x_i) ** 2
-        data = hstack((x_i, y_i, z_i))
-        if categorize:
-            if opt_naming:
-                groups = {"x": Dataset.DESIGN_GROUP, "rosen": Dataset.FUNCTION_GROUP}
-            else:
-                groups = {"x": Dataset.INPUT_GROUP, "rosen": Dataset.OUTPUT_GROUP}
+    Args:
+        n_samples: The number of samples.
+        opt_naming: Whether to use an optimization naming.
+        categorize: Whether to distinguish
+            between the different groups of variables.
+
+    Returns:
+        The Rosenbrock dataset.
+    """
+    # Create function.
+    root_n_samples = int(n_samples**0.5)
+    x_i = linspace(-2.0, 2.0, root_n_samples)
+    x_i, y_i = meshgrid(x_i, x_i)
+    x_i = x_i.reshape((-1, 1))
+    y_i = y_i.reshape((-1, 1))
+    z_i = 100 * (y_i - x_i**2) ** 2 + (1 - x_i) ** 2
+    data = hstack((x_i, y_i, z_i))
+
+    # Create groups.
+    if categorize:
+        if opt_naming:
+            groups = {
+                "x": OptimizationDataset.DESIGN_GROUP,
+                "rosen": OptimizationDataset.OBJECTIVE_GROUP,
+            }
+            cls = OptimizationDataset
         else:
-            groups = None
-        self.set_from_array(data, ["x", "rosen"], {"x": 2, "rosen": 1}, groups=groups)
-        self.set_metadata("root_n_samples", root_n_samples)
+            groups = {"x": IODataset.INPUT_GROUP, "rosen": IODataset.OUTPUT_GROUP}
+            cls = IODataset
+    else:
+        groups = None
+        cls = Dataset()
+
+    dataset = cls.from_array(data, ["x", "rosen"], {"x": 2, "rosen": 1}, groups)
+    dataset.name = "Rosenbrock"
+    dataset.misc["root_n_samples"] = root_n_samples
+
+    return dataset

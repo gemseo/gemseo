@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
 from gemseo.mlearning.clustering.kmeans import KMeans
@@ -53,7 +53,7 @@ RTOL = 1e-5
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
     x_2 = linspace(0, 1, ROOT_LEARNING_SIZE)
@@ -66,10 +66,17 @@ def dataset() -> Dataset:
     z_2[0, 0] = 0
     data = hstack([x_1, x_2, y_1, z_1, z_2])
     variables = ["x_1", "x_2", "y", "z"]
-    sizes = {"x_1": 1, "x_2": 1, "y": 1, "z": 2}
-    groups = {"x_1": "inputs", "x_2": "inputs", "y": "outputs", "z": "outputs"}
-    tmp = Dataset("dataset_name")
-    tmp.set_from_array(data, variables, sizes, groups)
+    variable_names_to_n_components = {"x_1": 1, "x_2": 1, "y": 1, "z": 2}
+    variable_names_to_group_names = {
+        "x_1": "inputs",
+        "x_2": "inputs",
+        "y": "outputs",
+        "z": "outputs",
+    }
+    tmp = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
+    tmp.name = "dataset_name"
     return tmp
 
 

@@ -55,7 +55,7 @@ from numpy.linalg import norm
 from scipy.interpolate import Rbf
 from strenum import StrEnum
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
@@ -92,7 +92,7 @@ class RBFRegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,

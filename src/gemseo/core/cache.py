@@ -33,7 +33,6 @@ from typing import Generator
 from typing import Iterable
 from typing import Mapping
 from typing import NamedTuple
-from typing import TYPE_CHECKING
 
 from numpy import append
 from numpy import array
@@ -49,6 +48,8 @@ from numpy import vstack
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.core.discipline_data import Data
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
@@ -56,9 +57,6 @@ from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
-
-if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -292,67 +290,48 @@ class AbstractCache(ABCMapping):
 
     def to_dataset(
         self,
-        name: str | None = None,
-        by_group: bool = True,
+        name: str = "",
         categorize: bool = True,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
-    ) -> Dataset:
-        """Build a :class:`.Dataset` from the cache.
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> IODataset:
+        """Build a :class:`.IODataset` from the cache.
 
         Args:
             name: A name for the dataset.
-                If ``None``, use the name of the cache.
-            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
-                in the sense of one unique NumPy array per group.
-                If ``categorize`` is ``False``,
-                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
-                If ``categorize`` is ``True``,
-                the groups are stored
-                in :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
-                If ``by_group`` is ``False``, store the data by variable names.
+                If empty, use the name of the cache.
             categorize: Whether to distinguish
                 between the different groups of variables.
                 Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
             input_names: The names of the inputs to be exported.
-                If ``None``, use all the inputs.
+                If empty, use all the inputs.
             output_names: The names of the outputs to be exported.
-                If ``None``, use all the outputs.
+                If empty, use all the outputs.
                 If an output name is also an input name,
                 the output name is suffixed with ``[out]``.
 
         Returns:
             A dataset version of the cache.
         """
-        from gemseo.core.dataset import Dataset
-
-        dataset = Dataset(name or self.name, by_group)
-
-        input_names = input_names or self.input_names
-        output_names = output_names or self.output_names
-
-        # Set the different groups
-        input_group = output_group = dataset.DEFAULT_GROUP
-        cache_output_as_input = True
+        dataset_name = name or self.name
         if categorize:
+            dataset = IODataset(dataset_name=dataset_name)
             input_group = dataset.INPUT_GROUP
             output_group = dataset.OUTPUT_GROUP
-            cache_output_as_input = False
+        else:
+            dataset = Dataset(dataset_name=dataset_name)
+            input_group = output_group = dataset.DEFAULT_GROUP
 
         self.__fill_dataset_by_group(
             dataset,
-            input_names,
+            input_names or self.input_names,
             input_group,
-            input_names,
-            cache_output_as_input,
             is_output_group=False,
         )
         self.__fill_dataset_by_group(
             dataset,
-            output_names,
+            output_names or self.output_names,
             output_group,
-            input_names,
-            cache_output_as_input,
             is_output_group=True,
         )
 
@@ -360,11 +339,9 @@ class AbstractCache(ABCMapping):
 
     def __fill_dataset_by_group(
         self,
-        dataset: Dataset,
+        dataset: IODataset,
         names: list[str],
         group: str,
-        input_names: list[str],
-        cache_output_as_input: bool,
         is_output_group: bool,
     ) -> None:
         """Fill a group of a dataset with cache variables.
@@ -376,9 +353,6 @@ class AbstractCache(ABCMapping):
             dataset: The dataset to be filled.
             names: The variable names of the group to be added to the dataset.
             group: The group of variables to be added to the dataset.
-            input_names: The names of the cached input variables to be added to the
-                dataset.
-            cache_output_as_input: Whether the output variables are added as input ones.
             is_output_group: Whether ``group`` is a group of output variables.
         """
         for name in names:
@@ -392,13 +366,8 @@ class AbstractCache(ABCMapping):
                     cache_entries.append(selected_cache_entry)
             data = vstack(cache_entries)
             if is_output_group:
-                if name in input_names:
-                    final_name = f"{name}[out]"
-                else:
-                    final_name = name
-                dataset.add_variable(
-                    final_name, data, group, cache_as_input=cache_output_as_input
-                )
+                final_name = name
+                dataset.add_variable(final_name, data, group)
             else:
                 dataset.add_variable(name, data, group)
 
