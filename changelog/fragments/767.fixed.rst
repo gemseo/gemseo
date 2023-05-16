@@ -1,0 +1,2 @@
+Corrected typing issues that caused an exception to be raised when a custom parser was passed to the
+:class:`.DiscFromExe` at instantiation.

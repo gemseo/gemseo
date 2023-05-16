@@ -185,14 +185,13 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
 @pytest.mark.parametrize(
     "parser",
     [
-        ("TEMPLATE", Parser.TEMPLATE),
-        (Parser.TEMPLATE, Parser.TEMPLATE),
-        (Parser.KEY_VALUE, Parser.KEY_VALUE),
-        ("KEY_VALUE", Parser.KEY_VALUE),
-        (lambda a, b: zip(a, b), Parser.CUSTOM_CALLABLE),
+        Parser.TEMPLATE,
+        Parser.KEY_VALUE,
+        lambda a, b: zip(a, b),
     ],
 )
 def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, parser):
+    """Test the instantiation of the discipline with built-in and custom parsers."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
@@ -202,7 +201,7 @@ def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, par
         output_template=join(DIRNAME, "output_template.cfg"),
         output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method=parser[0],
+        parse_outfile_method=parser,
         input_filename="input.cfg",
         output_filename="output.cfg",
         folders_iter="UUID",
