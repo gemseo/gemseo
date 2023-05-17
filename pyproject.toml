@@ -24,8 +24,6 @@ markers = [
 target-version = ['py38']
 
 [tool.towncrier]
-package = "gemseo"
-package_dir = "src"
 directory = "changelog/fragments"
 filename = "CHANGELOG.rst"
 template = "changelog/template.jinja2"
