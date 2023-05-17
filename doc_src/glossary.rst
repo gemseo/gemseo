@@ -332,7 +332,7 @@ Glossary
         Non-Linear Optimization package, an open source library of optimization algorithms from MIT, http://ab-initio.mit.edu/nlopt
 
     SciPy
-        Open Source Library of Scientific Tools, containing a library of optimization algorithms, https://www.scipy.org
+        Open Source Library of Scientific Tools, containing a library of optimization algorithms, https://scipy.org
 
     Secure Shell
         (SSH) an encrypted network protocol for accessing remote computers

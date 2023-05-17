@@ -27,25 +27,25 @@ In this example, we will see how to create and how to manipulate an instance of
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
+from gemseo import configure_logger
+from gemseo import create_design_space
 from numpy import array
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create a design space
 # ---------------------
 #
-# The user can create an instance of the :class:`.DesignSpace` using the API
-# and the :func:`.create_design_space` function.
+# The user can create an instance of the :class:`.DesignSpace`
+# using the high-level function :func:`.create_design_space`.
 
 
 design_space = create_design_space()
 
 
-###############################################################################
+# %%
 # Add design variables
 # --------------------
 #
@@ -59,7 +59,7 @@ design_space.add_variable("x", l_b=array([-2.0]), u_b=array([2.0]), value=array(
 
 print(design_space)
 
-###############################################################################
+# %%
 # The user can also add design variables with dimension greater than one. To do
 # that, the user can use the `size` keyword:
 
@@ -68,7 +68,7 @@ design_space.add_variable(
 )
 print(design_space)
 
-###############################################################################
+# %%
 # By default, each variable infers its type from the given values. One may also
 # specify it with the `var_type` keyword
 design_space.add_variable(
@@ -89,7 +89,7 @@ design_space.add_variable(
 )
 print(design_space)
 
-###############################################################################
+# %%
 # .. note::
 #
 #    Some optimization algorithms may not handle integer variables properly.
@@ -99,7 +99,7 @@ print(design_space)
 #    For additional information on how |g| handles integer variables, refer to
 #    :ref:`nutshell_design_space`.
 
-###############################################################################
+# %%
 # Remove design variables
 # -----------------------
 #

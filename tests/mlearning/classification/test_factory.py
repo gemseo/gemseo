@@ -22,14 +22,15 @@ gemseo.mlearning.classification.factory."""
 from __future__ import annotations
 
 import pytest
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.problems.dataset.iris import IrisDataset
+from gemseo.problems.dataset.iris import create_iris_dataset
 
 
 @pytest.fixture
-def dataset() -> IrisDataset:
+def dataset() -> IODataset:
     """The Iris dataset used to train the classification algorithms."""
-    iris = IrisDataset(as_io=True)
+    iris = create_iris_dataset(as_io=True)
     return iris
 
 
@@ -56,7 +57,7 @@ def test_load(dataset, tmp_wd):
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     knn.learn()
-    dirname = knn.save()
+    dirname = knn.to_pickle()
     loaded_knn = factory.load(dirname)
     assert hasattr(loaded_knn, "parameters")
 

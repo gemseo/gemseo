@@ -76,8 +76,8 @@ sphinx_gallery_conf = {
     "gallery_dirs": gallery_dirs,
     "default_thumb_file": str(current_dir / "_static/icon.png"),
     "within_subsection_order": ExampleTitleSortKey,
-    "filename_pattern": r"\.py$",
-    "ignore_pattern": r"(run|post_process_|save_from_)\w*\.py$",
+    "filename_pattern": r"plot_\w+\.py$",
+    "ignore_pattern": r"run\.py",
     "only_warn_on_example_error": True,
     "nested_sections": False,
     # directory where function/class granular galleries are stored
@@ -87,7 +87,7 @@ sphinx_gallery_conf = {
     "doc_module": "gemseo",
     # objects to exclude from implicit backreferences. The default option
     # is an empty set, i.e. exclude nothing.
-    "exclude_implicit_doc": {r"gemseo\.api\.configure_logger"},
+    "exclude_implicit_doc": {r"gemseo\.configure_logger"},
 }
 
 ################################################################################
@@ -120,6 +120,7 @@ autodoc_mock_imports = [
     "jep",
     "scilab2py",
     "pyfmi",
+    "pdfo",
 ]
 
 ################################################################################
@@ -138,9 +139,7 @@ templates_path = ["templates"]
 # The suffix of source filenames.
 source_suffix = ".rst"
 
-nitpick_ignore_regex = [
-    ("py:.*", ".*PySide6.*"),
-]
+nitpick_ignore_regex = []
 
 todo_include_todos = True
 
@@ -187,6 +186,9 @@ html_static_path = ["_static"]
 def setup(app):
     app.add_css_file("css/gemseo.css")
     app.add_css_file("css/all.css")
+    app.add_css_file("xdsm/fontello.css")
+    app.add_css_file("xdsm/xdsmjs.css")
+    app.add_js_file("xdsm/xdsmjs.js")
 
 
 # Additional templates that should be rendered to pages, maps page names to
@@ -292,7 +294,11 @@ html_context["plugins"] = {
     "gemseo-umdo": "Capability for MDO under uncertainty",
     "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
     "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
+    "gemseo-pdfo": "GEMSEO plugin for the PDFO library.",
+    "gemseo-pseven": "GEMSEO plugin for the pSeven library.",
+    "gemseo-matlab": "GEMSEO plugin for MATLAB.",
 }
+html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
 
 ###############################################################################
 # Settings for inheritance_diagram

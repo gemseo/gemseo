@@ -48,7 +48,7 @@ API changes that impact user scripts code
 - The class ``ConcatenationDiscipline`` has been renamed to :class:`.Concatenater`.
 - In Caches:
 
-  - ``inputs_names`` has been renamed to :attr:`~.AbstractCache.input_names`.
+  - ``input_names`` has been renamed to :attr:`~.AbstractCache.input_names`.
   - ``get_all_data()`` has been replaced by ``[cache_entry for cache_entry in cache]``.
   - ``get_data`` has been removed.
   - ``get_length()`` has been replaced by ``len(cache)``.
@@ -58,7 +58,7 @@ API changes that impact user scripts code
   - ``get_last_cached_outputs()`` has been replaced by ``cache.last_entry.outputs``.
   - ``max_length`` has been removed.
   - ``merge`` has been renamed to :meth:`~.AbstractFullCache.update`.
-  - ``outputs_names`` has been renamed to :attr:`~.AbstractCache.output_names`.
+  - ``output_names`` has been renamed to :attr:`~.AbstractCache.output_names`.
   - ``varsizes`` has been renamed to :attr:`~.AbstractCache.names_to_sizes`.
   - ``samples_indices`` has been removed.
 
@@ -107,7 +107,7 @@ API changes that affect plugin or features developers
 - The class variable ``MLAlgo.ABBR`` has been renamed to :attr:`.MLAlgo.SHORT_ALGO_NAME`.
 - For ``OptResult`` and ``MDOFunction``: ``get_data_dict_repr`` has been renamed to ``to_dict``.
 - Remove plugin detection for packages with ``gemseo_`` prefix.
-- ``MDOFunctionGenerator.get_function``: ``input_names_list`` and ``output_names_list``  has been renamed to ``output_names`` and ``output_names``.
+- ``MDODisciplineAdapterGenerator.get_function``: ``input_names_list`` and ``output_names_list``  has been renamed to ``output_names`` and ``output_names``.
 - ``MDOScenarioAdapter.__init__``: ``inputs_list`` and ``outputs_list``  has been renamed to ``input_names`` and ``output_names``.
 - ``OptPostProcessor.out_data_dict``  has been renamed to :attr:`.OptPostProcessor.materials_for_plotting`.
 

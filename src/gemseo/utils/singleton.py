@@ -21,15 +21,13 @@
 from __future__ import annotations
 
 from os.path import realpath
-from typing import Any
-
-from six import with_metaclass
 
 
 class SingleInstancePerAttributeId(type):
-    """A Singleton-like design pattern so that subclasses are only instantiated when the
-    discipline instance passed as input of the constructor is different from already
-    created instances.
+    """A multiton that depends on the id of a passed object.
+
+    Subclasses are only instantiated when the discipline instance passed as input of the
+    constructor is different from already created instances.
 
     The test if the instances are equal is made with the id(obj1)==id(obj2) operator
     """
@@ -38,8 +36,8 @@ class SingleInstancePerAttributeId(type):
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
-    # function.MDOFunctionGenerator should have self as first parameter"
-    def __call__(cls, *args, **kwargs):
+    # function.MDODisciplineAdapterGenerator should have self as first parameter"
+    def __call__(cls, *args, **kwargs):  # noqa:D102
         # id = memory address of the object, which is unique
         if not args:
             raise ValueError(
@@ -55,51 +53,11 @@ class SingleInstancePerAttributeId(type):
         return inst
 
 
-class _Multiton(type):
-    """A metaclass for implementing the Multiton design pattern.
-
-    See `Multiton <https://en.wikipedia.org/wiki/Multiton_pattern>`.
-
-    As opposed to the functools.lru_cache,
-    the objects built from this metaclass can be pickled.
-
-    .. warning:
-
-        Like the standard functools.lru_cache,
-        the kwargs order is not preserved:
-        it means that f(x=1, y=2) is treated as a
-        distinct call from f(y=2, x=1) which will be cached separately.
-    """
-
-    _cache: Any = {}
-
-    def __call__(
-        cls,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        key = (cls,) + args + tuple(kwargs.items())
-        try:
-            return cls._cache[key]
-        except KeyError:
-            inst = type.__call__(cls, *args, **kwargs)
-            cls._cache[key] = inst
-            return inst
-
-    @classmethod
-    def cache_clear(cls) -> None:
-        """Clear the cache."""
-        cls._cache = {}
-
-
-# Provide a naturally derivable class.
-Multiton = with_metaclass(_Multiton, object)
-
-
 class SingleInstancePerFileAttribute(type):
-    """A Singleton-like design pattern so that subclasses are only instantiated when the
-    discipline instance passed as input of the constructor is different from already
-    created instances.
+    """A multiton that depends on the file passed.
+
+    Subclasses are only instantiated when the discipline instance passed as input of the
+    constructor is different from already created instances.
 
     The test if the instances are equal is made with the obj1 == obj2 operator
     """
@@ -108,7 +66,7 @@ class SingleInstancePerFileAttribute(type):
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):  # noqa:D102
         if not args:
             raise ValueError(
                 "SingleInstancePerAttribute subclasses need at"

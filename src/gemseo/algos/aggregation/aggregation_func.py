@@ -29,16 +29,16 @@ from typing import Sequence
 
 from numpy import ndarray
 
+from gemseo.algos.aggregation.core import compute_iks_agg
+from gemseo.algos.aggregation.core import compute_ks_agg
+from gemseo.algos.aggregation.core import compute_max_agg
+from gemseo.algos.aggregation.core import compute_max_agg_jac
 from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
+from gemseo.algos.aggregation.core import compute_sum_square_agg
+from gemseo.algos.aggregation.core import compute_total_iks_agg_jac
+from gemseo.algos.aggregation.core import compute_total_ks_agg_jac
+from gemseo.algos.aggregation.core import compute_total_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
-from gemseo.algos.aggregation.core import iks_agg
-from gemseo.algos.aggregation.core import iks_agg_jac_v
-from gemseo.algos.aggregation.core import ks_agg
-from gemseo.algos.aggregation.core import ks_agg_jac_v
-from gemseo.algos.aggregation.core import max_agg
-from gemseo.algos.aggregation.core import max_agg_jac_v
-from gemseo.algos.aggregation.core import sum_square_agg
-from gemseo.algos.aggregation.core import sum_square_agg_jac_v
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
@@ -118,10 +118,10 @@ def aggregate_sum_square(
     """
 
     def compute(x):
-        return sum_square_agg(constr_fct(x), indices=indices, scale=scale)
+        return compute_sum_square_agg(constr_fct(x), indices=indices, scale=scale)
 
     def compute_jac(x):
-        return sum_square_agg_jac_v(
+        return compute_total_sum_square_agg_jac(
             constr_fct(x), constr_fct.jac(x), indices=indices, scale=scale
         )
 
@@ -192,10 +192,10 @@ def aggregate_max(
     """
 
     def compute(x):
-        return max_agg(constr_fct(x), indices=indices, scale=scale)
+        return compute_max_agg(constr_fct(x), indices=indices, scale=scale)
 
     def compute_jac(x):
-        return max_agg_jac_v(
+        return compute_max_agg_jac(
             constr_fct(x), constr_fct.jac(x), indices=indices, scale=scale
         )
 
@@ -232,10 +232,10 @@ def aggregate_iks(
     """
 
     def compute(x):
-        return iks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
+        return compute_iks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
 
     def compute_jac(x):
-        return iks_agg_jac_v(
+        return compute_total_iks_agg_jac(
             constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
         )
 
@@ -272,10 +272,10 @@ def aggregate_ks(
     """
 
     def compute(x):
-        return ks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
+        return compute_ks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
 
     def compute_jac(x):
-        return ks_agg_jac_v(
+        return compute_total_ks_agg_jac(
             constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
         )
 
@@ -316,8 +316,9 @@ def _create_mdofunc(
         constr_fct.f_type,
         compute_jac_fct,
         new_expr,
-        constr_fct.args,
+        constr_fct.input_names,
         1,
         new_output_names,
         constr_fct.force_real,
+        original_name=constr_fct.original_name,
     )

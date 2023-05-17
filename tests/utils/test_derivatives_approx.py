@@ -25,19 +25,21 @@ from math import log10
 from math import sin
 
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.derivatives.complex_step import ComplexStep
-from gemseo.utils.derivatives.derivatives_approx import comp_best_step
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
 from numpy import array
 from numpy import complex128
 from numpy import float64
@@ -128,19 +130,29 @@ def test_abs_der():
 
 def test_complex_fail():
     discipline = SobieskiMission("complex128")
-    assert discipline.check_jacobian(derr_approx=discipline.COMPLEX_STEP)
+    assert discipline.check_jacobian(
+        derr_approx=discipline.ApproximationMode.COMPLEX_STEP
+    )
 
     data = deepcopy(discipline.default_inputs)
     data["x_shared"] += 0.1j
     with pytest.raises(ValueError):
-        discipline.check_jacobian(data, derr_approx=discipline.COMPLEX_STEP)
+        discipline.check_jacobian(
+            data, derr_approx=discipline.ApproximationMode.COMPLEX_STEP
+        )
 
 
 @pytest.mark.parametrize("discipline_name", ["Sellar1", "Sellar2"])
-def test_auto_step(discipline_name):
+@pytest.mark.parametrize("parallel", [True, False])
+def test_auto_step(discipline_name, parallel):
     discipline = create_discipline(discipline_name)
 
-    ok = discipline.check_jacobian(auto_set_step=True, threshold=1e-2, step=1e-7)
+    ok = discipline.check_jacobian(
+        auto_set_step=True,
+        threshold=1e-2,
+        step=1e-7,
+        parallel=parallel,
+    )
     assert ok
 
 
@@ -156,7 +168,7 @@ def test_opt_step():
                 f_p = func(mult * (x + step))
                 f_x = func(mult * x)
                 f_m = func(mult * (x - step))
-                trunc_error, cancel_error, opt_step = comp_best_step(
+                trunc_error, cancel_error, opt_step = compute_best_step(
                     f_p, f_x, f_m, step
                 )
                 if trunc_error is None:
@@ -170,7 +182,7 @@ def test_opt_step():
 
 
 @pytest.mark.parametrize(
-    "indices,expected_sequence,expected_variables_indices",
+    "indices,expected_sequence,expected_variable_indices",
     [
         ({"y": None}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
         ({"y": Ellipsis}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
@@ -180,16 +192,16 @@ def test_opt_step():
         ({}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
     ],
 )
-def test_compute_io_indices(indices, expected_sequence, expected_variables_indices):
+def test_compute_io_indices(indices, expected_sequence, expected_variable_indices):
     """Check that input and output indices are correctly computed from indices."""
     (
         indices_sequence,
-        variables_indices,
-    ) = DisciplineJacApprox._compute_variables_indices(
+        variable_indices,
+    ) = DisciplineJacApprox._compute_variable_indices(
         indices, ["x", "y"], {"y": 3, "x": 2}
     )
     assert indices_sequence == expected_sequence
-    assert variables_indices == expected_variables_indices
+    assert variable_indices == expected_variable_indices
 
 
 def test_load_and_dump(tmp_wd):
@@ -222,8 +234,8 @@ def test_load_and_dump(tmp_wd):
 class ToyDiscipline(MDODiscipline):
     def __init__(self, dtype=float64):
         super().__init__()
-        self.input_grammar.update(["x1", "x2"])
-        self.output_grammar.update(["y1", "y2"])
+        self.input_grammar.update_from_names(["x1", "x2"])
+        self.output_grammar.update_from_names(["y1", "y2"])
         self.default_inputs = {
             "x1": array([1.0], dtype=dtype),
             "x2": array([1.0, 1.0], dtype=dtype),
@@ -279,7 +291,7 @@ def test_indices(inputs, outputs, indices, dtype):
         dtype: The data type of the variables for the test discipline.
     """
     discipline = ToyDiscipline(dtype=dtype)
-    discipline.linearize(force_all=True)
+    discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline)
     assert apprx.check_jacobian(
         discipline.jac, outputs, inputs, discipline, indices=indices
@@ -294,14 +306,14 @@ def test_wrong_step(dtype):
         dtype: The data type of the variables for the test discipline.
     """
     discipline = ToyDiscipline(dtype=dtype)
-    discipline.linearize(force_all=True)
+    discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7])
     with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
         apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
 
 
 def test_factory():
-    factory = GradientApproximationFactory()
+    factory = GradientApproximatorFactory()
     assert "ComplexStep" in factory.gradient_approximators
     assert factory.is_available("ComplexStep")
 
@@ -341,7 +353,7 @@ def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_
         problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize
     )
 
-    grad = problem.database.get_func_grad_history("my_objective")[0, 0]
+    grad = problem.database.get_gradient_history("my_objective")[0, 0]
     if upper_bound is None:
         assert grad > 4.0
     else:

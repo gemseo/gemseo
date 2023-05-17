@@ -24,26 +24,27 @@ Calibration of a polynomial regression
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from matplotlib.tri import Triangulation
 
-###############################################################################
+# %%
 # Load the dataset
 # ----------------
-dataset = RosenbrockDataset(opt_naming=False, n_samples=25)
+dataset = create_rosenbrock_dataset(opt_naming=False, n_samples=25)
 
-###############################################################################
+# %%
 # Define the measure
 # ------------------
 configure_logger()
-test_dataset = RosenbrockDataset(opt_naming=False)
-measure_options = {"method": "test", "test_data": test_dataset}
+test_dataset = create_rosenbrock_dataset(opt_naming=False)
+measure_evaluation_method_name = "test"
+measure_options = {"test_data": test_dataset}
 
-###############################################################################
+# %%
 # Calibrate the degree of the polynomial regression
 # -------------------------------------------------
 # Define and execute the calibration
@@ -56,7 +57,8 @@ calibration = MLAlgoCalibration(
     ["degree"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method_name=measure_evaluation_method_name,
+    measure_options=measure_options,
 )
 calibration.execute({"algo": "fullfact", "n_samples": 10})
 x_opt = calibration.optimal_parameters
@@ -64,12 +66,12 @@ f_opt = calibration.optimal_criterion
 print("optimal degree:", x_opt["degree"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^
 degree = calibration.get_history("degree")
@@ -84,7 +86,7 @@ plt.axvline(x_opt["degree"], color="red", ls="--")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Calibrate the ridge penalty of the polynomial regression
 # --------------------------------------------------------
 # Define and execute the calibration
@@ -97,7 +99,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method_name=measure_evaluation_method_name,
+    measure_options=measure_options,
     degree=10,
 )
 calibration.execute({"algo": "fullfact", "n_samples": 10})
@@ -106,12 +109,12 @@ f_opt = calibration.optimal_criterion
 print("optimal penalty_level:", x_opt["penalty_level"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^^
 penalty_level = calibration.get_history("penalty_level")
@@ -126,7 +129,7 @@ plt.ylabel("quality")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Calibrate the lasso penalty of the polynomial regression
 # --------------------------------------------------------
 # Define and execute the calibration
@@ -139,7 +142,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method_name=measure_evaluation_method_name,
+    measure_options=measure_options,
     degree=10,
     l2_penalty_ratio=0.0,
 )
@@ -149,12 +153,12 @@ f_opt = calibration.optimal_criterion
 print("optimal penalty_level:", x_opt["penalty_level"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^^
 penalty_level = calibration.get_history("penalty_level")
@@ -169,7 +173,7 @@ plt.ylabel("quality")
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Calibrate the elasticnet penalty of the polynomial regression
 # -------------------------------------------------------------
 # Define and execute the calibration
@@ -183,7 +187,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level", "l2_penalty_ratio"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method_name=measure_evaluation_method_name,
+    measure_options=measure_options,
     degree=10,
 )
 calibration.execute({"algo": "fullfact", "n_samples": 100})
@@ -193,12 +198,12 @@ print("optimal penalty_level:", x_opt["penalty_level"][0])
 print("optimal l2_penalty_ratio:", x_opt["l2_penalty_ratio"][0])
 print("optimal criterion:", f_opt)
 
-###############################################################################
+# %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset.export_to_dataframe())
+print(calibration.dataset)
 
-###############################################################################
+# %%
 # Visualize the results
 # ^^^^^^^^^^^^^^^^^^^^^
 penalty_level = calibration.get_history("penalty_level").flatten()
@@ -224,7 +229,7 @@ ax.set_title("Learning measure")
 
 plt.show()
 
-###############################################################################
+# %%
 # Add an optimization stage
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 calibration_space = DesignSpace()
@@ -236,7 +241,8 @@ calibration = MLAlgoCalibration(
     ["penalty_level", "l2_penalty_ratio"],
     calibration_space,
     MSEMeasure,
-    measure_options,
+    measure_evaluation_method_name=measure_evaluation_method_name,
+    measure_options=measure_options,
     degree=10,
 )
 calibration.execute({"algo": "NLOPT_COBYLA", "max_iter": 100})

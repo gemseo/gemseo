@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from gemseo.post.dataset.factory import DatasetPlotFactory
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 
 def test_instantiate_factory():
@@ -42,6 +42,6 @@ def test_is_available():
 
 def test_create():
     factory = DatasetPlotFactory()
-    dataset = RosenbrockDataset()
+    dataset = create_rosenbrock_dataset()
     dataset = factory.create("ScatterMatrix", dataset=dataset)
     assert not dataset.output_files

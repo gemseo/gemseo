@@ -30,7 +30,10 @@ from numpy import eye
 from numpy import ones
 from numpy import random
 from numpy import zeros
+from numpy.random import randn
+from numpy.random import seed
 from scipy.linalg import norm
+from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
 
@@ -174,6 +177,29 @@ def test_runtime_error():
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(RuntimeError, match="Factor is exactly singular"):
         LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False)
+
+
+def test_default_solver():
+    """Tests the default linear solver sequence.
+
+    Consider the default solver when the matrix A is either a NumPy array or a SciPy
+    LinearOperator. In the latter case, the final step using direct method cannot be
+    used leading to an unconverged problem.
+    """
+    seed(123456789)
+
+    lhs, rhs = randn(30, 30), ones(30)
+    options = {"tol": 1e-12, "max_iter": 1, "inner_m": 1}
+
+    # Linear system eventually solved using direct method and considered converged
+    problem = LinearProblem(lhs, rhs)
+    LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False, **options)
+    assert problem.is_converged
+
+    # Linear system left unsolved since no direct method applied
+    problem = LinearProblem(aslinearoperator(lhs), rhs)
+    LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False, **options)
+    assert not problem.is_converged
 
 
 def test_check_info():

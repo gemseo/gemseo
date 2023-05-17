@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from numpy import matmul
 from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
@@ -31,7 +30,7 @@ def compute_linear_approximation(
     x_vect: ArrayType,
     name: str | None = None,
     f_type: str | None = None,
-    args: Sequence[str] | None = None,
+    input_names: Sequence[str] | None = None,
 ) -> MDOLinearFunction:
     r"""Compute a first-order Taylor polynomial of a function.
 
@@ -52,7 +51,7 @@ def compute_linear_approximation(
             If ``None``, create a name from the name of the function.
         f_type: The type of the linear approximation function.
             If ``None``, the function will have no type.
-        args: The names of the inputs of the linear approximation function,
+        input_names: The names of the inputs of the linear approximation function,
             or a name base.
             If ``None``, use the names of the inputs of the function.
 
@@ -62,7 +61,7 @@ def compute_linear_approximation(
     Raises:
         AttributeError: If the function does not have a Jacobian function.
     """
-    if not function.has_jac():
+    if not function.has_jac:
         raise AttributeError("Function Jacobian unavailable for linear approximation.")
 
     coefficients = function.jac(x_vect)
@@ -75,8 +74,8 @@ def compute_linear_approximation(
         coefficients,
         f"{function.name}_linearized" if name is None else name,
         f_type,
-        args if args else function.args,
-        func_val - matmul(coefficients, x_vect),
+        input_names if input_names else function.input_names,
+        func_val - coefficients @ x_vect,
     )
 
 
@@ -84,7 +83,7 @@ def compute_quadratic_approximation(
     function: MDOFunction,
     x_vect: ArrayType,
     hessian_approx: ArrayType,
-    args: Sequence[str] | None = None,
+    input_names: Sequence[str] | None = None,
 ) -> MDOQuadraticFunction:
     r"""Build a quadratic approximation of a function at a given point.
 
@@ -110,8 +109,8 @@ def compute_quadratic_approximation(
         x_vect: The input vector at which to build the quadratic approximation.
         hessian_approx: The approximation of the Hessian matrix
             at this input vector.
-        args: The names of the inputs of the quadratic approximation function,
-            or a name base.
+        input_names: The names of the inputs of the quadratic approximation function,
+            or a base name.
             If ``None``, use the ones of the current function.
 
     Returns:
@@ -127,18 +126,18 @@ def compute_quadratic_approximation(
     if hessian_approx.shape[1] != x_vect.size:
         raise ValueError("Hessian approximation and vector must have same dimension.")
 
-    if not function.has_jac():
+    if not function.has_jac:
         raise AttributeError("Jacobian unavailable.")
 
     gradient = function.jac(x_vect)
-    hess_dot_vect = matmul(hessian_approx, x_vect)
+    hess_dot_vect = hessian_approx @ x_vect
 
     return MDOQuadraticFunction(
         quad_coeffs=0.5 * hessian_approx,
         linear_coeffs=gradient - hess_dot_vect,
         value_at_zero=(
-            matmul(0.5 * hess_dot_vect - gradient, x_vect) + function.evaluate(x_vect)
+            (0.5 * hess_dot_vect - gradient).T @ x_vect + function.evaluate(x_vect)
         ),
         name=f"{function.name}_quadratized",
-        args=args if args else function.args,
+        input_names=input_names if input_names else function.input_names,
     )

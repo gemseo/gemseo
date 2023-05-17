@@ -29,7 +29,6 @@ from copy import deepcopy
 from multiprocessing import cpu_count
 from multiprocessing import Manager
 from multiprocessing import Value
-from multiprocessing.sharedctypes import Synchronized
 from pathlib import Path
 from timeit import default_timer as timer
 from typing import Any
@@ -41,26 +40,29 @@ from typing import MutableMapping
 from typing import NoReturn
 from typing import TYPE_CHECKING
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import concatenate
 from numpy import empty
 from numpy import ndarray
 from numpy import zeros
+from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
-from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.defaults import Defaults
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarFactory
-from gemseo.core.namespaces import remove_prefix_from_dict
 from gemseo.core.namespaces import remove_prefix_from_list
+from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -76,7 +78,7 @@ def default_dict_factory() -> dict:
     return defaultdict(None)
 
 
-class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
+class MDODiscipline(Serializable):
     """A software integrated in the workflow.
 
     To be used,
@@ -101,6 +103,46 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     or your own which derives from :class:`.BaseGrammar`.
     """
 
+    class ExecutionStatus(StrEnum):
+        """The execution statuses of a discipline."""
+
+        VIRTUAL = "VIRTUAL"
+        PENDING = "PENDING"
+        DONE = "DONE"
+        RUNNING = "RUNNING"
+        FAILED = "FAILED"
+        LINEARIZE = "LINEARIZE"
+
+    class GrammarType(StrEnum):
+        """The name of the grammar class."""
+
+        JSON = "JSONGrammar"
+        SIMPLE = "SimpleGrammar"
+
+    class CacheType(StrEnum):
+        """The name of the cache class."""
+
+        SIMPLE = "SimpleCache"
+        HDF5 = "HDF5Cache"
+        MEMORY_FULL = "MemoryFullCache"
+        NONE = ""
+        """No cache is used."""
+
+    ApproximationMode = ApproximationMode
+
+    LinearizationMode = merge_enums(
+        "LinearizationMode",
+        StrEnum,
+        DerivationMode,
+        ApproximationMode,
+    )
+
+    class ReExecutionPolicy(StrEnum):
+        """The re-execution policy of a discipline."""
+
+        DONE = "RE_EXEC_DONE"
+        NEVER = "RE_EXEC_NEVER"
+
     input_grammar: BaseGrammar
     """The input grammar."""
 
@@ -110,20 +152,17 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     data_processor: DataProcessor
     """A tool to pre- and post-process discipline data."""
 
-    re_exec_policy: str
-    """The policy to re-execute the same discipline."""
-
     residual_variables: Mapping[str, str]
     """The output variables mapping to their inputs, to be considered as residuals; they
     shall be equal to zero."""
 
     run_solves_residuals: bool
-    """If True, the run method shall solve the residuals."""
+    """Whether the run method shall solve the residuals."""
 
     jac: dict[str, dict[str, ndarray]]
-    """The Jacobians of the outputs wrt inputs of the form ``{output: {input:
+    """The Jacobians of the outputs wrt inputs.
 
-    matrix}}``.
+    The structure is ``{output: {input: matrix}}``.
     """
 
     exec_for_lin: bool
@@ -136,51 +175,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """The cache containing one or several executions of the discipline according to the
     cache policy."""
 
-    STATUS_VIRTUAL = "VIRTUAL"
-    STATUS_PENDING = "PENDING"
-    STATUS_DONE = "DONE"
-    STATUS_RUNNING = "RUNNING"
-    STATUS_FAILED = "FAILED"
-    STATUS_LINEARIZE = "LINEARIZE"
-    AVAILABLE_STATUSES = [
-        STATUS_DONE,
-        STATUS_FAILED,
-        STATUS_PENDING,
-        STATUS_RUNNING,
-        STATUS_VIRTUAL,
-        STATUS_LINEARIZE,
-    ]
-
-    JSON_GRAMMAR_TYPE = "JSONGrammar"
-    SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"
-
-    GRAMMAR_DIRECTORY: ClassVar[str | None] = None
-    """The directory in which to search for the grammar files if not the class one."""
-
-    COMPLEX_STEP = derivation_modes.COMPLEX_STEP
-    FINITE_DIFFERENCES = derivation_modes.FINITE_DIFFERENCES
-
-    SIMPLE_CACHE = "SimpleCache"
-    HDF5_CACHE = "HDF5Cache"
-    MEMORY_FULL_CACHE = "MemoryFullCache"
-
-    activate_cache: bool = True
-    """Whether to cache the discipline evaluations by default."""
-
-    APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
-    AVAILABLE_MODES = (
-        derivation_modes.AUTO_MODE,
-        derivation_modes.DIRECT_MODE,
-        derivation_modes.ADJOINT_MODE,
-        derivation_modes.REVERSE_MODE,
-        derivation_modes.FINITE_DIFFERENCES,
-        derivation_modes.COMPLEX_STEP,
-    )
-
-    RE_EXECUTE_DONE_POLICY = "RE_EXEC_DONE"
-    RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
-    N_CPUS = cpu_count()
-
     activate_counters: ClassVar[bool] = True
     """Whether to activate the counters (execution time, calls and linearizations)."""
 
@@ -190,34 +184,24 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     activate_output_data_check: ClassVar[bool] = True
     """Whether to check the output data respect the output grammar."""
 
-    _ATTR_TO_SERIALIZE = (
-        "_cache_was_loaded",
-        "_default_inputs",
-        "_differentiated_inputs",
-        "_differentiated_outputs",
-        "_in_data_hash_dict",
-        "_is_linearized",
-        "_jac_approx",
-        "_linearization_mode",
-        "_linearize_on_last_state",
-        "_grammar_type",
-        "_local_data",
-        "_status",
-        "cache",
-        "data_processor",
-        "_disciplines",
-        "exec_for_lin",
-        "exec_time",
-        "input_grammar",
-        "jac",
-        "n_calls",
-        "n_calls_linearize",
-        "name",
-        "output_grammar",
-        "re_exec_policy",
-        "residual_variables",
-        "run_solves_residuals",
-    )
+    activate_cache: bool = True
+    """Whether to cache the discipline evaluations by default."""
+
+    re_exec_policy: ReExecutionPolicy
+    """The policy to re-execute the same discipline."""
+
+    GRAMMAR_DIRECTORY: ClassVar[str | None] = None
+    """The directory in which to search for the grammar files if not the class one."""
+
+    virtual_execution: ClassVar[bool] = False
+    """Whether to skip the :meth:`._run` method during execution and return the
+    default_outputs, whatever the inputs."""
+
+    N_CPUS = cpu_count()
+
+    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
+        "_status_observers",
+    }
 
     __mp_manager: Manager = None
     time_stamps = None
@@ -228,8 +212,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         input_grammar_file: str | Path | None = None,
         output_grammar_file: str | Path | None = None,
         auto_detect_grammar_files: bool = False,
-        grammar_type: str = JSON_GRAMMAR_TYPE,
-        cache_type: str | None = SIMPLE_CACHE,
+        grammar_type: GrammarType = GrammarType.JSON,
+        cache_type: CacheType = CacheType.SIMPLE,
         cache_file_path: str | Path | None = None,
     ) -> None:
         """
@@ -255,26 +239,18 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 in the :attr:`.GRAMMAR_DIRECTORY` if any
                 or in the directory of the discipline class module
                 when ``{input,output}_grammar_file`` is ``None``.
-            grammar_type: The type of grammar to define the input and output variables,
-                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
-            cache_type: The type of policy to cache the discipline evaluations,
-                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
-                :attr:`.MDODiscipline.HDF5_CACHE` to cache them in an HDF file,
-                or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
-                If ``None`` or if :attr:`.activate_cache` is ``True``,
-                do not cache the discipline evaluations.
+            grammar_type: The type of the input and output grammars.
+            cache_type: The type of cache.
             cache_file_path: The HDF file path
-                when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
+                when ``grammar_type`` is :attr:`.MDODiscipline.CacheType.HDF5`.
         """  # noqa: D205, D212, D415
         self.data_processor = None
-        self._default_inputs = None
         self.input_grammar = None
         self.output_grammar = None
-        self.__set_default_inputs({})
+
         # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
         # : list of outputs that shall be null, to be considered as residuals
         self.residual_variables = {}
 
@@ -282,8 +258,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         self.run_solves_residuals = False
 
-        self._differentiated_inputs = []  # : outputs to differentiate
-        # : inputs to be used for differentiation
+        self._differentiated_inputs = []  # : inputs to differentiate
+        # : outputs to be used for differentiation
         self._differentiated_outputs = []
         self._n_calls = None  # : number of calls to execute()
         self._exec_time = None  # : cumulated execution time
@@ -309,17 +285,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         self.cache = None
         if not self.activate_cache:
-            cache_type = None
+            cache_type = self.CacheType.NONE
 
-        if cache_type is not None:
+        if cache_type is not self.CacheType.NONE:
             self.cache = self.__create_new_cache(
                 cache_type, hdf_file_path=cache_file_path, hdf_node_path=self.name
             )
 
         self._cache_was_loaded = False
 
-        # linearize mode :auto, adjoint, direct
-        self._linearization_mode = derivation_modes.AUTO_MODE
+        self._linearization_mode = self.LinearizationMode.AUTO
 
         self._grammar_type = grammar_type
 
@@ -337,9 +312,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._local_data = None
         self.__set_local_data({})
 
-        self._status = self.STATUS_PENDING
+        self._status = self.ExecutionStatus.PENDING
         if self.activate_counters:
-            self._init_shared_attrs()
+            self._init_shared_memory_attrs()
 
         self._status_observers = []
 
@@ -354,8 +329,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
         return str(msg)
 
-    def _init_shared_attrs(self) -> None:
-        """Initialize the shared attributes in multiprocessing."""
+    def _init_shared_memory_attrs(self) -> None:
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
@@ -448,7 +422,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._n_calls_linearize.value = value
 
     @property
-    def grammar_type(self) -> str:
+    def grammar_type(self) -> GrammarType:
         """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
@@ -528,12 +502,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """Add the inputs against which to differentiate the outputs.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
         an input is either a non-numeric array or not an array, it will be ignored.
         If an input is declared as an array but the type of its items is not defined, it
         is assumed as a numeric array.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
         an input is not an array, it will be ignored. Keep in mind that in this case
         the array subtype is not checked.
 
@@ -568,12 +542,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """Add the outputs to be differentiated.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
         an output is either a non-numeric array or not an array, it will be ignored.
         If an output is declared as an array but the type of its items is not defined,
         it is assumed as a numeric array.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE` and
+        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
         an output is not an array, it will be ignored. Keep in mind that in this case
         the array subtype is not checked.
 
@@ -615,12 +589,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The cache object.
         """
-        if class_name != self.HDF5_CACHE:
+        if class_name != self.CacheType.HDF5:
             for key in ("hdf_file_path", "hdf_node_path"):
                 if key in kwargs:
                     del kwargs[key]
 
-        if class_name != self.MEMORY_FULL_CACHE:
+        if class_name != self.CacheType.MEMORY_FULL:
             key = "is_memory_shared"
             if key in kwargs:
                 del kwargs[key]
@@ -629,10 +603,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def set_cache_policy(
         self,
-        cache_type: str = SIMPLE_CACHE,
+        cache_type: CacheType = CacheType.SIMPLE,
         cache_tolerance: float = 0.0,
         cache_hdf_file: str | Path | None = None,
-        cache_hdf_node_name: str | None = None,
+        cache_hdf_node_path: str | None = None,
         is_memory_shared: bool = True,
     ) -> None:
         """Set the type of cache to use and the tolerance level.
@@ -658,9 +632,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 to consider that two input arrays are equal.
             cache_hdf_file: The path to the HDF file to store the data;
                 this argument is mandatory when the
-                :attr:`.MDODiscipline.HDF5_CACHE` policy is used.
-            cache_hdf_node_name: The name of the HDF file node
-                to store the discipline data.
+                :attr:`.MDODiscipline.CacheType.HDF5` policy is used.
+            cache_hdf_node_path: The name of the HDF file node
+                to store the discipline data,
+                possibly passed as a path ``root_name/.../group_name/.../node_name``.
                 If None, :attr:`.MDODiscipline.name` is used.
             is_memory_shared: Whether to store the data with a shared memory dictionary,
                 which makes the cache compatible with multiprocessing.
@@ -674,15 +649,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                    because the cache will not be shared among the processes.
         """
         if self.cache.__class__.__name__ != cache_type or not (
-            cache_type == self.HDF5_CACHE
+            cache_type == self.CacheType.HDF5
             and cache_hdf_file == self.cache.hdf_file.hdf_file_path
-            and cache_hdf_node_name == self.cache.hdf_node_name
+            and cache_hdf_node_path == self.cache.hdf_node_path
         ):
             self.cache = self.__create_new_cache(
                 cache_type,
                 tolerance=cache_tolerance,
                 hdf_file_path=cache_hdf_file,
-                hdf_node_path=cache_hdf_node_name or self.name,
+                hdf_node_path=cache_hdf_node_path or self.name,
                 is_memory_shared=is_memory_shared,
             )
         else:
@@ -694,7 +669,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 ),
                 cache_type,
                 cache_hdf_file,
-                cache_hdf_node_name,
+                cache_hdf_node_path,
             )
 
     def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
@@ -771,7 +746,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self,
         input_grammar_file: str | Path | None,
         output_grammar_file: str | Path | None,
-        grammar_type: str = JSON_GRAMMAR_TYPE,
+        grammar_type: GrammarType = GrammarType.JSON,
     ) -> None:
         """Create the input and output grammars.
 
@@ -780,20 +755,18 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 If None, do not initialize the input grammar from a schema file.
             output_grammar_file: The output grammar file path.
                 If None, do not initialize the output grammar from a schema file.
-            grammar_type: The type of grammar,
-                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
         """
         factory = GrammarFactory()
         self.input_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_input",
-            schema_path=input_grammar_file,
+            file_path=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_output",
-            schema_path=output_grammar_file,
+            file_path=output_grammar_file,
         )
 
     def _run(self) -> None:
@@ -804,9 +777,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         raise NotImplementedError()
 
     def _filter_inputs(
-        self,
-        input_data: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+        self, input_data: dict[str, Any] | None = None
+    ) -> MutableMapping[str, Any]:
         """Filter data with the discipline inputs and use the default values if missing.
 
         Args:
@@ -828,14 +800,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
 
         full_input_data = DisciplineData({})
-        for key in self.input_grammar.keys():
-            val = input_data.get(key)
-            if val is not None:
-                full_input_data[key] = val
+        for input_name in self.input_grammar:
+            input_value = input_data.get(input_name)
+            if input_value is not None:
+                full_input_data[input_name] = input_value
             else:
-                val = self._default_inputs.get(key)
-                if val is not None:
-                    full_input_data[key] = val
+                input_value = self.input_grammar.defaults.get(input_name)
+                if input_value is not None:
+                    full_input_data[input_name] = input_value
 
         return full_input_data
 
@@ -844,11 +816,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         This method removes data that are neither inputs nor outputs.
         """
-        all_data_names = self.get_input_output_data_names()
-
-        for key in tuple(self._local_data.keys()):
-            if key not in all_data_names:
-                del self._local_data[key]
+        for key in self._local_data.keys() - self.get_input_output_data_names():
+            del self._local_data[key]
 
     def _check_status_before_run(self) -> None:
         """Check the status of the discipline.
@@ -856,28 +825,28 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Check the status of the discipline depending on
         :attr:`.MDODiscipline.re_execute_policy`.
 
-        If ``re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
-        the status shall be either :attr:`.MDODiscipline.STATUS_PENDING`
+        If ``re_exec_policy == ReExecutionPolicy.NEVER``,
+        the status shall be either :attr:`.MDODiscipline.ExecutionStatus.PENDING`
         or :attr:`.MDODiscipline.VIRTUAL`.
 
-        If ``self.re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
+        If ``self.re_exec_policy == ReExecutionPolicy.NEVER``,
 
-        - if status is :attr:`.MDODiscipline.STATUS_DONE`,
+        - if status is :attr:`.MDODiscipline.ExecutionStatus.DONE`,
           :meth:`.MDODiscipline.reset_statuses_for_run`.
         - otherwise status must be :attr:`.MDODiscipline.VIRTUAL`
-          or :attr:`.MDODiscipline.STATUS_PENDING`.
+          or :attr:`.MDODiscipline.ExecutionStatus.PENDING`.
 
         Raises:
             ValueError:
                 When the discipline status and the re-execution policy are no consistent.
         """
         if self.status not in [
-            self.STATUS_PENDING,
-            self.STATUS_VIRTUAL,
-            self.STATUS_DONE,
+            self.ExecutionStatus.PENDING,
+            self.ExecutionStatus.VIRTUAL,
+            self.ExecutionStatus.DONE,
         ] or (
-            self.status == self.STATUS_DONE
-            and self.re_exec_policy == self.RE_EXECUTE_NEVER_POLICY
+            self.status == self.ExecutionStatus.DONE
+            and self.re_exec_policy == self.ReExecutionPolicy.NEVER
         ):
             raise ValueError(
                 f"Trying to run a discipline {type(self)} with status: {self.status} "
@@ -927,13 +896,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         * Caches the inputs.
         * Checks the input data against :attr:`.MDODiscipline.input_grammar`.
         * If :attr:`.MDODiscipline.data_processor` is not None, runs the preprocessor.
-        * Updates the status to :attr:`.MDODiscipline.STATUS_RUNNING`.
+        * Updates the status to :attr:`.MDODiscipline.ExecutionStatus.RUNNING`.
         * Calls the :meth:`.MDODiscipline._run` method, that shall be defined.
         * If :attr:`.MDODiscipline.data_processor` is not None, runs the postprocessor.
         * Checks the output data.
         * Caches the outputs.
-        * Updates the status to :attr:`.MDODiscipline.STATUS_DONE`
-          or :attr:`.MDODiscipline.STATUS_FAILED`.
+        * Updates the status to :attr:`.MDODiscipline.ExecutionStatus.DONE`
+          or :attr:`.MDODiscipline.ExecutionStatus.FAILED`.
         * Updates summed execution time.
 
         Args:
@@ -986,19 +955,22 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         t_0 = timer()
 
         self._check_status_before_run()
-        self.status = self.STATUS_RUNNING
+        self.status = self.ExecutionStatus.RUNNING
 
-        try:
-            # Effectively run the discipline, the _run method has to be
-            # Defined by the subclasses
-            self._run()
-        except Exception:
-            self.status = self.STATUS_FAILED
-            # Update the status but
-            # raise the same exception
-            raise
+        if not self.virtual_execution:
+            try:
+                # Effectively run the discipline, the _run method has to be
+                # Defined by the subclasses
+                self._run()
+            except Exception:
+                self.status = self.ExecutionStatus.FAILED
+                # Update the status but
+                # raise the same exception
+                raise
+        else:
+            self.store_local_data(**self.default_outputs)
 
-        self.status = self.STATUS_DONE
+        self.status = self.ExecutionStatus.DONE
 
         if self.activate_counters:
             self.__increment_exec_time(t_0)
@@ -1018,9 +990,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             # Caches output data in case the discipline is called twice in a row
             # with the same inputs
             out_names = self.get_output_data_names()
-            self.cache.cache_outputs(
-                cached_inputs, {name: self._local_data[name] for name in out_names}
-            )
+            if out_names:
+                self.cache.cache_outputs(
+                    cached_inputs, self._local_data.copy(keys=out_names)
+                )
             # Some disciplines are always linearized during execution, cache the
             # jac in this case
             if self._is_linearized:
@@ -1090,24 +1063,23 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _retrieve_diff_inouts(
         self,
-        force_all: bool = False,
+        compute_all_jacobians: bool = False,
     ) -> tuple[list[str], list[str]]:
         """Get the inputs and outputs used in the differentiation of the discipline.
 
         Args:
-            force_all: If True,
-                consider all the inputs and outputs of the discipline;
-                otherwise,
-                consider :attr:`.MDODiscipline._differentiated_inputs`
-                and :attr:`.MDODiscipline._differentiated_outputs`.
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
         """
-        if force_all:
-            inputs = self.get_input_data_names()
-            outputs = self.get_output_data_names()
-        else:
-            inputs = self._differentiated_inputs
-            outputs = self._differentiated_outputs
-        return inputs, outputs
+        if compute_all_jacobians:
+            return self.get_input_data_names(), self.get_output_data_names()
+
+        return self._differentiated_inputs, self._differentiated_outputs
 
     @classmethod
     def activate_time_stamps(cls) -> None:
@@ -1129,72 +1101,86 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     def linearize(
         self,
         input_data: Mapping[str, Any] | None = None,
-        force_all: bool = False,
-        force_no_exec: bool = False,
-    ) -> dict[str, dict[str, ndarray]]:
-        """Execute the linearized version of the code.
+        compute_all_jacobians: bool = False,
+        execute: bool = True,
+    ) -> dict[str, dict[str, NDArray[float]]]:
+        """Compute the Jacobians of some outputs with respect to some inputs.
 
         Args:
-            input_data: The input data needed to linearize the discipline
-                according to the discipline input grammar.
-                If None, use the :attr:`.MDODiscipline.default_inputs`.
-            force_all: If False,
-                :attr:`.MDODiscipline._differentiated_inputs` and
-                :attr:`.MDODiscipline._differentiated_outputs`
-                are used to filter the differentiated variables.
-                otherwise, all outputs are differentiated wrt all inputs.
-            force_no_exec: If True,
-                the discipline is not re-executed, cache is loaded anyway.
+            input_data: The input data for which to compute the Jacobian.
+                If ``None``, use the :attr:`.MDODiscipline.default_inputs`.
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
+            execute: Whether to start by executing the discipline
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline was executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.cache`.
 
         Returns:
-            The Jacobian of the discipline.
+            The Jacobian of the discipline
+            shaped as ``{output_name: {input_name: jacobian_array}}`` where
+            ``jacobian_array[i, j]`` is the partial derivative of ``output_name[i]``
+            with respect to ``input_name[j]``.
+
+        Raises:
+            ValueError: When either the inputs
+                for which to differentiate the outputs
+                or the outputs to differentiate are missing.
         """
         # TODO: remove the execution when no option exec_before_lin
         # is set to True
-        inputs, outputs = self._retrieve_diff_inouts(force_all)
-        if not outputs:
-            self.jac.clear()
-            return self.jac
-        # Save inputs dict for caching
-        input_data = self._filter_inputs(input_data)
+        inputs, outputs = self._retrieve_diff_inouts(compute_all_jacobians)
+        if not outputs or not inputs:
+            input_data = self._filter_inputs(input_data)
+            _, out_cached, out_jac = self.cache[input_data]
+            if out_cached:
+                self.jac = out_jac
+            else:
+                self.jac = {}
+            # self.jac.clear()  # this aint work
+            # self.jac = {}  # this aint work
+            # return {}#this aint work
+            return self.jac  # this aint work
 
-        # if force_no_exec, we do not re-execute the discipline
-        # otherwise, we ensure that the discipline was executed
-        # with the right input_data.
-        # This may trigger caching (see self.execute()
-        if not force_no_exec:
+        full_input_data = self._filter_inputs(input_data)
+        if execute:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
-            self.execute(input_data)
+            self.execute(full_input_data)
             self.exec_for_lin = False
 
-        # The local_data shall be reset to their original values in case
-        # an input is also an output, if we don't want to keep the computed
-        # state (as in MDAs)
+        # The local_data shall be reset to their original values
+        # in case an input is also an output,
+        # if we don't want to keep the computed state (as in MDAs).
         if not self._linearize_on_last_state:
-            self._local_data.update(input_data)
+            self._local_data.update(full_input_data)
 
-        # If the caching was triggered, check if the jacobian
-        # was loaded,
-        # Or the discipline._run method also linearizes the discipline
+        # If the caching was triggered,
+        # check if the jacobian was loaded,
+        # or the discipline._run method also linearizes the discipline.
         if self._cache_was_loaded or self._is_linearized:
             if self.jac:
-                # for cases when linearization is called
-                # twice with different i/o
-                # while cache_was_loaded=True, the check_jacobian_shape raises
-                # a KeyError.
+                # For cases when linearization is called twice with different I/O
+                # while cache_was_loaded=True,
+                # the check_jacobian_shape raises a KeyError.
                 try:
                     self._check_jacobian_shape(inputs, outputs)
                     return self.jac
                 except KeyError:
-                    # in this case, another computation of jacobian is
-                    # triggered.
+                    # In this case,
+                    # another computation of Jacobian is triggered.
                     pass
 
-        self.status = self.STATUS_LINEARIZE
-
+        self.status = self.ExecutionStatus.LINEARIZE
         t_0 = timer()
-        if self._linearization_mode in self.APPROX_MODES:
+        if self._linearization_mode in set(self.ApproximationMode):
             # Time already counted in execute()
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
@@ -1205,19 +1191,26 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if self.activate_counters:
             self.__increment_n_calls_lin()
 
+        if not compute_all_jacobians:
+            for output_name in list(self.jac.keys()):
+                if output_name not in outputs:
+                    del self.jac[output_name]
+                else:
+                    jac = self.jac[output_name]
+                    for input_name in list(jac.keys()):
+                        if input_name not in inputs:
+                            del jac[input_name]
+
         self._check_jacobian_shape(inputs, outputs)
-
         if self.cache is not None:
-            # Cache the Jacobian matrix
-            self.cache.cache_jacobian(input_data, self.jac)
+            self.cache.cache_jacobian(full_input_data, self.jac)
 
-        self.status = self.STATUS_DONE
-
+        self.status = self.ExecutionStatus.DONE
         return self.jac
 
     def set_jacobian_approximation(
         self,
-        jac_approx_type: str = FINITE_DIFFERENCES,
+        jac_approx_type: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         jax_approx_step: float = 1e-7,
         jac_approx_n_processes: int = 1,
         jac_approx_use_threading: bool = False,
@@ -1262,7 +1255,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self,
         outputs: Iterable[str] | None = None,
         inputs: Iterable[str] | None = None,
-        force_all: bool = False,
+        compute_all_jacobians: bool = False,
         print_errors: bool = False,
         numerical_error: float = EPSILON,
     ):
@@ -1293,7 +1286,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 If None, use the :attr:`.MDODiscipline._differentiated_inputs`.
             outputs: The outputs to be linearized.
                 If None, use the :attr:`.MDODiscipline._differentiated_outputs`.
-            force_all: Whether to consider all the inputs and outputs of the discipline;
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
             print_errors: Whether to display the estimated errors.
             numerical_error: The numerical error associated to the calculation of f.
                 By default, this is the machine epsilon (appx 1e-16),
@@ -1311,15 +1310,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 "set_jacobian_approximation must be called "
                 "before setting an optimal step."
             )
-        inpts, outps = self._retrieve_diff_inouts(force_all=force_all)
-        if outputs is None or force_all:
-            outputs = outps
-        if inputs is None or force_all:
-            inputs = inpts
-        errors, steps = self._jac_approx.auto_set_step(
+        diff_inputs, diff_outputs = self._retrieve_diff_inouts(
+            compute_all_jacobians=compute_all_jacobians
+        )
+        if outputs is None or compute_all_jacobians:
+            outputs = diff_outputs
+        if inputs is None or compute_all_jacobians:
+            inputs = diff_inputs
+        return self._jac_approx.auto_set_step(
             outputs, inputs, print_errors, numerical_error=numerical_error
         )
-        return errors, steps
 
     @staticmethod
     def __get_len(container) -> int:
@@ -1354,7 +1354,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             raise ValueError(f"The discipline {self.name} was not linearized.")
         out_set = set(outputs)
         in_set = set(inputs)
-        out_jac_set = set(self.jac.keys())
+        out_jac_set = self.jac.keys()
 
         if not out_set.issubset(out_jac_set):
             msg = "Missing outputs in Jacobian of discipline {}: {}."
@@ -1363,7 +1363,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         for j_o in outputs:
             j_out = self.jac[j_o]
-            out_dv_set = set(j_out.keys())
+            out_dv_set = j_out.keys()
             output_vals = self._local_data.get(j_o)
             n_out_j = self.__get_len(output_vals)
 
@@ -1384,13 +1384,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                     continue
 
                 if j_mat.shape != expected_shape:
-                    msg = (
-                        "Jacobian matrix of discipline {} d{}/d{}"
-                        "is not of the right shape.\n "
-                        "Expected: ({},{}), got: {}"
+                    raise ValueError(
+                        f"The shape {j_mat.shape} "
+                        f"of the Jacobian matrix d{j_o}/d{j_i} "
+                        f"of the discipline {self.name} "
+                        "does not match "
+                        f"(output_size, input_size)=({n_out_j}, {n_in_j})."
                     )
-                    data = [self.name, j_o, j_i, n_out_j, n_in_j, j_mat.shape]
-                    raise ValueError(msg.format(*data))
 
         # Discard imaginary part of Jacobian
         for output_jacobian in self.jac.values():
@@ -1438,47 +1438,24 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.cache.tolerance = cache_tol or 0.0
 
     @property
-    def default_inputs(self) -> dict[str, Any]:
-        """The default inputs.
-
-        Raises:
-            TypeError: When the default inputs are not passed as a dictionary.
-        """
-        return self._default_inputs
+    def default_inputs(self) -> Defaults:
+        """The default inputs."""
+        return self.input_grammar.defaults
 
     @default_inputs.setter
-    def default_inputs(self, default_inputs: dict[str, Any]) -> None:
-        if not isinstance(default_inputs, collections.abc.Mapping):
-            raise TypeError(
-                "MDODiscipline default_inputs must be of dict-like type, "
-                "got {} instead.".format(type(default_inputs))
-            )
-        self.__set_default_inputs(default_inputs, with_namespace=True)
+    def default_inputs(self, data: Mapping[str, Any]) -> None:
+        self.input_grammar.defaults = data
 
-    def __set_default_inputs(self, data: MutableData, with_namespace=False) -> None:
-        """Set the default inputs.
+    @property
+    def default_outputs(self) -> Defaults:
+        """The default outputs."""
+        return self.output_grammar.defaults
 
-        Args:
-            data: The mapping containing default values.
-            with_namespace: Whether to add the input grammar namespaces prefixes
-                to the keys of the default inputs.
-        """
-        if with_namespace:
-            to_ns = self.input_grammar.to_namespaced
-            in_names = self.input_grammar.keys()
-            data = {
-                (to_ns[k] if (k not in in_names and k in to_ns) else k): v
-                for k, v in data.items()
-            }
-        if self.input_grammar is not None:
-            disc_data = DisciplineData(
-                data, input_to_namespaced=self.input_grammar.to_namespaced
-            )
-        else:
-            disc_data = DisciplineData(data)
-        self._default_inputs = disc_data
+    @default_outputs.setter
+    def default_outputs(self, data: Mapping[str, Any]) -> None:
+        self.output_grammar.defaults = data
 
-    def add_namespace_to_input(self, name: str, namespace: str):
+    def add_namespace_to_input(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing input grammar element.
 
         The updated input grammar element name will be
@@ -1489,12 +1466,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             namespace: The name of the namespace.
         """
         self.input_grammar.add_namespace(name, namespace)
-        default_value = self.default_inputs.get(name)
-        if default_value is not None:
-            del self.default_inputs[name]
-            self.default_inputs[self.input_grammar.to_namespaced[name]] = default_value
 
-    def add_namespace_to_output(self, name: str, namespace: str):
+    def add_namespace_to_output(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing output grammar element.
 
         The updated output grammar element name will be
@@ -1530,16 +1503,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         outputs: Iterable[str] | None = None,
         with_zeros: bool = False,
         fill_missing_keys: bool = False,
-    ) -> None:
+    ) -> tuple[list[str], list[str]]:
         """Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
 
         Args:
-            inputs: The inputs wrt the outputs are linearized.
+            inputs: The inputs wrt to which the outputs are linearized.
                 If None,
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
                 If None,
-                the linearization should be performed on all outputs.
+                the linearization should be performed on all outputs declared differentiable.
                 fill_missing_keys: if True, just fill the missing items
             with_zeros: If True,
                 the matrices are set to zero
@@ -1548,48 +1521,46 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             fill_missing_keys: If True,
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
-        """
-        if inputs is None:
-            inputs_names = self._differentiated_inputs
-        else:
-            inputs_names = inputs
-        inputs_vals = []
-        for diff_name in inputs_names:
-            inputs_vals.append(self.get_inputs_by_name(diff_name))
 
-        if outputs is None:
-            outputs_names = self._differentiated_outputs
+        Returns:
+            The names of the input variables
+            against which to differentiate the output ones,
+            and these output variables.
+        """
+        output_names = self._differentiated_outputs if outputs is None else outputs
+        output_values = [self.get_outputs_by_name(name) for name in output_names]
+        input_names = self._differentiated_inputs if inputs is None else inputs
+        input_values = [self.get_inputs_by_name(name) for name in input_names]
+        default_matrix = zeros if with_zeros else empty
+        if fill_missing_keys:
+            jac = self.jac
+            # Only fill the missing sub jacobians
+            for output_name, output_value in zip(output_names, output_values):
+                jac_loc = jac.get(output_name, defaultdict(None))
+                for input_name, input_value in zip(input_names, input_values):
+                    sub_jac = jac_loc.get(input_name)
+                    if sub_jac is None:
+                        jac_loc[input_name] = default_matrix(
+                            (len(output_value), len(input_value))
+                        )
         else:
-            outputs_names = outputs
-        outputs_vals = []
-        for diff_name in outputs_names:
-            outputs_vals.append(self.get_outputs_by_name(diff_name))
-        if with_zeros:
-            np_method = zeros
-        else:
-            np_method = empty
-        if not fill_missing_keys:
             # When a key is not in the default dict, ie a function is not in
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(default_dict_factory)
-            for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = jac[out_n]
-                for in_n, in_v in zip(inputs_names, inputs_vals):
-                    jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+            if input_names:
+                for output_name, output_value in zip(output_names, output_values):
+                    jac_loc = jac[output_name]
+                    for input_name, input_value in zip(input_names, input_values):
+                        jac_loc[input_name] = default_matrix(
+                            (len(output_value), len(input_value))
+                        )
             self.jac = jac
-        else:
-            jac = self.jac
-            # Only fill the missing sub jacobians
-            for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = jac.get(out_n, defaultdict(None))
-                for in_n, in_v in zip(inputs_names, inputs_vals):
-                    sub_jac = jac_loc.get(in_n)
-                    if sub_jac is None:
-                        jac_loc[in_n] = np_method((len(out_v), len(in_v)))
+
+        return input_names, output_names
 
     @property
-    def linearization_mode(self) -> str:
-        """The linearization mode among :attr:`.MDODiscipline.AVAILABLE_MODES`.
+    def linearization_mode(self) -> LinearizationMode:
+        """The linearization mode among :attr:`.MDODiscipline.LinearizationMode`.
 
         Raises:
             ValueError: When the linearization mode is unknown.
@@ -1599,21 +1570,20 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     @linearization_mode.setter
     def linearization_mode(
         self,
-        linearization_mode: str,
+        linearization_mode: LinearizationMode,
     ) -> None:
-        if linearization_mode not in self.AVAILABLE_MODES:
-            msg = "Linearization mode '{}' is unknown; it must be one of {}."
-            raise ValueError(msg.format(linearization_mode, self.AVAILABLE_MODES))
-
         self._linearization_mode = linearization_mode
 
-        if linearization_mode in self.APPROX_MODES and self._jac_approx is None:
+        if (
+            linearization_mode in set(self.ApproximationMode)
+            and self._jac_approx is None
+        ):
             self.set_jacobian_approximation(linearization_mode)
 
     def check_jacobian(
         self,
         input_data: dict[str, ndarray] | None = None,
-        derr_approx: str = FINITE_DIFFERENCES,
+        derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-7,
         threshold: float = 1e-8,
         linearization_mode: str = "auto",
@@ -1632,7 +1602,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         reference_jacobian_path: str | Path | None = None,
         save_reference_jacobian: bool = False,
         indices: Iterable[int] | None = None,
-    ):
+    ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
         If `reference_jacobian_path` is not `None`
@@ -1745,7 +1715,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         )
 
     @property
-    def status(self) -> str:
+    def status(self) -> ExecutionStatus:
         """The status of the discipline.
 
         The status aims at monitoring the process and give the user a simplified view on
@@ -1754,18 +1724,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         is _compute_jacobian or approximate jacobian computation.
         """
         return self._status
-
-    def _check_status(
-        self,
-        status: str,
-    ) -> None:
-        """Check the status according to possible statuses.
-
-        Raises:
-            ValueError: When the status is unknown.
-        """
-        if status not in self.AVAILABLE_STATUSES:
-            raise ValueError(f"Unknown status: {status}.")
 
     def set_disciplines_statuses(
         self,
@@ -1855,10 +1813,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether the discipline can be run again.
         """
-        return status != self.STATUS_RUNNING
+        return status != self.ExecutionStatus.RUNNING
 
     def reset_statuses_for_run(self) -> None:
-        """Set all the statuses to :attr:`.MDODiscipline.STATUS_PENDING`.
+        """Set all the statuses to :attr:`.MDODiscipline.ExecutionStatus.PENDING`.
 
         Raises:
             ValueError: When the discipline cannot be run because of its status.
@@ -1869,14 +1827,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                     self.name, self.status
                 )
             )
-        self.status = self.STATUS_PENDING
+        self.status = self.ExecutionStatus.PENDING
 
     @status.setter
     def status(
         self,
-        status: str,
+        status: ExecutionStatus,
     ) -> None:
-        self._check_status(status)
         self._status = status
         self.notify_status_observers()
 
@@ -1946,7 +1903,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         try:
             self.input_grammar.validate(input_data, raise_exception)
-        except InvalidDataException as err:
+        except InvalidDataError as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid input data")
                 + f" in discipline {self.name}",
@@ -1964,7 +1921,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         try:
             self.output_grammar.validate(self._local_data, raise_exception)
-        except InvalidDataException as err:
+        except InvalidDataError as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid output data")
                 + f" in discipline {self.name}",
@@ -2031,7 +1988,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         except KeyError as err:
             raise ValueError(f"Discipline {self.name} has no output named {err}.")
 
-    def get_input_data_names(self, with_namespaces=True) -> list[str]:
+    def get_input_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input variables.
 
         Args:
@@ -2046,7 +2003,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             return remove_prefix_from_list(self.input_grammar.keys())
 
-    def get_output_data_names(self, with_namespaces=True) -> list[str]:
+    def get_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the output variables.
 
         Args:
@@ -2061,7 +2018,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             return remove_prefix_from_list(self.output_grammar.keys())
 
-    def get_input_output_data_names(self, with_namespaces=True) -> list[str]:
+    def get_input_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input and output variables.
 
          Args:
@@ -2071,7 +2028,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The name of the input and output variables.
         """
-        in_outs = set(self.output_grammar.keys()).union(self.input_grammar.keys())
+        in_outs = self.output_grammar.keys() | self.input_grammar.keys()
         if with_namespaces:
             return list(in_outs)
         else:
@@ -2097,7 +2054,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.get_outputs_by_name(self.get_output_data_names())
 
-    def get_output_data(self, with_namespaces=True) -> dict[str, Any]:
+    def get_output_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local output data as a dictionary.
 
         Args:
@@ -2107,13 +2064,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The local output data.
         """
-        if with_namespaces or not self.output_grammar.to_namespaced:
-            output_names = self.output_grammar.keys()
-            return {k: v for k, v in self._local_data.items() if k in output_names}
-        else:
-            return remove_prefix_from_dict(self.get_output_data())
+        return self._local_data.copy(
+            keys=self.output_grammar.keys(),
+            with_namespace=with_namespaces or not self.output_grammar.to_namespaced,
+        )
 
-    def get_input_data(self, with_namespaces=True) -> dict[str, Any]:
+    def get_input_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
 
         Args:
@@ -2123,16 +2079,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The local input data.
         """
-        if with_namespaces or not self.input_grammar.to_namespaced:
-            input_names = self.input_grammar.keys()
-            return {k: v for k, v in self._local_data.items() if k in input_names}
-        else:
-            return remove_prefix_from_dict(self.get_input_data())
+        return self._local_data.copy(
+            keys=self.input_grammar.keys(),
+            with_namespace=with_namespaces or not self.input_grammar.to_namespaced,
+        )
 
-    def serialize(
-        self,
-        file_path: str | Path,
-    ) -> None:
+    def to_pickle(self, file_path: str | Path) -> None:
         """Serialize the discipline and store it in a file.
 
         Args:
@@ -2143,9 +2095,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             pickler.dump(self)
 
     @staticmethod
-    def deserialize(
-        file_path: str | Path,
-    ) -> MDODiscipline:
+    def from_pickle(file_path: str | Path) -> MDODiscipline:
         """Deserialize a discipline from a file.
 
         Args:
@@ -2159,73 +2109,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             obj = pickler.load()
         return obj
 
-    def get_attributes_to_serialize(self) -> list[str]:  # pylint: disable=R0201
-        """Define the names of the attributes to be serialized.
-
-        Shall be overloaded by disciplines
-
-        Returns:
-            The names of the attributes to be serialized.
-        """
-        # pylint warning ==> method could be a function but when overridden,
-        # it is a function==> self is required
-        return list(self._ATTR_TO_SERIALIZE)
-
-    def __getstate__(self) -> dict[str, Any]:
-        """Used by pickle to define what to serialize.
-
-        Returns:
-            The attributes to be serialized.
-
-        Raises:
-            AttributeError: When an attribute to be serialized is undefined.
-            TypeError: When an attribute has an undefined type.
-        """
-        state = {}
-        for attribute_name in self.get_attributes_to_serialize():
-            if attribute_name not in self.__dict__:
-                if "_" + attribute_name not in self.__dict__ and not hasattr(
-                    self, attribute_name
-                ):
-                    msg = (
-                        "The discipline {} cannot be serialized "
-                        "because its attribute {} does not exist."
-                    ).format(self.name, attribute_name)
-                    raise AttributeError(msg)
-
-                prop = self.__dict__.get("_" + attribute_name)
-                # May appear for properties that overload public attrs of super class
-                if hasattr(self, attribute_name) and not isinstance(prop, Synchronized):
-                    continue
-
-                if not isinstance(prop, Synchronized):
-                    raise TypeError(
-                        "The discipline {} cannot be serialized "
-                        "because its attribute {} has an undefined type.".format(
-                            self.name, attribute_name
-                        )
-                    )
-                # Don´t serialize shared memory object,
-                # this is meaningless, save the value instead
-                state[attribute_name] = prop.value
-            else:
-                state[attribute_name] = self.__dict__[attribute_name]
-
-        return state
-
     def __setstate__(
         self,
         state: Mapping[str, Any],
     ) -> None:
-        self._init_shared_attrs()
+        super().__setstate__(state)
+        # Initialize the attributes that are not serializable nor Synchronized last.
         self._status_observers = []
-        __dict__ = self.__dict__
-        for key, val in state.items():
-            _key = f"_{key}"
-            if _key not in __dict__.keys():
-                __dict__[key] = val
-            else:
-                __dict__[_key].value = val
 
     def get_local_data_by_name(
         self,

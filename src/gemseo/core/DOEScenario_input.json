@@ -1,12 +1,8 @@
 {
     "name": "DOEScenario_input",
-    "required": ["algo"],
-    "properties": {
+   "properties": {
         "eval_jac":{
             "type": "boolean"
-        },
-        "algo": {
-            "type": "string"
         },
 		"algo_options": {
 			"type": "object"

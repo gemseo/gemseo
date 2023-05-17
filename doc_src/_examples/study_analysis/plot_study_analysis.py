@@ -27,39 +27,39 @@ from os import mkdir
 from os.path import exists
 from os.path import join
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.utils.study_analysis import StudyAnalysis
 
 configure_logger()
 
 
-#############################################################################
+# %%
 # Describe your MDO problem in an Excel file
 # ------------------------------------------
 #
 # .. image:: /_images/study_analysis_example/disciplines_spec.png
 #
 
-#############################################################################
+# %%
 # Visualize this study
 # --------------------
 study = StudyAnalysis("disciplines_spec.xlsx")
 if not exists("outputs"):
     mkdir("outputs")
 
-#############################################################################
+# %%
 # Generate N2 chrt
 # ^^^^^^^^^^^^^^^^^
 study.generate_n2(file_path=join("outputs", "n2.png"), save=False, show=True)
 
-#############################################################################
+# %%
 # Generate XDSM
 # ^^^^^^^^^^^^^
 study.generate_xdsm("outputs")
-#############################################################################
+# %%
 # .. image:: /_images/study_analysis_example/xdsm.png
 
-#############################################################################
+# %%
 # Visualize this study from command line
 # --------------------------------------
 #

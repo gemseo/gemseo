@@ -19,15 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create classification models.
 
-This module contains a factory to instantiate a :class:`.MLClassificationAlgo`
-from its class name.
+This module contains a factory to instantiate a :class:`.MLClassificationAlgo` from its
+class name.
 
-It also provides a list of available classification models
-and allows testing if a classification model type is available.
+It also provides a list of available classification models and allows testing if a
+classification model type is available.
 """
 from __future__ import annotations
 
-from gemseo.core.factory import Factory
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.factory import MLAlgoFactory
 
@@ -42,8 +41,5 @@ class ClassificationModelFactory(MLAlgoFactory):
     starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.factory = Factory(
-            MLClassificationAlgo, ("gemseo.mlearning.classification",)
-        )
+    _CLASS = MLClassificationAlgo
+    _MOODULE_NAMES = ("gemseo.mlearning.classification",)

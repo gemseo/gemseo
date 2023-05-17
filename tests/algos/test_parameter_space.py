@@ -21,16 +21,16 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.design_space import DesignVariable
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.parameter_space import RandomVariable
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import array_equal
 from numpy import concatenate
 from numpy import ndarray
+from openturns import NormalCopula
 
 
 def test_constructor():
@@ -56,7 +56,7 @@ def test_add_random_variable():
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     assert not space.is_deterministic("y")
     assert space.is_uncertain("y")
-    assert space.variables_names == ["x", "y"]
+    assert space.variable_names == ["x", "y"]
     assert space.uncertain_variables == ["y"]
     assert space.deterministic_variables == ["x"]
     assert "y" in space.distributions
@@ -76,7 +76,7 @@ def test_to_design_space(mixed_space):
     """Check the conversion of a ParameterSpace into a DesignSpace."""
     design_space = mixed_space.to_design_space()
     assert isinstance(design_space, DesignSpace)
-    assert design_space.variables_names == ["x1", "x2", "y"]
+    assert design_space.variable_names == ["x1", "x2", "y"]
     for name in ["x1", "x2"]:
         assert design_space.get_type(name) == mixed_space.get_type(name)
         assert design_space.get_size(name) == mixed_space.get_size(name)
@@ -104,20 +104,20 @@ def test_extract_deterministic_space(mixed_space):
     """Check the extraction of the deterministic part."""
     deterministic_space = mixed_space.extract_deterministic_space()
     assert isinstance(deterministic_space, DesignSpace)
-    assert deterministic_space.variables_names == ["x1", "x2"]
+    assert deterministic_space.variable_names == ["x1", "x2"]
 
 
 def test_extract_uncertain_space(mixed_space):
     """Check the extraction of the uncertain part."""
     uncertain_space = mixed_space.extract_uncertain_space()
-    assert uncertain_space.variables_names == ["y"]
+    assert uncertain_space.variable_names == ["y"]
     assert uncertain_space.uncertain_variables == ["y"]
 
 
 def test_extract_uncertain_space_as_design_space(mixed_space):
     """Check the extraction of the uncertain part as a design space."""
     uncertain_space = mixed_space.extract_uncertain_space(as_design_space=True)
-    assert uncertain_space.variables_names == ["y"]
+    assert uncertain_space.variable_names == ["y"]
     assert isinstance(uncertain_space, DesignSpace)
     assert (
         uncertain_space.get_lower_bound("y")[0]
@@ -141,22 +141,12 @@ def test_remove_variable():
     space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.remove_variable("x2")
-    assert space.variables_names == ["x1", "y1", "y2"]
+    assert space.variable_names == ["x1", "y1", "y2"]
     assert space.uncertain_variables == ["y1", "y2"]
     space.remove_variable("y1")
-    assert space.variables_names == ["x1", "y2"]
+    assert space.variable_names == ["x1", "y2"]
     assert space.uncertain_variables == ["y2"]
     assert "y1" not in space.distributions
-
-
-def test_copula():
-    """Check the copula feature works correctly."""
-    space = ParameterSpace()
-    space.add_variable("x")
-    space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
-    with pytest.raises(ValueError, match="foo is not a copula name"):
-        ParameterSpace(copula="foo")
 
 
 def test_compute_samples():
@@ -336,16 +326,21 @@ def test_evaluate_cdf_raising_errors():
 
 
 @pytest.fixture
-def io_dataset() -> Dataset:
+def io_dataset() -> IODataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)
     outputs = arange(20).reshape(10, 2)
     data = concatenate([inputs, outputs], axis=1)
     variables = ["in_1", "in_2", "out_1"]
-    sizes = {"in_1": 2, "in_2": 3, "out_1": 2}
-    groups = {"in_1": "inputs", "in_2": "inputs", "out_1": "outputs"}
-    dataset = Dataset()
-    dataset.set_from_array(data, variables, sizes, groups)
+    variable_names_to_n_components = {"in_1": 2, "in_2": 3, "out_1": 2}
+    variable_names_to_group_names = {
+        "in_1": "inputs",
+        "in_2": "inputs",
+        "out_1": "outputs",
+    }
+    dataset = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
     return dataset
 
 
@@ -361,11 +356,14 @@ def test_init_from_dataset_default(io_dataset):
         assert (parameter_space[name].var_type == "float").all()
         assert name in parameter_space.deterministic_variables
     assert parameter_space["in_1"].size == 2
-    ref = io_dataset["in_1"].min(0)
+    ref = io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
     assert (parameter_space["in_1"].l_b == ref).all()
-    ref = io_dataset["in_1"].max(0)
+    ref = io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
     assert (parameter_space["in_1"].u_b == ref).all()
-    ref = (io_dataset["in_1"].max(0) + io_dataset["in_1"].min(0)) / 2.0
+    ref = (
+        io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
+        + io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
+    ) / 2.0
     assert (parameter_space["in_1"].value == ref).all()
     assert parameter_space["in_2"].size == 3
     assert parameter_space["out_1"].size == 2
@@ -432,7 +430,7 @@ def test_gradient_unnormalization():
 
 def test_parameter_space_name():
     """Check the naming of a parameter space."""
-    assert ParameterSpace().name is None
+    assert ParameterSpace().name == ""
     assert ParameterSpace(name="my_name").name == "my_name"
 
 
@@ -481,7 +479,9 @@ def test_transform():
 
 def test_rename_variable():
     """Check the renaming of a variable."""
-    design_variable = DesignVariable(2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    design_variable = DesignSpace.DesignVariable(
+        2, "integer", 0.0, 2.0, array([1.0, 2.0])
+    )
     random_variable = RandomVariable(
         "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
     )
@@ -509,3 +509,15 @@ def test_mix_different_distribution_families(first, second):
         match=f"A parameter space cannot mix {first} and {second} distributions.",
     ):
         parameter_space.add_random_variable("y", f"{second}UniformDistribution")
+
+
+def test_copula():
+    """Check build_composed_distribution."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", "OTNormalDistribution")
+    parameter_space.add_random_variable("y", "OTNormalDistribution", 2)
+    parameter_space.build_composed_distribution(NormalCopula(3))
+    assert (
+        parameter_space.distribution.distribution.getCopula().getName()
+        == "NormalCopula"
+    )

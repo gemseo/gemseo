@@ -24,7 +24,7 @@ import os
 import numpy as np
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
-from gemseo.mda.sequential_mda import GSNewtonMDA
+from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
@@ -55,7 +55,7 @@ def test_mda_jacobi_newton_hybrid(sellar_disciplines):
     mda_newton = MDANewtonRaphson(sellar_disciplines)
     out2 = mda_newton.execute()
 
-    mda_hybrid = GSNewtonMDA(sellar_disciplines)
+    mda_hybrid = MDAGSNewton(sellar_disciplines)
     out3 = mda_hybrid.execute()
 
     for key, value1 in out1.items():

@@ -8,8 +8,7 @@
 					"type": "null"
 				},
 				{
-					"type": "integer",
-					"minimum": 0
+					"type": "integer"
 				}
 			],
             "default": null

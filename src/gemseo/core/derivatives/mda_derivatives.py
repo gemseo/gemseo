@@ -64,10 +64,12 @@ def _replace_strongly_coupled(
                     disciplines_with_group.remove(disc)
                     # The strong couplings are not real dependencies of the MDA for
                     # derivatives computation.
-                    disc_merged.input_grammar.update(
+                    disc_merged.input_grammar.update_from_names(
                         set(disc.input_grammar.names) - strong_c
                     )
-                    disc_merged.output_grammar.update(disc.output_grammar.names)
+                    disc_merged.output_grammar.update_from_names(
+                        disc.output_grammar.names
+                    )
 
                 all_disc_with_red.append(disc_merged)
                 reduced_disciplines.append(disc_merged)

@@ -71,7 +71,7 @@ We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disciplines = create_discipline(["SobieskiPropulsion", "SobieskiAerodynamics",
                                      "SobieskiMission", "SobieskiStructure"])
@@ -79,14 +79,14 @@ We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
 2. Define the :class:`.DesignSpace`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then, by means of the API function :meth:`~gemseo.api.read_design_space`,
+Then, by means of the API function :func:`.read_design_space`,
 we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~gemseo.core.mdo_scenario.MDOScenario`.
 
 .. code::
 
-    from gemseo.api import read_design_space
+    from gemseo import read_design_space
 
-    input_file = join(dirname(__file__), "sobieski_design_space.txt")
+    input_file = join(dirname(__file__), "sobieski_design_space.csv")
     design_space = read_design_space(input_file)
 
 3. Define the trade-off study
@@ -99,7 +99,7 @@ The :ref:`MDF formulation <mdf_formulation>` is selected to build the :class:`~g
 
 .. code::
 
-    from gemseo.api import create_scenario
+    from gemseo import create_scenario
 
     scenario = create_scenario(disciplines,
                                formulation="MDF",
@@ -146,15 +146,15 @@ thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' opti
    In this tutorial, the design is based on :term:`LHS` from
    `pyDOE <https://pythonhosted.org/pyDOE/>`_, however,
    several other designs are available, based on the package or
-   `OpenTURNS <http://www.openturns.org/>`_. Some examples of these
+   `OpenTURNS <https://openturns.github.io/www/>`_. Some examples of these
    designs are plotted in :ref:`doe_algos`.
 
    To list the available DOE algorithms in the current |g| configuration, use
-   :meth:`gemseo.api.get_available_doe_algorithms`:
+   :meth:`gemseo.get_available_doe_algorithms`:
 
    .. code::
 
-      from gemseo.api import get_available_doe_algorithms
+      from gemseo import get_available_doe_algorithms
 
       get_available_doe_algorithms()
 
@@ -248,7 +248,7 @@ We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     prop, aero, mission, struct = create_discipline(["SobieskiPropulsion", "SobieskiAerodynamics",
                                                      "SobieskiMission", "SobieskiStructure"])
@@ -258,15 +258,15 @@ We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
 
 Then, for each disciplinary scenario, we
 
-#. load the design space (function :meth:`~gemseo.api.read_design_space`
+#. load the design space (function :func:`.read_design_space`
 #. keep only the design variables that are of interest for the scenario (function :meth:`~gemseo.algos.design_space.DesignSpace.filter`):
 
 .. code::
 
    from copy import deepcopy
-   from gemseo.api import read_design_space
+   from gemseo import read_design_space
 
-   input_file = join(dirname(__file__), "sobieski_design_space.txt")
+   input_file = join(dirname(__file__), "sobieski_design_space.csv")
    design_space = read_design_space(input_file)
    design_space_prop = deepcopy(design_space).filter("x_3")
    design_space_aero = deepcopy(design_space).filter("x_2")

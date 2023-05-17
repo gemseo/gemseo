@@ -21,21 +21,21 @@
 
 The :class:`.OTDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
-OT stands for `OpenTURNS <http://www.openturns.org/>`_
+OT stands for `OpenTURNS <https://openturns.github.io/www/>`_
 which is the library it relies on.
 
 The :class:`.OTDistribution` of a given uncertain variable is built
 from mandatory arguments:
 
 - a variable name,
-- a distribution name recognized by OpenTURNS,
+- a probability distribution name recognized by OpenTURNS,
 - a set of parameters provided as a tuple
   of positional arguments filled in the order
-  specified by the OpenTURNS constructor of this distribution.
+  specified by the OpenTURNS constructor of this probability distribution.
 
 .. warning::
 
-    The distribution parameters must be provided according to the signature
+    The probability distribution parameters must be provided according to the signature
     of the openTURNS classes. `Access the openTURNS documentation
     <http://openturns.github.io/openturns/latest/user_manual/
     probabilistic_modelling.html>`_.
@@ -57,7 +57,7 @@ import logging
 from typing import Callable
 from typing import Iterable
 
-import openturns as ots
+import openturns as ot
 from numpy import array
 from numpy import inf
 from numpy import ndarray
@@ -67,6 +67,7 @@ from gemseo.uncertainty.distributions.distribution import ParametersType
 from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
 
 OT_WEBSITE = (
     "http://openturns.github.io/openturns/latest/user_manual/"
@@ -80,7 +81,7 @@ class OTDistribution(Distribution):
     """OpenTURNS probability distribution.
 
     Create a probability distribution for an uncertain variable
-    from its dimension and distribution names and properties.
+    from its dimension and probability distribution name and properties.
 
     Example:
         >>> from gemseo.uncertainty.distributions.openturns.distribution import (
@@ -92,6 +93,9 @@ class OTDistribution(Distribution):
     """
 
     _COMPOSED_DISTRIBUTION = OTComposedDistribution
+
+    marginals: list[ot.Distribution]
+    distribution = ot.ComposedDistribution
 
     def __init__(
         self,
@@ -105,23 +109,23 @@ class OTDistribution(Distribution):
         upper_bound: float | None = None,
         threshold: float = 0.5,
     ) -> None:
-        """
+        r"""
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
-                such as 'Normal' for OpenTURNS or 'norm' for SciPy.
+                such as ``"Normal"``.
             parameters: The parameters of the probability distribution.
             dimension: The dimension of the random variable.
             standard_parameters: The standard representation
                 of the parameters of the probability distribution.
             transformation: A transformation applied
                 to the random variable,
-                e.g. 'sin(x)'. If None, no transformation.
-            lower_bound: A lower bound to truncate the distribution.
-                If None, no lower truncation.
-            upper_bound: An upper bound to truncate the distribution.
-                If None, no upper truncation.
+                e.g. :math:`\sin(x)`. If ``None``, no transformation.
+            lower_bound: A lower bound to truncate the probability distribution.
+                If ``None``, no lower truncation.
+            upper_bound: An upper bound to truncate the probability distribution.
+                If ``None``, no upper truncation.
             threshold: A threshold in [0,1].
         """  # noqa: D205,D212,D415
         super().__init__(
@@ -139,7 +143,7 @@ class OTDistribution(Distribution):
             upper_bound,
             threshold,
         )
-        self.distribution = ots.ComposedDistribution(self.marginals)
+        self.distribution = ot.ComposedDistribution(self.marginals)
         msg = MultiLineString()
         msg.indent()
         msg.add("Mathematical support: {}", self.support)
@@ -153,7 +157,7 @@ class OTDistribution(Distribution):
     def compute_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
         return array(
             [
-                self.marginals[index].computeCDF(ots.Point([value]))
+                self.marginals[index].computeCDF(ot.Point([value]))
                 for index, value in enumerate(vector)
             ]
         )
@@ -210,51 +214,48 @@ class OTDistribution(Distribution):
         lower_bound: float,
         upper_bound: float,
         threshold: float,
-    ) -> list[ots.Distribution]:
+    ) -> list[ot.Distribution]:
         """Instantiate an OpenTURNS distribution for each random variable component.
 
         Args:
-            distribution: The name of the distribution.
-            parameters: The parameters of the distribution.
+            distribution: The name of the probability distribution.
+            parameters: The parameters of the probability distribution.
             transformation: A transformation applied to the random variable,
-                e.g. 'sin(x)'. If None, no transformation.
+                e.g. 'sin(x)'. If ``None``, no transformation.
             lower_bound: A lower truncation bound.
-                If None, no lower truncation.
+                If ``None``, no lower truncation.
             upper_bound: An upper truncation bound.
-                If None, no upper truncation.
+                If ``None``, no upper truncation.
             threshold: A threshold value in [0,1].
 
         Returns:
             The marginal OpenTURNS distributions.
         """
         try:
-            ot_dist = getattr(ots, distribution)
+            ot_dist = getattr(ot, distribution)
         except Exception:
             raise ValueError(f"{distribution} is an unknown OpenTURNS distribution.")
         try:
             ot_dist = [ot_dist(*parameters)] * self.dimension
         except Exception:
-            args = ", ".join([str(val) for val in parameters])
             raise ValueError(
-                "Arguments are wrong in {}({}); "
-                "more details on: {}.".format(distribution, args, OT_WEBSITE)
+                f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
+                f"more details on: {OT_WEBSITE}."
             )
         self.__set_bounds(ot_dist)
         if transformation is not None:
-            ot_dist = self.__transform_marginal_dist(ot_dist, transformation)
+            ot_dist = self.__transform_marginal_distributions(ot_dist, transformation)
         self.__set_bounds(ot_dist)
         if lower_bound is not None or upper_bound is not None:
-            ot_dist = self.__truncate_marginal_dist(
+            ot_dist = self.__truncate_marginal_distributions(
                 ot_dist, lower_bound, upper_bound, threshold
             )
         self.__set_bounds(ot_dist)
         return ot_dist
 
-    def __transform_marginal_dist(
-        self,
-        marginals: Iterable[ots.Distribution],
-        transformation: str,
-    ) -> list[ots.Distribution]:
+    def __transform_marginal_distributions(
+        self, marginals: Iterable[ot.Distribution], transformation: str
+    ) -> list[ot.CompositeDistribution]:
         """Apply the standard transformations on the marginals.
 
         Examples of transformations: -, +, *, **, sin, exp, log, ...
@@ -262,96 +263,94 @@ class OTDistribution(Distribution):
         Args:
             marginals: The marginal distributions.
             transformation: A transformation applied to the random variable,
-                e.g. 'sin(x)'. If None, no transformation.
+                e.g. 'sin(x)'. If ``None``, no transformation.
 
         Returns:
             The transformed marginal distributions.
         """
-        variable_name = self.variable_name
         transformation = transformation.replace(" ", "")
-        symbolic_function = ots.SymbolicFunction([self.variable_name], [transformation])
-        marginals = [
-            ots.CompositeDistribution(symbolic_function, marginal)
+        symbolic_function = ot.SymbolicFunction([self.variable_name], [transformation])
+        self.transformation = transformation.replace(
+            self.variable_name, f"({self.transformation})"
+        )
+        return [
+            ot.CompositeDistribution(symbolic_function, marginal)
             for marginal in marginals
         ]
-        prev = self.transformation
-        transformation = transformation.replace(variable_name, f"({prev})")
-        self.transformation = transformation
-        return marginals
 
-    def __truncate_marginal_dist(
+    def __truncate_marginal_distributions(
         self,
-        distributions: Iterable[ots.Distribution],
+        distributions: Iterable[ot.Distribution],
         lower_bound: float,
         upper_bound: float,
         threshold: float = 0.5,
-    ) -> list[ots.Distribution]:
+    ) -> list[ot.TruncatedDistribution]:
         """Truncate the distribution of a random variable.
 
         Args:
             distributions: The distributions.
-            lower_bound: A lower bound to truncate the distributions.
-                If None, no lower truncation.
-            upper_bound: An upper bound to truncate the distributions.
-                If None, no upper truncation.
+            lower_bound: A lower bound to truncate the probability distributions.
+                If ``None``, no lower truncation.
+            upper_bound: An upper bound to truncate the probability distributions.
+                If ``None``, no upper truncation.
             threshold: A threshold in [0,1].
 
         Returns:
             The transformed distributions.
         """
-        marginals = [
+        self.transformation = f"Trunc({self.transformation})"
+        return [
             self.__truncate_distribution(
-                dist, index, lower_bound, upper_bound, threshold
+                distribution, index, lower_bound, upper_bound, threshold
             )
-            for index, dist in enumerate(distributions)
+            for index, distribution in enumerate(distributions)
         ]
-        prev = self.transformation
-        self.transformation = f"Trunc({prev})"
-        return marginals
 
     def __truncate_distribution(
         self,
-        distributions: Iterable[ots.Distribution],
+        distribution: ot.Distribution,
         index: int,
         lower_bound: float,
         upper_bound: float,
         threshold: float = 0.5,
-    ) -> list[ots.Distribution]:
-        """Truncate a distribution with lower bound, upper bound or both.
+    ) -> ot.TruncatedDistribution:
+        """Truncate a probability distribution with lower bound, upper bound or both.
 
         Args:
-            distributions: The distributions.
+            distribution: The probability distribution.
             index: A random variable component.
-            lower_bound: A lower bound to truncate the distribution.
-                If None, no lower truncation.
-            upper_bound: An upper bound to truncate the distribution.
-                If None, no upper truncation.
+            lower_bound: A lower bound to truncate the probability distribution.
+                If ``None``, no lower truncation.
+            upper_bound: An upper bound to truncate the probability distribution.
+                If ``None``, no upper truncation.
             threshold: A threshold in [0,1].
 
         Returns:
-            The truncated distributions.
+            The truncated probability distributions.
         """
         if lower_bound is None:
             LOGGER.debug(
                 "Truncate distribution of component %s above %s.", index, upper_bound
             )
-            upper = ots.TruncatedDistribution.UPPER
-            current_u_b = self.math_upper_bound[index]
-            if upper_bound > current_u_b:
+            if upper_bound > self.math_upper_bound[index]:
                 raise ValueError("u_b is greater than the current upper bound.")
-            distributions = ots.TruncatedDistribution(
-                distributions, upper_bound, upper, threshold
+            args = (
+                distribution,
+                upper_bound,
+                ot.TruncatedDistribution.UPPER,
+                threshold,
             )
         elif upper_bound is None:
             LOGGER.debug(
                 "Truncate distribution of component %s below %s.", index, lower_bound
             )
-            lower = ots.TruncatedDistribution.LOWER
-            current_l_b = self.math_lower_bound[index]
-            if lower_bound < current_l_b:
-                raise ValueError("l_b is lower than the current lower bound.")
-            distributions = ots.TruncatedDistribution(
-                distributions, lower_bound, lower, threshold
+            if lower_bound < self.math_lower_bound[index]:
+                raise ValueError("l_b is less than the current lower bound.")
+            args = (
+                distribution,
+                lower_bound,
+                ot.TruncatedDistribution.LOWER,
+                threshold,
             )
         else:
             LOGGER.debug(
@@ -360,22 +359,19 @@ class OTDistribution(Distribution):
                 lower_bound,
                 upper_bound,
             )
-            current_l_b = self.math_lower_bound[index]
-            current_u_b = self.math_upper_bound[index]
-            if lower_bound < current_l_b:
-                raise ValueError("l_b is lower than the current lower bound.")
-            if upper_bound > current_u_b:
+            if lower_bound < self.math_lower_bound[index]:
+                raise ValueError("l_b is less than the current lower bound.")
+            if upper_bound > self.math_upper_bound[index]:
                 raise ValueError("u_b is greater than the current upper bound.")
-            distributions = ots.TruncatedDistribution(
-                distributions, lower_bound, upper_bound, threshold
-            )
-        return distributions
+            args = (distribution, ot.Interval(lower_bound, upper_bound), threshold)
 
-    def __set_bounds(self, distributions: Iterable[ots.Distribution]) -> None:
+        return ot.TruncatedDistribution(*args)
+
+    def __set_bounds(self, distributions: Iterable[ot.Distribution]) -> None:
         """Set the mathematical and numerical bounds (= support and range).
 
         Args:
-            distributions: The distributions.
+            distributions: The probability distributions.
         """
         self.math_lower_bound = []
         self.math_upper_bound = []

@@ -2,6 +2,7 @@
     "name": "OT_COMPOSITE_options",
     "description": "Composite DOE from the OpenTURNS library",
     "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.Composite.html",
+    "required": ["levels"],
     "properties": {
         "levels": {
           "type": "array",
@@ -37,7 +38,7 @@
                 },
                 {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 0
                 }
             ]
         },

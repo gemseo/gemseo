@@ -35,7 +35,6 @@ from numpy import atleast_2d
 from numpy import clip
 from numpy import complex128
 from numpy import concatenate
-from numpy import dot
 from numpy import float64
 from numpy import ndarray
 
@@ -162,22 +161,22 @@ class SobieskiBase:
     @classmethod
     def get_bounds_by_name(
         cls,
-        variables_names: str | Sequence[str],
+        variable_names: str | Sequence[str],
     ) -> tuple[ndarray, ndarray]:
         """Return the bounds of the design and coupling variables.
 
         Args:
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The lower and upper bounds of these variables.
         """
-        if isinstance(variables_names, str):
-            variables_names = [variables_names]
+        if isinstance(variable_names, str):
+            variable_names = [variable_names]
 
         bounds = atleast_2d(
             concatenate(
-                [_NAMES_TO_BOUNDS[variable_name] for variable_name in variables_names],
+                [_NAMES_TO_BOUNDS[variable_name] for variable_name in variable_names],
                 axis=0,
             )
         )
@@ -375,8 +374,8 @@ class SobieskiBase:
 
         poly_value = (
             a0_coeff
-            + dot(ai_coeff, s_shifted)
-            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), s_shifted)
+            + ai_coeff @ s_shifted
+            + 0.5 * s_shifted.T @ (aij_coeff[:imax, :imax] @ s_shifted)
         )
         return poly_value[0], ai_coeff, aij_coeff[:imax, :imax], s_shifted
 
@@ -431,8 +430,8 @@ class SobieskiBase:
 
         poly_value = (
             a0_coeff
-            + dot(ai_coeff, s_shifted)
-            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), s_shifted)
+            + ai_coeff @ s_shifted
+            + 0.5 * s_shifted.T @ (aij_coeff[:imax, :imax] @ s_shifted)
         )
         return poly_value[0]
 

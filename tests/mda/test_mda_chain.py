@@ -144,7 +144,7 @@ def test_sellar(tmp_wd, sellar_disciplines):
     outputs = ["obj", "c_1", "c_2"]
     assert mda_chain.check_jacobian(
         input_data,
-        derr_approx=MDODiscipline.COMPLEX_STEP,
+        derr_approx=MDODiscipline.ApproximationMode.COMPLEX_STEP,
         inputs=inputs,
         outputs=outputs,
         threshold=1e-5,
@@ -166,7 +166,7 @@ def test_sellar_chain_linearize(sellar_disciplines):
     )
 
     ok = mda_chain.check_jacobian(
-        derr_approx=MDODiscipline.FINITE_DIFFERENCES,
+        derr_approx=MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
         inputs=inputs,
         outputs=outputs,
         step=1e-6,
@@ -178,7 +178,7 @@ def test_sellar_chain_linearize(sellar_disciplines):
 
 
 def generate_disciplines_from_desc(
-    description_list, grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE
+    description_list, grammar_type=MDODiscipline.GrammarType.JSON
 ):
     disciplines = []
     data = ones(1)
@@ -199,11 +199,11 @@ def test_16_disc_parallel():
 
 
 @pytest.mark.parametrize(
-    "in_gtype", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "in_gtype", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_simple_grammar_type(in_gtype):
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    mda = MDAChain(disciplines, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE)
+    mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
 
     assert type(mda.input_grammar) == SimpleGrammar
     assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
@@ -214,7 +214,7 @@ def test_simple_grammar_type(in_gtype):
 def test_mix_sim_jsongrammar(sellar_disciplines):
     mda_chain_s = MDAChain(
         sellar_disciplines,
-        grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     assert type(mda_chain_s.input_grammar) == SimpleGrammar
 
@@ -228,15 +228,13 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
     assert out_1["obj"] == out_2["obj"]
 
 
-@pytest.mark.parametrize(
-    "matrix_type", [JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR]
-)
+@pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
 @pytest.mark.parametrize(
     "linearization_mode",
     [
-        JacobianAssembly.AUTO_MODE,
-        JacobianAssembly.DIRECT_MODE,
-        JacobianAssembly.ADJOINT_MODE,
+        JacobianAssembly.DerivationMode.AUTO,
+        JacobianAssembly.DerivationMode.DIRECT,
+        JacobianAssembly.DerivationMode.ADJOINT,
     ],
 )
 def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):

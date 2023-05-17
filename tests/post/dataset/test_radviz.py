@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import pytest
 from gemseo.post.dataset.radviz import Radar
-from gemseo.problems.dataset.iris import IrisDataset
-from gemseo.utils.testing import image_comparison
+from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 
 
@@ -54,7 +54,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, pyplot_close_all, fig_and_axes):
     """Test images created by Radar._plot against references."""
-    dataset = IrisDataset()
+    dataset = create_iris_dataset()
     plot = Radar(dataset, classifier="specy")
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)

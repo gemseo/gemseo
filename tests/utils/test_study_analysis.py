@@ -50,14 +50,14 @@ def test_generate_n2(tmp_wd):
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
-    study.generate_xdsm(".", latex_output=True)
+    study.generate_xdsm(".", save_pdf=True)
 
 
 def test_discipline_self_coupled_two_disciplines(tmp_wd):
     """Test that a GEMSEO study can be performed with a self-coupled discipline.
 
-    In this test, two disciplines with one self-coupled discipline are present in the MDO
-    process.
+    In this test, two disciplines with one self-coupled discipline are present in the
+    MDO process.
     """
     study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
     fpath = Path("xls_n2.pdf")
@@ -82,7 +82,7 @@ def test_discipline_self_coupled_one_disc(tmp_wd):
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf_special_characters(tmp_wd):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
-    study.generate_xdsm(".", latex_output=True)
+    study.generate_xdsm(".", save_pdf=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
@@ -93,7 +93,7 @@ def test_xdsm_idf(tmp_wd):
 
     disc_names = [d.name for d in study.disciplines.values()]
     assert disc_names == disc_names
-    study.generate_xdsm("", latex_output=True)
+    study.generate_xdsm("", save_pdf=True)
 
 
 def test_xdsm_bilevel(tmp_wd):

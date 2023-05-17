@@ -52,14 +52,12 @@ LOGGER = logging.getLogger(__name__)
 class MDARoot(MDA):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("strong_couplings", "all_couplings")
-
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
@@ -85,7 +83,6 @@ class MDARoot(MDA):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self._set_default_inputs()
         self._compute_input_couplings()
         # parallel execution
         # ==================================================================
@@ -103,12 +100,13 @@ class MDARoot(MDA):
         self._add_residuals_norm_to_output_grammar()
 
     def execute_all_disciplines(
-        self, input_local_data: Mapping[str, ndarray], update_local_data=True
+        self, input_local_data: Mapping[str, ndarray], update_local_data: bool = True
     ) -> None:
         """Execute all self.disciplines.
 
         Args:
             input_local_data: The input data of the disciplines.
+            update_local_data: Whether to update the local data from the disciplines.
         """
         # Set status of sub disciplines
         # if self.parallel_execution is not None:
@@ -142,13 +140,12 @@ class MDANewtonRaphson(MDARoot):
        x_{k+1} = x_k - \alpha f'(x_k)^{-1} f(x_k)
     """
 
-    _ATTR_TO_SERIALIZE = MDARoot._ATTR_TO_SERIALIZE + (
-        "assembly",
-        "relax_factor",
-        "linear_solver",
-        "linear_solver_options",
-        "matrix_type",
-    )
+    __newton_linear_solver_name: str
+    """The name of the linear solver for the Newton method: can be "DEFAULT", "GMRES" or
+    "BICGSTAB"."""
+
+    __newton_linear_solver_options: Mapping[str, Any] | None
+    """The options of the Newton linear solver."""
 
     def __init__(
         self,
@@ -156,7 +153,7 @@ class MDANewtonRaphson(MDARoot):
         max_mda_iter: int = 10,
         relax_factor: float = 0.99,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         linear_solver: str = "DEFAULT",
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -165,11 +162,15 @@ class MDANewtonRaphson(MDARoot):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver_options: Mapping[str, Any] = None,
-    ):
+        newton_linear_solver_name: str = "DEFAULT",
+        newton_linear_solver_options: Mapping[str, Any] | None = None,
+    ) -> None:
         """
         Args:
             relax_factor: The relaxation factor in the Newton step.
-        """
+            newton_linear_solver: The name of the linear solver for the Newton method.
+            newton_linear_solver_options: The options for the Newton linear solver.
+        """  # noqa:D205 D212 D415
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -186,6 +187,8 @@ class MDANewtonRaphson(MDARoot):
         )
         self.relax_factor = self.__check_relax_factor(relax_factor)
         self.linear_solver = linear_solver
+        self.__newton_linear_solver_name = newton_linear_solver_name
+        self.__newton_linear_solver_options = newton_linear_solver_options or {}
 
     @staticmethod
     def __check_relax_factor(
@@ -212,9 +215,9 @@ class MDANewtonRaphson(MDARoot):
             self.local_data,
             self.all_couplings,
             self.relax_factor,
-            self.linear_solver,
+            self.__newton_linear_solver_name,
             matrix_type=self.matrix_type,
-            **self.linear_solver_options,
+            **self.__newton_linear_solver_options,
         )
 
         # Update all the couplings with the Newton step.
@@ -250,7 +253,7 @@ class MDANewtonRaphson(MDARoot):
 
 
 class MDAQuasiNewton(MDARoot):
-    """Quasi-Newton solver for MDA.
+    r"""Quasi-Newton solver for MDA.
 
     `Quasi-Newton methods
     <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
@@ -300,19 +303,12 @@ class MDAQuasiNewton(MDARoot):
         DF_SANE,
     ]
 
-    _ATTR_TO_SERIALIZE = MDARoot._ATTR_TO_SERIALIZE + (
-        "method",
-        "use_gradient",
-        "assembly",
-        "normed_residual",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         method: str = HYBRID,
         use_gradient: bool = False,
         tolerance: float = 1e-6,
@@ -322,7 +318,7 @@ class MDAQuasiNewton(MDARoot):
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
         linear_solver_options: Mapping[str, Any] = None,
-    ):
+    ) -> None:
         """
         Args:
             method: The name of the method in scipy root finding,
@@ -331,7 +327,7 @@ class MDAQuasiNewton(MDARoot):
 
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
-        """
+        """  # noqa:D205 D212 D415
         self.method = method
         super().__init__(
             disciplines,
@@ -458,8 +454,8 @@ class MDAQuasiNewton(MDARoot):
                     size = list(discipline.jac[coupling].values())[0].shape[0]
                     n_couplings += size
                 self.assembly.compute_sizes(couplings, couplings, couplings)
-                dresiduals = self.assembly.dres_dvar(
-                    couplings, couplings, n_couplings, n_couplings
+                dresiduals = self.assembly.assemble_jacobian(
+                    couplings, couplings, is_residual=True
                 ).todense()
                 return dresiduals
 
@@ -486,7 +482,6 @@ class MDAQuasiNewton(MDARoot):
                     y_k: The coupling variables.
                     _: ignored
                 """
-
                 self.last_outputs = y_k
                 self.normed_residual = norm((y_k - self.last_outputs).real) / norm_0
                 self.residual_history.append(self.normed_residual)

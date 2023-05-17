@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegressor
@@ -38,13 +38,13 @@ def dataset():
     discipline = AnalyticDiscipline(
         {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}, name="func"
     )
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
     design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    data = discipline.cache.export_to_dataset()
+    data = discipline.cache.to_dataset()
     return data
 
 
@@ -140,9 +140,9 @@ def test_serialize(dataset, tmp_wd):
     """Check the serialization of a surroate discipline."""
     file_path = "discipline.pkl"
     discipline = SurrogateDiscipline("LinearRegressor", dataset)
-    discipline.serialize(file_path)
+    discipline.to_pickle(file_path)
 
-    loaded_discipline = SurrogateDiscipline.deserialize(file_path)
+    loaded_discipline = SurrogateDiscipline.from_pickle(file_path)
     loaded_discipline.execute()
 
     for name in discipline.local_data:

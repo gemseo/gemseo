@@ -24,13 +24,12 @@ from operator import gt
 from operator import le
 from operator import lt
 from typing import Any
+from typing import Final
+from typing import Literal
 
 from numpy import ndarray
 from scipy.spatial import distance
 from scipy.stats import qmc
-
-from gemseo.utils.python_compatibility import Final
-from gemseo.utils.python_compatibility import Literal
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,7 +89,7 @@ class DOEQuality:
             compute_phip_criterion(samples, power),
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self.measures)
 
     def __eq__(self, other_doe_quality: DOEQuality) -> bool:

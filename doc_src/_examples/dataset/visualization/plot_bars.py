@@ -25,15 +25,15 @@ Bars
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.core.dataset import Dataset
+from gemseo import configure_logger
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 from numpy import array
 
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 dataset = Dataset()
@@ -42,7 +42,7 @@ dataset.add_variable("x2", array([[0.5], [0.5]]))
 dataset.add_variable("x3", array([[0.75], [0.25]]))
 dataset.row_names = ["series_1", "series_2"]
 
-############################################################################
+# %%
 # Plot the two series on a radar chart
 # ------------------------------------
 # We can use the :class:`.BarPlot` plot

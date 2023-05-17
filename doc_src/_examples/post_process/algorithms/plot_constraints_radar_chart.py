@@ -23,17 +23,17 @@ Radar chart
 ===========
 
 In this example, we illustrate the use of the
-:class:`~gemseo.post.radar_chart.RadarChart` plot
+:class:`.RadarChart` plot
 on the Sobieski's SSBJ problem.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -41,18 +41,18 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
-# The :class:`~gemseo.post.radar_chart.RadarChart` post-processing
+# The :class:`.RadarChart` post-processing
 # plots on a radar style chart a list of constraint functions
 # at a given iteration.
 #
 # By default, the last iteration is used. This plot scales better with the number
 # of constraints than the constraint plot provided by the :ref:`opt_history_view`.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
@@ -66,13 +66,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -92,18 +92,18 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the
-# :class:`~gemseo.post.radar_chart.RadarChart`.
+# :class:`.RadarChart`.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    :func:.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

@@ -51,8 +51,8 @@ and can consider optional arguments:
   (by default, statistics are computed for all variables),
 - a fitting criterion name
   (by default, BIC is used;
-  see :attr:`.AVAILABLE_CRITERIA`
-  and :attr:`.AVAILABLE_SIGNIFICANCE_TESTS`
+  see :attr:`.FittingCriterion`
+  and :attr:`.SignificanceTest`
   for more information),
 - a level associated with the fitting criterion,
 - a selection criterion:
@@ -91,7 +91,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import Mapping
@@ -103,21 +102,19 @@ from numpy import array
 from numpy import linspace
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    Bounds,
+    ToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
 )
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceIntervalSide,
-)
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -139,7 +136,7 @@ class ParametricStatistics(Statistics):
     and the values are the statistic estimated for the different component.
 
     Examples:
-        >>> from gemseo.api import (
+        >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
         ...     create_scenario
@@ -166,7 +163,7 @@ class ParametricStatistics(Statistics):
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = scenario.export_to_dataset(opt_naming=False)
+        >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
         >>> statistics = ParametricStatistics(
         ...     dataset, ['Normal', 'Uniform', 'Triangular']
@@ -175,17 +172,20 @@ class ParametricStatistics(Statistics):
         >>> mean = statistics.compute_mean()
     """
 
-    fitting_criterion: str
-    """The name of the goodness-of-fit criterion, measuring how the distribution fits the
-    data."""
+    DistributionName = OTDistributionFitter.DistributionName
+    FittingCriterion = OTDistributionFitter.FittingCriterion
+    SignificanceTest = OTDistributionFitter.SignificanceTest
+    SelectionCriterion = OTDistributionFitter.SelectionCriterion
 
-    level: float
+    fitting_criterion: FittingCriterion
+    """The goodness-of-fit criterion, measuring how the distribution fits the data."""
+
+    level: float | None
     """The test level, i.e. risk of committing a Type 1 error, that is an incorrect
     rejection of a true null hypothesis, for criteria based on test hypothesis."""
 
-    selection_criterion: str
-    """The name of the selection criterion to select a distribution from a list of
-    candidates."""
+    selection_criterion: SelectionCriterion
+    """The selection criterion to select a distribution from a list of candidates."""
 
     distributions: dict[str, DistributionType | list[DistributionType]]
     """The probability distributions of the random variables.
@@ -195,29 +195,14 @@ class ParametricStatistics(Statistics):
     expressed as the unique marginal distribution.
     """
 
-    AVAILABLE_DISTRIBUTIONS: ClassVar[list[str]] = sorted(
-        OTDistributionFitter._AVAILABLE_DISTRIBUTIONS.keys()
-    )
-    """The names of the available probability distributions."""
-
-    AVAILABLE_CRITERIA: ClassVar[list[str]] = sorted(
-        OTDistributionFitter._AVAILABLE_FITTING_TESTS.keys()
-    )
-    """The names of the available fitting criteria."""
-
-    AVAILABLE_SIGNIFICANCE_TESTS: ClassVar[list[str]] = sorted(
-        OTDistributionFitter.SIGNIFICANCE_TESTS
-    )
-    """The names of the available significance tests."""
-
     def __init__(
         self,
         dataset: Dataset,
-        distributions: Sequence[str],
-        variables_names: Iterable[str] | None = None,
-        fitting_criterion: str = "BIC",
+        distributions: Sequence[DistributionName],
+        variable_names: Iterable[str] | None = None,
+        fitting_criterion: FittingCriterion = FittingCriterion.BIC,
         level: float = 0.05,
-        selection_criterion: str = "best",
+        selection_criterion: SelectionCriterion = SelectionCriterion.BEST,
         name: str | None = None,
     ) -> None:
         """
@@ -232,15 +217,14 @@ class ParametricStatistics(Statistics):
                 i.e. the risk of committing a Type 1 error,
                 that is an incorrect rejection of a true null hypothesis,
                 for criteria based on test hypothesis.
-            selection_criterion: The name of the selection criterion
+            selection_criterion: The selection criterion
                 to select a distribution from a list of candidates.
-                Either 'first' or 'best'.
         """  # noqa: D205,D212,D415
-        super().__init__(dataset, variables_names, name)
+        super().__init__(dataset, variable_names, name)
         self.fitting_criterion = fitting_criterion
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
-        if self.fitting_criterion in OTDistributionFitter.SIGNIFICANCE_TESTS:
+        if self.fitting_criterion in self.SignificanceTest.__members__:
             self.level = level
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
         else:
@@ -263,7 +247,7 @@ class ParametricStatistics(Statistics):
         distributions = list(self._all_distributions[variables[0]][0].keys())
         table = PrettyTable(["Variable"] + distributions + ["Selection"])
         for variable in variables:
-            for index in range(self.dataset.sizes[variable]):
+            for index in range(self.dataset.variable_names_to_n_components[variable]):
                 row = (
                     [variable]
                     + [
@@ -295,8 +279,7 @@ class ParametricStatistics(Statistics):
             for name, result in self._all_distributions[variable][index].items()
         }
         criterion_value_is_p_value = False
-        significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
-        if self.fitting_criterion in significance_tests:
+        if self.fitting_criterion in self.SignificanceTest.__members__:
             distribution_names_to_criterion_values = {
                 name: result[1]["p-value"]
                 for name, result in distribution_names_to_criterion_values.items()
@@ -305,17 +288,15 @@ class ParametricStatistics(Statistics):
 
         return distribution_names_to_criterion_values, criterion_value_is_p_value
 
-    # TODO: API: remove n_legend_cols as it is not used.
     def plot_criteria(
         self,
         variable: str,
         title: str | None = None,
         save: bool = False,
         show: bool = True,
-        n_legend_cols: int = 4,
         directory: str | Path = ".",
         index: int = 0,
-        fig_size: tuple[float, float] = (6.4, 3.2),
+        fig_size: FigSizeType = (6.4, 3.2),
     ) -> None:
         """Plot criteria for a given variable name.
 
@@ -324,7 +305,6 @@ class ParametricStatistics(Statistics):
             title: A plot title.
             save: If True, save the plot on the disk.
             show: If True, show the plot.
-            n_legend_cols: The number of text columns in the upper legend.
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
             fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
@@ -360,7 +340,7 @@ class ParametricStatistics(Statistics):
         ax1.set_box_aspect(1)
         ax1.set_xlabel("Probability distributions")
 
-        data = array(self.dataset[variable])
+        data = self.dataset.get_view(variable_names=variable).to_numpy()
         data_min = min(data)
         data_max = max(data)
         x_values = linspace(data_min, data_max, 1000)
@@ -375,7 +355,11 @@ class ParametricStatistics(Statistics):
         ax2.legend()
         ax2.grid(True, "both")
         ax2.set_title("Probability density function")
-        ax2.set_xlabel(repr_variable(variable, index, self.dataset.sizes[variable]))
+        ax2.set_xlabel(
+            repr_variable(
+                variable, index, self.dataset.variable_names_to_n_components[variable]
+            )
+        )
         if title is not None:
             plt.suptitle(title)
 
@@ -387,12 +371,12 @@ class ParametricStatistics(Statistics):
         save_show_figure(fig, show, file_path)
 
     def _select_best_distributions(
-        self, distributions_names: Sequence[str]
+        self, distribution_names: Sequence[DistributionName]
     ) -> dict[str, DistributionType | list[DistributionType]]:
         """Select the best distributions for the different variables.
 
         Args:
-            distributions_names: The names of the distributions.
+            distribution_names: The distribution names.
 
         Returns:
             The best distributions for the different variables.
@@ -401,16 +385,16 @@ class ParametricStatistics(Statistics):
         distributions = {}
         select_from_measures = OTDistributionFitter.select_from_measures
         for variable in self.names:
-            distribution_names = []
+            selected_distribution_names = []
             marginal_distributions = []
             for component, all_distributions in enumerate(
                 self._all_distributions[variable]
             ):
-                distribution_name = distributions_names[
+                distribution_name = distribution_names[
                     select_from_measures(
                         [
                             all_distributions[distribution]["criterion"]
-                            for distribution in distributions_names
+                            for distribution in distribution_names
                         ],
                         self.fitting_criterion,
                         self.level,
@@ -418,7 +402,7 @@ class ParametricStatistics(Statistics):
                     )
                 ]
                 best_dist = all_distributions[distribution_name]["fitted_distribution"]
-                distribution_names.append(distribution_name)
+                selected_distribution_names.append(distribution_name)
                 marginal_distributions.append(best_dist)
                 LOGGER.info(
                     "| The best distribution for %s[%s] is %s.",
@@ -430,7 +414,7 @@ class ParametricStatistics(Statistics):
             self.__distributions[variable] = [
                 {"name": distribution_name, "value": marginal_distribution}
                 for distribution_name, marginal_distribution in zip(
-                    distribution_names, marginal_distributions
+                    selected_distribution_names, marginal_distributions
                 )
             ]
             if len(marginal_distributions) == 1:
@@ -442,7 +426,7 @@ class ParametricStatistics(Statistics):
 
     def _fit_distributions(
         self,
-        distributions: Iterable[str],
+        distributions: Iterable[DistributionName],
     ) -> dict[str, list[dict[str, dict[str, OTDistribution | MeasureType]]]]:
         """Fit different distributions for the different marginals.
 
@@ -460,10 +444,10 @@ class ParametricStatistics(Statistics):
         results = {}
         for variable in self.names:
             LOGGER.info("| Fit different distributions for %s.", variable)
-            dataset = self.dataset[variable]
+            dataset_values = self.dataset.get_view(variable_names=variable).to_numpy()
             results[variable] = [
                 self._fit_marginal_distributions(variable, column, distributions)
-                for column in dataset.T
+                for column in dataset_values.T
             ]
         return results
 
@@ -471,7 +455,7 @@ class ParametricStatistics(Statistics):
         self,
         variable: str,
         sample: ndarray,
-        distributions: Iterable[str],
+        distributions: Iterable[DistributionName],
     ) -> dict[str, dict[str, OTDistribution | MeasureType]]:
         """Fit different distributions for a given dataset marginal.
 
@@ -535,9 +519,13 @@ class ParametricStatistics(Statistics):
         new_thresh = {}
         for name, value in thresh.items():
             if isinstance(value, float):
-                new_thresh[name] = [value] * self.dataset.sizes[name]
+                new_thresh[name] = [
+                    value
+                ] * self.dataset.variable_names_to_n_components[name]
             elif len(value) == 1:
-                new_thresh[name] = [value[0]] * self.dataset.sizes[name]
+                new_thresh[name] = [
+                    value[0]
+                ] * self.dataset.variable_names_to_n_components[name]
             else:
                 new_thresh[name] = value
 
@@ -562,8 +550,8 @@ class ParametricStatistics(Statistics):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
-    ) -> dict[str, list[Bounds]]:
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+    ) -> dict[str, list[ToleranceInterval.Bounds]]:
         if not 0.0 <= coverage <= 1.0:
             raise ValueError("The argument 'coverage' must be a number in [0,1].")
 

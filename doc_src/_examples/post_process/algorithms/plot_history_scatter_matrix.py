@@ -27,20 +27,20 @@ on the Sobieski's SSBJ problem.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
-# The first step is to import some functions from the API
+# The first step is to import some high-level functions
 # and a method to get the design space.
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
@@ -50,7 +50,7 @@ configure_logger()
 # according to the x- and y- coordinates names while the diagonal ones approximate
 # the probability distributions of the variables, using a kernel-density estimator.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
@@ -64,13 +64,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build a DOE scenario in order to maximize the range,
@@ -90,19 +90,19 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.ScatterPlotMatrix`
 # plot which builds scatter plot matrix among design variables, objective
 # function and constraints.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    of customization options. Use the high-level function
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

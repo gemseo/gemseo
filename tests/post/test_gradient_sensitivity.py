@@ -23,16 +23,16 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import empty
 
@@ -60,7 +60,7 @@ def test_import_gradient_sensitivity(
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
         "GradientSensitivity",
@@ -71,7 +71,7 @@ def test_import_gradient_sensitivity(
     assert len(post.output_files) == 1
     assert Path(post.output_files[0]).exists()
 
-    x_0 = problem.database.get_x_by_iter(0)
+    x_0 = problem.database.get_x_vect(1)
     problem.database[x_0].pop("@eq")
     post = factory.execute(
         problem,
@@ -79,7 +79,7 @@ def test_import_gradient_sensitivity(
         scale_gradients=scale_gradients,
         file_path="grad_sens2",
         save=True,
-        iteration=0,
+        iteration=1,
     )
     assert len(post.output_files) == 1
     assert Path(post.output_files[0]).exists()
@@ -279,7 +279,7 @@ def test_compute_missing_gradients(
                 with matplotlib pyplot.
         caplog: Fixture to access and control log capturing.
     """
-    problem = OptimizationProblem.import_hdf(str(opt_problem))
+    problem = OptimizationProblem.from_hdf(str(opt_problem))
 
     if opt_problem == SOBIESKI_MISSING_GRADIENTS:
         with pytest.raises(
@@ -317,7 +317,7 @@ def test_compute_missing_gradients_with_eval(factory, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
                 with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(str(SOBIESKI_MISSING_GRADIENTS))
+    problem = OptimizationProblem.from_hdf(str(SOBIESKI_MISSING_GRADIENTS))
 
     with open(SOBIESKI_GRADIENT_VALUES, "rb") as handle:
         gradients = pickle.load(handle)

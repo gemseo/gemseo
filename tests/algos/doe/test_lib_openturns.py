@@ -284,8 +284,8 @@ def test_methods(test_method):
 def variables_space():
     """A variables space."""
     design_space = mock.Mock()
-    design_space.variables_names = ["x"]
-    design_space.variables_sizes = {"x": 2}
+    design_space.variable_names = ["x"]
+    design_space.variable_sizes = {"x": 2}
     design_space.dimension = 2
     design_space.untransform_vect = lambda doe, no_check: doe
     return design_space

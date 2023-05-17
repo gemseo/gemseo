@@ -32,13 +32,14 @@ from typing import Sequence
 
 from numpy import array
 
-from gemseo.api import create_mda
+from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.mda import MDA
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
@@ -49,21 +50,6 @@ class MDAChain(MDA):
 
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
-
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
-        "mdo_chain",
-        "_chain_linearize",
-        "lin_cache_tol_fact",
-        "assembly",
-        "coupling_structure",
-        "linear_solver",
-        "linear_solver_options",
-        "linear_solver_tolerance",
-        "matrix_type",
-        "use_lu_fact",
-        "all_couplings",
-        "inner_mdas",
-    )
 
     inner_mdas: list[MDA]
     """The ordered MDAs."""
@@ -79,7 +65,7 @@ class MDAChain(MDA):
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         use_lu_fact: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         coupling_structure: MDOCouplingStructure | None = None,
         sub_coupling_structures: Iterable[MDOCouplingStructure] | None = None,
         log_convergence: bool = False,
@@ -88,7 +74,7 @@ class MDAChain(MDA):
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
         **inner_mda_options: float | int | bool | str | None,
-    ):
+    ) -> None:
         """
         Args:
             inner_mda_name: The class name of the inner-MDA.
@@ -107,7 +93,7 @@ class MDAChain(MDA):
             mdachain_parallel_options: The options of the MDOParallelChain
                 instances, if any.
             **inner_mda_options: The options of the inner-MDAs.
-        """
+        """  # noqa:D205 D212 D415
         self.n_processes = n_processes
         self.mdo_chain = None
         self._chain_linearize = chain_linearize
@@ -144,7 +130,6 @@ class MDAChain(MDA):
 
         self._initialize_grammars()
         self._check_consistency()
-        self._set_default_inputs()
         self._compute_input_couplings()
 
         # cascade the tolerance
@@ -152,7 +137,7 @@ class MDAChain(MDA):
             mda.tolerance = self.tolerance
 
     @MDA.log_convergence.setter
-    def log_convergence(
+    def log_convergence(  # noqa: D102
         self,
         value: bool,
     ) -> None:
@@ -168,7 +153,7 @@ class MDAChain(MDA):
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool | None] = None,
         **inner_mda_options: float | int | bool | str | None,
-    ):
+    ) -> None:
         """Create an MDO chain from the execution sequence of the disciplines.
 
         Args:
@@ -312,15 +297,14 @@ class MDAChain(MDA):
         Returns:
             A GEMSEO process instance.
         """
-        if len(parallel_disciplines) > 1:
-            process = self.__create_sequential_or_parallel_chain(
-                parallel_disciplines,
-                mdachain_parallelize_tasks,
-                mdachain_parallel_options,
-            )
-        else:
-            process = parallel_disciplines[0]
-        return process
+        if len(parallel_disciplines) == 1:
+            return parallel_disciplines[0]
+
+        return self.__create_sequential_or_parallel_chain(
+            parallel_disciplines,
+            mdachain_parallelize_tasks,
+            mdachain_parallel_options,
+        )
 
     def __create_inner_mda(
         self,
@@ -362,15 +346,14 @@ class MDAChain(MDA):
     def __is_one_discipline_self_coupled(
         self, disciplines: Sequence[MDODiscipline]
     ) -> bool:
-        """Whether the disciplines contain only one self-coupled discipline which is also
-        not a MDA.
+        """Return whether only one self-coupled discipline which is also not an MDA.
 
         Args:
             disciplines: The disciplines.
 
         Returns:
             True if the sole discipline of coupled_disciplines is self-coupled
-            and not a MDA.
+            and not an MDA.
         """
         first_discipline = disciplines[0]
         is_one_discipline_self_coupled = (
@@ -414,20 +397,18 @@ class MDAChain(MDA):
             Either a :class:`.MDOChain` or :class:`.MDOParallelChain instance.
         """
         if mdachain_parallelize_tasks:
-            process = self.__create_mdo_parallel_chain(
+            return self.__create_mdo_parallel_chain(
                 parallel_disciplines,
                 mdachain_parallel_options,
             )
-        else:
-            process = MDOChain(parallel_disciplines, grammar_type=self.grammar_type)
-        return process
+        return MDOChain(parallel_disciplines, grammar_type=self.grammar_type)
 
     def __create_mdo_parallel_chain(
         self,
         parallel_disciplines: Sequence[MDODiscipline],
         mdachain_parallel_options: dict[str, int | float | str] | None,
     ) -> MDOParallelChain:
-        """Create a :class:`.MDOParallelChain` with the provided disciplines and options.
+        """Create a :class:`.MDOParallelChain`.
 
         Args:
             parallel_disciplines: The parallel disciplines.
@@ -448,11 +429,11 @@ class MDAChain(MDA):
         """Define all inputs and outputs of the chain."""
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
-        self.input_grammar.update(self.mdo_chain.input_grammar)
-        self.output_grammar.update(self.mdo_chain.output_grammar)
+        self.input_grammar = self.mdo_chain.input_grammar.copy()
+        self.output_grammar = self.mdo_chain.output_grammar.copy()
         self._add_residuals_norm_to_output_grammar()
 
-    def _check_consistency(self):
+    def _check_consistency(self) -> None:
         """Check if there is no more than 1 equation per variable.
 
         For instance if a strong coupling is not also a self coupling.
@@ -472,7 +453,6 @@ class MDAChain(MDA):
             if res_local is not None:
                 res_sum += res_local[-1] ** 2
         self.local_data[self.RESIDUALS_NORM] = array([res_sum**0.5])
-        return self.local_data
 
     def _compute_jacobian(
         self,
@@ -488,7 +468,7 @@ class MDAChain(MDA):
         else:
             super()._compute_jacobian(inputs, outputs)
 
-    def add_differentiated_inputs(
+    def add_differentiated_inputs(  # noqa:D102
         self,
         inputs: Iterable[str] | None = None,
     ) -> None:
@@ -496,10 +476,10 @@ class MDAChain(MDA):
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
 
-    def add_differentiated_outputs(
+    def add_differentiated_outputs(  # noqa: D102
         self,
         outputs: Iterable[str] | None = None,
-    ) -> None:  # noqa: D102
+    ) -> None:
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
@@ -516,36 +496,35 @@ class MDAChain(MDA):
     ) -> None:
         """Set the normed_residual.
 
-        Has no effect,
-        since the normed residuals are defined by inner-MDAs residuals
+        Has no effect, since the normed residuals are defined by inner-MDAs residuals
         (see associated property).
 
         Here for compatibility with mother class.
         """
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.mdo_chain.get_expected_dataflow()
 
-    def get_expected_workflow(self) -> SerialExecSequence:
+    def get_expected_workflow(self) -> SerialExecSequence:  # noqa:D102
         exec_s = SerialExecSequence(self)
         workflow = self.mdo_chain.get_expected_workflow()
         exec_s.extend(workflow)
         return exec_s
 
-    def reset_statuses_for_run(self) -> None:
+    def reset_statuses_for_run(self) -> None:  # noqa:D102
         super().reset_statuses_for_run()
         self.mdo_chain.reset_statuses_for_run()
 
-    def plot_residual_history(
+    def plot_residual_history(  # noqa: D102
         self,
         show: bool = False,
         save: bool = True,
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
-        fig_size: tuple[float, float] = (50.0, 10.0),
+        fig_size: FigSizeType = (50.0, 10.0),
     ) -> None:
         for mda in self.inner_mdas:
             if filename is not None:

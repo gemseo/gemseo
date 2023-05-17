@@ -48,7 +48,7 @@ def test_from_dict():
     assert res.optimizer_name == dct["optimizer_name"]
     assert res.message == dct["message"]
     assert res.f_opt == dct["f_opt"]
-    assert res.constraints_values["cname"] == dct["constr:cname"]
+    assert res.constraint_values["cname"] == dct["constr:cname"]
     assert res.status == dct["status"]
     assert res.n_obj_call == dct["n_obj_call"]
     assert res.n_grad_call == dct["n_grad_call"]

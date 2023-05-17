@@ -49,6 +49,8 @@ from __future__ import annotations
 import logging
 import os
 from copy import deepcopy
+from typing import Iterable
+from typing import Sequence
 
 from numpy import array
 from numpy import full
@@ -57,13 +59,15 @@ from numpy import random
 from numpy import where
 from numpy import zeros
 
+from gemseo import create_design_space
+from gemseo import create_scenario
+from gemseo import generate_coupling_graph
+from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_design_space
-from gemseo.api import create_scenario
-from gemseo.api import generate_coupling_graph
-from gemseo.api import generate_n2_plot
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
@@ -77,15 +81,15 @@ class ScalableProblem:
 
     def __init__(
         self,
-        datasets,
+        datasets: Iterable[IODataset],
         design_variables,
         objective_function,
         eq_constraints=None,
         ineq_constraints=None,
-        maximize_objective=False,
+        maximize_objective: bool = False,
         sizes=None,
         **parameters,
-    ):
+    ) -> None:
         """Constructor.
 
         :param list(Dataset) datasets: disciplinary datasets.
@@ -101,15 +105,16 @@ class ScalableProblem:
         self.disciplines = [dataset.name for dataset in datasets]
         self.data = {dataset.name: dataset for dataset in datasets}
         self.inputs = {
-            dataset.name: dataset.get_names(dataset.INPUT_GROUP) for dataset in datasets
+            dataset.name: dataset.get_variable_names(dataset.INPUT_GROUP)
+            for dataset in datasets
         }
         self.outputs = {
-            dataset.name: dataset.get_names(dataset.OUTPUT_GROUP)
+            dataset.name: dataset.get_variable_names(dataset.OUTPUT_GROUP)
             for dataset in datasets
         }
         self.varsizes = {}
         for dataset in datasets:
-            self.varsizes.update(dataset.sizes)
+            self.varsizes.update(dataset.variable_names_to_n_components)
         self.design_variables = design_variables
         self.objective_function = objective_function
         self.ineq_constraints = ineq_constraints
@@ -120,7 +125,7 @@ class ScalableProblem:
         self._build_scalable_disciplines(sizes, **parameters)
         self.scenario = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation of information about the scalable problem.
 
         :return: scalable problem description
@@ -150,7 +155,7 @@ class ScalableProblem:
         msg.add("Sizes: {}", sizes)
         return str(msg)
 
-    def plot_n2_chart(self, save=True, show=False):
+    def plot_n2_chart(self, save: bool = True, show: bool = False) -> None:
         """Plot a N2 chart.
 
         :param bool save: save plot. Default: True.
@@ -158,12 +163,18 @@ class ScalableProblem:
         """
         generate_n2_plot(self.scaled_disciplines, save=save, show=show)
 
-    def plot_coupling_graph(self):
+    def plot_coupling_graph(self) -> None:
         """Plot a coupling graph."""
         generate_coupling_graph(self.scaled_disciplines)
 
     def plot_1d_interpolations(
-        self, save=True, show=False, step=0.01, varnames=None, directory=".", png=False
+        self,
+        save: bool = True,
+        show: bool = False,
+        step: float = 0.01,
+        varnames: Sequence[str] | None = None,
+        directory: os.PathLike[bytes] | os.PathLike[str] | bytes | str = ".",
+        png: bool = False,
     ):
         """Plot 1d interpolations.
 
@@ -186,7 +197,9 @@ class ScalableProblem:
             allfnames += [os.path.join(directory, fname) for fname in fnames]
         return allfnames
 
-    def plot_dependencies(self, save=True, show=False, directory="."):
+    def plot_dependencies(
+        self, save: bool = True, show: bool = False, directory: str = "."
+    ):
         """Plot dependency matrices.
 
         :param bool save: save plot (default: True)
@@ -203,7 +216,7 @@ class ScalableProblem:
             fnames.append(fname)
         return fnames
 
-    def _build_scalable_disciplines(self, sizes=None, **parameters):
+    def _build_scalable_disciplines(self, sizes=None, **parameters) -> None:
         """Build scalable disciplines.
 
         :param dict sizes: dictionary whose keys are variable names
@@ -279,7 +292,9 @@ class ScalableProblem:
         self.__add_eq_constraints(equilibrium)
         return self.scenario
 
-    def _create_bilevel_scenario(self, disciplines, **sub_scenario_options):
+    def _create_bilevel_scenario(
+        self, disciplines: Iterable[MDODiscipline], **sub_scenario_options
+    ) -> Scenario:
         """Create a bilevel scenario from disciplines.
 
         :param list(MDODiscipline) disciplines: list of MDODiscipline
@@ -336,7 +351,9 @@ class ScalableProblem:
         )
         return system_scenario
 
-    def _create_design_space(self, disciplines=None, formulation="DisciplinaryOpt"):
+    def _create_design_space(
+        self, disciplines=None, formulation: str = "DisciplinaryOpt"
+    ) -> DesignSpace:
         """Create a design space into the unit hypercube.
 
         :param list(MDODiscipline) disciplines: list of MDODiscipline
@@ -370,7 +387,7 @@ class ScalableProblem:
 
         return design_space
 
-    def __get_equilibrium(self, mda_name="MDAJacobi", **options):
+    def __get_equilibrium(self, mda_name: str = "MDAJacobi", **options):
         """Get the equilibrium point from a MDA method.
 
         :param str mda_name: MDA name (default: 'MDAJacobi')
@@ -386,7 +403,7 @@ class ScalableProblem:
 
     def __add_ineq_constraints(
         self, active_probability, feasibility_level, equilibrium
-    ):
+    ) -> None:
         """Add inequality constraints.
 
         :param float active_probability: probability to set the inequality
@@ -410,7 +427,7 @@ class ScalableProblem:
                 taui = 0.0
             self.scenario.add_constraint(constraint, "ineq", value=taui)
 
-    def __add_eq_constraints(self, equilibrium):
+    def __add_eq_constraints(self, equilibrium) -> None:
         """Add equality constraints.
 
         :param dict equilibrium: starting point at equilibrium
@@ -419,7 +436,7 @@ class ScalableProblem:
             cstr_value = equilibrium.get(constraint, array([0.0]))[0]
             self.scenario.add_constraint(constraint, "eq", value=cstr_value)
 
-    def exec_time(self, do_sum=True):
+    def exec_time(self, do_sum: bool = True):
         """Get total execution time per discipline.
 
         :param bool do_sum: sum over disciplines (default: True)

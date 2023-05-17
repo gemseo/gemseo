@@ -35,8 +35,8 @@ from numpy import atleast_2d
 from numpy import loadtxt
 from numpy import ndarray
 
-from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
+from gemseo.algos.doe.doe_library import DOELibrary
 
 OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
 
@@ -46,13 +46,11 @@ LOGGER = logging.getLogger(__name__)
 class CustomDOE(DOELibrary):
     """A design of experiments from samples provided as a file or an array.
 
-    The samples are provided
-    either as a file in text or csv format
-    or as a sequence of sequences of numbers,
-    e.g. a 2D numpy array.
+    The samples are provided either as a file in text or csv format or as a sequence of
+    sequences of numbers, e.g. a 2D numpy array.
 
-    A csv file format is assumed to have a header
-    whereas a text file (extension .txt) does not.
+    A csv file format is assumed to have a header whereas a text file (extension .txt)
+    does not.
     """
 
     COMMENTS_KEYWORD: ClassVar[str] = "comments"
@@ -107,11 +105,11 @@ class CustomDOE(DOELibrary):
         """Set the options.
 
         Args:
-            doe_file: Either a file path or the generator to read.
-                If None, the samples are used and must be provided.
-            samples: The samples.
+            doe_file: The path to the file containing the input samples.
+                If ``None``, use ``samples``.
+            samples: The input samples.
                 They must be at least a 2D-array.
-                If None, the `doe_file` is used and must be provided.
+                If ``None``, use ``doe_file``.
             delimiter: The character used to separate values.
                 If None, use whitespace.
             comments:  The characters or list of characters

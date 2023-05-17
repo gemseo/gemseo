@@ -24,25 +24,34 @@ import itertools
 import logging
 from collections import defaultdict
 from typing import Any
+from typing import Callable
 from typing import ClassVar
+from typing import Collection
+from typing import Generator
 from typing import Iterable
 from typing import Mapping
+from typing import NamedTuple
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import atleast_2d
 from numpy import concatenate
 from numpy import empty
+from numpy import fill_diagonal
+from numpy import int8
 from numpy import ndarray
-from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
-from scipy.sparse import dia_matrix
+from scipy.sparse import bmat
+from scipy.sparse import csr_matrix
 from scipy.sparse import dok_matrix
+from scipy.sparse import eye
+from scipy.sparse import spmatrix
 from scipy.sparse import vstack
 from scipy.sparse.csc import csc_matrix
 from scipy.sparse.linalg import factorized
 from scipy.sparse.linalg import LinearOperator
+from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
@@ -67,6 +76,80 @@ def none_factory() -> None:
 def default_dict_factory() -> dict[Any, None]:
     """Instantiates a defaultdict(None) object."""
     return defaultdict(none_factory)
+
+
+class JacobianOperator(LinearOperator):
+    """Representation of the Jacobian as a SciPy ``LinearOperator``."""
+
+    def __init__(
+        self,
+        functions: Iterable[str],
+        variables: Iterable[str],
+        n_functions: int,
+        n_variables: int,
+        get_jacobian_generator: Callable[
+            [Iterable[str], Iterable[str], bool], Generator
+        ],
+        is_residual: bool = False,
+    ) -> None:
+        """
+        Args:
+            functions: The functions to differentiate.
+            variables: The differentiation variables.
+            n_functions: The number of functions components.
+            n_variables: The number of variables components.
+            get_jacobian_generator: The method to iterate over the Jacobians associated
+                with the provided functions and variables.
+            is_residual: Whether the functions are residuals.
+        """  # noqa: D205, D212, D415
+        super().__init__(shape=(n_functions, n_variables), dtype=float)
+
+        self.__functions = functions
+        self.__variables = variables
+        self.__is_residual = is_residual
+        self.__get_jacobian_generator = get_jacobian_generator
+
+    def _matvec(self, x: ndarray) -> ndarray:
+        """The matrix-vector product involving the Jacobian ∂f/∂v.
+
+        Args:
+            x: The vector to apply ∂f/∂v to.
+
+        Returns:
+            The resulting vector ∂f/∂v x.
+        """
+        # Initialize the result with appropriate dimension
+        result = zeros(self.shape[0], dtype=x.dtype)
+
+        jacobian_generator = self.__get_jacobian_generator(
+            self.__functions, self.__variables, self.__is_residual
+        )
+
+        for jacobian, position in jacobian_generator:
+            result[position.row_slice] += jacobian.dot(x[position.column_slice])
+
+        return result
+
+    def _rmatvec(self, x: ndarray) -> ndarray:
+        """The matrix-vector product involving the transposed Jacobian ∂f/∂v.
+
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+
+        Returns:
+            The resulting vector (∂f/∂v)^T x.
+        """
+        # Initialize the result with appropriate dimension
+        result = zeros(self.shape[1], dtype=x.dtype)
+
+        jacobian_generator = self.__get_jacobian_generator(
+            self.__functions, self.__variables, self.__is_residual
+        )
+
+        for jacobian, position in jacobian_generator:
+            result[position.column_slice] += jacobian.T.dot(x[position.row_slice])
+
+        return result
 
 
 class JacobianAssembly:
@@ -99,30 +182,36 @@ class JacobianAssembly:
     __linear_solver_factory: LinearSolversFactory
     """The linear solver factory."""
 
-    AVAILABLE_MODES: ClassVar[tuple[str]] = derivation_modes.AVAILABLE_MODES
-    """The enumeration of the available modes."""
+    DerivationMode = derivation_modes.DerivationMode
 
-    DIRECT_MODE: ClassVar[str] = derivation_modes.DIRECT_MODE
-    """The name of the direct mode."""
+    class JacobianType(StrEnum):
+        """The available types for the Jacobian matrix."""
 
-    ADJOINT_MODE: ClassVar[str] = derivation_modes.ADJOINT_MODE
-    """The name of the adjoint mode."""
+        LINEAR_OPERATOR = "linear_operator"
+        """Jacobian as a SciPy ``LinearOperator`` implementing the appropriate method to
+        perform matrix-vector products."""
 
-    AUTO_MODE: ClassVar[str] = derivation_modes.AUTO_MODE
-    """The name of the auto-mode."""
+        MATRIX = "matrix"
+        """Jacobian matrix in Compressed Sparse Row (CSR) format."""
 
-    REVERSE_MODE: ClassVar[str] = derivation_modes.REVERSE_MODE
-    """The name of the reverse mode."""
+    class JacobianPosition(NamedTuple):
+        """The position of the discipline's Jacobians within the assembled Jacobian."""
 
-    # matrix types
-    SPARSE: ClassVar[str] = "sparse"
-    """The name for sparse matrices."""
+        row_slice: slice
+        """The row slice indicating where to position the disciplinary Jacobian within
+        the assembled Jacobian when defined as an array."""
 
-    LINEAR_OPERATOR: ClassVar[str] = "linear_operator"
-    """The name for linear operators."""
+        column_slice: slice
+        """The column slice indicating where to position the disciplinary Jacobian
+        within the assembled Jacobian when defined as an array."""
 
-    AVAILABLE_MAT_TYPES: ClassVar[tuple[str]] = (SPARSE, LINEAR_OPERATOR)
-    """The enumeration of the available matrix types."""
+        row_index: int
+        """The row index of the disciplinary Jacobian within the assembled Jacobian when
+        defined blockwise."""
+
+        column_index: int
+        """The column index of the disciplinary Jacobian within the assembled Jacobian
+        when defined blockwise."""
 
     def __init__(self, coupling_structure: MDOCouplingStructure) -> None:
         """
@@ -137,14 +226,14 @@ class JacobianAssembly:
         self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
         self.n_newton_linear_resolutions = 0
-        self.__linear_solver_factory = LinearSolversFactory()
+        self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
 
     def __check_inputs(
         self,
         functions: Iterable[str],
         variables: Iterable[str],
         couplings: Iterable[str],
-        matrix_type: str,
+        matrix_type: JacobianType,
         use_lu_fact: bool,
     ) -> None:
         """Check the inputs before differentiation.
@@ -203,15 +292,9 @@ class JacobianAssembly:
                 + " is both a coupling and a design variable"
             )
 
-        if matrix_type not in self.AVAILABLE_MAT_TYPES:
-            raise ValueError(
-                "Unknown matrix type "
-                + str(matrix_type)
-                + ", available ones are "
-                + str(self.AVAILABLE_MAT_TYPES)
-            )
+        matrix_type = self.JacobianType(matrix_type)
 
-        if use_lu_fact and matrix_type == self.LINEAR_OPERATOR:
+        if use_lu_fact and matrix_type == self.JacobianType.LINEAR_OPERATOR:
             raise ValueError(
                 "Unsupported LU factorization for "
                 + "LinearOperators! Please use Sparse matrices"
@@ -275,8 +358,8 @@ class JacobianAssembly:
                     f"Failed to determine the size of input variable {variable}"
                 )
 
-    @staticmethod
-    def _check_mode(mode: str, n_variables: int, n_functions: int) -> str:
+    @classmethod
+    def _check_mode(cls, mode: str, n_variables: int, n_functions: int) -> str:
         """Check the differentiation mode (direct or adjoint).
 
         Args:
@@ -287,11 +370,11 @@ class JacobianAssembly:
         Returns:
             The linearization mode.
         """
-        if mode == JacobianAssembly.AUTO_MODE:
+        if mode == cls.DerivationMode.AUTO:
             if n_variables <= n_functions:
-                mode = JacobianAssembly.DIRECT_MODE
+                mode = cls.DerivationMode.DIRECT
             else:
-                mode = JacobianAssembly.ADJOINT_MODE
+                mode = cls.DerivationMode.ADJOINT
         return mode
 
     def compute_dimension(self, names: Iterable[str]) -> int:
@@ -303,293 +386,146 @@ class JacobianAssembly:
         Returns:
             The dimension if the system.
         """
-        number = 0
-        for name in names:
-            number += self.sizes[name]
-        return number
+        return sum(self.sizes[name] for name in names)
 
-    def _dres_dvar_sparse(
+    def _get_jacobian_generator(
         self,
-        residuals: Iterable[str],
+        functions: Iterable[str],
         variables: Iterable[str],
-        n_residuals: int,
-        n_variables: int,
-    ) -> dok_matrix:
-        """Form the matrix of partial derivatives of residuals.
+        is_residual: bool = False,
+    ) -> Generator[Any, JacobianPosition]:
+        """Iterate over Jacobian matrices.
 
-        Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
-        fill the sparse Jacobian:
-        |           |
-        |  dRi/dvj  |
-        |           |
+        Provide a generator to iterate over the Jacobians associated with each provided
+        pair (function, variable). The generator yields the Jacobian along with its
+        relative position in the to be assembled Jacobian.
 
         Args:
-            residuals: The residuals.
+            functions: The functions to differentiate.
             variables: The differentiation variables.
-            n_residuals: The number of residuals.
-            n_variables: The number of variables.
+            is_residual: Whether the functions are residuals.
 
-        Returns:
-            The derivatives of the residuals wrt the variables.
+        Yields:
+            A tuple of the form (Jacobian, Position).
         """
-        dres_dvar = dok_matrix((n_residuals, n_variables))
-        out_i = 0
-        # Row blocks
-        for residual in residuals:
-            residual_size = self.sizes[residual]
-            # Find the associated discipline
-            discipline = self.disciplines[residual]
-            residual_jac = discipline.jac[residual]
-            # Column blocks
-            out_j = 0
-            for variable in variables:
+        row = 0
+        # Iterate over outputs
+        for row_index, function in enumerate(functions):
+            column = 0
+            function_jacobian = self.disciplines[function].jac[function]
+            # Iterate over inputs
+            for column_index, variable in enumerate(variables):
+                jacobian = function_jacobian.get(variable, None)
                 variable_size = self.sizes[variable]
-                if residual == variable:
-                    # residual Yi-Yi: put -I in the Jacobian
-                    ones_mat = (ones(variable_size), 0)
-                    shape = (variable_size, variable_size)
-                    diag_mat = -dia_matrix(ones_mat, shape=shape)
-                    if self.coupling_structure.is_self_coupled(discipline):
-                        jac = residual_jac.get(variable, None)
-                        if jac is not None:
-                            diag_mat += jac
-                    dres_dvar[
-                        out_i : out_i + variable_size, out_j : out_j + variable_size
-                    ] = diag_mat
 
-                else:
-                    # block Jacobian
-                    jac = residual_jac.get(variable, None)
-                    if jac is not None:
-                        n_i, n_j = jac.shape
-                        assert n_i == residual_size
-                        assert n_j == variable_size
-                        # Fill the sparse Jacobian block
-                        dres_dvar[out_i : out_i + n_i, out_j : out_j + n_j] = jac
-                # Shift the column by block width
-                out_j += variable_size
-            out_i += residual_size
-
-        return dres_dvar.real
-
-    def _dres_dvar_linop(
-        self,
-        residuals: Iterable[str],
-        variables: Iterable[str],
-        n_residuals: int,
-        n_variables: int,
-    ) -> LinearOperator:
-        """Form the linear operator of partial derivatives of residuals.
-
-        Args:
-            residuals: The residuals.
-            variables: The differentiation variables.
-            n_residuals:  The number of residuals.
-            n_variables:  The number of variables.
-
-        Returns:
-            The operator dres_dvar.
-        """
-
-        def dres_dvar(x_array: ndarray) -> ndarray:
-            """The linear operator that represents the square matrix dR/dy.
-
-            Args:
-                x_array: vector multiplied by the matrix
-            """
-            assert x_array.shape[0] == n_variables
-            # initialize the result
-            result = zeros(n_residuals, dtype=x_array.dtype)
-
-            out_i = 0
-            # Row blocks
-            for residual in residuals:
-                residual_size = self.sizes[residual]
-                # Find the associated discipline
-                discipline = self.disciplines[residual]
-                residual_jac = discipline.jac[residual]
-                # Column blocks
-                out_j = 0
-                for variable in variables:
-                    variable_size = self.sizes[variable]
-                    if residual == variable:
-                        # residual Yi-Yi: (-I).x = -x
-                        sub_x = x_array[out_j : out_j + variable_size]
-                        result[out_i : out_i + residual_size] -= sub_x
-                        if self.coupling_structure.is_self_coupled(discipline):
-                            jac = residual_jac.get(variable, None)
-                            if jac is not None:
-                                result[out_i : out_i + residual_size] += jac.dot(sub_x)
+                # If residual of the form Yi-Yi, then add -I to the Jacobian
+                if is_residual and function == variable:
+                    if jacobian is not None:
+                        # Make a copy to avoid in-place modifications
+                        jacobian_copy = jacobian.copy()
+                        if isinstance(jacobian_copy, ndarray):
+                            fill_diagonal(jacobian_copy, jacobian.diagonal() - 1)
+                        elif isinstance(jacobian_copy, spmatrix):
+                            jacobian_copy.setdiag(jacobian.diagonal() - 1)
+                        jacobian = jacobian_copy
                     else:
-                        # block Jacobian
-                        jac = residual_jac.get(variable, None)
-                        if jac is not None:
-                            sub_x = x_array[out_j : out_j + variable_size]
-                            sub_result = jac.dot(sub_x)
-                            result[out_i : out_i + residual_size] += sub_result
-                    # Shift the column by block width
-                    out_j += variable_size
-                # Shift the row by block height
-                out_i += residual_size
-            return result
+                        jacobian = -eye(variable_size, dtype=int8)
 
-        return LinearOperator((n_residuals, n_variables), matvec=dres_dvar)
+                # Yield only if Jacobian exists
+                if jacobian is not None:
+                    yield jacobian.real, self.JacobianPosition(
+                        row_slice=slice(row, row + jacobian.shape[0]),
+                        column_slice=slice(column, column + jacobian.shape[1]),
+                        row_index=row_index,
+                        column_index=column_index,
+                    )
 
-    def _dres_dvar_t_linop(
+                column += variable_size
+            row += self.sizes[function]
+
+    def _assemble_jacobian_as_matrix(
         self,
-        residuals: Iterable[str],
-        variables: Iterable[str],
-        n_residuals: int,
-        n_variables: int,
-    ) -> LinearOperator:
-        """Form the transposed linear operator of partial derivatives of residuals.
+        functions: Collection[str],
+        variables: Collection[str],
+        is_residual: bool = False,
+    ) -> csr_matrix:
+        """Form the Jacobian as a sparse matrix in Compressed Sparse Row (CSR) format.
+
+        The CSR format is well-adapted to perform matrix-vector and matrix-matrix
+        multiplications efficiently.
 
         Args:
-            residuals: The residuals.
+            functions: The functions to differentiate.
             variables: The differentiation variables.
-            n_residuals: The number of residuals.
-            n_variables: The number of variables.
+            is_residual: Whether the functions are residuals.
 
         Returns:
-            The transpose of the operator dres_dvar.
+            The Jacobian as a sparse matrix in CSR format.
         """
+        # Fill in with zero blocks of appropriate dimension if necessary
+        variable_sizes = [self.sizes[variable_name] for variable_name in variables]
+        function_sizes = [self.sizes[function_name] for function_name in functions]
 
-        def dres_t_dvar(x_array: ndarray) -> ndarray:
-            """The transposed linear operator that represents the square matrix dR/dy.
+        # Initialize the block Jacobian with the appropriate structure
+        total_jacobian: list[list[None | csr_matrix]] = [
+            [None for _ in variables] for _ in functions
+        ]
 
-            Args:
-                x_array: The vector multiplied by the matrix.
-            """
-            assert x_array.shape[0] == n_residuals
-            # initialize the result
-            result = zeros(n_variables)
+        variable_sizes_0 = variable_sizes[0]
+        for i, function_size in enumerate(function_sizes):
+            total_jacobian[i][0] = csr_matrix((function_size, variable_sizes_0))
 
-            out_j = 0
-            # Column blocks
-            for residual in residuals:
-                residual_size = self.sizes[residual]
-                # Find the associated discipline
-                discipline = self.disciplines[residual]
-                residual_jac = discipline.jac[residual]
-                # Row blocks
-                out_i = 0
-                for variable in variables:
-                    variable_size = self.sizes[variable]
-                    if residual == variable:
-                        # residual Yi-Yi: (-I).x = -x
-                        sub_x = x_array[out_j : out_j + residual_size]
-                        result[out_i : out_i + variable_size] -= sub_x
-                        if self.coupling_structure.is_self_coupled(discipline):
-                            jac = residual_jac.get(variable, None)
-                            if jac is not None:
-                                result[out_i : out_i + residual_size] += jac.T.dot(
-                                    sub_x
-                                )
-                    else:
-                        # block Jacobian
-                        jac = residual_jac.get(variable, None)
-                        if jac is not None:
-                            sub_x = x_array[out_j : out_j + residual_size]
-                            sub_result = jac.T.dot(sub_x)
-                            result[out_i : out_i + variable_size] += sub_result
-                    # Shift the column by block width
-                    out_i += variable_size
-                # Shift the row by block height
-                out_j += residual_size
-            return result
+        function_sizes_0 = function_sizes[0]
+        total_jacobian_0 = total_jacobian[0]
+        for j, variable_size in enumerate(variable_sizes):
+            total_jacobian_0[j] = csr_matrix((function_sizes_0, variable_size))
 
-        return LinearOperator((n_variables, n_residuals), matvec=dres_t_dvar)
+        # Perform the assembly
+        jacobian_generator = self._get_jacobian_generator(
+            functions, variables, is_residual=is_residual
+        )
 
-    def dres_dvar(
-        self,
-        residuals: Iterable[str],
-        variables: Iterable[str],
-        n_residuals: int,
-        n_variables: int,
-        matrix_type: str = SPARSE,
-        transpose: bool = False,
-    ) -> dok_matrix | LinearOperator:
-        """Form the matrix of partial derivatives of residuals.
-
-        Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
-        fill the sparse Jacobian:
-        |           |
-        |  dRi/dvj  |
-        |           | (Default value = False)
-
-        Args:
-            residuals: The residuals.
-            variables: The differentiation variables.
-            n_residuals: The number of residuals.
-            n_variables: The number of variables.
-            matrix_type: The type of the matrix.
-            transpose: Whether to transpose the matrix.
-
-        Returns:
-            The jacobian of dres_dvar.
-
-        Raises:
-            TypeError: When the matrix type is unknown.
-        """
-        if matrix_type == JacobianAssembly.SPARSE:
-            sparse_dres_dvar = self._dres_dvar_sparse(
-                residuals,
-                variables,
-                n_residuals,
-                n_variables,
+        for jacobian, position in jacobian_generator:
+            total_jacobian[position.row_index][position.column_index] = csr_matrix(
+                jacobian.real
             )
-            if transpose:
-                return sparse_dres_dvar.T
-            return sparse_dres_dvar
 
-        if matrix_type == JacobianAssembly.LINEAR_OPERATOR:
-            if transpose:
-                return self._dres_dvar_t_linop(
-                    residuals, variables, n_residuals, n_variables
-                )
-            return self._dres_dvar_linop(residuals, variables, n_residuals, n_variables)
+        return bmat(total_jacobian, format="csr")
 
-        raise TypeError("cannot handle the matrix type")
-
-    def dfun_dvar(
-        self, function: str, variables: Iterable[str], n_variables: int
-    ) -> dok_matrix:
-        """Forms the matrix of partial derivatives of a function.
-
-        Given disciplinary Jacobians dJi(v0...vn)/dvj,
-        fill the sparse Jacobian:
-        |           |
-        |  dJi/dvj  |
-        |           |
+    def assemble_jacobian(
+        self,
+        functions: Collection[str],
+        variables: Collection[str],
+        is_residual: bool = False,
+        jacobian_type: JacobianType = JacobianType.MATRIX,
+    ) -> csr_matrix | JacobianOperator:
+        """Form the Jacobian as a SciPy ``LinearOperator``.
 
         Args:
-            function: The function to differentiate.
+            functions: The functions to differentiate.
             variables: The differentiation variables.
-            n_variables: The number of variables.
+            is_residual: Whether the functions are residuals.
+            jacobian_type: The type of representation for the Jacobian ∂f/∂v.
 
         Returns:
-            The full Jacobian matrix.
+            The Jacobian ∂f/∂v in the specified type.
         """
-        function_size = self.sizes[function]
-        dfun_dy = dok_matrix((function_size, n_variables))
-        # Find the associated discipline
-        discipline = self.disciplines[function]
-        function_jac = discipline.jac[function]
+        if jacobian_type == self.JacobianType.MATRIX:
+            return self._assemble_jacobian_as_matrix(
+                functions,
+                variables,
+                is_residual,
+            )
 
-        # Loop over differentiation variable
-        out_j = 0
-        for variable in variables:
-            variable_size = self.sizes[variable]
-            jac_var = function_jac.get(variable, None)
-            if jac_var is not None:
-                n_i, n_j = jac_var.shape
-                assert n_j == variable_size
-                assert n_i == function_size
-                # Fill the sparse Jacobian block
-                dfun_dy[:, out_j : out_j + n_j] = jac_var
-            # Shift the column by block width
-            out_j += variable_size
-        return dfun_dy
+        if jacobian_type == self.JacobianType.LINEAR_OPERATOR:
+            return JacobianOperator(
+                functions,
+                variables,
+                self.compute_dimension(functions),
+                self.compute_dimension(variables),
+                self._get_jacobian_generator,
+                is_residual,
+            )
 
     def _compute_diff_ios_and_couplings(
         self,
@@ -643,15 +579,15 @@ class JacobianAssembly:
     def total_derivatives(
         self,
         in_data,
-        functions: Iterable[str],
-        variables: Iterable[str],
+        functions: Collection[str],
+        variables: Collection[str],
         couplings: Iterable[str],
         linear_solver: str = "DEFAULT",
-        mode: str = AUTO_MODE,
-        matrix_type: str = SPARSE,
+        mode: DerivationMode = DerivationMode.AUTO,
+        matrix_type: JacobianType = JacobianType.MATRIX,
         use_lu_fact: bool = False,
         exec_cache_tol: float | None = None,
-        force_no_exec: bool = False,
+        execute: bool = True,
         residual_variables: Mapping[str, str] | None = None,
         **linear_solver_options: Any,
     ) -> dict[str, dict[str, ndarray]] | dict[Any, dict[Any, None]]:
@@ -664,15 +600,19 @@ class JacobianAssembly:
             couplings: The coupling variables.
             linear_solver: The name of the linear solver.
             mode: The linearization mode (auto, direct or adjoint).
-            matrix_type: The representation of the matrix dR/dy (sparse or
+            matrix_type: The representation of the matrix ∂R/∂y (sparse or
                 linear operator).
             use_lu_fact: Whether to factorize dres_dy once,
                 unsupported for linear operator mode.
             exec_cache_tol: The discipline cache tolerance to
                 when calling the linearize method.
                 If None, no tolerance is set (equivalent to tol=0.0).
-            force_no_exec: Whether the discipline is not re-executed,
-                the cache is loaded anyway.
+            execute: Whether to start by executing the discipline
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline was executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.MDODiscipline.cache`.
             linear_solver_options: The options passed to the linear solver factory.
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
@@ -689,10 +629,12 @@ class JacobianAssembly:
 
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
+        # Retrieve states variables and local residuals if provided
         if residual_variables:
             states = list(residual_variables.values())
         else:
             states = []
+
         couplings_minimal = self._compute_diff_ios_and_couplings(
             variables,
             functions,
@@ -710,7 +652,8 @@ class JacobianAssembly:
         for disc in self.coupling_structure.disciplines:
             if disc.cache is not None and exec_cache_tol is not None:
                 disc.cache_tol = exec_cache_tol
-            disc.linearize(in_data, force_no_exec=force_no_exec)
+
+            disc.linearize(in_data, execute=execute)
 
         # compute the sizes from the Jacobians
         self.compute_sizes(functions, variables, couplings_minimal, residual_variables)
@@ -719,33 +662,26 @@ class JacobianAssembly:
         n_residuals = self.compute_dimension(couplings_minimal)
         if residual_variables:
             n_residuals += self.compute_dimension(residual_variables.keys())
-            n_variables += self.compute_dimension(residual_variables.values())
         # compute the partial derivatives of the residuals
-        dres_dx = self.dres_dvar(
-            couplings_and_res,
-            variables,
-            n_residuals,
-            n_variables,
-        )
+        dres_dx = self.assemble_jacobian(couplings_and_res, variables, is_residual=True)
 
         # compute the partial derivatives of the interest functions
         (dfun_dx, dfun_dy) = ({}, {})
         for fun in functions:
-            dfun_dx[fun] = self.dfun_dvar(fun, variables, n_variables)
-            dfun_dy[fun] = self.dfun_dvar(fun, couplings_minimal, n_residuals)
+            dfun_dx[fun] = self.assemble_jacobian([fun], variables)
+            dfun_dy[fun] = self.assemble_jacobian([fun], couplings_and_res)
 
         mode = self._check_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
-        if mode == JacobianAssembly.DIRECT_MODE:
-            # sparse square matrix dR/dy
+        if mode == self.DerivationMode.DIRECT:
+            # sparse square matrix ∂R/∂y
 
-            dres_dy = self.dres_dvar(
+            dres_dy = self.assemble_jacobian(
                 couplings_and_res,
                 couplings_and_states,
-                n_residuals,
-                n_residuals,
-                matrix_type=matrix_type,
+                is_residual=True,
+                jacobian_type=matrix_type,
             )
             # compute the coupled derivatives
             total_derivatives = self.coupled_system.direct_mode(
@@ -760,21 +696,20 @@ class JacobianAssembly:
                 use_lu_fact=use_lu_fact,
                 **linear_solver_options,
             )
-        elif mode == JacobianAssembly.ADJOINT_MODE:
-            # transposed square matrix dR/dy^T
-            dres_dy_t = self.dres_dvar(
+        elif mode == self.DerivationMode.ADJOINT:
+            # transposed square matrix ∂R/∂y^T
+            dres_dy_t = self.assemble_jacobian(
                 couplings_and_res,
                 couplings_and_states,
-                n_residuals,
-                n_residuals,
-                matrix_type=matrix_type,
-                transpose=True,
+                is_residual=True,
+                jacobian_type=matrix_type,
             )
+
             # compute the coupled derivatives
             total_derivatives = self.coupled_system.adjoint_mode(
                 functions,
                 dres_dx,
-                dres_dy_t,
+                dres_dy_t.T,
                 dfun_dx,
                 dfun_dy,
                 linear_solver,
@@ -815,10 +750,10 @@ class JacobianAssembly:
     def compute_newton_step(
         self,
         in_data: Mapping[str, Any],
-        couplings: Iterable[str],
+        couplings: Collection[str],
         relax_factor: float | int,
         linear_solver: str = "DEFAULT",
-        matrix_type: str = SPARSE,
+        matrix_type: JacobianType = JacobianType.MATRIX,
         **linear_solver_options: Any,
     ) -> dict[str, ndarray]:
         """Compute the Newton step for the coupled system of disciplines residuals.
@@ -828,12 +763,12 @@ class JacobianAssembly:
             couplings: The coupling variables.
             relax_factor: The relaxation factor.
             linear_solver: The name of the linear solver.
-            matrix_type: The representation of the matrix dR/dy (sparse or
+            matrix_type: The representation of the matrix ∂R/∂y (sparse or
                 linear operator).
             **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
-            The Newton step -[dR/dy]^-1 . R as a dict of steps
+            The Newton step -[∂R/∂y]^-1 . R as a dict of steps
             per coupling variable.
         """
         # linearize the disciplines
@@ -861,11 +796,13 @@ class JacobianAssembly:
                     disc.jac[out] = {}
 
         self.compute_sizes(couplings, couplings, couplings)
-        n_couplings = self.compute_dimension(couplings)
 
         # compute the partial derivatives of the residuals
-        dres_dy = self.dres_dvar(
-            couplings, couplings, n_couplings, n_couplings, matrix_type=matrix_type
+        dres_dy = self.assemble_jacobian(
+            couplings,
+            couplings,
+            is_residual=True,
+            jacobian_type=matrix_type,
         )
         # form the residuals
         res = self.residuals(in_data, couplings)
@@ -922,8 +859,8 @@ class JacobianAssembly:
     # plot method
     def plot_dependency_jacobian(
         self,
-        functions: Iterable[str],
-        variables: Iterable[str],
+        functions: Collection[str],
+        variables: Collection[str],
         save: bool = True,
         show: bool = False,
         filepath: str | None = None,
@@ -947,7 +884,6 @@ class JacobianAssembly:
             The file name.
         """
         self.compute_sizes(functions, variables, [])
-        n_variables = self.compute_dimension(variables)
 
         total_jac = None
         # compute the positions of the outputs
@@ -955,7 +891,7 @@ class JacobianAssembly:
         current_position = 0
 
         for fun in functions:
-            dfun_dx = self.dfun_dvar(fun, variables, n_variables)
+            dfun_dx = self.assemble_jacobian([fun], variables)
             outputs_positions[fun] = current_position
             current_position += self.sizes[fun]
 
@@ -1030,7 +966,7 @@ class CoupledSystem:
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0
         self.lu_fact = 0
-        self.__linear_solver_factory = LinearSolversFactory()
+        self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
         self.linear_problem = None
 
     def direct_mode(

@@ -30,16 +30,16 @@ generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 from __future__ import annotations
 
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 
 from numpy import ndarray
 from numpy import newaxis
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.python_compatibility import Final
 
 
 class RandomForestRegressor(MLRegressionAlgo):
@@ -50,7 +50,7 @@ class RandomForestRegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,

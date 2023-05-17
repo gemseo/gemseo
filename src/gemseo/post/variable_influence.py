@@ -35,6 +35,8 @@ from numpy import savetxt
 from numpy import stack
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,13 +76,13 @@ class VariableInfluence(OptPostProcessor):
             save_var_files: Whether to save the influential variables indices
                 to a NumPy file.
         """  # noqa: D205, D212, D415
-        function_names = self.opt_problem.get_all_functions_names()
+        function_names = self.opt_problem.get_all_function_name()
         _, x_opt, _, _, _ = self.opt_problem.get_optimum()
-        x_0 = self.database.get_x_by_iter(0)
+        x_0 = self.database.get_x_vect(1)
         absolute_value = log_scale or absolute_value
 
         names_to_sensitivities = {}
-        evaluate = self.database.get_f_of_x
+        evaluate = self.database.get_function_value
         for function_name in function_names:
             grad = evaluate(self.database.get_gradient_name(function_name), x_0)
             if grad is None:
@@ -104,7 +106,9 @@ class VariableInfluence(OptPostProcessor):
                     sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)
-                    names_to_sensitivities[f"{function_name}_{i}"] = sensitivity
+                    names_to_sensitivities[
+                        repr_variable(function_name, i)
+                    ] = sensitivity
 
         self._add_figure(
             self.__generate_subplots(
@@ -145,17 +149,16 @@ class VariableInfluence(OptPostProcessor):
             n_variables += 1
 
         influential_variables = absolute_sensitivity_indices[:n_variables]
-        LOGGER.info("VariableInfluence for function %s", func)
+        x_names = self._get_design_variable_names()
         LOGGER.info(
-            "Most influential variables indices to explain "
-            "%% of the function variation: %s",
-            int(level * 100),
+            "   %s; %s",
+            func,
+            pretty_str([x_names[i] for i in influential_variables]),
         )
-        LOGGER.info(influential_variables)
         if save:
             names = [
                 [f"{name}${i}" for i in range(size)]
-                for name, size in self.opt_problem.design_space.variables_sizes.items()
+                for name, size in self.opt_problem.design_space.variable_sizes.items()
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"
@@ -207,7 +210,7 @@ class VariableInfluence(OptPostProcessor):
         )
 
         axes = atleast_2d(axes)
-        x_labels = self._generate_x_names()
+        x_labels = self._get_design_variable_names()
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
@@ -217,6 +220,11 @@ class VariableInfluence(OptPostProcessor):
         font_size = 12
         rotation = 90
         i = j = 0
+        LOGGER.info(
+            "Output name; "
+            "most influential variables to explain %s%% of the output variation ",
+            level,
+        )
         for name, sensitivity in sorted(names_to_sensitivities.items()):
             axe = axes[i][j]
             axe.bar(abscissas, sensitivity, color="blue", align="center")

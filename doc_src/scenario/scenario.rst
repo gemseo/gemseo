@@ -50,7 +50,7 @@ A :class:`.Scenario` is defined by four main elements:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After the instantiation of the different :class:`.MDODiscipline`,
-an instance of this scenario can be created from the :meth:`~gemseo.api.create_scenario` API function whose arguments are:
+an instance of this scenario can be created from the :meth:`~gemseo.create_scenario` API function whose arguments are:
 
 - :code:`disciplines`: the ``list`` of instantiated :class:`.MDODiscipline`,
 - :code:`formulation`: the multidisciplinary formulation name (:code:`str`)
@@ -61,11 +61,11 @@ an instance of this scenario can be created from the :meth:`~gemseo.api.create_s
 - :code:`maximize_objective=False`: the choice between maximizing or minimizing the objective function (:code:`bool`),
 - :code:`**formulation_options`: options passed to the multidisciplinary formulation.
 
-The types of scenarios already implemented in |g| can be obtained by means of the :meth:`~gemseo.api.get_available_scenario_types` API function:
+The types of scenarios already implemented in |g| can be obtained by means of the :meth:`~gemseo.get_available_scenario_types` API function:
 
 .. code::
 
-   from gemseo.api import get_available_scenario_types
+   from gemseo import get_available_scenario_types
 
    get_available_scenario_types():
 
@@ -80,7 +80,7 @@ which results in:
 ****************************
 
 We can easily create a :class:`.MDOScenario` or a :class:`.DOEScenario`
-from the :meth:`~gemseo.api.create_scenario` API function.
+from the :meth:`~gemseo.create_scenario` API function.
 
 2.a. Instantiate the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,7 +89,7 @@ For that, we first instantiate the different :class:`.MDODiscipline`, e.g.
 
 .. code::
 
-   from gemseo.api import create_discipline
+   from gemseo import create_discipline
 
    disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
@@ -109,7 +109,7 @@ or by means of the file path of the design space:
 
 .. code::
 
-    design_space = 'path_to_sellar_design_space.txt'
+    design_space = 'path_to_sellar_design_space.csv'
 
 2.c. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,11 +131,11 @@ corresponding to a multidisciplinary formulation name specified by the user, e.g
 
    formulation = 'MDF'
 
-The list of the different available formulations can be obtained by means of the :meth:`~gemseo.api.get_available_formulations` API function:
+The list of the different available formulations can be obtained by means of the :meth:`~gemseo.get_available_formulations` API function:
 
 .. code::
 
-   from gemseo.api import get_available_formulations
+   from gemseo import get_available_formulations
 
    get_available_formulations()
 
@@ -147,7 +147,7 @@ which yields:
 
 .. note::
 
-   :code:`argument=value` formulation options can also be passed to the :meth:`~gemseo.api.create_scenario` API function.
+   :code:`argument=value` formulation options can also be passed to the :meth:`~gemseo.create_scenario` API function.
    Available options for the different formulations are presented in :ref:`gen_formulation_algos`.
 
 2.e. Choose the type of scenario
@@ -160,11 +160,11 @@ the type of scenario must be chosen, e.g.
 
    scenario_type = 'MDO'
 
-Remind that the different types of scenario can be obtained by means of the :meth:`~gemseo.api.get_available_scenario_types` API function:
+Remind that the different types of scenario can be obtained by means of the :meth:`~gemseo.get_available_scenario_types` API function:
 
 .. code::
 
-   from gemseo.api import get_available_scenario_types
+   from gemseo import get_available_scenario_types
 
    get_available_scenario_types()
 
@@ -178,11 +178,11 @@ which yields:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From these different elements, we can instantiate the :class:`.Scenario`
-by means of the :meth:`~gemseo.api.create_scenario` API function:
+by means of the :meth:`~gemseo.create_scenario` API function:
 
 .. code::
 
-   from gemseo.api import create_scenario
+   from gemseo import create_scenario
 
    scenario = create_scenario(
        disciplines=disciplines,
@@ -195,12 +195,12 @@ by means of the :meth:`~gemseo.api.create_scenario` API function:
 2.g. Get the names of design variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can use the :meth:`.Scenario.get_optim_variables_names` method of the :class:`.Scenario`
+We can use the :meth:`.Scenario.get_optim_variable_names` method of the :class:`.Scenario`
 to access formulation design variables names in a convenient way:
 
 .. code::
 
-   print(scenario.get_optim_variables_names)
+   print(scenario.get_optim_variable_names)
 
 which yields:
 
@@ -238,14 +238,13 @@ is to log them in the console or in a file using |g|'s logger.
 The method :meth:`.Scenario.xdsmize` of the :class:`.Scenario`
 can be used to this aim (:code:`monitor=True`).
 
-If html_output (default True), will generate a self contained html file, that can be automatically open using the option open_browser=True.
-If json_output is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`,
-
-and print the statuses in the logs (:code:`print_statuses=True`):
+If ``save_html`` (default True), will generate a self contained HTML file, that can be automatically open using the option ``show_html=True``.
+If ``save_json`` is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
+It will log the status of the workflow if ``log_workflow_status=True``:
 
 .. code::
 
-    scenario.xdsmize(monitor=True, print_statuses=True, open_browser=False)
+    scenario.xdsmize(monitor=True, log_workflow_status=True, show_html=False)
 
 which yields:
 
@@ -267,14 +266,14 @@ and
    :scale: 65 %
 
 Moreover, you can export a static version of the XDSM in both TIKZ, LaTeX and PDF files
-by means of the :code:`latex_output` boolean argument of the
+by means of the :code:`save_pdf` boolean argument of the
 :meth:`.Scenario.xdsmize` method:
 
 .. code::
 
-    scenario.xdsmize(latex_output=True)
+    scenario.xdsmize(save_pdf=True)
 
-eventually specifying the output directory :code:`outdir='SOME_PATH'`.
+eventually specifying the output directory :code:`directory_path='SOME_PATH'`.
 
 3. How to execute a scenario?
 *****************************
@@ -300,15 +299,18 @@ or sampling the problem, e.g.
 
 .. note::
 
-   - Both :class:`.MDOScenario` and :class:`.DOEScenario` use the :code:`algo` argument:
-
-       - Available values of :code:`algo` argument can be found by means of the :meth:`.Scenario.get_available_driver_names` method of the :class:`.Scenario` class,
-       - Any algorithm options are provided through the argument :code:`algo_options` with a dictionary.
-       - Algorithm options for :class:`.MDOScenario` can be found here: :ref:`gen_opt_algos`
-       - Algorithm options for :class:`.DOEScenario` can be found here: :ref:`gen_doe_algos`
-
-   - :class:`.MDOScenario` also requires the :code:`max_iter` mandatory argument corresponding to the maximum number of iterations in the :code:`algo` optimization algorithm. Optional arguments are referenced here: :ref:`gen_opt_algos`,
-   - :class:`.DOEScenario` also requires the :code:`n_samples` mandatory argument corresponding to the number of samples in the :code:`algo` sampling algorithm. Optional arguments are referenced here: :ref:`gen_doe_algos`.
+   :meth:`.MDOScenario.execute` and :meth:`.DOEScenario.execute` use input data defined as a dictionary
+   with at least an algorithm name :code:`algo` (see :meth:`.Scenario.get_available_driver_names` for a complete list).
+   A :class:`.MDOScenario` also requires the mandatory parameter :code:`max_iter`
+   corresponding to the maximum number of iterations of the optimization algorithm;
+   the other parameters can be passed as a dictionary of options (see :ref:`gen_opt_algos`),
+   e.g. ``{"algo": "SLSQP", "max_iter": 100, "algo_options": dict_of_options}``.
+   On the other hand,
+   depending on the DOE algorithm,
+   :class:`.DOEScenario` can require either :code:`n_samples`
+   or other arguments to be mandatory.
+   The other optional parameters can be passed as a dictionary (see :ref:`gen_doe_algos`),
+   e.g. ``{"algo": "lhs", "n_samples": 10, "algo_options": dict_of_options}``.
 
 .. seealso::
 
@@ -385,7 +387,7 @@ which yields:
 
 |g| provides many post-processing tools which can be called
 either by means of the :meth:`.Scenario.post_process` method of the :class:`.Scenario` class
-or by means of the :meth:`~gemseo.api.execute_post` API function.
+or by means of the :meth:`~gemseo.execute_post` API function.
 :meth:`.Scenario.post_process` method of the :class:`.Scenario` class
 returns the list of available post-processing methods.
 Find more information about post-processing and visualization here: :ref:`post_processing`.

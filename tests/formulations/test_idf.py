@@ -43,7 +43,7 @@ def test_build_func_from_disc():
         SobieskiStructure("complex128"),
     ]
     idf = IDF(disciplines, "y_4", pb.design_space)
-    x_names = idf.get_optim_variables_names()
+    x_names = idf.get_optim_variable_names()
     x_dict = pb.get_default_inputs(x_names)
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 
@@ -226,7 +226,7 @@ def test_grammar_type():
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
-    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = discipline.GrammarType.SIMPLE
     formulation = IDF(
         [discipline], "y", design_space, grammar_type=grammar_type, n_processes=2
     )

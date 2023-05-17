@@ -21,10 +21,12 @@ from __future__ import annotations
 import pickle
 
 import pytest
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import MDODiscipline
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
@@ -38,12 +40,11 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
 from numpy import ndarray
-from numpy.testing import assert_equal
 
 
 def build_mdo_scenario(
     formulation: str,
-    grammar_type: str = DOEScenario.JSON_GRAMMAR_TYPE,
+    grammar_type: MDODiscipline.GrammarType = DOEScenario.GrammarType.JSON,
 ) -> DOEScenario:
     """Build the DOE scenario for SSBJ.
 
@@ -54,14 +55,14 @@ def build_mdo_scenario(
     Returns:
         The DOE scenario.
     """
-    if grammar_type == DOEScenario.JSON_GRAMMAR_TYPE:
+    if grammar_type == DOEScenario.GrammarType.JSON:
         disciplines = [
             SobieskiPropulsion(),
             SobieskiAerodynamics(),
             SobieskiMission(),
             SobieskiStructure(),
         ]
-    elif grammar_type == DOEScenario.SIMPLE_GRAMMAR_TYPE:
+    elif grammar_type == DOEScenario.GrammarType.SIMPLE:
         disciplines = [
             SobieskiPropulsionSG(),
             SobieskiAerodynamicsSG(),
@@ -105,7 +106,7 @@ def test_parallel_doe_hdf_cache(caplog):
     )
     path = "cache.h5"
     for disc in disciplines:
-        disc.set_cache_policy(disc.HDF5_CACHE, cache_hdf_file=path)
+        disc.set_cache_policy(disc.CacheType.HDF5, cache_hdf_file=path)
 
     scenario = create_scenario(
         disciplines,
@@ -140,7 +141,7 @@ def test_parallel_doe_hdf_cache(caplog):
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_doe_scenario",
-    [DOEScenario.SIMPLE_GRAMMAR_TYPE, DOEScenario.JSON_GRAMMAR_TYPE],
+    [DOEScenario.GrammarType.SIMPLE, DOEScenario.GrammarType.JSON],
     indirect=True,
 )
 def test_doe_scenario(mdf_variable_grammar_doe_scenario):
@@ -267,7 +268,7 @@ def test_other_exceptions_caught(caplog):
     scenario = DOEScenario(
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidDataError):
         scenario.execute(
             {
                 "algo": "CustomDOE",
@@ -287,14 +288,9 @@ def test_export_to_dataset_with_repeated_inputs():
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1.0], [2.0], [1.0]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-    dataset = scenario.export_to_dataset(by_group=False)
-    assert_equal(
-        dataset.data,
-        {
-            "dv": samples,
-            "obj": samples * 2,
-        },
-    )
+    dataset = scenario.to_dataset()
+    assert (dataset.get_view(variable_names="dv").to_numpy() == samples).all()
+    assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
 
 
 def test_export_to_dataset_normalized_integers():
@@ -305,14 +301,9 @@ def test_export_to_dataset_normalized_integers():
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1], [2], [10]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
-    dataset = scenario.export_to_dataset(by_group=False)
-    assert_equal(
-        dataset.data,
-        {
-            "dv": samples,
-            "obj": samples * 2,
-        },
-    )
+    dataset = scenario.to_dataset()
+    assert (dataset.get_view(variable_names="dv").to_numpy() == samples).all()
+    assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
 
 
 def test_lib_serialization(tmp_wd, doe_scenario):
@@ -347,10 +338,10 @@ def test_lib_serialization(tmp_wd, doe_scenario):
     )
 
     assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
-    assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
+    assert pickled_scenario.formulation.opt_problem.database.get_function_value(
         "y", array([0.5])
     ) == array([1.0])
-    assert pickled_scenario.formulation.opt_problem.database.get_f_of_x(
+    assert pickled_scenario.formulation.opt_problem.database.get_function_value(
         "y", array([1.0])
     ) == array([2.0])
 

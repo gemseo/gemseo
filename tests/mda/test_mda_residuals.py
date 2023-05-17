@@ -33,8 +33,8 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
-from gemseo.api import create_mda
+from gemseo import create_discipline
+from gemseo import create_mda
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
@@ -185,7 +185,7 @@ def test_residuals_mda(res_disciplines):
     assert out["r2"] < 1e-13
 
     for disc in res_disciplines:
-        disc.linearize(force_all=True)
+        disc.linearize(compute_all_jacobians=True)
 
     assembly = JacobianAssembly(MDOCouplingStructure(res_disciplines))
     assembly.compute_sizes(
@@ -200,11 +200,11 @@ def test_residuals_mda(res_disciplines):
 
 @pytest.mark.parametrize(
     "mode",
-    [JacobianAssembly.ADJOINT_MODE, JacobianAssembly.DIRECT_MODE],
+    [JacobianAssembly.DerivationMode.ADJOINT, JacobianAssembly.DerivationMode.DIRECT],
 )
 @pytest.mark.parametrize(
     "matrix_type",
-    [JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR],
+    JacobianAssembly.JacobianType,
 )
 def test_adjoint(res_disciplines, mode, matrix_type):
     """Test the coupled adjoint with residual variables in disciplines."""

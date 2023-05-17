@@ -26,58 +26,49 @@ from pathlib import Path
 from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PostFactory:
+class PostFactory(BaseFactory):
     """Post-processing factory to run optimization post-processors.
 
-    List the available post-processors on the current configuration
-    and execute them on demand.
+    List the available post-processors on the current configuration and execute them on
+    demand.
 
-    Work both from memory, from a ran optimization problem,
-    and from disk, from a serialized optimization problem.
+    Work both from memory, from a ran optimization problem, and from disk, from a
+    serialized optimization problem.
     """
 
+    _CLASS = OptPostProcessor
+    _MODULE_NAMES = ("gemseo.post",)
+
     def __init__(self) -> None:  # noqa:D107
-        self.factory = Factory(OptPostProcessor, ("gemseo.post",))
+        super().__init__()
         self.executed_post = []
 
     @property
     def posts(self) -> list[str]:
         """The available post processors."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        name: str,
-    ) -> bool:
-        """Check the availability of a post-processor.
-
-        Args:
-            name: The name of the post-processor.
-
-        Returns:
-            Whether the post-processor is available.
-        """
-        return self.factory.is_available(name)
+        return self.class_names
 
     def create(
         self,
+        class_name: str,
         opt_problem: OptimizationProblem,
-        post_name: str,
+        **options: OptPostProcessorOptionType,
     ) -> OptPostProcessor:
         """Create a post-processor from its class name.
 
         Args:
+            class_name: The name of the post-processor.
             opt_problem: The optimization problem to be post-processed.
-            post_name: The name of the post-processor.
+            **options: The options of the post-processor.
         """
-        return self.factory.create(post_name, opt_problem=opt_problem)
+        return super().create(class_name, opt_problem=opt_problem, **options)
 
     def execute(
         self,
@@ -112,8 +103,8 @@ class PostFactory:
             **options: The options of the post-processor.
         """
         if isinstance(opt_problem, str):
-            opt_problem = OptimizationProblem.import_hdf(opt_problem)
-        post = self.create(opt_problem, post_name)
+            opt_problem = OptimizationProblem.from_hdf(opt_problem)
+        post = self.create(post_name, opt_problem)
         post.execute(
             save=save,
             show=show,

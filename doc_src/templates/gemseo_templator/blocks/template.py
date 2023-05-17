@@ -31,12 +31,11 @@ class WebLink:
 class Block:
     """A text block with at least a title and a description.
 
-    A block can also provide features, algorithms and dependencies as weblinks,
-    with a default URL to be used when the URL of a weblink is None.
+    A block can also provide features, algorithms and dependencies as weblinks, with a
+    default URL to be used when the URL of a weblink is None.
 
-    Finally,
-    a block can contain additional URLs,
-    to get more information, to discover examples or to read algorithms options.
+    Finally, a block can contain additional URLs, to get more information, to discover
+    examples or to read algorithms options.
     """
 
     title: str

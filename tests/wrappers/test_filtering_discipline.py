@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.wrappers.filtering_discipline import FilteringDiscipline
 
 
@@ -48,7 +48,7 @@ def test_standard(discipline):
 
 
 def test_keep_in_keep_out(discipline):
-    fdisc = FilteringDiscipline(discipline, inputs_names=["x1"], outputs_names=["y1"])
+    fdisc = FilteringDiscipline(discipline, input_names=["x1"], output_names=["y1"])
     assert set(fdisc.get_input_data_names()) == {"x1"}
     assert set(fdisc.get_output_data_names()) == {"y1"}
     fdisc.execute()
@@ -62,7 +62,7 @@ def test_keep_in_keep_out(discipline):
 
 def test_remove_in_keep_out(discipline):
     fdisc = FilteringDiscipline(
-        discipline, inputs_names=["x1"], outputs_names=["y1"], keep_in=False
+        discipline, input_names=["x1"], output_names=["y1"], keep_in=False
     )
     assert set(fdisc.get_input_data_names()) == {"x2", "x3"}
     assert set(fdisc.get_output_data_names()) == {"y1"}
@@ -76,7 +76,7 @@ def test_remove_in_keep_out(discipline):
 
 def test_keep_in_remove_out(discipline):
     fdisc = FilteringDiscipline(
-        discipline, inputs_names=["x1"], outputs_names=["y1"], keep_out=False
+        discipline, input_names=["x1"], output_names=["y1"], keep_out=False
     )
     assert set(fdisc.get_input_data_names()) == {"x1"}
     assert set(fdisc.get_output_data_names()) == {"y2"}

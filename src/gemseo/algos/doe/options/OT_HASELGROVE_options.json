@@ -2,6 +2,7 @@
     "name": "OT_HASELGROVE_options",
     "description": "Haselgrove DOE from the OpenTURNS library",
     "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.HaselgroveSequence.html#openturns.HaselgroveSequence",
+    "required": ["n_samples"],
     "properties": {
         "n_samples":{
             "type": "integer",
@@ -25,7 +26,7 @@
                 },
                 {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 0
                 }
             ]
         },

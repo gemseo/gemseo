@@ -58,7 +58,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         """  # noqa: D205, D212, D415
         f_type = ""
         expr = ""
-        args = None
+        input_names = None
         jac = None
         self._first_operand = first_operand
         self._second_operand = second_operand
@@ -80,29 +80,34 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             self._second_operand_name = self._second_operand_expr
 
         if self._second_operand_is_func:
-            if self._first_operand.has_jac() and self._second_operand.has_jac():
+            if self._first_operand.has_jac and self._second_operand.has_jac:
                 jac = self._compute_operation_jacobian
 
-            if self._first_operand.has_expr() and self._second_operand.has_expr():
+            if self._first_operand.expr and self._second_operand.expr:
                 expr = self._compute_expr()
 
-            if self._first_operand.has_args() and self._second_operand.has_args():
-                args = sorted(
-                    list(set(self._first_operand.args + self._second_operand.args))
+            if self._first_operand.input_names and self._second_operand.input_names:
+                input_names = sorted(
+                    list(
+                        set(
+                            self._first_operand.input_names
+                            + self._second_operand.input_names
+                        )
+                    )
                 )
 
-            if self._first_operand.has_f_type():
+            if self._first_operand.f_type:
                 f_type = self._first_operand.f_type
-            elif self._second_operand.has_f_type():
+            elif self._second_operand.f_type:
                 f_type = self._second_operand.f_type
 
         else:
-            args = self._first_operand.args
+            input_names = self._first_operand.input_names
             f_type = self._first_operand.f_type
-            if self._first_operand.has_expr():
+            if self._first_operand.expr:
                 expr = self._compute_expr()
 
-            if self._first_operand.has_jac():
+            if self._first_operand.has_jac:
                 jac = self._compute_operation_jacobian
 
         self.function = cls(
@@ -111,9 +116,12 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             f_type=f_type,
             jac=jac,
             expr=expr,
-            args=args,
+            input_names=input_names,
             dim=self._first_operand.dim,
-            outvars=self._first_operand.outvars,
+            output_names=self._first_operand.output_names,
+            original_name=first_operand.original_name
+            if self._second_operand_is_number
+            else "",
         )
 
     def _compute_expr(self) -> str:

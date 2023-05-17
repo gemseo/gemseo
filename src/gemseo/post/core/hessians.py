@@ -50,20 +50,18 @@ from numpy import atleast_2d
 from numpy import concatenate
 from numpy import cumsum
 from numpy import diag as np_diag
-from numpy import dot
 from numpy import eye
 from numpy import inf
 from numpy import ndarray
 from numpy import newaxis
 from numpy import sqrt
+from numpy import tile
 from numpy import trace
 from numpy import zeros
 from numpy.linalg import cholesky
 from numpy.linalg import inv
 from numpy.linalg import LinAlgError
-from numpy.linalg import multi_dot
 from numpy.linalg import norm
-from numpy.matlib import repmat
 from scipy.optimize import leastsq
 
 from gemseo.algos.database import Database
@@ -119,8 +117,8 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         self,
         funcname: str,
         first_iter: int = 0,
-        last_iter: int = 0,
-        at_most_niter: int = -1,
+        last_iter: int | None = None,
+        at_most_niter: int | None = None,
         func_index: int | None = None,
         normalize_design_space: bool = False,
         design_space: DesignSpace | None = None,
@@ -131,9 +129,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             funcname: The name of the function for which to get the gradient.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
-                If 0, consider all the iterations.
+                If ``None``, consider all the iterations.
             at_most_niter: The maximum number of iterations to be considered.
-                If -1, consider all the iterations.
+                If ``None``, consider all the iterations.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
                 If ``None`` and if the output is multidimensional, an error is raised.
@@ -157,8 +155,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 is not consistent with the shape of the history of the gradient
                 or the optimization history size is insufficient.
         """
-        # TODO: use None as default value for last_iter and at_most_iter
-        grad_hist, x_hist = self.history.get_func_grad_history(funcname, x_hist=True)
+        grad_hist, x_hist = self.history.get_gradient_history(
+            funcname, with_x_vect=True
+        )
         if normalize_design_space:
             (
                 x_hist,
@@ -166,7 +165,6 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             ) = self._normalize_x_g(x_hist, grad_hist, design_space)
 
         grad_hist_length = len(grad_hist)
-        assert grad_hist_length == len(x_hist)  # TODO: remove it
 
         if grad_hist_length < 2:
             raise ValueError(
@@ -174,15 +172,19 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 f"because its gradient history is too small: {grad_hist_length}."
             )
 
-        grad_hist = array(grad_hist)
         if grad_hist.ndim == 1:
             grad_hist = grad_hist[:, newaxis]
 
-        x_hist = array(x_hist)
-        if x_hist.shape != (grad_hist.shape[0], grad_hist.shape[-1]):
-            # TODO: add shapes in the exception message
+        x_hist_shape = x_hist.shape
+        grad_hist_shape = grad_hist.shape
+        grad_hist_shape_from_grad_hist = (grad_hist.shape[0], grad_hist.shape[-1])
+        if x_hist_shape != grad_hist_shape_from_grad_hist:
             raise ValueError(
-                "Inconsistent gradient and design variables optimization history."
+                "The shape of the design variable history "
+                f"(n_iter,n_x)=({x_hist_shape}) "
+                "and the shape of the gradient history "
+                f"(n_iter,[n_y,]n_x)=({grad_hist_shape}) "
+                "are not consistent."
             )
 
         # Function is a vector, Jacobian is a 2D matrix
@@ -206,33 +208,26 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
             grad_hist = grad_hist[:, func_index, :]
 
-        if last_iter == 0:
-            x_hist = x_hist[first_iter:, :]
-            grad_hist = grad_hist[first_iter:, :]
-        else:
-            x_hist = x_hist[first_iter:last_iter, :]
-            grad_hist = grad_hist[first_iter:last_iter, :]
+        if not last_iter:
+            last_iter = len(x_hist)
 
-        n_iterations = x_hist.shape[0]
-        if 0 < at_most_niter < n_iterations:
+        x_hist = x_hist[first_iter:last_iter, :]
+        grad_hist = grad_hist[first_iter:last_iter, :]
+        n_iterations = len(x_hist)
+        if at_most_niter and 0 < at_most_niter < n_iterations:
             x_hist = x_hist[n_iterations - at_most_niter :, :]
             grad_hist = grad_hist[n_iterations - at_most_niter :, :]
 
         n_iterations, input_dimension = x_hist.shape
-        if n_iterations < 2 or input_dimension == 0:
-            # TODO: split into two tests
+        if n_iterations < 2:
             raise ValueError(
-                "Insufficient optimization history size, "
-                f"niter={n_iterations} nparam={input_dimension}."
+                f"The number of iterations ({n_iterations}) "
+                "must greater than or equal to 2."
             )
 
         self.x_ref = x_hist[-1]
         self.fgrad_ref = grad_hist[-1]
-        if last_iter == 0:
-            self.f_ref = array(self.history.get_func_history(funcname))[-1]
-        else:
-            self.f_ref = array(self.history.get_func_history(funcname))[:last_iter][-1]
-
+        self.f_ref = array(self.history.get_function_history(funcname))[:last_iter][-1]
         return x_hist, grad_hist, n_iterations, input_dimension
 
     @staticmethod
@@ -266,7 +261,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             scaled_x_hist.append(design_space.normalize_vect(x_value))
             scaled_grad_hist.append(design_space.normalize_grad(grad_value))
 
-        return scaled_x_hist, scaled_grad_hist
+        return array(scaled_x_hist), array(scaled_grad_hist)
 
     @staticmethod
     def get_s_k_y_k(
@@ -339,9 +334,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         funcname: str,
         save_diag: bool = False,
         first_iter: int = 0,
-        last_iter: int = -1,
+        last_iter: int | None = -1,
         b_mat0: ndarray | None = None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         return_x_grad: bool = False,
         func_index: int | None = None,
         save_matrix: bool = False,
@@ -358,8 +353,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             save_diag: Whether to return the approximations of the Hessian's diagonal.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
+                If ``None``, consider all the iterations.
             b_mat0: The initial approximation of the Hessian matrix.
             at_most_niter: The maximum number of iterations to be considered.
+                If ``None``, consider all the iterations.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
             func_index: The index of the output of interest
@@ -391,7 +388,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         if b_mat0 is None:
             last_n_grad = grad_hist.shape[0] - 2
             input_diff, grad_diff = self.get_s_k_y_k(x_hist, grad_hist, last_n_grad)
-            alpha = dot(grad_diff.T, input_diff) / dot(grad_diff.T, grad_diff)
+            alpha = (grad_diff.T @ input_diff) / (grad_diff.T @ grad_diff)
             hessian = (1.0 / alpha) * eye(grad_hist.shape[1])
         elif b_mat0.size == 0:
             hessian = zeros((x_hist.shape[1],) * 2)
@@ -482,12 +479,13 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             dyk: The variation :math:`\Delta g_k` of the gradient.
             scaling: Whether to use a scaling stage.
         """
-        dyt_dsk = dot(dyk.T, dsk)
-        hessk_dsk = dot(hessk, dsk)
-        dskt_hessk_dsk = multi_dot((dsk.T, hessk, dsk))
+        dyt_dsk = dyk.T @ dsk
+        hessk_dsk = hessk @ dsk
+        dskt_hessk_dsk = dsk.T @ hessk_dsk
         # Build the next approximation:
-        b_first_term = hessk - multi_dot((hessk, dsk, dsk.T, hessk)) / dskt_hessk_dsk
-        b_second_term = dot(dyk, dyk.T) / dyt_dsk
+
+        b_first_term = hessk - (hessk_dsk / dskt_hessk_dsk) @ hessk_dsk.T
+        b_second_term = (dyk @ dyk.T) / dyt_dsk
         if not scaling:
             hessk[:, :] = b_first_term + b_second_term
         else:
@@ -501,9 +499,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         funcname: str,
         save_diag: int = False,
         first_iter: int = 0,
-        last_iter: int = -1,
+        last_iter: int | None = -1,
         h_mat0: ndarray | None = None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         return_x_grad: bool = False,
         func_index: int | None = None,
         save_matrix: bool = False,
@@ -522,11 +520,13 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             save_diag: Whether to return the list of diagonal approximations.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
+                If ``None``, consider all the iterations.
             h_mat0: The initial approximation of the inverse of the Hessian matrix.
                 If None,
                 use :math:`H_0=\frac{\Delta g_k^T\Delta x_k}
                 {\Delta g_k^T\Delta g_k}I_d`.
-            at_most_niter: The maximum number of iterations to take.
+            at_most_niter: The maximum number of iterations to be considered.
+                If ``None``, consider all the iterations.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
             func_index: The output index of the function
@@ -575,7 +575,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         if h_mat0 is None:
             last_n_grad = grad_hist.shape[0] - 2
             s_k, y_k = self.get_s_k_y_k(x_hist, grad_hist, last_n_grad)
-            alpha = dot(y_k.T, s_k) / dot(y_k.T, y_k)
+            alpha = (y_k.T @ s_k) / (y_k.T @ y_k)
             n_x = len(grad_hist[0])
             h_mat = alpha * eye(n_x)
             b_mat = 1.0 / alpha * eye(n_x)
@@ -612,7 +612,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         k = 0
         for s_k, y_k in self.iterate_s_k_y_k(x_hist, grad_hist):
             k += 1
-            if dot(s_k.T, y_k) > angle_tol and norm(y_k, inf) < step_tol:
+            if (s_k.T @ y_k) > angle_tol and norm(y_k, inf) < step_tol:
                 count += 1
                 self.iterate_inverse_approximation(
                     h_mat,
@@ -680,10 +680,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             * The history of the gradient.
         """
         # Rebuild the argument history:
-        x_hist = repmat(x_0, x_corr.shape[1], 1) + cumsum(x_corr.T, axis=0)
+        x_hist = tile(x_0, (x_corr.shape[1], 1)) + cumsum(x_corr.T, axis=0)
         x_hist = concatenate((atleast_2d(x_0), x_hist), axis=0)
         # Rebuild the gradient history
-        x_grad_hist = repmat(g_0, grad_corr.shape[1], 1) + cumsum(grad_corr.T, axis=0)
+        x_grad_hist = tile(g_0, (grad_corr.shape[1], 1)) + cumsum(grad_corr.T, axis=0)
         x_grad_hist = concatenate((atleast_2d(g_0), x_grad_hist), axis=0)
         return x_hist, x_grad_hist
 
@@ -697,7 +697,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         b_factor: ndarray | None = None,
         factorize: bool = False,
         scaling: bool = False,
-    ):
+    ) -> None:
         r"""Update :math:`H` and :math:`B` from step :math:`k` to step :math:`k+1`.
 
         Use an iteration of the BFGS algorithm:
@@ -747,12 +747,12 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             scaling: do scaling step
         """
         # Compute the two terms of the non-scaled updated matrix:
-        yts = dot(y_k.T, s_k)
-        proj = eye(len(s_k)) - dot(s_k, y_k.T) / yts
-        h_first_term = multi_dot((proj, h_mat, proj.T))
-        h_second_term = dot(s_k, s_k.T) / yts
-        b_s = dot(b_mat, s_k)
-        st_b_s = dot(s_k.T, b_s)
+        yts = y_k.T @ s_k
+        proj = eye(len(s_k)) - (s_k / yts) @ y_k.T
+        h_first_term = proj @ (h_mat @ proj.T)
+        h_second_term = (s_k / yts) @ s_k.T
+        b_s = b_mat @ s_k
+        st_b_s = s_k.T @ b_s
         # Compute the scaling coefficients:
         if scaling:
             coeff1, coeff2 = HessianApproximation.compute_scaling(
@@ -764,20 +764,20 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         # Update the inverse approximation H and, optionally, the factor G:
         h_mat[:, :] = h_first_term / coeff1 + h_second_term / coeff2
         if factorize:
-            sst_b = dot(s_k, b_s.T)
+            sst_b = s_k @ b_s.T
             left = proj / sqrt(coeff1) + sst_b / sqrt(coeff2 * yts * st_b_s)
-            h_factor[:, :] = dot(left, h_factor)
+            h_factor[:, :] = left @ h_factor
             # b_factor[:, :] = dot(eye(len(s_k)) - sstB.T / stBs / sqrt(coeff1)
             #                      + dot(y_k, s_k.T)
             #                      / sqrt(coeff2 * stBs * yts),
             #                      b_factor)
             right = sqrt(coeff1) * (eye(len(s_k)) - sst_b / st_b_s)
-            right += sqrt(coeff2) * dot(s_k, y_k.T) / sqrt(st_b_s * yts)
-            b_factor[:, :] = dot(b_factor, right)
+            right += sqrt(coeff2) * (s_k @ y_k.T) / sqrt(st_b_s * yts)
+            b_factor[:, :] = b_factor @ right
 
         # Update the Hessian approximation:
-        b_first_term = b_mat - multi_dot((b_s, b_s.T)) / st_b_s
-        b_second_term = dot(y_k, y_k.T) / yts
+        b_first_term = b_mat - (b_s / st_b_s) @ b_s.T
+        b_second_term = (y_k @ y_k.T) / yts
         b_mat[:, :] = coeff1 * b_first_term + coeff2 * b_second_term
 
 
@@ -799,7 +799,7 @@ class BFGSApprox(HessianApproximation):
             )
             # All pairs curvatures shall be positive
             # if dot(s_k.T, y_k) > 0.:
-            if dot(input_diff.T, grad_diff) > 1e-16 * dot(grad_diff.T, grad_diff):
+            if (input_diff.T @ grad_diff) > 1e-16 * (grad_diff.T @ grad_diff):
                 yield input_diff, grad_diff
 
 
@@ -831,11 +831,11 @@ class SR1Approx(HessianApproximation):
         s_k: ndarray,
         y_k: ndarray,
         scaling: bool = False,
-    ):
-        residuals = y_k - multi_dot((b_mat, s_k))
-        denominator = multi_dot((residuals.T, s_k))
+    ) -> None:
+        residuals = y_k - b_mat @ s_k
+        denominator = residuals.T @ s_k
         if abs(denominator) > SR1Approx.EPSILON * norm(s_k) * norm(residuals):
-            b_mat[:, :] = b_mat + multi_dot((residuals, residuals.T)) / denominator
+            b_mat[:, :] = b_mat + (residuals / denominator) @ residuals.T
         else:
             LOGGER.debug(
                 "Denominator of SR1 update is too small, update skipped %s.",
@@ -851,9 +851,9 @@ class LSTSQApprox(HessianApproximation):
         funcname: str,
         save_diag: bool = False,
         first_iter: int = 0,
-        last_iter: int = -1,
+        last_iter: int | None = -1,
         b_mat0: ndarray | None = None,
-        at_most_niter: int = -1,
+        at_most_niter: int | None = None,
         return_x_grad: bool = False,
         scaling: bool = False,
         func_index: int = -1,
@@ -902,7 +902,7 @@ class LSTSQApprox(HessianApproximation):
             hessian = y_to_b(y_vars)
             err = zeros((input_dimension, sec_dim))
             for item, x_current in enumerate(x_hist):
-                err[:, item] = dot(hessian, x_current - self.x_ref) - grad_hist[item]
+                err[:, item] = hessian @ (x_current - self.x_ref) - grad_hist[item]
 
             err = err.reshape(-1)
             if n_iterations < input_dimension:

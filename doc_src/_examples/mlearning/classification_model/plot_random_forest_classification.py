@@ -24,25 +24,25 @@ Random forest classification
 
 We want to classify the Iris dataset using a Random Forest classifier.
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_classification_model
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.mlearning import create_classification_model
 from numpy import array
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Load Iris dataset
 # -----------------
-iris = load_dataset("IrisDataset", as_io=True)
+iris = create_benchmark_dataset("IrisDataset", as_io=True)
 
-###############################################################################
+# %%
 # Create the classification model
 # -------------------------------
 # Then, we build the linear regression model from the discipline cache and
@@ -51,7 +51,7 @@ model = create_classification_model("RandomForestClassifier", data=iris)
 model.learn()
 print(model)
 
-###############################################################################
+# %%
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction.

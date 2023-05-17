@@ -34,6 +34,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy.dual import norm
 
 
@@ -44,7 +45,8 @@ class TestMDOFormulation(unittest.TestCase):
         """"""
         sm = SobieskiMission()
         ds = SobieskiProblem().design_space
-        f = MDOFormulation([sm], "y_4", ds)
+        with concretize_classes(MDOFormulation):
+            f = MDOFormulation([sm], "y_4", ds)
         args = ["toto"]
         self.assertRaises(Exception, f._get_generator_with_inputs, *args)
 
@@ -54,7 +56,8 @@ class TestMDOFormulation(unittest.TestCase):
         """"""
         sm = SobieskiMission()
         ds = SobieskiProblem().design_space
-        f = MDOFormulation([sm], "y_4", ds)
+        with concretize_classes(MDOFormulation):
+            f = MDOFormulation([sm], "y_4", ds)
         prob = f.opt_problem
         assert not prob.has_constraints()
         f.add_constraint("y_4", constraint_name="toto")
@@ -87,7 +90,8 @@ class TestMDOFormulation(unittest.TestCase):
         sm = SobieskiMission()
         design_space = DesignSpace()
         design_space.add_variable("x_shared")
-        f = MDOFormulation([sm], "y_4", design_space)
+        with concretize_classes(MDOFormulation):
+            f = MDOFormulation([sm], "y_4", design_space)
 
         g = MDOFunction(
             math.sin,
@@ -95,7 +99,7 @@ class TestMDOFormulation(unittest.TestCase):
             f_type="ineq",
             jac=math.cos,
             expr="sin(x)",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         f.opt_problem.objective = g
 
@@ -105,14 +109,18 @@ class TestMDOFormulation(unittest.TestCase):
 
     def test_get_x0(self):
         """"""
-        _ = MDOFormulation([SobieskiMission()], "y_4", SobieskiProblem().design_space)
+        with concretize_classes(MDOFormulation):
+            _ = MDOFormulation(
+                [SobieskiMission()], "y_4", SobieskiProblem().design_space
+            )
 
     def test_add_user_defined_constraint_error(self):
         """Check that an error is raised when adding a constraint with wrong type."""
         sm = SobieskiMission()
         design_space = DesignSpace()
         design_space.add_variable("x_shared")
-        f = MDOFormulation([sm], "y_4", design_space)
+        with concretize_classes(MDOFormulation):
+            f = MDOFormulation([sm], "y_4", design_space)
         self.assertRaises(Exception, f.add_constraint, "y_4", "None", "None")
 
     # =========================================================================
@@ -148,7 +156,8 @@ class TestMDOFormulation(unittest.TestCase):
         design_space = DesignSpace()
         design_space.add_variable("x_shared", 4)
         design_space.add_variable("y_14", 4)
-        f = MDOFormulation([sm], "y_4", design_space)
+        with concretize_classes(MDOFormulation):
+            f = MDOFormulation([sm], "y_4", design_space)
 
         x = np.concatenate([rid[n] for n in dvs])
         c = f.mask_x_swap_order(dvs, x, dvs)
@@ -174,7 +183,7 @@ class TestMDOFormulation(unittest.TestCase):
         ff = f.mask_x_swap_order(
             ["x_shared"],
             x_vect=np.zeros(19),
-            all_data_names=design_space.variables_names,
+            all_data_names=design_space.variable_names,
         )
         assert (ff == np.zeros(4)).all()
 
@@ -190,10 +199,11 @@ class TestMDOFormulation(unittest.TestCase):
         ds1.add_variable("x")
         sm = SobieskiMission()
         s1 = MDOScenario([sm], "IDF", "y_4", ds1)
-        f2 = MDOFormulation([sm, s1], "y_4", ds2)
-        assert "x" in f2.design_space.variables_names
+        with concretize_classes(MDOFormulation):
+            f2 = MDOFormulation([sm, s1], "y_4", ds2)
+        assert "x" in f2.design_space.variable_names
         f2._remove_sub_scenario_dv_from_ds()
-        assert "x" not in f2.design_space.variables_names
+        assert "x" not in f2.design_space.variable_names
 
     def test_get_obj(self):
         """"""
@@ -204,15 +214,9 @@ class TestMDOFormulation(unittest.TestCase):
         for name in dvs:
             design_space.add_variable(name)
 
-        f = MDOFormulation([sm], "Y5", design_space)
+        with concretize_classes(MDOFormulation):
+            f = MDOFormulation([sm], "Y5", design_space)
         self.assertRaises(Exception, lambda: f.get_objective())
-
-    def test_get_expected_workflow(self):
-        """"""
-        sm = SobieskiMission()
-        ds = SobieskiProblem().design_space
-        f = MDOFormulation([sm], "Y5", ds)
-        self.assertRaises(Exception, f.get_expected_workflow)
 
 
 def test_grammar_type():
@@ -220,9 +224,10 @@ def test_grammar_type():
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
-    formulation = MDOFormulation(
-        [discipline], "y", design_space, grammar_type="a_grammar_type"
-    )
+    with concretize_classes(MDOFormulation):
+        formulation = MDOFormulation(
+            [discipline], "y", design_space, grammar_type="a_grammar_type"
+        )
     assert formulation._grammar_type == "a_grammar_type"
 
 
@@ -240,7 +245,8 @@ def test_remove_unused_variable_logger(caplog):
     design_space.add_variable("x2")
     design_space.add_variable("y1")
     design_space.add_variable("toto")
-    formulation = MDOFormulation([y1, y2, y3], "y2", design_space)
+    with concretize_classes(MDOFormulation):
+        formulation = MDOFormulation([y1, y2, y3], "y2", design_space)
     formulation._remove_unused_variables()
     assert (
         "Variable toto was removed from the Design Space, it is not an input of any "
@@ -258,15 +264,17 @@ def test_get_sub_disciplines_recursive(recursive, expected):
         recursive: Whether to list sub-disciplines recursively.
         expected: The expected disciplines.
     """
-    d1 = MDODiscipline("d1")
-    d2 = MDODiscipline("d2")
-    d3 = MDODiscipline("d3")
+    with concretize_classes(MDODiscipline):
+        d1 = MDODiscipline("d1")
+        d2 = MDODiscipline("d2")
+        d3 = MDODiscipline("d3")
     chain1 = MDOChain([d3], "chain1")
     chain2 = MDOChain([d2, chain1], "chain2")
     chain3 = MDOChain([d1, chain2], "chain3")
     design_space = DesignSpace()
 
-    formulation = MDOFormulation([chain3], "foo", design_space)
+    with concretize_classes(MDOFormulation):
+        formulation = MDOFormulation([chain3], "foo", design_space)
 
     classes = [
         discipline.name

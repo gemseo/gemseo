@@ -23,15 +23,14 @@ from unittest import TestCase
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
+from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 from numpy import inf
 from scipy.optimize.optimize import rosen
 from scipy.optimize.optimize import rosen_der
-
-from .opt_lib_test_base import OptLibraryTestBase
 
 
 class TestScipy(TestCase):
@@ -76,8 +75,10 @@ class TestScipy(TestCase):
             )
         )
 
-        opt_library.problem.pb_type = OptimizationProblem.NON_LINEAR_PB
-        opt_library.descriptions["SLSQP"].problem_type = OptimizationProblem.LINEAR_PB
+        opt_library.problem.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
+        opt_library.descriptions[
+            "SLSQP"
+        ].problem_type = OptimizationProblem.ProblemType.LINEAR
         self.assertFalse(
             opt_library.is_algorithm_suited(
                 opt_library.descriptions["SLSQP"], opt_library.problem
@@ -163,10 +164,18 @@ class TestScipy(TestCase):
         """Runs a problem with one variable to be normalized and three not to be
         normalized."""
         design_space = DesignSpace()
-        design_space.add_variable("x1", 1, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
-        design_space.add_variable("x2", 1, DesignSpace.FLOAT, -inf, 1.0, 0.0)
-        design_space.add_variable("x3", 1, DesignSpace.FLOAT, -1.0, inf, 0.0)
-        design_space.add_variable("x4", 1, DesignSpace.FLOAT, -inf, inf, 0.0)
+        design_space.add_variable(
+            "x1", 1, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+        )
+        design_space.add_variable(
+            "x2", 1, DesignSpace.DesignVariableType.FLOAT, -inf, 1.0, 0.0
+        )
+        design_space.add_variable(
+            "x3", 1, DesignSpace.DesignVariableType.FLOAT, -1.0, inf, 0.0
+        )
+        design_space.add_variable(
+            "x4", 1, DesignSpace.DesignVariableType.FLOAT, -inf, inf, 0.0
+        )
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
@@ -175,7 +184,9 @@ class TestScipy(TestCase):
     def test_xtol_ftol_activation(self):
         def run_pb(algo_options):
             design_space = DesignSpace()
-            design_space.add_variable("x1", 2, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
+            design_space.add_variable(
+                "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+            )
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
             res = OptimizersFactory().execute(problem, "L-BFGS-B", **algo_options)

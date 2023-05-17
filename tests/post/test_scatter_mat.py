@@ -21,15 +21,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import ones
 from numpy import power
@@ -57,7 +57,7 @@ def test_scatter(tmp_wd, pyplot_close_all):
         problem,
         "ScatterPlotMatrix",
         file_path="scatter1",
-        variable_names=problem.get_all_functions_names(),
+        variable_names=problem.get_all_function_name(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -73,12 +73,12 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
         "ScatterPlotMatrix",
         file_path="scatter2",
-        variable_names=problem.get_all_functions_names(),
+        variable_names=problem.get_all_function_name(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -96,7 +96,7 @@ def test_non_existent_var(tmp_wd):
         tmp_wd : Fixture to move into a temporary directory.
     """
     factory = PostFactory()
-    problem = OptimizationProblem.import_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(POWER2)
     with pytest.raises(
         ValueError,
         match=r"Cannot build scatter plot matrix: function foo is neither "

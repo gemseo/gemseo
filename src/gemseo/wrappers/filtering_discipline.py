@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Filtering wrapper."""
 from __future__ import annotations
 
 from typing import Any
@@ -27,50 +28,49 @@ from gemseo.core.discipline import MDODiscipline
 
 
 class FilteringDiscipline(MDODiscipline):
-    """The FilteringDiscipline is a MDODiscipline wrapping another MDODiscipline, for a
-    subset of inputs and outputs."""
+    """A class to wrap another MDODiscipline for a subset of inputs and outputs."""
 
     def __init__(
         self,
         discipline: MDODiscipline,
-        inputs_names: Iterable[str] | None = None,
-        outputs_names: Iterable[str] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
         keep_in: bool = True,
         keep_out: bool = True,
     ) -> None:
         """
         Args:
             discipline: The original discipline.
-            inputs_names: The names of the inputs of interest.
+            input_names: The names of the inputs of interest.
                 If ``None``, use all the inputs.
-            outputs_names: The names of the outputs of interest.
+            output_names: The names of the outputs of interest.
                 If ``None``, use all the outputs.
             keep_in: Whether to the inputs of interest.
                 Otherwise, remove them.
             keep_out: Whether to the outputs of interest.
                 Otherwise, remove them.
-        """
+        """  # noqa:D205 D212 D415
         self.discipline = discipline
         super().__init__(name=discipline.name)
-        original_inputs_names = discipline.get_input_data_names()
-        original_outputs_names = discipline.get_output_data_names()
-        if not inputs_names:
-            inputs_names = original_inputs_names
+        original_input_names = discipline.get_input_data_names()
+        original_output_names = discipline.get_output_data_names()
+        if not input_names:
+            input_names = original_input_names
         elif not keep_in:
-            inputs_names = list(set(original_inputs_names) - set(inputs_names))
+            input_names = list(set(original_input_names) - set(input_names))
 
-        if not outputs_names:
-            outputs_names = original_outputs_names
+        if not output_names:
+            output_names = original_output_names
         elif not keep_out:
-            outputs_names = list(set(original_outputs_names) - set(outputs_names))
+            output_names = list(set(original_output_names) - set(output_names))
 
-        self.input_grammar.update(inputs_names)
-        self.output_grammar.update(outputs_names)
+        self.input_grammar.update_from_names(input_names)
+        self.output_grammar.update_from_names(output_names)
         self.default_inputs = self.__filter_inputs(self.discipline.default_inputs)
-        removed_inputs = set(original_inputs_names) - set(inputs_names)
+        removed_inputs = set(original_input_names) - set(input_names)
         diff_inputs = set(self.discipline._differentiated_inputs) - removed_inputs
         self.add_differentiated_inputs(list(diff_inputs))
-        removed_outputs = set(original_outputs_names) - set(outputs_names)
+        removed_outputs = set(original_output_names) - set(output_names)
         diff_outputs = set(self.discipline._differentiated_outputs) - removed_outputs
         self.add_differentiated_outputs(list(diff_outputs))
 

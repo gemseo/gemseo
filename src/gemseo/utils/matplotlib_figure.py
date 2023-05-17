@@ -16,16 +16,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+
+FigSizeType = Tuple[float, float]
+"""The type of a figure size."""
 
 
 def save_show_figure(
     fig: Figure,
     show: bool,
     file_path: str | Path,
-    fig_size: tuple[float, float] | None = None,
+    fig_size: FigSizeType | None = None,
 ) -> None:
     """Save or show a Matplotlib figure.
 

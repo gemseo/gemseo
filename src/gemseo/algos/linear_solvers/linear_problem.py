@@ -28,8 +28,10 @@ from numpy.linalg import norm
 from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
 
+from gemseo.algos.base_problem import BaseProblem
 
-class LinearProblem:
+
+class LinearProblem(BaseProblem):
     """Representation of the linear equations' system ``A.x = b``.
 
     It also contains the solution, and some properties of the system such as the symmetry
@@ -77,9 +79,9 @@ class LinearProblem:
         lhs: ndarray | spmatrix | LinearOperator,
         rhs: ndarray | None = None,
         solution: ndarray | None = None,
-        is_symmetric=False,
-        is_positive_def=False,
-        is_converged=None,
+        is_symmetric: bool = False,
+        is_positive_def: bool = False,
+        is_converged: bool | None = None,
     ) -> None:
         """
         Args:
@@ -111,8 +113,8 @@ class LinearProblem:
 
     def compute_residuals(
         self,
-        relative_residuals=True,
-        store=False,
+        relative_residuals: bool = True,
+        store: bool = False,
         current_x=None,
     ) -> ndarray:
         """Compute the L2 norm of the residuals of the problem.

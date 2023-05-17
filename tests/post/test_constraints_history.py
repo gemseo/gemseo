@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.post.constraints_history import ConstraintsHistory
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 
 def test_function_error(common_problem):

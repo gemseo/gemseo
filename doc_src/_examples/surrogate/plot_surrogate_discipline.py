@@ -34,21 +34,21 @@ For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegress
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import create_surrogate
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import create_surrogate
 from numpy import array
 
-###############################################################################
+# %%
 # Import
 # ------
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create the discipline to learn
 # ------------------------------
 # We can implement this analytic discipline by means of the
@@ -58,7 +58,7 @@ discipline = create_discipline(
     "AnalyticDiscipline", name="func", expressions=expressions
 )
 
-###############################################################################
+# %%
 # Create the input sampling space
 # -------------------------------
 # We create the input sampling space by adding the variables one by one.
@@ -66,7 +66,7 @@ design_space = create_design_space()
 design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
 design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
 
-###############################################################################
+# %%
 # Create the learning set
 # -----------------------
 # We can build a learning set by means of a
@@ -77,15 +77,15 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "fullfact", "n_samples": 9})
 
-###############################################################################
+# %%
 # Create the surrogate discipline
 # -------------------------------
 # Then, we build the Gaussian process regression model from the database and
 # displays this model.
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 model = create_surrogate("GaussianProcessRegressor", data=dataset)
 
-###############################################################################
+# %%
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction, either with default inputs

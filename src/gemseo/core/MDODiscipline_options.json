@@ -53,7 +53,7 @@
 			"format":"uri",
 			"description": "Path to the HDF5 file to store the cache data."
 		},
-		"cache_hdf_node_name": {
+		"cache_hdf_node_path": {
 			"type": "string",
 			"description": "Name of the HDF dataset to store the discipline\n data. If None, the discipline name is used."
 		}

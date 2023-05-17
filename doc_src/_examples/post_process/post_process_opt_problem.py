@@ -24,17 +24,17 @@ Post-process an optimization problem
 """
 from __future__ import annotations
 
+from gemseo import create_design_space
+from gemseo import execute_algo
+from gemseo import execute_post
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import execute_algo
-from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 # %%
 # We consider a minimization problem over the interval :math:`[0,1]`
 # of the :math:`f(x)=x^2` objective function:
 
-objective = MDOFunction(lambda x: x**2, "f", args=["x"], outvars=["y"])
+objective = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
 
 design_space = create_design_space()
 design_space.add_variable("x", l_b=0.0, u_b=1.0)

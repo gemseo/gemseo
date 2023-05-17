@@ -51,6 +51,7 @@ from ._compact import itermap
 from ._compact import str_types
 from ._compact import uni_chr
 from ._compact import unicode_
+from typing import Optional, Sequence
 
 PY2 = sys.version_info.major == 2
 
@@ -72,7 +73,7 @@ RANDOM = 20
 _re = re.compile("\033\[[0-9;]*m")
 
 
-def _get_size(text):
+def _get_size(text: str):
     """
 
     :param text:
@@ -86,7 +87,7 @@ def _get_size(text):
 
 class PrettyTable(object):
 
-    def __init__(self, field_names=None, **kwargs):
+    def __init__(self, field_names: Optional[Sequence[str]]=None, **kwargs) -> None:
         """
 
         :param encoding: Unicode encoding scheme used to decode any encoded input
@@ -216,7 +217,7 @@ class PrettyTable(object):
             value = unicode_(value, self.encoding, "strict")
         return value
 
-    def _justify(self, text, width, align):
+    def _justify(self, text: str, width: int, align):
         """
 
         :param text: param width:
@@ -244,7 +245,7 @@ class PrettyTable(object):
                 # Equal padding on either side
                 return (excess // 2) * " " + text + (excess // 2) * " "
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str):
 
         if name == "rowcount":
             return len(self._rows)
@@ -276,7 +277,7 @@ class PrettyTable(object):
                 str(index))
         return new
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__unicode__()
 
     def __unicode__(self):
@@ -294,7 +295,7 @@ class PrettyTable(object):
     # Secondly, in the _get_options method, where keyword arguments are mixed
     # with persistent settings
 
-    def _validate_option(self, option, val):
+    def _validate_option(self, option, val) -> None:
         """
 
         :param option: param val:
@@ -390,7 +391,7 @@ class PrettyTable(object):
                 "Alignment %s is invalid, use t, m, b or None!" %
                 val)
 
-    def _validate_nonnegative_int(self, name, val):
+    def _validate_nonnegative_int(self, name: str, val):
         """
 
         :param name: param val:
@@ -404,7 +405,7 @@ class PrettyTable(object):
                 "Invalid value for %s: %s!" %
                 (name, self._unicode(val)))
 
-    def _validate_true_or_false(self, name, val):
+    def _validate_true_or_false(self, name: str, val):
         """
 
         :param name: param val:
@@ -418,7 +419,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be True or False." %
                 name)
 
-    def _validate_int_format(self, name, val):
+    def _validate_int_format(self, name: str, val):
         """
 
         :param name: param val:
@@ -435,7 +436,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be an integer format string." %
                 name)
 
-    def _validate_float_format(self, name, val):
+    def _validate_float_format(self, name: str, val):
         """
 
         :param name: param val:
@@ -458,7 +459,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be a float format string." %
                 name)
 
-    def _validate_function(self, name, val):
+    def _validate_function(self, name: str, val):
         """
 
         :param name: param val:
@@ -472,7 +473,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be a function." %
                 name)
 
-    def _validate_hrules(self, name, val):
+    def _validate_hrules(self, name: str, val):
         """
 
         :param name: param val:
@@ -486,7 +487,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be ALL, FRAME, HEADER or NONE." %
                 name)
 
-    def _validate_vrules(self, name, val):
+    def _validate_vrules(self, name: str, val):
         """
 
         :param name: param val:
@@ -500,7 +501,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be ALL, FRAME, or NONE." %
                 name)
 
-    def _validate_field_name(self, name, val):
+    def _validate_field_name(self, name: str, val):
         """
 
         :param name: param val:
@@ -512,7 +513,7 @@ class PrettyTable(object):
         except AssertionError:
             raise Exception("Invalid field name: %s!" % val)
 
-    def _validate_all_field_names(self, name, val):
+    def _validate_all_field_names(self, name: str, val):
         """
 
         :param name: param val:
@@ -525,7 +526,7 @@ class PrettyTable(object):
         except AssertionError:
             raise Exception("fields must be a sequence of field names!")
 
-    def _validate_single_char(self, name, val):
+    def _validate_single_char(self, name: str, val):
         """
 
         :param name: param val:
@@ -539,7 +540,7 @@ class PrettyTable(object):
                 "Invalid value for %s!  Must be a string of length 1." %
                 name)
 
-    def _validate_attributes(self, name, val):
+    def _validate_attributes(self, name: str, val):
         """
 
         :param name: param val:
@@ -562,7 +563,7 @@ class PrettyTable(object):
         return self._field_names
 
     @field_names.setter
-    def field_names(self, val):
+    def field_names(self, val) -> None:
         """
 
         :param val:
@@ -600,7 +601,7 @@ class PrettyTable(object):
         return self._align
 
     @align.setter
-    def align(self, val):
+    def align(self, val) -> None:
         """
 
         :param val:
@@ -626,7 +627,7 @@ class PrettyTable(object):
         return self._valign
 
     @valign.setter
-    def valign(self, val):
+    def valign(self, val) -> None:
         """
 
         :param val:
@@ -652,7 +653,7 @@ class PrettyTable(object):
         return self._max_width
 
     @max_width.setter
-    def max_width(self, val):
+    def max_width(self, val) -> None:
         """
 
         :param val:
@@ -688,7 +689,7 @@ class PrettyTable(object):
         return result
 
     @min_width.setter
-    def min_width(self, val):
+    def min_width(self, val) -> None:
         """
 
         :param val:
@@ -707,7 +708,7 @@ class PrettyTable(object):
         return self._min_table_width
 
     @min_table_width.setter
-    def min_table_width(self, val):
+    def min_table_width(self, val) -> None:
         """
 
         :param val:
@@ -722,7 +723,7 @@ class PrettyTable(object):
         return self._max_table_width
 
     @max_table_width.setter
-    def max_table_width(self, val):
+    def max_table_width(self, val) -> None:
         """
 
         :param val:
@@ -737,7 +738,7 @@ class PrettyTable(object):
         return self._fields
 
     @fields.setter
-    def fields(self, val):
+    def fields(self, val) -> None:
         """
 
         :param val:
@@ -756,7 +757,7 @@ class PrettyTable(object):
         return self._title
 
     @title.setter
-    def title(self, val):
+    def title(self, val) -> None:
         """
 
         :param val:
@@ -774,7 +775,7 @@ class PrettyTable(object):
         return self._start
 
     @start.setter
-    def start(self, val):
+    def start(self, val) -> None:
         """
 
         :param val:
@@ -793,7 +794,7 @@ class PrettyTable(object):
         return self._end
 
     @end.setter
-    def end(self, val):
+    def end(self, val) -> None:
         """
 
         :param val:
@@ -812,7 +813,7 @@ class PrettyTable(object):
         return self._sortby
 
     @sortby.setter
-    def sortby(self, val):
+    def sortby(self, val) -> None:
         """
 
         :param val:
@@ -831,7 +832,7 @@ class PrettyTable(object):
         return self._reversesort
 
     @reversesort.setter
-    def reversesort(self, val):
+    def reversesort(self, val) -> None:
         """
 
         :param val:
@@ -850,7 +851,7 @@ class PrettyTable(object):
         return self._sort_key
 
     @sort_key.setter
-    def sort_key(self, val):
+    def sort_key(self, val) -> None:
         """
 
         :param val:
@@ -869,7 +870,7 @@ class PrettyTable(object):
         return self._header
 
     @header.setter
-    def header(self, val):
+    def header(self, val) -> None:
         """
 
         :param val:
@@ -888,7 +889,7 @@ class PrettyTable(object):
         return self._header_style
 
     @header_style.setter
-    def header_style(self, val):
+    def header_style(self, val) -> None:
         """
 
         :param val:
@@ -907,7 +908,7 @@ class PrettyTable(object):
         return self._border
 
     @border.setter
-    def border(self, val):
+    def border(self, val) -> None:
         """
 
         :param val:
@@ -926,7 +927,7 @@ class PrettyTable(object):
         return self._hrules
 
     @hrules.setter
-    def hrules(self, val):
+    def hrules(self, val) -> None:
         """
 
         :param val:
@@ -945,7 +946,7 @@ class PrettyTable(object):
         return self._vrules
 
     @vrules.setter
-    def vrules(self, val):
+    def vrules(self, val) -> None:
         """
 
         :param val:
@@ -964,7 +965,7 @@ class PrettyTable(object):
         return self._int_format
 
     @int_format.setter
-    def int_format(self, val):
+    def int_format(self, val) -> None:
         """
 
         :param val:
@@ -987,7 +988,7 @@ class PrettyTable(object):
         return self._float_format
 
     @float_format.setter
-    def float_format(self, val):
+    def float_format(self, val) -> None:
         """
 
         :param val:
@@ -1010,7 +1011,7 @@ class PrettyTable(object):
         return self._padding_width
 
     @padding_width.setter
-    def padding_width(self, val):
+    def padding_width(self, val) -> None:
         """
 
         :param val:
@@ -1029,7 +1030,7 @@ class PrettyTable(object):
         return self._left_padding_width
 
     @left_padding_width.setter
-    def left_padding_width(self, val):
+    def left_padding_width(self, val) -> None:
         """
 
         :param val:
@@ -1048,7 +1049,7 @@ class PrettyTable(object):
         return self._right_padding_width
 
     @right_padding_width.setter
-    def right_padding_width(self, val):
+    def right_padding_width(self, val) -> None:
         """
 
         :param val:
@@ -1067,7 +1068,7 @@ class PrettyTable(object):
         return self._vertical_char
 
     @vertical_char.setter
-    def vertical_char(self, val):
+    def vertical_char(self, val) -> None:
         """
 
         :param val:
@@ -1087,7 +1088,7 @@ class PrettyTable(object):
         return self._horizontal_char
 
     @horizontal_char.setter
-    def horizontal_char(self, val):
+    def horizontal_char(self, val) -> None:
         """
 
         :param val:
@@ -1107,7 +1108,7 @@ class PrettyTable(object):
         return self._junction_char
 
     @junction_char.setter
-    def junction_char(self, val):
+    def junction_char(self, val) -> None:
         """
 
         :param val:
@@ -1127,7 +1128,7 @@ class PrettyTable(object):
         return self._format
 
     @format.setter
-    def format(self, val):
+    def format(self, val) -> None:
         """
 
         :param val:
@@ -1146,7 +1147,7 @@ class PrettyTable(object):
         return self._print_empty
 
     @print_empty.setter
-    def print_empty(self, val):
+    def print_empty(self, val) -> None:
         """
 
         :param val:
@@ -1168,7 +1169,7 @@ class PrettyTable(object):
         return self._attributes
 
     @attributes.setter
-    def attributes(self, val):
+    def attributes(self, val) -> None:
         """
 
         :param val:
@@ -1184,7 +1185,7 @@ class PrettyTable(object):
         return self._oldsortslice
 
     @oldsortslice.setter
-    def oldsortslice(self, val):
+    def oldsortslice(self, val) -> None:
         """
 
         :param val:
@@ -1235,7 +1236,7 @@ class PrettyTable(object):
         else:
             raise Exception("Invalid pre-set style!")
 
-    def _set_default_style(self):
+    def _set_default_style(self) -> None:
         """ """
 
         self.header = True
@@ -1249,7 +1250,7 @@ class PrettyTable(object):
         self.horizontal_char = "-"
         self.junction_char = "+"
 
-    def _set_msword_style(self):
+    def _set_msword_style(self) -> None:
         """ """
 
         self.header = True
@@ -1260,7 +1261,7 @@ class PrettyTable(object):
         self.right_padding_width = 1
         self.vertical_char = "|"
 
-    def _set_columns_style(self):
+    def _set_columns_style(self) -> None:
         """ """
 
         self.header = True
@@ -1269,7 +1270,7 @@ class PrettyTable(object):
         self.left_padding_width = 0
         self.right_padding_width = 8
 
-    def _set_random_style(self):
+    def _set_random_style(self) -> None:
         """ """
 
         # Just for fun!
@@ -1318,7 +1319,7 @@ class PrettyTable(object):
                     self._rows)))
         del self._rows[row_index]
 
-    def add_column(self, fieldname, column, align="c", valign="t"):
+    def add_column(self, fieldname: str, column, align: str="c", valign: str="t"):
         """Add a column to the table.
 
         :param fieldname: name of the field to contain the new column of data
@@ -1345,12 +1346,12 @@ class PrettyTable(object):
                 (len(column), len(
                     self._rows)))
 
-    def clear_rows(self):
+    def clear_rows(self) -> None:
         """Delete all rows from the table but keep the current field names"""
 
         self._rows = []
 
-    def clear(self):
+    def clear(self) -> None:
         """Delete all rows and field names from the table, maintaining nothing but styling options"""
 
         self._rows = []
@@ -1398,7 +1399,7 @@ class PrettyTable(object):
                 table_width += self._widths[index] + per_col_padding
         return table_width
 
-    def _compute_widths(self, rows, options):
+    def _compute_widths(self, rows, options) -> None:
         """
 
         :param rows: param options:
@@ -1450,7 +1451,7 @@ class PrettyTable(object):
                     self._max_table_width - nonshrinkable) / (table_width -
                                                               nonshrinkable)
 
-                def calculate_new_width(field_name, old_width):
+                def calculate_new_width(field_name: str, old_width):
                     """
 
                     :param field_name: param old_width:
@@ -1831,7 +1832,7 @@ class PrettyTable(object):
 
         return "\n".join(bits)
 
-    def paginate(self, page_length=58, **kwargs):
+    def paginate(self, page_length: int=58, **kwargs):
         """
 
         :param page_length: Default value = 58)
@@ -2039,7 +2040,7 @@ class PrettyTable(object):
 # UNICODE WIDTH FUNCTIONS    #
 ##############################
 
-def _char_block_width(char):
+def _char_block_width(char: str):
     """
 
     :param char:

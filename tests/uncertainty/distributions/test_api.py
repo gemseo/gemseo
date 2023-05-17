@@ -34,7 +34,7 @@ def distribution_factory() -> DistributionFactory:
 def test_available_distributions(distribution_factory):
     """Check the property available_distributions."""
     distributions = distribution_factory.available_distributions
-    assert distributions == distribution_factory.factory.classes
+    assert distributions == distribution_factory.class_names
     assert "OTNormalDistribution" in distributions
 
 

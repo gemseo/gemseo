@@ -36,11 +36,11 @@ Here, we take 5 for the dimension of all outputs (here "y\_1", which is of dimen
 2. Creation of the discipline
 -----------------------------
 
-First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.api.create_discipline` API function and the argument :code:`"Sellar1"`. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
+First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument :code:`"Sellar1"`. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
 
 .. code::
 
-   from gemseo.api import create_discipline
+   from gemseo import create_discipline
 
    sellar = create_discipline("Sellar1")
 
@@ -52,7 +52,7 @@ First of all, we create the reference :class:`.MDODiscipline`: with the help of 
 
    .. code::
 
-      from gemseo.api import create_discipline
+      from gemseo import create_discipline
 
       newmdodiscipline = create_discipline("NewMDODiscipline")
 
@@ -80,7 +80,7 @@ and optional ones :
 2.1. Sample the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :code:`hdf_file_path` file is built from the :meth:`~gemseo.api.create_scenario` API function applied to the :class:`.MDODiscipline` instance, :code:`sellar`,
+The :code:`hdf_file_path` file is built from the :func:`.create_scenario` API function applied to the :class:`.MDODiscipline` instance, :code:`sellar`,
 with :code:`DOE` scenario type and the following :class:`.DesignSpace`:
 
 .. code::
@@ -93,7 +93,7 @@ The DOE algorithm is :code:`'DiagonalDOE'` and use a sampling of size :code:`n_s
 
 .. code::
 
-   from gemseo.api import create_scenario
+   from gemseo import create_scenario
 
    sellar.set_cache_policy(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
    output = sellar.get_output_data_names()[0]
@@ -111,12 +111,12 @@ A scalable discipline is a discipline version for which inputs and outputs can t
 .. code::
 
    # Set the size of input and output variables at 5
-   # - Number of n_x = number_of_inputs*variables_sizes
-   # - Number of n_y = number_of_outputs*variables_sizes
-   variables_sizes = 5
+   # - Number of n_x = number_of_inputs*variable_sizes
+   # - Number of n_y = number_of_outputs*variable_sizes
+   variable_sizes = 5
    input_names = sellar.get_input_data_names()
    output_names = sellar.get_output_data_names()
-   sizes = {name: variables_sizes for name in input_names + output_names}
+   sizes = {name: variable_sizes for name in input_names + output_names}
 
 The :code:`sizes` of the inputs are specified in a dictionary at the construction of the :class:`.ScalableDiscipline` instance.
 
@@ -127,7 +127,7 @@ Lastly, we define the density factor for the matrix S describing the dependencie
    # Density factor for the dependency matrix S
    fill_factor = 0.6
 
-From this, we can create the :class:`.ScalableDiscipline` by means of the API function :meth:`~gemseo.api.create_discipline`:
+From this, we can create the :class:`.ScalableDiscipline` by means of the API function :func:`.create_discipline`:
 
 .. code::
 
@@ -154,7 +154,7 @@ for all inputs of the discipline ("x\_shared", "x\_local", and "y\_2").
 
    from numpy import arange
 
-   input_data = {name: arange(variables_sizes) / float(variables_sizes)
+   input_data = {name: arange(variable_sizes) / float(variable_sizes)
 	             for name in input_names}
    print(scalable_sellar.execute(input_data)['y_1'])
 
@@ -170,14 +170,14 @@ Arbitrary input dimensions arrays can be provided. Here, only three components f
 
 .. code::
 
-    variables_sizes = 3
-    sizes = {name: variables_sizes for name in input_names + output_names}
+    variable_sizes = 3
+    sizes = {name: variable_sizes for name in input_names + output_names}
     scalable_sellar = create_discipline('ScalableDiscipline',
                                         hdf_file_path='sellar.hdf5',
                                         hdf_node_path='Sellar1',
                                         sizes=sizes,
                                         fill_factor=fill_factor)
-    input_data = {name: arange(variables_sizes) / float(variables_sizes)
+    input_data = {name: arange(variable_sizes) / float(variable_sizes)
                   for name in input_names}
 
     print(scalable_sellar.execute(input_data)['y_1'])

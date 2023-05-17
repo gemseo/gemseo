@@ -16,11 +16,11 @@
 from __future__ import annotations
 
 import numpy as np
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_post
-from gemseo.api import get_available_opt_algorithms
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_post
+from gemseo import get_available_opt_algorithms
 from scipy import optimize
 
 # PART 1
@@ -42,7 +42,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
-opt_results = scenario.get_optimum()
+opt_results = scenario.optimization_result
 print(f"The solution of P is (x*, f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
 
 
@@ -75,7 +75,7 @@ design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * np.ones(1))
 scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 
-opt_results = scenario.get_optimum()
+opt_results = scenario.optimization_result
 print(
     "The solution of P is (x*,f(x*)) = ({}, {})".format(
         opt_results.x_opt, opt_results.f_opt
@@ -88,7 +88,7 @@ print("Available algorithms:" + str(algo_list))
 # POST TREATMENTS
 
 problem = scenario.formulation.opt_problem
-problem.export_hdf("my_optim.hdf5")
+problem.to_hdf("my_optim.hdf5")
 execute_post(problem, "OptHistoryView", save=True, file_path="opt_view_with_doe")
 # or execute_post("my_optim.hdf5", "OptHistoryView", save=True,
 # file_path="opt_view_from_disk")

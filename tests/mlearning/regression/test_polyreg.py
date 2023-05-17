@@ -22,10 +22,10 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from numpy import allclose
 from numpy import array
@@ -59,7 +59,7 @@ ANOTHER_INPUT_VALUE = {
 
 
 @pytest.fixture
-def dataset():
+def dataset() -> IODataset:
     """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
     root_learning_size = int(sqrt(LEARNING_SIZE))
     x_1 = linspace(-1, 2, root_learning_size)
@@ -72,22 +72,23 @@ def dataset():
 
     data = hstack([x_1, x_2, y_1, y_2, y_3])
     variables = ["x_1", "x_2", "y_1", "y_2", "y_3"]
-    sizes = {"x_1": 1, "x_2": 1, "y_1": 1, "y_2": 1, "y_3": 1}
-    groups = {
-        "x_1": Dataset.INPUT_GROUP,
-        "x_2": Dataset.INPUT_GROUP,
-        "y_1": Dataset.OUTPUT_GROUP,
-        "y_2": Dataset.OUTPUT_GROUP,
-        "y_3": Dataset.OUTPUT_GROUP,
+    variable_names_to_n_components = {"x_1": 1, "x_2": 1, "y_1": 1, "y_2": 1, "y_3": 1}
+    variable_names_to_group_names = {
+        "x_1": IODataset.INPUT_GROUP,
+        "x_2": IODataset.INPUT_GROUP,
+        "y_1": IODataset.OUTPUT_GROUP,
+        "y_2": IODataset.OUTPUT_GROUP,
+        "y_3": IODataset.OUTPUT_GROUP,
     }
 
-    dataset_ = Dataset()
-    dataset_.set_from_array(data, variables, sizes, groups)
+    dataset_ = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
     return dataset_
 
 
 @pytest.fixture
-def dataset_from_cache() -> Dataset:
+def dataset_from_cache() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline(
         {
@@ -96,13 +97,13 @@ def dataset_from_cache() -> Dataset:
             "y_3": "10*x_1*x_2**2 + 7*x_2**5",
         }
     )
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_2", l_b=-1, u_b=2)
     design_space.add_variable("x_1", l_b=-1, u_b=2)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    data = discipline.cache.export_to_dataset("dataset_name")
+    data = discipline.cache.to_dataset("dataset_name")
     return data
 
 
@@ -205,7 +206,7 @@ def test_jacobian_constant(dataset):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

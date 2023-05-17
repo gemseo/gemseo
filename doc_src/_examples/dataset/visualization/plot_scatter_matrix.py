@@ -25,19 +25,19 @@ Scatter matrix
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 configure_logger()
 
 
-############################################################################
+# %%
 # Load a dataset
 # --------------
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
-############################################################################
+# %%
 # Plot scatter matrix
 # -------------------
 # We can use the :class:`.ScatterMatrix` plot where each non-diagonal block

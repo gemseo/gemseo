@@ -15,8 +15,8 @@
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 from __future__ import annotations
 
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_discipline
+from gemseo import create_scenario
 
 disciplines = create_discipline(
     [
@@ -32,7 +32,7 @@ scenario = create_scenario(
     formulation="MDF",
     objective_name="y_4",
     maximize_objective=True,
-    design_space="design_space.txt",
+    design_space="design_space.csv",
 )
 
 scenario.set_differentiation_method()

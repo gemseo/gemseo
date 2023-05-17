@@ -33,14 +33,12 @@ from gemseo.mda.newton import MDANewtonRaphson
 class MDASequential(MDA):
     """A sequence of elementary MDAs."""
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("mda_sequence",)
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
         mda_sequence: Sequence[MDA],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         max_mda_iter: int = 10,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -53,7 +51,7 @@ class MDASequential(MDA):
         """
         Args:
             mda_sequence: The sequence of MDAs.
-        """
+        """  # noqa:D205 D212 D415
         super().__init__(
             disciplines,
             name=name,
@@ -67,7 +65,6 @@ class MDASequential(MDA):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
-        self._set_default_inputs()
         self._compute_input_couplings()
 
         self.mda_sequence = mda_sequence
@@ -76,7 +73,7 @@ class MDASequential(MDA):
             self._log_convergence = self._log_convergence or mda.log_convergence
 
     @MDA.log_convergence.setter
-    def log_convergence(
+    def log_convergence(  # noqa: D102
         self,
         value: bool,
     ) -> None:
@@ -105,14 +102,14 @@ class MDASequential(MDA):
                 break
 
 
-class GSNewtonMDA(MDASequential):
+class MDAGSNewton(MDASequential):
     """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
 
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         max_mda_iter: int = 10,
         relax_factor: float = 0.99,
@@ -125,7 +122,7 @@ class GSNewtonMDA(MDASequential):
         linear_solver_options: Mapping[str, Any] = None,
         log_convergence: bool = False,
         **newton_mda_options: float,
-    ):
+    ) -> None:
         """
         Args:
             relax_factor: The relaxation factor.
@@ -136,7 +133,7 @@ class GSNewtonMDA(MDASequential):
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
-        """
+        """  # noqa:D205 D212 D415
         mda_gs = MDAGaussSeidel(
             disciplines, max_mda_iter=max_mda_iter_gs, log_convergence=log_convergence
         )

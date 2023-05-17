@@ -20,7 +20,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from numpy import arange
 
@@ -31,8 +31,8 @@ output_names = sellar.get_output_data_names()
 var_lb = {name: design_space.get_lower_bound(name) for name in input_names}
 var_ub = {name: design_space.get_upper_bound(name) for name in input_names}
 
-variables_sizes = 5
-sizes = {name: variables_sizes for name in input_names + output_names}
+variable_sizes = 5
+sizes = {name: variable_sizes for name in input_names + output_names}
 scalable_sellar = create_discipline(
     "ScalableFittedDiscipline",
     discipline=sellar,
@@ -43,12 +43,12 @@ scalable_sellar = create_discipline(
 )
 
 input_data = {
-    name: arange(variables_sizes) / float(variables_sizes) for name in input_names
+    name: arange(variable_sizes) / float(variable_sizes) for name in input_names
 }
 print(scalable_sellar.execute(input_data)["y_1"])
 
-variables_sizes = 3
-sizes = {name: variables_sizes for name in input_names + output_names}
+variable_sizes = 3
+sizes = {name: variable_sizes for name in input_names + output_names}
 scalable_sellar = create_discipline(
     "ScalableFittedDiscipline",
     discipline=sellar,
@@ -59,6 +59,6 @@ scalable_sellar = create_discipline(
 )
 
 input_data = {
-    name: arange(variables_sizes) / float(variables_sizes) for name in input_names
+    name: arange(variable_sizes) / float(variable_sizes) for name in input_names
 }
 print(scalable_sellar.execute(input_data)["y_1"])

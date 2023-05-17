@@ -21,10 +21,10 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 
 
@@ -33,9 +33,9 @@ def dataset() -> Dataset:
     """The dataset used to train the unsupervised machine learning algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
-    sizes = {"x_1": 1, "x_2": 2}
-    dataset_ = Dataset("dataset_name")
-    dataset_.set_from_array(data, variables, sizes)
+    variable_names_to_n_components = {"x_1": 1, "x_2": 2}
+    dataset_ = Dataset.from_array(data, variables, variable_names_to_n_components)
+    dataset_.name = "dataset_name"
     return dataset_
 
 
@@ -45,7 +45,7 @@ def test_constructor(dataset):
         ml_algo = MLUnsupervisedAlgo(dataset)
 
     assert ml_algo.algo is None
-    assert ml_algo.var_names == dataset.get_names(dataset.DEFAULT_GROUP)
+    assert ml_algo.var_names == dataset.get_variable_names(dataset.DEFAULT_GROUP)
 
 
 def test_variable_limitation(dataset):

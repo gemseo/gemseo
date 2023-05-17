@@ -25,35 +25,35 @@ K-means
 
 Load Iris dataset and create clusters.
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import create_clustering_model
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.mlearning import create_clustering_model
+from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from numpy import array
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create dataset
 # --------------
 # We import the Iris benchmark dataset through the API.
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
 # Extract inputs as a new dataset
-data = iris.get_data_by_group(iris.PARAMETER_GROUP)
-variables = iris.get_names(iris.PARAMETER_GROUP)
+data = iris.get_view(group_names=iris.PARAMETER_GROUP).to_numpy()
+variables = iris.get_variable_names(iris.PARAMETER_GROUP)
 print(variables)
 
-dataset = Dataset("sepal_and_petal")
-dataset.set_from_array(data, variables)
+dataset = Dataset.from_array(data, variables)
 
-###############################################################################
+# %%
 # Create clustering model
 # -----------------------
 # We know that there are three classes of Iris plants.
@@ -62,7 +62,7 @@ model = create_clustering_model("KMeans", data=dataset, n_clusters=3)
 model.learn()
 print(model)
 
-###############################################################################
+# %%
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction.
@@ -75,11 +75,9 @@ input_value = {
 output_value = model.predict(input_value)
 print(output_value)
 
-###############################################################################
+# %%
 # Plot clusters
 # -------------
 # Show cluster labels
-dataset.add_variable(
-    "km_specy", model.labels.reshape((-1, 1)), group="labels", cache_as_input=False
-)
-dataset.plot("ScatterMatrix", kde=True, classifier="km_specy")
+dataset.add_variable("km_specy", model.labels.reshape((-1, 1)), "labels")
+ScatterMatrix(dataset, kde=True, classifier="km_specy").execute(save=False, show=True)

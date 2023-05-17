@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -80,7 +81,7 @@ class PostScalabilityStudy:
         "total_calls": "Total number of evaluations",
     }
 
-    def __init__(self, study_directory):
+    def __init__(self, study_directory) -> None:
         """Constructor.
 
         :param str study_directory: directory of the scalability study."
@@ -100,7 +101,7 @@ class PostScalabilityStudy:
             result.total_calls = sum(result.n_calls.values())
             result.total_calls += sum(result.n_calls_linearize.values())
 
-    def set_cost_function(self, formulation, cost):
+    def set_cost_function(self, formulation, cost) -> None:
         """Set cost function for each formulation.
 
         :param str formulation: name of the formulation.
@@ -108,7 +109,7 @@ class PostScalabilityStudy:
         """
         self.cost_function[formulation] = cost
 
-    def set_cost_unit(self, cost_unit):
+    def set_cost_unit(self, cost_unit) -> None:
         """Set the measurement unit for cost evaluation.
 
         :param str cost_unit: cost unit, e.g. 'h', 'min', ...
@@ -118,14 +119,14 @@ class PostScalabilityStudy:
         description = f"{description} ({cost_unit})"
         self.descriptions["original_exec_time"] = description
 
-    def labelize_exec_time(self, description):
+    def labelize_exec_time(self, description: str) -> None:
         """Change the description of execution time, used in plotting methods notably.
 
         :param str description: description.
         """
         self._update_descriptions("exec_time", description)
 
-    def labelize_original_exec_time(self, description):
+    def labelize_original_exec_time(self, description: str) -> None:
         """Change the description of original execution time, used in plotting methods
         notably.
 
@@ -135,14 +136,14 @@ class PostScalabilityStudy:
         if self.unit_cost is not None:
             self.set_cost_unit(self.unit_cost)
 
-    def labelize_n_calls(self, description):
+    def labelize_n_calls(self, description: str) -> None:
         """Change the description of number of calls, used in plotting methods notably.
 
         :param str description: description.
         """
         self._update_descriptions("n_calls", description)
 
-    def labelize_n_calls_linearize(self, description):
+    def labelize_n_calls_linearize(self, description: str) -> None:
         """Change the description of number of calls for linearization, used in plotting
         methods notably.
 
@@ -150,28 +151,28 @@ class PostScalabilityStudy:
         """
         self._update_descriptions("n_calls_linearize", description)
 
-    def labelize_status(self, description):
+    def labelize_status(self, description: str) -> None:
         """Change the description of status, used in plotting methods notably.
 
         :param str description: description.
         """
         self._update_descriptions("status", description)
 
-    def labelize_is_feasible(self, description):
+    def labelize_is_feasible(self, description: str) -> None:
         """Change the description of feasibility, used in plotting methods notably.
 
         :param str description: description.
         """
         self._update_descriptions("is_feasible", description)
 
-    def labelize_scaling_strategy(self, description):
+    def labelize_scaling_strategy(self, description: str) -> None:
         """Change the description of scaling strategy, used in plotting methods notably.
 
         :param str description: description.
         """
         self._update_descriptions("scaling_strategy", description)
 
-    def _update_descriptions(self, keyword, description):
+    def _update_descriptions(self, keyword, description: str) -> None:
         """Update the description initialized with the NOMENCLATURE class attribute.
 
         :param str keyword: keyword of the considered object.
@@ -212,12 +213,12 @@ class PostScalabilityStudy:
 
     def plot(
         self,
-        legend_loc="upper left",
+        legend_loc: str = "upper left",
         xticks=None,
-        xticks_labels=None,
-        xmargin=0.0,
+        xticks_labels: Sequence[str] | None = None,
+        xmargin: float = 0.0,
         **options,
-    ):
+    ) -> None:
         """Plot the results using different methods according to the presence or absence
         of replicate values.
 
@@ -243,7 +244,7 @@ class PostScalabilityStudy:
             self._plot_lines(legend_loc, xticks, xticks_labels, xmargin, **options)
         LOGGER.info("%s", msg)
 
-    def __has_scaling_dimension(self, value):
+    def __has_scaling_dimension(self, value) -> None:
         """Assert if a value has the scaling dimension.
 
         :param ndarray value: value.
@@ -252,8 +253,12 @@ class PostScalabilityStudy:
             assert len(value) == len(self.get_scaling_strategies(True))
 
     def _plot_lines(
-        self, legend_loc="upper left", xticks=None, xticks_labels=None, xmargin=0.0
-    ):
+        self,
+        legend_loc: str = "upper left",
+        xticks=None,
+        xticks_labels: Sequence[str] | None = None,
+        xmargin: float = 0.0,
+    ) -> None:
         """Deterministic plot.
 
         :param str legend_loc: legend localization
@@ -278,7 +283,9 @@ class PostScalabilityStudy:
             fpath = self.study_directory / POSTSTUDY_DIRECTORY / fname
             plt.savefig(str(fpath))
 
-    def __draw(self, name, value, xticks, labels, scales, color, xmargin):
+    def __draw(
+        self, name: str, value, xticks, labels: Sequence[str], scales, color, xmargin
+    ) -> None:
         """Create plot for specific criterion when r=1 replicate.
 
         :param str name: criterion name.
@@ -315,21 +322,21 @@ class PostScalabilityStudy:
             plt.grid(True, "both")
 
     @property
-    def n_samples(self):
+    def n_samples(self) -> int:
         """Number of samples."""
         return len(self.get_replicates(True))
 
     def _plot_boxes(
         self,
-        legend_loc="upper left",
+        legend_loc: str = "upper left",
         xticks=None,
-        xticks_labels=None,
-        xmargin=0.0,
-        minbox=2,
-        notch=False,
-        widths=0.25,
-        whis=1.5,
-    ):
+        xticks_labels: Sequence[str] | None = None,
+        xmargin: float = 0.0,
+        minbox: int = 2,
+        notch: bool = False,
+        widths: float = 0.25,
+        whis: float = 1.5,
+    ) -> None:
         """Probabilistic plot.
 
         :param str legend_loc: legend localization
@@ -384,18 +391,18 @@ class PostScalabilityStudy:
 
     def __drawb(
         self,
-        name,
+        name: str,
         index,
         value,
         xticks,
-        labels,
+        labels: Sequence[str],
         scales,
-        widths,
+        widths: Sequence[int],
         color,
         notch,
         whis,
         xmargin,
-    ):
+    ) -> None:
         """Create plot for specific criterion when r=1 replicate.
 
         :param str name: criterion name.
@@ -436,7 +443,9 @@ class PostScalabilityStudy:
         plt.grid(True, "both")
 
     @staticmethod
-    def __draw_boxplot(data, xticks, edge_color, fill_color, notch, widths, whis):
+    def __draw_boxplot(
+        data, xticks, edge_color, fill_color, notch, widths: Sequence[int], whis
+    ):
         """Draw boxplot from a dataset.
 
         :param array data: dataset array of dimension 2 or 3
@@ -569,7 +578,7 @@ class PostScalabilityStudy:
         """Get the names of the scalability results."""
         return [value.name for value in self.scalability_results]
 
-    def get_optimization_strategies(self, unique=False):
+    def get_optimization_strategies(self, unique: bool = False) -> list[str]:
         """Get the names of the optimization strategies.
 
         :param bool unique: return either unique values if True
@@ -584,10 +593,10 @@ class PostScalabilityStudy:
         return strategy_names
 
     @property
-    def optimization_strategies(self):
+    def optimization_strategies(self) -> list[str]:
         return self.get_optimization_strategies(True)
 
-    def get_scaling_strategies(self, unique=False):
+    def get_scaling_strategies(self, unique: bool = False) -> list[int]:
         """Get the identifiers of the scaling strategies.
 
         :param bool unique: return either unique values if True
@@ -601,7 +610,7 @@ class PostScalabilityStudy:
 
         return strategy_identifiers
 
-    def get_replicates(self, unique=False):
+    def get_replicates(self, unique: bool = False) -> list[int]:
         """Get the replicate identifiants.
 
         :param bool unique: return either unique values if True
@@ -614,7 +623,7 @@ class PostScalabilityStudy:
             rep = sorted(set(rep))
         return rep
 
-    def _estimate_original_time(self):
+    def _estimate_original_time(self) -> None:
         """Estimate the original execution time from the number of calls and
         linearizations of the different disciplines and top-level disciplines and from
         the cost functions provided by the user.

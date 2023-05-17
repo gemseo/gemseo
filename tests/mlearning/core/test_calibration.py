@@ -22,19 +22,20 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def dataset() -> RosenbrockDataset:
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
-    return RosenbrockDataset(opt_naming=False)
+    return create_rosenbrock_dataset(opt_naming=False)
 
 
 def test_discipline_multioutput_fail(dataset):
@@ -48,14 +49,12 @@ def test_discipline_multioutput_fail(dataset):
             dataset,
             ["degree"],
             MSEMeasure,
-            {"method": "loo", "multioutput": True},
+            measure_evaluation_method_name="LOO",
+            measure_options={"multioutput": True},
         )
 
 
-@pytest.mark.parametrize(
-    "options",
-    [{"method": "loo", "multioutput": False}, {"method": "loo"}],
-)
+@pytest.mark.parametrize("options", [{"multioutput": False}, {}])
 def test_discipline_multioutput(dataset, options):
     """Verify that MLAlgoAssessor works correctly when multioutput option is False."""
     assessor = MLAlgoAssessor(
@@ -63,17 +62,20 @@ def test_discipline_multioutput(dataset, options):
         dataset,
         ["degree"],
         MSEMeasure,
-        options,
+        measure_evaluation_method_name="LOO",
+        measure_options=options,
     )
     assert not assessor.measure_options["multioutput"]
-    assert not options["multioutput"]
 
 
 def test_discipline(dataset):
     """Test discipline."""
-    measure_options = {"method": "loo"}
     disc = MLAlgoAssessor(
-        "PolynomialRegressor", dataset, ["degree"], MSEMeasure, measure_options
+        "PolynomialRegressor",
+        dataset,
+        ["degree"],
+        MSEMeasure,
+        measure_evaluation_method_name="LOO",
     )
     result = disc.execute({"degree": array([3])})
     assert "degree" in result
@@ -103,7 +105,7 @@ def test_calibration(dataset, calibration_space, algo):
         ["penalty_level"],
         calibration_space,
         MSEMeasure,
-        {"method": "loo"},
+        measure_evaluation_method_name="LOO",
         degree=2,
     )
 

@@ -70,8 +70,8 @@ class ParetoFront(OptPostProcessor):
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
 
-        all_funcs = self.opt_problem.get_all_functions_names()
-        all_dv_names = self.opt_problem.design_space.variables_names
+        all_funcs = self.opt_problem.get_all_function_name()
+        all_dv_names = self.opt_problem.design_space.variable_names
 
         sample_values, all_labels = self.__compute_names_and_values(
             all_dv_names, all_funcs, objectives
@@ -122,17 +122,21 @@ class ParetoFront(OptPostProcessor):
             design_variables_labels = []
             all_data_names = objectives
             _, objective_labels, _ = self.database.get_history_array(
-                functions=objectives, add_dv=False
+                function_names=objectives, with_x_vect=False
             )
         elif not objectives:
-            design_variables_labels = self._generate_x_names(variables=design_variables)
+            design_variables_labels = self._get_design_variable_names(
+                variables=design_variables
+            )
             all_data_names = design_variables
             objective_labels = []
         else:
-            design_variables_labels = self._generate_x_names(variables=design_variables)
+            design_variables_labels = self._get_design_variable_names(
+                variables=design_variables
+            )
             all_data_names = objectives + design_variables
             _, objective_labels, _ = self.database.get_history_array(
-                functions=objectives, add_dv=False
+                function_names=objectives, with_x_vect=False
             )
 
         all_data_names.sort()
@@ -192,7 +196,7 @@ class ParetoFront(OptPostProcessor):
              func: The function name.
              objectives: The objectives names.
         """
-        if func in self.opt_problem.design_space.variables_names:
+        if func in self.opt_problem.design_space.variable_names:
             objectives.remove(func)
             design_variables.append(func)
 
@@ -206,7 +210,7 @@ class ParetoFront(OptPostProcessor):
             An array of size ``n_samples``, True if the point is non-feasible.
         """
         x_feasible, _ = self.opt_problem.get_feasible_points()
-        feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
+        feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
 
         is_non_feasible = full(sample_values.shape[0], True)
         is_non_feasible[feasible_indexes] = False

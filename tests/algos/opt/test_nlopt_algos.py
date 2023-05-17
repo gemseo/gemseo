@@ -22,20 +22,20 @@ from __future__ import annotations
 from unittest import TestCase
 
 import pytest
+from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_nlopt import Nlopt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
+from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 from numpy import array
 from numpy import inf
 from scipy.optimize.optimize import rosen
 from scipy.optimize.optimize import rosen_der
 
-from .opt_lib_test_base import OptLibraryTestBase
 from .problems.x2 import X2
 
 
@@ -73,10 +73,18 @@ class TestNLOPT(TestCase):
     def test_normalization(self):
         """Runs a problem with one variable to be normalized and three not to be."""
         design_space = DesignSpace()
-        design_space.add_variable("x1", 1, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
-        design_space.add_variable("x2", 1, DesignSpace.FLOAT, -inf, 1.0, 0.0)
-        design_space.add_variable("x3", 1, DesignSpace.FLOAT, -1.0, inf, 0.0)
-        design_space.add_variable("x4", 1, DesignSpace.FLOAT, -inf, inf, 0.0)
+        design_space.add_variable(
+            "x1", 1, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+        )
+        design_space.add_variable(
+            "x2", 1, DesignSpace.DesignVariableType.FLOAT, -inf, 1.0, 0.0
+        )
+        design_space.add_variable(
+            "x3", 1, DesignSpace.DesignVariableType.FLOAT, -1.0, inf, 0.0
+        )
+        design_space.add_variable(
+            "x4", 1, DesignSpace.DesignVariableType.FLOAT, -inf, inf, 0.0
+        )
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizersFactory().execute(problem, "NLOPT_COBYLA")
@@ -84,7 +92,9 @@ class TestNLOPT(TestCase):
     def test_tolerance_activation(self):
         def run_pb(algo_options):
             design_space = DesignSpace()
-            design_space.add_variable("x1", 2, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
+            design_space.add_variable(
+                "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+            )
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
             res = OptimizersFactory().execute(problem, "NLOPT_SLSQP", **algo_options)

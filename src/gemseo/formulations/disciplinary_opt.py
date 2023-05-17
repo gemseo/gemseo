@@ -41,7 +41,7 @@ class DisciplinaryOpt(MDOFormulation):
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         super().__init__(
             disciplines,
@@ -80,5 +80,5 @@ class DisciplinaryOpt(MDOFormulation):
     def _filter_design_space(self) -> None:
         """Filter the design space to keep only available variables."""
         all_inpts = get_all_inputs(self.get_top_level_disc())
-        kept = set(self.design_space.variables_names) & set(all_inpts)
+        kept = set(self.design_space.variable_names) & set(all_inpts)
         self.design_space.filter(kept)

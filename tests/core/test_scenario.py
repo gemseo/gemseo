@@ -20,20 +20,22 @@ from __future__ import annotations
 
 import pickle
 import re
-import unittest
 from pathlib import Path
 from typing import Sequence
+from unittest.mock import patch
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
+from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
@@ -53,7 +55,7 @@ from numpy.testing import assert_equal
 
 def build_mdo_scenario(
     formulation: str,
-    grammar_type: str = MDOScenario.JSON_GRAMMAR_TYPE,
+    grammar_type: MDODiscipline.GrammarType = MDOScenario.GrammarType.JSON,
 ) -> MDOScenario:
     """Build the scenario for SSBJ.
 
@@ -64,14 +66,14 @@ def build_mdo_scenario(
     Returns:
         The MDOScenario.
     """
-    if grammar_type == MDOScenario.JSON_GRAMMAR_TYPE:
+    if grammar_type == MDOScenario.GrammarType.JSON:
         disciplines = [
             SobieskiPropulsion(),
             SobieskiAerodynamics(),
             SobieskiMission(),
             SobieskiStructure(),
         ]
-    elif grammar_type == MDOScenario.SIMPLE_GRAMMAR_TYPE:
+    elif grammar_type == MDOScenario.GrammarType.SIMPLE:
         disciplines = [
             SobieskiPropulsionSG(),
             SobieskiAerodynamicsSG(),
@@ -137,16 +139,13 @@ def test_scenario_state(mdf_scenario):
 
 def test_add_user_defined_constraint_error(mdf_scenario):
     # Set the design constraints
-    with pytest.raises(
-        ValueError,
-        match="Constraint type must be either 'eq' or 'ineq'; got 'foo' instead.",
-    ):
-        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="foo")
-
-    mdf_scenario.set_differentiation_method(None)
+    mdf_scenario.set_differentiation_method(
+        mdf_scenario.DifferentiationMethod.NO_DERIVATIVE
+    )
 
     assert (
-        mdf_scenario.formulation.opt_problem.differentiation_method == "no_derivatives"
+        mdf_scenario.formulation.opt_problem.differentiation_method
+        == mdf_scenario.DifferentiationMethod.NO_DERIVATIVE
     )
 
 
@@ -182,7 +181,7 @@ def test_basic_idf(tmp_wd, idf_scenario):
         assert post in posts
 
     # Monitor in the console
-    idf_scenario.xdsmize(json_output=True)
+    idf_scenario.xdsmize(save_json=True)
     assert Path("xdsm.json").exists()
     assert Path("xdsm.html").exists()
 
@@ -217,7 +216,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
     assert file_path.exists()
 
-    opt_read = OptimizationProblem.import_hdf(file_path)
+    opt_read = OptimizationProblem.from_hdf(file_path)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
@@ -227,7 +226,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
-    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
     indirect=True,
 )
 def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
@@ -240,7 +239,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
         filename, pre_load=True
     )
     mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
-    opt_read = OptimizationProblem.import_hdf(filename)
+    opt_read = OptimizationProblem.from_hdf(filename)
 
     assert len(opt_read.database) == len(
         mdf_variable_grammar_scenario.formulation.opt_problem.database
@@ -249,10 +248,10 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     assert (
         norm(
             array(
-                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_vect_history()
             )
             - array(
-                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_vect_history()
             )
         )
         == 0.0
@@ -273,7 +272,7 @@ def test_typeerror_formulation():
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
-    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
     indirect=True,
 )
 def test_get_optimization_results(mdf_variable_grammar_scenario):
@@ -283,24 +282,24 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
     """
     x_opt = array([1.0, 2.0])
     f_opt = array([3.0])
-    constraints_values = {"g": array([4.0, 5.0])}
+    constraint_values = {"g": array([4.0, 5.0])}
     constraints_grad = {"g": array([6.0, 7.0])}
     is_feasible = True
 
     opt_results = OptimizationResult(
         x_opt=x_opt,
         f_opt=f_opt,
-        constraints_values=constraints_values,
+        constraint_values=constraint_values,
         constraints_grad=constraints_grad,
         is_feasible=is_feasible,
     )
 
     mdf_variable_grammar_scenario.optimization_result = opt_results
-    optimum = mdf_variable_grammar_scenario.get_optimum()
+    optimum = mdf_variable_grammar_scenario.optimization_result
 
     assert_equal(optimum.x_opt, x_opt)
     assert_equal(optimum.f_opt, f_opt)
-    assert_equal(optimum.constraints_values, constraints_values)
+    assert_equal(optimum.constraint_values, constraint_values)
     assert_equal(optimum.constraints_grad, constraints_grad)
     assert optimum.is_feasible is is_feasible
 
@@ -311,15 +310,13 @@ def test_get_optimization_results_empty(mdf_scenario):
     Test the case when the Optimization results are not available (e.g. when the execute
     method has not been executed).
     """
-    assert mdf_scenario.get_optimum() is None
+    assert mdf_scenario.optimization_result is None
 
 
 def test_adapter(tmp_wd, idf_scenario):
     """Test the adapter."""
     # Monitor in the console
-    idf_scenario.xdsmize(
-        True, print_statuses=True, outdir=str(tmp_wd), json_output=True
-    )
+    idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
 
     idf_scenario.default_inputs = {
         "max_iter": 1,
@@ -330,7 +327,7 @@ def test_adapter(tmp_wd, idf_scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(idf_scenario, inputs, outputs)
-    gen = MDOFunctionGenerator(adapter)
+    gen = MDODisciplineAdapterGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
     f_x1 = func(x_shared)
@@ -373,9 +370,9 @@ def test_repr_str(idf_scenario):
 
 def test_xdsm_filename(tmp_wd, idf_scenario):
     """Tests the export path dir for xdsm."""
-    outfilename = "my_xdsm.html"
-    idf_scenario.xdsmize(outfilename=outfilename)
-    assert Path(outfilename).is_file()
+    file_name = "my_xdsm.html"
+    idf_scenario.xdsmize(file_name=file_name)
+    assert Path(file_name).is_file()
 
 
 @pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
@@ -413,7 +410,7 @@ def test_database_name(mdf_scenario):
     assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
 
 
-@unittest.mock.patch("timeit.default_timer", new=lambda: 1)
+@patch("timeit.default_timer", new=lambda: 1)
 def test_run_log(mdf_scenario, caplog):
     """Check the log message of Scenario._run."""
     mdf_scenario._run_algorithm = lambda: None
@@ -498,7 +495,7 @@ def mocked_export_to_dataset(
     opt_naming: bool = True,
     export_gradients: bool = False,
 ) -> Dataset:
-    """A mock for OptimizationProblem.export_to_dataset."""
+    """A mock for OptimizationProblem.to_dataset."""
     return (
         name,
         by_group,
@@ -509,10 +506,10 @@ def mocked_export_to_dataset(
 
 
 def test_export_to_dataset(mdf_scenario):
-    """Check that export_to_dataset calls OptimizationProblem.export_to_dataset."""
+    """Check that to_dataset calls OptimizationProblem.to_dataset."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    mdf_scenario.export_to_dataset = mocked_export_to_dataset
-    dataset = mdf_scenario.export_to_dataset(
+    mdf_scenario.to_dataset = mocked_export_to_dataset
+    dataset = mdf_scenario.to_dataset(
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
     )
     assert dataset == (1, 2, 3, 4, 5)
@@ -529,14 +526,14 @@ def complex_step_scenario() -> MDOScenario:
 
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.update(["x"])
-            self.output_grammar.update(["y"])
+            self.input_grammar.update_from_names(["x"])
+            self.output_grammar.update_from_names(["y"])
 
         def _run(self) -> None:
             self.local_data["y"] = self.local_data["x"]
 
     scenario = MDOScenario([MyDiscipline()], "DisciplinaryOpt", "y", design_space)
-    scenario.set_differentiation_method(scenario.COMPLEX_STEP)
+    scenario.set_differentiation_method(scenario.ApproximationMode.COMPLEX_STEP)
     return scenario
 
 
@@ -613,7 +610,7 @@ def test_complex_casting(
             assert value.dtype == float64
 
     mdf_scenario.set_differentiation_method(
-        mdf_scenario.COMPLEX_STEP,
+        mdf_scenario.ApproximationMode.COMPLEX_STEP,
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
     for discipline in mdf_scenario.disciplines:
@@ -632,8 +629,8 @@ def scenario_with_non_float_variables() -> MDOScenario:
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
 
     discipline = AnalyticDiscipline({"y": "x"})
-    discipline.input_grammar.update(["z"])
-    discipline.input_grammar.update(["w"])
+    discipline.input_grammar.update_from_names(["z"])
+    discipline.input_grammar.update_from_names(["w"])
     discipline.default_inputs["z"] = "some_str"
     discipline.default_inputs["w"] = array(1, dtype=int64)
 
@@ -657,7 +654,7 @@ def test_complex_casting_with_non_float_variables(
             an AnalyticDiscipline that has integer and string inputs.
     """
     scenario_with_non_float_variables.set_differentiation_method(
-        scenario_with_non_float_variables.COMPLEX_STEP,
+        scenario_with_non_float_variables.ApproximationMode.COMPLEX_STEP,
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
 

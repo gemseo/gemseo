@@ -19,13 +19,12 @@
 """Gradient approximation by finite differences."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 from typing import Callable
+from typing import Final
 from typing import Sequence
 
 from numpy import argmax
-from numpy import finfo
 from numpy import full
 from numpy import ndarray
 from numpy import tile
@@ -33,43 +32,47 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
-from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.error_estimators import compute_best_step
+from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
-
-EPSILON = finfo(float).eps
-LOGGER = logging.getLogger(__name__)
 
 
 class FirstOrderFD(GradientApproximator):
-    """First-order finite differences approximator.
+    r"""First-order finite differences approximator.
 
     .. math::
 
         \frac{df(x)}{dx}\approx\frac{f(x+\\delta x)-f(x)}{\\delta x}
     """
 
-    ALIAS = FINITE_DIFFERENCES
+    _APPROXIMATION_MODE = ApproximationMode.FINITE_DIFFERENCES
 
-    def __init__(
+    __DEFAULT_STEP: Final[float] = 1e-6
+    """The default value for the step."""
+
+    def __init__(  # noqa:D107
         self,
         f_pointer: Callable[[ndarray], ndarray],
-        step: float | ndarray = 1e-6,
-        parallel: bool = False,
+        step: float | ndarray | None = None,
         design_space: DesignSpace | None = None,
         normalize: bool = True,
+        parallel: bool = False,
         **parallel_args: int | bool | float,
     ) -> None:
         super().__init__(
             f_pointer,
-            step=step,
-            parallel=parallel,
+            step=self.__DEFAULT_STEP if step is None else step,
             design_space=design_space,
             normalize=normalize,
+            parallel=parallel,
             **parallel_args,
         )
 
-    def f_gradient(
+    def f_gradient(  # noqa:D102
         self,
         x_vect: ndarray,
         step: float | ndarray | None = None,
@@ -92,21 +95,9 @@ class FirstOrderFD(GradientApproximator):
         if not isinstance(step, ndarray):
             step = full(n_perturbations, step)
 
-        def func_noargs(
-            f_input_values: ndarray,
-        ) -> ndarray:
-            """Call the function without explicitly passed arguments.
-
-            Args:
-                f_input_values: The input value.
-
-            Return:
-                The value of the function output.
-            """
-            return self.f_pointer(f_input_values, **kwargs)
-
-        functions = [func_noargs] * (n_perturbations + 1)
-        parallel_execution = ParallelExecution(functions, **self._par_args)
+        self._function_kwargs = kwargs
+        functions = [self._wrap_function] * (n_perturbations + 1)
+        parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
 
         perturbated_inputs = [
             input_perturbations[:, perturbation_index]
@@ -181,7 +172,7 @@ class FirstOrderFD(GradientApproximator):
         """
         n_out = f_p.size
         if n_out == 1:
-            t_e, c_e, opt_step = comp_best_step(
+            t_e, c_e, opt_step = compute_best_step(
                 f_p, f_0, f_m, self.step, epsilon_mach=numerical_error
             )
             if t_e is None:
@@ -192,7 +183,7 @@ class FirstOrderFD(GradientApproximator):
             errors = zeros(n_out)
             opt_steps = zeros(n_out)
             for i in range(n_out):
-                t_e, c_e, opt_steps[i] = comp_best_step(
+                t_e, c_e, opt_steps[i] = compute_best_step(
                     f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
                 )
                 if t_e is None:
@@ -233,15 +224,11 @@ class FirstOrderFD(GradientApproximator):
         errors = zeros(n_dim)
         comp_step = self._get_opt_step
         if self._parallel:
-
-            def func_noargs(
-                xval: ndarray,
-            ) -> ndarray:
-                """Call the function without explicitly passed arguments."""
-                return self.f_pointer(xval, **kwargs)
-
-            functions = [func_noargs] * (n_dim + 1)
-            parallel_execution = ParallelExecution(functions, **self._par_args)
+            self._function_kwargs = kwargs
+            functions = [self._wrap_function] * (n_dim * 2 + 1)
+            parallel_execution = CallableParallelExecution(
+                functions, **self._parallel_args
+            )
 
             all_x = [x_vect] + [x_p_arr[:, i] for i in range(n_dim)]
             all_x += [x_m_arr[:, i] for i in range(n_dim)]
@@ -299,113 +286,3 @@ class FirstOrderFD(GradientApproximator):
             input_perturbations[input_indices, range(n_indices)] += steps
 
             return input_perturbations, steps
-
-
-def comp_best_step(
-    f_p: ndarray,
-    f_x: ndarray,
-    f_m: ndarray,
-    step: float,
-    epsilon_mach: float = EPSILON,
-) -> tuple[ndarray | None, ndarray | None, float]:
-    r"""Compute the optimal step for finite differentiation.
-
-    Applied to a forward first order finite differences gradient approximation.
-
-    Require a first evaluation of the perturbed functions values.
-
-    The optimal step is reached when the truncation error
-    (cut in the Taylor development),
-    and the numerical cancellation errors
-    (round-off when doing :math:`f(x+step)-f(x))` are equal.
-
-    See Also:
-        https://en.wikipedia.org/wiki/Numerical_differentiation
-        and *Numerical Algorithms and Digital Representation*,
-        Knut Morken, Chapter 11, "Numerical Differenciation"
-
-    Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
-        f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step :math:`x-\\delta_x`.
-        step: The differentiation step :math:`\\delta_x`.
-
-    Returns:
-        The estimation of the truncation error.
-        None if the Hessian approximation is too small to compute the optimal step.
-        The estimation of the cancellation error.
-        None if the Hessian approximation is too small to compute the optimal step.
-        The optimal step.
-    """
-    hess = approx_hess(f_p, f_x, f_m, step)
-
-    if abs(hess) < 1e-10:
-        LOGGER.debug("Hessian approximation is too small, can't compute optimal step.")
-        return None, None, step
-
-    opt_step = 2 * (epsilon_mach * abs(f_x) / abs(hess)) ** 0.5
-    trunc_error = compute_truncature_error(hess, step)
-    cancel_error = compute_cancellation_error(f_x, opt_step)
-    return trunc_error, cancel_error, opt_step
-
-
-def compute_truncature_error(
-    hess: ndarray,
-    step: float,
-) -> ndarray:
-    r"""Estimate the truncation error.
-
-    Defined for a first order finite differences scheme.
-
-    Args:
-        hess: The second-order derivative :math:`d^2f/dx^2`.
-        step: The differentiation step.
-
-    Returns:
-        The truncation error.
-    """
-    trunc_error = abs(hess) * step / 2
-    return trunc_error
-
-
-def compute_cancellation_error(
-    f_x: ndarray,
-    step: float,
-    epsilon_mach=EPSILON,
-) -> ndarray:
-    r"""Estimate the cancellation error.
-
-    This is the round-off when doing :math:`f(x+\\delta_x)-f(x)`.
-
-    Args:
-        f_x: The value of the function at the current step :math:`x`.
-        step: The step used for the calculations of the perturbed functions values.
-        epsilon_mach: The machine epsilon.
-
-    Returns:
-        The cancellation error.
-    """
-    epsa = epsilon_mach * abs(f_x)
-    cancel_error = 2 * epsa / step
-    return cancel_error
-
-
-def approx_hess(
-    f_p: ndarray,
-    f_x: ndarray,
-    f_m: ndarray,
-    step: float,
-) -> ndarray:
-    r"""Compute the second-order approximation of the Hessian matrix :math:`d^2f/dx^2`.
-
-    Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
-        f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step :math:`x-\\delta_x`.
-        step: The differentiation step :math:`\\delta_x`.
-
-    Returns:
-        The approximation of the Hessian matrix at the current step :math:`x`.
-    """
-    hess = (f_p - 2 * f_x + f_m) / (step**2)
-    return hess

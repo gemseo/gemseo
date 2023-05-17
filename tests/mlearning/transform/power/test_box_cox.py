@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.power.boxcox import BoxCox
+from gemseo.mlearning.transformers.power.boxcox import BoxCox
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray

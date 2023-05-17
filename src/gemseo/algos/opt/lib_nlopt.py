@@ -33,8 +33,8 @@ from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import ndarray
 
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import TerminationCriterion
@@ -43,10 +43,6 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 LOGGER = logging.getLogger(__name__)
 
 NLoptOptionsType = Union[bool, int, float]
-
-
-class NloptRoundOffException(Exception):
-    """NLopt roundoff error."""
 
 
 @dataclass
@@ -369,9 +365,9 @@ class Nlopt(OptimizationLibrary):
             dim = constraint.dim
             for idim in range(dim):
                 nl_fun = self.__make_constraint(func, jac, idim)
-                if f_type == MDOFunction.TYPE_INEQ:
+                if f_type == MDOFunction.ConstraintType.INEQ:
                     nlopt_problem.add_inequality_constraint(nl_fun, ctol)
-                elif f_type == MDOFunction.TYPE_EQ:
+                elif f_type == MDOFunction.ConstraintType.EQ:
                     nlopt_problem.add_equality_constraint(nl_fun, ctol)
 
     def __set_prob_options(
@@ -410,7 +406,7 @@ class Nlopt(OptimizationLibrary):
         problem: OptimizationProblem,
         algo_name: str,
         **options: NLoptOptionsType,
-    ):
+    ) -> None:
         """Set :attr:`.STOP_CRIT_NX` depending on the algorithm.
 
         The COBYLA and BOBYQA algorithms create sets of interpolation points

@@ -94,7 +94,7 @@ def from_db_cursor(cursor, **kwargs):
 class TableHandler(HTMLParser):
     """TableHandler"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         HTMLParser.__init__(self)
         self.kwargs = kwargs
         self.tables = []
@@ -106,7 +106,7 @@ class TableHandler(HTMLParser):
         self.is_last_row_header = False
         self.colspan = 0
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, attrs) -> None:
         """
 
         :param tag: param attrs:
@@ -120,7 +120,7 @@ class TableHandler(HTMLParser):
             if key == "colspan":
                 self.colspan = int(value)
 
-    def handle_endtag(self, tag):
+    def handle_endtag(self, tag) -> None:
         """
 
         :param tag:
@@ -147,7 +147,7 @@ class TableHandler(HTMLParser):
         self.last_content = " "
         self.active = None
 
-    def handle_data(self, data):
+    def handle_data(self, data) -> None:
         """
 
         :param data:
@@ -176,7 +176,7 @@ class TableHandler(HTMLParser):
         return table
 
     @staticmethod
-    def make_fields_unique(fields):
+    def make_fields_unique(fields) -> None:
         """iterates over the row and make each field unique
 
         :param fields: fields

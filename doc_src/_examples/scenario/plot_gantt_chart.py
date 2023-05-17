@@ -25,16 +25,16 @@ Gantt Chart
 In this example, we illustrate the use of the Gantt chart plot
 on the Sobieski's SSBJ problem.
 """
-###############################################################################
+# %%
 # Import
 # ------
-# The first step is to import some functions from the API
+# The first step is to import some high-level functions
 # and a method to get the design space.
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
@@ -42,7 +42,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
@@ -56,13 +56,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -81,7 +81,7 @@ scenario = create_scenario(
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 
-###############################################################################
+# %%
 # Activate time stamps
 # --------------------
 # In order to record all time stamps recording, we have to call this method
@@ -90,7 +90,7 @@ MDODiscipline.activate_time_stamps()
 
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we plot the Gantt chart.

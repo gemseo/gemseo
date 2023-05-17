@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.power.power import Power
+from gemseo.mlearning.transformers.power.power import Power
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray

@@ -22,19 +22,19 @@
 Create a discipline from a Python function
 ==========================================
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
+from gemseo import configure_logger
+from gemseo import create_discipline
 from numpy import array
 from numpy import empty
 
 configure_logger()
 
-###############################################################################
+# %%
 # Build a discipline from a simple Python function
 # ------------------------------------------------
 # Let's consider a simple Python function, e.g.:
@@ -46,34 +46,34 @@ def f(x=0.0, y=0.0):
     return z
 
 
-###############################################################################
+# %%
 # Create and instantiate the discipline
 # -------------------------------------
 # Then, we can consider the
 # :class:`.AutoPyDiscipline` class
 # to convert it into an :class:`.MDODiscipline`.
-# For that, we can use the :meth:`~gemseo.api.create_discipline` API function
+# For that, we can use the :func:`.create_discipline` API function
 # with :code:`'AutoPyDiscipline'` as first argument:
 disc = create_discipline("AutoPyDiscipline", py_func=f)
 
-###############################################################################
+# %%
 # The original Python function may or may not include default values for input
 # arguments, however, if the resulting :class:`.AutoPyDiscipline` is going to be
 # placed inside an :class:`.MDF`, a :class:`.BiLevel` formulation or an :class:`.MDA`
 # with strong couplings, then the Python function **must** assign default values
 # for its input arguments.
 
-###############################################################################
+# %%
 # Execute the discipline
 # ----------------------
 # Then, we can execute it easily, either considering default inputs:
 print(disc.execute())
 
-###############################################################################
+# %%
 # or using new inputs:
 print(disc.execute({"x": array([1.0]), "y": array([-3.2])}))
 
-###############################################################################
+# %%
 # Optional arguments
 # ------------------
 # The optional arguments passed to the constructor are:
@@ -85,7 +85,7 @@ print(disc.execute({"x": array([1.0]), "y": array([-3.2])}))
 # - :code:`write_schema=False`: if :code:`True`, write the json schema on the
 #   disk.
 
-###############################################################################
+# %%
 # Define the jacobian function
 # ----------------------------
 # Here is an example of jacobian function:
@@ -99,6 +99,6 @@ def dfdxy(x=0.0, y=0.0):
     return jac
 
 
-###############################################################################
+# %%
 # that we can execute with default inputs for example:
 print(dfdxy())

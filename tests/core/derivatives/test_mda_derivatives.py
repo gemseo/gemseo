@@ -80,7 +80,7 @@ def test_traverse_add_diff_io_basic():
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_chain_jac_basic_grammars(grammar_type):
     """Test the jacobian from the MDOChain on a basic case with different grammars."""
@@ -96,9 +96,9 @@ def test_chain_jac_basic(input, output):
     """Test the jacobian from the MDOChain on a basic case."""
     seed(1)
     disciplines = create_disciplines_from_desc(
-        DISC_DESCR_1, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE
+        DISC_DESCR_1, grammar_type=MDODiscipline.GrammarType.SIMPLE
     )
-    mda = MDAChain(disciplines, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE)
+    mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
     assert mda.check_jacobian(inputs=input, outputs=output)
 
 
@@ -146,10 +146,10 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
         unique_disc_per_output=True,
         no_strong_couplings=False,
         no_self_coupled=True,
-        grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     assert MDAChain(
-        disciplines, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE
+        disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE
     ).check_jacobian()
 
 
@@ -168,8 +168,8 @@ def test_chain_jac_io_sizes(inputs_size, outputs_size):
         unique_disc_per_output=True,
         no_strong_couplings=True,
         no_self_coupled=True,
-        grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
+        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     assert MDAChain(
-        disciplines, grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE
+        disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE
     ).check_jacobian()

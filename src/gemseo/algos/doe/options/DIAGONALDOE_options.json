@@ -1,6 +1,7 @@
 {
     "name": "DIAGONALDOE8options",
     "description": "Diagonal DOE algorithm",
+    "required": ["n_samples"],
     "properties": {
          "eval_jac":{
             "type": "boolean"

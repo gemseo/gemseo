@@ -16,15 +16,16 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An analytical problem to test the non-early termination of optimization algorithms."""
+"""An analytical problem to test the non-early termination of optimization
+algorithms."""
 from __future__ import annotations
 
 import logging
+from typing import Final
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.python_compatibility import Final
 from numpy import array
 from numpy import ndarray
 from numpy import zeros
@@ -66,7 +67,7 @@ class X2(OptimizationProblem):
             f_type="obj",
             jac=self.__compute_x2_jac,
             expr="x**2",
-            args=["x", "a", "b", "c", "d"],
+            input_names=["x", "a", "b", "c", "d"],
         )
 
     @staticmethod

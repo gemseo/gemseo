@@ -1,13 +1,10 @@
 {
     "name": "MDOScenario_input",
-    "required": ["algo", "max_iter"],
+    "required": ["max_iter"],
     "properties": {
         "max_iter": {
         	"type" : "integer",
         	"minimum":1
-        },
-        "algo": {
-            "type": "string"
         },
 		"algo_options": {
 			"type": "object"

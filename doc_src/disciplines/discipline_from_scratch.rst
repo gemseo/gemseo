@@ -33,7 +33,7 @@ we call the :class:`.MDODiscipline` superconstructor:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -52,18 +52,18 @@ Setting the grammars from data names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When the variables are float arrays without any particular constraint,
-the simplest approach is to apply the :meth:`.JSONGrammar.update` method to a list of variable names:
+the simplest approach is to apply the :meth:`.JSONGrammar.update_from_names` method to a list of variable names:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
-            self.input_grammar.update(['x', 'z'])
-            self.output_grammar.update(['f', 'g'])
+            self.input_grammar.update_from_names(['x', 'z'])
+            self.output_grammar.update_from_names(['f', 'g'])
             # TO BE COMPLETED
 
 Setting the grammars from JSON files
@@ -76,7 +76,7 @@ pass an optional argument to the superconstructor:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -144,7 +144,7 @@ with a :code:`dict` data example:
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
 
     class NewDiscipline(MDODiscipline):
 
@@ -192,15 +192,15 @@ We also define the default inputs by means of the :attr:`!MDODiscipline.default_
 
 .. code::
 
-    from gemseo.api import MDODiscipline
+    from gemseo import MDODiscipline
     from numpy import array
 
     class NewDiscipline(MDODiscipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
-            self.input_grammar.update(['x', 'z'])
-            self.output_grammar.update(['f', 'g'])
+            self.input_grammar.update_from_names(['x', 'z'])
+            self.output_grammar.update_from_names(['f', 'g'])
             self.default_inputs = {'x': array([0.]), 'z': array([0.])}
 
 .. warning::

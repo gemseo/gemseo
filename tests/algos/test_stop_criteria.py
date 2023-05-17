@@ -20,9 +20,9 @@
 from __future__ import annotations
 
 import pytest
+from gemseo import execute_algo
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
-from gemseo.api import execute_algo
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import ones
 
@@ -62,6 +62,9 @@ def test_is_f_tol_reached():
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.001)
 
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2, n_x=3)
+    pb.objective.jac(0.5 * ones(2))
+    pb.objective(ones(2))
+    assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5)
 
 
 @pytest.mark.parametrize("n_stop_crit_x", [2, 4, 6, 10, 20])

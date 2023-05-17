@@ -40,8 +40,8 @@ def test_create_fail():
     factory = ToleranceIntervalFactory()
 
     expected = re.escape(
-        "Class WrongNameToleranceInterval is not available; \n"
-        "available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, "
+        "The class WrongNameToleranceInterval is not available; "
+        "the available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, "
         "NormalToleranceInterval, UniformToleranceInterval, "
         "WeibullMinToleranceInterval, WeibullToleranceInterval."
     )

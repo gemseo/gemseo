@@ -29,6 +29,7 @@ from matplotlib.figure import Figure
 from numpy import arange
 from numpy import atleast_2d
 from numpy import ndarray
+from numpy import where
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
@@ -50,7 +51,7 @@ class GradientSensitivity(OptPostProcessor):
         Args:
             iteration: The iteration to plot the sensitivities.
                 Can use either positive or negative indexing,
-                e.g. ``4`` for the 5-th iteration
+                e.g. ``5`` for the 5-th iteration
                 or ``-2`` for the penultimate one.
                 If ``None``, use the iteration of the optimum.
             scale_gradients: If True, normalize each gradient
@@ -69,10 +70,10 @@ class GradientSensitivity(OptPostProcessor):
         if iteration is None:
             design_value = self.opt_problem.solution.x_opt
         else:
-            design_value = self.opt_problem.database.get_x_by_iter(iteration)
+            design_value = self.opt_problem.database.get_x_vect(iteration)
 
         fig = self.__generate_subplots(
-            self._generate_x_names(),
+            self._get_design_variable_names(),
             design_value,
             self.__get_output_gradients(
                 design_value,
@@ -116,7 +117,11 @@ class GradientSensitivity(OptPostProcessor):
         if compute_missing_gradients:
             try:
                 _, gradient_values = self.opt_problem.evaluate_functions(
-                    design_value, no_db_no_norm=True, eval_jac=True, normalize=False
+                    design_value,
+                    no_db_no_norm=True,
+                    eval_jac=True,
+                    eval_observables=False,
+                    normalize=False,
                 )
             except NotImplementedError:
                 LOGGER.info(
@@ -124,15 +129,15 @@ class GradientSensitivity(OptPostProcessor):
                     "callable functions cannot be computed."
                 )
 
-        function_names = self.opt_problem.get_all_functions_names()
+        function_names = self.opt_problem.get_all_function_name()
         scale_gradient = self.opt_problem.design_space.unnormalize_vect
         function_names_to_gradients = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:
                 gradient_value = gradient_values[function_name]
             else:
-                gradient_value = self.database.get_f_of_x(
-                    f"@{function_name}", design_value
+                gradient_value = self.database.get_function_value(
+                    self.database.get_gradient_name(function_name), design_value
                 )
             if gradient_value is None:
                 continue
@@ -192,7 +197,14 @@ class GradientSensitivity(OptPostProcessor):
         rotation = 90
         for output_name, gradient_value in sorted(gradients.items()):
             axe = axes[i][j]
-            axe.bar(abscissa, gradient_value, color="blue", align="center")
+            axe.bar(
+                abscissa,
+                gradient_value,
+                color=where(gradient_value < 0, "blue", "red"),
+                align="center",
+            )
+            axe.grid()
+            axe.set_axisbelow(True)
             axe.set_title(output_name)
             axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissa)

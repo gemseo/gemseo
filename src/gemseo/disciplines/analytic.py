@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 from typing import Iterable
 from typing import Mapping
 
@@ -61,12 +62,11 @@ class AnalyticDiscipline(MDODiscipline):
     input_names: list[str]
     """The names of the inputs."""
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "expressions",
-        "output_names_to_symbols",
-        "_fast_evaluation",
-        "_sympy_exprs",
-        "_sympy_jac_exprs",
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+        [
+            "_sympy_funcs",
+            "_sympy_jac_funcs",
+        ]
     )
 
     def __init__(
@@ -74,7 +74,7 @@ class AnalyticDiscipline(MDODiscipline):
         expressions: Mapping[str, str | Expr],
         name: str | None = None,
         fast_evaluation: bool = True,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -97,12 +97,12 @@ class AnalyticDiscipline(MDODiscipline):
         self._init_expressions()
         self._init_grammars()
         self._init_default_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _init_grammars(self) -> None:
         """Initialize the input an output grammars from the expressions' dictionary."""
-        self.input_grammar.update(self.input_names)
-        self.output_grammar.update(self.expressions.keys())
+        self.input_grammar.update_from_names(self.input_names)
+        self.output_grammar.update_from_names(self.expressions.keys())
 
     def _init_expressions(self) -> None:
         """Parse the expressions of the functions and their derivatives.
@@ -229,31 +229,38 @@ class AnalyticDiscipline(MDODiscipline):
     ) -> None:
         # otherwise there may be missing terms
         # if some formula have no dependency
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        input_names, output_names = self._init_jacobian(
+            inputs, outputs, with_zeros=True
+        )
         input_values = self.__convert_input_values_to_float()
         if self._fast_evaluation:
-            for output_name, gradient_function in self._sympy_jac_funcs.items():
+            for output_name in output_names:
+                gradient_function = self._sympy_jac_funcs[output_name]
                 input_data = tuple(
                     input_values[name]
                     for name in self.output_names_to_symbols[output_name]
                 )
                 jac = self.jac[output_name]
                 for input_symbol, derivative_function in gradient_function.items():
-                    jac[input_symbol] = array(
-                        [[derivative_function(*input_data)]], dtype=float64
-                    )
+                    if input_symbol in input_names:
+                        jac[input_symbol] = array(
+                            [[derivative_function(*input_data)]], dtype=float64
+                        )
         else:
             subs = {self.__real_symbols[k]: v for k, v in input_values.items()}
-            for output_name, output_expression in self._sympy_exprs.items():
+            for output_name in output_names:
+                output_expression = self._sympy_exprs[output_name]
                 jac = self.jac[output_name]
                 jac_expr = self._sympy_jac_exprs[output_name]
                 for input_symbol in output_expression.free_symbols:
-                    jac[input_symbol.name] = array(
-                        [[jac_expr[input_symbol.name].evalf(subs=subs)]],
-                        dtype=float64,
-                    )
+                    input_name = input_symbol.name
+                    if input_name in input_names:
+                        jac[input_name] = array(
+                            [[jac_expr[input_name].evalf(subs=subs)]],
+                            dtype=float64,
+                        )
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
         super().__setstate__(state)
         self._sympy_funcs = {}
         self._sympy_jac_funcs = {}

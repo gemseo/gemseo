@@ -80,13 +80,15 @@ import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 from numpy import ndarray
+from strenum import StrEnum
 
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.post.dataset.dataset_plot import VariableType
+from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.string_tools import repr_variable
@@ -109,7 +111,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     Examples:
         >>> from numpy import pi
-        >>> from gemseo.api import create_discipline, create_parameter_space
+        >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
@@ -217,6 +219,15 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     DEFAULT_DRIVER = PyDOE.PYDOE_LHS
 
+    class Method(StrEnum):
+        """The names of the sensitivity methods."""
+
+        MU_STAR = "MU_STAR"
+        """The mean of the absolute finite difference."""
+
+        SIGMA = "SIGMA"
+        """The standard deviation of the absolute finite difference."""
+
     def __init__(
         self,
         disciplines: Collection[MDODiscipline],
@@ -230,7 +241,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        r"""..
+        r"""
         Args:
             n_replicates: The number of times
                 the OAT method is repeated. Used only if ``n_samples`` is None.
@@ -242,7 +253,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         Raises:
             ValueError: If at least one input dimension is not equal to 1.
         """  # noqa: D205, D212, D415
-        if parameter_space.dimension != len(parameter_space.variables_names):
+        if parameter_space.dimension != len(parameter_space.variable_names):
             raise ValueError("Each input dimension must be equal to 1.")
 
         self.mu_ = {}
@@ -277,7 +288,7 @@ class MorrisAnalysis(SensitivityAnalysis):
             algo=algo,
             algo_options=algo_options,
         )
-        self._main_method = "Morris(mu*)"
+        self._main_method = self.Method.MU_STAR
         self.__outputs_bounds = discipline.output_range
         self.default_output = output_names
 
@@ -293,17 +304,19 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: Sequence[str] | None = None,
+        outputs: str | Sequence[str] | None = None,
         normalize: bool = False,
-    ) -> dict[str, IndicesType]:
+    ) -> dict[str, FirstOrderIndicesType]:
         """
         Args:
             normalize: Whether to normalize the indices
                 with the empirical bounds of the outputs.
         """  # noqa: D205 D212 D415
-        fd_data = self.dataset.get_data_by_group(self.dataset.OUTPUT_GROUP, True)
+        fd_data = self.dataset.get_view(group_names=self.dataset.OUTPUT_GROUP).to_dict(
+            orient="list"
+        )
         output_names = outputs or self.default_output
-        if not isinstance(output_names, list):
+        if isinstance(output_names, str):
             output_names = [output_names]
         self.mu_ = {name: {} for name in output_names}
         self.mu_star = {name: {} for name in output_names}
@@ -312,7 +325,8 @@ class MorrisAnalysis(SensitivityAnalysis):
         self.min = {name: {} for name in output_names}
         self.max = {name: {} for name in output_names}
         for fd_name, value in fd_data.items():
-            output_name, input_name = _OATSensitivity.get_io_names(fd_name)
+            value = array([value]).T
+            output_name, input_name = _OATSensitivity.get_io_names(fd_name[1])
             if output_name in output_names:
                 lower = self.outputs_bounds[output_name][0]
                 upper = self.outputs_bounds[output_name][1]
@@ -354,25 +368,19 @@ class MorrisAnalysis(SensitivityAnalysis):
     @property
     def indices(  # noqa: D102
         self,
-    ) -> dict[str, IndicesType]:
+    ) -> dict[str, FirstOrderIndicesType]:
         return {
-            "mu": self.mu_,
-            "mu_star": self.mu_star,
-            "sigma": self.sigma,
-            "relative_sigma": self.relative_sigma,
-            "min": self.min,
-            "max": self.max,
+            "MU": self.mu_,
+            "MU_STAR": self.mu_star,
+            "SIGMA": self.sigma,
+            "RELATIVE_SIGMA": self.relative_sigma,
+            "MIN": self.min,
+            "MAX": self.max,
         }
-
-    @property
-    def main_indices(  # noqa: D102
-        self,
-    ) -> IndicesType:
-        return self.mu_star
 
     def plot(
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         save: bool = True,
@@ -400,7 +408,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
-        names = self.dataset.get_names(self.dataset.INPUT_GROUP)
+        names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
         names = self._filter_names(names, inputs)
         x_val = [self.mu_star[output[0]][output[1]][name] for name in names]
         y_val = [self.sigma[output[0]][output[1]][name] for name in names]

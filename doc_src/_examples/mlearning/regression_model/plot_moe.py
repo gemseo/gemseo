@@ -28,10 +28,9 @@ mixture of experts regression model to obtain an approximation.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.mlearning import create_regression_model
 from numpy import array
 from numpy import hstack
 from numpy import linspace
@@ -43,54 +42,51 @@ from numpy import zeros
 configure_logger()
 
 
-##############################################################################
+# %%
 # Dataset (Rosenbrock)
 # --------------------
 # We here consider the Rosenbrock function with two inputs, on the interval
 # :math:`[-2, 2] \times [-2, 2]`.
 
-##############################################################################
+# %%
 # Load dataset
 # ~~~~~~~~~~~~
 # A prebuilt dataset for the Rosenbrock function with two inputs is given
 # as a dataset parametrization, based on a full factorial DOE of the input
 # space with 100 points.
-dataset = load_dataset("RosenbrockDataset", opt_naming=False)
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 
-##############################################################################
+# %%
 # Print information
 # ~~~~~~~~~~~~~~~~~
 # Information about the dataset can easily be displayed by printing the
 # dataset directly.
 print(dataset)
 
-##############################################################################
+# %%
 # Show dataset
 # ~~~~~~~~~~~~
 # The dataset object can present the data in tabular form.
-print(dataset.export_to_dataframe())
+print(dataset)
 
-##############################################################################
+# %%
 # Mixture of experts (MoE)
 # ------------------------
 # In this section we load a mixture of experts regression model through the
 # machine learning API, using clustering, classification and regression models.
 
-##############################################################################
+# %%
 # Mixture of experts model
 # ~~~~~~~~~~~~~~~~~~~~~~~~
-# We construct the MoE model using the predefined parameters, and fit the model
-# to the dataset through the learn() method.
-model = create_regression_model(
-    "MOERegressor", dataset, transformer={"outputs": MinMaxScaler()}
-)
+# We construct the MoE model using the predefined parameters,
+# and fit the model to the dataset through the :meth:`~.MOERegressor.learn` method.
+model = create_regression_model("MOERegressor", dataset)
 model.set_clusterer("KMeans", n_clusters=3)
 model.set_classifier("KNNClassifier", n_neighbors=5)
 model.set_regressor("GaussianProcessRegressor")
-
 model.learn()
 
-##############################################################################
+# %%
 # Tests
 # ~~~~~
 # Here, we test the mixture of experts method applied to two points:
@@ -109,7 +105,7 @@ for value in [input_value, another_input_value]:
         print(f"Local model {cls}: {model.predict_local_model(value, cls)}")
     print()
 
-##############################################################################
+# %%
 # Plot clusters
 # ~~~~~~~~~~~~~
 # Here, we plot the 10x10 = 100 Rosenbrock function data points, with colors
@@ -121,8 +117,8 @@ input_dim = int(sqrt(n_samples))
 assert input_dim**2 == n_samples  # Check that n_samples is a square number
 
 colors = ["b", "r", "g", "o", "y"]
-inputs = dataset.get_data_by_group(dataset.INPUT_GROUP)
-outputs = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+inputs = dataset.input_dataset.to_numpy()
+outputs = dataset.output_dataset.to_numpy()
 x = inputs[:input_dim, 0]
 y = inputs[:input_dim, 0]
 
@@ -138,7 +134,7 @@ for index in range(model.n_clusters):
 plt.scatter(1, 1, marker="x")
 plt.show()
 
-##############################################################################
+# %%
 # Plot data and predictions from final model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # We construct a refined input space, and compute the model predictions.
@@ -165,7 +161,7 @@ plt.colorbar()
 plt.title("Predictions")
 plt.show()
 
-##############################################################################
+# %%
 # Plot local models
 # ~~~~~~~~~~~~~~~~~
 for i in range(model.n_clusters):

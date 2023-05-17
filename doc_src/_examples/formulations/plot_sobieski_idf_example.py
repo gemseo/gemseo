@@ -23,10 +23,10 @@ IDF-based MDO on the Sobieski SSBJ test case
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
@@ -88,6 +88,16 @@ scenario = create_scenario(
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 for c_name in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(c_name, "ineq")
+
+# %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM file on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+scenario.xdsmize(save_html=False)
 
 # %%
 # Define the algorithm inputs

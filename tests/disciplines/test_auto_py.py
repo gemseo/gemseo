@@ -22,13 +22,13 @@ from __future__ import annotations
 import re
 
 import pytest
+from gemseo import create_design_space
+from gemseo import create_mda
+from gemseo import create_scenario
+from gemseo import execute_algo
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import create_mda
-from gemseo.api import create_scenario
-from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
 from numpy import array
@@ -100,7 +100,7 @@ def test_basic():
 
 @pytest.mark.parametrize(
     "grammar_type",
-    [AutoPyDiscipline.SIMPLE_GRAMMAR_TYPE, AutoPyDiscipline.JSON_GRAMMAR_TYPE],
+    [AutoPyDiscipline.GrammarType.SIMPLE, AutoPyDiscipline.GrammarType.JSON],
 )
 def test_jac(grammar_type):
     """Test a basic jacobian."""
@@ -131,7 +131,7 @@ def test_fail_wrongly_formatted_function():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Inconsistent definition of return statements in function: ('y', 'x') != ('y',)."
+            "Two return statements use different variable names; ['y', 'x'] and ['y']."
         ),
     ):
         AutoPyDiscipline(f4)
@@ -222,9 +222,30 @@ def test_jacobian_shape_mismatch():
     assert disc.check_jacobian(threshold=1e-5)
 
     disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
-    msg = (
-        "The jacobian provided by the py_jac function is of wrong shape. "
-        r"Expected \(1, 3\), got \(3, 1\)."
-    )
-    with pytest.raises(ValueError, match=msg):
-        disc_wrong.linearize(force_all=True)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The shape (3, 1) of the Jacobian matrix of the discipline obj "
+            "provided by py_jac does not match (output_size, input_size)=(1, 3)."
+        ),
+    ):
+        disc_wrong.linearize(compute_all_jacobians=True)
+
+
+def test_multiline_return():
+    """Check that AutoPyDiscipline can wrap a function with a multiline return."""
+
+    def f(x):
+        yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy = x
+        zzzzzzzzzzzzzzzzz = x
+        return (
+            yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy,
+            zzzzzzzzzzzzzzzzz,
+        )
+
+    discipline = AutoPyDiscipline(f)
+    assert discipline.input_names == ["x"]
+    assert discipline.output_names == [
+        "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+        "zzzzzzzzzzzzzzzzz",
+    ]

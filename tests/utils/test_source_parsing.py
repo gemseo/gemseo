@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.utils.source_parsing import get_default_options_values
+from gemseo.utils.source_parsing import get_default_option_values
 from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.source_parsing import parse_google
 from gemseo.utils.source_parsing import parse_rest
@@ -49,9 +49,9 @@ class ClassWithGoogleDocstring:
         """
 
 
-def test_get_default_options_values():
+def test_get_default_option_values():
     """Check the function getting the default values of the __init__'s options."""
-    assert get_default_options_values(ClassWithGoogleDocstring) == {
+    assert get_default_option_values(ClassWithGoogleDocstring) == {
         "arg1": 0.0,
         "arg2": 1.0,
     }

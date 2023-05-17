@@ -226,6 +226,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from scipy.sparse import csr_matrix
 from sklearn import neighbors
+from typing import Optional
 
 try:
     from sklearn.externals.joblib import Parallel, delayed, dump, load
@@ -252,13 +253,13 @@ class SOM(object):
 
     def __init__(
         self,
-        name,
+        name: str,
         Data,
-        mapsize=None,
-        norm_method="var",
-        initmethod="pca",
-        neigh="Guassian",
-    ):
+        mapsize: Optional[int]=None,
+        norm_method: str="var",
+        initmethod: str="pca",
+        neigh: str="Guassian",
+    ) -> None:
         """
         name and data, neigh== Bubble or Guassian
         """
@@ -282,8 +283,8 @@ class SOM(object):
 
     # set SOM topology
     def set_topology(
-        self, mapsize=None, mapshape="planar", lattice="rect", mask=None, compname=None
-    ):
+        self, mapsize: Optional[int]=None, mapshape: str="planar", lattice: str="rect", mask=None, compname: Optional[str]=None
+    ) -> None:
         """all_mapshapes = ['planar','toroid','cylinder']
         all_lattices = ['hexa','rect']
 
@@ -344,7 +345,7 @@ class SOM(object):
 
     # Set labels of the training data
     # it should be in the format of a list of strings
-    def set_data_labels(self, dlabel=None):
+    def set_data_labels(self, dlabel: Optional[str]=None) -> None:
         """
 
         :param dlabel: Default value = None)
@@ -377,7 +378,7 @@ class SOM(object):
 
     # calculating the grid distance, which will be called during the training steps
     # currently just works for planar grids
-    def calc_map_dist(self):
+    def calc_map_dist(self) -> None:
         """ """
         cd = getattr(self, "nnodes")
         UD2 = np.zeros((cd, cd))
@@ -387,13 +388,13 @@ class SOM(object):
 
     def set_algorithm(
         self,
-        initmethod="pca",
-        algtype="batch",
-        neighborhoodmethod="gaussian",
-        alfatype="inv",
-        alfaini=0.5,
-        alfafinal=0.005,
-    ):
+        initmethod: str="pca",
+        algtype: str="batch",
+        neighborhoodmethod: str="gaussian",
+        alfatype: str="inv",
+        alfaini: float=0.5,
+        alfafinal: float=0.005,
+    ) -> None:
         """initmethod = ['random', 'pca']
         algos = ['seq','batch']
         all_neigh = ['gaussian','manhatan','bubble','cut_gaussian','epanechicov' ]
@@ -417,17 +418,17 @@ class SOM(object):
     # visualize map
     def view_map(
         self,
-        what="codebook",
-        which_dim="all",
-        pack="Yes",
-        text_size=2.8,
-        save="No",
-        save_dir="empty",
-        grid="No",
-        text="Yes",
-        cmap="None",
-        COL_SiZe=6,
-    ):
+        what: str="codebook",
+        which_dim: str="all",
+        pack: str="Yes",
+        text_size: float=2.8,
+        save: str="No",
+        save_dir: str="empty",
+        grid: str="No",
+        text: str="Yes",
+        cmap: str="None",
+        COL_SiZe: int=6,
+    ) -> None:
         """
 
         :param what: Default value = 'codebook')
@@ -467,7 +468,7 @@ class SOM(object):
 
     ##########################################################################
     # Initialize map codebook: Weight vectors of SOM
-    def init_map(self):
+    def init_map(self) -> None:
         """ """
         if getattr(self, "initmethod") == "random":
             # It produces random values in the range of min- max of each
@@ -498,7 +499,7 @@ class SOM(object):
             LOGGER.debug("possible init methods:'random', 'pca'")
 
     # Main loop of training
-    def train(self, trainlen=None, n_job=1, shared_memory="no", verbose="on"):
+    def train(self, trainlen=None, n_job: int=1, shared_memory: str="no", verbose: str="on") -> None:
         """
 
         :param trainlen: Default value = None)
@@ -554,7 +555,7 @@ class SOM(object):
         Predicted_labels = clf.predict(data)
         return Predicted_labels
 
-    def predict_by(self, data, Target, K=5, wt="distance"):
+    def predict_by(self, data, Target, K: int=5, wt: str="distance"):
         """‘uniform’
 
         :param data: param Target:
@@ -590,7 +591,7 @@ class SOM(object):
         Predicted_values = denormalize_by(data_raw[:, Target], Predicted_values)
         return Predicted_values
 
-    def predict(self, X_test, K=5, wt="distance"):
+    def predict(self, X_test, K: int=5, wt: str="distance"):
         """‘uniform’
 
         :param X_test: param K:  (Default value = 5)
@@ -617,7 +618,7 @@ class SOM(object):
         Predicted_values = denormalize_by(data_raw[:, Target], Predicted_values)
         return Predicted_values
 
-    def find_K_nodes(self, data, K=5):
+    def find_K_nodes(self, data, K: int=5):
         """
 
         :param data: param K:  (Default value = 5)
@@ -654,7 +655,7 @@ class SOM(object):
         out[:, 1] = bm_ind % cols
         return out.astype(int)
 
-    def cluster(self, method="Kmeans", n_clusters=8):
+    def cluster(self, method: str="Kmeans", n_clusters: int=8):
         """
 
         :param method: Default value = 'Kmeans')
@@ -670,7 +671,7 @@ class SOM(object):
         setattr(self, "cluster_labels", labels)
         return labels
 
-    def hit_map(self, data=None):
+    def hit_map(self, data=None) -> None:
         """
 
         :param data: Default value = None)
@@ -816,7 +817,7 @@ class SOM(object):
         plt.show()
         return cents
 
-    def predict_Probability(self, data, Target, K=5):
+    def predict_Probability(self, data, Target, K: int=5):
         """
 
         :param data: param Target:
@@ -870,7 +871,7 @@ class SOM(object):
         # Predicted_values = denormalize_by(data_raw[:,Target], Predicted_values)
         return np.concatenate((pos_prob, neg_prob), axis=1)
 
-    def node_Activation(self, data, wt="distance", Target=None):
+    def node_Activation(self, data, wt: str="distance", Target=None):
         """‘uniform’
 
         :param data: param wt:  (Default value = 'distance')
@@ -900,7 +901,7 @@ class SOM(object):
 
         #
 
-    def para_bmu_find(self, x, y, njb=1):
+    def para_bmu_find(self, x, y, njb: int=1):
         """
 
         :param x: param y:
@@ -927,7 +928,7 @@ class SOM(object):
     # First finds the Voronoi set of each node. It needs to calculate a smaller matrix. Super fast comparing to classic batch training algorithm
     # it is based on the implemented algorithm in som toolbox for Matlab by
     # Helsinky university
-    def update_codebook_voronoi(self, training_data, bmu, H, radius):
+    def update_codebook_voronoi(self, training_data, bmu, H, radius: float):
         """
 
         :param training_data: param bmu:
@@ -1000,7 +1001,7 @@ def chunk_based_bmu_find(self, x, y, y_2):
         High = min(dlen, i0 + blen)
         i0 += blen
         ddata = x[Low : High + 1]
-        d = np.dot(y, ddata.T)
+        d = y @ ddata.T
         d *= -2
         d += y_2.reshape(nnodes, 1)
         bmu[Low : High + 1, 0] = np.argmin(d, axis=0)
@@ -1013,7 +1014,7 @@ def chunk_based_bmu_find(self, x, y, y_2):
 # Batch training which is called for rought training as well as finetuning
 
 
-def batchtrain(self, njob=1, phase=None, shared_memory="no", verbose="on"):
+def batchtrain(self, njob: int=1, phase=None, shared_memory: str="no", verbose: str="on") -> None:
     """
 
     :param njob: Default value = 1)
@@ -1189,7 +1190,7 @@ def rect_dist(self, bmu):
         return np.zeros((rows, cols)).ravel()
 
 
-def view_2d(self, text_size, which_dim="all", what="codebook"):
+def view_2d(self, text_size: int, which_dim: str="all", what: str="codebook") -> None:
     """
 
     :param text_size: param which_dim:  (Default value = 'all')
@@ -1261,16 +1262,16 @@ def view_2d(self, text_size, which_dim="all", what="codebook"):
 
 def view_2d_Pack(
     self,
-    text_size,
-    which_dim="all",
-    what="codebook",
-    save="No",
-    grid="Yes",
-    save_dir="empty",
-    text="Yes",
-    CMAP="None",
+    text_size: int,
+    which_dim: str="all",
+    what: str="codebook",
+    save: str="No",
+    grid: str="Yes",
+    save_dir: str="empty",
+    text: str="Yes",
+    CMAP: str="None",
     col_sz=None,
-):
+) -> None:
     """
 
     :param text_size: param which_dim:  (Default value = 'all')
@@ -1416,7 +1417,7 @@ def view_2d_Pack(
         plt.close(fig)
 
 
-def view_1d(self, text_size, which_dim="all", what="codebook"):
+def view_1d(self, text_size: int, which_dim: str="all", what: str="codebook") -> None:
     """
 
     :param text_size: param which_dim:  (Default value = 'all')
@@ -1556,7 +1557,7 @@ def lininit(self):
         return np.around(codebook, decimals=6)
 
 
-def normalize(data, method="var"):
+def normalize(data, method: str="var"):
     """
 
     :param data: param method:  (Default value = 'var')
@@ -1574,7 +1575,7 @@ def normalize(data, method="var"):
         return n_data
 
 
-def normalize_by(data_raw, data, method="var"):
+def normalize_by(data_raw, data, method: str="var"):
     """
 
     :param data_raw: param data:
@@ -1592,7 +1593,7 @@ def normalize_by(data_raw, data, method="var"):
         return n_data
 
 
-def denormalize_by(data_by, n_vect, n_method="var"):
+def denormalize_by(data_by, n_vect, n_method: str="var"):
     """
 
     :param data_by: param n_vect:

@@ -21,9 +21,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.color_evolution import ColorEvolution
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 from numpy import array
 

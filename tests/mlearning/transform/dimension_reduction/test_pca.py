@@ -22,103 +22,116 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.dimension_reduction.pca import PCA
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from numpy import allclose
 from numpy import arange
+from numpy import array
+from numpy import diag
 from numpy import ndarray
+from numpy import tile
 
 N_SAMPLES = 10
 N_FEATURES = 8
+N_COMPONENTS = 3
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
 
+@pytest.fixture(scope="module", params=[False, True])
+def pca(request, data) -> PCA:
+    """A PCA with or without data scaling."""
+    if request.param:
+        pca = PCA(n_components=N_COMPONENTS, scale=True)
+    else:
+        pca = PCA(n_components=N_COMPONENTS)
+    pca.fit(data)
+    return pca
+
+
 def test_constructor():
     """Test constructor."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
+    pca = PCA(n_components=N_COMPONENTS)
     assert pca.name == "PCA"
     assert pca.algo is not None
-    assert pca.n_components == n_components
+    assert pca.n_components == N_COMPONENTS
+    assert not pca.data_is_scaled
+    assert pca._PCA__scaler.__class__.__name__ == "Scaler"
 
 
-def test_learn(data):
+def test_scales_data():
+    """Test data_is_scaled."""
+    pca = PCA(n_components=N_COMPONENTS, scale=True)
+    assert pca.data_is_scaled
+    assert pca._PCA__scaler.__class__.__name__ == "StandardScaler"
+
+
+def test_learn(pca):
     """Test learn with the default number of components (None)."""
-    pca = PCA()
-    pca.fit(data)
     assert pca.n_components == pca.algo.n_components_
 
 
-def test_learn_custom(data):
+def test_learn_custom(pca):
     """Test learn with a custom number of components."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
-    pca.fit(data)
-    assert pca.n_components == n_components
+    assert pca.n_components == N_COMPONENTS
 
 
-def test_transform(data):
+def test_transform(data, pca):
     """Test transform."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
-    pca.fit(data)
     reduced_data = pca.transform(data)
     assert reduced_data.shape[0] == data.shape[0]
-    assert reduced_data.shape[1] == n_components
+    assert reduced_data.shape[1] == N_COMPONENTS
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(pca):
     """Test inverse transform."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
-    pca.fit(data)
-    data = arange(N_SAMPLES * n_components).reshape((N_SAMPLES, n_components))
+    data = arange(N_SAMPLES * N_COMPONENTS).reshape((N_SAMPLES, N_COMPONENTS))
     restored_data = pca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
     assert restored_data.shape[1] == N_FEATURES
 
 
-def test_compute_jacobian(data):
+def test_compute_jacobian(data, pca):
     """Test compute_jacobian method."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
-    pca.fit(data)
     jac = pca.compute_jacobian(data)
+    assert jac.shape == (data.shape[0], N_COMPONENTS, data.shape[1])
+    shape = (len(data), 1, 1)
+    expectation = tile(pca.algo.components_, shape)
+    if pca.data_is_scaled:
+        coefficient = 1 / data.std(0)
+        expectation = expectation @ tile(diag(coefficient), shape)
+    assert allclose(jac, expectation)
 
-    assert jac.shape == (data.shape[0], n_components, data.shape[1])
-    assert allclose(jac, pca.algo.components_)
 
-
-def test_compute_jacobian_inverse(data):
+def test_compute_jacobian_inverse(data, pca):
     """Test compute_jacobian_inverse method."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
-    pca.fit(data)
-    jac_inv = pca.compute_jacobian_inverse(data)
+    transformed_data = pca.transform(data)
+    jac_inv = pca.compute_jacobian_inverse(transformed_data)
+    assert jac_inv.shape == (data.shape[0], data.shape[1], N_COMPONENTS)
+    shape = (len(data), 1, 1)
+    expectation = tile(pca.algo.components_.T, shape)
+    if pca.data_is_scaled:
+        coefficient = 1 / data.std(0)
+        expectation = tile(diag(1 / coefficient), shape) @ expectation
 
-    assert jac_inv.shape == (data.shape[0], data.shape[1], n_components)
-    assert allclose(jac_inv, pca.algo.components_.T)
+    assert allclose(jac_inv, expectation)
 
 
-def test_components(data):
+def test_components(pca):
     """Test transform."""
-    n_components = 3
-    pca = PCA(n_components=n_components)
-    pca.fit(data)
-    assert pca.components.shape[0] == data.shape[1]
-    assert pca.components.shape[1] == n_components
+    assert pca.components.shape[0] == N_FEATURES
+    assert pca.components.shape[1] == N_COMPONENTS
 
 
-def test_shape(data):
+def test_shape(data, pca):
     """Check the shapes of the data."""
-    pca = PCA(n_components=3)
-    pca.fit(data)
-    n, p = data.shape
-    q = pca.n_components
+    n = N_SAMPLES
+    p = N_FEATURES
+    q = N_COMPONENTS
     transformed_data = pca.transform(data)
     assert transformed_data.shape == (n, q)
     assert pca.inverse_transform(transformed_data).shape == (n, p)
@@ -131,3 +144,21 @@ def test_shape(data):
 
     assert pca.compute_jacobian(data[0]).shape == (q, p)
     assert pca.compute_jacobian_inverse(transformed_data[0]).shape == (p, q)
+
+
+def test_transformation_jacobian(pca):
+    """Check the Jacobian of the transformation."""
+    function = MDOFunction(pca.transform, "transform", jac=pca.compute_jacobian)
+    input_data = array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
+    function.check_grad(input_data, error_max=1e-7)
+    function.check_grad(input_data[::-1], error_max=1e-7)
+
+
+def test_inverse_transformation_jacobian(pca):
+    """Check the Jacobian of the inverse transformation."""
+    function = MDOFunction(
+        pca.inverse_transform, "inverse_transform", jac=pca.compute_jacobian_inverse
+    )
+    input_data = array([1.0, 2.0, 3.0])
+    function.check_grad(input_data, error_max=1e-7)
+    function.check_grad(input_data[::-1], error_max=1e-7)

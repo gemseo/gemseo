@@ -23,12 +23,12 @@ import pytest
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
-
+from gemseo.utils.testing.helpers import concretize_classes
 
 OPT_LIB_NAME = "ScipyOpt"
 
@@ -113,12 +113,12 @@ def test_is_algorithm_suited_has_ineq_constraints():
 def test_is_algorithm_suited_pbm_type():
     """Check is_algorithm_suited with unhandled problem type."""
     description = OptimizationAlgorithmDescription(
-        "foo", "bar", problem_type=OptimizationProblem.LINEAR_PB
+        "foo", "bar", problem_type=OptimizationProblem.ProblemType.LINEAR
     )
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.pb_type = problem.NON_LINEAR_PB
+    problem.pb_type = problem.ProblemType.NON_LINEAR
     assert not OptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         OptimizationLibrary._get_unsuitability_reason(description, problem)
@@ -154,7 +154,8 @@ def test_algorithm_handles_eqcstr_fail(lib, power):
 
 def test_optimization_algorithm():
     """Check the default settings of OptimizationAlgorithmDescription."""
-    lib = OptimizationLibrary()
+    with concretize_classes(OptimizationLibrary):
+        lib = OptimizationLibrary()
     lib.descriptions["new_algo"] = OptimizationAlgorithmDescription(
         algorithm_name="bar", internal_algorithm_name="foo"
     )

@@ -15,7 +15,7 @@
 Scalable models
 ===============
 
-.. automodule:: gemseo.problems.scalable.data_driven.api
+.. automodule:: gemseo.problems.scalable.data_driven
    :noindex:
 
 .. automodule:: gemseo.problems.scalable.data_driven.problem
@@ -58,8 +58,8 @@ Scalable models
     +sizes
     +build_model()
     +compute_bounds()
-    +inputs_names()
-    +outputs_names()
+    +input_names()
+    +output_names()
     +original_sizes()
     +scalable_function()
     +scalable_derivatives()

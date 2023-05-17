@@ -27,18 +27,18 @@ of a mixture of experts (MoE) and a random forest algorithm under different
 circumstances. We will consider two different datasets: A 1D function, and the
 Rosenbrock dataset (two inputs and one output).
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning import create_regression_model
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import hstack
 from numpy import linspace
 from numpy import meshgrid
@@ -47,13 +47,13 @@ from numpy import sin
 configure_logger()
 
 
-###############################################################################
+# %%
 # Test on 1D dataset
 # ------------------
 # In this section we create a dataset from an analytical expression of a
 # 1D function, and compare the errors of the two regression models.
 
-###############################################################################
+# %%
 # Create 1D dataset from expression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -69,12 +69,11 @@ y = data_gen(x)
 data = hstack((x[:, None], y[:, None]))
 variables = ["x", "y"]
 sizes = {"x": 1, "y": 1}
-groups = {"x": Dataset.INPUT_GROUP, "y": Dataset.OUTPUT_GROUP}
+groups = {"x": IODataset.INPUT_GROUP, "y": IODataset.OUTPUT_GROUP}
 
-dataset = Dataset("dataset_name")
-dataset.set_from_array(data, variables, sizes, groups)
+dataset = IODataset.from_array(data, variables, sizes, groups)
 
-###############################################################################
+# %%
 # Plot 1D data
 # ~~~~~~~~~~~~
 x_refined = linspace(0, 1, 500)
@@ -83,7 +82,7 @@ plt.plot(x_refined, y_refined)
 plt.scatter(x, y)
 plt.show()
 
-###############################################################################
+# %%
 # Create regression algorithms
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 moe = create_regression_model(
@@ -104,18 +103,18 @@ randfor = create_regression_model(
     n_estimators=50,
 )
 
-###############################################################################
+# %%
 # Compute measures (Mean Squared Error)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 measure_moe = MSEMeasure(moe)
 measure_randfor = MSEMeasure(randfor)
 
-###############################################################################
+# %%
 # Evaluate on training set directly (keyword: 'learn')
 # ****************************************************
 print("Learn:")
-print("Error MoE:", measure_moe.evaluate(method="learn"))
-print("Error Random Forest:", measure_randfor.evaluate(method="learn"))
+print("Error MoE:", measure_moe.evaluate_learn())
+print("Error Random Forest:", measure_randfor.evaluate_learn())
 
 plt.figure()
 plt.plot(x_refined, moe.predict(x_refined[:, None]).flatten(), label="MoE")
@@ -145,19 +144,19 @@ plt.legend()
 plt.ylim(2, 5)
 plt.show()
 
-###############################################################################
+# %%
 # Evaluate using cross validation (keyword: 'kfolds')
 # ***************************************************
 # In order to better consider the generalization error, perform a k-folds
 # cross validation algorithm. We also plot the predictions from the last
 # iteration of the algorithm.
 print("K-folds:")
-print("Error MoE:", measure_moe.evaluate("kfolds"))
-print("Error Random Forest:", measure_randfor.evaluate("kfolds"))
+print("Error MoE:", measure_moe.evaluate_kfolds())
+print("Error Random Forest:", measure_randfor.evaluate_kfolds())
 
 print("Loo:")
-print("Error MoE:", measure_moe.evaluate("loo"))
-print("Error Random Forest:", measure_randfor.evaluate("loo"))
+print("Error MoE:", measure_moe.evaluate_loo())
+print("Error Random Forest:", measure_randfor.evaluate_loo())
 
 plt.plot(x_refined, moe.predict(x_refined[:, None]).flatten(), label="MoE")
 plt.plot(
@@ -167,18 +166,18 @@ plt.scatter(x, y)
 plt.legend()
 plt.show()
 
-###############################################################################
+# %%
 # Test on 2D dataset (Rosenbrock)
 # -------------------------------
 # In this section, we load the Rosenbrock dataset, and compare the error
 # measures for the two regression models.
 
-###############################################################################
+# %%
 # Load dataset
 # ~~~~~~~~~~~~
-dataset = load_dataset("RosenbrockDataset", opt_naming=False)
-x = dataset.get_data_by_group(dataset.INPUT_GROUP)
-y = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
+x = dataset.input_dataset.to_numpy()
+y = dataset.output_dataset.to_numpy()
 Y = y.reshape((10, 10))
 
 refinement = 100
@@ -189,7 +188,7 @@ x_refined = hstack((x_1_refined[:, None], x_2_refined[:, None]))
 
 print(dataset)
 
-###############################################################################
+# %%
 # Create regression algorithms
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 moe = create_regression_model(
@@ -209,7 +208,7 @@ randfor = create_regression_model(
     n_estimators=200,
 )
 
-###############################################################################
+# %%
 # Compute measures (Mean Squared Error)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -217,21 +216,21 @@ measure_moe = MSEMeasure(moe)
 measure_randfor = MSEMeasure(randfor)
 
 print("Learn:")
-print("Error MoE:", measure_moe.evaluate(method="learn"))
-print("Error Random Forest:", measure_randfor.evaluate(method="learn"))
+print("Error MoE:", measure_moe.evaluate_learn())
+print("Error Random Forest:", measure_randfor.evaluate_learn())
 
 print("K-folds:")
-print("Error MoE:", measure_moe.evaluate("kfolds"))
-print("Error Random Forest:", measure_randfor.evaluate("kfolds"))
+print("Error MoE:", measure_moe.evaluate_kfolds())
+print("Error Random Forest:", measure_randfor.evaluate_kfolds())
 
-###############################################################################
+# %%
 # Plot data
 # ~~~~~~~~~
 plt.imshow(Y, interpolation="nearest")
 plt.colorbar()
 plt.show()
 
-###############################################################################
+# %%
 # Plot predictions
 # ~~~~~~~~~~~~~~~~
 moe.learn()
@@ -242,14 +241,14 @@ Y_pred_moe_1 = moe.predict_local_model(x_refined, 1).reshape((refinement, refine
 Y_pred_moe_2 = moe.predict_local_model(x_refined, 2).reshape((refinement, refinement))
 Y_pred_randfor = randfor.predict(x_refined).reshape((refinement, refinement))
 
-###############################################################################
+# %%
 # Plot mixture of experts predictions
 # ***********************************
 plt.imshow(Y_pred_moe)
 plt.colorbar()
 plt.show()
 
-###############################################################################
+# %%
 # Plot local models
 # ***********************************
 plt.figure()
@@ -267,7 +266,7 @@ plt.imshow(Y_pred_moe_2)
 plt.colorbar()
 plt.show()
 
-###############################################################################
+# %%
 # Plot random forest predictions
 # ******************************
 plt.imshow(Y_pred_randfor)

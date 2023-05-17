@@ -32,6 +32,8 @@ from numpy import full
 from numpy import ndarray
 from numpy import vstack
 
+from gemseo.utils.matplotlib_figure import FigSizeType
+
 
 def compute_pareto_optimal_points(
     obj_values: ndarray,
@@ -194,7 +196,7 @@ class ParetoPlotBiObjective:
 def generate_pareto_plots(
     obj_values: ndarray,
     obj_names: Sequence[str],
-    fig_size: tuple[float, float] = (10.0, 10.0),
+    fig_size: FigSizeType = (10.0, 10.0),
     non_feasible_samples: ndarray | None = None,
     show_non_feasible: bool = True,
 ) -> matplotlib.figure.Figure:

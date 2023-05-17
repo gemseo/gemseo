@@ -82,7 +82,7 @@ class _OATSensitivity(MDODiscipline):
         parameter_space: DesignSpace,
         step: float,
     ) -> None:
-        """.. # noqa: D107 D205 D212 D415
+        """
         Args:
             scenario: The scenario for the analysis.
             parameter_space: A parameter space.
@@ -92,22 +92,22 @@ class _OATSensitivity(MDODiscipline):
         Raises:
             ValueError: If the relative variation step is lower than or equal to 0
                 or greater than or equal to 0.5.
-        """
+        """  # noqa: D205, D212, D415
         if not 0 < step < 0.5:
             raise ValueError(
                 "Relative variation step must be "
                 f"strictly comprised between 0 and 0.5; got {step}."
             )
         super().__init__()
-        input_names = parameter_space.variables_names
-        self.input_grammar.update(input_names)
+        input_names = parameter_space.variable_names
+        self.input_grammar.update_from_names(input_names)
         self.__output_names = get_all_outputs(scenario.disciplines)
         output_names = [
             self.get_fd_name(input_name, output_name)
             for output_name in self.__output_names
             for input_name in input_names
         ]
-        self.output_grammar.update(output_names)
+        self.output_grammar.update_from_names(output_names)
 
         # The scenario is evaluated many times, this setting
         # prevents conflicts between runs.

@@ -26,34 +26,34 @@ API
 Here are some examples of the machine learning API
 applied to clustering models.
 """
-###############################################################################
+# %%
 # Import
 # ------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_clustering_model
-from gemseo.mlearning.api import get_clustering_models
-from gemseo.mlearning.api import get_clustering_options
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.mlearning import create_clustering_model
+from gemseo.mlearning import get_clustering_models
+from gemseo.mlearning import get_clustering_options
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Get available clustering models
 # -------------------------------
 print(get_clustering_models())
 
-###############################################################################
+# %%
 # Get clustering model options
 # ----------------------------
 print(get_clustering_options("GaussianMixture"))
 
-###############################################################################
+# %%
 # Create clustering model
 # -----------------------
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
 model = create_clustering_model("KMeans", data=iris, n_clusters=3)
 model.learn()

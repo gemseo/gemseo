@@ -24,8 +24,8 @@ Boxplot
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.core.dataset import Dataset
+from gemseo import configure_logger
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.post.dataset.boxplot import Boxplot
 from numpy import hstack
 from numpy import linspace
@@ -33,24 +33,20 @@ from numpy import linspace
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 inputs = linspace(-1, 1, 100)[:, None]
 
-dataset = Dataset(name="Foo")
-dataset.add_variable("y1", inputs**2, "outputs", cache_as_input=False)
-dataset.add_variable(
-    "y2", hstack((inputs**3, inputs**4)), "outputs", cache_as_input=False
-)
+dataset = IODataset(dataset_name="Foo")
+dataset.add_output_variable("y1", inputs**2)
+dataset.add_output_variable("y2", hstack((inputs**3, inputs**4)))
 
-other_dataset = Dataset(name="Bar")
-other_dataset.add_variable("y1", -(inputs**2), "outputs", cache_as_input=False)
-other_dataset.add_variable(
-    "y2", hstack((-(inputs**3), -(inputs**4))), "outputs", cache_as_input=False
-)
+other_dataset = IODataset(dataset_name="Bar")
+other_dataset.add_output_variable("y1", -(inputs**2))
+other_dataset.add_output_variable("y2", hstack((-(inputs**3), -(inputs**4))))
 
-############################################################################
+# %%
 # Plot y1 and y2
 # --------------
 # We can use the :class:`.Boxplot` plot.
@@ -60,7 +56,7 @@ plot.ylabel = "Values"
 plot.title = "Standard boxplots"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with centering
 # -------------------
 # We can center the data:
@@ -68,7 +64,7 @@ plot = Boxplot(dataset, center=True)
 plot.title = "With centering"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with scaling
 # -----------------
 # We can scale the data (normalization with the standard deviation):
@@ -76,7 +72,7 @@ plot = Boxplot(dataset, scale=True)
 plot.title = "With scaling"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot without outliers
 # ---------------------
 # We can remove the outliers:
@@ -84,7 +80,7 @@ plot = Boxplot(dataset, add_outliers=False)
 plot.title = "Without outliers"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with confidence intervals
 # ------------------------------
 # We can add confidence intervals for the median:
@@ -92,7 +88,7 @@ plot = Boxplot(dataset, add_confidence_interval=True)
 plot.title = "Confidence intervals"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot horizontally
 # -----------------
 # We can use horizontal bars:
@@ -100,7 +96,7 @@ plot = Boxplot(dataset, use_vertical_bars=False)
 plot.title = "Horizontal bars"
 plot.execute(save=False, show=True)
 
-############################################################################
+# %%
 # Plot with other datasets
 # ------------------------
 # We can add a dataset:

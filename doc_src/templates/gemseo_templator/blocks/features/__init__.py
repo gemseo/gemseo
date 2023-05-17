@@ -19,6 +19,7 @@ from .formulation import block as formulation
 from .linear_solver import block as linear_solver
 from .mda import block as mda
 from .mlearning import block as mlearning
+from .ode import block as ode
 from .opt import block as opt
 from .post import block as post
 from .scalable import block as scalable
@@ -38,4 +39,5 @@ blocks = [
     scalable,
     mlearning,
     uncertainty,
+    ode,
 ]

@@ -18,12 +18,11 @@ from pathlib import Path
 
 import pytest
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 
 
 def test_str():
     """Verify the string representation of a FileManager."""
-    manager = FilePathManager(FileType.FIGURE)
+    manager = FilePathManager(FilePathManager.FileType.FIGURE)
     expected = [
         "FilePathManager",
         "   File type: FIGURE",
@@ -37,7 +36,7 @@ def test_str():
 @pytest.fixture(scope="module")
 def file_path_manager() -> FilePathManager:
     """A manager of figure file paths."""
-    return FilePathManager(FileType.FIGURE, default_directory=Path("."))
+    return FilePathManager(FilePathManager.FileType.FIGURE, default_directory=Path("."))
 
 
 @pytest.mark.parametrize(

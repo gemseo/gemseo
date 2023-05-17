@@ -17,7 +17,9 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from numpy import eye
+from numpy import ndarray
+from scipy.sparse import csc_array
+from scipy.sparse import eye
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -38,7 +40,7 @@ class Splitter(MDODiscipline):
         self,
         input_name: str,
         output_names_to_input_indices: dict[str, Iterable[int] | int],
-    ):
+    ) -> None:
         """
         Args:
             input_name: The name of the input to split.
@@ -47,13 +49,15 @@ class Splitter(MDODiscipline):
         """  # noqa: D205, D212, D415
         self.__input_name = input_name
         for output_name, input_indices in output_names_to_input_indices.items():
-            if isinstance(input_indices, int):
+            if not isinstance(input_indices, ndarray) and not isinstance(
+                input_indices, list
+            ):
                 output_names_to_input_indices[output_name] = [input_indices]
         self.__slicing_structure = output_names_to_input_indices
 
         super().__init__()
-        self.input_grammar.update([input_name])
-        self.output_grammar.update(output_names_to_input_indices.keys())
+        self.input_grammar.update_from_names([input_name])
+        self.output_grammar.update_from_names(output_names_to_input_indices.keys())
 
     def _run(self) -> None:
         input_data = self.local_data[self.__input_name]
@@ -67,7 +71,7 @@ class Splitter(MDODiscipline):
     ) -> None:
         self._init_jacobian(with_zeros=True)
         self.jac = {}
-        identity = eye(self.local_data[self.__input_name].size)
+        identity = csc_array(eye(self.local_data[self.__input_name].size))
         for output_name, input_indices in self.__slicing_structure.items():
             self.jac[output_name] = {}
             self.jac[output_name][self.__input_name] = identity[input_indices, :]

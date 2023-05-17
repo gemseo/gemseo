@@ -62,7 +62,7 @@ class MDOScenario(Scenario):
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
@@ -108,12 +108,16 @@ class MDOScenario(Scenario):
         )
         return self.optimization_result
 
-    def _init_algo_factory(self):
-        self._algo_factory = OptimizersFactory()
+    def _init_algo_factory(self) -> None:
+        self._algo_factory = OptimizersFactory(use_cache=True)
 
-    def _update_grammar_input(self) -> None:
-        self.input_grammar.update(dict(algo=str, max_iter=int, algo_options=dict))
-        self.input_grammar.required_names.remove("algo_options")
+    def _update_input_grammar(self) -> None:
+        super()._update_input_grammar()
+        if self.grammar_type == self.GrammarType.SIMPLE:
+            self.input_grammar.update_from_types(
+                {"max_iter": int, "algo_options": dict}
+            )
+            self.input_grammar.required_names.remove("algo_options")
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
         super().__setstate__(state)

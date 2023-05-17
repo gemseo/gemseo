@@ -22,7 +22,7 @@ import re
 
 import pytest
 from gemseo.post.para_coord import ParallelCoordinates
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 
 

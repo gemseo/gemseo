@@ -19,13 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create regression models.
 
-This module contains a factory to instantiate a :class:`.MLRegressionAlgo` from its class
-name. It also provides the available regression models and allows testing if a regression
-model type is available.
+This module contains a factory to instantiate a :class:`.MLRegressionAlgo` from its
+class name. It also provides the available regression models and allows testing if a
+regression model type is available.
 """
 from __future__ import annotations
 
-from gemseo.core.factory import Factory
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
@@ -40,6 +39,5 @@ class RegressionModelFactory(MLAlgoFactory):
     starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.factory = Factory(MLRegressionAlgo, ("gemseo.mlearning.regression",))
+    _CLASS = MLRegressionAlgo
+    _MODULE_NAMES = ("gemseo.mlearning.regression",)

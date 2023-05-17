@@ -53,7 +53,9 @@ def test_execute(discipline, input_values):
 
 def test_gradient(discipline, input_values):
     """Check the gradient of the discipline."""
-    gradient = discipline.linearize(input_data=input_values[0], force_all=True)["y"]
+    gradient = discipline.linearize(
+        input_data=input_values[0], compute_all_jacobians=True
+    )["y"]
     assert_equal(
         array([gradient[name][0, 0] for name in discipline.input_grammar.names]),
         compute_gradient(input_values[1]),

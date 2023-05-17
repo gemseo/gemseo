@@ -19,14 +19,14 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from numpy import array
 from numpy import newaxis
 
 
 def test_notimplementederror():
-    dataset = Dataset()
+    dataset = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
     dataset.add_variable("x", (val * 2)[:, newaxis], dataset.INPUT_GROUP)
     dataset.add_variable("y", val[:, newaxis], dataset.INPUT_GROUP)

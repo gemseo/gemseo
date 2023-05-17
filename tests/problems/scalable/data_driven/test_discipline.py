@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from numpy import array
 from numpy import newaxis
@@ -28,7 +28,7 @@ from numpy import newaxis
 
 @pytest.fixture
 def dataset():
-    data = Dataset()
+    data = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
     data.add_variable("x", (val * 2)[:, newaxis], data.INPUT_GROUP)
     data.add_variable("y", val[:, newaxis], data.INPUT_GROUP)

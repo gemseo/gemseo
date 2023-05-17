@@ -36,7 +36,8 @@ def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum):
         == is_optimum
     )
     assert (
-        problem.database.get_f_of_x(problem.KKT_RESIDUAL_NORM, design_point) is not None
+        problem.database.get_function_value(problem.KKT_RESIDUAL_NORM, design_point)
+        is not None
     )
 
 
@@ -57,7 +58,8 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum):
         == is_optimum
     )
     assert (
-        problem.database.get_f_of_x(problem.KKT_RESIDUAL_NORM, design_point) is not None
+        problem.database.get_function_value(problem.KKT_RESIDUAL_NORM, design_point)
+        is not None
     )
 
 
@@ -72,8 +74,8 @@ def test_kkt_norm_correctly_stored(algorithm, problem):
         kkt_tol_abs=1e-3,
         kkt_tol_rel=1e-3,
     )
-    kkt_hist = problem.database.get_func_history(problem.KKT_RESIDUAL_NORM)
-    obj_grad_hist = problem.database.get_func_grad_history(problem.objective.name)
-    obj_hist = problem.database.get_func_history(problem.objective.name)
+    kkt_hist = problem.database.get_function_history(problem.KKT_RESIDUAL_NORM)
+    obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
+    obj_hist = problem.database.get_function_history(problem.objective.name)
     assert len(kkt_hist) == obj_grad_hist.shape[0]
     assert len(obj_hist) >= len(kkt_hist)

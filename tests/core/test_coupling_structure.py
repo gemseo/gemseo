@@ -23,7 +23,7 @@ from os.path import exists
 from random import shuffle
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -39,7 +39,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 
 from .test_dependency_graph import create_disciplines_from_desc
@@ -112,10 +112,10 @@ class TestCouplingStructure(unittest.TestCase):
     def test_n2_many_io(self):
         a = MDODiscipline("a")
         b = MDODiscipline("b")
-        a.input_grammar.update(["i" + str(i) for i in range(30)])
-        a.output_grammar.update(["o" + str(i) for i in range(30)])
-        b.output_grammar.update(["i" + str(i) for i in range(30)])
-        b.input_grammar.update(["o" + str(i) for i in range(30)])
+        a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
+        a.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
+        b.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
+        b.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
 
         cpl = MDOCouplingStructure([a, b])
         cpl.plot_n2_chart()
@@ -135,8 +135,8 @@ class TestCouplingStructure(unittest.TestCase):
 class SelfCoupledDisc(MDODiscipline):
     def __init__(self):
         MDODiscipline.__init__(self)
-        self.input_grammar.update(["y"])
-        self.output_grammar.update(["y"])
+        self.input_grammar.update_from_names(["y"])
+        self.output_grammar.update_from_names(["y"])
         self.default_inputs["y"] = array([0.2])
 
     def _run(self):

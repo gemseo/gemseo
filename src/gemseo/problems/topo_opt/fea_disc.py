@@ -24,7 +24,6 @@ import scipy
 from numpy import arange
 from numpy import array
 from numpy import atleast_2d
-from numpy import dot
 from numpy import kron
 from numpy import newaxis
 from numpy import ones
@@ -93,8 +92,8 @@ class FininiteElementAnalysis(MDODiscipline):
         self.fixednodes = fixed_nodes
         self.fixed_dir = fixed_dir
         self.prepare_fea()
-        self.input_grammar.update(["E"])
-        self.output_grammar.update(["compliance"])
+        self.input_grammar.update_from_names(["E"])
+        self.output_grammar.update_from_names(["compliance"])
         self.default_inputs = {"E": ones(self.N_elements)}
 
     def _run(self) -> None:
@@ -113,7 +112,7 @@ class FininiteElementAnalysis(MDODiscipline):
         # Objective function and sensitivity
         ce = ones(self.N_elements)
         ce[:] = (
-            dot(u_vec[self.edofMat].reshape(self.N_elements, 8), self.KE)
+            (u_vec[self.edofMat].reshape(self.N_elements, 8) @ self.KE)
             * u_vec[self.edofMat].reshape(self.N_elements, 8)
         ).sum(1)
         self.local_data["compliance"] = array([(em * ce).sum()])

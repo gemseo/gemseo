@@ -20,8 +20,7 @@ from __future__ import annotations
 
 import pytest
 from gemseo.post.basic_history import BasicHistory
-from gemseo.utils.testing import image_comparison
-
+from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
     "standardized": (True, ["BasicHistory_standardized"]),
@@ -42,4 +41,12 @@ def test_common_scenario(
     """Check BasicHistory with objective, standardized or not."""
     opt = BasicHistory(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)
+
+
+@pytest.mark.parametrize("baseline_images", [("BasicHistory_many_iterations",)])
+@image_comparison(None)
+def test_large_common_scenario(baseline_images, large_common_problem, pyplot_close_all):
+    """Check BasicHistory with a common problem and many iterations."""
+    opt = BasicHistory(large_common_problem)
     opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)

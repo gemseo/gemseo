@@ -37,6 +37,7 @@ from matplotlib.figure import Figure
 from matplotlib.text import Text
 
 from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
@@ -193,8 +194,8 @@ class MDOCouplingStructure:
     def _compute_strong_couplings(self) -> None:
         """Determine the strong couplings.
 
-        These are the outputs of the strongly coupled disciplines that are also inputs of
-        the strongly coupled disciplines.
+        These are the outputs of the strongly coupled disciplines that are also inputs
+        of the strongly coupled disciplines.
         """
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline
@@ -321,7 +322,7 @@ class MDOCouplingStructure:
         show_data_names: True,
         save: bool,
         show: bool,
-        fig_size: tuple[float, float],
+        fig_size: FigSizeType,
     ) -> None:
         """Draw the N2 chart for the disciplines.
 
@@ -398,8 +399,8 @@ class MDOCouplingStructure:
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
-        fig_size: tuple[float, float] = (15.0, 10.0),
-        open_browser: bool = False,
+        fig_size: FigSizeType = (15.0, 10.0),
+        show_html: bool = False,
     ) -> None:
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
 
@@ -432,7 +433,7 @@ class MDOCouplingStructure:
             save: Whether to save the static N2 chart.
             show: Whether to display the static N2 chart on screen.
             fig_size: The width and height of the static N2 chart in inches.
-            open_browser: Whether to display the interactive N2 chart in a browser.
+            show_html: Whether to display the interactive N2 chart in a browser.
 
         Raises:
             ValueError: When there is less than two disciplines.
@@ -446,7 +447,7 @@ class MDOCouplingStructure:
             for discipline in self.disciplines
             if self.is_self_coupled(discipline)
         ]
-        N2HTML(html_file_path, open_browser).from_graph(
+        N2HTML(html_file_path, show_html).from_graph(
             self.graph, self_coupled_discipline
         )
 
@@ -505,14 +506,14 @@ class MDOCouplingStructure:
             source_position = self.disciplines.index(source)
             destination_position = self.disciplines.index(destination)
             if show_data_names:
-                variables_names = plt.text(
+                variable_names = plt.text(
                     destination_position + 0.5,
                     n_disciplines - source_position - 0.5,
                     "\n".join(variables),
                     verticalalignment="center",
                     horizontalalignment="center",
                 )
-                self._check_size_text(variables_names, fig, n_disciplines)
+                self._check_size_text(variable_names, fig, n_disciplines)
             else:
                 circle = plt.Circle(
                     (

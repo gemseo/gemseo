@@ -45,16 +45,12 @@ class LinearCombination(MDODiscipline):
 
     Example:
         >>> discipline = LinearCombination(["alpha", "beta", "gamma"], "delta",
-        input_coefficients={"beta": 2.})
-        >>> input_data = {"alpha": array([1.0]), "beta": array([2.0])}
+                input_coefficients={"alpha": 1.,"beta": 2.,"gamma": 3.})
+        >>> input_data = {"alpha": array([1.0]), "beta": array([1.0]),
+                "gamma": array([1.0])}
         >>> discipline.execute(input_data)
-        >>> delta = discipline.local_data["delta"]  # delta = array([5.])
+        >>> delta = discipline.local_data["delta"]  # delta = array([6.])
     """
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_LinearCombination__offset",
-        "_LinearCombination__coefficients",
-        "_LinearCombination__output_name",
-    )
 
     def __init__(
         self,
@@ -62,7 +58,7 @@ class LinearCombination(MDODiscipline):
         output_name: str,
         input_coefficients: dict[str, float] = None,
         offset: float = 0.0,
-    ):
+    ) -> None:
         """
         Args:
             input_names: The names of input variables.
@@ -75,8 +71,8 @@ class LinearCombination(MDODiscipline):
         self.__offset = offset
         self.__coefficients = input_coefficients
         self.__output_name = output_name
-        self.input_grammar.update(list(input_names))
-        self.output_grammar.update([output_name])
+        self.input_grammar.update_from_names(input_names)
+        self.output_grammar.update_from_names([output_name])
         self.__coefficients = {name: 1.0 for name in self.get_input_data_names()}
         if input_coefficients:
             self.__coefficients.update(input_coefficients)

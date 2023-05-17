@@ -107,15 +107,13 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 
 
-def get_design_space(to_complex=True):
+def get_design_space(to_complex: bool = True) -> DesignSpace:
     """Read the design space file.
 
     Args:
         to_complex: Whether the current design point is a complex vector.
     """
-    ds_read = DesignSpace.read_from_txt(
-        Path(__file__).parent / "propane_design_space.txt"
-    )
+    ds_read = DesignSpace.from_csv(Path(__file__).parent / "propane_design_space.csv")
     if to_complex:
         ds_read.to_complex()
     return ds_read
@@ -142,7 +140,7 @@ class PropaneReaction(MDODiscipline):
             "y_2": ones(2, dtype=complex128),
             "y_3": ones(3, dtype=complex128),
         }
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         inputs = ["y_1", "y_2", "y_3", "x_shared"]
@@ -185,7 +183,7 @@ class PropaneReaction(MDODiscipline):
         )
 
     @classmethod
-    def f_6(cls, x_shared, y_1, y_3):
+    def f_6(cls, x_shared, y_1, y_3) -> complex:
         """Compute the second term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -201,7 +199,7 @@ class PropaneReaction(MDODiscipline):
         return sqrt(y_1[0] * y_1[1]) - sqrt(40.0 * x_shared[0] / y_3[2]) * x_shared[2]
 
     @classmethod
-    def f_7(cls, x_shared, y_1, y_3):
+    def f_7(cls, x_shared, y_1, y_3) -> complex:
         """Compute the third term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -242,7 +240,7 @@ class PropaneComb1(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
@@ -264,7 +262,7 @@ class PropaneComb1(MDODiscipline):
         return -x_shared[0] * (x_shared[2] + x_shared[3] - 8.0) / 6.0
 
     @classmethod
-    def compute_y1(cls, x_shared):
+    def compute_y1(cls, x_shared) -> float:
         """Solve the second coupling equation in functional form.
 
         Args:
@@ -285,7 +283,7 @@ class PropaneComb2(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
@@ -331,7 +329,7 @@ class PropaneComb3(MDODiscipline):
     def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_shared = self.get_inputs_by_name("x_shared")
@@ -342,7 +340,7 @@ class PropaneComb3(MDODiscipline):
         self.store_local_data(y_3=y_3_out)
 
     @classmethod
-    def compute_y4(cls, x_shared):
+    def compute_y4(cls, x_shared) -> float:
         """Solve the fifth coupling equation in functional form.
 
         Args:
@@ -369,7 +367,7 @@ class PropaneComb3(MDODiscipline):
         return y_5
 
     @classmethod
-    def compute_y6(cls, x_shared):
+    def compute_y6(cls, x_shared) -> float:
         """Solve the seventh coupling equation in functional form.
 
         Args:

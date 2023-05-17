@@ -99,7 +99,7 @@ def test_execute_range_sg():
     )
     sr.execute(indata)
     sr.get_local_data_by_name(sr.get_output_data_names())
-    sr.linearize(indata, force_all=True)
+    sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_weight_sg():
@@ -109,7 +109,7 @@ def test_execute_weight_sg():
     )
     sr.execute(indata)
     _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
-    sr.linearize(indata, force_all=True)
+    sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_power_sg():
@@ -119,7 +119,7 @@ def test_execute_power_sg():
     )
     sr.execute(indata)
     _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
-    sr.linearize(indata, force_all=True)
+    sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_aerodynamics_sg():
@@ -129,4 +129,4 @@ def test_execute_aerodynamics_sg():
     )
     sr.execute(indata)
     _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
-    sr.linearize(indata, force_all=True)
+    sr.linearize(indata, compute_all_jacobians=True)

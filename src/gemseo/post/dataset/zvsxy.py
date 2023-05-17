@@ -33,8 +33,9 @@ import matplotlib.tri as mtri
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import VariableType
 
 
 class ZvsXY(DatasetPlot):
@@ -43,25 +44,25 @@ class ZvsXY(DatasetPlot):
     def __init__(
         self,
         dataset: Dataset,
-        x: str,
-        y: str,
-        z: str,
-        x_comp: int = 0,
-        y_comp: int = 0,
-        z_comp: int = 0,
+        x: VariableType,
+        y: VariableType,
+        z: VariableType,
         add_points: bool = False,
         fill: bool = True,
-        levels: int | Sequence[int] = None,
-        other_datasets: Iterable[Dataset] = None,
+        levels: int | Sequence[int] | None = None,
+        other_datasets: Iterable[Dataset] | None = None,
     ) -> None:
         """
         Args:
-            x: The name of the variable on the x-axis.
-            y: The name of the variable on the y-axis.
-            z: The name of the variable on the z-axis.
-            x_comp: The component of x.
-            y_comp: The component of y.
-            z_comp: The component of z.
+            x: The name of the variable on the x-axis,
+                with its optional component if not ``0``,
+                e.g. ``("foo", 3)`` for the fourth component of the variable ``"foo"``.
+            y: The name of the variable on the y-axis,
+                with its optional component if not ``0``,
+                e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
+            z: The name of the variable on the z-axis,
+                with its optional component if not ``0``,
+                e.g. ``("baz", 3)`` for the fourth component of the variable ``"baz"``.
             add_points: Whether to display the entries of the dataset as points
                 above the surface.
             fill: Whether to generate a filled contour plot.
@@ -73,12 +74,9 @@ class ZvsXY(DatasetPlot):
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset=dataset,
-            x=x,
-            y=y,
-            z=z,
-            x_comp=x_comp,
-            y_comp=y_comp,
-            z_comp=z_comp,
+            x=self._force_variable_to_tuple(x),
+            y=self._force_variable_to_tuple(y),
+            z=self._force_variable_to_tuple(z),
             add_points=add_points,
             other_datasets=other_datasets,
             fill=fill,
@@ -91,22 +89,19 @@ class ZvsXY(DatasetPlot):
         axes: None | Axes = None,
     ) -> list[Figure]:
         other_datasets = self._param.other_datasets
-        x = self._param.x
-        y = self._param.y
-        z = self._param.z
-        x_comp = self._param.x_comp
-        y_comp = self._param.y_comp
-        z_comp = self._param.z_comp
-        n_series = 1
+        x, x_comp = self._param.x
+        y, y_comp = self._param.y
+        z, z_comp = self._param.z
 
+        n_series = 1
         if other_datasets:
             n_series += len(other_datasets)
 
         self._set_color(n_series)
 
-        x_data = self.dataset[x][:, x_comp]
-        y_data = self.dataset[y][:, y_comp]
-        z_data = self.dataset[z][:, z_comp]
+        x_data = self.dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
+        y_data = self.dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
+        z_data = self.dataset.get_view(variable_names=z).to_numpy()[:, z_comp]
 
         fig, axes = self._get_figure_and_axes(fig, axes)
 
@@ -128,18 +123,24 @@ class ZvsXY(DatasetPlot):
 
         if other_datasets:
             for index, dataset in enumerate(other_datasets):
-                x_data = dataset[x][:, x_comp]
-                y_data = dataset[y][:, y_comp]
+                x_data = dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
+                y_data = dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
                 axes.scatter(x_data, y_data, color=self.color[index + 1])
 
         if not self.xlabel:
-            self.xlabel = self._get_component_name(x, x_comp, self.dataset.sizes)
+            self.xlabel = self._get_component_name(
+                x, x_comp, self.dataset.variable_names_to_n_components
+            )
 
         if not self.ylabel:
-            self.ylabel = self._get_component_name(y, y_comp, self.dataset.sizes)
+            self.ylabel = self._get_component_name(
+                y, y_comp, self.dataset.variable_names_to_n_components
+            )
 
         if not self.zlabel:
-            self.zlabel = self._get_component_name(z, z_comp, self.dataset.sizes)
+            self.zlabel = self._get_component_name(
+                z, z_comp, self.dataset.variable_names_to_n_components
+            )
 
         if not self.title:
             self.title = self.zlabel

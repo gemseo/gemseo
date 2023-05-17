@@ -16,13 +16,15 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An analytical problem to test the non-early termination of optimization algorithms."""
+"""An analytical problem to test the non-early termination of optimization
+algorithms."""
 from __future__ import annotations
+
+from typing import Final
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.python_compatibility import Final
 from numpy import array
 from numpy import ndarray
 from numpy import zeros
@@ -31,8 +33,8 @@ from numpy import zeros
 class Constant(OptimizationProblem):
     """A Toy analytical :class:`.OptimizationProblem`.
 
-    It is currently used to test the premature termination of some optimization algorithms,
-    when the criterion n_stop_crit_x is not properly set (see bug #307).
+    It is currently used to test the premature termination of some optimization
+    algorithms, when the criterion n_stop_crit_x is not properly set (see bug #307).
 
     The objective to minimize is :math:`x`.
     """
@@ -53,7 +55,7 @@ class Constant(OptimizationProblem):
             name="constant",
             f_type="obj",
             jac=self.__compute_constant_jac,
-            args=["x"],
+            input_names=["x"],
         )
 
     def __compute_constant(self, x_dv: ndarray) -> ndarray:

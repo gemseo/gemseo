@@ -20,30 +20,21 @@
 """Derivation modes for the GEMSEO processes."""
 from __future__ import annotations
 
-DIRECT_MODE = "direct"
-"""The direct Jacobian accumulation, chain rule from inputs to outputs, or derivation of
-an MDA that solves one system per input."""
-
-REVERSE_MODE = "reverse"
-"""The reverse Jacobian accumulation, chain rule from outputs to inputs."""
-
-ADJOINT_MODE = "adjoint"
-"""The adjoint resolution mode for MDAs, solves one system per output."""
-
-AUTO_MODE = "auto"
-"""Automatic switch between direct, reverse or adjoint depending on data sizes."""
+from strenum import StrEnum
 
 
-COMPLEX_STEP = "complex_step"
-"""The complex step method used to approximate the Jacobians by perturbing each variable
-with a small complex number."""
+class DerivationMode(StrEnum):
+    """The derivation modes."""
 
-FINITE_DIFFERENCES = "finite_differences"
-"""The finite differences method used to approximate the Jacobians by perturbing each
-variable with a small real number."""
+    DIRECT = "direct"
+    """The direct Jacobian accumulation, chain rule from inputs to outputs, or
+    derivation of an MDA that solves one system per input."""
 
-AVAILABLE_MODES = (DIRECT_MODE, ADJOINT_MODE, AUTO_MODE, REVERSE_MODE)
-"""All possible derivation modes."""
+    REVERSE = "reverse"
+    """The reverse Jacobian accumulation, chain rule from outputs to inputs."""
 
-AVAILABLE_APPROX_MODES = (COMPLEX_STEP, FINITE_DIFFERENCES)
-"""The approximation derivation modes."""
+    ADJOINT = "adjoint"
+    """The adjoint resolution mode for MDAs, solves one system per output."""
+
+    AUTO = "auto"
+    """Automatic switch between direct, reverse or adjoint depending on data sizes."""

@@ -22,9 +22,8 @@ from __future__ import annotations
 from unittest import mock
 
 import pytest
-from gemseo.mlearning.transform.transformer import Transformer
-from gemseo.utils.pytest_conftest import concretize_classes
-from gemseo.utils.python_compatibility import get_mock_method_call_args
+from gemseo.mlearning.transformers.transformer import Transformer
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import ndarray
@@ -76,4 +75,4 @@ def test_fit_shape(data):
         with mock.patch.object(transformer, "_fit") as mock_method:
             transformer.fit(data)
 
-        assert get_mock_method_call_args(mock_method)[0].shape == (3, 1)
+        assert mock_method.call_args.args[0].shape == (3, 1)

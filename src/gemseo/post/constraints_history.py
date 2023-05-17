@@ -23,7 +23,6 @@ from math import ceil
 from typing import Sequence
 
 from matplotlib import pyplot
-from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
 from numpy import arange
 from numpy import atleast_2d
@@ -43,18 +42,25 @@ from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 
 class ConstraintsHistory(OptPostProcessor):
-    """A matrix of constraint history plots.
+    r"""A matrix of constraint history plots.
 
     A blue line represents the values of a constraint w.r.t. the iterations.
 
-    A background color indicates
-    whether the constraint is satisfied (green), active (white) or violated (red).
+    A background color indicates whether the constraint is satisfied (green), active
+    (white) or violated (red).
 
-    A vertical black line indicates the last iteration (or pseudo-iteration)
-    where the constraint is (or should be) active.
+    An horizontal black line indicates the value for which an inequality constraint is
+    active or an equality constraint is satisfied, namely :math:`0`. An horizontal black
+    dashed line indicates the value below which an inequality constraint is satisfied
+    *with a tolerance level*, namely :math:`\varepsilon`.
+
+    For an equality constraint, the horizontal dashed black lines indicate the values
+    between which the constraint is satisfied *with a tolerance level*, namely
+    :math:`-\varepsilon` and :math:`\varepsilon`.
+
+    A vertical black line indicates the last iteration (or pseudo-iteration) where the
+    constraint is (or should be) active.
     """
-
-    DEFAULT_FIG_SIZE = (11.0, 11.0)
 
     def __init__(self, opt_problem: OptimizationProblem) -> None:  # noqa:D107
         super().__init__(opt_problem)
@@ -88,7 +94,7 @@ class ConstraintsHistory(OptPostProcessor):
 
         constraint_names = self.opt_problem.get_function_names(constraint_names)
         constraint_histories, constraint_names, _ = self.database.get_history_array(
-            constraint_names, add_dv=False
+            function_names=constraint_names, with_x_vect=False
         )
 
         # harmonization of tables format because constraints can be vectorial
@@ -112,24 +118,32 @@ class ConstraintsHistory(OptPostProcessor):
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)
 
         iterations = arange(len(constraint_histories))
+        n_iterations = len(iterations)
         eq_constraint_names = [f.name for f in self.opt_problem.get_eq_constraints()]
         # for each subplot
         for constraint_history, constraint_name, axe in zip(
             constraint_histories.T, constraint_names, axes.ravel()
         ):
-            f_name = self.opt_problem.database.retrieve_variable_name(constraint_name)
-            if f_name in eq_constraint_names:
+            f_name = constraint_name.split("[")[0]
+            is_eq_constraint = f_name in eq_constraint_names
+            if is_eq_constraint:
                 cmap = self.eq_cstr_cmap
                 constraint_type = "equality"
+                tolerance = self.opt_problem.eq_tolerance
             else:
                 cmap = self.ineq_cstr_cmap
                 constraint_type = "inequality"
+                tolerance = self.opt_problem.ineq_tolerance
 
             # prepare the graph
             axe.grid(True)
             axe.set_title(f"{constraint_name} ({constraint_type})")
-            axe.xaxis.set_major_locator(MaxNLocator(integer=True))
-            axe.axhline(0.0, color="k", linewidth=2)
+            axe.set_xticks([i for i in range(n_iterations)])
+            axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
+            axe.axhline(tolerance, color="k", linestyle="--")
+            axe.axhline(0.0, color="k")
+            if is_eq_constraint:
+                axe.axhline(-tolerance, color="k", linestyle="--")
 
             # Add line and points
             axe.plot(iterations, constraint_history, linestyle=line_style)
@@ -138,12 +152,14 @@ class ConstraintsHistory(OptPostProcessor):
 
             # Plot color bars
             maximum = np_max(np_abs(constraint_history))
+            margin = 2 * maximum * 0.05
             axe.imshow(
                 atleast_2d(constraint_history),
                 cmap=cmap,
                 interpolation="nearest",
                 aspect="auto",
                 norm=SymLogNorm(linthresh=1.0, vmin=-maximum, vmax=maximum),
+                extent=[-0.5, n_iterations - 0.5, -maximum - margin, maximum + margin],
                 alpha=0.6,
             )
 
@@ -162,10 +178,6 @@ class ConstraintsHistory(OptPostProcessor):
                     constraint_values = flip(constraint_values)
                     iteration_values = flip(iteration_values)
 
-                axe.axvline(
-                    interp(0.0, constraint_values, iteration_values),
-                    color="k",
-                    linewidth=2,
-                )
+                axe.axvline(interp(0.0, constraint_values, iteration_values), color="k")
 
         self._add_figure(fig)

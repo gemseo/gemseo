@@ -17,25 +17,31 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""scipy.optimize global optimization library wrapper."""
+"""A wrapper for the global optimization algorithms of the SciPy library."""
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from typing import Any
 from typing import Mapping
+from typing import Union
 
-import scipy
-from distutils.version import LooseVersion
+from numpy import float64
 from numpy import inf as np_inf
+from numpy import int32
 from numpy import isfinite
-from numpy import ndarray
 from numpy import real
+from numpy.typing import NDArray
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
+from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
+
+InputType = NDArray[Union[float64, int32]]
 
 
 @dataclass
@@ -43,27 +49,18 @@ class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a global optimization algorithm from the SciPy library."""
 
     library_name: str = "SciPy"
+    website: str = (
+        "https://docs.scipy.org/doc/scipy/reference/optimize.html#global-optimization"
+    )
 
 
 class ScipyGlobalOpt(OptimizationLibrary):
-    """Scipy optimization library interface.
-
-    See OptimizationLibrary.
-    """
+    """A wrapper for the global optimization algorithms of the SciPy library."""
 
     LIB_COMPUTE_GRAD = True
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):
-        """Constructor.
-
-        Generate the library dict, contains the list
-        of algorithms with their characteristics:
-
-        - does it require gradient
-        - does it handle equality constraints
-        - does it handle inequality constraints
-        """
+    def __init__(self) -> None:  # noqa:D107
         super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/generated/"
         self.descriptions = {
@@ -95,22 +92,17 @@ class ScipyGlobalOpt(OptimizationLibrary):
             ),
         }
         # maximum function calls option passed to the algorithm
-        self.max_func_calls = 1000000000
-        scipy_version_ok = LooseVersion(scipy.__version__) >= LooseVersion("1.4.0")
-        if not scipy_version_ok:
-            for algo in ["DIFFERENTIAL_EVOLUTION", "SHGO"]:
-                self.descriptions[algo].handle_equality_constraints = False
-                self.descriptions[algo].handle_inequality_constraints = False
-            # Causes overflow due to py2
-            self.max_func_calls = 1000000
+        self.max_func_calls = sys.maxsize
 
     def _get_options(
         self,
         max_iter: int = 999,
+        max_time: float = 0.0,
         ftol_rel: float = 1e-9,
         ftol_abs: float = 1e-9,
         xtol_rel: float = 1e-9,
         xtol_abs: float = 1e-9,
+        stop_crit_n_x: int = 3,
         workers: int = 1,
         updating: str = "immediate",
         atol: float = 0.0,
@@ -139,6 +131,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
 
         Args:
             max_iter: The maximum number of iterations, i.e. unique calls to f(x).
+            max_time: The maximum runtime in seconds.
+                The value 0 disables the cap on the runtime.
             ftol_rel: A stop criteria, the relative tolerance on the
                objective function.
                If abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
@@ -148,6 +142,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
                design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
             xtol_abs: A stop criteria, the absolute tolerance on the
                    design variables. If norm(xk-xk+1)<= xtol_abs: stop.
+            stop_crit_n_x: The number of design vectors to take into account in the
+                stopping criteria.
             workers: The number of processes for parallel execution.
             updating: The strategy to update the solution vector.
                 If ``"immediate"``, the best solution vector is continuously
@@ -198,10 +194,12 @@ class ScipyGlobalOpt(OptimizationLibrary):
         """
         return self._process_options(
             max_iter=max_iter,
+            max_time=max_time,
             ftol_rel=ftol_rel,
             ftol_abs=ftol_abs,
             xtol_rel=xtol_rel,
             xtol_abs=xtol_abs,
+            stop_crit_n_x=stop_crit_n_x,
             workers=workers,
             updating=updating,
             init=init,
@@ -222,10 +220,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
             **kwargs,
         )
 
-    def iter_callback(
-        self,
-        x_vect: ndarray,
-    ) -> None:
+    def iter_callback(self, x_vect: InputType) -> None:
         """Call the objective and constraints functions.
 
         Args:
@@ -237,10 +232,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         for constraint in self.problem.constraints:
             constraint(x_vect)
 
-    def real_part_obj_fun(
-        self,
-        x: ndarray,
-    ) -> int | float:
+    def real_part_obj_fun(self, x: InputType) -> int | float:
         """Wrap the function and return the real part.
 
         Args:
@@ -276,21 +268,17 @@ class ScipyGlobalOpt(OptimizationLibrary):
         if self.problem.has_constraints():
             self.problem.add_callback(self.iter_callback)
 
-        local_options = options.get("local_options")
-
         if self.internal_algo_name == "dual_annealing":
             opt_result = optimize.dual_annealing(
                 func=self.real_part_obj_fun,
                 bounds=bounds,
                 maxiter=self.max_func_calls,
-                local_search_options={},
                 initial_temp=5230.0,
                 restart_temp_ratio=2e-05,
                 maxfun=self.max_func_calls,
                 seed=options["seed"],
             )
         elif self.internal_algo_name == "shgo":
-            constraints = self.__get_constraints_as_scipy_dictionary()
             opt_result = optimize.shgo(
                 func=self.real_part_obj_fun,
                 bounds=bounds,
@@ -298,8 +286,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 n=options["n"],
                 iters=options["iters"],
                 sampling_method=options["sampling_method"],
-                constraints=constraints,
-                options=local_options,
+                constraints=self.__get_constraints_as_scipy_dictionary(),
+                options=options.get("local_options"),
             )
         elif self.internal_algo_name == "differential_evolution":
             opt_result = optimize.differential_evolution(
@@ -326,39 +314,34 @@ class ScipyGlobalOpt(OptimizationLibrary):
         return self.get_optimum_from_database(opt_result.message, opt_result.success)
 
     def __get_non_linear_constraints(self) -> tuple[NonlinearConstraint]:
-        """Create the constraints to be passed to as NonLinearConstraints.
+        """Return the SciPy nonlinear constraints.
 
-        :return: The constraints.
-        :rtype: tuple(NonLinearConstraint)
+        Returns:
+            The SciPy nonlinear constraints.
         """
-        constraints = []
-        ineq_tolerance = self.problem.ineq_tolerance
         eq_tolerance = self.problem.eq_tolerance
-        for constr in self.problem.get_eq_constraints():
-            constraints.append(
-                NonlinearConstraint(constr, -eq_tolerance, eq_tolerance, jac=constr.jac)
-            )
-
-        for constr in self.problem.get_ineq_constraints():
-            constraints.append(
+        constraints = [
+            NonlinearConstraint(constr, -eq_tolerance, eq_tolerance, jac=constr.jac)
+            for constr in self.problem.get_eq_constraints()
+        ]
+        ineq_tolerance = self.problem.ineq_tolerance
+        constraints.extend(
+            [
                 NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
-            )
+                for constr in self.problem.get_ineq_constraints()
+            ]
+        )
         return tuple(constraints)
 
-    def __get_constraints_as_scipy_dictionary(self):
-        """Create the constraints to be passed to a SciPy algorithm as a dictionary.
+    def __get_constraints_as_scipy_dictionary(
+        self,
+    ) -> list[dict[str, str | WrappedFunctionType | WrappedJacobianType]]:
+        """Create the constraints to be passed to a SciPy algorithm as dictionaries.
 
-        :return: The constraints.
-        :rtype: list(dict)
+        Returns:
+            The constraints.
         """
-        constraints = self.get_right_sign_constraints()
-        scipy_constraints = []
-        for constraint in constraints:
-            scipy_constraint = {
-                "type": constraint.f_type,
-                "fun": constraint.func,
-                "jac": constraint.jac,
-            }
-            scipy_constraints.append(scipy_constraint)
-
-        return scipy_constraints
+        return [
+            {"type": constraint.f_type, "fun": constraint.func, "jac": constraint.jac}
+            for constraint in self.get_right_sign_constraints()
+        ]

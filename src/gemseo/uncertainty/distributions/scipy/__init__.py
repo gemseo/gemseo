@@ -15,7 +15,7 @@
 """Scipy-based capabilities for probability distributions.
 
 This package interfaces capabilities
-from the `SciPy <https://www.scipy.org/>`_ library.
+from the `SciPy <https://scipy.org/>`_ library.
 
 Interfaced distributions
 ------------------------

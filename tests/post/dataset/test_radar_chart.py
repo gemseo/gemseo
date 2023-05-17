@@ -21,9 +21,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 from numpy import array
 
@@ -35,7 +35,7 @@ def dataset():
     dataset.add_variable("x1", array([[-0.5], [3]]))
     dataset.add_variable("x2", array([[2], [2]]))
     dataset.add_variable("x3", array([[3], [1]]))
-    dataset.row_names = ["series_1", "series_2"]
+    dataset.index = ["series_1", "series_2"]
     return dataset
 
 

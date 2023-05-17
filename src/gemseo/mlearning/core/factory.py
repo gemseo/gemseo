@@ -27,16 +27,16 @@ from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import Final
 
-from gemseo.core.dataset import Dataset
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.utils.python_compatibility import Final
 
 
-class MLAlgoFactory:
+class MLAlgoFactory(BaseFactory):
     """This factory instantiates a :class:`.MLAlgo` from its class name.
 
     The class can be either internal or external. In this second case, it can be either
@@ -57,8 +57,8 @@ class MLAlgoFactory:
         "RBFRegression": "RBFRegressor",
     }
 
-    def __init__(self) -> None:
-        self.factory = Factory(MLAlgo, ("gemseo.mlearning",))
+    _CLASS = MLAlgo
+    _MODULE_NAMES = ("gemseo.mlearning",)
 
     def create(
         self,
@@ -75,26 +75,12 @@ class MLAlgoFactory:
         Returns:
             The instance of the machine learning algorithm.
         """
-        return self.factory.create(ml_algo, **options)
+        return super().create(ml_algo, **options)
 
     @property
     def models(self) -> list[str]:
         """The available machine learning algorithms."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        ml_algo: str,
-    ) -> bool:
-        """Check the availability of a machine learning algorithm.
-
-        Args:
-            ml_algo: The name of a machine learning algorithm (its class name).
-
-        Returns:
-            Whether the machine learning algorithm is available.
-        """
-        return self.factory.is_available(ml_algo)
+        return self.class_names
 
     def load(
         self,
@@ -113,7 +99,7 @@ class MLAlgoFactory:
         with (directory / MLAlgo.FILENAME).open("rb") as handle:
             objects = pickle.load(handle)
         algo_name = objects.pop("algo_name")
-        model = self.factory.create(
+        model = super().create(
             self.__OLD_TO_NEW_NAMES.get(algo_name, algo_name),
             data=objects.pop("data"),
             **objects.pop("parameters"),

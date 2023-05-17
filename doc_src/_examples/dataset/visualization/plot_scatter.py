@@ -25,8 +25,8 @@ Scatter
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.core.dataset import Dataset
+from gemseo import configure_logger
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
 from numpy import linspace
 from numpy import pi
@@ -35,7 +35,7 @@ from numpy import sin
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 inputs = linspace(0, 1, 20)[:, None]
@@ -44,9 +44,9 @@ color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
 
 dataset = Dataset()
 dataset.add_variable("x", inputs, "inputs")
-dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
+dataset.add_variable("y", outputs, "outputs")
 
-############################################################################
+# %%
 # Plot y vs x
 # -----------
 # We can use the :class:`.Scatter` plot

@@ -24,7 +24,7 @@ In this tutorial, we are creating the disciplines from their analytic formulatio
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     def create_disciplines():
         """
@@ -190,7 +190,7 @@ where:
 
 .. code::
 
-    from gemseo.api import create_scenario
+    from gemseo import create_scenario
     from gemseo.problems.aerostructure.aerostructure_design_space import AerostructureDesignSpace
     from copy import deepcopy
 
@@ -209,10 +209,10 @@ where:
         """
         design_space = AerostructureDesignSpace()
         design_space.set_current_value(design_space.get_current_value().real)
-        sizes = design_space.variables_sizes
+        sizes = design_space.variable_sizes
         disciplines_scal = []
         for discipline in disciplines:
-            discipline.set_cache_policy(cache_type=discipline.MEMORY_FULL_CACHE)
+            discipline.set_cache_policy(cache_type=discipline.CacheType.MEMORY_FULL)
             output = discipline.get_output_data_names()[0]
             disc_design_space = deepcopy(design_space)
             disc_design_space.filter(discipline.get_input_data_names())

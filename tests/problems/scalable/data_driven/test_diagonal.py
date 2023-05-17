@@ -23,7 +23,7 @@ from os.path import exists
 
 import numpy as np
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalModel
 from numpy import newaxis
 
@@ -38,7 +38,7 @@ def f_2(x_1, x_2, x_3):
 
 @pytest.fixture
 def dataset():
-    data = Dataset("sinus")
+    data = IODataset(dataset_name="sinus")
     x1_val = x2_val = x3_val = np.linspace(0.0, 1.0, 10)[:, newaxis]
     data.add_variable("x1", x1_val, data.INPUT_GROUP)
     data.add_variable("x2", x2_val, data.INPUT_GROUP)

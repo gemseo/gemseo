@@ -26,20 +26,20 @@ cache only stores the last inputs and outputs stored.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.caches.simple_cache import SimpleCache
 from numpy import array
 
 configure_logger()
 
-###############################################################################
+# %%
 # Import
 # ------
 # In the following lines, we import the `array` and the :class:`.SimpleCache`
 # classes.
 
 
-###############################################################################
+# %%
 # Create
 # ------
 # We can create an instance of the :class:`.SimpleCache` class with the
@@ -49,21 +49,21 @@ cache = SimpleCache()
 # The cache information can be displayed easily:
 print(cache)
 
-###############################################################################
+# %%
 # Cache
 # -----
 # It is possible to manually add some data into the cache by using the
 # following lines:
 cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 
-###############################################################################
+# %%
 # We can add another entry to the cache, and we can then see that its length is
 # still one. Indeed, as previously mentioned, the :class:`.SimpleCache` only
 # enable to store one evaluation.
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
 print(cache)
 
-###############################################################################
+# %%
 # Get all data
 # ------------
 # We can display the lenght and the data contained in the cache. As mentionned
@@ -73,7 +73,7 @@ print(len(cache))
 for data in cache:
     print(data)
 
-###############################################################################
+# %%
 # Get last cached data
 # --------------------
 # We can also print the last cached input and output data. For this cache, the
@@ -83,7 +83,7 @@ last_entry = cache.last_entry
 print(last_entry.inputs)
 print(last_entry.outputs)
 
-###############################################################################
+# %%
 # Clear
 # -----
 # It is also possible to clear the cache, by using the following lines:

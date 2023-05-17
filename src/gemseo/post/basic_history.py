@@ -20,7 +20,12 @@
 from __future__ import annotations
 
 import logging
+from typing import Final
 from typing import Sequence
+
+from matplotlib.ticker import MaxNLocator
+from numpy import arange
+from numpy import newaxis
 
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -35,6 +40,11 @@ class BasicHistory(OptPostProcessor):
     """
 
     DEFAULT_FIG_SIZE = (11.0, 6.0)
+    __ITERATION_NAME: Final[str] = ",;:!"
+    """The name for the variable iteration in the dataset.
+
+    A name that a user cannot chose for its own variables. Only used in the background.
+    """
 
     def _plot(
         self,
@@ -45,7 +55,10 @@ class BasicHistory(OptPostProcessor):
             variable_names: The names of the variables.
         """  # noqa: D205, D212, D415
         problem = self.opt_problem
-        dataset = problem.export_to_dataset(opt_naming=False, by_group=False)
+        dataset = problem.to_dataset(opt_naming=False)
+        dataset.add_variable(
+            self.__ITERATION_NAME, arange(1, len(dataset) + 1)[:, newaxis]
+        )
         if self._obj_name in variable_names:
             if problem.use_standardized_objective and not problem.minimize_objective:
                 obj_index = variable_names.index(self._obj_name)
@@ -55,14 +68,18 @@ class BasicHistory(OptPostProcessor):
                 dataset.transform_variable(self._neg_obj_name, lambda x: -x)
                 dataset.rename_variable(self._neg_obj_name, self._obj_name)
 
-        plot = Lines(dataset)
+        plot = Lines(
+            dataset,
+            abscissa_variable=self.__ITERATION_NAME,
+            variables=problem.get_function_names(variable_names),
+            set_xticks_from_data=False,
+        )
         plot.font_size = 12
         plot.xlabel = "Iterations"
         plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
         plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
-        figures = plot.execute(
-            save=False, variables=problem.get_function_names(variable_names)
-        )
+        figures = plot.execute(save=False)
+        figures[-1].gca().get_xaxis().set_major_locator(MaxNLocator(integer=True))
         for figure in figures:
             self._add_figure(figure)

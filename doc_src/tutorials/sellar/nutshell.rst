@@ -67,7 +67,7 @@ After having called the superconstructor :meth:`!MDODiscipline.__init__`,
 we complete the constructor of the new discipline
 by declaring the :ref:`Sellar <sellar_problem>` discipline input data names :attr:`!MDODiscipline.input_grammar`
 and discipline output data names :attr:`!MDODiscipline.output_grammar`
-in a straightforward way with :meth:`.JSONGrammar.update` .
+in a straightforward way with :meth:`.JSONGrammar.update_from_names` .
 
 .. warning::
 
@@ -88,8 +88,8 @@ For example, in the case of Sellar 1, we build:
 
         def __init__(self, residual_form=False):
             super(Sellar1, self).__init__()
-            self.input_grammar.update(['x_local', 'x_shared', 'y_2'])
-            self.output_grammar.update(['y_1'])
+            self.input_grammar.update_from_names(['x_local', 'x_shared', 'y_2'])
+            self.output_grammar.update_from_names(['y_1'])
 
 .. seealso::
 
@@ -275,8 +275,8 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
         def __init__(self, residual_form=False):
             super(Sellar1, self).__init__()
-            self.input_grammar.update(['x_local', 'x_shared', 'y_2'])
-            self.output_grammar.update(['y_1'])
+            self.input_grammar.update_from_names(['x_local', 'x_shared', 'y_2'])
+            self.output_grammar.update_from_names(['y_1'])
 
         def _run(self):
             x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
@@ -300,8 +300,8 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
         def __init__(self, residual_form=False):
             super(Sellar2, self).__init__()
-            self.input_grammar.update(['x_shared', 'y_1'])
-            self.output_grammar.update(['y_2'])
+            self.input_grammar.update_from_names(['x_shared', 'y_1'])
+            self.output_grammar.update_from_names(['y_2'])
 
         def _run(self):
             x_shared, y_1 = self.get_inputs_by_name(['x_shared', 'y_1'])
@@ -324,8 +324,8 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
         def __init__(self):
             super(SellarSystem, self).__init__()
-            self.input_grammar.update(['x_local', 'x_shared', 'y_1', 'y_2'])
-            self.output_grammar.update(['obj', 'c_1', 'c_2'])
+            self.input_grammar.update_from_names(['x_local', 'x_shared', 'y_1', 'y_2'])
+            self.output_grammar.update_from_names(['obj', 'c_1', 'c_2'])
 
         def _run(self):
             x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_1', 'y_2'])
@@ -358,11 +358,11 @@ Consequently, you just need to import them and use it!
    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
 A more simple alternative consists in
-using the :meth:`~gemseo.api.create_discipline` API function:
+using the :func:`.create_discipline` API function:
 
 .. code::
 
-   from gemseo.api import create_discipline
+   from gemseo import create_discipline
 
    disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
@@ -398,7 +398,7 @@ we need first the :class:`.MDODiscipline` instances.
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
@@ -407,7 +407,7 @@ we need first the :class:`.MDODiscipline` instances.
 2.2. Create the :class:`.DesignSpace`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then, by means of the API function :meth:`gemseo.api.create_design_space`,
+Then, by means of the API function :meth:`gemseo.create_design_space`,
 we build the :class:`.DesignSpace`,
 which defines the design variables,
 with their bounds and values:
@@ -415,7 +415,7 @@ with their bounds and values:
 .. code::
 
     from numpy import ones, array
-    from gemseo.api import create_design_space
+    from gemseo import create_design_space
 
     design_space = create_design_space()
     design_space.add_variable('x_local', 1, l_b=0., u_b=10., value=ones(1))
@@ -454,7 +454,7 @@ with their bounds and values:
 2.3. Create the :class:`.MDOScenario`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then, by means of the API function :meth:`gemseo.api.create_scenario`,
+Then, by means of the API function :meth:`gemseo.create_scenario`,
 we create the process which is a :class:`.MDOScenario`.
 The scenario delegates the creation of an :class:`.OptimizationProblem`
 to the  :class:`.MDOFormulation`.
@@ -473,7 +473,7 @@ which are declared as, respectively, the objective function and inequality const
 
 .. code::
 
-    from gemseo.api import create_scenario
+    from gemseo import create_scenario
 
     scenario = create_scenario(disciplines, 'MDF', 'obj', design_space)
 
@@ -599,7 +599,7 @@ Synthetic Python code
 .. code::
 
    from numpy import array, ones
-   from gemseo.api import create_discipline, create_design_space, create_scenario
+   from gemseo import create_discipline, create_design_space, create_scenario
 
    # Step 1: create the disciplines
    disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
@@ -628,11 +628,11 @@ Basically you just need to change the name of the formulation in the script.
 .. tip::
 
    Available formulations can be obtained through the API function
-   :meth:`gemseo.api.get_available_formulations()`. The following Python lines
+   :meth:`gemseo.get_available_formulations()`. The following Python lines
 
    .. code::
 
-      from gemseo.api import get_available_formulations
+      from gemseo import get_available_formulations
 
       print(get_available_formulations())
 

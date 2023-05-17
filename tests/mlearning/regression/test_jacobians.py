@@ -29,22 +29,25 @@ from __future__ import annotations
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.mlearning.transform.dimension_reduction.pca import PCA
-from gemseo.mlearning.transform.scaler.scaler import Scaler
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 
 LEARNING_SIZE = 10
 
 
-def dataset_factory(dataset_name, expressions, design_space_variables, objective_name):
+def dataset_factory(
+    dataset_name, expressions, design_space_variables, objective_name
+) -> IODataset:
     """Return a dataset from a sampled function.
 
     Args:
@@ -55,7 +58,7 @@ def dataset_factory(dataset_name, expressions, design_space_variables, objective
         objective_name (str): The name of the objective variable.
     """
     discipline = AnalyticDiscipline(expressions)
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=-3.0, u_b=3.0)
     for name, bounds in design_space_variables.items():
@@ -64,7 +67,7 @@ def dataset_factory(dataset_name, expressions, design_space_variables, objective
         [discipline], "DisciplinaryOpt", objective_name, design_space
     )
     scenario.execute({"algo": "lhs", "n_samples": LEARNING_SIZE})
-    return discipline.cache.export_to_dataset(dataset_name)
+    return discipline.cache.to_dataset(dataset_name)
 
 
 # the following contains the arguments passed to dataset_factory
@@ -108,15 +111,15 @@ DATASETS_DESCRIPTIONS = (
 
 TRANSFORMERS = (
     {},
-    {Dataset.INPUT_GROUP: Scaler(offset=5, coefficient=3)},
-    {Dataset.OUTPUT_GROUP: Scaler(offset=-3, coefficient=0.1)},
+    {IODataset.INPUT_GROUP: Scaler(offset=5, coefficient=3)},
+    {IODataset.OUTPUT_GROUP: Scaler(offset=-3, coefficient=0.1)},
     {
-        Dataset.INPUT_GROUP: Scaler(offset=10, coefficient=4),
-        Dataset.OUTPUT_GROUP: Scaler(offset=-7, coefficient=-8),
+        IODataset.INPUT_GROUP: Scaler(offset=10, coefficient=4),
+        IODataset.OUTPUT_GROUP: Scaler(offset=-7, coefficient=-8),
     },
     {
-        Dataset.INPUT_GROUP: PCA(n_components=1),
-        Dataset.OUTPUT_GROUP: PCA(n_components=1),
+        IODataset.INPUT_GROUP: PCA(n_components=1),
+        IODataset.OUTPUT_GROUP: PCA(n_components=1),
     },
 )
 
@@ -183,7 +186,7 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", RBFRegressor.AVAILABLE_FUNCTIONS + [_r3])
+@pytest.mark.parametrize("function", list(RBFRegressor.Function) + [_r3])
 def test_rbf(dataset, transformer, function):
     """Test polynomial regression Jacobians."""
     if function is _r3:
@@ -205,7 +208,7 @@ def test_pce(dataset):
     """Test polynomial regression Jacobians."""
     space = ParameterSpace()
 
-    for input_name in dataset.get_names(dataset.INPUT_GROUP):
+    for input_name in dataset.get_variable_names(dataset.INPUT_GROUP):
         space.add_random_variable(input_name, "OTUniformDistribution")
 
     discipline = SurrogateDiscipline(

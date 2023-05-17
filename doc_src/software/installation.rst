@@ -74,7 +74,7 @@ in an anaconda environment named *gemseo* for Python 3.9 with
 
     conda create -c conda-forge -n gemseo python=3.9 gemseo
 
-You can change the Python version to 3.7, 3.8 or 3.10.
+You can change the Python version to 3.8 or 3.10.
 
 Install without internet access
 *******************************
@@ -110,12 +110,12 @@ then the installation failed.
 Test the |g| dependencies with the API
 --------------------------------------
 
-You can use the function :meth:`~gemseo.api.print_configuration` to print
+You can use the function :func:`.print_configuration` to print
 the successfully loaded modules and the failed imports with the reason.
 
 .. code-block:: py
 
-    from gemseo.api import print_configuration
+    from gemseo import print_configuration
 
     print_configuration()
 

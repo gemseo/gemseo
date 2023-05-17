@@ -15,9 +15,9 @@
 """Statistics associated with the Ishigami use case."""
 from __future__ import annotations
 
-from numpy import pi
+from typing import Final
 
-from gemseo.utils.python_compatibility import Final
+from numpy import pi
 
 __A: Final[float] = 7
 __B: Final[float] = 0.1

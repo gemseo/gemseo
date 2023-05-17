@@ -48,8 +48,8 @@ from numpy import array
 class FruitCounting(MDODiscipline):
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update(["fruits"])
-        self.output_grammar.update(["n_fruits", "n_fruits_per_category"])
+        self.input_grammar.update_from_names(["fruits"])
+        self.output_grammar.update_from_names(["n_fruits", "n_fruits_per_category"])
         self.default_inputs = {"fruits": array([1, 2, 3])}
 
     def _run(self) -> None:

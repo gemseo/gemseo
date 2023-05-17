@@ -17,7 +17,7 @@ Overview
 
 |g| stands for Generic Engine for Multi-disciplinary Scenarios, Exploration and Optimization.
 
-Built on top of `NumPy  <http://www.numpy.org/>`_, `SciPy  <http://www.scipy.org/>`_ and `Matplotlib  <http://www.matplotlib.org/>`_ libraries,
+Built on top of `NumPy  <http://www.numpy.org/>`_, `SciPy  <http://scipy.org/>`_ and `Matplotlib  <http://www.matplotlib.org/>`_ libraries,
 this `Python <https://www.python.org/>`__ library enables an automatic treatment of design problems,
 using design of experiments, optimization algorithms and graphic post-processing.
 

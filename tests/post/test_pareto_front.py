@@ -18,14 +18,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from unittest import mock  # noqa: F401
-
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
 # - the expected file names without extension to be compared
@@ -80,7 +78,7 @@ def test_pareto(
         "ParetoFront",
         save=False,
         file_path="power",
-        objectives=problem.get_all_functions_names(),
+        objectives=problem.get_all_function_name(),
         **kwargs,
     )
     post.figures
@@ -112,7 +110,7 @@ def test_pareto_incorrect_objective_list():
             problem,
             "ParetoFront",
             save=False,
-            objectives=problem.get_all_functions_names(),
+            objectives=problem.get_all_function_name(),
             objectives_labels=["fake_label"],
             file_path="power",
         )

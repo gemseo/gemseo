@@ -22,10 +22,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.wrappers.xls_discipline import XLSDiscipline
 from numpy import array
 from numpy import exp

@@ -45,6 +45,7 @@ from numpy import zeros
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class BinhKorn(OptimizationProblem):
     the :class:`.DesignSpace`, the objective function and the constraints.
     """
 
-    def __init__(self, initial_values: tuple[float, float] = (1.0, 1.0)):
+    def __init__(self, initial_values: FigSizeType = (1.0, 1.0)) -> None:
         """
         Args:
             initial_values: Initial value of the design variables.
@@ -72,7 +73,8 @@ class BinhKorn(OptimizationProblem):
             f_type="obj",
             jac=self.__compute_binhkorn_jac,
             expr="(4*x**2+ 4*y**2, (x-5.)**2 + (y-5.)**2)",
-            args=["x", "y"],
+            input_names=["x", "y"],
+            dim=2,
         )
         ineq1 = MDOFunction(
             self.__compute_ineq_constraint1,
@@ -80,7 +82,7 @@ class BinhKorn(OptimizationProblem):
             f_type="ineq",
             jac=self.__compute_ineq_constraint1_jac,
             expr="(x-5.)**2 + y**2 <= 25.",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         self.add_ineq_constraint(ineq1)
 
@@ -90,7 +92,7 @@ class BinhKorn(OptimizationProblem):
             f_type="ineq",
             jac=self.__compute_ineq_constraint2_jac,
             expr="(x-8.)**2 + (y+3)**2 >= 7.7",
-            args=["x", "y"],
+            input_names=["x", "y"],
         )
         self.add_ineq_constraint(ineq2)
 

@@ -2,6 +2,7 @@
     "name": "fullfact_options",
     "description": "General Full-Factorial algorithm from the pyDOE library",
     "id": "https://pythonhosted.org/pyDOE/factorial.html#general-full-factorial",
+    "required": ["n_samples", "levels"],
     "properties": {
         "n_samples":{
             "type":  ["null", "integer"],

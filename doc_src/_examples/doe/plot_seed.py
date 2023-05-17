@@ -37,12 +37,12 @@ and how the user can change its value.
 """
 from __future__ import annotations
 
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_algo
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 # %%
@@ -74,51 +74,35 @@ scenario = create_scenario(
 # %%
 # and solve it:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
-print(scenario.formulation.opt_problem.database.get_last_n_x(2))
+print(scenario.formulation.opt_problem.database.get_last_n_x_vect(2))
 
 # %%
-# You can get the value of the random :attr:`.DOEScenario.seed` that has been used:
-print(scenario.seed)
+# You can get the value of the random seed that has been used:
+print(scenario._lib.seed)
 
 # %%
-#
-# Note:
-#     This :attr:`~.DOEScenario.seed` is initialized at 0.
-#
-# Each call to :meth:`~.DOEScenario.execute` increments this :attr:`~.DOEScenario.seed`
-# and then passes this value to the underlying :meth:`~.DOELibrary.execute`
-# (or a custom seed value if any).
-#
+# When using the same DOE algorithm,
+# a new call to :meth:`.DOEScenario.execute` increments the :attr:`.DOELibrary.seed`.
 # Then,
 # solving again this problem with the same configuration leads to a new result:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
-print(scenario.formulation.opt_problem.database.get_last_n_x(2))
+print(scenario.formulation.opt_problem.database.get_last_n_x_vect(2))
 
 # %%
 # and we can check that the value of the seed was incremented:
-print(scenario.seed)
+print(scenario._lib.seed)
 
 # %%
 # You can also pass a custom ``"seed"`` to the DOE algorithm
 # with the key ``"algo_options"`` of the ``input_data``
 # passed to :meth:`.DOEScenario.execute`:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2, "algo_options": {"seed": 123}})
-print(scenario.formulation.opt_problem.database.get_last_n_x(2))
+print(scenario.formulation.opt_problem.database.get_last_n_x_vect(2))
 
 # %%
-# You can verify that
-# the :attr:`.DOEScenario.seed` has not been replaced by the custom value
+# You can verify that :attr:`.DOELibrary.seed` has not been replaced by the custom value
 # but incremented:
-print(scenario.seed)
-
-# %%
-# Lastly,
-# you can change the value of the :attr:`~.DOEScenario.seed`
-# attached to the :class:`.DOEScenario`:
-scenario.seed = 123
-scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
-print(scenario.seed)
-print(scenario.formulation.opt_problem.database.get_last_n_x(2))
+print(scenario._lib.seed)
 
 # %%
 # At the problem level
@@ -126,7 +110,7 @@ print(scenario.formulation.opt_problem.database.get_last_n_x(2))
 # Basic
 # ~~~~~
 # Let us consider a :class:`.MDOFunction` representing the function :math:`y=x^2`:
-function = MDOFunction(lambda x: x**2, "f", args=["x"], outvars=["y"])
+function = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
 
 # %%
 # and defined over the unit interval :math:`x\in[0,1]`:
@@ -143,7 +127,7 @@ problem.objective = function
 # %%
 # and solve it:
 execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2)
-print(problem.database.get_last_n_x(2))
+print(problem.database.get_last_n_x_vect(2))
 
 # %%
 # Note:
@@ -153,19 +137,19 @@ print(problem.database.get_last_n_x(2))
 #
 # Solving again this problem with the same configuration leads to the same result:
 execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2)
-print(problem.database.get_last_n_x(2))
+print(problem.database.get_last_n_x_vect(2))
 
 # %%
 # and the result is still the same if we take 1 as random seed,
 # as 1 is the default value of this seed:
 execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2, seed=1)
-print(problem.database.get_last_n_x(2))
+print(problem.database.get_last_n_x_vect(2))
 
 # %%
 # If you want to use a different random seed,
 # you only have to change the value of ``seed``:
 execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2, seed=3)
-print(problem.database.get_last_n_x(2))
+print(problem.database.get_last_n_x_vect(2))
 
 # %%
 # Advanced
@@ -177,16 +161,16 @@ print(problem.database.get_last_n_x(2))
 library = OpenTURNS()
 library.algo_name = "OT_OPT_LHS"
 library.execute(problem, n_samples=2)
-print(scenario.seed)
-print(problem.database.get_last_n_x(2))
+print(library.seed)
+print(problem.database.get_last_n_x_vect(2))
 # %%
 # Solving again the problem will give different samples:
 library.execute(problem, n_samples=2)
-print(scenario.seed)
-print(problem.database.get_last_n_x(2))
+print(library.seed)
+print(problem.database.get_last_n_x_vect(2))
 # %%
 # You can also change the seed:
 library.seed = 123
 library.execute(problem, n_samples=2)
-print(scenario.seed)
-print(problem.database.get_last_n_x(2))
+print(library.seed)
+print(problem.database.get_last_n_x_vect(2))

@@ -23,53 +23,26 @@ from typing import Any
 
 from numpy import ndarray
 
-from gemseo.algos.driver_factory import DriverFactory
+from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
+from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
 
 
-class LinearSolversFactory(DriverFactory):
+class LinearSolversFactory(BaseAlgoFactory):
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__(LinearSolverLib, "gemseo.algos.linear_solvers")
+    _CLASS = LinearSolverLibrary
+    _MODULE_NAMES = ("gemseo.algos.linear_solvers",)
 
     @property
     def linear_solvers(self) -> list[str]:
         """The names of the available classes."""
-        return self.factory.classes
+        return self._factory.class_names
 
-    def is_available(self, solver_name: str) -> bool:
-        """Check the availability of a LinearSolver.
-
-        Args:
-            solver_name: The name of the LinearSolver.
-
-        Returns:
-            Whether the :class:`.LinearSolver` is available.
-        """
-        return super().is_available(solver_name)
-
-    def execute(
+    def execute(  # noqa:D102
         self,
         problem: LinearProblem,
         algo_name: str,
         **options: Any,
     ) -> ndarray:
-        """Execute the driver.
-
-        Find the appropriate library and execute the driver on the problem to solve
-        the linear system LHS.x = RHS.
-
-        Args:
-            problem: The linear equations and right hand side
-             (lhs, rhs) that defines the linear problem. XXX is a tuple expected?
-            algo_name: The algorithm name.
-            **options: The options for the algorithm,
-                see associated JSON file.
-
-        Returns:
-            The solution.
-        """
-        lib = self.create(algo_name)
-        return lib.execute(problem, algo_name=algo_name, **options)
+        return super().execute(problem, algo_name, **options)

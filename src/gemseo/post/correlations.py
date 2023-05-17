@@ -86,9 +86,9 @@ class Correlations(OptPostProcessor):
             )
 
         variable_history, variable_names, _ = self.database.get_history_array(
-            func_names, None, True, 0.0
+            function_names=func_names, add_missing_tag=True, missing_tag=0.0
         )
-        variable_names = self.__sort_variables_names(variable_names, func_names)
+        variable_names = self.__sort_variable_names(variable_names, func_names)
 
         if self._standardized_obj_name in variable_names and self._change_obj:
             obj_index = variable_names.index(self._standardized_obj_name)
@@ -195,9 +195,9 @@ class Correlations(OptPostProcessor):
             atleast_2d(np.corrcoef(variable_history.astype(float), rowvar=False))
         )
 
-    def __sort_variables_names(
+    def __sort_variable_names(
         self,
-        variables_names: Sequence[str],
+        variable_names: Sequence[str],
         func_names: Sequence[str],
     ) -> list[str]:
         """Sort the expanded variable names using func_names as the pattern.
@@ -207,15 +207,15 @@ class Correlations(OptPostProcessor):
         the names given by the user.
 
         Args:
-            variables_names: The expanded variable names to be sorted.
+            variable_names: The expanded variable names to be sorted.
             func_names: The functions names in the required order.
 
         Returns:
             The sorted expanded variable names.
         """
-        variables_names.sort(key=partial(self.func_order, func_names))
-        x_names = self._generate_x_names()
-        return variables_names[: -len(x_names)] + x_names
+        variable_names.sort(key=partial(self.func_order, func_names))
+        x_names = self._get_design_variable_names()
+        return variable_names[: -len(x_names)] + x_names
 
     @staticmethod
     def func_order(

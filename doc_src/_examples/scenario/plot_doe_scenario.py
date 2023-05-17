@@ -25,12 +25,12 @@ Create a DOE Scenario
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import get_available_doe_algorithms
-from gemseo.api import get_available_post_processings
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import get_available_doe_algorithms
+from gemseo import get_available_post_processings
 
 configure_logger()
 
@@ -55,7 +55,7 @@ configure_logger()
 #
 # Define the discipline
 # ---------------------
-# Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
+# Firstly, by means of the :func:`.create_discipline` API function,
 # we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
@@ -68,7 +68,7 @@ discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 #
 # Define the design space
 # -----------------------
-# For that, by means of the :meth:`~gemseo.api.create_design_space` API function,
+# For that, by means of the :func:`.create_design_space` API function,
 # we define the :class:`.DesignSpace` :math:`[-5, 5]\times[-5, 5]`
 # by using its :meth:`.DesignSpace.add_variable` method.
 
@@ -79,7 +79,7 @@ design_space.add_variable("x2", l_b=-5, u_b=5, var_type="integer")
 # %%
 # Define the DOE scenario
 # -----------------------
-# Then, by means of the :meth:`~gemseo.api.create_scenario` API function,
+# Then, by means of the :func:`.create_scenario` API function,
 # we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
 # and the :class:`.DesignSpace` defined above:
 
@@ -100,15 +100,12 @@ scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
-# extract them by invoking the :meth:`.Scenario.get_optimum` method. It
-# returns a dictionary containing the optimum results for the
-# scenario under consideration:
+# access them with :attr:`.Scenario.optimization_result`:
 
-opt_results = scenario.get_optimum()
+optimization_result = scenario.optimization_result
 print(
-    "The solution of P is (x*,f(x*)) = ({}, {})".format(
-        opt_results.x_opt, opt_results.f_opt
-    ),
+    "The solution of P is "
+    f"(x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
 )
 
 # %%

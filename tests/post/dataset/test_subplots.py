@@ -21,10 +21,10 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.yvsx import YvsX
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 from numpy import array
 
@@ -36,7 +36,7 @@ def dataset() -> Dataset:
     dataset.add_variable("x1", array([[0.25, 0.35], [0.75, 0.85]]))
     dataset.add_variable("x2", array([[0.5], [0.25]]))
     dataset.add_variable("x3", array([[0.75], [0.25]]))
-    dataset.row_names = ["series_1", "series_2"]
+    dataset.index = ["series_1", "series_2"]
     return dataset
 
 

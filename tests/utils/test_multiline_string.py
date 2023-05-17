@@ -114,6 +114,14 @@ def test_pretty_str(obj, delimiter, key_value_separator, sort, expected):
     assert pretty_str(obj, **kwargs) == expected
 
 
+def test_use_and():
+    """Check the option use_and of pretty_repr and pretty_str."""
+    assert pretty_str(["b", "c", "a"]) == "a, b, c"
+    assert pretty_str(["a", "c", "b"], use_and=True) == "a, b and c"
+    assert pretty_repr(["b", "c", "a"]) == "'a', 'b', 'c'"
+    assert pretty_repr(["a", "c", "b"], use_and=True) == "'a', 'b' and 'c'"
+
+
 def test_replace():
     msg = MultiLineString()
     msg.add("123")
@@ -148,3 +156,9 @@ def test_repr_variable_default_settings():
 def test_repr_variable_custom_settings(size, expected):
     """Check repr_variable() with custom settings."""
     assert repr_variable("x", 0, size=size) == expected
+
+
+@pytest.mark.parametrize("index,expected", [(0, "x[0]"), (1, "[1]")])
+def test_repr_variable_simplify(index, expected):
+    """Check repr_variable() with argument simplify."""
+    assert repr_variable("x", index, simplify=True) == expected

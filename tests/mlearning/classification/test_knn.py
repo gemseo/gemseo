@@ -21,10 +21,10 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
-from gemseo.mlearning.api import import_classification_model
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning import import_classification_model
 from gemseo.mlearning.classification.knn import KNNClassifier
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
@@ -49,7 +49,7 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the KNNClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 3))
@@ -58,12 +58,12 @@ def dataset() -> Dataset:
     output_data[2::4, 0] = 3
     output_data[:, 1] = permutation(output_data[:, 0])
     output_data[:, 2] = permutation(output_data[:, 0])
-    dataset_ = Dataset()
+    dataset_ = IODataset()
     dataset_.add_group(
-        Dataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
+        IODataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
     )
     dataset_.add_group(
-        Dataset.OUTPUT_GROUP, output_data, ["y_1", "y_2"], {"y_1": 1, "y_2": 2}
+        IODataset.OUTPUT_GROUP, output_data, ["y_1", "y_2"], {"y_1": 1, "y_2": 2}
     )
     return dataset_
 
@@ -225,7 +225,7 @@ def test_predict_proba_transform(model_with_transform):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_classification_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

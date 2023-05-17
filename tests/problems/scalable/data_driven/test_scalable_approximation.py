@@ -49,8 +49,10 @@ def test_build_model(sobieski_aerodynamics):
     for k, value in sobieski_aerodynamics.default_inputs.items():
         sizes[k] = len(value)
 
-    hdf_cache = HDF5Cache(HDF_CACHE_PATH, sobieski_aerodynamics.name)
-    dataset = hdf_cache.export_to_dataset()
+    hdf_cache = HDF5Cache(
+        hdf_file_path=HDF_CACHE_PATH, hdf_node_path=sobieski_aerodynamics.name
+    )
+    dataset = hdf_cache.to_dataset()
 
     scd = ScalableDiscipline("ScalableDiagonalModel", dataset, sizes, fill_factor=0.7)
     comp_dep, in_dep = scd.scalable_model.generate_random_dependency()
@@ -95,6 +97,6 @@ def test_build_model(sobieski_aerodynamics):
 def test_serialize(tmp_wd, sobieski_aerodynamics):
     """Test the serialization of a SobieskiAerodynamics instance."""
     s_file = "aero.o"
-    sobieski_aerodynamics.serialize(s_file)
-    aero2 = MDODiscipline.deserialize(s_file)
+    sobieski_aerodynamics.to_pickle(s_file)
+    aero2 = MDODiscipline.from_pickle(s_file)
     aero2.execute()

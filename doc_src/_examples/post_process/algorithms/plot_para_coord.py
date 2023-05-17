@@ -23,33 +23,33 @@ Parallel coordinates
 ====================
 
 In this example, we illustrate the use of the
-:class:`~gemseo.post.para_coord.ParallelCoordinates` plot on the Sobieski's SSBJ
+:class:`.ParallelCoordinates` plot on the Sobieski's SSBJ
 problem.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
-# The first step is to import some functions from the API
+# The first step is to import some high-level functions
 # and a method to get the design space.
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 #
-# The :class:`~gemseo.post.para_coord.ParallelCoordinates` post-processing
+# The :class:`.ParallelCoordinates` post-processing
 # builds parallel coordinates plots among design
 # variables, outputs functions and constraints.
 #
-# The :class:`~gemseo.post.para_coord.ParallelCoordinates` portrays the design
+# The :class:`.ParallelCoordinates` portrays the design
 # variables history during the scenario execution. Each vertical coordinate is
 # dedicated to a design variable, normalized by its bounds.
 #
@@ -57,7 +57,7 @@ configure_logger()
 # by objective function values. This highlights the correlations between
 # the values of the design variables and the values of the objective function.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
@@ -71,13 +71,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -97,19 +97,19 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the
-# :class:`~gemseo.post.para_coord.ParallelCoordinates` plot which parallel
+# :class:`.ParallelCoordinates` plot which parallel
 # coordinates plots among design variables, objective function and constraints.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    of customization options. Use the high-level function
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

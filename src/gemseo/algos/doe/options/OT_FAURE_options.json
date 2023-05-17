@@ -1,7 +1,8 @@
 {
     "name": "OT_FAURE_options",
-    "description": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FaureSequence.html",
-    "id": "http://www.openturns.org/",
+    "description": "Faure sequence DOE algorithm from the OpenTURNS library",
+    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FaureSequence.html",
+    "required": ["n_samples"],
     "properties": {
         "n_samples":{
             "type": "integer",
@@ -25,7 +26,7 @@
                 },
                 {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 0
                 }
             ]
         },

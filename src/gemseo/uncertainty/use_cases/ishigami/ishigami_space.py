@@ -15,10 +15,11 @@
 """The uncertain space used in the Ishigami use case."""
 from __future__ import annotations
 
+from typing import Final
+
 from numpy import pi
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.utils.python_compatibility import Final
 
 _DISTRIBUTION_NAME: Final[str] = "SPUniformDistribution"
 """The probability distribution for the different random variables."""

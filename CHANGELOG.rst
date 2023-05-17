@@ -27,6 +27,642 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version rc-5.0.0 (2023-05-17)
+*****************************
+
+
+
+Added
+-----
+
+- :class:`.PCERegressor` has new arguments:
+  - ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
+  - ``use_lars`` to get a sparse PCE with the LARS algorithm in the case of the least-squares regression.
+  - ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
+  - ``hyperbolic_parameter`` to truncate the PCE before training.
+  `#496 <https://gitlab.com/gemseo/dev/gemseo/-/issues/496>`_
+- The argument use_deep_copy has been added to the constructor of MDOParallelChain class.
+  This controls the use of deepcopy when running MDOParallelChain.
+  By default this is set to False, as a performance improvement has been observed in use cases with a large number of disciplines.
+  The old behaviour of using deepcopy of local_data can be enabled by setting this option to True.
+  This may be necessary in some rare combination of MDOParallelChain and other disciplines that directly modify the MDODiscipline input data.
+  `#527 <https://gitlab.com/gemseo/dev/gemseo/-/issues/527>`_
+- :class:`.MDODiscipline` has now a virtual execution mode that returns default_outputs when active.
+  `#558 <https://gitlab.com/gemseo/dev/gemseo/-/issues/558>`_
+- :meth:`.Scenario.xdsmize` returns a :class:`.XDSM`; its :meth:`~.XDSM.visualize` method displays the XDSM in a web browser; this object has also a HTML view.
+  `#564 <https://gitlab.com/gemseo/dev/gemseo/-/issues/564>`_
+- Add exterior penalty approach to reformulate Optimization Problem with constraints into one without constraints.
+  `#581 <https://gitlab.com/gemseo/dev/gemseo/-/issues/581>`_
+- Scenario adapter subproblem databases can be exported in h5 files.
+  `#607 <https://gitlab.com/gemseo/dev/gemseo/-/issues/607>`_
+- :class:`.JSchedulerDisciplineWrapper` can submit the execution of disciplines to a HPC job scheduler.
+  `#613 <https://gitlab.com/gemseo/dev/gemseo/-/issues/613>`_
+- Added a new :class:`.RunFolderManager` to generate unique run directory names for :class:`.DiscFromExe`, either as successive integers or as uuid's.
+  `#648 <https://gitlab.com/gemseo/dev/gemseo/-/issues/648>`_
+- :class:`.CorrelationAnalysis` proposes two new sensitivity methods, namely Kendall rank correlation coefficients (:attr:`~.CorrelationAnalysis.kendall`) and squared standard regression coefficients (:attr:`~.CorrelationAnalysis.ssrc`).
+  `#654 <https://gitlab.com/gemseo/dev/gemseo/-/issues/654>`_
+- :class:`.OTComposedDistribution` can consider any copula offered by OpenTURNS.
+  `#655 <https://gitlab.com/gemseo/dev/gemseo/-/issues/655>`_
+- Stopping options ``"max_time"`` and ``"stop_crit_n_x"`` can now be used with the global optimizers of SciPy (``"DIFFERENTIAL_EVOLUTION"``, ``"DUAL_ANNEALING"`` and ``"SHGO"``).
+  `#663 <https://gitlab.com/gemseo/dev/gemseo/-/issues/663>`_
+- :class:`.ConstraintsHistory` uses horizontal black dashed lines for tolerance.
+  `#664 <https://gitlab.com/gemseo/dev/gemseo/-/issues/664>`_
+- A new :class:`.MDOWarmStartedChain` allows users to warm start some inputs of the chain with the output values of the
+  previous run.
+  `#665 <https://gitlab.com/gemseo/dev/gemseo/-/issues/665>`_
+- :class:`.SobolAnalysis` provides the :attr:`~.SobolAnalysis.output_variances` and :attr:`~.SobolAnalysis.output_standard_deviations`.
+  :meth:`.SobolAnalysis.unscale_indices` allows to unscale the Sobol' indices using :attr:`~.SobolAnalysis.output_variances` or :attr:`~.SobolAnalysis.output_standard_deviations`.
+  :meth:`.SobolAnalysis.plot` now displays the variance of the output variable in the title of the graph.
+  `#671 <https://gitlab.com/gemseo/dev/gemseo/-/issues/671>`_
+- Documentation: the required parameters of optimization, DOE and linear solver algorithms are documented in dedicated sections.
+  `#680 <https://gitlab.com/gemseo/dev/gemseo/-/issues/680>`_
+- :class:`.ScenarioAdapter` is a :class:`.Factory` of :class:`.MDOScenarioAdapter`.
+  `#684 <https://gitlab.com/gemseo/dev/gemseo/-/issues/684>`_
+- The MDOLinear function expression can be passed as an argument to the instantiation.
+  This can be useful for large numbers of inputs or outputs to avoid long computation times for the expression string.
+  `#697 <https://gitlab.com/gemseo/dev/gemseo/-/issues/697>`_
+- :class:`.GradientSensitivity` plots the positive derivatives in red and the negative ones in blue for easy reading.
+  `#725 <https://gitlab.com/gemseo/dev/gemseo/-/issues/725>`_
+- :class:`.TopologyView` allows to visualize the solution of a 2D topology optimization problem.
+  `#739 <https://gitlab.com/gemseo/dev/gemseo/-/issues/739>`_
+- The argument ``scale`` of :class:`.PCA` allows to scale the data before reducing their dimension.
+  `#743 <https://gitlab.com/gemseo/dev/gemseo/-/issues/743>`_
+- Enable sparse coefficients for MDOLinearFunctions.
+  `#756 <https://gitlab.com/gemseo/dev/gemseo/-/issues/756>`_
+- Improve the computation of MDA residuals with the following new strategies:
+  - each sub-residual is scaled by the corresponding initial norm,
+  - each component is scaled by the corresponding initial component,
+  - the euclidean norm of the component-wise division by initial residual scaled by the problem size.
+  `#780 <https://gitlab.com/gemseo/dev/gemseo/-/issues/780>`_
+- Factory for algo can cache the algo libraries.
+  `#522 <https://gitlab.com/gemseo/dev/gemseo/-/issues/522>`_
+
+Fixed
+-----
+
+- The different kinds of :class:`.OptPostProcessor` displaying iteration numbers start counting at 1.
+  `#601 <https://gitlab.com/gemseo/dev/gemseo/-/issues/601>`_
+- :meth:`.OptimizationProblem.to_dataset` uses the order of the design variables given by the :class:`.ParameterSpace` to build the :class:`.Dataset`.
+  `#626 <https://gitlab.com/gemseo/dev/gemseo/-/issues/626>`_
+- :meth:`.SensitivityAnalysis.to_dataset` works correctly with several methods and the returned :class:`.Dataset` can be exported to a ``DataFrame``.
+  `#640 <https://gitlab.com/gemseo/dev/gemseo/-/issues/640>`_
+- The option ``fig_size`` passed to :meth:`.OptPostProcessor.execute` is now taken into account.
+  `#641 <https://gitlab.com/gemseo/dev/gemseo/-/issues/641>`_
+- :meth:`.MDODiscipline.linearize` with ``compute_all_jacobians=False`` (default value) computes the Jacobians only for the inputs and outputs defined with :meth:`~.MDODiscipline.add_differentiated_inputs` and :meth:`~.MDODiscipline.add_differentiated_outputs` if any; otherwise, it returns an empty dictionary; if ``compute_all_jacobians=True``, it considers all the inputs and outputs.
+  `#644 <https://gitlab.com/gemseo/dev/gemseo/-/issues/644>`_
+- The bug concerning the linearization of scenario adapters including disciplines that depends both only on scenario adapter inputs and that are linearized in the _run method is solve.
+  Tests concerning this behavior where added.
+  `#651 <https://gitlab.com/gemseo/dev/gemseo/-/issues/651>`_
+- The subplots of :class:`.ConstraintsHistory` use their own y-limits.
+  `#656 <https://gitlab.com/gemseo/dev/gemseo/-/issues/656>`_
+- :class:`.OTDistribution` can now truncate a probability distribution on both sides.
+  `#660 <https://gitlab.com/gemseo/dev/gemseo/-/issues/660>`_
+- :class:`.AutoPyDiscipline` can wrap a Python function with multiline return statements.
+  `#661 <https://gitlab.com/gemseo/dev/gemseo/-/issues/661>`_
+- The method :meth:`.OptProblem.constraint_names` is now built on fly from the constraints.
+  This fixes the issue of the updating of the constraint names when the constraints are modified, as it is the case with the aggregation of constraints.
+  `#669 <https://gitlab.com/gemseo/dev/gemseo/-/issues/669>`_
+- :meth:`.Database.get_complete_history` raises a ``ValueError`` when asking for a non-existent function.
+  `#670 <https://gitlab.com/gemseo/dev/gemseo/-/issues/670>`_
+- The visualization :class:`.ParallelCoordinates` uses the names of the design variables defined in the :class:`.DesignSpace` instead of default ones.
+  `#675 <https://gitlab.com/gemseo/dev/gemseo/-/issues/675>`_
+- The DOE algorithm ``OT_FACTORIAL`` handles correctly the tuple of parameters (``levels``, ``centers``); this DOE algorithm does not use ``n_samples``.
+  The DOE algorithm ``OT_FULLFACT `` handles correctly the use of ``n_samples`` as well as the use of the parameters ``levels``; this DOE algorithm can use either ``n_samples`` or ``levels``.
+  `#676 <https://gitlab.com/gemseo/dev/gemseo/-/issues/676>`_
+- The required properties are now available in the grammars of the DOE algorithms.
+  `#680 <https://gitlab.com/gemseo/dev/gemseo/-/issues/680>`_
+- :class:`.Factory` considers the base class as an available class when it is not abstract.
+  `#685 <https://gitlab.com/gemseo/dev/gemseo/-/issues/685>`_
+- Modify the computation of total derivatives in the presence of state variables to avoid unnecessary calculations.
+  `#686 <https://gitlab.com/gemseo/dev/gemseo/-/issues/686>`_
+- Modify the default linear solver calling sequence to prevent the use of the splu function on SciPy LinearOperator objects.
+  `#691 <https://gitlab.com/gemseo/dev/gemseo/-/issues/691>`_
+- The stopping criteria for the objective function variation are only activated if the objective value is stored in the database in the last iterations.
+  `#692 <https://gitlab.com/gemseo/dev/gemseo/-/issues/692>`_
+- The :class:`.GradientApproximator` and its subclasses no longer include closures preventing serialization.
+  `#700 <https://gitlab.com/gemseo/dev/gemseo/-/issues/700>`_
+- Serialization of paths in disciplines attributes and local_data in multi OS.
+  `#711 <https://gitlab.com/gemseo/dev/gemseo/-/issues/711>`_
+- Constraint aggregation MDOFunction is now capable of dealing with complex ndarrays inputs.
+  `#716 <https://gitlab.com/gemseo/dev/gemseo/-/issues/716>`_
+- :class:`.MinMaxScaler` and :class:`.StandardScaler` handle constant data without ``RuntimeWarning``.
+  `#719 <https://gitlab.com/gemseo/dev/gemseo/-/issues/719>`_
+- Fix ``OptimizationProblem.is_mono_objective`` that returned wrong values when the objective had one outvars but multidimensional.
+  `#734 <https://gitlab.com/gemseo/dev/gemseo/-/issues/734>`_
+- Fix the behavior of DesignSpace.filter_dim method for list of indices containing more than one index.
+  `#746 <https://gitlab.com/gemseo/dev/gemseo/-/issues/746>`_
+- Fix Jacobian of MDOChain including Splitter disciplines.
+  `#764 <https://gitlab.com/gemseo/dev/gemseo/-/issues/764>`_
+- Corrected typing issues that caused an exception to be raised when a custom parser was passed to the
+  :class:`.DiscFromExe` at instantiation.
+  `#767 <https://gitlab.com/gemseo/dev/gemseo/-/issues/767>`_
+
+Changed
+-------
+
+- :class:`.CorrelationAnalysis` no longer proposes the signed standard regression coefficients (SSRC), as it has been removed from ``openturns``.
+  `#654 <https://gitlab.com/gemseo/dev/gemseo/-/issues/654>`_
+- Splitter, Concatenater, Density Filter, and Material Interpolation disciplines use sparse jacobians.
+  `#745 <https://gitlab.com/gemseo/dev/gemseo/-/issues/745>`_
+- The minimum value of the seed used by a DOE algorithm is 0.
+  `#727 <https://gitlab.com/gemseo/dev/gemseo/-/issues/727>`_
+- ``JSONGrammar`` no longer merge the definition of a property with the dictionary-like ``update`` methods.
+  Now the usual behavior of a dictionary will be used such that the definition of a property is overwritten.
+  The previous behavior can be used by passing the argument ``merge = True``.
+  `#708 <https://gitlab.com/gemseo/dev/gemseo/-/issues/708>`_
+- Parametric :class:`~gemseo.problems.scalable.parametric.scalable_problem.ScalableProblem`:
+
+  - The configuration of the scalable disciplines is done with :class:`ScalableDisciplineSettings`.
+  - The method :meth:`~gemseo.problems.scalable.parametric.scalable_problem.ScalableProblem.create_quadratic_programming_problem` returns the corresponding quadratic programming (QP) problem as an :class:`OptimizationProblem`.
+  - The argument ``alpha`` (default: 0.5) defines the share of feasible design space.
+  `#717 <https://gitlab.com/gemseo/dev/gemseo/-/issues/717>`_
+
+API changes
+***********
+
+- ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
+- Removed the useless exception ``NloptRoundOffException``,
+- Renamed ``InvalidDataException`` to ``InvalidDataError``.
+  `#23 <https://gitlab.com/gemseo/dev/gemseo/-/issues/23>`_
+- Moved the :class:`.MatlabDiscipline` to the plugin `gemseo-matlab <https://gitlab.com/gemseo/dev/gemseo-matlab>`_.
+- Moved the ``PDFO`` wrapper to the plugin `gemseo-pdfo <https://gitlab.com/gemseo/dev/gemseo-pdfo>`_.
+- Moved the library of optimization algorithms :class:`.PSevenOpt` to the plugin `gemseo-pseven <https://gitlab.com/gemseo/dev/gemseo-pseven>`_.
+- Moved ``gemseo.utils.testing.compare_dict_of_arrays`` to :mod:`gemseo.utils.comparisons.compare_dict_of_arrays`.
+- Moved ``gemseo.utils.testing.image_comparison`` to :mod:`gemseo.utils.testing.helpers.image_comparison`.
+- Moved ``gemseo.utils.pytest_conftest`` to :mod:`gemseo.utils.testing.pytest_conftest`.
+- Moved ``gemseo.utils.testing.pytest_conftest.concretize_classes`` to :mod:`gemseo.utils.testing.helpers.concretize_classes`.
+  `#173 <https://gitlab.com/gemseo/dev/gemseo/-/issues/173>`_
+- :class:`.Dataset` inherits from :class:`DataFrame` and uses multi-indexing columns.
+  Some methods have been added to improve the use of multi-index.
+  Two derived classes (:class:`.IODataset` and :class:`.OptimizationDataset`) can be considered for specific usages.
+- :class:`.Dataset` can be imported from ``src.gemseo.datasets.dataset``.
+- :class:`.Dataset` no longer has the ``get_data_by_group``, ``get_all_data`` and ``get_data_by_names`` methods. Use :meth:`~.Dataset.get_view`` instead.
+  It returns a sliced :class:`.Dataset`, to focus on some parts.
+  Different formats can be used to extract data using pandas default methods.
+- :class:`.Dataset` no longer has the ``export_to_dataframe`` method, since it is a ``DataFrame`` itself.
+- :class:`.Dataset` no longer has the ``length``; use ``len(dataset)`` instead.
+- :class:`.Dataset` no longer has the ``is_empty`` method. Use pandas attribute ``empty`` instead.
+- :class:`.Dataset` no longer has the :method:`.export_to_cache` method.
+- :class:`.Dataset` no longer has the ``row_names`` attribute. Use ``index`` instead.
+- :meth:`.Dataset.add_variable` no longer has the ``group`` argument. Use ``group_name`` instead.
+- :meth:`.Dataset.add_variable` no longer has the ``name`` argument. Use ``variable_name`` instead.
+- :meth:`.Dataset.add_variable` no longer has the ``cache_as_input`` argument.
+- :meth:`.Dataset.add_group` no longer has the ``group`` argument. Use ``group_name`` instead.
+- :meth:`.Dataset.add_group` no longer has the ``variables`` argument. Use ``variable_names`` instead.
+- :meth:`.Dataset.add_group` no longer has the ``sizes`` argument. Use ``variable_names_to_n_components`` instead.
+- :meth:`.Dataset.add_group` no longer has the ``cache_as_input`` and ``pattern`` arguments.
+- :meth:`~.gemseo.load_dataset` is renamed: :meth:`~gemseo.create_benchmark_dataset`.
+  Can be used to create a Burgers, Iris or Rosenbrock dataset.
+- :class:`.BurgerDataset` no longer exists. Create a Burger dataset with :function:`.create_burgers_dataset`.
+- :class:`.IrisDataset` no longer exists. Create an Iris dataset with :function:`.create_iris_dataset`.
+- :class:`.RosenbrockDataset` no longer exists. Create a Rosenbrock dataset with :function:`.create_rosenbrock_dataset`.
+- :mod:`.problems.dataset.factory` no longer exists.
+- :meth:`~.Scenario.to_dataset` no longer has the ``by_group`` argument.
+- :meth:`.AbstractCache.to_dataset` no longer has the ``by_group`` and ``name`` arguments.
+  `#257 <https://gitlab.com/gemseo/dev/gemseo/-/issues/257>`_
+- Rename :class:`.MDOObjScenarioAdapter` to :class:`.MDOObjectiveScenarioAdapter`.
+- The scenario adapters :class:`.MDOScenarioAdapter` and :class:`.MDOObjectiveScenarioAdapter` are now located in the package :mod:`gemseo.disciplines.scenario_adapters`.
+  `#407 <https://gitlab.com/gemseo/dev/gemseo/-/issues/407>`_
+- Rename :class:`.MakeFunction` to :class:`.MDODisciplineAdapter`.
+- In :class:`.MDODisciplineAdapter`, replace the argument ``mdo_function`` of type :class:`.MDODisciplineAdapterGenerator` by the argument ``discipline`` of type :class:`.MDODiscipline`.
+- Rename :class:`.MDOFunctionGenerator` to :class:`.MDODisciplineAdapterGenerator`.
+  `#412 <https://gitlab.com/gemseo/dev/gemseo/-/issues/412>`_
+- :class:`.DesignSpace` has a class method :meth:`.DesignSpace.from_file` and an instance method :meth:`.DesignSpace.to_file`.
+- :func:`read_design_space` can read an HDF file.
+- Rename :meth:`.DesignSpace.export_hdf` to :meth:`.DesignSpace.to_hdf`.
+- Rename :meth:`.DesignSpace.import_hdf` to :meth:`.DesignSpace.from_hdf` which is a class method.
+- Rename :meth:`.DesignSpace.export_to_txt` to :meth:`.DesignSpace.to_csv`.
+- Rename :meth:`.DesignSpace.read_from_txt` to :meth:`.DesignSpace.from_csv` which is a class method.
+- Rename :meth:`.Database.export_hdf` to :meth:`.Database.to_hdf`.
+- Replace :meth:`.Database.import_hdf` by the class method :meth:`.Database.from_hdf` and the instance method :meth:`.Database.update_from_hdf`.
+- Rename :meth:`.Database.export_to_ggobi` to :meth:`.Database.to_ggobi`.
+- Rename :meth:`.Database.import_from_opendace` to :meth:`.Database.update_from_opendace`.
+- :class:`.Database` no longer has the argument ``input_hdf_file``; use ``database = Database.from_hdf(file_path)`` instead.
+- Rename :meth:`.OptimizationProblem.export_hdf` to :meth:`.OptimizationProblem.to_hdf`.
+- Rename :meth:`.OptimizationProblem.import_hdf` to :meth:`.OptimizationProblem.from_hdf` which is a class method.
+- Rename :meth:`.OptimizationProblem.export_to_dataset` to :meth:`.OptimizationProblem.to_dataset`.
+- Rename :meth:`.AbstractCache.export_to_dataset` to :meth:`.AbstractCache.to_dataset`.
+- Rename :meth:`.AbstractCache.export_to_ggobi` to :meth:`.AbstractCache.to_ggobi`.
+- Rename :meth:`.Scenario.export_to_dataset` to :meth:`.Scenario.to_dataset`.
+- Rename :meth:`.SensitivityAnalysis.export_to_dataset` to :meth:`.SensitivityAnalysis.to_dataset`.
+- Rename :meth:`.SensitivityAnalysis.save` to :meth:`.SensitivityAnalysis.to_pickle`.
+- Rename :meth:`.SensitivityAnalysis.load` to :meth:`.SensitivityAnalysis.from_pickle` which is a class method.
+- Rename :meth:`.MDOFunction.serialize` to :meth:`.MDOFunction.to_pickle`.
+- Rename :meth:`.MDOFunction.deserialize` to :meth:`.MDOFunction.from_pickle` which is a static method.
+- Rename :meth:`.MDODiscipline.serialize` to :meth:`.MDODiscipline.to_pickle`.
+- Rename :meth:`.MDODiscipline.deserialize` to :meth:`.MDODiscipline.from_pickle` which is a static method.
+- Rename :meth:`.MLAlgo.save` to :meth:`.MLAlgo.to_pickle`.
+- Rename :meth:`.ScalabilityResult.save` to :meth:`.ScalabilityResult.to_pickle`.
+- Rename :meth:`.BaseGrammar.convert_to_simple_grammar` to :meth:`.BaseGrammar.to_simple_grammar`.
+- The argument ``export_hdf`` of :func:`write_design_space` has been removed.
+- Rename :func:`export_design_space` to :func:`write_design_space`.
+- :class:`.DesignSpace` no longer has ``file_path`` as argument; use ``design_space = DesignSpace.from_file(file_path)`` instead.
+  `#450 <https://gitlab.com/gemseo/dev/gemseo/-/issues/450>`_
+- Rename :func:`.iks_agg` to :func:`.compute_iks_agg`
+- Rename :func:`.iks_agg_jac_v` to :func:`.compute_total_iks_agg_jac`
+- Rename :func:`.ks_agg` to :func:`.compute_ks_agg`
+- Rename :func:`.ks_agg_jac_v` to :func:`.compute_total_ks_agg_jac`
+- Rename :func:`.max_agg` to :func:`.compute_max_agg`
+- Rename :func:`.max_agg_jac_v` to :func:`.compute_max_agg_jac`
+- Rename :func:`.sum_square_agg` to :func:`.compute_sum_square_agg`
+- Rename :func:`.sum_square_agg_jac_v` to :func:`.compute_total_sum_square_agg_jac`
+- Rename the first positional argument ``constr_data_names`` of :class:`.ConstraintAggregation` to ``constraint_names``.
+- Rename the second positional argument ``method_name`` of :class:`.ConstraintAggregation` to ``aggregation_function``.
+- Rename the first position argument ``constr_id`` of :meth:`.OptimizationProblem.aggregate_constraint` to ``constraint_index``.
+- Rename the aggregation methods ``"pos_sum"``, ``"sum"`` and ``"max"`` to ``"POS_SUM"``, ``"SUM"`` and ``"MAX"``.
+- The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoAssessor` with the argument ``measure_evaluation_method``.
+- The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoSelection` with the argument ``measure_evaluation_method``.
+- The name of the method to evaluate the quality measure is passed to :class:`.MLAlgoCalibration` with the argument ``measure_evaluation_method``.
+- The names of the methods to evaluate a quality measure can be accessed with :attr:`.MLAlgoQualityMeasure.EvaluationMethod`.
+  `#464 <https://gitlab.com/gemseo/dev/gemseo/-/issues/464>`_
+- Removed the property ``penultimate_entry`` from :class:`.SimpleCache`.
+  `#480 <https://gitlab.com/gemseo/dev/gemseo/-/issues/480>`_
+- Removed the attribute ``.factory`` of the factories.
+- Removed :attr:`Factory._GEMS_PATH`.
+- Moved :class:`singleton._Multiton` to :class:`factory._FactoryMultitonMeta`
+- Renamed :class:`Factory.cache_clear` to :class:`Factory.clear_cache`.
+- Renamed :attr:`Factory.classes` to :attr:`Factory.class_names`.
+- Renamed :class:`Factory` to :class:`BaseFactory`.
+- Renamed :class:`DriverFactory` to :class:`BaseAlgoFactory`.
+  `#522 <https://gitlab.com/gemseo/dev/gemseo/-/issues/522>`_
+- Removed the method ``_update_grammar_input`` from :class:`.Scenario`,
+  :meth:`.Scenario._update_input_grammar` shall be used instead.
+  `#558 <https://gitlab.com/gemseo/dev/gemseo/-/issues/558>`_
+- :meth:`.Scenario.xdsmize`
+
+    - Rename ``latex_output`` to ``save_pdf``.
+    - Rename ``html_output`` to ``save_html``.
+    - Rename ``json_output`` to ``save_json``.
+    - Rename ``open_browser`` to ``show_html``.
+    - Rename ``outfilename`` to ``file_name`` and do not use suffix.
+    - Rename ``outdir`` to ``directory_path``.
+
+- :class:`~.XDSMizer
+- Rename ``latex_output`` to ``save_pdf``.
+- Rename ``open_browser`` to ``show_html``.
+- Rename ``output_dir`` to ``directory_path``.
+`
+    - Rename :attr:`~.XDSMizer.outdir` to :attr:`~.XDSMizer.directory_path`.
+    - Rename :attr:`~.XDSMizer.outfilename` to :attr:`~.XDSMizer.json_file_name`.
+    - Rename :attr:`~.XDSMizer.latex_output` to :attr:`~.XDSMizer.save_pdf`.
+
+- :meth:`~.XDSMizer.monitor`
+    - Rename ``latex_output`` to ``save_pdf``.
+    - Rename ``outfilename`` to ``file_name`` and do not use suffix.
+    - Rename ``outdir`` to ``directory_path``.
+
+- :meth:`~.XDSMizer.run`
+
+    - Rename ``latex_output`` to ``save_pdf``.
+    - Rename ``html_output`` to ``save_html``.
+    - Rename ``json_output`` to ``save_json``.
+    - Rename ``open_browser`` to ``show_html``.
+    - Rename ``outfilename`` to ``file_name`` and do not use suffix.
+    - Rename ``outdir`` to ``directory_path`` and use ``"."`` as default value.
+
+- :meth:`.StudyAnalysis.generate_xdsm`
+
+    - Rename ``latex_output`` to ``save_pdf``.
+    - Rename ``open_browser`` to ``show_html``.
+    - Rename ``output_dir`` to ``directory_path``.
+
+- :meth:`.MDOCouplingStructure.plot_n2_chart`: rename ``open_browser`` to ``show_html``.
+- :meth:`.N2HTML`: rename ``open_browser`` to ``show_html``.
+- :func:`generate_n2_plot` rename ``open_browser`` to ``show_html``.
+- :meth:`.Scenario.xdsmize`: rename ``print_statuses`` to ``log_workflow_status``.
+- :meth:`.XDSMizer.monitor`: rename ``print_statuses`` to ``log_workflow_status``.
+- Rename :attr:`.XDSMizer.print_statuses` to :attr:`.XDSMizer.log_workflow_status`.
+- The CLI of the :class:`.StudyAnalysis` uses the shortcut ``-p`` for the option ``--save_pdf``.
+  `#564 <https://gitlab.com/gemseo/dev/gemseo/-/issues/564>`_
+- Replace the argument ``force_no_exec`` by ``execute`` in :meth:`.MDODiscipline.linearize` and :meth:`.JacobianAssembly.total_derivatives`.
+- Rename the argument ``force_all`` to ``compute_all_jacobians`` in :meth:`.MDODiscipline.linearize`.
+  `#644 <https://gitlab.com/gemseo/dev/gemseo/-/issues/644>`_
+- The names of the algorithms proposed by :class:`.CorrelationAnalysis` must be written in capital letters; see :class:`.CorrelationAnalysis.Method`.
+  `#654 <https://gitlab.com/gemseo/dev/gemseo/-/issues/654>`_
+- :class:`.ComposedDistribution` uses ``None`` as value for independent copula.
+- :class:`.ParameterSpace` no longer uses a ``copula`` passed at instantiation but to :meth:`.ParameterSpace.build_composed_distribution`.
+- :class:`.SPComposedDistribution` raises an error when set up with a copula different from ``None``.
+  `#655 <https://gitlab.com/gemseo/dev/gemseo/-/issues/655>`_
+- Rename :meth:`.AutoPyDiscipline.in_names` to :meth:`.AutoPyDiscipline.input_names`.
+- Rename :meth:`.AutoPyDiscipline.out_names` to :meth:`.AutoPyDiscipline.output_names`.
+  `#661 <https://gitlab.com/gemseo/dev/gemseo/-/issues/661>`_
+- Replaced the module ``parallel_execution.py`` by the package ``parallel_execution``.
+- Renamed the class ``ParallelExecution`` to ``CallableParallelExecution``.
+- Renamed the function ``worker`` to ``execute_workers``.
+- Renamed the argument ``input_values`` to ``inputs``.
+- Removed the ``ParallelExecution`` methods:
+
+    - ``_update_local_objects``
+    - ``_run_task``
+    - ``_is_worker``
+    - ``_filter_ordered_outputs``
+    - ``_run_task_by_index``
+- ``ParallelExecution`` and its derive classes always take a collection of workers and no longer a single worker.
+  `#668 <https://gitlab.com/gemseo/dev/gemseo/-/issues/668>`_
+- The visualization :class:`.Lines` uses a specific tuple (color, style, marker, name) per line by default.
+  `#677 <https://gitlab.com/gemseo/dev/gemseo/-/issues/677>`_
+- :mod:`.utils.python_compatibility` was moved and renamed to :mod:`.utils.compatibility.python`.
+  `#689 <https://gitlab.com/gemseo/dev/gemseo/-/issues/689>`_
+- The way non-serializable attributes of an :class:`.MDODiscipline` are treated has changed. From now on, instead of
+  defining the attributes to serialize with the class variable ``_ATTR_TO_SERIALIZE``, :class:`.MDODiscipline` and its
+  child classes shall define the attributes not to serialize with the class variable ``_ATTR_NOT_TO_SERIALIZE``.
+  When a new attribute that is not serializable is added to the list, the methods ``__setstate__`` and ``__getstate__``
+  shall be modified to handle its creation properly.
+  `#699 <https://gitlab.com/gemseo/dev/gemseo/-/issues/699>`_
+- Rename :mod:`gemseo.mlearning.qual_measure` to :mod:`gemseo.mlearning.quality_measures`.
+- Rename :mod:`gemseo.mlearning.qual_measure.silhouette` to :mod:`gemseo.mlearning.quality_measures.silhouette_measure`.
+- Rename :mod:`gemseo.mlearning.cluster` to :mod:`gemseo.mlearning.clustering`.
+- Rename :mod:`gemseo.mlearning.cluster.cluster` to :mod:`gemseo.mlearning.clustering.clustering`.
+- Rename :mod:`gemseo.mlearning.transform` to :mod:`gemseo.mlearning.transformers`.
+  `#701 <https://gitlab.com/gemseo/dev/gemseo/-/issues/701>`_
+- Rename :mod:`gemseo.algos.driver_lib` to :mod:`gemseo.algos.driver_library`.
+- Rename :class:`.DriverLib` to :class:`.DriverLibrary`.
+- Rename :mod:`gemseo.algos.algo_lib` to :mod:`gemseo.algos.algorithm_library`.
+- Rename :class:`.AlgoLib` to :class:`.AlgorithmLibrary`.
+- Rename :mod:`gemseo.algos.doe.doe_lib` to :mod:`gemseo.algos.doe.doe_library`.
+- Rename :mod:`gemseo.algos.linear_solvers.linear_solver_lib` to :mod:`gemseo.algos.linear_solvers.linear_solver_library`.
+- Rename :class:`.LinearSolverLib` to :class:`.LinearSolverLibrary`.
+- Rename :mod:`gemseo.algos.opt.opt_lib` to :mod:`gemseo.algos.opt.optimization_library`.
+  `#702 <https://gitlab.com/gemseo/dev/gemseo/-/issues/702>`_
+- Rename :class:`.GSNewtonMDA` to :class:`.MDAGSNewton`.
+  `#703 <https://gitlab.com/gemseo/dev/gemseo/-/issues/703>`_
+- The high-level functions defined in :mod:`gemseo.uncertainty.api` have been moved to :mod:`gemseo.uncertainty`.
+- The high-level functions defined in :mod:`gemseo.mlearning.api` have been moved to :mod:`gemseo.mlearning`.
+- The high-level functions defined in :mod:`gemseo.api` have been moved to :mod:`gemseo`.
+- The high-level functions defined in :mod:`gemseo.problems.scalable.data_driven.api` have been moved to :mod:`gemseo.problems.scalable.data_driven`.
+  `#707 <https://gitlab.com/gemseo/dev/gemseo/-/issues/707>`_
+- The enumeration :attr:`.MDODiscipline.ExecutionStatus` replaced the constants:
+ - ``MDODiscipline.STATUS_VIRTUAL``
+ - ``MDODiscipline.STATUS_PENDING``
+ - ``MDODiscipline.STATUS_DONE``
+ - ``MDODiscipline.STATUS_RUNNING``
+ - ``MDODiscipline.STATUS_FAILED``
+ - ``MDODiscipline.STATUS_LINEARIZE``
+ - ``MDODiscipline.AVAILABLE_STATUSES``
+- The enumeration :attr:`.MDODiscipline.GrammarType` replaced the constants:
+ - ``MDODiscipline.JSON_GRAMMAR_TYPE``
+ - ``MDODiscipline.SIMPLE_GRAMMAR_TYPE``
+- The enumeration :attr:`.MDODiscipline.CacheType` replaced the constants:
+ - ``MDODiscipline.SIMPLE_CACHE``
+ - ``MDODiscipline.HDF5_CACHE``
+ - ``MDODiscipline.MEMORY_FULL_CACHE``
+ - The value ``None`` indicating no cache is replaced by :attr:`.MDODiscipline.CacheType.NONE`
+- The enumeration :attr:`.MDODiscipline.ReExecutionPolicy` replaced the constants:
+ - ``MDODiscipline.RE_EXECUTE_DONE_POLICY``
+ - ``MDODiscipline.RE_EXECUTE_NEVER_POLICY``
+- The enumeration :attr:`.derivation_modes.ApproximationMode` replaced the constants:
+ - ``derivation_modes.FINITE_DIFFERENCES``
+ - ``derivation_modes.COMPLEX_STEP``
+ - ``derivation_modes.AVAILABLE_APPROX_MODES``
+- The enumeration :attr:`.derivation_modes.DerivationMode` replaced the constants:
+ - ``derivation_modes.DIRECT_MODE``
+ - ``derivation_modes.REVERSE_MODE``
+ - ``derivation_modes.ADJOINT_MODE``
+ - ``derivation_modes.AUTO_MODE``
+ - ``derivation_modes.AVAILABLE_MODES``
+- The enumeration :attr:`.JacobianAssembly.DerivationMode` replaced the constants:
+ - ``JacobianAssembly.DIRECT_MODE``
+ - ``JacobianAssembly.REVERSE_MODE``
+ - ``JacobianAssembly.ADJOINT_MODE``
+ - ``JacobianAssembly.AUTO_MODE``
+ - ``JacobianAssembly.AVAILABLE_MODES``
+- The enumeration :attr:`.MDODiscipline.ApproximationMode` replaced the constants:
+ - ``MDODiscipline.FINITE_DIFFERENCES``
+ - ``MDODiscipline.COMPLEX_STEP``
+ - ``MDODiscipline.APPROX_MODES``
+- The enumeration :attr:`.MDODiscipline.LinearizationMode` replaced the constants:
+ - ``MDODiscipline.FINITE_DIFFERENCE``
+ - ``MDODiscipline.COMPLEX_STEP``
+ - ``MDODiscipline.AVAILABLE_APPROX_MODES``
+- The enumeration :attr:`.DriverLib.DifferentiationMethod` replaced the constants:
+ - ``DriverLib.USER_DEFINED_GRADIENT``
+ - ``DriverLib.DIFFERENTIATION_METHODS``
+- The enumeration :attr:`.DriverLib.ApproximationMode` replaced the constants:
+ - ``DriverLib.COMPLEX_STEP_METHOD``
+ - ``DriverLib.FINITE_DIFF_METHOD``
+- The enumeration :attr:`.OptProblem.ApproximationMode` replaced the constants:
+ - ``OptProblem.USER_DEFINED_GRADIENT``
+ - ``OptProblem.DIFFERENTIATION_METHODS``
+ - ``OptProblem.NO_DERIVATIVES``
+ - ``OptProblem.COMPLEX_STEP_METHOD``
+ - ``OptProblem.FINITE_DIFF_METHOD``
+- The method :meth:`.Scenario.set_differentiation_method` no longer accepts ``None`` for the argument ``method``.
+- The enumeration :attr:`.OptProblem.ProblemType` replaced the constants:
+ - ``OptProblem.LINEAR_PB``
+ - ``OptProblem.NON_LINEAR_PB``
+ - ``OptProblem.AVAILABLE_PB_TYPES``
+- The enumeration :attr:`.DesignSpace.DesignVariableType` replaced the constants:
+ - ``DesignSpace.FLOAT``
+ - ``DesignSpace.INTEGER``
+ - ``DesignSpace.AVAILABLE_TYPES``
+- The namedtuple :attr:`.DesignSpace.DesignVariable` replaced:
+ - ``design_space.DesignVariable``
+- The enumeration :attr:`.MDOFunction.ConstraintType` replaced the constants:
+ - ``MDOFunction.TYPE_EQ``
+ - ``MDOFunction.TYPE_INEQ``
+- The enumeration :attr:`.MDOFunction.FunctionType` replaced the constants:
+ - ``MDOFunction.TYPE_EQ``
+ - ``MDOFunction.TYPE_INEQ``
+ - ``MDOFunction.TYPE_OBJ``
+ - ``MDOFunction.TYPE_OBS``
+ - The value ``""`` indicating no function type is replaced by :attr:`.MDOFunction.FunctionType.NONE`
+- The enumeration :attr:`.RBFRegressor.Function` replaced the constants:
+ - ``RBFRegressor.MULTIQUADRIC``
+ - ``RBFRegressor.INVERSE_MULTIQUADRIC``
+ - ``RBFRegressor.GAUSSIAN``
+ - ``RBFRegressor.LINEAR``
+ - ``RBFRegressor.CUBIC``
+ - ``RBFRegressor.QUINTIC``
+ - ``RBFRegressor.THIN_PLATE``
+ - ``RBFRegressor.AVAILABLE_FUNCTIONS``
+- Removed ``StudyAnalysis.AVAILABLE_DISTRIBUTED_FORMULATIONS``.
+- The enumeration :attr:`.RobustnessQuantifier.Approximation` replaced the constant:
+ - ``RobustnessQuantifier.AVAILABLE_APPROXIMATIONS``
+- The enumeration :attr:`.OTDistributionFitter.DistributionName` replaced the constants:
+ - ``OTDistributionFitter.AVAILABLE_DISTRIBUTIONS``
+ - ``OTDistributionFitter._AVAILABLE_DISTRIBUTIONS``
+- The enumeration :attr:`.OTDistributionFitter.FittingCriterion` replaced the constants:
+ - ``OTDistributionFitter.AVAILABLE_FITTING_TESTS``
+ - ``OTDistributionFitter._AVAILABLE_FITTING_TESTS``
+- The enumeration :attr:`.OTDistributionFitter.SignificanceTest` replaced the constant:
+ - ``OTDistributionFitter.SIGNIFICANCE_TESTS``
+- The enumeration :attr:`.ParametricStatistics.DistributionName` replaced the constant:
+ - ``ParametricStatistics.AVAILABLE_DISTRIBUTIONS``
+- The enumeration :attr:`.ParametricStatistics.FittingCriterion` replaced the constant:
+ - ``ParametricStatistics.AVAILABLE_FITTING_TESTS``
+- The enumeration :attr:`.ParametricStatistics.SignificanceTest` replaced the constant:
+ - ``ParametricStatistics.SIGNIFICANCE_TESTS``
+- The enumeration :attr:`.LinearSolver.Solver` replaced the constants:
+ - ``LinearSolver.LGMRES``
+ - ``LinearSolver.AVAILABLE_SOLVERS``
+- The enumeration :attr:`.DiscFromExe.Parser` replaced the constants:
+ - ``DiscFromExe.Parsers``
+ - ``DiscFromExe.Parsers.KEY_VALUE_PARSER``
+ - ``DiscFromExe.Parsers.TEMPLATE_PARSER``
+- The enumeration :attr:`.SobolAnalysis.Algorithm` replaced the constant:
+ - ``SobolAnalysis.Algorithm.Saltelli`` by ``SobolAnalysis.Algorithm.SALTELLI``
+ - ``SobolAnalysis.Algorithm.Jansen`` by ``SobolAnalysis.Algorithm.JANSEN``
+ - ``SobolAnalysis.Algorithm.MauntzKucherenko`` by ``SobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO``
+ - ``SobolAnalysis.Algorithm.Martinez`` by ``SobolAnalysis.Algorithm.MARTINEZ``
+- The enumeration :attr:`.SobolAnalysis.Method` replaced the constant:
+ - ``SobolAnalysis.Method.first`` by ``SobolAnalysis.Method.FIRST``
+ - ``SobolAnalysis.Method.total`` by ``SobolAnalysis.Method.TOTAL``
+- The enumeration :attr:`.FilePathManager.FileType` replaced the constant:
+ - ``file_type_manager.FileType``
+- The enumeration :attr:`.ToleranceInterval.ToleranceIntervalSide` replaced:
+ - ``distribution.ToleranceIntervalSide``
+- The namedtuple :attr:`.ToleranceInterval.Bounds` replaced:
+ - ``distribution.Bounds``
+- The enumeration :attr:`.MatlabEngine.ParallelType` replaced:
+ - ``matlab_engine.ParallelType``
+- The enumeration :attr:`.ConstrAggregationDisc.EvaluationFunction` replaced:
+ - ``.constraint_aggregation.EvaluationFunction``
+  `#710 <https://gitlab.com/gemseo/dev/gemseo/-/issues/710>`_
+- Rename :attr:`.HDF5Cache.hdf_node_name` to :attr:`.HDF5Cache.hdf_node_path`.
+- ``tolerance`` and ``name`` are the first instantiation arguments of :class:`.HDF5Cache`, for consistency with other caches.
+- Rename :attr:`.Factory.classes` to :attr:`.Factory.class_names`.
+- Use ``True`` as default value of ``eval_observables`` in :meth:`.OptimizationProblem.evaluate_functions`.
+- Rename ``outvars`` to ``output_names`` and ``args`` to ``input_names`` in :class:`.MDOFunction` and its subclasses (names of arguments, attributes and methods).
+- :attr:`.MDOFunction.has_jac` is a property.
+- Remove :meth:`.MDOFunction.has_dim`.
+- Remove :meth:`.MDOFunction.has_outvars`.
+- Remove :meth:`.MDOFunction.has_expr`.
+- Remove :meth:`.MDOFunction.has_args`.
+- Remove :meth:`.MDOFunction.has_f_type`.
+- Rename :meth:`.DriverLib.is_algo_requires_grad` to :meth:`.DriverLibrary.requires_gradient`.
+- Remove ``n_legend_cols`` in :meth:`.ParametricStatistics.plot_criteria`.
+- Rename ``variables_names``, ``variables_sizes`` and ``variables_types`` to ``variable_names``, ``variable_sizes`` and ``variable_types``.
+- Rename ``inputs_names`` and ``outputs_names`` to ``input_names`` and ``output_names``.
+- Rename ``constraints_names`` to ``constraint_names``.
+- Rename ``functions_names`` to ``function_names``.
+- Rename ``inputs_sizes`` and ``outputs_sizes`` to ``input_sizes`` and ``output_sizes``.
+- Rename ``disciplines_names`` to ``discipline_names``.
+- Rename ``jacobians_names`` to ``jacobian_names``.
+- Rename ``observables_names`` to ``observable_names``.
+- Rename ``columns_names`` to ``column_names``.
+- Rename ``distributions_names`` to ``distribution_names``.
+- Rename ``options_values`` to ``option_values``.
+- Rename ``constraints_values`` to ``constraint_values``.
+- Rename ``jacobians_values`` to ``jacobian_values``.
+- Rename :class:`.ConstrAggegationDisc` to :class:`.ConstraintAggregation`.
+  `#713 <https://gitlab.com/gemseo/dev/gemseo/-/issues/713>`_
+- Added the arguments ``newton_linear_solver`` and ``newton_linear_solver_options`` to the constructor of :class:`MDANewtonRaphson`. These arguments are passed to the linear solver of the Newton solver used to solve the MDA coupling.
+  `#715 <https://gitlab.com/gemseo/dev/gemseo/-/issues/715>`_
+- The API and the variable names are based on the paper :cite:`azizalaoui:hal-04002825`.
+- The module :mod:`gemseo.problems.scalable.parametric.study` has been removed.
+  `#717 <https://gitlab.com/gemseo/dev/gemseo/-/issues/717>`_
+- :class:`.YvsX` no longer has the arguments ``x_comp`` and ``y_comp``; the components have to be passed as ``x=("variable_name", variable_component)``.
+- :class:`.Scatter` no longer has the arguments ``x_comp`` and ``y_comp``; the components have to be passed as ``x=("variable_name", variable_component)``.
+- :class:`.ZvsXY` no longer has the arguments ``x_comp``, ``y_comp`` and ``z_comp``; the components have to be passed as ``x=("variable_name", variable_component)``.
+  `#722 <https://gitlab.com/gemseo/dev/gemseo/-/issues/722>`_
+- :meth:`.MDOFunciton.check_grad` argument ``method`` was renamed to ``approximation_mode`` and now expects to be passed an :class:`ApproximationMode`.
+- For :class:`GradientApproximator` and its derived classes:
+- Renamed the class attribute ``ALIAS`` to ``_APPROXIMATION_MODE``,
+- Renamed the instance attribute ``_par_args`` to ``_parallel_args``,
+- Renamed ``GradientApproximationFactory`` to :class:`GradientApproximatorFactory` and moved it to the module ``gradient_approximator_factory.py``,
+- Moved the duplicated functions to ``error_estimators.py``:
+- ``finite_differences.comp_best_step``
+- ``finite_differences.compute_truncature_error``
+- ``finite_differences.compute_cancellation_error``
+- ``finite_differences.approx_hess``
+- ``derivatives_approx.comp_best_step``
+- ``derivatives_approx.compute_truncature_error``
+- ``derivatives_approx.compute_cancellation_error``
+- ``derivatives_approx.approx_hess``
+- ``comp_best_step`` was renamed to ``compute_best_step``
+- ``approx_hess`` was renamed to ``compute_hessian_approximation``
+  `#735 <https://gitlab.com/gemseo/dev/gemseo/-/issues/735>`_
+- To update a grammar from data names that shall be validated against Numpy arrays, the ``update`` method is now replaced by the method ``update_from_names``.
+- To update a :class:`JSONGrammar` from a JSON schema, the ``update`` method is now replaced by the method ``update_from_schema``.
+- Renamed :meth:`.JSONGrammar.write` to :meth:`JSONGrammar.to_file`.
+- Renamed the argument ``schema_path`` to ``file_path`` for the :class:`JSONGrammar` constructor.
+- To update a :class:`SimpleGrammar` or a :class:`JSONGrammar` from a names and types, the ``update`` method is now replaced by the method ``update_from_types``.
+  `#741 <https://gitlab.com/gemseo/dev/gemseo/-/issues/741>`_
+- :meth:`.RobustnessQuantifier.compute_approximation` uses ``None`` as default value for ``at_most_niter``.
+- :meth:`.HessianApproximation.get_x_grad_history` uses ``None`` as default value for ``last_iter`` and ``at_most_niter``.
+- :meth:`.HessianApproximation.build_approximation` uses ``None`` as default value for ``at_most_niter``.
+- :meth:`.HessianApproximation.build_inverse_approximation` uses ``None`` as default value for ``at_most_niter``.
+- :meth:`.LSTSQApprox.build_approximation` uses ``None`` as default value for ``at_most_niter``.
+  `#750 <https://gitlab.com/gemseo/dev/gemseo/-/issues/750>`_
+- :meth:`.PostFactory.create` uses ``class_name``, then ``opt_problem`` and ``**options`` as arguments.
+  `#752 <https://gitlab.com/gemseo/dev/gemseo/-/issues/752>`_
+- Move :class:`.ProgressBar` and :class:`.TqdmToLogger` to :mod:`gemseo.algos.progress_bar`.
+- Move :class:`.HashableNdarray` to :mod:`gemseo.algos.hashable_ndarray`.
+- Move the HDF methods of :class:`.Database` to :class:`.HDFDatabase`.
+- Remove :attr:`.Database.KEYSSEPARATOR`.
+- Remove :meth:`.Database._format_design_variable_names`.
+- Remove :meth:`.Database.get_value`; use ``output_value = database[x_vect]`` instead of ``output_value = database.get_value(x_vect)``.
+- Remove :meth:`.Database.contains_x`; use ``x_vect in database`` instead of ``database.contains_x(x_vect)``.
+- Remove :meth:`.Database.contains_dataname`; use ``output_name in database.output_names`` instead of ``database.contains_dataname(output_name)``.
+- Remove :meth:`.Database.set_dv_names`; use ``database.input_names`` to access the input names.
+- Remove :meth:`.Database.is_func_grad_history_empty`; use :meth:`.database.check_output_history_is_empty` instead with any output name.
+- Rename :meth:`.Database.get_hashed_key` to :meth:`.Database.get_hashable_ndarray`.
+- Rename :meth:`.Database.get_all_data_names` to :meth:`.Database.get_function_names`.
+- Rename :attr:`.Database.missing_value_tag` to :attr:`.Database.MISSING_VALUE_TAG`.
+- Rename :meth:`.Database.get_x_by_iter` to :meth:`.Database.get_x_vect`.
+- Rename :meth:`.Database.clean_from_iterate` to :meth:`.Database.clear_from_iteration`.
+- Rename :meth:`.Database.get_max_iteration` to :attr:`.Database.n_new_iterations`.
+- Rename :meth:`.Database.notify_newiter_listeners` to :meth:`.Database.notify_new_iter_listeners`.
+- Rename :meth:`.Database.get_func_history` to :meth:`.Database.get_function_history`.
+- Rename :meth:`.Database.get_func_grad_history` to :meth:`.Database.get_gradient_history`.
+- Rename :meth:`.Database.get_x_history` to :meth:`.Database.get_x_vect_history`.
+- Rename :meth:`.Database.get_last_n_x` to :meth:`.Database.get_last_n_x_vect`.
+- Rename :meth:`.Database.get_x_at_iteration` to :meth:`.Database.get_x_vect`.
+- Rename :meth:`.Database.get_index_of` to :meth:`.Database.get_iteration`.
+- Rename :meth:`.Database.get_f_of_x` to :meth:`.Database.get_function_value`.
+- Rename the argument ``all_function_names`` to ``function_names`` in :meth:`.Database.to_ggobi`.
+- Rename the argument ``design_variable_names`` to ``input_names`` in :meth:`.Database.to_ggobi`.
+- Rename the argument ``add_dv`` to ``with_x_vect`` in :meth:`.Database.get_history_array`.
+- Rename the argument ``values_dict`` to ``output_value`` in :meth:`.Database.store`.
+- Rename the argument ``x_vect`` to ``input_value``.
+- Rename the argument ``listener_func`` to ``function``.
+- Rename the arguments ``funcname``, ``fname`` and ``data_name`` to ``function_name``.
+- Rename the arguments ``functions`` and ``names`` to ``function_names``.
+- Rename the argument ``names`` to ``output_names`` in :meth:`.Database.filter`.
+- Rename the argument ``x_hist`` to ``add_x_vect_history`` in :meth:`.Database.get_function_history` and :meth:`.Database.get_gradient_history`.
+- :meth:`.Database.get_x_vect` starts counting the iterations at 1.
+- :meth:`.Database.clear_from_iteration` starts counting the iterations at 1.
+- :class:`.RadarChart`, :class:`.TopologyView` and :class:`.GradientSensitivity` starts counting the iterations at 1.
+- The input history returned by :meth:`.Database.get_gradient_history` and :meth:`.Database.get_function_history` is now a 2D NumPy array.
+- Remove :attr:`.Database.n_new_iteration`.
+- Remove :attr:`.Database.reset_n_new_iteration`.
+- Remove the argument ``reset_iteration_counter`` in :meth:`.Database.clear`.
+- The :class:`.Database` no longer uses the tag ``"Iter"``.
+- The :class:`.Database` no longer uses the notion of ``stacked_data``.
+  `#753 <https://gitlab.com/gemseo/dev/gemseo/-/issues/753>`_
+- Remove the attributes _scale_residuals_with_coupling_size and _scale_residuals_with_first_norm and add the scaling and _scaling_data attributes.
+- Remove the method set_residuals_scaling_options.
+  `#780 <https://gitlab.com/gemseo/dev/gemseo/-/issues/780>`_
+- :attr:`.SobolAnalysis.AVAILABLE_ALGOS` no longer exists; use the ``enum`` :attr:`.SobolAnalysis.Algorithm` instead.
+- :meth:`.MLQualityMeasure.evaluate` no longer exists; please use either :meth:`.MLQualityMeasure.evaluate_learn`, :meth:`.MLQualityMeasure.evaluate_test`, :meth:`.MLQualityMeasure.evaluate_kfolds`, :meth:`.MLQualityMeasure.evaluate_loo` and :meth:`.MLQualityMeasure.evaluate_bootstrap`.
+- Remove :meth:`.BaseEnum.get_member_from_name`; please use :meth:`.BaseEnum.__getitem__`.
+- Remove :meth:`.DOELibrary.compute_phip_criteria`; please use :func:`.compute_phip_criterion`.
+- Remove :attr:`.OTComposedDistribution.AVAILABLE_COPULA_MODELS`; please use :attr:`.OTComposedDistribution.CopulaModel`.
+- Remove :attr:`.ComposedDistribution.AVAILABLE_COPULA_MODELS`; please use :attr:`.ComposedDistribution.CopulaModel`.
+- Remove :attr:`.SPComposedDistribution.AVAILABLE_COPULA_MODELS`; please use :attr:`.SPComposedDistribution.CopulaModel`.
+- Remove :attr:`.ComposedDistribution.INDEPENDENT_COPULA`; please use :attr:`.ComposedDistribution.INDEPENDENT_COPULA`.
+- Remove :attr:`.SobolAnalysis.AVAILABLE_ALGOS`; please use :attr:`.SobolAnalysis.Algorithm`.
+- Remove :meth:`.MDOFunction.concatenate`; please use :class:`.Concatenate`.
+- Remove :meth:`.MDOFunction.convex_linear_approx`; please use :class:`.ConvexLinearApprox`.
+- Remove :meth:`.MDOFunction.linear_approximation`; please use :meth:`.compute_linear_approximation`.
+- Remove :meth:`.MDOFunction.quadratic_approx`; please use :meth:`.compute_quadratic_approximation`.
+- Remove :meth:`.MDOFunction.restrict`; please use :class:`.FunctionRestriction`.
+  `#464 <https://gitlab.com/gemseo/dev/gemseo/-/issues/464>`_
+- :class:`.DOEScenario` no longer has a ``seed`` attribute.
+  `#621 <https://gitlab.com/gemseo/dev/gemseo/-/issues/621>`_
+- Remove :meth:`.AutoPyDiscipline.get_return_spec_fromstr`.
+  `#661 <https://gitlab.com/gemseo/dev/gemseo/-/issues/661>`_
+- Remove :meth:`.Scenario.get_optimum`; use :attr:`.Scenario.optimization_result` instead.
+  `#770 <https://gitlab.com/gemseo/dev/gemseo/-/issues/770>`_
+
+Removed
+-------
+
+- Removed the obsolete ``gemseo.core.jacobian_assembly`` module.
+- Removed the obsolete ``snopt`` wrapper.
+- Removed python 3.7 support.
+
+
 Version 4.3.0 (2023-02-09)
 **************************
 
@@ -723,9 +1359,7 @@ Documentation and examples
 Software improvements
 ~~~~~~~~~~~~~~~~~~~~~
 
-- It is now possible to execute DOEScenarios in parallel on Windows. For Python versions < 3.7 and
-  Numpy < 1.20.0, there is a known issue where one of the processes gets hung randomly, updating your
-  environment is strongly recommended.
+- It is now possible to execute DOEScenarios in parallel on Windows.
   This feature does not support the use of MemoryFullCache or HDF5Cache on Windows.
   The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
   it may also print the conclusion of an iteration ahead of another one that was concluded first. This

@@ -118,14 +118,6 @@ pyparsing==3.0.9
     # via
     #   matplotlib
     #   packaging
-pyside6==6.3.1
-    # via gemseo (setup.py)
-pyside6-addons==6.3.1
-    # via pyside6
-pyside6-essentials==6.3.1
-    # via
-    #   pyside6
-    #   pyside6-addons
 python-dateutil==2.8.2
     # via
     #   matplotlib
@@ -149,11 +141,6 @@ scipy==1.9.1
     #   gemseo (setup.py)
     #   pydoe2
     #   scikit-learn
-shiboken6==6.3.1
-    # via
-    #   pyside6
-    #   pyside6-addons
-    #   pyside6-essentials
 six==1.16.0
     # via
     #   latexcodec

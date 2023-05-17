@@ -27,9 +27,9 @@ on the Sobieski's SSBJ problem.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 # %%
@@ -43,7 +43,7 @@ configure_logger()
 # %%
 # Description
 # -----------
-# The :class:`~gemseo.post.basic_history.BasicHistory` post-processing
+# The :class:`.BasicHistory` post-processing
 # plots any of the constraint or objective functions
 # w.r.t. the optimization iterations or sampling snapshots.
 
@@ -99,7 +99,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

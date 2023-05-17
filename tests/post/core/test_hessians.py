@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 from typing import Mapping
@@ -56,7 +57,7 @@ def build_history(
     Returns:
         The Rosenbrock hessian, the problem solution and the opt problem.
     """
-    problem = OptimizationProblem.import_hdf(problem_path)
+    problem = OptimizationProblem.from_hdf(problem_path)
     x_opt = problem.solution.x_opt
     h_ref = rosen_hess(x_opt)
     return h_ref, problem.solution, problem
@@ -170,14 +171,30 @@ def test_baseclass_methods():
 
     assert len(apprx.b_mat_history) > 1
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The number of iterations (1) must greater than or equal to 2."
+        ),
+    ):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=1)
     database.clear()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot build approximation for function: "
+            "rosen because its gradient history is too small: 0."
+        ),
+    ):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Design space must be provided when using a normalize_design_space option."
+        ),
+    ):
         apprx.get_x_grad_history(
             problem.objective.name,
             at_most_niter=at_most_niter,
@@ -187,9 +204,15 @@ def test_baseclass_methods():
 
 def test_get_x_grad_history_on_sobieski():
     """Test the gradient history on the Sobieski problem."""
-    opt_pb = OptimizationProblem.import_hdf(MDF_HIST_PATH)
+    opt_pb = OptimizationProblem.from_hdf(MDF_HIST_PATH)
     apprx = HessianApproximation(opt_pb.database)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Function g_1 has a vector output, "
+            "the function index of the output must be specified."
+        ),
+    ):
         apprx.get_x_grad_history("g_1")
     x_hist, x_grad_hist, n_iter, nparam = apprx.get_x_grad_history("g_1", func_index=1)
 
@@ -203,10 +226,21 @@ def test_get_x_grad_history_on_sobieski():
     for grad in x_grad_hist:
         assert grad.shape == (nparam,)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Iteration 5 is higher than the number of gradients in the database: 4."
+        ),
+    ):
         apprx.get_s_k_y_k(x_hist, x_grad_hist, 5)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Function g_1 has a vector output of size 7, "
+            "function index 7 is out of range."
+        ),
+    ):
         apprx.get_x_grad_history("g_1", func_index=7)
 
     # Create inconsistent optimization history by restricting g_2 gradient
@@ -214,7 +248,14 @@ def test_get_x_grad_history_on_sobieski():
     x_0 = next(iter(opt_pb.database.keys()))
     val_0 = opt_pb.database[x_0]
     val_0["@g_2"] = val_0["@g_2"][1:]
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The shape of the design variable history (n_iter,n_x)=((4, 10)) "
+            "and the shape of the gradient history (n_iter,[n_y,]n_x)=((4, 1)) "
+            "are not consistent."
+        ),
+    ):
         apprx.get_x_grad_history("g_2")
 
 
@@ -258,9 +299,12 @@ def test_build_inverse_approximation():
     approx = HessianApproximation(database)
     funcname = problem.objective.name
     approx.build_inverse_approximation(funcname=funcname, h_mat0=[], factorize=True)
-    with pytest.raises(LinAlgError):
+    with pytest.raises(LinAlgError, match=re.escape("The inversion of h_mat failed.")):
         approx.build_inverse_approximation(funcname=funcname, h_mat0=array([1.0, 2.0]))
-    with pytest.raises(LinAlgError):
+    with pytest.raises(
+        LinAlgError,
+        match=re.escape("The Cholesky decomposition of h_factor or b_factor failed."),
+    ):
         approx.build_inverse_approximation(
             funcname=funcname,
             h_mat0=array([[0.0, 1.0], [-1.0, 0.0]]),

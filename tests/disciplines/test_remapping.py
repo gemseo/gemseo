@@ -30,8 +30,8 @@ class NewDiscipline(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__(name="foo")
-        self.input_grammar.update(["in_1", "in_2"])
-        self.output_grammar.update(["out_1", "out_2"])
+        self.input_grammar.update_from_names(["in_1", "in_2"])
+        self.output_grammar.update_from_names(["out_1", "out_2"])
         self.default_inputs = {"in_1": array([1.0]), "in_2": array([2.0, 3.0])}
 
     def _run(self) -> None:
@@ -70,8 +70,8 @@ def discipline(module_tmp_wd, request) -> MDODiscipline:
 
     # Use the remapping discipline loaded from the disk, after serialization
     file_name = "discipline.pkl"
-    discipline.serialize(file_name)
-    return MDODiscipline.deserialize(file_name)
+    discipline.to_pickle(file_name)
+    return MDODiscipline.from_pickle(file_name)
 
 
 def test_original_discipline(discipline):
@@ -119,7 +119,7 @@ def test_execute(discipline):
 
 def test_linearize(discipline):
     """Check the linearization of the discipline."""
-    discipline.linearize(force_all=True)
+    discipline.linearize(compute_all_jacobians=True)
     assert_equal(
         discipline.jac,
         {

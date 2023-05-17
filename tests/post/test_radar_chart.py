@@ -24,14 +24,14 @@ from pathlib import Path
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
 @pytest.fixture(scope="module")
 def problem():
-    return OptimizationProblem.import_hdf(file_path=POWER2)
+    return OptimizationProblem.from_hdf(file_path=POWER2)
 
 
 TEST_PARAMETERS = {
@@ -80,14 +80,13 @@ def test_iteration_error(problem):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The requested iteration 1000 is neither in ({},...,0,...,{}) "
-            "nor equal to the tag {}.".format(
-                -n_iterations + 1, n_iterations - 1, RadarChart.OPTIMUM
-            )
+            "The requested iteration 1000 is neither "
+            f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
+            f"nor equal to the tag {RadarChart.OPTIMUM}."
         ),
     ):
         post.execute(
-            save=False, constraint_names=problem.get_constraints_names(), iteration=1000
+            save=False, constraint_names=problem.get_constraint_names(), iteration=1000
         )
 
 

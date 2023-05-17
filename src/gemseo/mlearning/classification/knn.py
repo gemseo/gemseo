@@ -91,6 +91,7 @@ generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 from __future__ import annotations
 
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 
 from numpy import ndarray
@@ -98,10 +99,9 @@ from numpy import newaxis
 from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.utils.python_compatibility import Final
 
 
 class KNNClassifier(MLClassificationAlgo):
@@ -112,7 +112,7 @@ class KNNClassifier(MLClassificationAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,

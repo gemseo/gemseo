@@ -25,22 +25,22 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_post
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_post
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
-##############################################################################
+# %%
 # Instantiate the  disciplines
 # ----------------------------
 # First, we instantiate the four disciplines of the use case:
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`,
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`
-# and :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`.
+# :class:`.SobieskiPropulsion`,
+# :class:`.SobieskiAerodynamics`,
+# :class:`.SobieskiMission`
+# and :class:`.SobieskiStructure`.
 propu, aero, mission, struct = create_discipline(
     [
         "SobieskiPropulsion",
@@ -50,7 +50,7 @@ propu, aero, mission, struct = create_discipline(
     ]
 )
 
-##############################################################################
+# %%
 # Build, execute and post-process the scenario
 # --------------------------------------------
 # Then, we build the scenario which links the disciplines
@@ -61,7 +61,7 @@ propu, aero, mission, struct = create_discipline(
 # We need to define the design space.
 design_space = SobieskiProblem().design_space
 
-##############################################################################
+# %%
 # Then, we build a sub-scenario for each strongly coupled disciplines,
 # using the following algorithm, maximum number of iterations and
 # algorithm options:
@@ -73,7 +73,7 @@ algo_options = {
     "ineq_tolerance": 1e-4,
 }
 sub_sc_opts = {"max_iter": 30, "algo": "SLSQP", "algo_options": algo_options}
-##############################################################################
+# %%
 # Build a sub-scenario for Propulsion
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This sub-scenario will minimize SFC.
@@ -87,7 +87,7 @@ sc_prop = create_scenario(
 sc_prop.default_inputs = sub_sc_opts
 sc_prop.add_constraint("g_3", constraint_type="ineq")
 
-##############################################################################
+# %%
 # Build a sub-scenario for Aerodynamics
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This sub-scenario will minimize L/D.
@@ -102,7 +102,7 @@ sc_aero = create_scenario(
 sc_aero.default_inputs = sub_sc_opts
 sc_aero.add_constraint("g_2", constraint_type="ineq")
 
-##############################################################################
+# %%
 # Build a sub-scenario for Structure
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This sub-scenario will maximize
@@ -118,7 +118,7 @@ sc_str = create_scenario(
 sc_str.add_constraint("g_1", constraint_type="ineq")
 sc_str.default_inputs = sub_sc_opts
 
-##############################################################################
+# %%
 # Build a scenario for Mission
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This scenario is based on the three previous sub-scenarios and on the
@@ -139,12 +139,24 @@ system_scenario = create_scenario(
 )
 system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
 
-# system_scenario.xdsmize(open_browser=True)
+# %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+system_scenario.xdsmize(save_html=False)
+
+# %%
+# Execute the main scenario
+# ^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.execute(
     {"max_iter": 50, "algo": "NLOPT_COBYLA", "algo_options": algo_options}
 )
 
-##############################################################################
+# %%
 # Plot the history of the MDA residuals
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For the first MDA:
@@ -152,12 +164,12 @@ system_scenario.formulation.mda1.plot_residual_history(save=False, show=True)
 # For the second MDA:
 system_scenario.formulation.mda2.plot_residual_history(save=False, show=True)
 
-##############################################################################
+# %%
 # Plot the system optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process("OptHistoryView", save=False, show=True)
 
-##############################################################################
+# %%
 # Plot the structure optimization histories of the 2 first iterations
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

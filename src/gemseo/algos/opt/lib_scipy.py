@@ -29,8 +29,8 @@ from numpy import ndarray
 from numpy import real
 from scipy import optimize
 
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 
 
@@ -59,7 +59,7 @@ class ScipyOpt(OptimizationLibrary):
 
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dict, contains the list

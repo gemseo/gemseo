@@ -31,26 +31,21 @@ and to check is a type of scalable model is available
 """
 from __future__ import annotations
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 
 
-class ScalableModelFactory:
+class ScalableModelFactory(BaseFactory):
     """This factory instantiates a class:`.ScalableModel` from its class name.
 
     The class can be internal to |g| or located in an external module whose path is
     provided to the constructor.
     """
 
-    def __init__(self):
-        """Initializes the factory: scans the directories to search for subclasses of
-        ScalableModel.
+    _CLASS = ScalableModel
+    _MODULE_NAMES = ("gemseo.problems.scalable",)
 
-        Searches in "GEMSEO_PATH" and gemseo.caches
-        """
-        self.factory = Factory(ScalableModel, ("gemseo.problems.scalable",))
-
-    def create(self, model_name, data, sizes=None, **parameters):
+    def create(self, model_name: str, data, sizes=None, **parameters):
         """Create a scalable model.
 
         :param str model_name: name of the scalable model (its class name)
@@ -61,22 +56,13 @@ class ScalableModelFactory:
         :param parameters: model parameters
         :return: model_name scalable model
         """
-        return self.factory.create(model_name, data=data, sizes=sizes, **parameters)
+        return super().create(model_name, data=data, sizes=sizes, **parameters)
 
     @property
-    def scalable_models(self):
+    def scalable_models(self) -> list[str]:
         """Lists the available classes for scalable models.
 
         :returns: the list of classes names.
         :rtype: list(str)
         """
-        return self.factory.classes
-
-    def is_available(self, model_name):
-        """Checks the availability of a scalable model.
-
-        :param str model_name:  model_name of the scalable model.
-        :returns: True if the scalable model is available.
-        :rtype: bool
-        """
-        return self.factory.is_available(model_name)
+        return self.class_names

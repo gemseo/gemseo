@@ -21,10 +21,10 @@ from __future__ import annotations
 from copy import deepcopy
 
 import pytest
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
@@ -121,7 +121,7 @@ def test_get_sub_options_grammar_errors():
     with pytest.raises(ValueError):
         BiLevel.get_sub_options_grammar()
     with pytest.raises(ValueError):
-        BiLevel.get_default_sub_options_values()
+        BiLevel.get_default_sub_option_values()
 
 
 def test_get_sub_options_grammar():
@@ -129,10 +129,8 @@ def test_get_sub_options_grammar():
     sub_options_schema = BiLevel.get_sub_options_grammar(main_mda_name="MDAJacobi")
     assert sub_options_schema.name == "MDAJacobi"
 
-    sub_options_values = BiLevel.get_default_sub_options_values(
-        main_mda_name="MDAJacobi"
-    )
-    assert "acceleration" in sub_options_values.keys()
+    sub_option_values = BiLevel.get_default_sub_option_values(main_mda_name="MDAJacobi")
+    assert "acceleration" in sub_option_values.keys()
 
 
 def test_bilevel_aerostructure():
@@ -224,7 +222,7 @@ def test_grammar_type():
     scn2 = MDOScenario(
         [discipline], "DisciplinaryOpt", "y2", design_space.filter(["x2"], copy=True)
     )
-    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = discipline.GrammarType.SIMPLE
     formulation = BiLevel(
         [scn1, scn2],
         "y1",
@@ -300,3 +298,26 @@ def test_get_sub_disciplines(sobieski_bilevel_scenario):
         SobieskiAerodynamics().__class__,
         SobieskiStructure().__class__,
     }
+
+
+def test_bilevel_warm_start(sobieski_bilevel_scenario):
+    """Test the warm start of the BiLevel chain.
+
+    Args:
+        sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
+    """
+    scenario = sobieski_bilevel_scenario()
+    scenario.formulation.chain.set_cache_policy(scenario.CacheType.MEMORY_FULL)
+    bilevel_chain_cache = scenario.formulation.chain.cache
+    scenario.formulation.chain.disciplines[0].set_cache_policy(
+        scenario.CacheType.MEMORY_FULL
+    )
+    mda1_cache = scenario.formulation.chain.disciplines[0].cache
+    scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 3})
+    mda1_inputs = [entry.inputs for entry in mda1_cache]
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache]
+
+    assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]
+    assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
+    assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
+    assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()

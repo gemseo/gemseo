@@ -53,7 +53,7 @@ from matplotlib.figure import Figure
 from numpy import inf
 from pandas.plotting import parallel_coordinates
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -87,18 +87,18 @@ class ParallelCoordinates(DatasetPlot):
         upper = self._param.upper
         lower = self._param.lower
         kwargs = self._param.kwargs
-        if classifier not in self.dataset.variables:
+        if classifier not in self.dataset.variable_names:
             raise ValueError(
                 "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variables)
+                + ", ".join(self.dataset.variable_names)
             )
         label, varname = self._get_label(classifier)
-        dataframe = self.dataset.export_to_dataframe()
+        dataframe = self.dataset.copy()
         cluster = varname
-        columns = list(dataframe.columns)
+        columns = self.dataset.get_columns(as_tuple=True)
 
         def is_btw(row):
-            return lower < row[varname] < upper
+            return lower < row.loc[varname] < upper
 
         if lower != -inf or upper != inf:
             cluster = ("classifiers", f"{lower} < {label} < {upper}", "0")
@@ -106,7 +106,7 @@ class ParallelCoordinates(DatasetPlot):
 
         fig, axes = self._get_figure_and_axes(fig, axes)
         axes = parallel_coordinates(dataframe, cluster, cols=columns, ax=axes, **kwargs)
-        axes.set_xticklabels(self._get_variables_names(columns))
+        axes.set_xticklabels(self._get_variable_names(columns))
         if lower != -inf or upper != inf:
             default_title = f"Cobweb plot based on the classifier: {cluster[1]}"
         else:

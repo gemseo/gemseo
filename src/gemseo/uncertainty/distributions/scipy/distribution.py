@@ -21,8 +21,8 @@
 
 The :class:`.SPDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
-SP stands for `scipy <https://docs.scipy.org/doc/scipy/reference/
-tutorial/stats.html>`_ which is the library it relies on.
+SP stands for `scipy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_
+which is the library it relies on.
 
 The :class:`.SPDistribution` of a given uncertain variable is built
 from mandatory arguments:
@@ -106,10 +106,10 @@ class SPDistribution(Distribution):
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
-                such as 'Normal' for OpenTURNS or 'norm' for SciPy.
+                such as ``"norm"`` for SciPy.
             parameters: The parameters of the probability distribution.
             dimension: The dimension of the random variable.
-            standard_parameters (dict, optional): The standard representation
+            standard_parameters: The standard representation
                 of the parameters of the probability distribution.
         """  # noqa: D205,D212,D415
         super().__init__(

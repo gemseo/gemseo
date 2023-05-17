@@ -33,26 +33,26 @@ for the scalable diagonal discipline.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scalable
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scalable
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-###############################################################################
+# %%
 # Import
 # ------
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Learning dataset
 # ----------------
 # The first step is to build an :class:`.AbstractFullCache` dataset
 # from a :class:`.DiagonalDOE`.
 
-###############################################################################
+# %%
 # Instantiate the discipline
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For that, we instantiate the
@@ -60,7 +60,7 @@ configure_logger()
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
 
-###############################################################################
+# %%
 # Get the input space
 # ~~~~~~~~~~~~~~~~~~~
 # We also define the input space on which to sample the discipline.
@@ -68,7 +68,7 @@ input_space = SobieskiProblem().design_space
 input_names = [name for name in discipline.get_input_data_names() if name != "c_4"]
 input_space.filter(input_names)
 
-###############################################################################
+# %%
 # Build the DOE scenario
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Lastly, we sample the discipline by means of a :class:`.DOEScenario`
@@ -83,20 +83,20 @@ for output_name in discipline.get_output_data_names():
         scenario.add_observable(output_name)
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 20})
 
-###############################################################################
+# %%
 # Scalable diagonal discipline
 # ----------------------------
 
-###############################################################################
+# %%
 # Build the scalable discipline
 # -----------------------------
 # The second step is to build a :class:`.ScalableDiscipline`,
 # using a :class:`.ScalableDiagonalModel` and the database
 # converted to a :class:`.Dataset`.
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 scalable = create_scalable("ScalableDiagonalModel", dataset)
 
-###############################################################################
+# %%
 # Visualize the input-output dependencies
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # We can easily access the underlying :class:`.ScalableDiagonalModel`
@@ -110,28 +110,28 @@ scalable = create_scalable("ScalableDiagonalModel", dataset)
 # and for a given column, the elements add up to 100.
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Visualize the 1D interpolations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For every output, we can also visualize a spline interpolation of the output
 # samples over the diagonal of the input space.
 scalable.scalable_model.plot_1d_interpolations(save=False, show=True)
 
-###############################################################################
+# %%
 # Increased problem dimension
 # ---------------------------
 # We can repeat the construction of the scalable discipline for different sizes
 # of variables and visualize the input-output dependency matrices.
 
-###############################################################################
+# %%
 # Twice as many inputs
 # ~~~~~~~~~~~~~~~~~~~~
 # For example, we can increase the size of each input by a factor of 2.
-sizes = {name: dataset.sizes[name] * 2 for name in input_names}
+sizes = {name: dataset.variable_names_to_n_components[name] * 2 for name in input_names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Twice as many outputs
 # ~~~~~~~~~~~~~~~~~~~~~
 # Or we can increase the size of each output by a factor of 2.
@@ -142,16 +142,16 @@ sizes = {
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Twice as many variables
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Or we can increase the size of each input and each output by a factor of 2.
 names = input_names + list(discipline.get_output_data_names())
-sizes = {name: dataset.sizes[name] * 2 for name in names}
+sizes = {name: dataset.variable_names_to_n_components[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Binary IO dependencies
 # ----------------------
 # By default, any output component depends on any input component
@@ -166,25 +166,25 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 # Conversely, when the fill factor is equal to 0,
 # there is not a single connection between inputs and outputs.
 
-###############################################################################
+# %%
 # Fill factor = 0.2
 # ~~~~~~~~~~~~~~~~~
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.2)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Fill factor = 0.5
 # ~~~~~~~~~~~~~~~~~
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.5)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Fill factor = 0.8
 # ~~~~~~~~~~~~~~~~~
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.8)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Heterogeneous dependencies
 # --------------------------
 scalable = create_scalable(
@@ -192,7 +192,7 @@ scalable = create_scalable(
 )
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
-###############################################################################
+# %%
 # Group dependencies
 # ------------------
 scalable = create_scalable(

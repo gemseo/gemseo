@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 DEFAULT_NAME = "gantt_chart"
@@ -38,7 +38,7 @@ def create_gantt_chart(
     save: bool = True,
     show: bool = False,
     file_extension: str | None = None,
-    fig_size: tuple[float, float] = (15.0, 10.0),
+    fig_size: FigSizeType = (15.0, 10.0),
     font_size: int = 12,
     disc_names: Sequence[str] | None = None,
 ) -> plt.Figure:
@@ -111,7 +111,7 @@ def create_gantt_chart(
 
     if save:
         file_path = FilePathManager(
-            FileType.FIGURE, default_name=DEFAULT_NAME
+            FilePathManager.FileType.FIGURE, default_name=DEFAULT_NAME
         ).create_file_path(file_path=file_path, file_extension=file_extension)
     else:
         file_path = None

@@ -17,6 +17,7 @@
 """A discipline whose inputs and outputs map to those of another."""
 from __future__ import annotations
 
+from functools import singledispatchmethod
 from typing import Dict
 from typing import Iterable
 from typing import Tuple
@@ -26,7 +27,6 @@ from numpy import empty
 from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.python_compatibility import singledispatchmethod
 
 Data = Dict[str, ndarray]
 Indices = Tuple[str, Union[int, Iterable[int]]]
@@ -48,20 +48,13 @@ class RemappingDiscipline(MDODiscipline):
     (from the ``i``-th to the ``j``-th components of ``y``).
     """
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_discipline",
-        "_empty_original_input_data",
-        "_input_mapping",
-        "_output_mapping",
-    )
-
     def __init__(
         self,
         discipline: MDODiscipline,
         input_mapping: NameMapping,
         output_mapping: NameMapping,
     ) -> None:
-        """..
+        """
         Args:
             discipline: The original discipline.
             input_mapping: The input names to the original input names.
@@ -81,8 +74,8 @@ class RemappingDiscipline(MDODiscipline):
         self._input_mapping = self.__format_mapping(input_mapping)
         self._output_mapping = self.__format_mapping(output_mapping)
         super().__init__(name=self._discipline.name)
-        self.input_grammar.update(self._input_mapping.keys())
-        self.output_grammar.update(self._output_mapping.keys())
+        self.input_grammar.update_from_names(self._input_mapping.keys())
+        self.output_grammar.update_from_names(self._output_mapping.keys())
         self.default_inputs = self.__convert_from_origin(
             discipline.default_inputs, self._input_mapping
         )
@@ -170,8 +163,7 @@ class RemappingDiscipline(MDODiscipline):
             name_mapping: The current names mapping to the original ones.
 
         Returns:
-            The current data
-            mapping the current names to the corresponding values.
+            The current data mapping the current names to the corresponding values.
         """
         return {
             new_name: original_data[original_name][args]

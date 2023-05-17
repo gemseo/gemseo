@@ -99,6 +99,7 @@ from __future__ import annotations
 
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Tuple
@@ -110,12 +111,11 @@ from numpy import newaxis
 from numpy import repeat
 from sklearn.gaussian_process.kernels import Kernel
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.python_compatibility import Final
 
 __Bounds = Tuple[float, float]
 
@@ -129,7 +129,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,

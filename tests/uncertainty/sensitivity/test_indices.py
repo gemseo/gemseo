@@ -21,15 +21,18 @@
 from __future__ import annotations
 
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import linspace
 from numpy import pi
@@ -57,8 +60,8 @@ class Ishigami1D(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["x1", "x2", "x3"])
-        self.output_grammar.update(["out"])
+        self.input_grammar.update_from_names(["x1", "x2", "x3"])
+        self.output_grammar.update_from_names(["out"])
 
     def _run(self):
         x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
@@ -75,7 +78,7 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
     """
 
     def __init__(self):
-        self.dataset = Dataset()
+        self.dataset = IODataset()
         data = array([[1, 2, 3]])
         variables = ["x1", "x2"]
         sizes = {"x1": 1, "x2": 2}
@@ -83,7 +86,6 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
         variables = ["y1", "y2"]
         sizes = {"y1": 1, "y2": 2}
         self.dataset.add_group(self.dataset.OUTPUT_GROUP, data, variables, sizes)
-        self.dataset.row_names = ["x1(0)", "x2(0)", "x2(1)"]
 
     @property
     def indices(self):
@@ -117,16 +119,80 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
         return self.indices["m2"]
 
 
+class MockMorrisAnalysisIndices(MorrisAnalysis):
+    """A mock of a Morris sensitivity analysis, from which a dataset can be exported."""
+
+    def __init__(self):
+        self.dataset = IODataset()
+        self.dataset.sizes = {
+            "x1": 1,
+        }
+
+    @property
+    def input_names(self) -> list[str]:
+        """The names of the inputs."""
+        return ["x1"]
+
+    @property
+    def indices(self):
+        return {
+            "mu": {
+                "y": [
+                    {
+                        "x1": array([-0.36000398]),
+                    }
+                ]
+            },
+            "mu_star": {
+                "y": [
+                    {
+                        "x1": array([0.67947346]),
+                    }
+                ]
+            },
+            "sigma": {
+                "y": [
+                    {
+                        "x1": array([0.98724949]),
+                    }
+                ]
+            },
+            "relative_sigma": {
+                "y": [
+                    {
+                        "x1": array([1.45296254]),
+                    }
+                ]
+            },
+            "min": {
+                "y": [
+                    {
+                        "x1": array([0.0338188]),
+                    }
+                ]
+            },
+            "max": {
+                "y": [
+                    {
+                        "x1": array([2.2360336]),
+                    }
+                ]
+            },
+        }
+
+
 @pytest.fixture
 def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
-    return MockSensitivityAnalysis()
+    with concretize_classes(MockSensitivityAnalysis):
+        return MockSensitivityAnalysis()
 
 
 @pytest.fixture
 def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
-    return SecondMockSensitivityAnalysis()
+    with concretize_classes(SecondMockSensitivityAnalysis):
+        return SecondMockSensitivityAnalysis()
 
 
 BARPLOT_TEST_PARAMETERS = {
@@ -200,7 +266,7 @@ def test_plot_comparison(
     spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
     pearson = CorrelationAnalysis([discipline], parameter_space, 10)
-    pearson.main_method = pearson._PEARSON
+    pearson.main_method = pearson.Method.PEARSON
     pearson.compute_indices()
     plot = pearson.plot_comparison(
         spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot
@@ -208,13 +274,13 @@ def test_plot_comparison(
     assert plot.title == "foo"
 
 
-def test_inputs_names(mock_sensitivity_analysis):
+def test_input_names(mock_sensitivity_analysis):
     """Check the value of the attribute input_names.
 
     Args:
         mock_sensitivity_analysis: The sensitivity analysis.
     """
-    assert mock_sensitivity_analysis.inputs_names == ["x1", "x2"]
+    assert mock_sensitivity_analysis.input_names == ["x1", "x2"]
 
 
 @pytest.mark.parametrize("output", ["y1", ("y1", 0), ("y2", 0)])
@@ -235,13 +301,19 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
     Args:
         mock_sensitivity_analysis: The sensitivity analysis.
     """
-    dataset = mock_sensitivity_analysis.export_to_dataset()
+    dataset = mock_sensitivity_analysis.to_dataset()
     assert isinstance(dataset, Dataset)
-    assert dataset.row_names == ["x1", "x2[0]", "x2[1]"]
-    assert dataset.variables == ["y1", "y2"]
-    assert dataset.groups == ["m1", "m2"]
-    assert_array_equal(dataset.data["y1"], array([[1], [1], [1]]))
-    assert_array_equal(dataset.data["y2"], array([[2, 3], [2, 3], [2, 3]]))
+    assert (dataset.index == ["x1", "x2[0]", "x2[1]"]).all()
+    assert dataset.variable_names == ["y1", "y2"]
+    assert dataset.group_names == ["m1", "m2"]
+    assert_array_equal(
+        dataset.get_view(group_names="m2", variable_names="y1").to_numpy(),
+        array([[1], [1], [1]]),
+    )
+    assert_array_equal(
+        dataset.get_view(group_names="m2", variable_names="y2").to_numpy(),
+        array([[2, 3], [2, 3], [2, 3]]),
+    )
 
 
 @pytest.fixture(scope="module")
@@ -353,8 +425,17 @@ def test_multiple_disciplines(parameter_space):
     d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
     d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
 
-    sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+    with concretize_classes(SensitivityAnalysis):
+        sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
 
-    assert sensitivity_analysis.dataset.get_names("inputs") == ["x1", "x2", "x3"]
-    assert sensitivity_analysis.dataset.get_names("outputs") == ["f", "y1", "y2"]
+    assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
+        "x1",
+        "x2",
+        "x3",
+    ]
+    assert sensitivity_analysis.dataset.get_variable_names("outputs") == [
+        "f",
+        "y1",
+        "y2",
+    ]
     assert sensitivity_analysis.dataset.n_samples == 5

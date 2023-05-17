@@ -42,7 +42,7 @@ from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
@@ -69,7 +69,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
@@ -89,7 +89,10 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         indices: Sequence[int] | None,
         fit_transformers: bool,
     ) -> None:
-        output_data = self.learning_set.get_data_by_names(self.output_names, False)
+        output_data = self.learning_set.get_view(
+            group_names=self.learning_set.OUTPUT_GROUP,
+            variable_names=self.output_names,
+        ).to_numpy()
         self.n_classes = unique(output_data).shape[0]
         super()._learn(indices, fit_transformers=fit_transformers)
 

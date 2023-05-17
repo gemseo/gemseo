@@ -26,8 +26,7 @@ from gemseo.algos.opt.lib_scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-
-from tests.algos.opt.opt_lib_test_base import OptLibraryTestBase
+from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 
 class TestScipyGlobalOpt(TestCase):
@@ -55,7 +54,7 @@ def pow2_database() -> Database:
 
 @pytest.mark.parametrize("name", ["pow2", "ineq1", "ineq2", "eq"])
 def test_function_history_length(name, pow2_database):
-    assert len(pow2_database.get_func_history(name)) == len(pow2_database)
+    assert len(pow2_database.get_function_history(name)) == len(pow2_database)
 
 
 def get_options(algo_name):

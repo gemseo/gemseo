@@ -18,11 +18,9 @@ from __future__ import annotations
 from typing import Sequence
 
 from numpy import array
-from numpy import matmul
 from numpy import ndarray
 from numpy import zeros
 from numpy import zeros_like
-from numpy.linalg import multi_dot
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -53,7 +51,7 @@ class MDOQuadraticFunction(MDOFunction):
         quad_coeffs: ArrayType,
         name: str,
         f_type: str | None = None,
-        args: Sequence[str] = None,
+        input_names: Sequence[str] = None,
         linear_coeffs: ArrayType | None = None,
         value_at_zero: OutputType = 0.0,
     ) -> None:
@@ -62,9 +60,9 @@ class MDOQuadraticFunction(MDOFunction):
             quad_coeffs: The second-order coefficients.
             name: The name of the function.
             f_type: The type of the linear function
-                among :attr:`.MDOFunction.AVAILABLE_TYPES`.
+                among :attr:`.MDOFunction.FunctionType`.
                 If ``None``, the linear function will have no type.
-            args: The names of the inputs of the linear function.
+            input_names: The names of the inputs of the linear function.
                 If ``None``, the inputs of the linear function will have no names.
             linear_coeffs: The first-order coefficients.
                 If ``None``, the first-order coefficients will be zero.
@@ -75,7 +73,7 @@ class MDOQuadraticFunction(MDOFunction):
         self._quad_coeffs = array([])
         self.quad_coeffs = quad_coeffs  # sets the input dimension
         self._linear_part = MDOLinearFunction(zeros(self._input_dim), f"{name}_lin")
-        new_args = self.generate_args(self._input_dim, args)
+        new_input_names = self.generate_input_names(self._input_dim, input_names)
 
         # Build the first-order term
         if linear_coeffs is not None and linear_coeffs.size:
@@ -89,9 +87,12 @@ class MDOQuadraticFunction(MDOFunction):
             f_type,
             self._jac_to_wrap,
             self.__build_expression(
-                self._quad_coeffs, new_args, self.linear_coeffs, self._value_at_zero
+                self._quad_coeffs,
+                new_input_names,
+                self.linear_coeffs,
+                self._value_at_zero,
             ),
-            args=new_args,
+            input_names=new_input_names,
             dim=1,
         )
 
@@ -105,7 +106,7 @@ class MDOQuadraticFunction(MDOFunction):
             The value of the quadratic function.
         """
         return (
-            multi_dot((x_vect.T, self._quad_coeffs, x_vect))
+            x_vect.T @ (self._quad_coeffs @ x_vect)
             + self._linear_part(x_vect)
             + self._value_at_zero
         )
@@ -119,9 +120,9 @@ class MDOQuadraticFunction(MDOFunction):
         Returns:
             The value of the gradient of the quadratic function.
         """
-        return matmul(
-            self._quad_coeffs + self._quad_coeffs.T, x_vect
-        ) + self._linear_part.jac(x_vect)
+        return (
+            self._quad_coeffs + self._quad_coeffs.T
+        ) @ x_vect + self._linear_part.jac(x_vect)
 
     @property
     def quad_coeffs(self) -> ArrayType:
@@ -171,7 +172,7 @@ class MDOQuadraticFunction(MDOFunction):
     def __build_expression(
         cls,
         quad_coeffs: ArrayType,
-        args: Sequence[str],
+        input_names: Sequence[str],
         linear_coeffs: ArrayType | None = None,
         value_at_zero: float | None = None,
     ) -> str:
@@ -179,7 +180,7 @@ class MDOQuadraticFunction(MDOFunction):
 
         Args:
             quad_coeffs: The second-order coefficients.
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
             linear_coeffs: The first-order coefficients.
                 If ``None``, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
@@ -191,7 +192,7 @@ class MDOQuadraticFunction(MDOFunction):
         transpose_str = "'"
         expr = ""
         for index, line in enumerate(quad_coeffs):
-            arg = args[index]
+            arg = input_names[index]
             # Second-order expression
             line = quad_coeffs[index, :].tolist()
             expr += f"[{arg}]"

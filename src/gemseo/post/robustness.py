@@ -32,6 +32,7 @@ from numpy.random import seed
 
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -112,10 +113,7 @@ class Robustness(OptPostProcessor):
                     function_samples.append(
                         normal(loc=mean, scale=sqrt(variance), size=500)
                     )
-                    legend = func_name
-                    if dim > 1:
-                        legend += f" ({func_index})"
-                    function_names.append(legend)
+                    function_names.append(repr_variable(func_name, func_index, dim))
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         fig.suptitle(

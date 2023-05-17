@@ -33,6 +33,7 @@ from collections import namedtuple
 from pathlib import Path
 from random import uniform
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Sequence
 
@@ -49,7 +50,6 @@ from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
-from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
@@ -294,18 +294,18 @@ class SobieskiProblem:
 
     def get_bounds_by_name(
         self,
-        variables_names: Sequence[str],
+        variable_names: Sequence[str],
     ) -> tuple[ndarray, ndarray]:
         """Return the lower and upper bounds of variables.
 
         Args:
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The lower and upper bounds of the variables;
             the array components keep the order of the variables.
         """
-        return self.__base.get_bounds_by_name(variables_names)
+        return self.__base.get_bounds_by_name(variable_names)
 
     def __set_indata(
         self,
@@ -744,11 +744,11 @@ class SobieskiProblem:
         """
         if self.__design_space is None:
             if self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER:
-                file_name = f"sobieski_original_design_space{suffix}.txt"
+                file_name = f"sobieski_original_design_space{suffix}.csv"
             else:
-                file_name = f"sobieski_design_space{suffix}.txt"
+                file_name = f"sobieski_design_space{suffix}.csv"
 
-            self.__design_space = DesignSpace.read_from_txt(
+            self.__design_space = DesignSpace.from_csv(
                 Path(__file__).parent / file_name
             )
             if self.__dtype == complex128:

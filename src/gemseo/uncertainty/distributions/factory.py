@@ -20,11 +20,12 @@
 """Module containing a factory to create an instance of :class:`.Distribution`."""
 from __future__ import annotations
 
+from typing import Any
 from typing import Optional
 from typing import Sequence
 from typing import Union
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.distributions.distribution import ParametersType
@@ -36,7 +37,7 @@ DistributionParametersType = Union[
 ]
 
 
-class DistributionFactory:
+class DistributionFactory(BaseFactory):
     """Factory to build instances of :class:`.Distribution`.
 
     At initialization, this factory scans the following modules
@@ -62,8 +63,8 @@ class DistributionFactory:
         Normal(mu=0.0, sigma=1.0)
     """
 
-    def __init__(self) -> None:  # noqa: D107
-        self.factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
+    _CLASS = Distribution
+    _MODULE_NAMES = ("gemseo.uncertainty.distributions",)
 
     def create_marginal_distribution(
         self,
@@ -81,21 +82,23 @@ class DistributionFactory:
         Returns:
             The marginal probability distribution.
         """
-        return self.factory.create(distribution_name, variable=variable, **parameters)
+        return super().create(distribution_name, variable=variable, **parameters)
 
     create = create_marginal_distribution
 
     def create_composed_distribution(
         self,
         distributions: Sequence[Distribution],
-        copula_name: str = ComposedDistribution.CopulaModel.independent_copula.value,
+        copula: Any = None,
         variable: str = "",
     ) -> ComposedDistribution:
         """Create a composed probability distribution from marginal ones.
 
         Args:
             distributions: The marginal distributions.
-            copula_name: The name of the copula.
+            copula: A copula distribution
+                defining the dependency structure between random variables;
+                if ``None``, consider an independent copula.
             variable: The name of the variable, if any;
                 otherwise,
                 concatenate the names of the random variables
@@ -111,25 +114,14 @@ class DistributionFactory:
                 f"with different identifiers; got {pretty_str(identifiers)}."
             )
 
-        return self.factory.create(
+        return super().create(
             f"{next(iter(identifiers))}ComposedDistribution",
             distributions=distributions,
-            copula=copula_name,
+            copula=copula,
             variable=variable,
         )
 
     @property
     def available_distributions(self) -> list[str]:
         """The available probability distributions."""
-        return self.factory.classes
-
-    def is_available(self, distribution_name: str) -> bool:
-        """Check the availability of a probability distribution.
-
-        Args:
-            distribution_name: The name of a class defining a distribution.
-
-        Returns:
-            The availability of the distribution.
-        """
-        return self.factory.is_available(distribution_name)
+        return self.class_names

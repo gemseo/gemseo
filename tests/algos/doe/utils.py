@@ -24,7 +24,7 @@ from typing import Any
 from typing import Callable
 
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
@@ -156,7 +156,7 @@ def generate_test_functions(
 ) -> list[Callable[[], None]]:
     """Generate test functions for a DOE library.
 
-    This methods filters the algorithms adapted to the benchmark problem.
+    This method filters the algorithms adapted to the benchmark problem.
 
     Args:
         opt_lib_name: The name of the library.

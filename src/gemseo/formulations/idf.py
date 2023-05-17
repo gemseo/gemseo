@@ -50,15 +50,13 @@ LOGGER = logging.getLogger(__name__)
 class IDF(MDOFormulation):
     """The Individual Discipline Feasible (IDF) formulation.
 
-    This formulation draws an optimization architecture
-    where the coupling variables of strongly coupled disciplines is made consistent
-    by adding equality constraints on the coupling variables at top level,
-    the optimization problem
-    with respect to the local, global design variables and coupling variables
-    is made at the top level.
+    This formulation draws an optimization architecture where the coupling variables of
+    strongly coupled disciplines is made consistent by adding equality constraints on
+    the coupling variables at top level, the optimization problem with respect to the
+    local, global design variables and coupling variables is made at the top level.
 
-    The disciplinary analysis is made at each optimization iteration
-    while the multidisciplinary analysis is made at the optimum.
+    The disciplinary analysis is made at each optimization iteration while the
+    multidisciplinary analysis is made at the optimum.
     """
 
     def __init__(
@@ -71,7 +69,7 @@ class IDF(MDOFormulation):
         n_processes: int = 1,
         use_threading: bool = True,
         start_at_equilibrium: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -141,12 +139,12 @@ class IDF(MDOFormulation):
             )
             self.design_space.set_current_variable(name, value)
 
-    def _update_design_space(self):
+    def _update_design_space(self) -> None:
         """Update the design space with the required variables."""
         strong_couplings = set(self.all_couplings)
-        variables_names = set(self.opt_problem.design_space.variables_names)
-        if not strong_couplings.issubset(variables_names):
-            missing = strong_couplings - variables_names
+        variable_names = set(self.opt_problem.design_space.variable_names)
+        if not strong_couplings.issubset(variable_names):
+            missing = strong_couplings - variable_names
             raise ValueError(
                 "IDF formulation needs coupling variables as design variables, "
                 f"missing variables: {missing}."
@@ -237,7 +235,7 @@ class IDF(MDOFormulation):
                 # coupling, at the right place
                 n_outs = coupl_jac.shape[0]
                 x_jac_2d = zeros((n_outs, len(x_vec)), dtype=x_vec.dtype)
-                x_names = self.get_optim_variables_names()
+                x_names = self.get_optim_variable_names()
                 o_min = 0
                 o_max = 0
                 for out in output_couplings:
@@ -273,11 +271,11 @@ class IDF(MDOFormulation):
         return MDOFunction(
             coupl_min_x,
             name,
-            args=dv_names_of_disc,
+            input_names=dv_names_of_disc,
             expr=expr,
             jac=coupl_min_x_jac,
-            outvars=coupl_func.outvars,
-            f_type=MDOFunction.TYPE_EQ,
+            output_names=coupl_func.output_names,
+            f_type=MDOFunction.ConstraintType.EQ,
         )
 
     def _build_constraints(self) -> None:

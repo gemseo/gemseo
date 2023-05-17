@@ -19,35 +19,36 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An abstract class to plot data from a :class:`.Dataset`.
 
-The :mod:`~gemseo.post.dataset.dataset_plot` module
-implements the abstract :class:`.DatasetPlot` class
-whose purpose is to build a graphical representation of a :class:`.Dataset`
-and to display it on screen or save it to a file.
+The :mod:`~gemseo.post.dataset.dataset_plot` module implements the abstract
+:class:`.DatasetPlot` class whose purpose is to build a graphical representation of a
+:class:`.Dataset` and to display it on screen or save it to a file.
 
-This abstract class has to be overloaded by concrete ones
-implementing at least method :meth:`!DatasetPlot._run`.
+This abstract class has to be overloaded by concrete ones implementing at least method
+:meth:`!DatasetPlot._run`.
 """
 from __future__ import annotations
 
+from abc import abstractmethod
 from collections import namedtuple
 from numbers import Number
 from typing import Any
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
+from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.axes import Axes
 from numpy import linspace
 
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -56,8 +57,10 @@ from pathlib import Path
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
+VariableType = Union[str, Tuple[str, int]]
 
-class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
+
+class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Abstract class for plotting a dataset."""
 
     color: str | list[str]
@@ -72,7 +75,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
     dataset: Dataset
     """The dataset to be plotted."""
 
-    fig_size: tuple[float, float]
+    fig_size: FigSizeType
     """The figure size."""
 
     font_size: int
@@ -156,7 +159,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         param = namedtuple(f"{self.__class__.__name__}Parameters", kwargs.keys())
         self._param = param(**kwargs)
 
-        if dataset.is_empty():
+        if dataset.empty:
             raise ValueError("Dataset is empty.")
 
         self.color = ""
@@ -180,7 +183,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.zmax = None
         self.fig_size = (6.4, 4.8)
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE,
+            FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
         self.__output_files = []
@@ -323,6 +326,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
         return figures
 
+    @abstractmethod
     def _plot(
         self,
         fig: None | Figure = None,
@@ -339,9 +343,8 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The figures.
         """
-        raise NotImplementedError
 
-    def _get_variables_names(
+    def _get_variable_names(
         self,
         dataframe_columns: Iterable[tuple],
     ) -> list[str]:
@@ -355,7 +358,9 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         """
         new_columns = []
         for column in dataframe_columns:
-            name = self._get_component_name(column[1], column[2], self.dataset.sizes)
+            name = self._get_component_name(
+                column[1], column[2], self.dataset.variable_names_to_n_components
+            )
             new_columns.append(name)
 
         return new_columns
@@ -400,7 +405,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         )
         if isinstance(variable, str):
             label = variable
-            variable = (self.dataset.get_group(variable), variable, "0")
+            variable = (self.dataset.get_group_names(variable)[0], variable, 0)
         elif hasattr(variable, "__len__") and len(variable) == 3:
             is_string = isinstance(variable[0], str)
             is_string = is_string and isinstance(variable[1], str)
@@ -470,7 +475,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self,
         fig: Figure | None,
         axes: Axes | None,
-        fig_size: tuple[float, float] | None = None,
+        fig_size: FigSizeType | None = None,
     ) -> tuple[Figure, Axes]:
         """Return the figure and axes to plot the data.
 
@@ -497,3 +502,18 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             raise ValueError("The axes associated with the given figure are missing.")
 
         return fig, axes
+
+    @staticmethod
+    def _force_variable_to_tuple(variable: VariableType) -> tuple[str, int]:
+        """Return a variable as a tuple ``(variable_name, variable_component)``.
+
+        Args:
+            variable: The original variable.
+
+        Returns:
+            The variable as ``(variable_name, variable_component)``.
+        """
+        if isinstance(variable, str):
+            variable = (variable, 0)
+
+        return variable

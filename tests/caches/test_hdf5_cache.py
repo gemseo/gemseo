@@ -28,17 +28,17 @@ from numpy import array
 from numpy import ones
 
 
-def create_cache(hdf_node_name="Dummy") -> HDF5Cache:
+def create_cache(hdf_node_path="Dummy") -> HDF5Cache:
     """Create an HDF5 cache.
 
     Args:
-        hdf_node_name: The name of the HDF node.
+        hdf_node_path: The name of the HDF node.
 
     Returns:
         An HDF5 cache.
     """
     return CacheFactory().create(
-        "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path=hdf_node_name
+        "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path=hdf_node_path
     )
 
 
@@ -96,7 +96,7 @@ def test_str(tmp_wd):
     expected.add("Output names: ['o']")
     expected.add("Length: 2")
     expected.add("HDF file path: dummy.h5")
-    expected.add("HDF node name: Dummy")
+    expected.add("HDF node path: Dummy")
     assert str(cache) == str(expected)
 
 
@@ -114,7 +114,7 @@ def test_cache_array_str(tmp_wd):
     assert cache.last_entry[1] == outputs
 
 
-def test_hdf_node_name(tmp_wd):
-    """Check the property hdf_node_name."""
-    assert create_cache().hdf_node_name == "Dummy"
-    assert create_cache("foo").hdf_node_name == "foo"
+def test_hdf_node_path(tmp_wd):
+    """Check the property hdf_node_path."""
+    assert create_cache().hdf_node_path == "Dummy"
+    assert create_cache("foo").hdf_node_path == "foo"

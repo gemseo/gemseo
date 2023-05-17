@@ -20,18 +20,17 @@
 from __future__ import annotations
 
 import pytest
+from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import allclose
 from numpy import array
 from numpy import pi
 from numpy.testing import assert_almost_equal
-from numpy.testing import assert_equal
 
 FUNCTION = {
     "name": "my_function",
@@ -83,12 +82,12 @@ def test_morris_main_indices_outputs_content(morris, output):
 
 def test_morris_main_indices(morris):
     """Check that the main indices are mu_star."""
-    assert morris.main_indices == morris.indices["mu_star"]
+    assert morris.main_indices == morris.indices["MU_STAR"]
 
 
 @pytest.mark.parametrize(
     "name",
-    ["mu", "mu_star", "sigma", "relative_sigma", "min", "max"],
+    ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
 def test_morris_indices_outputs(morris, name):
     """Check that all the outputs have indices."""
@@ -97,7 +96,7 @@ def test_morris_indices_outputs(morris, name):
 
 @pytest.mark.parametrize(
     "name",
-    ["mu", "mu_star", "sigma", "relative_sigma", "min", "max"],
+    ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_indices_outputs_content(morris, name, output):
@@ -110,7 +109,7 @@ def test_morris_indices_outputs_content(morris, name, output):
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_sigma(morris, output, variable):
     """Check that sigma is positive."""
-    assert morris.indices["sigma"][output][0][variable] >= 0
+    assert morris.indices["SIGMA"][output][0][variable] >= 0
 
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
@@ -118,8 +117,8 @@ def test_morris_sigma(morris, output, variable):
 def test_morris_mu(morris, output, variable):
     """Check that mu_star is greater or equal to mu."""
     assert (
-        morris.indices["mu_star"][output][0][variable]
-        >= morris.indices["mu"][output][0][variable]
+        morris.indices["MU_STAR"][output][0][variable]
+        >= morris.indices["MU"][output][0][variable]
     )
 
 
@@ -128,8 +127,8 @@ def test_morris_mu(morris, output, variable):
 def test_morris_min_max(morris, output, variable):
     """Check that the maximum is greater or equal to the minimum."""
     assert (
-        morris.indices["max"][output][0][variable]
-        >= morris.indices["min"][output][0][variable]
+        morris.indices["MAX"][output][0][variable]
+        >= morris.indices["MIN"][output][0][variable]
     )
 
 
@@ -137,9 +136,9 @@ def test_morris_min_max(morris, output, variable):
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_relative_sigma(morris, output, variable):
     """Check that the relative sigma is equal to sigma divided by mu_star."""
-    relative_sigma = morris.indices["relative_sigma"][output][0][variable]
-    sigma = morris.indices["sigma"][output][0][variable]
-    mu_star = morris.indices["mu_star"][output][0][variable]
+    relative_sigma = morris.indices["RELATIVE_SIGMA"][output][0][variable]
+    sigma = morris.indices["SIGMA"][output][0][variable]
+    mu_star = morris.indices["MU_STAR"][output][0][variable]
     assert relative_sigma == sigma / mu_star
 
 
@@ -341,8 +340,8 @@ def test_morris_multiple_disciplines():
     morris = MorrisAnalysis([d1, d2, d3], space, 5)
     morris.compute_indices()
 
-    assert morris.dataset.get_names("inputs") == ["x1", "x2", "x3"]
-    assert morris.dataset.get_names("outputs") == [
+    assert morris.dataset.get_variable_names("inputs") == ["x1", "x2", "x3"]
+    assert morris.dataset.get_variable_names("outputs") == [
         "fd!f!x1",
         "fd!f!x2",
         "fd!f!x3",
@@ -358,9 +357,14 @@ def test_morris_multiple_disciplines():
 
 def test_save_load(morris, tmp_wd):
     """Check saving and loading a MorrisAnalysis."""
-    morris.save("foo.pkl")
-    new_morris = MorrisAnalysis.load("foo.pkl")
-    assert_equal(new_morris.dataset.data, morris.dataset.data)
+    morris.to_pickle("foo.pkl")
+    new_morris = MorrisAnalysis.from_pickle("foo.pkl")
+    assert new_morris.dataset.equals(morris.dataset)
     assert new_morris.default_output == morris.default_output
     assert new_morris.n_replicates == morris.n_replicates
     assert new_morris.outputs_bounds == morris.outputs_bounds
+
+
+def test_compute_indices_output_names(morris):
+    """Check compute_indices with different types for output_names."""
+    assert morris.compute_indices(["y1"]).keys() == morris.compute_indices("y1").keys()

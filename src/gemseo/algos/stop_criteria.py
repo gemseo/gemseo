@@ -22,37 +22,40 @@ from __future__ import annotations
 from numpy import all
 from numpy import allclose
 from numpy import average
+from numpy import bool_
 
 
-class TerminationCriterion(Exception):
+class TerminationCriterion(Exception):  # noqa: N818
     """Stop driver for some reason."""
 
 
-class FunctionIsNan(TerminationCriterion):
+class FunctionIsNan(TerminationCriterion):  # noqa: N818
     """Stops driver when a function has NaN value or NaN Jacobian."""
 
 
-class DesvarIsNan(TerminationCriterion):
+class DesvarIsNan(TerminationCriterion):  # noqa: N818
     """Stops driver when the design variables are nan."""
 
 
-class MaxIterReachedException(TerminationCriterion):
+class MaxIterReachedException(TerminationCriterion):  # noqa: N818
     """Exception raised when the maximum number of iterations is reached."""
 
 
-class MaxTimeReached(TerminationCriterion):
+class MaxTimeReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the maximum execution time is reached."""
 
 
-class FtolReached(TerminationCriterion):
+class FtolReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the f_tol_rel or f_tol_abs criteria is reached."""
 
 
-class XtolReached(TerminationCriterion):
+class XtolReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the x_tol_rel or x_tol_abs criteria is reached."""
 
 
-def is_x_tol_reached(opt_problem, x_tol_rel=1e-6, x_tol_abs=1e-6, n_x=2):
+def is_x_tol_reached(
+    opt_problem, x_tol_rel: float = 1e-6, x_tol_abs: float = 1e-6, n_x: int = 2
+) -> bool | bool_:
     """Tests if the tolerance on the design variables are reached.
 
     The coordinate wise
@@ -75,7 +78,7 @@ def is_x_tol_reached(opt_problem, x_tol_rel=1e-6, x_tol_abs=1e-6, n_x=2):
     if len(database) < n_x:
         return False
 
-    x_values = database.get_last_n_x(n_x)
+    x_values = database.get_last_n_x_vect(n_x)
 
     # Checks that there is at least one feasible point
     if not any(opt_problem.is_point_feasible(database[x_val]) for x_val in x_values):
@@ -90,7 +93,9 @@ def is_x_tol_reached(opt_problem, x_tol_rel=1e-6, x_tol_abs=1e-6, n_x=2):
     )
 
 
-def is_f_tol_reached(opt_problem, f_tol_rel=1e-6, f_tol_abs=1e-6, n_x=2):
+def is_f_tol_reached(
+    opt_problem, f_tol_rel: float = 1e-6, f_tol_abs: float = 1e-6, n_x: int = 2
+) -> bool | bool_:
     """Tests if the tolerance on the objective function are reached.
 
     The average function
@@ -114,17 +119,19 @@ def is_f_tol_reached(opt_problem, f_tol_rel=1e-6, f_tol_abs=1e-6, n_x=2):
         return False
 
     # Checks that there is at least one feasible point
-    x_values = database.get_last_n_x(n_x)
+    x_values = database.get_last_n_x_vect(n_x)
     if not any(opt_problem.is_point_feasible(database[x_val]) for x_val in x_values):
         return False
 
     obj_name = opt_problem.objective.name
     f_values = [
         f_value
-        for f_value in [database.get_f_of_x(obj_name, x_val) for x_val in x_values]
+        for f_value in [
+            database.get_function_value(obj_name, x_val) for x_val in x_values
+        ]
         if f_value is not None
     ]
-    if not f_values:
+    if len(f_values) < n_x:
         return False
 
     f_average = average(f_values)

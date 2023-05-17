@@ -2,6 +2,7 @@
     "name": "OT_MONTE_CARLO_options",
     "description": "Monte Carlo DOE from the OpenTURNS library",
     "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.MonteCarloLHS.html",
+    "required": ["n_samples"],
     "properties": {
         "n_samples":{
             "type": "integer",
@@ -42,7 +43,7 @@
                 },
                 {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 0
                 }
             ]
         },

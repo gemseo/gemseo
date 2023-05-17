@@ -2,12 +2,8 @@ ARG FEDORA_VERSION=34
 
 FROM fedora:$FEDORA_VERSION
 
-ARG TOX_VERSION=3.25.0
-
 RUN  dnf -y update \
-  && dnf -y install python \
-  && dnf -y install pip \
-  && dnf -y install python37 \
+  && dnf -y install pipx \
   && dnf -y install python38 \
   && dnf -y install python39 \
   && dnf -y install python310 \
@@ -15,8 +11,13 @@ RUN  dnf -y update \
   && dnf -y install graphviz \
   && dnf clean all
 
-RUN python -m pip install tox==$TOX_VERSION
+ARG TOX_VERSION=4.4.7
 
-RUN  curl -Os https://uploader.codecov.io/latest/linux/codecov \
-  && chmod +x codecov \
-  && mv codecov /usr/bin
+RUN  pipx install 'tox<4' \
+  && pipx install 'tox<4' --suffix 3 \
+  && pipx install tox==$TOX_VERSION --suffix 4 \
+  && pip cache purge
+
+# Explicitely update PATH because gitlab runner run the container in a way
+# that prevent .bashrc to be sourced.
+ENV PATH="/root/.local/bin:${PATH}"

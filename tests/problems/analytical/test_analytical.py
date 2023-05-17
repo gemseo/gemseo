@@ -22,7 +22,7 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-from gemseo.algos.driver_lib import MaxIterReachedException
+from gemseo.algos.driver_library import MaxIterReachedException
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
@@ -72,8 +72,8 @@ class TestAnalyticalFunctions(unittest.TestCase):
         self.run_and_test_problem(problem, "L-BFGS-B")
         problem = Rosenbrock(initial_guess=zeros(2))
         problem = Rosenbrock(scalar_var=True)
-        assert "x1" in problem.design_space.variables_names
-        assert "x" not in problem.design_space.variables_names
+        assert "x1" in problem.design_space.variable_names
+        assert "x" not in problem.design_space.variable_names
 
     def test_power2(self):
         """"""

@@ -17,14 +17,12 @@
 #                           documentation
 #        :author: Antoine Dechaume
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Logging tools
-=============
-"""
+"""Logging tools."""
 from __future__ import annotations
 
 import logging
 import types
+from types import TracebackType
 
 
 class MultiLineHandlerMixin:
@@ -35,7 +33,7 @@ class MultiLineHandlerMixin:
         """Return the raw message of a log record."""
         return record.msg
 
-    def emit(self, record):
+    def emit(self, record) -> None:
         """Emit one logging message per input record line."""
         # compute the message without the logging prefixes (timestamp, level, ...)
         message = record.getMessage()
@@ -93,7 +91,7 @@ class LoggingContext:
             level: The level of the logger to be used on block entry.
             handler: An additional handler to be used on block entry.
             close: Whether to close the handler on block exit.
-        """
+        """  # noqa:D205 D212 D415
         self.logger = logger
         self.level = level
         self.handler = handler
@@ -106,7 +104,12 @@ class LoggingContext:
         if self.handler:
             self.logger.addHandler(self.handler)
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if self.level is not None:
             self.logger.setLevel(self.old_level)
         if self.handler:

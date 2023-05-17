@@ -27,29 +27,29 @@ applied to classification models.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
-from gemseo.mlearning.api import create_classification_model
-from gemseo.mlearning.api import get_classification_models
-from gemseo.mlearning.api import get_classification_options
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.mlearning import create_classification_model
+from gemseo.mlearning import get_classification_models
+from gemseo.mlearning import get_classification_options
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Get available classification models
 # -----------------------------------
 print(get_classification_models())
 
-###############################################################################
+# %%
 # Get classification model options
 # --------------------------------
 print(get_classification_options("KNNClassifier"))
 
-###############################################################################
+# %%
 # Create classification model
 # ---------------------------
-iris = load_dataset("IrisDataset", as_io=True)
+iris = create_benchmark_dataset("IrisDataset", as_io=True)
 
 model = create_classification_model("KNNClassifier", data=iris)
 model.learn()

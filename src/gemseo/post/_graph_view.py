@@ -18,12 +18,12 @@ from __future__ import annotations
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from graphviz import Digraph
 
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.python_compatibility import Final
 
 
 class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
@@ -112,7 +112,7 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
         show: bool = True,
         file_path: str | Path = "",
         clean_up: bool = True,
-    ):
+    ) -> None:
         """Create the visualization and save it on the disk.
 
         Args:

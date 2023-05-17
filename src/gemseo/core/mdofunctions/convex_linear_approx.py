@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from numpy import absolute
 from numpy import atleast_2d
-from numpy import matmul
 from numpy import multiply
 from numpy import ndarray
 from numpy import ones_like
@@ -70,7 +69,7 @@ class ConvexLinearApprox(MDOFunction):
             )
 
         # Get the function Jacobian matrix
-        if not self.__mdo_function.has_jac():
+        if not self.__mdo_function.has_jac:
             raise AttributeError(
                 "Function Jacobian unavailable for convex linearization."
             )
@@ -91,8 +90,9 @@ class ConvexLinearApprox(MDOFunction):
             self.__mdo_function.f_type,
             self._jac_to_wrap,
             dim=self.__mdo_function.dim,
-            outvars=self.__mdo_function.outvars,
+            output_names=self.__mdo_function.output_names,
             force_real=self.__mdo_function.force_real,
+            original_name=mdo_function.original_name,
         )
 
     def __get_steps(self, x_new: ArrayType) -> tuple[ArrayType, ArrayType]:
@@ -124,8 +124,8 @@ class ConvexLinearApprox(MDOFunction):
         step, inv_step = self.__get_steps(x_new)
         value = (
             self.__mdo_function.evaluate(merged_vect)
-            + matmul(self.__direct_coeffs, step)
-            + matmul(self.__recipr_coeffs, inv_step)
+            + self.__direct_coeffs @ step
+            + self.__recipr_coeffs @ inv_step
         )
         if self.__mdo_function._dim == 1:
             return value[0]

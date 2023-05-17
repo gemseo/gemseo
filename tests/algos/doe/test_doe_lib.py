@@ -23,17 +23,16 @@ import logging
 from sys import platform
 
 import pytest
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_algo
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
@@ -72,15 +71,15 @@ def test_evaluate_samples_multiproc(doe):
         eval_jac=True,
     )
     new_pb = Power2()
-    x_history = problem.database.get_x_history()
+    x_history = problem.database.get_x_vect_history()
     assert len(x_history) == n_samples
     for sample in x_history:
         val_ref = new_pb.objective(sample)
-        val_sample = problem.database.get_f_of_x("pow2", sample)
+        val_sample = problem.database.get_function_value("pow2", sample)
         assert val_ref == val_sample
 
         grad_ref = new_pb.objective.jac(sample)
-        grad_sample = problem.database.get_f_of_x("@pow2", sample)
+        grad_sample = problem.database.get_function_value("@pow2", sample)
         assert (grad_ref == grad_sample).all()
 
 
@@ -122,7 +121,7 @@ def test_evaluate_samples_multiproc_with_observables(doe):
 
     database = scenario.formulation.opt_problem.database
     for i, (x, data) in enumerate(database.items()):
-        assert x.wrapped[0] == pytest.approx(float(i))
+        assert x.wrapped_array[0] == pytest.approx(float(i))
         assert data["obj"] == float(i)
         assert data["obs"] == float(i + 1)
 
@@ -136,14 +135,6 @@ def test_evaluate_samples_multiproc_with_observables(doe):
         assert disc.n_calls == 0
     else:
         assert disc.n_calls == 8
-
-
-def test_phip_criteria():
-    """Check that the phi-p criterion is well implemented."""
-    power = 3.0
-    samples = array([[0.0, 0.0], [0.0, 2.0], [0.0, 3.0]])
-    expected = sum(val ** (-power) for val in [2.0, 3.0, 1.0]) ** (1.0 / power)
-    assert DOELibrary.compute_phip_criteria(samples, power) == expected
 
 
 @pytest.fixture(scope="module")
@@ -194,13 +185,11 @@ def doe_database(request) -> Database:
 def test_transformation(doe_database, var):
     """Check that the transformation of variables works correctly.
 
-    For the deterministic variables,
-    the transformation is affine,
-    based on the bounds of the variables.
+    For the deterministic variables, the transformation is affine, based on the bounds
+    of the variables.
 
-    For the uncertain variables,
-    the transformation is probabilistic,
-    based on inverse transformation sampling.
+    For the uncertain variables, the transformation is probabilistic, based on inverse
+    transformation sampling.
     """
     assert doe_database[array([var])]["func"] == array([var])
 
@@ -294,8 +283,8 @@ def test_variable_types(doe, var_type1, var_type2):
     class Disc(MDODiscipline):
         def __init__(self):
             super().__init__("foo")
-            self.input_grammar.update(("x", "y"))
-            self.output_grammar.update(("z",))
+            self.input_grammar.update_from_names(("x", "y"))
+            self.output_grammar.update_from_names(("z",))
 
         def execute(self, input_data):
             assert (

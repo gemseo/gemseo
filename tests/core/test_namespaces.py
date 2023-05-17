@@ -33,9 +33,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_mda
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -43,7 +43,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.namespaces import namespaces_separator
-from gemseo.core.namespaces import remove_prefix_from_dict
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.namespaces import remove_prefix_from_name
 from gemseo.core.namespaces import split_namespace
@@ -81,7 +80,6 @@ def test_remove_ns_prefix():
     assert remove_prefix_from_name("ac") == "ac"
 
     data_dict = {"ac": 1, "a:b": 2}
-    assert remove_prefix_from_dict(data_dict) == {"ac": 1, "b": 2}
     assert remove_prefix_from_list(data_dict.keys()) == ["ac", "b"]
 
 
@@ -93,7 +91,7 @@ def test_split_namespace():
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 @pytest.mark.parametrize("use_defaults", [True, False])
 def test_analytic_disc_ns(grammar_type, use_defaults):
@@ -122,7 +120,7 @@ def test_analytic_disc_ns(grammar_type, use_defaults):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_chain_disc_ns(grammar_type):
     """Tests MDOChain features with namespaces."""
@@ -159,7 +157,7 @@ def test_chain_disc_ns(grammar_type):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 @pytest.mark.parametrize("chain_type", [MDOChain, MDOParallelChain])
 def test_chain_disc_ns_twice(grammar_type, chain_type):
@@ -212,7 +210,7 @@ def test_chain_disc_ns_twice(grammar_type, chain_type):
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_mda_with_namespaces(grammar_type):
     """Tests MDAs and namespaces."""
@@ -264,8 +262,8 @@ def test_mda_with_namespaces(grammar_type):
 def test_json_grammar_grammar_add_namespace():
     """Tests JSONGrammar namespaces handling."""
     g = JSONGrammar("g")
-    g.update(["name1", "name2"])
-    g.required_names.update("name1")
+    g.update_from_names(["name1", "name2"])
+    g.required_names.add("name1")
     g.add_namespace("name1", "ns")
     assert "ns" + namespaces_separator + "name1" in g
     assert g.to_namespaced == {"name1": "ns:name1"}

@@ -27,8 +27,10 @@ from gemseo.formulations.mdf import MDF
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.utils.testing.helpers import concretize_classes
 
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
+from tests.formulations.not_mdo_formulations.formulation_A import ANotMDOFormulation
 
 
 @pytest.fixture
@@ -54,8 +56,8 @@ def test_create_with_wrong_formulation_name(factory):
     with pytest.raises(
         ImportError,
         match=(
-            "Class foo is not available; \n"
-            "available ones are: BiLevel, DisciplinaryOpt, IDF, MDF."
+            "The class foo is not available; "
+            "the available ones are: BiLevel, DisciplinaryOpt, IDF, MDF."
         ),
     ):
         factory.create("foo", None, None, None)
@@ -79,6 +81,7 @@ def test_create(factory):
 
 def test_not_mdo_formulation():
     """Check the use of a factory of _BaseFormulation that is not a MDOFormulation."""
-    factory = NotMDOFormulationFactory()
-    assert factory.factory.is_available("ANotMDOFormulation")
-    assert not factory.factory.is_available("MDF")
+    with concretize_classes(ANotMDOFormulation):
+        factory = NotMDOFormulationFactory()
+        assert factory.is_available("ANotMDOFormulation")
+        assert not factory.is_available("MDF")

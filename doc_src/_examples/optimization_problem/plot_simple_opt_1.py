@@ -21,7 +21,7 @@
 Analytical test case # 1
 ========================
 """
-#############################################################################
+# %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and :class:`.MDOFunction`.
 #
@@ -29,7 +29,7 @@ Analytical test case # 1
 # -----------------------------
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import cos
 from numpy import exp
@@ -40,7 +40,7 @@ from scipy import optimize
 configure_logger()
 
 
-#############################################################################
+# %%
 # Define the objective function
 # -----------------------------
 # We define the objective function :math:`f(x)=\sin(x)-\exp(x)`
@@ -50,7 +50,7 @@ f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
 f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 objective = f_1 - f_2
 
-#############################################################################
+# %%
 # .. seealso::
 #
 #    The following operators are implemented: :math:`+`, :math:`-`
@@ -59,7 +59,7 @@ objective = f_1 - f_2
 
 print("Objective function = ", objective)
 
-#############################################################################
+# %%
 # Minimize the objective function
 # -------------------------------
 # We want to minimize this objective function over :math:`[-2,2]`,

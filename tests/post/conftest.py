@@ -52,7 +52,7 @@ def __common_problem():
     func = MDOFunction(lambda x: x * 2.5, "neg")
     func.has_default_name = True
     problem.add_constraint(func, cstr_type="ineq", value=0.5)
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     return problem
 
 
@@ -71,6 +71,15 @@ def common_problem(__common_problem):
     lib = DiagonalDOE()
     lib.algo_name = "DiagonalDOE"
     lib.execute(__common_problem, n_samples=2, eval_jac=True)
+    return __common_problem
+
+
+@pytest.fixture
+def large_common_problem(__common_problem):
+    """The __common_problem sampled 20 times on a diagonal of its input space."""
+    lib = DiagonalDOE()
+    lib.algo_name = "DiagonalDOE"
+    lib.execute(__common_problem, n_samples=20, eval_jac=True)
     return __common_problem
 
 

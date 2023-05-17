@@ -24,27 +24,26 @@ import re
 from pathlib import Path
 
 import pytest
-from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.kmeans import KMeans
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.transform.scaler.scaler import Scaler
-from gemseo.utils.pytest_conftest import concretize_classes
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
-from numpy import array_equal
 
 from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
-    sizes = {"x_1": 1, "x_2": 2}
-    samples = Dataset("dataset_name")
-    samples.set_from_array(data, variables, sizes)
+    variable_names_to_n_components = {"x_1": 1, "x_2": 2}
+    samples = IODataset.from_array(data, variables, variable_names_to_n_components)
+    samples.name = "dataset_name"
     return samples
 
 
@@ -117,26 +116,25 @@ def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
     model.learn()
     factory = MLAlgoFactory()
 
-    directory_path = model.save(save_learning_set=True)
+    directory_path = model.to_pickle(save_learning_set=True)
     imported_model = factory.load(directory_path)
-    assert array_equal(
-        imported_model.learning_set.get_data_by_names(["x_1"], False),
-        model.learning_set.get_data_by_names(["x_1"], False),
+    assert imported_model.learning_set.get_view(variable_names="x_1").equals(
+        model.learning_set.get_view(variable_names="x_1")
     )
     assert imported_model.is_trained
 
-    directory_path = model.save()
+    directory_path = model.to_pickle()
     imported_model = factory.load(directory_path)
-    assert len(model.learning_set) == 0
-    assert len(imported_model.learning_set) == 0
+    assert len(model.learning_set) == 10
+    assert len(imported_model.learning_set) == 10
     assert imported_model.is_trained
-    assert imported_model.sizes == dataset.sizes
+    assert imported_model.sizes == dataset.variable_names_to_n_components
 
 
 def test_transformers_error(dataset):
     """Check that MLAlgo cannot use a transformer for both group and variable."""
-    dataset = Dataset()
-    dataset.add_variable("x", array([[1.0]]), group="foo")
+    dataset = IODataset()
+    dataset.add_variable("x", array([[1.0]]), group_name="foo")
     with pytest.raises(
         ValueError,
         match=(

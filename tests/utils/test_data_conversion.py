@@ -21,6 +21,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import array_to_dict
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
@@ -31,7 +32,6 @@ from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.data_conversion import nest_flat_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
-from gemseo.utils.testing import compare_dict_of_arrays
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray

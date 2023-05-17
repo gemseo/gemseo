@@ -28,10 +28,11 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
+from typing import Mapping
 from typing import Sequence
 from typing import Sized
-from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import abs as np_abs
@@ -40,6 +41,7 @@ from numpy import ufunc
 from numpy import where
 from numpy.linalg import norm
 from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
@@ -47,17 +49,13 @@ from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
-from gemseo.utils.derivatives.complex_step import ComplexStep
-from gemseo.utils.derivatives.finite_differences import FirstOrderFD
-from gemseo.utils.python_compatibility import Final
+from gemseo.core.serializable import Serializable
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
-
-if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-    from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
-    from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
-    from gemseo.core.mdofunctions.concatenate import Concatenate
-    from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +67,7 @@ WrappedFunctionType = Callable[[ArrayType], OutputType]
 WrappedJacobianType = Callable[[ArrayType], ArrayType]
 
 
-class MDOFunction:
+class MDOFunction(Serializable):
     """The standard definition of an array-based function with algebraic operations.
 
     :class:`.MDOFunction` is the key class
@@ -90,13 +88,13 @@ class MDOFunction:
 
     - the type of the function,
       e.g. :code:`f_type="obj"` if the function will be used as an objective
-      (see :attr:`.MDOFunction.AVAILABLE_TYPES` for the available types),
+      (see :attr:`.MDOFunction.FunctionType`),
     - the function computing the Jacobian matrix,
       e.g. :code:`jac=lambda x: array([2.])`,
     - the literal expression to be used for the string representation of the object,
       e.g. :code:`expr="2*x"`,
     - the names of the inputs and outputs of the function,
-      e.g. :code:`args=["x"]` and :code:`outvars=["y"]`.
+      e.g. :code:`input_names=["x"]` and :code:`output_names=["y"]`.
 
     .. warning::
 
@@ -108,7 +106,7 @@ class MDOFunction:
 
     After the initialization,
     all of these arguments can be overloaded with setters,
-    e.g. :attr:`.MDOFunction.args`.
+    e.g. :attr:`.MDOFunction.input_names`.
 
     The original function and Jacobian function
     can be accessed with the properties :attr:`.MDOFunction.func`
@@ -136,36 +134,43 @@ class MDOFunction:
     (see :meth:`.MDOFunction.check_grad`).
     """
 
-    TYPE_OBJ: str = "obj"
-    """The type of function for objective."""
+    class ConstraintType(StrEnum):
+        """The type of constraint."""
 
-    TYPE_EQ: str = "eq"
-    """The type of function for equality constraint."""
+        EQ = "eq"
+        """The type of function for equality constraint."""
 
-    TYPE_INEQ: str = "ineq"
-    """The type of function for inequality constraint."""
+        INEQ = "ineq"
+        """The type of function for inequality constraint."""
 
-    TYPE_OBS: str = "obs"
-    """The type of function for observable."""
+    class _FunctionType(StrEnum):
+        """The type of function complementary to the constraints."""
 
-    __CONSTRAINT_TYPES: Final[tuple[str]] = (TYPE_INEQ, TYPE_EQ)
-    """The different types of constraint."""
+        OBJ = "obj"
+        """The type of function for objective."""
 
-    AVAILABLE_TYPES: list[str] = [TYPE_OBJ, TYPE_EQ, TYPE_INEQ, TYPE_OBS]
-    """The available types of function."""
+        OBS = "obs"
+        """The type of function for observable."""
+
+        NONE = ""
+        """The type of function is not set."""
+
+    FunctionType = merge_enums("FunctionType", StrEnum, _FunctionType, ConstraintType)
+
+    ApproximationMode = ApproximationMode
 
     DICT_REPR_ATTR: list[str] = [
         "name",
         "f_type",
         "expr",
-        "args",
+        "input_names",
         "dim",
         "special_repr",
     ]
     """The names of the attributes to be serialized."""
 
-    DEFAULT_ARGS_BASE: str = "x"
-    """The default name base for the inputs."""
+    DEFAULT_BASE_INPUT_NAME: str = "x"
+    """The default base name for the inputs."""
 
     INDEX_PREFIX: str = "!"
     """The character used to separate a name base and a prefix, e.g. ``"x!1``."""
@@ -201,8 +206,8 @@ class MDOFunction:
     _n_calls: Value
     """The number of times that the function has been evaluated."""
 
-    _f_type: str
-    """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`."""
+    _f_type: FunctionType
+    """The type of the function."""
 
     _func: WrappedFunctionType
     """The function to be evaluated from a given input vector."""
@@ -213,7 +218,7 @@ class MDOFunction:
     _name: str
     """The name of the function."""
 
-    _args: list[str]
+    _input_names: list[str]
     """The names of the inputs of the function."""
 
     _expr: str
@@ -222,15 +227,14 @@ class MDOFunction:
     _dim: int
     """The dimension of the output space of the function."""
 
-    _outvars: list[str]
+    _output_names: list[str]
     """The names of the outputs of the function."""
 
-    _ATTR_NOT_TO_SERIALIZE: tuple[str] = ("_n_calls",)
-    """The attributes that shall be skipped at serialization.
+    __original_name: str
+    """The original name of the function.
 
-    Private attributes shall be written following name mangling conventions:
-    ``_ClassName__attribute_name``. Subclasses must expand this class attribute if
-    needed.
+    By default, it is the same as :attr:`.name`. When the value of :attr:`.name` changes,
+    :attr:`.original_name` stores its former value.
     """
 
     __INPUT_NAME_PATTERN: Final[str] = "x"
@@ -240,63 +244,69 @@ class MDOFunction:
         self,
         func: WrappedFunctionType | None,
         name: str,
-        f_type: str = "",
+        f_type: FunctionType = FunctionType.NONE,
         jac: WrappedJacobianType | None = None,
         expr: str = "",
-        args: Iterable[str] | None = None,
+        input_names: Iterable[str] | None = None,
         dim: int = 0,
-        outvars: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
         force_real: bool = False,
         special_repr: str = "",
+        original_name: str = "",
     ) -> None:
         """
         Args:
             func: The original function to be actually called.
                 If ``None``, the function will not have an original function.
             name: The name of the function.
-            f_type: The type of the function among :attr:`.MDOFunction.AVAILABLE_TYPES`
-                if any.
+            f_type: The type of the function.
             jac: The original Jacobian function to be actually called.
                 If ``None``, the function will not have an original Jacobian function.
             expr: The expression of the function, e.g. `"2*x"`, if any.
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
                 If ``None``, the inputs of the function will have no names.
             dim: The dimension of the output space of the function.
                 If 0, the dimension of the output space of the function
                 will be deduced from the evaluation of the function.
-            outvars: The names of the outputs of the function.
+            output_names: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
             force_real: Whether to cast the output values to real.
             special_repr: The string representation of the function.
                 If empty, use :meth:`.default_repr`.
+            original_name: The original name of the function.
+                If empty, use the same name than the ``name`` input.
         """  # noqa: D205, D212, D415
         super().__init__()
 
         # Initialize attributes
+        self.__original_name = original_name if original_name else name
         self._f_type = ""
         self._func = NotImplementedCallable()
         self._jac = NotImplementedCallable()
         self._name = ""
-        self._args = []
+        self._input_names = []
         self._expr = ""
         self._dim = 0
-        # TODO: API: rename to _output_variables
-        self._outvars = []
-        self._init_shared_attrs()
+        self._output_names = []
+        self._init_shared_memory_attrs()
         # Use setters to check values
         self.func = func
         self.jac = jac
         self.name = name
         self.f_type = f_type
         self.expr = expr
-        self.args = args
+        self.input_names = input_names
         self.dim = dim
-        # TODO: API: rename to output_variables
-        self.outvars = outvars
+        self.output_names = output_names
         self.last_eval = None
         self.force_real = force_real
         self.special_repr = special_repr or ""
-        self.has_default_name = False
+        self.has_default_name = True if self.name else False
+
+    @property
+    def original_name(self) -> str:
+        """The original name of the function."""
+        return self.__original_name
 
     @property
     def n_calls(self) -> int:
@@ -350,7 +360,7 @@ class MDOFunction:
 
         self._func = f_pointer or NotImplementedCallable()
 
-    def serialize(self, file_path: str | Path) -> None:
+    def to_pickle(self, file_path: str | Path) -> None:
         """Serialize the function and store it in a file.
 
         Args:
@@ -361,7 +371,7 @@ class MDOFunction:
             pickler.dump(self)
 
     @staticmethod
-    def deserialize(file_path: str | Path) -> MDOFunction:
+    def from_pickle(file_path: str | Path) -> MDOFunction:
         """Deserialize a function from a file.
 
         Args:
@@ -375,46 +385,15 @@ class MDOFunction:
 
         return obj
 
-    def __getstate__(self) -> dict[str, Any]:
-        """Used by pickle to define what to serialize.
+    def __setstate__(
+        self,
+        state: Mapping[str, Any],
+    ) -> None:
+        super().__setstate__(state)
+        # If at some point this class includes attributes that are not serializable
+        # nor Synchronized, they shall be set last.
 
-        Returns:
-            The attributes to be serialized.
-        """
-        state = {}
-        for attribute_name in list(self.__dict__.keys() - self._ATTR_NOT_TO_SERIALIZE):
-            attribute_value = self.__dict__[attribute_name]
-
-            # At this point, there are no Synchronized attributes in MDOFunction or its
-            # child classes other than _n_calls, which is not serialized.
-            # If a Synchronized attribute is added in the future, the following check
-            # (and its counterpart in __setstate__) shall be uncommented.
-
-            # if isinstance(attribute_value, Synchronized):
-            #     # Don´t serialize shared memory object,
-            #     # this is meaningless, save the value instead
-            #     attribute_value = attribute_value.value
-
-            state[attribute_name] = attribute_value
-
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        self._init_shared_attrs()
-        for attribute_name, attribute_value in state.items():
-            # At this point, there are no Synchronized attributes in MDOFunction or its
-            # child classes other than _n_calls, which is not serialized.
-            # If a Synchronized attribute is added in the future, the following check
-            # (and its counterpart in __getstate__) shall be uncommented.
-
-            # if isinstance(attribute_value, Synchronized):
-            #     # Don´t serialize shared memory object,
-            #     # this is meaningless, save the value instead
-            #     attribute_value = attribute_value.value
-
-            self.__dict__[attribute_name] = attribute_value
-
-    def _init_shared_attrs(self) -> None:
+    def _init_shared_memory_attrs(self) -> None:
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
 
@@ -465,24 +444,6 @@ class MDOFunction:
         self._name = name or ""
 
     @property
-    def f_type(self) -> str:
-        """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`."""
-        return self._f_type
-
-    @f_type.setter
-    def f_type(
-        self,
-        f_type: str,
-    ) -> None:
-        if f_type not in [None, ""] and f_type not in self.AVAILABLE_TYPES:
-            raise ValueError(
-                "MDOFunction type must be among {}; got {} instead.".format(
-                    self.AVAILABLE_TYPES, f_type
-                )
-            )
-        self._f_type = f_type or ""
-
-    @property
     def jac(self) -> WrappedJacobianType:
         """The Jacobian function to be evaluated from a given input vector."""
         return self._jac
@@ -492,19 +453,19 @@ class MDOFunction:
         self._jac = jac or NotImplementedCallable()
 
     @property
-    def args(self) -> list[str]:
+    def input_names(self) -> list[str]:
         """The names of the inputs of the function.
 
         Use a copy of the original names.
         """
-        return self._args
+        return self._input_names
 
-    @args.setter
-    def args(self, args: Iterable[str] | None) -> None:
-        if args is None:
-            self._args = []
+    @input_names.setter
+    def input_names(self, input_names: Iterable[str] | None) -> None:
+        if input_names is None:
+            self._input_names = []
         else:
-            self._args = list(args)
+            self._input_names = list(input_names)
 
     @property
     def expr(self) -> str:
@@ -525,19 +486,19 @@ class MDOFunction:
         self._dim = dim or 0
 
     @property
-    def outvars(self) -> list[str]:
+    def output_names(self) -> list[str]:
         """The names of the outputs of the function.
 
         Use a copy of the original names.
         """
-        return self._outvars
+        return self._output_names
 
-    @outvars.setter
-    def outvars(self, outvars: Iterable[str]) -> None:
-        if outvars is None:
-            self._outvars = []
+    @output_names.setter
+    def output_names(self, output_names: Iterable[str]) -> None:
+        if output_names is None:
+            self._output_names = []
         else:
-            self._outvars = list(outvars)
+            self._output_names = list(output_names)
 
     def is_constraint(self) -> bool:
         """Check if the function is a constraint.
@@ -547,7 +508,7 @@ class MDOFunction:
         Returns:
             Whether the function is a constraint.
         """
-        return self.f_type in self.__CONSTRAINT_TYPES
+        return self.f_type in set(self.ConstraintType)
 
     def __repr__(self) -> str:
         return self.special_repr or self.default_repr
@@ -559,17 +520,21 @@ class MDOFunction:
             if self.expr:
                 left = self.expr
             else:
-                name = "#".join(self.outvars) or self.name
-                left = f"{name}({pretty_str(self.args, sort=False)})"
+                name = "#".join(self.output_names) or self.name
+                if self.input_names:
+                    left = f"{name}({pretty_str(self.input_names, sort=False)})"
+                else:
+                    left = f"{name}"
 
-            sign = "==" if self.f_type == self.TYPE_EQ else "<="
+            sign = "==" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
-        strings = [self.name]
-        if self.has_args():
-            strings.append(f"({pretty_str(self.args, sort=False)})")
+        if self.input_names:
+            strings = [f"{self.name}({pretty_str(self.input_names, sort=False)})"]
+        else:
+            strings = [self.name]
 
-        if not self.has_expr():
+        if not self.expr or strings[-1] == self.expr:
             return "".join(strings)
 
         strings.append(" = ")
@@ -582,6 +547,7 @@ class MDOFunction:
         strings[-1] = strings[-1][:-1]
         return "".join(strings)
 
+    @property
     def has_jac(self) -> bool:
         """Check if the function has an implemented Jacobian function.
 
@@ -591,46 +557,6 @@ class MDOFunction:
         return self.jac is not None and not isinstance(
             self._jac, NotImplementedCallable
         )
-
-    def has_dim(self) -> bool:
-        """Check if the dimension of the output space of the function is defined.
-
-        Returns:
-            Whether the dimension of the output space of the function is defined.
-        """
-        return bool(self.dim)
-
-    def has_outvars(self) -> bool:
-        """Check if the outputs of the function have names.
-
-        Returns:
-            Whether the outputs of the function have names.
-        """
-        return bool(self.outvars)
-
-    def has_expr(self) -> bool:
-        """Check if the function has an expression.
-
-        Returns:
-            Whether the function has an expression.
-        """
-        return bool(self.expr)
-
-    def has_args(self) -> bool:
-        """Check if the inputs of the function have names.
-
-        Returns:
-            Whether the inputs of the function have names.
-        """
-        return bool(self.args)
-
-    def has_f_type(self) -> bool:
-        """Check if the function has a type.
-
-        Returns:
-            Whether the function has a type.
-        """
-        return bool(self.f_type)
 
     def __add__(self, other_f: MDOFunction) -> MDOFunction:
         """Operator defining the sum of the function and another one.
@@ -691,24 +617,26 @@ class MDOFunction:
         Returns:
             The opposite of the function.
         """
-        jac = self._min_jac if self.has_jac() else None
+        jac = self._min_jac if self.has_jac else None
 
-        if self.has_expr():
-            expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
+        if self.expr:
             name = "-" + self.name.translate({ord("-"): "+", ord("+"): "-"})
+            expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
         else:
-            expr = f"-{self.name}({pretty_str(self.args, sort=False)})"
-            name = f"-{self.name}"
+            name = expr = f"-{self.name}"
+            if self.input_names:
+                expr = f"-{self.name}({pretty_str(self.input_names, sort=False)})"
 
         return MDOFunction(
             self._min_pt,
             name,
             jac=jac,
-            args=self.args,
+            input_names=self.input_names,
             f_type=self.f_type,
             dim=self.dim,
-            outvars=self.outvars,
+            output_names=self.output_names,
             expr=expr,
+            original_name=self.original_name,
         )
 
     def __truediv__(self, other: MDOFunction | Number) -> MDOFunction:
@@ -776,7 +704,7 @@ class MDOFunction:
             second_operand = -value
 
         function = self + value
-        name = f"{self.name}({pretty_str(self.args, sort=False)})"
+        name = f"{self.name}({pretty_str(self.input_names, sort=False)})"
         function.name = self._compute_operation_expression(
             self.name, operator, second_operand
         )
@@ -785,211 +713,10 @@ class MDOFunction:
         )
         return function
 
-    # TODO: Remove this deprecated method.
-    def restrict(
-        self,
-        frozen_indexes: ndarray[int],
-        frozen_values: ArrayType,
-        input_dim: int,
-        name: str | None = None,
-        f_type: str | None = None,
-        expr: str | None = None,
-        args: Sequence[str] | None = None,
-    ) -> FunctionRestriction:
-        r"""Return a restriction of the function.
-
-        :math:`\newcommand{\frozeninds}{I}\newcommand{\xfrozen}{\hat{x}}\newcommand{
-        \frestr}{\hat{f}}`
-        For a subset :math:`\approxinds` of the variables indexes of a function
-        :math:`f` to remain frozen at values :math:`\xfrozen_{i \in \frozeninds}` the
-        restriction of :math:`f` is given by
-
-        .. math::
-            \frestr:
-            x_{i \not\in \approxinds}
-            \longmapsto
-            f(\xref_{i \in \approxinds}, x_{i \not\in \approxinds}).
-
-        Args:
-            frozen_indexes: The indexes of the inputs that will be frozen
-            frozen_values: The values of the inputs that will be frozen.
-            input_dim: The dimension of input space of the function before restriction.
-            name: The name of the function after restriction.
-                If ``None``,
-                create a default name
-                based on the name of the current function
-                and on the argument `args`.
-            f_type: The type of the function after restriction.
-                If ``None``, the function will have no type.
-            expr: The expression of the function after restriction.
-                If ``None``, the function will have no expression.
-            args: The names of the inputs of the function after restriction.
-                If ``None``, the inputs of the function will have no names.
-
-        Returns:
-            The restriction of the function.
-        """
-        from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
-
-        return FunctionRestriction(
-            frozen_indexes, frozen_values, input_dim, self, name, f_type, expr, args
-        )
-
-    # TODO: Remove this deprecated method.
-    def linear_approximation(
-        self,
-        x_vect: ArrayType,
-        name: str | None = None,
-        f_type: str | None = None,
-        args: Sequence[str] | None = None,
-    ) -> MDOLinearFunction:
-        r"""Compute a first-order Taylor polynomial of the function.
-
-        :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
-        The first-order Taylor polynomial of a (possibly vector-valued) function
-        :math:`f` at a point :math:`\xref` is defined as
-
-        .. math::
-            \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
-            f(x)
-            \approx
-            f(\xref) + \sum_{i = 1}^{\dim} \partialder \, (x_i - \xref_i).
-
-        Args:
-            x_vect: The input vector at which to build the Taylor polynomial.
-            name: The name of the linear approximation function.
-                If ``None``, create a name from the name of the function.
-            f_type: The type of the linear approximation function.
-                If ``None``, the function will have no type.
-            args: The names of the inputs of the linear approximation function,
-                or a name base.
-                If ``None``, use the names of the inputs of the function.
-
-        Returns:
-            The first-order Taylor polynomial of the function at the input vector.
-        """
-        from gemseo.core.mdofunctions.taylor_polynomials import (
-            compute_linear_approximation,
-        )
-
-        return compute_linear_approximation(
-            self, x_vect, name=name, f_type=f_type, args=args
-        )
-
-    # TODO: Remove this deprecated method.
-    def convex_linear_approx(
-        self,
-        x_vect: ArrayType,
-        approx_indexes: ndarray[bool] | None = None,
-        sign_threshold: float = 1e-9,
-    ) -> ConvexLinearApprox:
-        r"""Compute a convex linearization of the function.
-
-        :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
-        The convex linearization of a function :math:`f` at a point :math:`\xref`
-        is defined as
-
-        .. math::
-            \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
-            f(x)
-            \approx
-            f(\xref)
-            +
-            \sum_{\substack{i = 1 \\ \partialder > 0}}^{\dim}
-            \partialder \, (x_i - \xref_i)
-            -
-            \sum_{\substack{i = 1 \\ \partialder < 0}}^{\dim}
-            \partialder \, \xref_i^2 \, \left(\frac{1}{x_i} - \frac{1}{\xref_i}\right).
-
-        :math:`\newcommand{\approxinds}{I}`
-        Optionally, one may require the convex linearization of :math:`f` with
-        respect to a subset of its variables
-        :math:`x_{i \in \approxinds}`, :math:`I \subset \{1, \dots, \dim\}`,
-        rather than all of them:
-
-        .. math::
-            f(x)
-            =
-            f(x_{i \in \approxinds}, x_{i \not\in \approxinds})
-            \approx
-            f(\xref_{i \in \approxinds}, x_{i \not\in \approxinds})
-            +
-            \sum_{\substack{i \in \approxinds \\ \partialder > 0}}
-            \partialder \, (x_i - \xref_i)
-            -
-            \sum_{\substack{i \in \approxinds \\ \partialder < 0}}
-            \partialder
-            \, \xref_i^2 \, \left(\frac{1}{x_i} - \frac{1}{\xref_i}\right).
-
-        Args:
-            x_vect: The input vector at which to build the convex linearization.
-            approx_indexes: A boolean mask
-                specifying w.r.t. which inputs the function should be approximated.
-                If ``None``, consider all the inputs.
-            sign_threshold: The threshold for the sign of the derivatives.
-
-        Returns:
-            The convex linearization of the function at the given input vector.
-        """
-        from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
-
-        return ConvexLinearApprox(
-            x_vect, self, approx_indexes=approx_indexes, sign_threshold=sign_threshold
-        )
-
-    # TODO: Remove this deprecated method.
-    def quadratic_approx(
-        self,
-        x_vect: ArrayType,
-        hessian_approx: ArrayType,
-        args: Sequence[str] | None = None,
-    ) -> MDOQuadraticFunction:
-        r"""Build a quadratic approximation of the function at a given point.
-
-        The function must be scalar-valued.
-
-        :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}\newcommand{
-        \hessapprox}{\hat{H}}`
-        For a given approximation :math:`\hessapprox` of the Hessian matrix of a
-        function :math:`f` at a point :math:`\xref`, the quadratic approximation of
-        :math:`f` is defined as
-
-        .. math::
-            \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
-            f(x)
-            \approx
-            f(\xref)
-            + \sum_{i = 1}^{\dim} \partialder \, (x_i - \xref_i)
-            + \frac{1}{2} \sum_{i = 1}^{\dim} \sum_{j = 1}^{\dim}
-            \hessapprox_{ij} (x_i - \xref_i) (x_j - \xref_j).
-
-        Args:
-            x_vect: The input vector at which to build the quadratic approximation.
-            hessian_approx: The approximation of the Hessian matrix
-                at this input vector.
-            args: The names of the inputs of the quadratic approximation function,
-                or a name base.
-                If ``None``, use the ones of the current function.
-
-        Returns:
-            The second-order Taylor polynomial of the function at the given point.
-
-        Raises:
-            ValueError: Either if the approximated Hessian matrix is not square,
-                or if it is not consistent with the dimension of the given point.
-            AttributeError: If the function does not have
-                an implemented Jacobian function.
-        """
-        from gemseo.core.mdofunctions.taylor_polynomials import (
-            compute_quadratic_approximation,
-        )
-
-        return compute_quadratic_approximation(self, x_vect, hessian_approx, args=args)
-
     def check_grad(
         self,
         x_vect: ArrayType,
-        method: str = "FirstOrderFD",
+        approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-6,
         error_max: float = 1e-8,
     ) -> None:
@@ -997,8 +724,7 @@ class MDOFunction:
 
         Args:
             x_vect: The vector at which the function is checked.
-            method: The method used to approximate the gradients,
-                either "FirstOrderFD" or "ComplexStep".
+            approximation_mode: The approximation mode.
             step: The step for the approximation of the gradients.
             error_max: The maximum value of the error.
 
@@ -1009,15 +735,9 @@ class MDOFunction:
                 are inconsistent
                 or if the analytical gradients are wrong.
         """
-        if method == "FirstOrderFD":
-            gradient_approximator = FirstOrderFD(self, step)
-        elif method == "ComplexStep":
-            gradient_approximator = ComplexStep(self, step)
-        else:
-            raise ValueError(
-                f"Unknown approximation method {method},"
-                "use 'FirstOrderFD' or 'ComplexStep'."
-            )
+        gradient_approximator = GradientApproximatorFactory().create(
+            approximation_mode, self, step=step
+        )
 
         approximation = gradient_approximator.f_gradient(x_vect).real
         reference = self._jac(x_vect).real
@@ -1028,16 +748,16 @@ class MDOFunction:
             flatten_diff = reference.flatten().shape != approximation.flatten().shape
             if not shapes_are_1d or (shapes_are_1d and flatten_diff):
                 raise ValueError(
-                    "Inconsistent function jacobian shape; "
+                    f"The Jacobian matrix computed by {self} has a wrong shape; "
                     f"got: {reference.shape} while expected: {approximation.shape}."
                 )
 
         if self.rel_err(reference, approximation, error_max) > error_max:
-            LOGGER.error("Function jacobian is wrong %s", self)
+            LOGGER.error("The Jacobian matrix computed by %s is wrong.", self)
             LOGGER.error("Error =\n%s", self.filt_0(reference - approximation))
             LOGGER.error("Analytic jacobian=\n%s", self.filt_0(reference))
             LOGGER.error("Approximate step gradient=\n%s", self.filt_0(approximation))
-            raise ValueError(f"Function jacobian is wrong {self}.")
+            raise ValueError(f"The Jacobian matrix computed by {self} is wrong.")
 
     @staticmethod
     def rel_err(a_vect: ArrayType, b_vect: ArrayType, error_max: float) -> float:
@@ -1111,6 +831,9 @@ class MDOFunction:
                 :attr:`.MDOFunction.DICT_REPR_ATTR`.
         """
         serializable_attributes = MDOFunction.DICT_REPR_ATTR
+        args = attributes.pop("args", None)
+        if args is not None:
+            attributes["input_names"] = args
         for attribute in attributes:
             if attribute not in serializable_attributes:
                 raise ValueError(
@@ -1146,14 +869,14 @@ class MDOFunction:
         SetPtFromDatabase(database, design_space, self, normalize, jac, x_tolerance)
 
     @classmethod
-    def generate_args(
-        cls, input_dim: int, args: Sequence[str] | None = None
+    def generate_input_names(
+        cls, input_dim: int, input_names: Sequence[str] | None = None
     ) -> Sequence[str]:
         """Generate the names of the inputs of the function.
 
         Args:
             input_dim: The dimension of the input space of the function.
-            args: The initial names of the inputs of the function.
+            input_names: The initial names of the inputs of the function.
                 If there is only one name,
                 e.g. ``["var"]``,
                 use this name as a base name
@@ -1167,47 +890,28 @@ class MDOFunction:
         Returns:
             The names of the inputs of the function.
         """
-        args = args or []
-        n_args = len(args)
-        if n_args == input_dim:
-            return args
+        input_names = input_names or []
+        n_input_names = len(input_names)
+        if n_input_names == input_dim:
+            return input_names
 
-        return cls._generate_args(
-            args[0] if n_args == 1 else cls.__INPUT_NAME_PATTERN, input_dim
+        return cls._generate_input_names(
+            input_names[0] if n_input_names == 1 else cls.__INPUT_NAME_PATTERN,
+            input_dim,
         )
 
     @classmethod
-    def _generate_args(cls, args_base: str, input_dim: int) -> list[str]:
-        """Generate the names of the inputs from a base name and their indices.
+    def _generate_input_names(cls, base_input_name: str, input_dim: int) -> list[str]:
+        """Generate the names of the inputs from a base input name and their indices.
 
         Args:
-            args_base: The base name.
+            base_input_name: The base input name.
             input_dim: The number of scalar inputs.
 
         Returns:
             The names of the inputs.
         """
-        return [f"{args_base}{cls.INDEX_PREFIX}{i}" for i in range(input_dim)]
-
-    # TODO: Remove this deprecated method.
-    @staticmethod
-    def concatenate(
-        functions: Iterable[MDOFunction], name: str, f_type: str | None = None
-    ) -> Concatenate:
-        """Concatenate functions.
-
-        Args:
-            functions: The functions to be concatenated.
-            name: The name of the concatenation function.
-            f_type: The type of the concatenation function.
-                If ``None``, the function will have no type.
-
-        Returns:
-            The concatenation of the functions.
-        """
-        from gemseo.core.mdofunctions.concatenate import Concatenate
-
-        return Concatenate(functions, name, f_type)
+        return [f"{base_input_name}{cls.INDEX_PREFIX}{i}" for i in range(input_dim)]
 
     @property
     def expects_normalized_inputs(self) -> bool:

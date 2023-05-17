@@ -17,8 +17,8 @@ from __future__ import annotations
 
 import sys
 
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_discipline
+from gemseo import create_scenario
 
 num = int(sys.argv[1])
 
@@ -37,7 +37,7 @@ scenario = create_scenario(
     objective_name="y_4",
     maximize_objective=True,
     scenario_type="DOE",
-    design_space="design_space.txt",
+    design_space="design_space.csv",
 )
 
 scenario.set_differentiation_method()

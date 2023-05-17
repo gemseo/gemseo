@@ -18,36 +18,24 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Calibration of a machine learning algorithm.
 
-A machine learning algorithm depends on hyper-parameters,
-e.g. the number of clusters for a clustering algorithm,
-the regularization constant for a regression model,
-the kernel for a Gaussian process regression, ...
-Its ability to generalize the information learned during the training stage,
-and thus to avoid over-fitting,
-which is an over-reliance on the learning data set,
-depends on the values of these hyper-parameters.
-Thus,
-the hyper-parameters minimizing the learning quality measure are rarely
-those minimizing the generalization one.
-Classically,
-the generalization one decreases before growing again as the model becomes more complex,
-while the learning error keeps decreasing.
-This phenomenon is called the curse of dimensionality.
+A machine learning algorithm depends on hyper-parameters, e.g. the number of clusters for
+a clustering algorithm, the regularization constant for a regression model, the kernel
+for a Gaussian process regression, ... Its ability to generalize the information learned
+during the training stage, and thus to avoid over-fitting, which is an over-reliance on
+the learning data set, depends on the values of these hyper-parameters. Thus, the hyper-
+parameters minimizing the learning quality measure are rarely those minimizing the
+generalization one. Classically, the generalization one decreases before growing again as
+the model becomes more complex, while the learning error keeps decreasing. This
+phenomenon is called the curse of dimensionality.
 
-In this module,
-the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-parameters
-in order to minimize this measure of the generalization quality
-over a calibration parameter space.
-This class relies on the :class:`.MLAlgoAssessor` class
-which is a discipline (:class:`.MDODiscipline`)
-built from a machine learning algorithm (:class:`.MLAlgo`),
-a dataset (:class:`.Dataset`),
-a quality measure (:class:`.MLQualityMeasure`)
-and various options for the data scaling,
-the quality measure
-and the machine learning algorithm.
-The inputs of this discipline are hyper-parameters of the machine learning algorithm
-while the output is the quality criterion.
+In this module, the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-
+parameters in order to minimize this measure of the generalization quality over a
+calibration parameter space. This class relies on the :class:`.MLAlgoAssessor` class
+which is a discipline (:class:`.MDODiscipline`) built from a machine learning algorithm
+(:class:`.MLAlgo`), a dataset (:class:`.Dataset`), a quality measure
+(:class:`.MLQualityMeasure`) and various options for the data scaling, the quality
+measure and the machine learning algorithm. The inputs of this discipline are hyper-
+parameters of the machine learning algorithm while the output is the quality criterion.
 """
 from __future__ import annotations
 
@@ -61,17 +49,17 @@ from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.scenario import Scenario
 from gemseo.core.scenario import ScenarioInputDataType
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 
 MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
 
@@ -115,6 +103,7 @@ class MLAlgoAssessor(MDODiscipline):
         dataset: Dataset,
         parameters: Iterable[str],
         measure: type[MLQualityMeasure],
+        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: B950
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -125,6 +114,8 @@ class MLAlgoAssessor(MDODiscipline):
             dataset: A learning dataset.
             parameters: The parameters of the machine learning algorithm to calibrate.
             measure: A measure to assess the machine learning algorithm.
+            measure_evaluation_method_name: The name of the method
+                to evaluate the quality measure.
             measure_options: The options of the quality measure.
                 If "multioutput" is missing,
                 it is added with False as value.
@@ -148,18 +139,19 @@ class MLAlgoAssessor(MDODiscipline):
             ValueError: If the measure option "multioutput" is True.
         """
         super().__init__()
-        self.input_grammar.update(parameters)
-        self.output_grammar.update([self.CRITERION, self.LEARNING])
+        self.input_grammar.update_from_names(parameters)
+        self.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
         self.algo = algo
         self.measure = measure
         self.measure_options = measure_options or {}
+        self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.parameters = algo_options
         self.data = dataset
         self.transformer = transformer
         self.algos = []
-
         if self.measure_options.get("multioutput", False):
             raise ValueError("MLAlgoAssessor does not support multioutput.")
+
         self.measure_options[self.MULTIOUTPUT] = False
 
     def _run(self) -> None:
@@ -181,8 +173,11 @@ class MLAlgoAssessor(MDODiscipline):
         )
         algo.learn()
         measure = self.measure(algo)
-        learning = measure.evaluate(multioutput=False)
-        criterion = measure.evaluate(**self.measure_options)
+        learning = measure.evaluate_learn(multioutput=False)
+        evaluate = getattr(
+            measure, f"evaluate_{self.__measure_evaluation_method_name.lower()}"
+        )
+        criterion = evaluate(**self.measure_options)
         self.store_local_data(criterion=array([criterion]), learning=array([learning]))
         self.algos.append(algo)
 
@@ -221,6 +216,8 @@ class MLAlgoCalibration:
         parameters: Iterable[str],
         calibration_space: DesignSpace,
         measure: MLQualityMeasure,
+        measure_evaluation_method_name: str
+        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -233,6 +230,8 @@ class MLAlgoCalibration:
                 to calibrate.
             calibration_space: The space defining the calibration variables.
             measure: A measure to assess the machine learning algorithm.
+            measure_evaluation_method_name: The name of the method
+                to evaluate the quality measure.
             measure_options: The options of the quality measure.
                 If ``None``, do not use the quality measure options.
             transformer: The strategies
@@ -254,8 +253,9 @@ class MLAlgoCalibration:
             dataset,
             parameters,
             measure,
-            measure_options,
-            transformer,
+            measure_evaluation_method_name=measure_evaluation_method_name,
+            measure_options=measure_options,
+            transformer=transformer,
             **algo_options,
         )
         self.algo_assessor = disc
@@ -299,8 +299,8 @@ class MLAlgoCalibration:
         self.scenario.add_observable(self.algo_assessor.LEARNING)
         self.scenario.execute(input_data)
         x_opt = self.scenario.design_space.get_current_value(as_dict=True)
-        f_opt = self.scenario.get_optimum().f_opt
-        self.dataset = self.scenario.export_to_dataset(by_group=False, opt_naming=False)
+        f_opt = self.scenario.optimization_result.f_opt
+        self.dataset = self.scenario.to_dataset(opt_naming=False)
         algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
         self.optimal_parameters = x_opt
         self.optimal_criterion = f_opt
@@ -320,9 +320,9 @@ class MLAlgoCalibration:
         """
         if self.dataset is not None:
             if name == self.algo_assessor.CRITERION and self.maximize_objective:
-                return -self.dataset.data["-" + name]
+                return -self.dataset.get_view(variable_names="-" + name).to_numpy()
             else:
-                return self.dataset.data[name]
+                return self.dataset.get_view(variable_names=name).to_numpy()
 
     @property
     def algos(self) -> MLAlgo:

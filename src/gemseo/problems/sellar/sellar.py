@@ -128,10 +128,10 @@ class SellarSystem(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update(["x_local", "x_shared", "y_1", "y_2"])
-        self.output_grammar.update(["obj", "c_1", "c_2"])
+        self.input_grammar.update_from_names(["x_local", "x_shared", "y_1", "y_2"])
+        self.output_grammar.update_from_names(["obj", "c_1", "c_2"])
         self.default_inputs = get_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
         x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(
@@ -210,8 +210,8 @@ class Sellar1(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update(["x_local", "x_shared", "y_2"])
-        self.output_grammar.update(["y_1"])
+        self.input_grammar.update_from_names(["x_local", "x_shared", "y_2"])
+        self.output_grammar.update_from_names(["y_1"])
         self.default_inputs = get_inputs(self.input_grammar.keys())
 
     def _run(self) -> None:
@@ -261,8 +261,8 @@ class Sellar2(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update(["x_shared", "y_1"])
-        self.output_grammar.update(["y_2"])
+        self.input_grammar.update_from_names(["x_shared", "y_1"])
+        self.output_grammar.update_from_names(["y_2"])
         self.default_inputs = get_inputs(self.input_grammar.keys())
 
     def _run(self) -> None:

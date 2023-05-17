@@ -22,14 +22,14 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.transform.dimension_reduction.pca import PCA
-from gemseo.mlearning.transform.dimension_reduction.pls import PLS
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
+from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from sklearn.linear_model import ElasticNet
@@ -40,16 +40,16 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset() -> Dataset:
+def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
     design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    return discipline.cache.export_to_dataset("dataset_name")
+    return discipline.cache.to_dataset("dataset_name")
 
 
 @pytest.fixture
@@ -243,7 +243,7 @@ def test_jacobian_transform(model_with_transform):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     out1 = model.predict(input_value)

@@ -26,9 +26,9 @@ from __future__ import annotations
 from copy import deepcopy
 from os import name as os_name
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
@@ -150,6 +150,16 @@ for sub_sc in sub_disciplines[0:3]:
     sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
 
 # %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow  in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+system_scenario.xdsmize(save_html=False)
+
+# %%
 # Multiprocessing
 # ^^^^^^^^^^^^^^^
 # It is possible to run a DOE in parallel using multiprocessing, in order to do
@@ -160,9 +170,6 @@ for sub_sc in sub_disciplines[0:3]:
 # .. warning::
 #    The multiprocessing option has some limitations on Windows.
 #    Due to problems with sphinx, we disable it in this example.
-#    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
-#    randomly during execution. It is strongly recommended to update your
-#    environment to avoid this problem.
 #    The features :class:`.MemoryFullCache` and :class:`.HDF5Cache` are not
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
@@ -189,12 +196,9 @@ system_scenario.print_execution_metrics()
 # Exporting the problem data.
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The method :meth:`.Scenario.export_to_dataset` will allow you to export
+# elsewhere. The method :meth:`.Scenario.to_dataset` will allow you to export
 # your results to a :class:`.Dataset`, the basic |g| class to store data.
-# From a dataset, you can even obtain a Pandas dataframe with the method
-# :meth:`~.Dataset.export_to_dataframe`:
-dataset = system_scenario.export_to_dataset("a_name_for_my_dataset")
-dataframe = dataset.export_to_dataframe()
+dataset = system_scenario.to_dataset("a_name_for_my_dataset")
 
 # %%
 # Plot the optimization history view

@@ -71,6 +71,8 @@ and
 """
 from __future__ import annotations
 
+from typing import Iterable
+
 from numpy import array
 from numpy import atleast_2d
 from numpy import complex128
@@ -79,11 +81,11 @@ from numpy import ones
 from gemseo.core.discipline import MDODiscipline
 
 
-def get_inputs(names=None):
+def get_inputs(*names: str):
     """Generate initial solution.
 
     Args:
-        names: The names of the design and coupling variables.
+        *names: The names of the variables.
 
     Returns:
         An initial design solution.
@@ -99,7 +101,7 @@ def get_inputs(names=None):
         "thick_panels": ones(1, dtype=complex128),
         "reserve_fact": ones(1, dtype=complex128),
     }
-    if names is None:
+    if not names:
         return inputs
     return {name: inputs.get(name) for name in names}
 
@@ -110,19 +112,19 @@ class Mission(MDODiscipline):
     Compute the objective and the constraints.
     """
 
-    def __init__(self, r_val=0.5, lift_val=0.5):
+    def __init__(self, r_val: float = 0.5, lift_val: float = 0.5) -> None:
         """
         Args:
             r_val: The threshold to compute the reserve factor constraint.
             lift_val: The threshold to compute the lift constraint.
         """
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.default_inputs = get_inputs("lift", "mass", "drag", "reserve_fact")
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
         self.r_val = r_val
         self.lift_val = lift_val
 
-    def _run(self):
+    def _run(self) -> None:
         lift, mass, drag, reserve_fact = self.get_inputs_by_name(
             ["lift", "mass", "drag", "reserve_fact"]
         )
@@ -132,7 +134,7 @@ class Mission(MDODiscipline):
         self.store_local_data(range=obj, c_lift=c_lift, c_rf=c_rf)
 
     @staticmethod
-    def compute_range(lift, mass, drag):
+    def compute_range(lift, mass, drag) -> float:
         """Compute the objective function: :math:`range=8.10^{11}*lift/(mass*drag)`
 
         Args:
@@ -146,7 +148,7 @@ class Mission(MDODiscipline):
         return 8e11 * lift[0] / (mass[0] * drag[0])
 
     @staticmethod
-    def c_lift(lift, lift_val=0.5):
+    def c_lift(lift, lift_val: float = 0.5):
         """Compute the lift constraint: :math:`lift-0.5`
 
         Args:
@@ -159,7 +161,7 @@ class Mission(MDODiscipline):
         return lift[0] - lift_val
 
     @staticmethod
-    def c_rf(reserve_fact, rf_val=0.5):
+    def c_rf(reserve_fact, rf_val: float = 0.5):
         """Compute the reserve factor constraint: :math:`rf-0.5`
 
         Args:
@@ -171,7 +173,9 @@ class Mission(MDODiscipline):
         """
         return reserve_fact[0] - rf_val
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         # Initialize all matrices to zeros
         self._init_jacobian(inputs, outputs, with_zeros=True)
         drag, lift, mass = self.get_inputs_by_name(["drag", "lift", "mass"])
@@ -192,12 +196,12 @@ class Aerodynamics(MDODiscipline):
     Evaluate: ``[drag, forces, lift] = f(sweep, thick_airfoils, displ)``.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.default_inputs = get_inputs("sweep", "thick_airfoils", "displ")
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
-    def _run(self):
+    def _run(self) -> None:
         sweep, thick_airfoils, displ = self.get_inputs_by_name(
             ["sweep", "thick_airfoils", "displ"]
         )
@@ -207,8 +211,9 @@ class Aerodynamics(MDODiscipline):
         self.store_local_data(drag=drag_out, forces=forces_out, lift=lift_out)
 
     @staticmethod
-    def compute_drag(sweep, thick_airfoils, displ):
-        r"""Compute the coupling
+    def compute_drag(sweep, thick_airfoils, displ) -> float:
+        r"""Compute the coupling.
+
         :math:`drag=0.1*((sweep/360)^2 + 200 + thick\\_airfoils^2
         - thick\\_airfoils - 4*displ)`
 
@@ -258,7 +263,9 @@ class Aerodynamics(MDODiscipline):
         """
         return (sweep[0] + 0.2 * thick_airfoils[0] - 2.0 * displ[0]) / 3000.0
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         # Initialize all matrices to zeros
         self._init_jacobian(inputs, outputs, with_zeros=True)
         sweep, thick_airfoils = self.get_inputs_by_name(["sweep", "thick_airfoils"])
@@ -283,12 +290,12 @@ class Structure(MDODiscipline):
     Evaluate: ``[mass, rf, displ] = f(sweep, thick_panels, forces)``.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.default_inputs = get_inputs("sweep", "forces", "thick_panels")
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
-    def _run(self):
+    def _run(self) -> None:
         sweep, thick_panels, forces = self.get_inputs_by_name(
             ["sweep", "thick_panels", "forces"]
         )
@@ -350,7 +357,9 @@ class Structure(MDODiscipline):
         """
         return 2 * sweep[0] + 3 * thick_panels[0] - 2.0 * forces[0]
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+    ) -> None:
         # Initialize all matrices to zeros
         self._init_jacobian(inputs, outputs, with_zeros=True)
         sweep = self.get_inputs_by_name("sweep")

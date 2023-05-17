@@ -85,8 +85,8 @@ def order_disciplines_from_default_inputs(
 class MDOInitializationChain(MDOChain):
     """An initialization process for a set of disciplines.
 
-    This MDOChain subclass computes the initialization for the computation of a set
-    of disciplines. It is particularly useful in the case of MDAs when not all
+    This MDOChain subclass computes the initialization for the computation of a set of
+    disciplines. It is particularly useful in the case of MDAs when not all
     default_inputs are available, and the execution order is not obvious to compute
     initial values for all couplings.
 
@@ -97,11 +97,11 @@ class MDOInitializationChain(MDOChain):
     ensure consistency.
     """
 
-    def __init__(
+    def __init__(  # noqa:D107
         self,
         disciplines: list[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         disc_ordered = order_disciplines_from_default_inputs(disciplines)
         super().__init__(disciplines=disc_ordered, name=name, grammar_type=grammar_type)

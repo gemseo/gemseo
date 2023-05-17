@@ -11,10 +11,20 @@
 
 .. _discipline_matlab:
 
+
+Requirements
+************
+
+In order to use the :class:`.MatlabDiscipline`,
+you shall install the MATLAB plugin for |g|.
+Please refer to the plugin installation instructions.
+
+
 Build discipline from a MATLAB function
 ***************************************
 
-As explained in :ref:`software_connection`, |g| can interface any simulation software through
+As explained in :ref:`software_connection`,
+|g| can interface any simulation software through
 the :class:`.MDODiscipline` class.
 When dealing with a MATLAB program given as a function,
 a generic interface is
@@ -24,15 +34,6 @@ It is described here.
 We first start the explanation with a simple example which handles scalar inputs and outputs.
 Then, we explain how to use the vector inputs and outputs as well as the ability to
 compute and return output Jacobian matrices.
-
-.. note::
-
-    Building and executing a MATLAB discipline requires that a MATLAB
-    engine as well as its Python API are installed.
-    To make sure that MATLAB works fine through the Python API,
-    start a Python interpreter and
-    check that there is no error when executing :code:`import matlab`.
-    See :ref:`matlab_requirements` for more information.
 
 .. warning::
 
@@ -67,7 +68,7 @@ the previous function is to use the |g| API:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="simple_scalar_func.m")
@@ -115,7 +116,7 @@ Thus, inputs must match the right size when executing the discipline:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc_vec = create_discipline("MatlabDiscipline",
                                  matlab_fct="simple_vector_func.m")
@@ -189,7 +190,7 @@ the boolean argument :code:`is_jac_returned_by_func` in this case:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="jac_func.m",
@@ -284,7 +285,7 @@ An example is:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="simple_scalar_func.m",
@@ -305,7 +306,7 @@ An example is:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("MatlabDiscipline",
                              matlab_fct="simple_scalar_func.m",
@@ -322,7 +323,7 @@ denoted ``x``, ``y``, ``z1`` and ``z2`` in the MATLAB function:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline(
         "MatlabDiscipline",

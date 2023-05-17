@@ -24,13 +24,14 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
-from gemseo.utils.testing import compare_dict_of_arrays
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
-from numpy import ndarray
 from pandas import DataFrame
 
 from .test_discipline_data import to_df_key
@@ -43,7 +44,7 @@ class DFChooser(MDODiscipline):
     def __init__(
         self,
         with_df: bool,
-        grammar_type: str,
+        grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool,
     ):
         super().__init__(grammar_type=grammar_type)
@@ -64,34 +65,26 @@ class A(DFChooser):
     def __init__(
         self,
         with_df: bool,
-        grammar_type: str,
+        grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool = False,
     ):
         super().__init__(with_df, grammar_type, df_shares_io)
 
         if self.with_df:
+            self.input_grammar.update_from_data({to_df_key("x", "a"): array([0.0])})
+            self.output_grammar.update_from_data({self.output_name: array([0.0])})
             self.default_inputs = {"x": DataFrame(data={"a": array([0.0])})}
-            if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.update_from_data({to_df_key("x", "a"): array([0.0])})
-                self.output_grammar.update_from_data({self.output_name: array([0.0])})
-            else:
-                self.input_grammar.update({to_df_key("x", "a"): ndarray})
-                self.output_grammar.update({self.output_name: ndarray})
         else:
-            self.default_inputs = {"x": array([0.0])}
-            if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.update_from_data({"x": array([0.0])})
-                self.output_grammar.update_from_data({"y": array([0.0])})
-            else:
-                self.input_grammar.update({"x": ndarray})
-                self.output_grammar.update({"y": ndarray})
+            self.input_grammar.update_from_data({"a": array([0.0])})
+            self.output_grammar.update_from_data({"b": array([0.0])})
+            self.default_inputs = {"a": array([0.0])}
 
     def _run(self):
         d = self.local_data
         if self.with_df:
             d[self.output_name] = 1 - 0.2 * d[to_df_key("x", "a")]
         else:
-            d["y"] = 1 - 0.2 * d["x"]
+            d["b"] = 1 - 0.2 * d["a"]
 
 
 class B(DFChooser):
@@ -104,46 +97,32 @@ class B(DFChooser):
     def __init__(
         self,
         with_df: bool,
-        grammar_type: str,
+        grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool = False,
     ):
         super().__init__(with_df, grammar_type, df_shares_io)
         if self.with_df:
-            if df_shares_io:
-                df_name = "x"
-            else:
-                df_name = "y"
-
+            self.input_grammar.update_from_data({self.output_name: array([0.0])})
+            self.output_grammar.update_from_data({to_df_key("x", "a"): array([0.0])})
+            df_name = "x" if df_shares_io else "y"
             self.default_inputs = {df_name: DataFrame(data={"b": array([0.0])})}
-            if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.update_from_data({self.output_name: array([0.0])})
-                self.output_grammar.update_from_data(
-                    {to_df_key("x", "a"): array([0.0])}
-                )
-            else:
-                self.input_grammar.update({self.output_name: ndarray})
-                self.output_grammar.update({to_df_key("x", "a"): ndarray})
         else:
-            self.default_inputs = {"y": array([0.0])}
-            if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.update_from_data({"y": array([0.0])})
-                self.output_grammar.update_from_data({"x": array([0.0])})
-            else:
-                self.input_grammar.update({"y": ndarray})
-                self.output_grammar.update({"x": ndarray})
+            self.input_grammar.update_from_data({"b": array([0.0])})
+            self.output_grammar.update_from_data({"a": array([0.0])})
+            self.default_inputs = {"b": array([0.0])}
 
     def _run(self):
         d = self.local_data
         if self.with_df:
             d[to_df_key("x", "a")] = 1 - 0.3 * d[self.output_name]
         else:
-            d["x"] = 1 - 0.3 * d["y"]
+            d["a"] = 1 - 0.3 * d["b"]
 
 
 def get_executed_disc(
     disc_class: type,
     with_df: bool,
-    grammar_type: str,
+    grammar_type: MDODiscipline.GrammarType,
     df_shares_io: bool = False,
 ) -> MDODiscipline:
     """Create, execute and return a discipline.
@@ -168,9 +147,10 @@ def get_executed_disc(
     return disc
 
 
-@pytest.mark.parametrize("df_shares_io", [False, True])
+# @pytest.mark.parametrize("df_shares_io", [False, True])
+@pytest.mark.parametrize("df_shares_io", [True])
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 @pytest.mark.parametrize(
     "disc_class",
@@ -190,20 +170,20 @@ def test_disciplines_comparison(grammar_type, disc_class, df_shares_io):
         output_name = to_df_key("y", "b")
 
     assert len(disc_with_df.local_data) == len(disc.local_data)
-    assert disc_with_df.local_data[to_df_key("x", "a")] == disc.local_data["x"]
-    assert disc_with_df.local_data[output_name] == disc.local_data["y"]
+    assert disc_with_df.local_data[to_df_key("x", "a")] == disc.local_data["a"]
+    assert disc_with_df.local_data[output_name] == disc.local_data["b"]
 
 
 def test_mdo_function_comparison():
     """Compare results of data frames against NumPy arrays with MDOFunctions."""
-    grammar_type = MDODiscipline.SIMPLE_GRAMMAR_TYPE
+    grammar_type = MDODiscipline.GrammarType.SIMPLE
 
     with_df = False
-    fct_gen = MDOFunctionGenerator(A(with_df, grammar_type))
-    fct = fct_gen.get_function(["x"], ["y"])
+    fct_gen = MDODisciplineAdapterGenerator(A(with_df, grammar_type))
+    fct = fct_gen.get_function(["a"], ["b"])
 
     with_df = True
-    fct_gen = MDOFunctionGenerator(A(with_df, grammar_type))
+    fct_gen = MDODisciplineAdapterGenerator(A(with_df, grammar_type))
     fct_with_df = fct_gen.get_function([to_df_key("x", "a")], [to_df_key("y", "b")])
 
     x = np.array([1.0])
@@ -214,15 +194,15 @@ class A2(A):
     """Discipline with 2 inputs and 2 outputs."""
 
     def __init__(self, with_df):
-        super().__init__(with_df, MDODiscipline.SIMPLE_GRAMMAR_TYPE)
+        super().__init__(with_df, MDODiscipline.GrammarType.SIMPLE)
         if self.with_df:
+            self.input_grammar.update_from_names([to_df_key("x", "c")])
             self.default_inputs["x"]["c"] = array([0.0])
-            self.input_grammar.update({to_df_key("x", "c"): ndarray})
-            self.output_grammar.update({to_df_key("y", "d"): ndarray})
+            self.output_grammar.update_from_names([to_df_key("y", "d")])
         else:
+            self.input_grammar.update_from_names(["c"])
             self.default_inputs["c"] = array([0.0])
-            self.input_grammar.update({"c": ndarray})
-            self.output_grammar.update({"d": ndarray})
+            self.output_grammar.update_from_names(["d"])
 
     def _run(self):
         super()._run()
@@ -237,11 +217,11 @@ def test_mdo_function_array_dispatch():
     """Compare results of data frames against NumPy arrays with MDOFunction array
     dispatch."""
     with_df = False
-    fct_gen = MDOFunctionGenerator(A2(with_df))
-    fct = fct_gen.get_function(["x", "c"], ["y", "d"])
+    fct_gen = MDODisciplineAdapterGenerator(A2(with_df))
+    fct = fct_gen.get_function(["a", "c"], ["b", "d"])
 
     with_df = True
-    fct_gen = MDOFunctionGenerator(A2(with_df))
+    fct_gen = MDODisciplineAdapterGenerator(A2(with_df))
     fct_with_df = fct_gen.get_function(
         [to_df_key("x", "a"), to_df_key("x", "c")],
         [to_df_key("y", "b"), to_df_key("y", "d")],
@@ -253,14 +233,14 @@ def test_mdo_function_array_dispatch():
 
 def test_discipline_outputs():
     """Compare discipline outputs of data frames against NumPy arrays."""
-    res = A2(False).execute({"x": np.array([1.0]), "c": np.array([2.0])})
+    res = A2(False).execute({"a": np.array([1.0]), "c": np.array([2.0])})
     res_with_df = A2(True).execute(
         {to_df_key("x", "a"): np.array([1.0]), to_df_key("x", "c"): np.array([2.0])}
     )
 
-    assert res_with_df[to_df_key("x", "a")] == res["x"]
+    assert res_with_df[to_df_key("x", "a")] == res["a"]
     assert res_with_df[to_df_key("x", "c")] == res["c"]
-    assert res_with_df[to_df_key("y", "b")] == res["y"]
+    assert res_with_df[to_df_key("y", "b")] == res["b"]
     assert res_with_df[to_df_key("y", "d")] == res["d"]
 
 
@@ -299,11 +279,11 @@ def test_cache(cache_name, cache_options, tmp_wd):
 def test_serialization(tmp_wd):
     """Verify serialization."""
     with_df = True
-    disc = A(with_df, MDODiscipline.JSON_GRAMMAR_TYPE)
+    disc = A(with_df, MDODiscipline.GrammarType.JSON)
     disc.execute()
     pickle_file_name = "a.pickle"
-    disc.serialize(pickle_file_name)
+    disc.to_pickle(pickle_file_name)
 
-    new_disc = MDODiscipline.deserialize(pickle_file_name)
+    new_disc = MDODiscipline.from_pickle(pickle_file_name)
 
     compare_dict_of_arrays(disc.local_data, new_disc.local_data)

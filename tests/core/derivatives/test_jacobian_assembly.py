@@ -28,13 +28,17 @@ import pytest
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives import jacobian_assembly
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.problems.scalable.linear.disciplines_generator import (
+    create_disciplines_from_desc,
+)
+from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.utils.python_compatibility import get_mock_method_call_args
 from numpy import ndarray
 from numpy import random
+from numpy.random import randn
 from scipy.sparse import csr_matrix
 
 CWD = Path(__file__).parent
@@ -45,7 +49,7 @@ def assembly() -> JacobianAssembly:
     """An assembly of Jacobians."""
     disciplines = [SobieskiAerodynamics(), SobieskiMission()]
     for discipline in disciplines:
-        discipline.linearize(force_all=True)
+        discipline.linearize(compute_all_jacobians=True)
 
     return JacobianAssembly(MDOCouplingStructure(disciplines))
 
@@ -169,18 +173,16 @@ def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
 
 @pytest.mark.parametrize(
     "mode",
-    [JacobianAssembly.DIRECT_MODE, JacobianAssembly.ADJOINT_MODE],
+    [JacobianAssembly.DerivationMode.DIRECT, JacobianAssembly.DerivationMode.ADJOINT],
 )
-@pytest.mark.parametrize(
-    "matrix_type", [JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR]
-)
+@pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
 @pytest.mark.parametrize("use_lu_fact", [False, True])
 def test_sobieski_all_modes(
     mda, in_data, functions, variables, couplings, mode, matrix_type, use_lu_fact
 ):
     """Test Sobieski's coupled derivatives computed in all modes (sparse direct, sparse
     adjoint, linear operator direct, linear operator adjoint)"""
-    if use_lu_fact and not matrix_type == JacobianAssembly.SPARSE:
+    if use_lu_fact and not matrix_type == JacobianAssembly.JacobianType.MATRIX:
         return
 
     mda.jac = mda.assembly.total_derivatives(
@@ -202,7 +204,11 @@ def test_sobieski_all_modes(
 def test_total_derivatives(mda, variables, couplings):
     """Check that total_derivatives() returns a non-empty nested dictionary."""
     jac = mda.assembly.total_derivatives(
-        in_data, None, variables, couplings, mode=JacobianAssembly.ADJOINT_MODE
+        in_data,
+        None,
+        variables,
+        couplings,
+        mode=JacobianAssembly.DerivationMode.ADJOINT,
     )
     assert jac["y_4"]["x_shared"] is None
     assert jac["y_1"]["TOTO"] is None
@@ -227,7 +233,7 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
             == expected
         )
 
-        assert get_mock_method_call_args(mock_method)[2] == expected
+        assert mock_method.call_args.args[2] == expected
 
 
 def test_lu_convergence_warning(assembly, caplog):
@@ -269,3 +275,38 @@ def test_lu_convergence_warning(assembly, caplog):
     )
 
     assert expected in caplog.text
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [JacobianAssembly.DerivationMode.ADJOINT, JacobianAssembly.DerivationMode.DIRECT],
+)
+@pytest.mark.parametrize(
+    "jacobian_type",
+    JacobianAssembly.JacobianType,
+)
+@pytest.mark.parametrize(
+    "matrix_format",
+    LinearDiscipline.MatrixFormat,
+)
+def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format):
+    io_size = 10
+
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "a", "b"], ["a"]), ("B", ["a"], ["b", "f"])],
+        inputs_size=io_size,
+        outputs_size=io_size,
+        matrix_format=matrix_format,
+        matrix_density=0.5,
+    )
+
+    mc = MDOCouplingStructure(disciplines)
+    ja = JacobianAssembly(mc)
+
+    inputs = {
+        "x": randn(io_size),
+        "a": randn(io_size),
+        "b": randn(io_size),
+    }
+
+    ja.total_derivatives(inputs, ["f"], ["x"], mc.all_couplings)

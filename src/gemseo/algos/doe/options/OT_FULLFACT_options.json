@@ -2,6 +2,7 @@
     "name": "OT_FULLFACT_options",
     "description": "Full-factorial DOE based on the Box DOE from the OpenTURNS library",
     "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.Box.html",
+    "required": ["n_samples", "levels"],
     "properties": {
         "n_samples":{
             "type":  ["null", "integer"],
@@ -37,7 +38,7 @@
                 },
                 {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 0
                 }
             ]
         },

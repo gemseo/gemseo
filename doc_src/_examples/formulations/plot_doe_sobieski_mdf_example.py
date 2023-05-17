@@ -25,10 +25,10 @@ from __future__ import annotations
 
 from os import name as os_name
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
@@ -60,7 +60,7 @@ for discipline in disciplines:
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
-# A quick way of getting this information is the API function
+# A quick way of getting this information is the high-level function
 # :func:`.generate_n2_plot`. A much more detailed explanation of coupling
 # visualization is available :ref:`here <coupling_visualization>`.
 generate_n2_plot(disciplines, save=False, show=True)
@@ -96,6 +96,16 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 
 # %%
+# Visualize the XDSM
+# ^^^^^^^^^^^^^^^^^^
+# Generate the XDSM on the fly:
+#
+# - ``log_workflow_status=True`` will log the status of the workflow in the console,
+# - ``save_html`` (default ``True``) will generate a self-contained HTML file,
+#   that can be automatically opened using ``show_html=True``.
+scenario.xdsmize(save_html=False)
+
+# %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
 # Use provided analytic derivatives
@@ -112,9 +122,6 @@ scenario.set_differentiation_method()
 # .. warning::
 #    The multiprocessing option has some limitations on Windows.
 #    Due to problems with sphinx, we disable it in this example.
-#    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
-#    randomly during execution. It is strongly recommended to update your
-#    environment to avoid this problem.
 #    The features :class:`.MemoryFullCache` and :class:`.HDF5Cache` are not
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
@@ -146,14 +153,9 @@ scenario.execute({"n_samples": 30, "algo": "lhs", "algo_options": algo_options})
 # Exporting the problem data.
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The method :meth:`.Scenario.export_to_dataset` will allow you to export
+# elsewhere. The method :meth:`.Scenario.to_dataset` will allow you to export
 # your results to a :class:`.Dataset`, the basic |g| class to store data.
-# From a dataset, you can even obtain a Pandas dataframe with its method
-# :meth:`~.Dataset.export_to_dataframe`:
-dataset = scenario.export_to_dataset("a_name_for_my_dataset")
-dataframe = dataset.export_to_dataframe(
-    variable_names=["-y_4", "x_1", "x_2", "x_3", "x_shared"]
-)
+dataset = scenario.to_dataset("a_name_for_my_dataset")
 
 # %%
 # Plot the optimization history view
@@ -164,7 +166,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the API function
+#    of customization options. Use the high-level function
 #    :func:`.get_post_processing_options_schema` to print a table with
 #    the attributes for any post-processing algo. Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.

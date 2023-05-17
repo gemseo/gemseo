@@ -60,8 +60,10 @@ from pathlib import Path
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import List
+from typing import Mapping
 from typing import NoReturn
 from typing import Optional
 from typing import Union
@@ -74,25 +76,27 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-from gemseo.mlearning.cluster.factory import ClusteringModelFactory
+from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.core.supervised import SavedObjectType
-from gemseo.mlearning.qual_measure.f1_measure import F1Measure
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
-from gemseo.mlearning.qual_measure.quality_measure import OptionType as EvalOptionType
-from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
+from gemseo.mlearning.quality_measures.f1_measure import F1Measure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import (
+    OptionType as EvalOptionType,
+)
+from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -167,7 +171,7 @@ class MOERegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
@@ -258,7 +262,7 @@ class MOERegressor(MLRegressionAlgo):
                 Returns:
                     The output data with the same type as the input one.
                 """
-                as_dict = isinstance(input_data, dict)
+                as_dict = isinstance(input_data, Mapping)
                 if as_dict:
                     input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names
@@ -503,28 +507,34 @@ class MOERegressor(MLRegressionAlgo):
         input_data: ndarray,
         output_data: ndarray,
     ) -> None:
-        dataset = Dataset("training_set")
+        dataset = IODataset(dataset_name="training_set")
         dataset.add_group(
-            Dataset.INPUT_GROUP,
+            dataset.INPUT_GROUP,
             input_data,
             [self._LOCAL_INPUT],
             {self._LOCAL_INPUT: input_data.shape[1]},
         )
         dataset.add_group(
-            Dataset.OUTPUT_GROUP,
+            dataset.OUTPUT_GROUP,
             output_data,
             [self._LOCAL_OUTPUT],
             {self._LOCAL_OUTPUT: output_data.shape[1]},
-            cache_as_input=False,
         )
         self._fit_clusters(dataset)
-        self._fit_classifier(dataset)
+        _dataset = IODataset(dataset_name="training_set")
+        _dataset.add_group(
+            dataset.INPUT_GROUP,
+            input_data,
+            [self._LOCAL_INPUT],
+            {self._LOCAL_INPUT: input_data.shape[1]},
+        )
+        _dataset.add_variable(
+            self.LABELS, self.clusterer.labels[:, newaxis], _dataset.OUTPUT_GROUP
+        )
+        self._fit_classifier(_dataset)
         self._fit_regressors(dataset)
 
-    def _fit_clusters(
-        self,
-        dataset: Dataset,
-    ) -> None:
+    def _fit_clusters(self, dataset: Dataset) -> None:
         """Train the clustering algorithm.
 
         The method adds resulting labels as a new output in the dataset.
@@ -551,13 +561,7 @@ class MOERegressor(MLRegressionAlgo):
             with MultiLineString.offset():
                 LOGGER.info("%s", self.clusterer)
 
-        labels = self.clusterer.labels[:, newaxis]
-        dataset.add_variable(self.LABELS, labels, self.LABELS, False)
-
-    def _fit_classifier(
-        self,
-        dataset: Dataset,
-    ) -> None:
+    def _fit_classifier(self, dataset: IODataset) -> None:
         """Train the classification algorithm.
 
         Args:
@@ -585,10 +589,7 @@ class MOERegressor(MLRegressionAlgo):
             with MultiLineString.offset():
                 LOGGER.info("%s", self.classifier)
 
-    def _fit_regressors(
-        self,
-        dataset: Dataset,
-    ) -> None:
+    def _fit_regressors(self, dataset: IODataset) -> None:
         """Train the local regression models on each cluster separately.
 
         Args:
@@ -721,10 +722,10 @@ class MOERegressor(MLRegressionAlgo):
         self,
         directory: Path,
     ) -> None:
-        self.clusterer.save(directory / "clusterer")
-        self.classifier.save(directory / "classifier")
+        self.clusterer.to_pickle(directory / "clusterer")
+        self.classifier.to_pickle(directory / "classifier")
         for i, local_model in enumerate(self.regress_models):
-            local_model.save(directory / f"local_model_{i}")
+            local_model.to_pickle(directory / f"local_model_{i}")
 
     def load_algo(
         self,

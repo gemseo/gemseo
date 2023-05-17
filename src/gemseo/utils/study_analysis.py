@@ -17,27 +17,27 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Generate a N2 and XDSM into files (and/or web page) from an Excel description of the
-MDO problem."""
+"""Generate N2 and XDSM files from an Excel of the MDO problem."""
 from __future__ import annotations
 
 import logging
 from ast import literal_eval
 from pathlib import Path
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
-from pandas import DataFrame  # noqa F401
+from pandas import DataFrame
 from pandas import read_excel
 
-from gemseo.api import create_design_space
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
-from gemseo.api import get_available_formulations
+from gemseo import create_design_space
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
+from gemseo import get_available_formulations
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.utils.python_compatibility import Final
+from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -94,7 +94,7 @@ class XLSStudyParser:
     DESIGN_VARIABLES = "Design variables"
     FORMULATION = "Formulation"
     OPTIONS = "Options"
-    OPTIONS_VALUES = "Options values"
+    OPTION_VALUES = "Options values"
     __SPACE: Final[str] = MultiLineString.INDENTATION
 
     def __init__(self, xls_study_path: str) -> None:
@@ -158,8 +158,8 @@ class XLSStudyParser:
 
             all_outputs += outputs
             disc = MDODiscipline(disc_name)
-            disc.input_grammar.update(inputs)
-            disc.output_grammar.update(outputs)
+            disc.input_grammar.update_from_names(inputs)
+            disc.output_grammar.update_from_names(outputs)
             string.indent()
             string.add("Inputs: {}", pretty_str(inputs))
             string.add("Outputs: {}", pretty_str(outputs))
@@ -170,13 +170,10 @@ class XLSStudyParser:
         self.inputs = set(all_inputs)
         self.outputs = set(all_outputs)
 
-    # TODO: API: change return_none to raise_error and return empty list instead of None
     @staticmethod
     def _get_frame_series_values(
-        frame: DataFrame,
-        series_name: str,
-        return_none: bool | None = False,
-    ) -> list[str] | None:
+        frame: DataFrame, series_name: str, raise_error: bool = True
+    ) -> list[str]:
         """Return the data of a named column.
 
         Removes empty data.
@@ -184,20 +181,21 @@ class XLSStudyParser:
         Args:
             frame: The pandas frame of the sheet.
             series_name: The name of the series.
-            return_none: If the series does not exist, returns None
-                instead of raising a ValueError.
+            raise_error: Whether to raise a ``ValueError``
+                when the series does not exist;
+                otherwise, return an empty list.
 
         Returns:
             The names of the columns, if the series exist.
 
         Raises:
-            ValueError: If the sheet has no name.
+            ValueError: If the sheet has no name and ``raise_error`` is ``True``.
         """
         series = frame.get(series_name)
         if series is None:
-            if return_none:
-                return None
-            raise ValueError(f"The sheet has no series named '{series_name}'")
+            if raise_error:
+                raise ValueError(f"The sheet has no series named '{series_name}'.")
+            return []
         # Remove empty data
         # pylint: disable=comparison-with-itself
         return [val for val in series.tolist() if val == val]
@@ -258,9 +256,9 @@ class XLSStudyParser:
                     missing_column_msg.format(frame_name, self.FORMULATION)
                 )
 
-            options = self._get_frame_series_values(frame, self.OPTIONS, True)
-            options_values = self._get_frame_series_values(
-                frame, self.OPTIONS_VALUES, True
+            options = self._get_frame_series_values(frame, self.OPTIONS, False)
+            option_values = self._get_frame_series_values(
+                frame, self.OPTION_VALUES, False
             )
 
             if len(formulation) != 1:
@@ -271,10 +269,10 @@ class XLSStudyParser:
                 )
 
             if options is not None:
-                if len(options) != len(options_values):
+                if len(options) != len(option_values):
                     raise ValueError(
                         "Options {} and Options values {} "
-                        "must have the same length.".format(options, options_values)
+                        "must have the same length.".format(options, option_values)
                     )
 
             formulation = formulation[0]
@@ -286,7 +284,7 @@ class XLSStudyParser:
                 self.DESIGN_VARIABLES: design_variables,
                 self.FORMULATION: formulation,
                 self.OPTIONS: options,
-                self.OPTIONS_VALUES: options_values,
+                self.OPTION_VALUES: option_values,
             }
 
             self.scenarios[frame_name] = scn
@@ -448,13 +446,13 @@ class StudyAnalysis:
 
     .. table:: Scenario1
 
-        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-        |Design variables| Objective function |  Constraints   |  Disciplines   |  Formulation   |  Options       | Options values |
-        +================+====================+================+================+================+================+================+
-        |      in1       |       out1         |     out2       |     Disc1      |     MDF        |  tolerance     |     0.1        |
-        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-        |                |                    |                |     Disc2      |                | main_mda_name  |   MDAJacobi    |
-        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
+        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+        | Design variables | Objective function | Constraints | Disciplines | Formulation |    Options    | Options values |
+        +==================+====================+=============+=============+=============+===============+================+
+        |       in1        |       out1         |    out2     |    Disc1    |    MDF      |   tolerance   |       0.1      |
+        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+        |                  |                    |             |    Disc2    |             | main_mda_name |   MDAJacobi    |
+        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
 
     All the objective functions and constraints must be outputs of a discipline,
     not necessarily the one of the current sheet.
@@ -493,8 +491,6 @@ class StudyAnalysis:
     scenarios: dict[str, MDOScenario]
     """The scenarios."""
 
-    AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
-
     def __init__(self, xls_study_path: str | Path) -> None:
         """Initialize the study from the Excel specification.
 
@@ -512,11 +508,11 @@ class StudyAnalysis:
 
     def generate_n2(
         self,
-        file_path: str = "n2.pdf",
+        file_path: str | Path = "n2.pdf",
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
-        fig_size: tuple[float, float] = (15, 10),
+        fig_size: FigSizeType = (15, 10),
     ) -> None:
         """Generate a N2 plot for the disciplines list.
 
@@ -563,7 +559,7 @@ class StudyAnalysis:
         option_names = scenario_description[XLSStudyParser.OPTIONS]
         options = {}
         if option_names is not None:
-            option_values = scenario_description[XLSStudyParser.OPTIONS_VALUES]
+            option_values = scenario_description[XLSStudyParser.OPTION_VALUES]
             for option_name, option_value in zip(option_names, option_values):
                 if isinstance(option_value, str):
                     try:
@@ -650,26 +646,24 @@ class StudyAnalysis:
 
     def generate_xdsm(
         self,
-        output_dir: str,
-        latex_output: bool = False,
-        open_browser: bool = False,
+        directory_path: str | Path,
+        save_pdf: bool = False,
+        show_html: bool = False,
     ) -> MDOScenario:
-        """Create a xdsm.json file from the current scenario.
+        """Create a XDSM diagram of the :attr:`.main_scenario`.
 
         Args:
-            output_dir: The directory where the XDSM html files are generated.
-            latex_output: If True, build the .tex, .tikz and .pdf files.
-            open_browser: If True, open in a web browser.
+            directory_path: The path of the directory to save the files.
+            save_pdf: Whether to save the XDSM as a PDF file.
+            show_html: Whether to open the web browser and display the XDSM.
 
         Returns:
-            The MDOScenario that contains the DesignSpace, the
-            formulation, but the disciplines have only correct
-            input and output grammars but no _run methods so that can't be executed
+            The scenario with non-executable disciplines.
         """
         LOGGER.info("Generated the following Scenario:")
         LOGGER.info("%s", self.main_scenario)
         LOGGER.info("%s", self.main_scenario.formulation.opt_problem)
         self.main_scenario.xdsmize(
-            outdir=output_dir, latex_output=latex_output, open_browser=open_browser
+            directory_path=directory_path, save_pdf=save_pdf, show_html=show_html
         )
         return self.main_scenario

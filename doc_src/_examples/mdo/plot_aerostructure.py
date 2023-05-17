@@ -25,10 +25,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import generate_n2_plot
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import generate_n2_plot
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -45,7 +45,7 @@ algo_options = {
     "eq_tolerance": 1e-3,
 }
 
-#############################################################################
+# %%
 # Create discipline
 # -----------------
 # First, we create disciplines (aero, structure, mission) with dummy formulas
@@ -75,11 +75,11 @@ mission = create_discipline(
 
 disciplines = [aerodynamics, structure, mission]
 
-#############################################################################
+# %%
 # We can see that structure and aerodynamics are strongly coupled:
 generate_n2_plot(disciplines, save=False, show=True)
 
-#############################################################################
+# %%
 # Create an MDO scenario with MDF formulation
 # -------------------------------------------
 # Then, we create an MDO scenario based on the MDF formulation
@@ -96,7 +96,7 @@ scenario.add_constraint("lift", "eq", value=0.5)
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 10, "algo_options": algo_options})
 scenario.post_process("OptHistoryView", save=False, show=True)
 
-#############################################################################
+# %%
 # Create an MDO scenario with bilevel formulation
 # -----------------------------------------------
 # Then, we create an MDO scenario based on the bilevel formulation
@@ -107,7 +107,7 @@ sub_scenario_options = {
 }
 design_space_ref = AerostructureDesignSpace()
 
-##############################################################################
+# %%
 # Create the aeronautics sub-scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For this purpose, we create a first sub-scenario to maximize the range
@@ -122,7 +122,7 @@ aero_scenario = create_scenario(
 )
 aero_scenario.default_inputs = sub_scenario_options
 
-##############################################################################
+# %%
 # Create the structure sub-scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We create a second sub-scenario to maximize the range
@@ -137,7 +137,7 @@ struct_scenario = create_scenario(
 )
 struct_scenario.default_inputs = sub_scenario_options
 
-##############################################################################
+# %%
 # Create the system scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Lastly, we build a system scenario to maximize the range with respect to

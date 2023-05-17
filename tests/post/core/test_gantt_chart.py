@@ -23,10 +23,10 @@ import pickle
 from pathlib import Path
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
@@ -53,7 +53,7 @@ def test_time_stamps(reset_time_stamping):
     mission = create_discipline("SobieskiMission", enable_delay=True)
     mission.execute()
     data = {"x_shared": mission.default_inputs["x_shared"] + 1.0}
-    mission.linearize(data, force_all=True)
+    mission.linearize(data, compute_all_jacobians=True)
     stamps = MDODiscipline.time_stamps
 
     assert "SobieskiMission" in stamps

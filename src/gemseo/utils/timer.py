@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 from time import perf_counter
+from types import TracebackType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class Timer:
         Args:
             log_level: The level of the logger.
                 If ``None``, do not log the elapsed time.
-        """
+        """  # noqa:D205 D212 D415
         if log_level is not None:
             log_level = logging.getLevelName(log_level)
 
@@ -66,7 +67,12 @@ class Timer:
         self.__elapsed_time = perf_counter()
         return self
 
-    def __exit__(self, type, value, traceback) -> None:
+    def __exit__(
+        self,
+        type: type[BaseException] | None,
+        value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         self.__elapsed_time = perf_counter() - self.__elapsed_time
         if self.__log_level is not None:
             LOGGER.log(self.__log_level, str(self))

@@ -31,19 +31,19 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
 
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 LOGGER = logging.getLogger(__name__)
 
 
-class DatasetPlotFactory:
+class DatasetPlotFactory(BaseFactory):
     """This factory instantiates a :class:`.DatasetPlot` from its class name."""
 
-    def __init__(self) -> None:  # noqa: D107
-        self.factory = Factory(DatasetPlot, ("gemseo.post.dataset",))
+    _CLASS = DatasetPlot
+    _MODULE_NAMES = ("gemseo.post.dataset",)
 
     def create(
         self,
@@ -61,23 +61,9 @@ class DatasetPlotFactory:
         Returns:
             A plot method built from the provided dataset.
         """
-        return self.factory.create(plot_name, dataset=dataset, **options)
+        return super().create(plot_name, dataset=dataset, **options)
 
     @property
     def plots(self) -> list[str]:
         """The available plot methods for dataset."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        plot_name: str,
-    ) -> bool:
-        """Check the availability of a plot for dataset.
-
-        Args:
-            plot_name: The name of a plot method for dataset (its class name).
-
-        Returns:
-            True if the plot method is available.
-        """
-        return self.factory.is_available(plot_name)
+        return self.class_names

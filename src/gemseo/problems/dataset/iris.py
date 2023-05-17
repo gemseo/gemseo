@@ -52,39 +52,43 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gemseo.core.dataset import Dataset
+from numpy import int64 as np_int64
+from pandas import factorize
+
+from gemseo.datasets.io_dataset import IODataset
 
 
-class IrisDataset(Dataset):
-    """Iris dataset parametrization."""
+def create_iris_dataset(
+    as_io: bool = False,
+    as_numeric: bool = True,
+) -> IODataset:
+    """Iris dataset parametrization.
 
-    def __init__(self, name="Iris", by_group=True, as_io=False):
-        """Constructor."""
-        super().__init__(name, by_group)
-        file_path = Path(__file__).parent / "iris.data"
-        variables = [
-            "sepal_length",
-            "sepal_width",
-            "petal_length",
-            "petal_width",
-            "specy",
-        ]
-        sizes = {
-            "sepal_length": 1,
-            "sepal_width": 1,
-            "petal_length": 1,
-            "petal_width": 1,
-            "specy": 1,
+    Args:
+        as_io: Whether to use Input/Output group names.
+        as_numeric: Whether to consider a string label or a numeric one.
+
+    Returns:
+        The Iris dataset.
+    """
+    file_path = Path(__file__).parent / "iris.data"
+    dataset = IODataset.from_csv(file_path)
+    dataset.name = "Iris"
+
+    if as_numeric:
+        numeric_data, numeric_meaning = factorize(
+            dataset.get_view(variable_names="specy").to_numpy().T[0]
+        )
+        dataset.update_data(numeric_data, variable_names="specy")
+        dataset = dataset.astype({("labels", "specy", 0): np_int64})
+        dataset.misc["labels"] = {"specy": numeric_meaning}
+
+    if as_io:
+        groups = {
+            "parameters": IODataset.INPUT_GROUP,
+            "labels": IODataset.OUTPUT_GROUP,
         }
-        if as_io:
-            groups = {
-                "sepal_length": "inputs",
-                "sepal_width": "inputs",
-                "petal_length": "inputs",
-                "petal_width": "inputs",
-                "specy": "outputs",
-            }
-        else:
-            groups = {"specy": "labels"}
+        for group, new_group in groups.items():
+            dataset.rename_group(group_name=group, new_group_name=new_group)
 
-        self.set_from_file(file_path, variables, sizes, groups, ",", False)
+    return dataset

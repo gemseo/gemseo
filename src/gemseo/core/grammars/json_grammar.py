@@ -22,13 +22,14 @@ from __future__ import annotations
 
 import json
 import logging
+from copy import copy
 from copy import deepcopy
 from numbers import Number
 from pathlib import Path
 from typing import Any
 from typing import Callable
-from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import Iterator
 from typing import List
@@ -42,11 +43,10 @@ from numpy import generic
 from numpy import ndarray
 
 from gemseo.core.discipline_data import Data
-from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.base_grammar import NamesToTypes
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
-from gemseo.core.grammars.simple_grammar import NamesToTypes
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.string_tools import MultiLineString
 
@@ -60,7 +60,14 @@ SerializedGrammarType = Dict[
 
 
 class JSONGrammar(BaseGrammar):
-    """A grammar based on a JSON schema."""
+    """A grammar based on a JSON schema.
+
+    For the dictionary-like methods similar to ``update``,
+    when a key exists in both grammars,
+    the values can be merged instead of being
+    updated by passing ``merge = True``.
+    In that case, the resulting grammar will allow any of the values.
+    """
 
     __validator: Callable[[Mapping[str, Any]], None] | None
     """The schema validator."""
@@ -71,7 +78,7 @@ class JSONGrammar(BaseGrammar):
     __schema_builder: MutableMappingSchemaBuilder
     """The internal schema object."""
 
-    __JSON_TO_PYTHON_TYPES = {
+    __JSON_TO_PYTHON_TYPES: Final[dict[str, type]] = {
         "array": ndarray,
         "string": str,
         "integer": int,
@@ -81,33 +88,46 @@ class JSONGrammar(BaseGrammar):
     }
     """The binding from JSON types to Python types."""
 
-    __NUMERIC_TYPE_NAMES: ClassVar[tuple[str]] = ("number", "float", "integer")
+    __PYTHON_TO_JSON_TYPES: Final[type, str] = {
+        ndarray: "array",
+        list: "array",
+        tuple: "array",
+        str: "string",
+        int: "integer",
+        bool: "boolean",
+        Number: "number",
+        float: "number",
+    }
+    """The binding from Python types to JSON types."""
+
+    __NUMERIC_TYPE_NAMES: Final[tuple[str]] = ("number", "float", "integer")
 
     def __init__(
         self,
         name: str,
-        schema_path: str | Path | None = None,
+        file_path: str | Path = "",
         descriptions: Mapping[str, str] | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Args:
-            schema_path: The path to a JSON schema file.
+            file_path: The path to a JSON schema file.
                 If ``None``, do not initialize the grammar from a JSON schema file.
-            descriptions: The descriptions of the elements read from ``schema_path``,
+            descriptions: The descriptions of the elements read from ``file_path``,
                 in the form: ``{element_name: element_meaning}``.
                 If ``None``, use the descriptions available in the JSON schema if any.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        if schema_path is not None:
-            self.update_from_file(schema_path)
+        if file_path:
+            self.update_from_file(file_path)
             self.set_descriptions(descriptions)
 
     def __delitem__(
         self,
         name: str,
     ) -> None:
+        super().__delitem__(name)
         del self.__schema_builder[name]
         self.__init_dependencies()
 
@@ -120,81 +140,93 @@ class JSONGrammar(BaseGrammar):
     def __iter__(self) -> Iterator[Any]:
         return iter(self.__schema_builder)
 
+    def __copy__(self) -> JSONGrammar:
+        grammar = self._copy_base()
+        # Updating is much faster than deep copying a schema builder.
+        grammar.__schema_builder.add_schema(self.__schema_builder, True)
+        grammar.__schema = self.__schema.copy()
+        grammar.__validator = copy(self.__validator)
+        return grammar
+
+    copy = __copy__
+
     def rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__schema_builder.properties[
             new_name
         ] = self.__schema_builder.properties.pop(current_name)
-
         required = self.__schema_builder.required
         if current_name in required:
             required.remove(current_name)
             required.add(new_name)
         self.__init_dependencies()
+        super().rename_element(current_name, new_name)
 
     def update(
         self,
-        grammar: JSONGrammar | Iterable[str] | DictSchemaType,
-        exclude_names: Iterable[str] | None = None,
+        grammar: JSONGrammar,
+        exclude_names: Iterable[str] = (),
+        merge: bool = False,
     ) -> None:
-        """Update the elements from another grammar or names or a schema."""
-        if isinstance(grammar, JSONGrammar):
-            if exclude_names:
-                schema_builder = deepcopy(grammar.__schema_builder)
-                for name in exclude_names:
-                    if name in schema_builder:
-                        del schema_builder[name]
-            else:
-                schema_builder = grammar.__schema_builder
-            self.__update(schema_builder)
-            self._update_namespaces_from_grammar(grammar)
-        elif isinstance(grammar, BaseGrammar):
-            raise TypeError(
-                f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
-            )
-        elif isinstance(grammar, Mapping):
-            if exclude_names:
-                schema = dict(grammar)
-                for name in exclude_names:
-                    schema.pop(name)
-            else:
-                schema = grammar
-            self.__update(schema)
-        elif isinstance(grammar, Iterable):
-            if not grammar:
-                return
-            if exclude_names is None:
-                exclude_names = tuple()
-            for name in grammar:
-                if name not in exclude_names:
-                    self.__schema_builder.add_object({name: [0.0]})
+        """Update the elements from another grammar or names or a schema.
+
+        Args:
+            merge: Whether to merge or update the grammar.
+
+        Raises:
+            TypeError: If the grammar is not a :class:`JSONGrammar`.
+        """  # noqa:D417
+        if not isinstance(grammar, JSONGrammar):
+            msg = f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
+            raise TypeError(msg)
+
+        if exclude_names:
+            schema_builder = deepcopy(grammar.__schema_builder)
+            for name in exclude_names:
+                if name in schema_builder:
+                    del schema_builder[name]
         else:
-            raise TypeError()
+            schema_builder = grammar.__schema_builder
+        self.__schema_builder.add_schema(schema_builder, not merge)
+        self._update_namespaces_from_grammar(grammar)
+        self._defaults.update(grammar._defaults, exclude=exclude_names)
         self.__init_dependencies()
 
     def clear(self) -> None:  # noqa: D102
+        super().clear()
         self.__schema_builder = MutableMappingSchemaBuilder()
         self.__init_dependencies()
 
-    def __repr__(self) -> str:
-        return f"{self}, schema: {self.__schema_builder.to_json(indent=2)}"
+    def _repr_required_elements(self, text: MultiLineString) -> None:  # noqa: D102
+        for name, schema in self.items():
+            if name in self.__schema_builder.required:
+                text.add(f"{name}: {schema.to_schema()}")
+
+    def _repr_optional_elements(self, text: MultiLineString) -> None:  # noqa: D102
+        for name, schema in self.items():
+            if name not in self.__schema_builder.required:
+                text.add(f"{name}: {schema.to_schema()}")
+                if name in self._defaults:
+                    text.indent()
+                    text.add(f"default: {self._defaults[name]}")
+                    text.dedent()
 
     def validate(
         self,
-        data: MutableData,
+        data: Data,
         raise_exception: bool = True,
     ) -> None:
         """
         Raises:
-            InvalidDataException: If the passed data is not a dictionary,
+            InvalidDataError: If the passed data is not a dictionary,
                 or if the data is not consistent with the grammar.
         """  # noqa: D205, D212, D415
         error_message = MultiLineString()
 
         # Check the required names explicitly to provide a clearer message.
-        missing_names = self.required_names - set(data.keys())
+        missing_names = self.required_names - data.keys()
         if missing_names:
             error_message.add(
-                "Missing required names: {}.".format(",".join(sorted(missing_names)))
+                "Missing required names: {}.", ",".join(sorted(missing_names))
             )
 
         if self.__validator is None:
@@ -206,23 +238,67 @@ class JSONGrammar(BaseGrammar):
             self.__validator(data_to_check)
         except JsonSchemaException as error:
             if not error.args[0].startswith("data must contain"):
-                error_message.add(f", error: {error.args[0]}")
+                error_message.add(", error: {}", error.args[0])
             LOGGER.error(error_message)
             if raise_exception:
-                raise InvalidDataException(str(error_message))
+                raise InvalidDataError(str(error_message))
+
+    def update_from_names(
+        self,
+        names: Iterable[str],
+        merge: bool = False,
+    ) -> None:
+        """
+        Args:
+            merge: Whether to merge or update the grammar.
+        """  # noqa: D205, D212, D415
+        if not names:
+            return
+        for name in names:
+            self.__schema_builder.add_object({name: [0.0]}, not merge)
+        self.__init_dependencies()
 
     def update_from_data(
         self,
         data: Data,
+        merge: bool = False,
     ) -> None:
         """
+        Args:
+            merge: Whether to merge or update the grammar.
+
         Notes:
             The types of the values of the ``data`` will be converted
             to JSON Schema types and define the elements of the JSON Schema.
         """  # noqa: D205, D212, D415
         if not data:
             return
-        self.__schema_builder.add_object(self.__cast_array_to_list(data))
+        self.__schema_builder.add_object(self.__cast_array_to_list(data), not merge)
+        self.__init_dependencies()
+
+    def update_from_types(  # noqa: D102
+        self,
+        names_to_types: NamesToTypes,
+        merge: bool = False,
+    ) -> None:
+        if not names_to_types:
+            return
+
+        try:
+            properties = {
+                element_name: {"type": self.__PYTHON_TO_JSON_TYPES[element_type]}
+                for element_name, element_type in names_to_types.items()
+            }
+        except KeyError as error:
+            raise KeyError(f"Unsupported python type for a JSON Grammar: {error}")
+
+        schema = {
+            "$schema": "http://json-schema.org/draft-04/schema",
+            "type": "object",
+            "properties": properties,
+            "required": list(names_to_types.keys()),
+        }
+        self.__schema_builder.add_schema(schema, not merge)
         self.__init_dependencies()
 
     def is_array(  # noqa: D102
@@ -262,19 +338,20 @@ class JSONGrammar(BaseGrammar):
 
     def restrict_to(  # noqa: D102
         self,
-        names: Sequence[str],
+        names: Iterable[str],
     ) -> None:
+        super().restrict_to(names)
         self._check_name(*names)
-        for element_name in tuple(self.__schema_builder):
-            if element_name not in names:
-                del self.__schema_builder[element_name]
+        for element_name in self.__schema_builder.keys() - names:
+            del self.__schema_builder[element_name]
         self.__init_dependencies()
 
-    def convert_to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
+    def to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
         grammar = SimpleGrammar(self.name)
-        grammar.update(self.__get_names_to_types())
-        for name in set(self.keys()) - self.required_names:
+        grammar.update_from_types(self.__get_names_to_types())
+        for name in self.keys() - self.required_names:
             grammar.required_names.remove(name)
+        grammar._defaults.update(self._defaults)
         return grammar
 
     @property
@@ -283,25 +360,12 @@ class JSONGrammar(BaseGrammar):
 
     # API not in the base class.
 
-    def __update(
-        self,
-        schema: DictSchemaType,
-    ) -> None:
-        """Update the elements from a schema.
-
-        Args:
-            schema: The schema to take the elements from.
-        """
-        self.__schema_builder.add_schema(schema)
-
-    def update_from_file(
-        self,
-        path: str | Path,
-    ) -> None:
+    def update_from_file(self, path: str | Path, merge: bool = False) -> None:
         """Update the grammar from a schema file.
 
         Args:
             path: The path to the schema file.
+            merge: Whether to merge or update the grammar.
 
         Raises:
             FileNotFoundError: If the schema file does not exist.
@@ -311,19 +375,26 @@ class JSONGrammar(BaseGrammar):
             raise FileNotFoundError(
                 f"Cannot update the grammar from non existing file: {path}."
             )
-        self.__schema_builder.add_schema(json.loads(path.read_text()))
+        self.__schema_builder.add_schema(json.loads(path.read_text()), not merge)
         self.__init_dependencies()
 
-    def write(
-        self,
-        path: Path | str | None = None,
-    ) -> None:
-        """Write the grammar schema to a file.
+    def update_from_schema(self, schema: DictSchemaType, merge: bool = False) -> None:
+        """Update the grammar from a json schema.
+
+        Args:
+            schema: The schema to update from.
+            merge: Whether to merge or update the grammar.
+        """
+        self.__schema_builder.add_schema(schema, not merge)
+        self.__init_dependencies()
+
+    def to_file(self, path: Path | str = "") -> None:
+        """Write the grammar ,schema to a json file.
 
         Args:
             path: The file path.
-                If ``None``,
-                then write to a file named after the grammar and with .json extension.
+                If empty,
+                write to a file named after the grammar and with .json extension.
         """
         if path is None:
             path = Path(self.name).with_suffix(".json")
@@ -344,7 +415,7 @@ class JSONGrammar(BaseGrammar):
         return self.__schema_builder.to_json(*args, **kwargs)
 
     @property
-    def schema(self) -> dict[str, DictSchemaType]:
+    def schema(self) -> DictSchemaType:
         """The dictionary representation of the schema."""
         if not self.__schema:
             self.__schema = self.__schema_builder.to_schema()
@@ -477,25 +548,28 @@ class JSONGrammar(BaseGrammar):
         self.__schema = {}
 
     def _check_name(self, *names: str) -> None:
-        for name in names:
-            if name not in self.__schema_builder:
-                raise KeyError(f"The name {name} is not in the grammar.")
+        self.__schema_builder.check_property_names(*names)
 
     def __getstate__(self) -> SerializedGrammarType:
-        # Ensure self.__schema is filled.
+        # Ensure self.__schema_builder is filled.
         self.schema
         state = dict(self.__dict__)
         # The validator will be recreated on demand.
         del state[f"_{self.__class__.__name__}__validator"]
         # The schema builder cannot be pickled.
         del state[f"_{self.__class__.__name__}__schema_builder"]
+        # The defaults cannot be pickled because it also depends on the schema builder.
+        state["defaults"] = dict(state.pop("_defaults"))
         return state
 
     def __setstate__(
         self,
         state: SerializedGrammarType,
     ) -> None:
-        self.__dict__.update(state)
         # That will create the missing attributes.
+        self.__dict__.update(state)
         self.clear()
-        self.__schema_builder.add_schema(state[f"_{self.__class__.__name__}__schema"])
+        self.__schema_builder.add_schema(
+            state[f"_{self.__class__.__name__}__schema"], True
+        )
+        self._defaults.update(state.pop("defaults"))

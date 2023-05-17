@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from typing import Sequence
 
 import pytest
@@ -45,30 +46,13 @@ def composed_distribution(
     return SPComposedDistribution(distributions)
 
 
-def test_available_copula_models():
-    """Check AVAILABLE_COPULA_MODELS."""
-    assert "independent_copula" in SPComposedDistribution.AVAILABLE_COPULA_MODELS
-
-
 def test_constructor(composed_distribution):
     assert composed_distribution.dimension == 4
     assert composed_distribution.variable_name == "x1_x2"
     assert composed_distribution.distribution_name == "Composed"
     assert composed_distribution.transformation == "x1_x2"
     assert len(composed_distribution.parameters) == 1
-    assert composed_distribution.parameters[0].name == "independent_copula"
-
-
-@pytest.mark.parametrize(
-    "copula",
-    [SPComposedDistribution.CopulaModel.independent_copula, "independent_copula"],
-)
-def test_copula_enum_or_str(distributions, copula):
-    """Check that copula passed to __init__ can be either a CopulaModel or a str."""
-    assert (
-        str(SPComposedDistribution(distributions, copula=copula).parameters[0])
-        == "independent_copula"
-    )
+    assert composed_distribution.parameters[0] is None
 
 
 def test_variable_name(distributions):
@@ -77,7 +61,18 @@ def test_variable_name(distributions):
 
 
 def test_str(composed_distribution):
-    assert str(composed_distribution) == "Composed(independent_copula)"
+    assert str(composed_distribution) == "Composed(None)"
+
+
+def test_copula(distributions):
+    """Check that using a copula which is not None raises an error."""
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(
+            "There is not copula distribution yet for SciPy-based distributions."
+        ),
+    ):
+        SPComposedDistribution(distributions, copula="foo")
 
 
 def test_compute_samples(composed_distribution):

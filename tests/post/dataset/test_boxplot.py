@@ -20,9 +20,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 from numpy import array
 
@@ -30,26 +30,34 @@ from numpy import array
 @pytest.fixture(scope="module")
 def dataset():
     """A dataset containing 3 samples of variables x, y and z (dim(z)=2)."""
-    dataset = Dataset(name="A dataset")
     sample1 = [0.0, 1.0, 1.0, 0.0]
     sample2 = [0.75, 0.0, 0.5, 1.0]
     sample3 = [1.0, 1.0, 0.75, 0.0]
     data_array = array([sample1, sample2, sample3])
-    sizes = {"x": 1, "y": 1, "z": 2}
-    dataset.set_from_array(data_array, variables=["x", "y", "z"], sizes=sizes)
+    variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+    dataset = Dataset.from_array(
+        data_array,
+        variable_names=["x", "y", "z"],
+        variable_names_to_n_components=variable_names_to_n_components,
+    )
+    dataset.name = "A dataset"
     return dataset
 
 
 @pytest.fixture(scope="module")
 def other_dataset():
     """Another dataset containing 3 samples of variables x, y and z (dim(z)=2)."""
-    dataset = Dataset(name="Another dataset")
     sample1 = [0.0, 1.0, 1.0, 0.0]
     sample2 = [-0.75, -0.0, -0.5, -1.0]
     sample3 = [-1.0, -1.0, -0.75, -0.0]
     data_array = array([sample1, sample2, sample3])
-    sizes = {"x": 1, "y": 1, "z": 2}
-    dataset.set_from_array(data_array, variables=["x", "y", "z"], sizes=sizes)
+    variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+    dataset = Dataset.from_array(
+        data_array,
+        variable_names=["x", "y", "z"],
+        variable_names_to_n_components=variable_names_to_n_components,
+    )
+    dataset.name = "Another dataset"
     return dataset
 
 

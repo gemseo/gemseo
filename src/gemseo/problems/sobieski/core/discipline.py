@@ -63,7 +63,7 @@ class SobieskiDiscipline:
         return self.base.constants
 
     @property
-    def dtype(self):
+    def dtype(self) -> str:
         return self.base.dtype
 
     @property

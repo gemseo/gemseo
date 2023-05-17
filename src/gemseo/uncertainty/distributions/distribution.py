@@ -90,7 +90,6 @@ from numpy import array
 from numpy import ndarray
 
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -105,22 +104,19 @@ ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Probability distribution related to a random variable.
 
-    The dimension of the random variable can be greater than 1. In this case,
-    the same distribution is applied to all components of the random variable
-    under the hypothesis that these components are stochastically independent.
+    The dimension of the random variable can be greater than 1. In this case, the same
+    distribution is applied to all components of the random variable under the hypothesis
+    that these components are stochastically independent.
 
-    The string representation of a distribution
-    interfacing a distribution called :code:`'MyDistribution'`
-    with parameters :code:`(2,3)` is 'MyDistribution(2, 3)`
-    if no standard parameters are passed.
-    If the standard parameters are :code:`{a: 2, b: 3}`
-    (resp. :code:`{a_inv: 2, b: 3}`),
-    then the standard representation is: 'MyDistribution(a=2, b=3)`
-    (resp. 'MyDistribution(a_inv=0.5, b=3)`)
-    Standard parameters are useful to redefine the name of the parameters.
-    For example, some exponential distributions consider the notion of rate
-    while other ones consider the notion of scale, which is the inverse of the rate...
-    even in the background, the distribution is the same!
+    The string representation of a distribution interfacing a distribution called
+    :code:`'MyDistribution'` with parameters :code:`(2,3)` is 'MyDistribution(2, 3)` if
+    no standard parameters are passed. If the standard parameters are :code:`{a: 2, b:
+    3}` (resp. :code:`{a_inv: 2, b: 3}`), then the standard representation is:
+    'MyDistribution(a=2, b=3)` (resp. 'MyDistribution(a_inv=0.5, b=3)`) Standard
+    parameters are useful to redefine the name of the parameters. For example, some
+    exponential distributions consider the notion of rate while other ones consider the
+    notion of scale, which is the inverse of the rate... even in the background, the
+    distribution is the same!
     """
 
     math_lower_bound: ndarray
@@ -183,7 +179,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
-                such as 'Normal' for OpenTURNS or 'norm' for SciPy.
+                such as ``"Normal"`` for OpenTURNS or ``"norm"`` for SciPy.
             parameters: The parameters of the class
                 related to distribution.
             dimension: The dimension of the random variable.
@@ -206,7 +202,8 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             self.standard_parameters = standard_parameters
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE, default_name=f"distribution_{self.variable_name}"
+            FilePathManager.FileType.FIGURE,
+            default_name=f"distribution_{self.variable_name}",
         )
         msg = MultiLineString()
         msg.add("Define the random variable: {}", variable)
@@ -281,13 +278,12 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     def range(self) -> list[ndarray]:
         """The numerical range.
 
-        The numerical range is the interval defined by
-        the lower and upper bounds numerically reachable by the random variable.
+        The numerical range is the interval defined by the lower and upper bounds
+        numerically reachable by the random variable.
 
-        Here, the numerical range of the random variable is defined
-        by one array for each component of the random variable,
-        whose first element is the lower bound of this component
-        while the second one is its upper bound.
+        Here, the numerical range of the random variable is defined by one array for
+        each component of the random variable, whose first element is the lower bound of
+        this component while the second one is its upper bound.
         """
         value = [
             array([l_b, u_b])
@@ -299,13 +295,12 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     def support(self) -> list[ndarray]:
         """The mathematical support.
 
-        The mathematical support is the interval defined by
-        the theoretical lower and upper bounds of the random variable.
+        The mathematical support is the interval defined by the theoretical lower and
+        upper bounds of the random variable.
 
-        Here, the mathematical range of the random variable is defined
-        by one array for each component of the random variable,
-        whose first element is the lower bound of this component
-        while the second one is its upper bound.
+        Here, the mathematical range of the random variable is defined by one array for
+        each component of the random variable, whose first element is the lower bound of
+        this component while the second one is its upper bound.
         """
         value = [
             array([l_b, u_b])

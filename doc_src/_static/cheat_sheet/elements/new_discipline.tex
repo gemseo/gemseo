@@ -11,15 +11,15 @@
 
 Create a new discipline from scratch:
 \begin{python}
-from gemseo.api import MDODiscipline
+from gemseo import MDODiscipline
 from numpy import array
 
 class NewDiscipline(MDODiscipline):
 
     def __init__(self):
         super(NewDiscipline, self).__init__()
-        self.input_grammar.update(['x', 'z'])
-        self.output_grammar.update(['f'])
+        self.input_grammar.update_from_names(['x', 'z'])
+        self.output_grammar.update_from_names(['f'])
         self.default_inputs = {'x': array([0.]), 'z': array([0.])}
 
     def _run(self):

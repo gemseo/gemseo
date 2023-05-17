@@ -43,7 +43,7 @@ variables (a.k.a. random variables) from:
 
 - a variable name,
 - a distribution name
-  (see :meth:`~gemseo.uncertainty.api.get_available_distributions`),
+  (see :func:`.uncertainty.get_available_distributions`),
 - an optional variable size,
 - optional distribution parameters (:code:`parameters` set as
   a tuple of positional arguments for :class:`.OTDistribution`
@@ -77,11 +77,11 @@ from typing import TYPE_CHECKING
 from gemseo.uncertainty.distributions.distribution import Distribution
 
 if TYPE_CHECKING:
-    from gemseo.core.dataset import Dataset
+    from gemseo.datasets.dataset import Dataset
 
 from numpy import array, ndarray
 
-from gemseo.algos.design_space import DesignSpace, DesignVariable
+from gemseo.algos.design_space import DesignSpace
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.factory import (
     DistributionFactory,
@@ -91,7 +91,6 @@ from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
     split_array_to_dict_of_arrays,
 )
-from pathlib import Path
 
 RandomVariable = collections.namedtuple(
     "RandomVariable",
@@ -123,30 +122,32 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    def __init__(
-        self,
-        hdf_file: str | Path | None = None,
-        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
-        name: str | None = None,
-    ) -> None:
-        """
-        Args:
-            copula: A name of copula defining the dependency between random variables.
-        """  # noqa: D205, D212, D415
+    def __init__(self, name: str = "") -> None:  # noqa:D107
         LOGGER.debug("*** Create a new parameter space ***")
-        super().__init__(hdf_file=hdf_file, name=name)
+        super().__init__(name=name)
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
-        if copula not in ComposedDistribution.AVAILABLE_COPULA_MODELS:
-            raise ValueError(f"{copula} is not a copula name.")
-        self._copula = copula
         self.__distributions_definitions = {}
         # To be defined as:
         # self.__distributions_definitions["u"] = ("SPNormalDistribution", {"mu": 1.})
         # where the first component of the tuple is a distribution name
         # and the second one a mapping of the distribution parameter.
         self.__distribution_family_id = ""
+
+    def build_composed_distribution(self, copula: Any = None) -> None:
+        """Build the joint probability distribution.
+
+        Args:
+            copula: A copula distribution
+                defining the dependency structure between random variables;
+                if ``None``, consider an independent copula.
+        """
+        if self.uncertain_variables:
+            first_marginal = self.distributions[self.uncertain_variables[0]]
+            self.distribution = first_marginal._COMPOSED_DISTRIBUTION(
+                [self.distributions[name] for name in self.uncertain_variables], copula
+            )
 
     def is_uncertain(
         self,
@@ -174,7 +175,7 @@ class ParameterSpace(DesignSpace):
         Returns:
             True is the variable is deterministic.
         """
-        deterministic = set(self.variables_names) - set(self.uncertain_variables)
+        deterministic = set(self.variable_names) - set(self.uncertain_variables)
         return variable in deterministic
 
     def __update_parameter_space(
@@ -186,7 +187,7 @@ class ParameterSpace(DesignSpace):
         Args:
             variable: The name of the random variable.
         """
-        if variable not in self.variables_names:
+        if variable not in self.variable_names:
             l_b = self.distributions[variable].math_lower_bound
             u_b = self.distributions[variable].math_upper_bound
             value = self.distributions[variable].mean
@@ -247,14 +248,8 @@ class ParameterSpace(DesignSpace):
         LOGGER.debug("Add the random variable: %s.", name)
         self.distributions[name] = distribution
         self.uncertain_variables.append(name)
-        self._build_composed_distribution()
+        self.build_composed_distribution()
         self.__update_parameter_space(name)
-
-    def _build_composed_distribution(self) -> None:
-        """Build the composed distribution from the marginal ones."""
-        tmp_marginal = self.distributions[self.uncertain_variables[0]]
-        marginals = [self.distributions[name] for name in self.uncertain_variables]
-        self.distribution = tmp_marginal._COMPOSED_DISTRIBUTION(marginals, self._copula)
 
     def get_range(
         self,
@@ -297,7 +292,7 @@ class ParameterSpace(DesignSpace):
             del self.distributions[name]
             self.uncertain_variables.remove(name)
             if self.uncertain_variables:
-                self._build_composed_distribution()
+                self.build_composed_distribution()
         super().remove_variable(name)
 
     def compute_samples(
@@ -323,7 +318,7 @@ class ParameterSpace(DesignSpace):
         if as_dict:
             sample = [
                 split_array_to_dict_of_arrays(
-                    data_array, self.variables_sizes, self.uncertain_variables
+                    data_array, self.variable_sizes, self.uncertain_variables
                 )
                 for data_array in sample
             ]
@@ -400,7 +395,7 @@ class ParameterSpace(DesignSpace):
                 if not isinstance(value, ndarray):
                     raise TypeError(error_msg)
 
-                if value.shape[-1] != self.variables_sizes[variable]:
+                if value.shape[-1] != self.variable_sizes[variable]:
                     raise ValueError(error_msg)
 
                 if (value > 1.0).any() or (value < 0.0).any():
@@ -409,13 +404,13 @@ class ParameterSpace(DesignSpace):
     def __str__(self) -> str:
         table = super().get_pretty_table()
         distribution = []
-        for variable in self.variables_names:
+        for variable in self.variable_names:
             if variable in self.uncertain_variables:
                 dist = self.distributions[variable]
                 for _ in range(dist.dimension):
                     distribution.append(str(dist))
             else:
-                for _ in range(self.variables_sizes[variable]):
+                for _ in range(self.variable_sizes[variable]):
                     distribution.append(self._BLANK)
 
         table.add_column(self._INITIAL_DISTRIBUTION, distribution)
@@ -444,7 +439,7 @@ class ParameterSpace(DesignSpace):
         mean = []
         std = []
         rnge = []
-        for variable in self.variables_names:
+        for variable in self.variable_names:
             if variable in self.uncertain_variables:
                 dist = self.distributions[variable]
                 tmp_mean = dist.mean
@@ -461,7 +456,7 @@ class ParameterSpace(DesignSpace):
                     rnge.append(tmp_range[dim])
                     support.append(tmp_support[dim])
             else:
-                for _ in range(self.variables_sizes[variable]):
+                for _ in range(self.variable_sizes[variable]):
                     distribution.append(self._BLANK)
                     transformation.append(self._BLANK)
                     mean.append(self._BLANK)
@@ -521,8 +516,8 @@ class ParameterSpace(DesignSpace):
         return self.__unnormalize_vect(x_vect, no_check)
 
     def __unnormalize_vect(self, x_vect, no_check):
-        data_names = self.variables_names
-        data_sizes = self.variables_sizes
+        data_names = self.variable_names
+        data_sizes = self.variable_sizes
         x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
         x_u = self.evaluate_cdf(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
@@ -589,8 +584,8 @@ class ParameterSpace(DesignSpace):
         return self.__normalize_vect(x_vect)
 
     def __normalize_vect(self, x_vect):
-        data_names = self.variables_names
-        data_sizes = self.variables_sizes
+        data_names = self.variable_names
+        data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
         x_n = self.evaluate_cdf(dict_sample)
@@ -606,7 +601,7 @@ class ParameterSpace(DesignSpace):
         """The deterministic variables."""
         return [
             variable
-            for variable in self.variables_names
+            for variable in self.variable_names
             if variable not in self.uncertain_variables
         ]
 
@@ -660,7 +655,7 @@ class ParameterSpace(DesignSpace):
         dataset: Dataset,
         groups: Iterable[str] | None = None,
         uncertain: Mapping[str, bool] | None = None,
-        copula: str = ComposedDistribution.CopulaModel.independent_copula.value,
+        copula: Any = None,
     ) -> ParameterSpace:
         """Initialize the parameter space from a dataset.
 
@@ -671,16 +666,16 @@ class ParameterSpace(DesignSpace):
             uncertain: Whether the variables should be uncertain or not.
             copula: A name of copula defining the dependency between random variables.
         """
-        parameter_space = ParameterSpace(copula=copula)
+        parameter_space = ParameterSpace()
 
         if uncertain is None:
             uncertain = {}
 
         if groups is None:
-            groups = dataset.groups
+            groups = dataset.group_names
         for group in groups:
-            for name in dataset.get_names(group):
-                data = dataset.get_data_by_names(name)[name]
+            for name in dataset.get_variable_names(group):
+                data = dataset.get_view(variable_names=name).to_numpy()
                 l_b = data.min(0)
                 u_b = data.max(0)
                 value = (l_b + u_b) / 2
@@ -697,6 +692,7 @@ class ParameterSpace(DesignSpace):
                 else:
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
 
+        parameter_space.build_composed_distribution(copula)
         return parameter_space
 
     def to_design_space(self) -> DesignSpace:
@@ -727,8 +723,8 @@ class ParameterSpace(DesignSpace):
     def __getitem__(
         self,
         name: str,
-    ) -> DesignVariable | RandomVariable:
-        if name not in self.variables_names:
+    ) -> DesignSpace.DesignVariable | RandomVariable:
+        if name not in self.variable_names:
             raise KeyError(f"Variable '{name}' is not known.")
 
         if self.is_uncertain(name):
@@ -743,7 +739,7 @@ class ParameterSpace(DesignSpace):
             except KeyError:
                 value = None
 
-            return DesignVariable(
+            return DesignSpace.DesignVariable(
                 size=self.get_size(name),
                 var_type=self.get_type(name),
                 l_b=self.get_lower_bound(name),
@@ -754,7 +750,7 @@ class ParameterSpace(DesignSpace):
     def __setitem__(
         self,
         name: str,
-        item: DesignVariable | RandomVariable,
+        item: DesignSpace.DesignVariable | RandomVariable,
     ) -> None:
         if isinstance(item, RandomVariable):
             self.add_random_variable(

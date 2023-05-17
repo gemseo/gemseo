@@ -25,13 +25,13 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 
 np.random.seed(54321)
 
-###############################################################################
+# %%
 # Build dataset
 # -------------
 # The data are generated from the function :math:`f(x)=x^2`.
@@ -45,17 +45,19 @@ n = 20
 x = np.sort(np.random.random(n))
 y = x**2 + np.random.normal(0, 0.05, n)
 
-dataset = Dataset()
-dataset.add_variable("x", x[:, None], Dataset.INPUT_GROUP)
-dataset.add_variable("y", y[:, None], Dataset.OUTPUT_GROUP, cache_as_input=False)
+dataset = IODataset()
+dataset.add_variable("x", x[:, None], dataset.INPUT_GROUP)
+dataset.add_variable("y", y[:, None], dataset.OUTPUT_GROUP)
 
-###############################################################################
+# %%
 # Build selector
 # --------------
 # We consider three regression models, with different possible hyperparameters.
 # A mean squared error quality measure is used with a k-folds cross validation
 # scheme (5 folds).
-selector = MLAlgoSelection(dataset, MSEMeasure, eval_method="kfolds", n_folds=5)
+selector = MLAlgoSelection(
+    dataset, MSEMeasure, measure_evaluation_method_name="KFOLDS", n_folds=5
+)
 selector.add_candidate(
     "LinearRegressor",
     penalty_level=[0, 0.1, 1, 10, 20],
@@ -78,13 +80,13 @@ selector.add_candidate(
     smooth=[0, 0.01, 0.1, 1, 10, 100],
 )
 
-###############################################################################
+# %%
 # Select best candidate
 # ---------------------
 best_algo = selector.select()
 print(best_algo)
 
-###############################################################################
+# %%
 # Plot results
 # ------------
 # Plot the best models from each candidate algorithm

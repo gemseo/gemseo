@@ -87,7 +87,7 @@ class ScalableProblem(unittest.TestCase):
     def test_serialize(self):
         disc = ScalableProblem.scalable_disciplines[0]
         outf = "scalable.o"
-        disc.serialize(outf)
+        disc.to_pickle(outf)
         assert exists(outf)
 
     def _determine_size(self, name, original_sizes=False):
@@ -152,7 +152,9 @@ class ScalableProblem(unittest.TestCase):
                 hdf_node_path = discipline.name
                 sizes = ScalableProblem.sizes
                 fill_factor = ScalableProblem.fill_factor
-                data = HDF5Cache(HDF_CACHE_PATH, hdf_node_path).export_to_dataset()
+                data = HDF5Cache(
+                    hdf_file_path=HDF_CACHE_PATH, hdf_node_path=hdf_node_path
+                ).to_dataset()
                 scal_disc = ScalableDiscipline(
                     ScalableProblem.scalable_model,
                     data=data,
@@ -241,17 +243,13 @@ class ScalableProblem(unittest.TestCase):
                 linearization_mode="auto",
             )
 
-    def test_get_attributes_to_serialize(self):
-        attrs = self.scalable_disciplines[0].get_attributes_to_serialize()
-        assert len(attrs) > 5
-        for attr in attrs:
-            assert isinstance(attr, str)
-
     def test_group_dep(self):
         hdf_node_path = ScalableProblem.original_disciplines[3].name
         ScalableDiscipline(
             ScalableProblem.scalable_model,
-            data=HDF5Cache(HDF_CACHE_PATH, hdf_node_path).export_to_dataset(),
+            data=HDF5Cache(
+                hdf_file_path=HDF_CACHE_PATH, hdf_node_path=hdf_node_path
+            ).to_dataset(),
             sizes=ScalableProblem.sizes,
             fill_factor=ScalableProblem.fill_factor,
             group_dep={"y_4": []},

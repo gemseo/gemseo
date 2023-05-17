@@ -26,19 +26,20 @@ from typing import Any
 from typing import Callable
 
 import jinja2
+from gemseo import _get_schema
+from gemseo import get_algorithm_features
+from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.driver_factory import DriverFactory
-from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import _get_schema
-from gemseo.api import get_algorithm_features
-from gemseo.core.factory import Factory
+from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.cluster.factory import ClusteringModelFactory
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
+from gemseo.mlearning.clustering.factory import ClusteringModelFactory
+from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
@@ -152,7 +153,7 @@ class AlgoOptionsDoc:
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Any | Factory,
+        algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
@@ -176,12 +177,11 @@ class AlgoOptionsDoc:
 
         self.algo_type = algo_type
         self.long_algo_type = long_algo_type
-        if isinstance(algo_factory, Factory):
-            self.factory = algo_factory
+        self.factory = algo_factory
+        if hasattr(self.factory, "class_names"):
+            self.algos_names = self.factory.class_names
         else:
-            self.factory = algo_factory.factory
-
-        self.algos_names = self.factory.classes
+            self.algos_names = self.factory.libraries
         self.get_class = self.factory.get_class
         self.get_library_name = self.factory.get_library_name
         self.__get_options_schema = self.__default_options_schema_getter
@@ -254,7 +254,7 @@ class AlgoOptionsDoc:
         self, algo_type: str, output_json: bool = False, pretty_print: bool = False
     ) -> str | dict[str, Any]:
         """Get the options schema from the algorithm factory."""
-        grammar = self.algo_factory.factory.get_options_grammar(algo_type)
+        grammar = self.algo_factory.get_options_grammar(algo_type)
         return _get_schema(grammar, output_json, pretty_print)
 
     def to_rst(
@@ -327,7 +327,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Any | Factory,
+        algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
@@ -348,7 +348,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     def __default_options_schema_getter(
         self,
-        algo_factory: DriverFactory,
+        algo_factory: BaseAlgoFactory,
     ) -> Callable[[str], dict[dict[str, str]]]:
         """Return the default algorithm description getter from a driver factory."""
 
@@ -366,15 +366,22 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             )
             algo_lib = algo_factory.create(algo)
             options_grammar = algo_lib.init_options_grammar(algo)
-            return {
+            options = {
                 k: v for k, v in options_schema.items() if k in options_grammar.names
             }
+            for name in options_grammar.required_names:
+                if name not in options:
+                    options[name] = {}
+
+                options[name]["default"] = ""
+
+            return options
 
         return get_options_schema
 
     @staticmethod
     def __default_description_getter(
-        algo_factory: DriverFactory,
+        algo_factory: BaseAlgoFactory,
     ) -> Callable[[str], str]:
         """Return the default algorithm description getter from a driver factory."""
 
@@ -393,7 +400,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     @staticmethod
     def __default_website_getter(
-        algo_factory: DriverFactory,
+        algo_factory: BaseAlgoFactory,
     ) -> Callable[[str], str]:
         """Return the default algorithm website getter from a driver factory."""
 
@@ -412,11 +419,11 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     @staticmethod
     def __default_class_getter(
-        algo_factory: DriverFactory,
-    ) -> Callable[[str], DriverLib]:
+        algo_factory: BaseAlgoFactory,
+    ) -> Callable[[str], DriverLibrary]:
         """Return the default algorithm class getter from a driver factory."""
 
-        def get_class(algo: str) -> DriverLib:
+        def get_class(algo: str) -> DriverLibrary:
             """Return the driver library associated with an algorithm.
 
             Args:
@@ -425,21 +432,20 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The driver library associated with the algorithm.
             """
-            return algo_factory.factory.get_class(
-                algo_factory.algo_names_to_libraries[algo]
-            )
+            return algo_factory.get_class(algo_factory.algo_names_to_libraries[algo])
 
         return get_class
 
 
 class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
-    """Generator of the reST documentation of a post-processor from a Jinja2 template."""
+    """Generator of the reST documentation of a post-processor from a Jinja2
+    template."""
 
     def __init__(
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Any | Factory,
+        algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
@@ -468,7 +474,7 @@ class InitOptionsDoc(AlgoOptionsDoc):
         self,
         algo_type: str,
         long_algo_type: str,
-        algo_factory: Any | Factory,
+        algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
@@ -500,6 +506,7 @@ def main(gen_opts_path: str | Path) -> None:
         DriverOptionsDoc("doe", "DOE", DOEFactory(), user_guide_anchor="doe"),
         DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
         DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
+        DriverOptionsDoc("ode", "Ordinary Differential Equation", ODESolversFactory()),
         InitOptionsDoc(
             "distribution", "Probability distribution", DistributionFactory()
         ),

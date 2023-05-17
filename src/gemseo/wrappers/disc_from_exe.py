@@ -23,26 +23,25 @@ from __future__ import annotations
 import logging
 import re
 import subprocess
-import sys
 from ast import literal_eval
 from copy import deepcopy
-from multiprocessing import Lock
-from multiprocessing import Value
-from os import listdir
 from pathlib import Path
 from typing import Callable
 from typing import Mapping
 from typing import MutableSequence
 from typing import Sequence
-from uuid import uuid1
+from typing import Tuple
+from typing import Union
 
 from numpy import array
 from numpy import ndarray
+from strenum import StrEnum
 
-from gemseo.core.data_processor import DataProcessor  # noqa: F401
+from gemseo.core.data_processor import DataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.run_folder_manager import FoldersIter
+from gemseo.utils.run_folder_manager import RunFolderManager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,15 +50,40 @@ INPUT_REGEX = r"GEMSEO_INPUT\{(.*)\}"
 OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
 
 
-class FoldersIter(BaseEnum):
-    NUMBERED = 0
-    UUID = 1
+class Parser(StrEnum):
+    """Built-in parser types."""
+
+    KEY_VALUE = "KEY_VALUE"
+    """The output file is expected to have a key-value structure for each line."""
+
+    TEMPLATE = "TEMPLATE"
+    """The output is expected as a JSON file with the following format:
+
+     .. code::
+
+    {
+       "a": GEMSEO_OUTPUT{a::1.0},
+       "b": GEMSEO_OUTPUT{b::2.0},
+       "c": GEMSEO_OUTPUT{c::3.0}
+    }
+    """
 
 
-class Parsers(BaseEnum):
-    KEY_VALUE_PARSER = 0
-    TEMPLATE_PARSER = 1
-    CUSTOM_CALLABLE = 2
+OutputParser = Callable[
+    [Mapping[str, Tuple[int]], Sequence[str]], Mapping[str, Union[ndarray, float]]
+]
+"""Output parser type."""
+
+InputWriter = Callable[
+    [
+        Union[str, Path],
+        Mapping[str, ndarray],
+        Mapping[str, Tuple[int, int, int]],
+        MutableSequence[str],
+    ],
+    None,
+]
+"""Input writer type."""
 
 
 class DiscFromExe(MDODiscipline):
@@ -110,6 +134,9 @@ class DiscFromExe(MDODiscipline):
       and :func:`.parse_outfile_method` arguments of the constructor.
     """
 
+    _run_folder_manager: RunFolderManager
+    """The object generating unique names for run directories.."""
+
     input_template: str
     """The path to the input template file."""
 
@@ -125,32 +152,27 @@ class DiscFromExe(MDODiscipline):
     executable_command: str
     """The executable command."""
 
-    parse_outfile: Callable[[Mapping[str, tuple[int]]], Sequence[str]]
+    parse_outfile: OutputParser
     """The function used to parse the output template file."""
 
-    write_input_file: Callable[
-        [str, Mapping[str, ndarray], Mapping[str, tuple[int]], Sequence[int]], str
-    ]
+    write_input_file: InputWriter
     """The function used to write the input template file."""
-
-    output_folder_basepath: str
-    """The base path of the execution directories."""
 
     data_processor: DataProcessor
     """A data processor to be used before the execution of the discipline."""
 
     def __init__(
         self,
-        input_template: str,
-        output_template: str,
-        output_folder_basepath: str,
+        input_template: str | Path,
+        output_template: str | Path,
+        output_folder_basepath: str | Path,
         executable_command: str,
-        input_filename: str,
-        output_filename: str,
-        folders_iter: str | FoldersIter = FoldersIter.NUMBERED,
+        input_filename: str | Path,
+        output_filename: str | Path,
+        folders_iter: FoldersIter = FoldersIter.NUMBERED,
         name: str | None = None,
-        parse_outfile_method: str | Parsers = Parsers.TEMPLATE_PARSER,
-        write_input_file_method: str | None = None,
+        parse_outfile_method: Parser | OutputParser = Parser.TEMPLATE,
+        write_input_file_method: InputWriter | None = None,
         parse_out_separator: str = "=",
         use_shell: bool = True,
     ) -> None:
@@ -181,102 +203,56 @@ class DiscFromExe(MDODiscipline):
                 of the already existing ``f"output_folder_basepath{i}"`` folders.
                 Otherwise, a unique number based on the UUID function is
                 generated. This last option shall be used if multiple MDO
-                processes are run in the same work directory.
+                processes are run in the same work folder.
             parse_outfile_method: The optional method that can be provided
                 by the user to parse the output template file.
-                If ``None``,
-                use :func:`~gemseo.wrappers.template_grammar_editor.parse_outfile`.
-                If the :attr:`~.Parsers.KEY_VALUE_PARSER` is used as
-                output parser, specify the separator key.
+                If the :attr:`~.Parser.KEY_VALUE` is used as
+                output parser, the user may specify the separator key.
             write_input_file_method: The method to write the input data file.
                 If ``None``,
-                use :func:`~gemseo.wrappers.template_grammar_editor.write_input_file`.
-            parse_out_separator: The separator used for the output parser.
+                use :func:`~.write_input_file`.
+            parse_out_separator: The separator used for the
+                :attr:`~.Parser.KEY_VALUE` output parser.
             use_shell: If ``True``, run the command using the default shell.
                 Otherwise, run directly the command.
+            output_folder_basepath: The base path of the execution directories.
+
 
         Raises:
-            TypeError: If the provided ``write_input_file_method`` is not callable.
-        """
+            TypeError: If the provided ``parse_outfile_method`` is not callable.
+                If the provided ``write_input_file_method`` is not callable.
+        """  # noqa:D205 D212 D415
         super().__init__(name=name)
+        self._run_folder_manager = RunFolderManager(
+            output_folder_basepath, folders_iter, use_shell
+        )
         self.input_template = input_template
         self.output_template = output_template
         self.input_filename = input_filename
         self.output_filename = output_filename
         self.executable_command = executable_command
         self.__use_shell = use_shell
-        if (
-            parse_outfile_method is None
-            or parse_outfile_method == Parsers.TEMPLATE_PARSER
-        ):
+        if parse_outfile_method == Parser.TEMPLATE:
             self.parse_outfile = parse_outfile
-            self._parse_outfile_method = Parsers.TEMPLATE_PARSER
-        elif parse_outfile_method == Parsers.KEY_VALUE_PARSER:
+        elif parse_outfile_method == Parser.KEY_VALUE:
             self.parse_outfile = lambda a, b: parse_key_value_file(
                 a, b, parse_out_separator
             )
-            self._parse_outfile_method = Parsers.KEY_VALUE_PARSER
         else:
             self.parse_outfile = parse_outfile_method
-            self._parse_outfile_method = Parsers.CUSTOM_CALLABLE
 
         if not callable(self.parse_outfile):
-            raise TypeError("The parse_outfile_method must be callable")
+            raise TypeError("The parse_outfile_method must be callable.")
 
         self.write_input_file = write_input_file_method or write_input_file
         if not callable(self.write_input_file):
             raise TypeError("The write_input_file_method must be callable.")
-
-        self.__lock = Lock()
-        self.__folders_iter = None
-        self.folders_iter = folders_iter
-        self.output_folder_basepath = output_folder_basepath
-        self.__check_base_path_on_windows()
         self._out_pos = None
         self._input_data = None
-        self._output_data = None
         self._in_lines = None
         self._out_lines = None
-        self._counter = Value("i", self._get_max_outdir())
         self.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
-
-    @property
-    def folders_iter(self) -> FoldersIter:
-        """The names of the new execution directories.
-
-        Raises:
-            ValueError: When the value is not a valid :class:`.FoldersIter`.
-        """
-        return self.__folders_iter
-
-    @folders_iter.setter
-    def folders_iter(
-        self,
-        value: str | FoldersIter,
-    ) -> None:
-        if value not in FoldersIter:
-            raise ValueError(f"{value} is not a valid FoldersIter value.")
-        self.__folders_iter = FoldersIter[value]
-
-    def __check_base_path_on_windows(self) -> None:
-        """Check that the base path can be used.
-
-        Raises:
-            ValueError: When the users use the shell under Windows
-            and the base path is located on a network location.
-        """
-        if sys.platform.startswith("win") and self.__use_shell:
-            output_folder_base_path = Path(self.output_folder_basepath).resolve()
-            if not output_folder_base_path.parts[0].startswith("\\\\"):
-                return
-
-            raise ValueError(
-                "A network base path and use_shell cannot be used together"
-                " under Windows, as cmd.exe cannot change the current directory"
-                " to a UNC path."
-                " Please try use_shell=False or use a local base path."
-            )
 
     def __parse_templates_and_set_grammars(self) -> None:
         """Parse the templates and set the grammar of the discipline."""
@@ -287,11 +263,11 @@ class DiscFromExe(MDODiscipline):
 
         self._input_data, self._in_pos = parse_template(self._in_lines, True)
         input_names = self._input_data.keys()
-        self.input_grammar.update(input_names)
+        self.input_grammar.update_from_names(input_names)
 
         names_to_values, self._out_pos = parse_template(self._out_lines, False)
         output_names = names_to_values.keys()
-        self.output_grammar.update(output_names)
+        self.output_grammar.update_from_names(output_names)
         LOGGER.debug(
             "Initialize discipline from template. Input grammar: %s", input_names
         )
@@ -303,7 +279,7 @@ class DiscFromExe(MDODiscipline):
         }
 
     def _run(self) -> None:
-        out_dir = Path(self.output_folder_basepath) / self.generate_uid()
+        out_dir = self._run_folder_manager.get_unique_run_folder_path()
         out_dir.mkdir()
         self.write_input_file(
             out_dir / self.input_filename,
@@ -336,51 +312,6 @@ class DiscFromExe(MDODiscipline):
             )
 
         self.local_data.update(self.parse_outfile(self._out_pos, out_lines))
-
-    def generate_uid(self) -> str:
-        """Generate a unique identifier for the execution directory.
-
-        Generate a unique identifier for the current execution.
-        If the folders_iter strategy is :attr:`~.FoldersIter.NUMBERED`,
-        the successive iterations are named by an integer 1, 2, 3 etc.
-        This is multiprocess safe.
-        Otherwise, a unique number based on the UUID function is generated.
-        This last option shall be used if multiple MDO processes are runned
-        in the same workdir.
-
-        Returns:
-            An unique string identifier (either a number or a UUID).
-        """
-        if self.folders_iter == FoldersIter.NUMBERED:
-            with self.__lock:
-                self._counter.value += 1
-                return str(self._counter.value)
-        elif self.folders_iter == FoldersIter.UUID:
-            return str(uuid1()).split("-")[-1]
-        else:
-            raise ValueError(
-                f"{self.folders_iter} is not a valid method "
-                "for creating the execution directories."
-            )
-
-    def _list_out_dirs(self) -> list[str]:
-        """Return the directories in the output folder path.
-
-        Returns:
-             The list of the directories in the output folder path.
-        """
-        return listdir(self.output_folder_basepath)
-
-    def _get_max_outdir(self) -> int:
-        """Get the maximum current index of output folders.
-
-        Returns:
-             The maximum index in the output folders.
-        """
-        outs = list(self._list_out_dirs())
-        if not outs:
-            return 0
-        return max(literal_eval(n) for n in outs)
 
 
 def parse_template(
@@ -479,6 +410,11 @@ def parse_key_value_file(
 
     Returns:
         The output data in `.MDODiscipline` friendly data structure.
+
+    Raises:
+        ValueError: If the amount of separators in the lines are not consistent with the
+            keys and values.
+            If the float values cannot be parsed.
     """
     data = {}
     for line in out_lines:

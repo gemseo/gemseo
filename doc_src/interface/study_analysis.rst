@@ -98,11 +98,14 @@ Class documentation
 Usage of the command line executable
 ------------------------------------
 
-|g| installation provides the :program:`gemseo-study` command line executable, its usage is:
+|g| installation provides the :program:`gemseo-study` command line executable.
+This tool allows the generation of an N2 chart and an XDSM diagram from an Excel description file.
 
-gemseo-study [-h] [-o OUT_DIR] [-x] [-l] [-s FIG_SIZE] study_file
+Its usage is:
 
-A tool to generate an N2 chart and an XDSM diagram from an Excel description file.
+``gemseo-study [-h] [-o OUT_DIR] [-x] [-p] [-s FIG_SIZE] study_file``
+
+with
 
 positional arguments:
   study_file            XLS file that describes the study
@@ -110,8 +113,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -o OUT_DIR, --out_dir OUT_DIR
-                        Output directory for the generated files
-  -x, --xdsm            If True, generates the XDSM file
-  -l, --latex_output    If True, generates the XDSM in PDF and Latex
+                        The path of the directory to save the files.
+  -x, --xdsm            Whether to generate a XDSM.
+  -p, --save_pdf    Whether to save the XDSM as a PDF file.
   -s FIG_SIZE, --fig_size FIG_SIZE
-                        Size of the N2 figure, tuple (x,y)
+                        The size of the N2 figure, as a tuple (x,y).

@@ -21,49 +21,8 @@ from __future__ import annotations
 from os.path import dirname
 
 import pytest
-from gemseo.utils.singleton import _Multiton
-from gemseo.utils.singleton import Multiton
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
-
-
-class MultitonOneArg(Multiton):
-    def __init__(self, arg):
-        pass
-
-
-class MultitonTwoArgs(Multiton):
-    def __init__(self, arg, kwarg):
-        pass
-
-
-@pytest.mark.parametrize(
-    "cls,kwarg_name", ((MultitonOneArg, None), (MultitonTwoArgs, "kwarg"))
-)
-def test_multiton(cls, kwarg_name):
-    """Verify the multiton behavior.
-
-    Args:
-        cls: The multiton class.
-        kwarg_name: The name of the kwarg, None otherwise.
-    """
-    if kwarg_name is None:
-        kwargs = {}
-    else:
-        kwargs = {"kwarg": 0}
-
-    a = cls(0, **kwargs)
-
-    assert a is cls(0, **kwargs)
-
-    assert a is not cls(1, **kwargs)
-
-
-def test_multiton_cache_clear():
-    # The cache is not empty because of the Multiton* classes declared in the module.
-    assert _Multiton._cache
-    _Multiton.cache_clear()
-    assert not _Multiton._cache
 
 
 def test_sing_id():

@@ -29,7 +29,9 @@ from typing import TYPE_CHECKING
 
 from numpy import empty
 
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -64,7 +66,7 @@ class FunctionFromDiscipline(MDOFunction):
             x_names: The names of the design variables.
                 If None, use self.get_x_names_of_disc(discipline).
             all_data_names: The reference data names for masking x.
-                If None, use self.get_optim_variables_names().
+                If None, use self.get_optim_variable_names().
             differentiable: If True, then inputs and outputs are added
                 to the list of variables to be differentiated.
         """  # noqa: D205, D212, D415
@@ -83,7 +85,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
             self.__discipline = self.__gen.discipline
         else:
-            self.__gen = MDOFunctionGenerator(self.__discipline)
+            self.__gen = MDODisciplineAdapterGenerator(self.__discipline)
 
         if self.__x_names is None:
             self.__x_names = self.__mdo_formulation.get_x_names_of_disc(
@@ -98,11 +100,11 @@ class FunctionFromDiscipline(MDOFunction):
             self._func_to_wrap,
             jac=self._jac_to_wrap,
             name=self.__out_x_func.name,
-            f_type=MDOFunction.TYPE_OBJ,
-            args=self.__x_names,
+            f_type=MDOFunction.FunctionType.OBJ,
+            input_names=self.__x_names,
             expr=self.__out_x_func.expr,
             dim=self.__out_x_func.dim,
-            outvars=self.__out_x_func.outvars,
+            output_names=self.__out_x_func.output_names,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:

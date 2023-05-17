@@ -20,11 +20,12 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import ndarray
+from numpy import zeros
 from numpy.testing import assert_almost_equal
 
 
@@ -78,23 +79,62 @@ def test_inverse_transform(data):
     assert allclose(other_unscaled_data, left + (right - left) * data)
 
 
-@pytest.mark.parametrize(
-    ["data", "transformed_data"],
-    [
-        (
-            array([[1.0, 2.0, 6.0], [4.0, 2.0, 3.0]]),
-            array([[0, 0.5, 1.0], [1.0, 0.5, 0.0]]),
-        ),
-        (
-            array([[1.0, 2.0, 6.0], [4.0, 5.0, 3.0]]),
-            array([[0, 0, 1.0], [1.0, 1.0, 0.0]]),
-        ),
-        (array([[2.0], [4.0]]), array([[0.0], [1.0]])),
-        (array([[1.0], [1.0]]), array([[0.5], [0.5]])),
-    ],
-)
-def test_constant(data, transformed_data):
-    """Check scaling with a constant feature."""
+def _test_transformer(data, transformed_data, coefficient, offset):
+    """Test the MinMaxScaler transformer.
+
+    Args:
+        data: The data to be transformed.
+        transformed_data: The expected transformed data.
+        coefficient: The expected coefficient.
+        offset: The expected offset.
+    """
     transformer = MinMaxScaler()
     assert_almost_equal(transformer.fit_transform(data), transformed_data)
     assert_almost_equal(transformer.inverse_transform(transformed_data), data)
+    assert_almost_equal(transformer.coefficient, coefficient)
+    assert_almost_equal(transformer.offset, offset)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [array([[2.0], [2.0]]), array([[0.0], [0.0]])],
+)
+def test_with_only_constant(data):
+    """Check scaling with only constant features."""
+    if data[0] == 0:
+        offset = array([0.5])
+        coefficient = array([1])
+    else:
+        offset = array([-0.5])
+        coefficient = 1 / data[0]
+    transformed_data = offset + coefficient * data
+    _test_transformer(data, transformed_data, coefficient, offset)
+
+
+def test_with_constant():
+    """Check scaling with constant feature."""
+    offset = zeros(4)
+    coefficient = zeros(4)
+    data = array([[1.0, 2.0, 0.0, 6.0], [4.0, 2.0, 0.0, 3.0]])
+    minimum = data[:, [0, 3]].min(0)
+    delta = data[:, [0, 3]].max(0) - minimum
+    offset[[0, 3]] = -minimum / delta
+    coefficient[[0, 3]] = 1 / delta
+    offset[[1, 2]] = array([-0.5, 0.5])
+    coefficient[[1, 2]] = array([1 / data[0, 1], 1])
+    transformed_data = offset + coefficient * data
+    _test_transformer(data, transformed_data, coefficient, offset)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [array([[1.0, 2.0, 6.0], [4.0, 5.0, 3.0]]), array([[2.0], [4.0]])],
+)
+def test_without_constant(data):
+    """Check scaling without constant feature."""
+    minimum = data.min(0)
+    delta = data.max(0) - minimum
+    offset = -minimum / delta
+    coefficient = 1 / delta
+    transformed_data = offset + coefficient * data
+    _test_transformer(data, transformed_data, coefficient, offset)

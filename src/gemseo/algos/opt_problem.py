@@ -68,6 +68,7 @@ from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import Optional
 from typing import Sequence
@@ -92,40 +93,38 @@ from numpy import number as np_number
 from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
+from numpy.typing import NDArray
+from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
 from gemseo.algos.aggregation.aggregation_func import aggregate_ks
 from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
+from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.dataset import Dataset
-from gemseo.core.derivatives.derivation_modes import COMPLEX_STEP
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.derivatives.complex_step import ComplexStep
-from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
+from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
-
-NAME_TO_METHOD = {
-    "sum": aggregate_sum_square,
-    "max": aggregate_max,
-    "KS": aggregate_ks,
-    "IKS": aggregate_iks,
-    "pos_sum": aggregate_positive_sum_square,
-}
 
 BestInfeasiblePointType = Tuple[
     Optional[ndarray], Optional[ndarray], bool, Dict[str, ndarray]
@@ -136,7 +135,7 @@ OptimumSolutionType = Tuple[
 ]
 
 
-class OptimizationProblem:
+class OptimizationProblem(BaseProblem):
     """An optimization problem.
 
     Create an optimization problem from:
@@ -146,7 +145,7 @@ class OptimizationProblem:
     - the objective function as a :class:`.MDOFunction`,
       which can be a vector,
 
-    execute it from an algorithm provided by a :class:`.DriverLib`,
+    execute it from an algorithm provided by a :class:`.DriverLibrary`,
     and store some execution data in a :class:`.Database`.
 
     In particular,
@@ -223,32 +222,43 @@ class OptimizationProblem:
     """Whether to use standardized objective for logging and post-processing.
 
     The standardized objective corresponds to the original one expressed as a cost
-    function to minimize. A :class:`.DriverLib` works with this standardized objective
-    and the :class:`.Database` stores its values. However, for convenience, it may be
-    more relevant to log the expression and the values of the original objective.
+    function to minimize. A :class:`.DriverLibrary` works with this standardized
+    objective and the :class:`.Database` stores its values. However, for convenience, it
+    may be more relevant to log the expression and the values of the original objective.
     """
 
-    constraint_names: dict[str, list[str]]
-    """The standardized constraint names bound to the original ones."""
+    AggregationFunction = ConstraintAggregation.EvaluationFunction
 
-    LINEAR_PB: Final[str] = "linear"
-    NON_LINEAR_PB: Final[str] = "non-linear"
-    AVAILABLE_PB_TYPES: ClassVar[str] = [LINEAR_PB, NON_LINEAR_PB]
-
-    USER_GRAD: Final[str] = "user"
-    COMPLEX_STEP: Final[str] = COMPLEX_STEP
-    FINITE_DIFFERENCES: Final[str] = FINITE_DIFFERENCES
-    __DIFFERENTIATION_CLASSES: ClassVar[str] = {
-        COMPLEX_STEP: ComplexStep,
-        FINITE_DIFFERENCES: FirstOrderFD,
+    _AGGREGATION_FUNCTION_MAP: Final[str] = {
+        AggregationFunction.IKS: aggregate_iks,
+        AggregationFunction.KS: aggregate_ks,
+        AggregationFunction.POS_SUM: aggregate_positive_sum_square,
+        AggregationFunction.MAX: aggregate_max,
+        AggregationFunction.SUM: aggregate_sum_square,
     }
-    NO_DERIVATIVES: Final[str] = "no_derivatives"
-    DIFFERENTIATION_METHODS: ClassVar[str] = [
-        USER_GRAD,
-        COMPLEX_STEP,
-        FINITE_DIFFERENCES,
-        NO_DERIVATIVES,
-    ]
+
+    class ProblemType(StrEnum):
+        """The type of problem."""
+
+        LINEAR = "linear"
+        NON_LINEAR = "non-linear"
+
+    ApproximationMode = ApproximationMode
+
+    class _DifferentiationMethod(StrEnum):
+        """The additional differentiation methods."""
+
+        USER_GRAD = "user"
+        NO_DERIVATIVE = "no_derivative"
+
+    DifferentiationMethod = merge_enums(
+        "DifferentiationMethod",
+        StrEnum,
+        ApproximationMode,
+        _DifferentiationMethod,
+        doc="The differentiation methods.",
+    )
+
     DESIGN_VAR_NAMES: Final[str] = "x_names"
     DESIGN_VAR_SIZE: Final[str] = "x_size"
     DESIGN_SPACE_ATTRS: Final[str] = [
@@ -285,9 +295,9 @@ class OptimizationProblem:
     def __init__(
         self,
         design_space: DesignSpace,
-        pb_type: str = NON_LINEAR_PB,
+        pb_type: ProblemType = ProblemType.NON_LINEAR,
         input_database: str | Path | Database | None = None,
-        differentiation_method: str = USER_GRAD,
+        differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         fd_step: float = 1e-7,
         parallel_differentiation: bool = False,
         use_standardized_objective: bool = True,
@@ -296,8 +306,7 @@ class OptimizationProblem:
         """
         Args:
             design_space: The design space on which the functions are evaluated.
-            pb_type: The type of the optimization problem
-                among :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`.
+            pb_type: The type of the optimization problem.
             input_database: A database to initialize that of the optimization problem.
                 If None, the optimization problem starts from an empty database.
             differentiation_method: The default differentiation method to be applied
@@ -329,10 +338,12 @@ class OptimizationProblem:
         self.current_iter = 0
         self.use_standardized_objective = use_standardized_objective
         self.__functions_are_preprocessed = False
-        if isinstance(input_database, Database):
+        if input_database is None:
+            self.database = Database()
+        elif isinstance(input_database, Database):
             self.database = input_database
         else:
-            self.database = Database(input_hdf_file=input_database)
+            self.database = Database.from_hdf(input_database)
         self.solution = None
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
@@ -344,7 +355,6 @@ class OptimizationProblem:
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = parallel_differentiation_options
         self.__eval_obs_jac = False
-        self.constraint_names = {}
         self.__observable_names = set()
 
     def __raise_exception_if_functions_are_already_preprocessed(self):
@@ -364,6 +374,16 @@ class OptimizationProblem:
         if self.max_iter in [None, 0] or self.current_iter in [None, 0]:
             return False
         return self.current_iter >= self.max_iter
+
+    @property
+    def constraint_names(self) -> dict[str, list[str]]:
+        """The standardized constraint names bound to the original ones."""
+        names = {}
+        for constraint in self.constraints:
+            if constraint.original_name not in names:
+                names[constraint.original_name] = []
+            names[constraint.original_name].append(constraint.name)
+        return names
 
     @property
     def parallel_differentiation(self) -> bool:
@@ -389,25 +409,6 @@ class OptimizationProblem:
         self.__parallel_differentiation_options = value
 
     @property
-    def differentiation_method(self) -> str:
-        """The differentiation method."""
-        return self.__differentiation_method
-
-    @differentiation_method.setter
-    def differentiation_method(
-        self,
-        value: str,
-    ) -> None:
-        if not isinstance(value, str):
-            value = value[0].decode()
-        if value not in self.DIFFERENTIATION_METHODS:
-            raise ValueError(
-                "'{}' is not a differentiation methods; available ones are: '{"
-                "}'.".format(value, "', '".join(self.DIFFERENTIATION_METHODS))
-            )
-        self.__differentiation_method = value
-
-    @property
     def objective(self) -> MDOFunction:
         """The objective function."""
         return self._objective
@@ -417,12 +418,19 @@ class OptimizationProblem:
         self,
         func: MDOFunction,
     ) -> None:
+        if self.pb_type == self.ProblemType.LINEAR and not isinstance(
+            func, MDOLinearFunction
+        ):
+            raise TypeError(
+                "The objective of a linear optimization problem "
+                "must be an MDOLinearFunction."
+            )
         self._objective = func
 
     @staticmethod
     def repr_constraint(
         func: MDOFunction,
-        ctype: str,
+        cstr_type: MDOFunction.ConstraintType,
         value: float | None = None,
         positive: bool = False,
     ) -> str:
@@ -430,8 +438,7 @@ class OptimizationProblem:
 
         Args:
             func: The constraint function.
-            ctype: The type of the constraint.
-                Either equality or inequality.
+            cstr_type: The type of the constraint.
             value: The value for which the constraint is active.
                 If None, this value is 0.
             positive: If True, then the inequality constraint is positive.
@@ -442,18 +449,18 @@ class OptimizationProblem:
         if value is None:
             value = 0.0
         str_repr = func.name
-        if func.has_args():
-            arguments = ", ".join(func.args)
+        if func.input_names:
+            arguments = ", ".join(func.input_names)
             str_repr += f"({arguments})"
 
-        if ctype == func.TYPE_EQ:
+        if cstr_type == MDOFunction.ConstraintType.EQ:
             sign = " == "
         elif positive:
             sign = " >= "
         else:
             sign = " <= "
 
-        if func.has_expr():
+        if func.expr:
             str_repr += ": "
             expr = func.expr
             n_char = len(str_repr)
@@ -474,7 +481,7 @@ class OptimizationProblem:
         self,
         cstr_func: MDOFunction,
         value: float | None = None,
-        cstr_type: str | None = None,
+        cstr_type: MDOFunction.ConstraintType | None = None,
         positive: bool = False,
     ) -> None:
         """Add a constraint (equality and inequality) to the optimization problem.
@@ -484,7 +491,6 @@ class OptimizationProblem:
             value: The value for which the constraint is active.
                 If None, this value is 0.
             cstr_type: The type of the constraint.
-                Either equality or inequality.
             positive: If True, then the inequality constraint is positive.
 
         Raises:
@@ -495,7 +501,7 @@ class OptimizationProblem:
         func_name = cstr_func.name
         has_default_name = cstr_func.has_default_name
         self.check_format(cstr_func)
-        if self.pb_type == OptimizationProblem.LINEAR_PB and not isinstance(
+        if self.pb_type == OptimizationProblem.ProblemType.LINEAR and not isinstance(
             cstr_func, MDOLinearFunction
         ):
             raise TypeError(
@@ -522,16 +528,11 @@ class OptimizationProblem:
         self.constraints.append(cstr_func)
         if not has_default_name:
             cstr_func.name = func_name
-            if cstr_func.outvars:
-                output_names = "#".join(cstr_func.outvars)
+            if cstr_func.output_names:
+                output_names = "#".join(cstr_func.output_names)
                 cstr_repr = cstr_repr.replace(func_name, output_names)
                 cstr_func.expr = cstr_func.expr.replace(func_name, output_names)
                 cstr_func.special_repr = f"{func_name}: {cstr_repr}"
-
-        if func_name not in self.constraint_names:
-            self.constraint_names[func_name] = [cstr_func.name]
-        else:
-            self.constraint_names[func_name].append(cstr_func.name)
 
     def add_eq_constraint(
         self,
@@ -545,7 +546,7 @@ class OptimizationProblem:
             value: The value for which the constraint is active.
                 If None, this value is 0.
         """
-        self.add_constraint(cstr_func, value, cstr_type=MDOFunction.TYPE_EQ)
+        self.add_constraint(cstr_func, value, cstr_type=MDOFunction.ConstraintType.EQ)
 
     def add_ineq_constraint(
         self,
@@ -562,59 +563,65 @@ class OptimizationProblem:
             positive: If True, then the inequality constraint is positive.
         """
         self.add_constraint(
-            cstr_func, value, cstr_type=MDOFunction.TYPE_INEQ, positive=positive
+            cstr_func,
+            value,
+            cstr_type=MDOFunction.ConstraintType.INEQ,
+            positive=positive,
         )
 
     def aggregate_constraint(
         self,
-        constr_id: int,
-        method: str | Callable[[Callable], Callable] = "max",
-        groups: tuple[ndarray] | None = None,
+        constraint_index: int,
+        method: Callable[[NDArray[float]], float]
+        | AggregationFunction = AggregationFunction.MAX,
+        groups: Iterable[Sequence[int]] | None = None,
         **options: Any,
-    ):
-        """Aggregates a constraint to generate a reduced dimension constraint.
+    ) -> None:
+        """Aggregate a constraint to generate a reduced dimension constraint.
 
         Args:
-            constr_id: The index of the constraint in :attr:`.constraints`.
+            constraint_index: The index of the constraint in :attr:`.constraints`.
             method: The aggregation method, e.g. ``"max"``, ``"KS"`` or ``"IKS"``.
-            groups: The groups for which to produce an output.
-                If ``None``, a single output constraint is produced.
+            groups: The groups of components of the constraint to aggregate
+                to produce one aggregation constraint per group of components;
+                if ``None``, a single aggregation constraint is produced.
             **options: The options of the aggregation method.
 
         Raises:
-            ValueError: When the given is index is greater or equal
+            ValueError: When the given index is greater or equal
                 than the number of constraints
-                or when the method is aggregation unknown.
+                or when the constraint aggregation method is unknown.
         """
-        if constr_id >= len(self.constraints):
-            raise ValueError("constr_id must be lower than the number of constraints.")
+        n_constraints = len(self.constraints)
+        if constraint_index >= n_constraints:
+            raise KeyError(
+                f"The index of the constraint ({constraint_index}) must be lower "
+                f"than the number of constraints ({n_constraints})."
+            )
 
-        constr = self.constraints[constr_id]
-
+        constraint = self.constraints[constraint_index]
         if callable(method):
-            method_imp = method
+            aggregate_constraints = method
         else:
-            method_imp = NAME_TO_METHOD.get(method)
-            if method_imp is None:
-                raise ValueError(f"Unknown method {method}.")
+            aggregate_constraints = self._AGGREGATION_FUNCTION_MAP[method]
 
-        del self.constraints[constr_id]
-
+        del self.constraints[constraint_index]
         if groups is None:
-            cstr = method_imp(constr, **options)
-            self.constraints.insert(constr_id, cstr)
+            self.constraints.insert(
+                constraint_index, aggregate_constraints(constraint, **options)
+            )
         else:
-            cstrs = [method_imp(constr, indx, **options) for indx in groups]
-            icstr = self.constraints[:constr_id]
-            ecstr = self.constraints[constr_id:]
-            self.constraints = icstr + cstrs + ecstr
+            self.constraints[constraint_index:constraint_index] = [
+                aggregate_constraints(constraint, indices, **options)
+                for indices in groups
+            ]
 
     def apply_exterior_penalty(
         self,
         objective_scale: float = 1.0,
         scale_inequality: float | ndarray = 1.0,
         scale_equality: float | ndarray = 1.0,
-    ):
+    ) -> None:
         r"""Reformulate the optimization problem using exterior penalty.
 
         Given the optimization problem with equality and inequality constraints:
@@ -656,7 +663,7 @@ class OptimizationProblem:
         penalized_objective = self.objective / objective_scale
         self.add_observable(self.objective)
         for constr in self.constraints:
-            if constr.f_type == MDOFunction.TYPE_INEQ:
+            if constr.f_type == MDOFunction.ConstraintType.INEQ:
                 penalized_objective += aggregate_positive_sum_square(
                     constr, scale=scale_inequality
                 )
@@ -667,7 +674,6 @@ class OptimizationProblem:
             self.add_observable(constr)
         self.objective = penalized_objective
         self.constraints = []
-        self.constraint_names = {}
 
     def add_observable(
         self,
@@ -706,7 +712,7 @@ class OptimizationProblem:
             return
 
         self.check_format(obs_func)
-        obs_func.f_type = MDOFunction.TYPE_OBS
+        obs_func.f_type = MDOFunction.FunctionType.OBS
         self.observables.append(obs_func)
         self.__observable_names.add(name)
         if new_iter:
@@ -730,7 +736,7 @@ class OptimizationProblem:
             Returns:
                 True if the function is an equality constraint.
             """
-            return func.f_type == MDOFunction.TYPE_EQ
+            return func.f_type == MDOFunction.ConstraintType.EQ
 
         return list(filter(is_equality_constraint, self.constraints))
 
@@ -752,7 +758,7 @@ class OptimizationProblem:
             Returns:
                 True if the function is an inequality constraint.
             """
-            return func.f_type == MDOFunction.TYPE_INEQ
+            return func.f_type == MDOFunction.ConstraintType.INEQ
 
         return list(filter(is_inequality_constraint, self.constraints))
 
@@ -815,7 +821,7 @@ class OptimizationProblem:
         """
         return len(self.constraints)
 
-    def get_constraints_names(self) -> list[str]:
+    def get_constraint_names(self) -> list[str]:
         """Retrieve the names of the constraints.
 
         Returns:
@@ -838,7 +844,7 @@ class OptimizationProblem:
         Returns:
             The names of the design variables.
         """
-        return self.design_space.variables_names
+        return self.design_space.variable_names
 
     def get_all_functions(self) -> list[MDOFunction]:
         """Retrieve all the functions of the optimization problem.
@@ -850,7 +856,7 @@ class OptimizationProblem:
         """
         return [self.objective] + self.constraints + self.observables
 
-    def get_all_functions_names(self) -> list[str]:
+    def get_all_function_name(self) -> list[str]:
         """Retrieve the names of all the function of the optimization problem.
 
         These functions are the constraints, the objective function and the observables.
@@ -906,7 +912,7 @@ class OptimizationProblem:
         """
         return len(self.constraints) > 0
 
-    def has_constraints(self):
+    def has_constraints(self) -> bool:
         """Check if the problem has equality or inequality constraints.
 
         Returns:
@@ -984,7 +990,7 @@ class OptimizationProblem:
         Returns:
             The total dimension of the equality constraints.
         """
-        return self.__count_cstr_total_dim(MDOFunction.TYPE_EQ)
+        return self.__count_cstr_total_dim(MDOFunction.ConstraintType.EQ)
 
     def get_ineq_cstr_total_dim(self) -> int:
         """Retrieve the total dimension of the inequality constraints.
@@ -996,7 +1002,7 @@ class OptimizationProblem:
         Returns:
             The total dimension of the inequality constraints.
         """
-        return self.__count_cstr_total_dim(MDOFunction.TYPE_INEQ)
+        return self.__count_cstr_total_dim(MDOFunction.ConstraintType.INEQ)
 
     def __count_cstr_total_dim(
         self,
@@ -1015,7 +1021,7 @@ class OptimizationProblem:
         """
         n_cstr = 0
         for constraint in self.constraints:
-            if not constraint.has_dim():
+            if not constraint.dim:
                 raise ValueError(
                     "Constraint dimension not available yet, "
                     "please call function {} once".format(constraint)
@@ -1071,18 +1077,17 @@ class OptimizationProblem:
         """Clear all the listeners."""
         self.database.clear_listeners()
 
-    # TODO: API: set the default value of eval_observables to True.
     def evaluate_functions(
         self,
         x_vect: ndarray = None,
         eval_jac: bool = False,
         eval_obj: bool = True,
-        eval_observables: bool = False,
+        eval_observables: bool = True,
         normalize: bool = True,
         no_db_no_norm: bool = False,
-        constraints_names: Iterable[str] | None = None,
-        observables_names: Iterable[str] | None = None,
-        jacobians_names: Iterable[str] | None = None,
+        constraint_names: Iterable[str] | None = None,
+        observable_names: Iterable[str] | None = None,
+        jacobian_names: Iterable[str] | None = None,
     ) -> tuple[dict[str, float | ndarray], dict[str, ndarray]]:
         """Compute the functions of interest, and possibly their derivatives.
 
@@ -1098,39 +1103,39 @@ class OptimizationProblem:
                 if None, the initial point x_0 is used.
             eval_jac: Whether to compute the Jacobian matrices
                 of the functions of interest.
-                If ``True`` and ``jacobians_names`` is ``None`` then
+                If ``True`` and ``jacobian_names`` is ``None`` then
                 compute the Jacobian matrices (or gradients) of the functions that are
-                selected for evaluation (with ``eval_obj``, ``constraints_names``,
-                ``eval_observables`` and``observables_names``).
-                If ``False`` and ``jacobians_names`` is ``None`` then no Jacobian
+                selected for evaluation (with ``eval_obj``, ``constraint_names``,
+                ``eval_observables`` and``observable_names``).
+                If ``False`` and ``jacobian_names`` is ``None`` then no Jacobian
                 matrix is evaluated.
-                If ``jacobians_names`` is not ``None`` then the value of
+                If ``jacobian_names`` is not ``None`` then the value of
                 ``eval_jac`` is ignored.
             eval_obj: Whether to consider the objective function
                 as a function of interest.
             eval_observables: Whether to evaluate the observables.
-                If ``True`` and ``observables_names`` is ``None`` then all the
+                If ``True`` and ``observable_names`` is ``None`` then all the
                 observables are evaluated.
-                If ``False`` and ``observables_names`` is ``None`` then no observable
+                If ``False`` and ``observable_names`` is ``None`` then no observable
                 is evaluated.
-                If ``observables_names`` is not ``None`` then the value of
+                If ``observable_names`` is not ``None`` then the value of
                 ``eval_observables`` is ignored.
             normalize: Whether to consider the input vector ``x_vect`` normalized.
             no_db_no_norm: If True, then do not use the pre-processed functions,
                 so we have no database, nor normalization.
-            constraints_names: The names of the constraints to evaluate.
+            constraint_names: The names of the constraints to evaluate.
                 If ``None`` then all the constraints are evaluated.
-            observables_names: The names of the observables to evaluate.
+            observable_names: The names of the observables to evaluate.
                 If ``None`` and ``eval_observables`` is ``True`` then all the
                 observables are evaluated.
                 If ``None`` and ``eval_observables`` is ``False`` then no observable is
                 evaluated.
-            jacobians_names: The names of the functions whose Jacobian matrices
+            jacobian_names: The names of the functions whose Jacobian matrices
                 (or gradients) to compute.
                 If ``None`` and ``eval_jac`` is ``True`` then
                 compute the Jacobian matrices (or gradients) of the functions that are
-                selected for evaluation (with ``eval_obj``, ``constraints_names``,
-                ``eval_observables`` and``observables_names``).
+                selected for evaluation (with ``eval_obj``, ``constraint_names``,
+                ``eval_observables`` and``observable_names``).
                 If ``None`` and ``eval_jac`` is ``False`` then no Jacobian matrix is
                 computed.
 
@@ -1139,15 +1144,15 @@ class OptimizationProblem:
             as well as their Jacobian matrices if ``eval_jac`` is ``True``.
 
         Raises:
-            ValueError: If a name in ``jacobians_names`` is not the name of
+            ValueError: If a name in ``jacobian_names`` is not the name of
                 a function of the problem.
         """
         # Get the functions to be evaluated
         from_original_functions = not self.__functions_are_preprocessed or no_db_no_norm
         functions = self.__get_functions(
             eval_obj,
-            constraints_names,
-            observables_names,
+            constraint_names,
+            observable_names,
             eval_observables,
             from_original_functions,
         )
@@ -1167,12 +1172,12 @@ class OptimizationProblem:
                     LOGGER.error("Failed to evaluate function %s", function.name)
                     raise
 
-        if not eval_jac and jacobians_names is None:
+        if not eval_jac and jacobian_names is None:
             return outputs, {}
 
         # Evaluate the Jacobians
-        if jacobians_names is not None:
-            unknown_names = set(jacobians_names) - set(self.get_all_functions_names())
+        if jacobian_names is not None:
+            unknown_names = set(jacobian_names) - set(self.get_all_function_name())
             if unknown_names:
                 if len(unknown_names) > 1:
                     message = "These names are"
@@ -1185,9 +1190,9 @@ class OptimizationProblem:
                 )
 
             functions = self.__get_functions(
-                self.objective.name in jacobians_names,
-                [name for name in jacobians_names if name in self.constraint_names],
-                [name for name in jacobians_names if name in self.__observable_names],
+                self.objective.name in jacobian_names,
+                [name for name in jacobian_names if name in self.constraint_names],
+                [name for name in jacobian_names if name in self.__observable_names],
                 True,
                 from_original_functions,
             )
@@ -1247,8 +1252,8 @@ class OptimizationProblem:
     def __get_functions(
         self,
         eval_obj: bool,
-        constraints_names: Iterable[str] | None,
-        observables_names: Iterable[str] | None,
+        constraint_names: Iterable[str] | None,
+        observable_names: Iterable[str] | None,
         eval_observables: bool,
         from_original_functions: bool,
     ) -> list[MDOFunction]:
@@ -1256,9 +1261,9 @@ class OptimizationProblem:
 
         Args:
             eval_obj: Whether to return the objective function.
-            constraints_names: The names of the constraints to return.
+            constraint_names: The names of the constraints to return.
                 If ``None`` then all the constraints are evaluated.
-            observables_names: The names of the observables to return.
+            observable_names: The names of the observables to return.
                 If ``None`` and ``eval_observables`` is True then all the observables
                 are returned.
                 If ``None`` and ``eval_observables`` is False then no observable is
@@ -1280,8 +1285,8 @@ class OptimizationProblem:
         else:
             functions = [self.objective]
 
-        if constraints_names is not None:
-            for name in constraints_names:
+        if constraint_names is not None:
+            for name in constraint_names:
                 functions.append(self.__get_constraint(name, from_original_functions))
 
         elif use_nonproc_functions:
@@ -1289,8 +1294,8 @@ class OptimizationProblem:
         else:
             functions += self.constraints
 
-        if observables_names is not None:
-            for name in observables_names:
+        if observable_names is not None:
+            for name in observable_names:
                 functions.append(self.__get_observable(name, from_original_functions))
 
         elif eval_observables and use_nonproc_functions:
@@ -1322,8 +1327,8 @@ class OptimizationProblem:
         if round_ints:
             # Keep the rounding option only if there is an integer design variable
             round_ints = any(
-                np_any(var_type == DesignSpace.INTEGER)
-                for var_type in self.design_space.variables_types.values()
+                np_any(var_type == DesignSpace.DesignVariableType.INTEGER)
+                for var_type in self.design_space.variable_types.values()
             )
         # Avoids multiple wrappings of functions when multiple executions
         # are performed, in bi-level scenarios for instance
@@ -1373,14 +1378,14 @@ class OptimizationProblem:
 
             # Preprocess the objective
             self.nonproc_objective = self.objective
-            self.objective = self.__preprocess_func(
+            self._objective = self.__preprocess_func(
                 self.objective,
                 is_function_input_normalized=is_function_input_normalized,
                 use_database=use_database,
                 round_ints=round_ints,
             )
             self.objective.special_repr = self.objective.special_repr
-            self.objective.f_type = MDOFunction.TYPE_OBJ
+            self.objective.f_type = MDOFunction.FunctionType.OBJ
             self.__functions_are_preprocessed = True
             self.check()
             self.__eval_obs_jac = eval_obs_jac
@@ -1441,7 +1446,7 @@ class OptimizationProblem:
         else:
             func = NormFunction(func, is_function_input_normalized, round_ints, self)
 
-        if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
+        if self.differentiation_method in set(self.ApproximationMode):
             self.__add_fd_jac(func, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
@@ -1486,7 +1491,7 @@ class OptimizationProblem:
             coefficients,
             orig_func.name,
             orig_func.f_type,
-            orig_func.args,
+            orig_func.input_names,
             value_at_zero,
         )
 
@@ -1499,7 +1504,7 @@ class OptimizationProblem:
     ) -> None:
         """Add a pointer to the approached Jacobian of the function.
 
-        This Jacobian matrix is generated either by COMPLEX_STEP or FINITE_DIFFERENCES.
+        This Jacobian matrix is generated according :attr:`.differentiation_method`.
 
         Args:
             func: The function to be derivated.
@@ -1512,18 +1517,16 @@ class OptimizationProblem:
         if not self.design_space.has_current_value():
             raise ValueError("The design space has no current value.")
 
-        differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
-            self.differentiation_method
-        )
-        if differentiation_class is None:
+        if self.differentiation_method not in set(self.ApproximationMode):
             return
 
-        differentiation_object = differentiation_class(
+        differentiation_object = GradientApproximatorFactory().create(
+            self.differentiation_method,
             func.evaluate,
             step=self.fd_step,
-            parallel=self.__parallel_differentiation,
             design_space=self.design_space,
             normalize=normalize,
+            parallel=self.__parallel_differentiation,
             **self.__parallel_differentiation_options,
         )
         func.jac = differentiation_object.f_gradient
@@ -1536,7 +1539,6 @@ class OptimizationProblem:
         """
         if self.objective is None:
             raise ValueError("Missing objective function in OptimizationProblem")
-        self.__check_pb_type()
         self.design_space.check()
         self.__check_differentiation_method()
         self.check_format(self.objective)
@@ -1557,26 +1559,10 @@ class OptimizationProblem:
                 )
         self.check_format(self.objective)
 
-    def __check_pb_type(self):
-        """Check that the problem type is right.
-
-        Available type are: :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`.
-
-        Raises:
-            ValueError: If a function declared as a constraint has the wrong type.
-        """
-        if self.pb_type not in self.AVAILABLE_PB_TYPES:
-            raise TypeError(
-                "Unknown problem type {}, "
-                "available problem types are {}".format(
-                    self.pb_type, self.AVAILABLE_PB_TYPES
-                )
-            )
-
     def __check_differentiation_method(self):
         """Check that the differentiation method is in allowed ones.
 
-        Available ones are: :attr:`.OptimizationProblem.DIFFERENTIATION_METHODS`.
+        Available ones are: :attr:`.OptimizationProblem.DifferentiationMethod`.
 
         Raises:
             ValueError: If either
@@ -1584,15 +1570,7 @@ class OptimizationProblem:
                 the complex step is null or
                 the finite differences' step is null.
         """
-        if self.differentiation_method not in self.DIFFERENTIATION_METHODS:
-            raise ValueError(
-                "Unknown method {} "
-                "is not among the supported ones: {}".format(
-                    self.differentiation_method, self.DIFFERENTIATION_METHODS
-                )
-            )
-
-        if self.differentiation_method == self.COMPLEX_STEP:
+        if self.differentiation_method == self.ApproximationMode.COMPLEX_STEP:
             if self.fd_step == 0:
                 raise ValueError("ComplexStep step is null!")
             if self.fd_step.imag != 0:
@@ -1602,7 +1580,7 @@ class OptimizationProblem:
                     " Auto setting the real part"
                 )
                 self.fd_step = self.fd_step.imag
-        elif self.differentiation_method == self.FINITE_DIFFERENCES:
+        elif self.differentiation_method == self.ApproximationMode.FINITE_DIFFERENCES:
             if self.fd_step == 0:
                 raise ValueError("Finite differences step is null!")
             if self.fd_step.imag != 0:
@@ -1626,7 +1604,7 @@ class OptimizationProblem:
 
     def _satisfied_constraint(
         self,
-        cstr_type: str,
+        cstr_type: MDOFunction.ConstraintType,
         value: ndarray,
     ) -> bool:
         """Determine if an evaluation satisfies a constraint within a given tolerance.
@@ -1638,7 +1616,7 @@ class OptimizationProblem:
         Returns:
             Whether a value satisfies a constraint.
         """
-        if cstr_type == MDOFunction.TYPE_EQ:
+        if cstr_type == MDOFunction.ConstraintType.EQ:
             return np_all(np_abs(value) <= self.eq_tolerance)
         return np_all(value <= self.ineq_tolerance)
 
@@ -1734,7 +1712,7 @@ class OptimizationProblem:
                 if isnan(eval_cstr).any():
                     return False, inf
                 is_pt_feasible = False
-                if constraint.f_type == MDOFunction.TYPE_INEQ:
+                if constraint.f_type == MDOFunction.ConstraintType.INEQ:
                     if isinstance(eval_cstr, ndarray):
                         viol_inds = where(eval_cstr > self.ineq_tolerance)
                         f_violation += (
@@ -1907,7 +1885,7 @@ class OptimizationProblem:
             msg.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add("with respect to {}", pretty_str(self.design_space.variables_names))
+        msg.add("with respect to {}", pretty_str(self.design_space.variable_names))
         if self.has_constraints():
             msg.add("subject to constraints:")
             msg.indent()
@@ -1980,11 +1958,7 @@ class OptimizationProblem:
                 dtype = h5py.special_dtype(vlen=str)
             cls.__store_h5data(group, attr, attr_name, dtype)
 
-    def export_hdf(
-        self,
-        file_path: str | Path,
-        append: bool = False,
-    ) -> None:
+    def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
@@ -2024,17 +1998,15 @@ class OptimizationProblem:
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
-        self.database.export_hdf(file_path, append=True)
+        self.database.to_hdf(file_path, append=True)
 
         # Design space shall remain the same in append mode
         if not append or no_design_space:
-            self.design_space.export_hdf(file_path, append=True)
+            self.design_space.to_hdf(file_path, append=True)
 
     @classmethod
-    def import_hdf(
-        cls,
-        file_path: str | Path,
-        x_tolerance: float = 0.0,
+    def from_hdf(
+        cls, file_path: str | Path, x_tolerance: float = 0.0
     ) -> OptimizationProblem:
         """Import an optimization history from an HDF file.
 
@@ -2047,7 +2019,7 @@ class OptimizationProblem:
         """
         LOGGER.info("Import optimization problem from file: %s", file_path)
 
-        design_space = DesignSpace(file_path)
+        design_space = DesignSpace.from_file(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
         with h5py.File(file_path) as h5file:
@@ -2091,15 +2063,14 @@ class OptimizationProblem:
 
         return opt_pb
 
-    def export_to_dataset(
+    def to_dataset(
         self,
-        name: str | None = None,
-        by_group: bool = True,
+        name: str = "",
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,
-        input_values: Iterable[ndarray] | None = None,
-    ) -> Dataset:
+        input_values: Iterable[ndarray] = (),
+    ) -> OptimizationDataset | IODataset:
         """Export the database of the optimization problem to a :class:`.Dataset`.
 
         The variables can be classified into groups:
@@ -2111,17 +2082,7 @@ class OptimizationProblem:
 
         Args:
             name: The name to be given to the dataset.
-                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
-            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
-                in the sense of one unique NumPy array per group.
-                If ``categorize`` is ``False``,
-                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
-                If ``categorize`` is ``True``,
-                the groups can be either
-                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
-                if ``opt_naming`` is ``True``,
-                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
-                If ``by_group`` is ``False``, store the data by variable names.
+                If empty, use the name of the :attr:`.OptimizationProblem.database`.
             categorize: Whether to distinguish
                 between the different groups of variables.
                 Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
@@ -2134,41 +2095,38 @@ class OptimizationProblem:
                 (objective function, constraints and observables)
                 if the latter are available in the database of the optimization problem.
             input_values: The input values to be considered.
-                If ``None``, consider all the input values of the database.
+                If empty, consider all the input values of the database.
 
         Returns:
             A dataset built from the database of the optimization problem.
         """
-        if name is None:
-            name = self.database.name
-
-        dataset = Dataset(name, by_group)
-
+        dataset_name = name or self.database.name
         # Set the different groups
-        input_group = output_group = gradient_group = dataset.DEFAULT_GROUP
-        cache_output_as_input = True
         if categorize:
             if opt_naming:
+                dataset = OptimizationDataset(dataset_name=dataset_name)
                 input_group = dataset.DESIGN_GROUP
                 output_group = dataset.FUNCTION_GROUP
                 gradient_group = dataset.GRADIENT_GROUP
             else:
+                dataset = IODataset(dataset_name=dataset_name)
                 input_group = dataset.INPUT_GROUP
                 output_group = dataset.OUTPUT_GROUP
                 gradient_group = dataset.GRADIENT_GROUP
-            cache_output_as_input = False
+        else:
+            dataset = Dataset(dataset_name=dataset_name)
+            input_group = output_group = gradient_group = dataset.DEFAULT_GROUP
 
         # Add database inputs
-        input_names = self.design_space.variables_names
-        names_to_sizes = self.design_space.variables_sizes
-        input_history = array(self.database.get_x_history())
+        input_names = self.design_space.variable_names
+        names_to_sizes = self.design_space.variable_sizes
+        input_history = array(self.database.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
-        if input_values is not None:
-            for input_value in input_values:
-                positions.extend(
-                    where((input_history == input_value).all(axis=1))[0].tolist()
-                )
+        offset = int(opt_naming)
+        for input_value in input_values:
+            _positions = where((input_history == input_value).all(axis=1))[0]
+            positions.extend((_positions + offset).tolist())
 
         input_history = split_array_to_dict_of_arrays(
             input_history, names_to_sizes, input_names
@@ -2177,7 +2135,7 @@ class OptimizationProblem:
             dataset.add_variable(input_name, input_value.real, input_group)
 
         # Add database outputs
-        variable_names = self.database.get_all_data_names(skip_iter=True)
+        variable_names = self.database.get_function_names()
         output_names = [name for name in variable_names if name not in input_names]
 
         self.__add_database_outputs(
@@ -2185,7 +2143,6 @@ class OptimizationProblem:
             output_names,
             n_samples,
             output_group,
-            cache_output_as_input,
         )
 
         # Add database output gradients
@@ -2195,16 +2152,9 @@ class OptimizationProblem:
                 output_names,
                 n_samples,
                 gradient_group,
-                cache_output_as_input,
             )
 
-        if positions:
-            dataset.data = {
-                name: value[positions, :] for name, value in dataset.data.items()
-            }
-            dataset.length = len(positions)
-
-        return dataset
+        return dataset.get_view(indices=positions)
 
     def __add_database_outputs(
         self,
@@ -2212,7 +2162,6 @@ class OptimizationProblem:
         output_names: Iterable[str],
         n_samples: int,
         output_group: str,
-        cache_output_as_input: bool,
     ) -> None:
         """Add the database outputs to the dataset.
 
@@ -2223,22 +2172,19 @@ class OptimizationProblem:
                 points where the evaluation failed.
             output_group: The dataset group where the variables will
                 be added.
-            cache_output_as_input: If True, cache these data as inputs
-                when the cache is exported to a cache.
         """
         for output_name in output_names:
-            output_history, input_history = self.database.get_func_history(
-                output_name, x_hist=True
+            output_history, input_history = self.database.get_function_history(
+                output_name, with_x_vect=True
             )
             output_history = self.__replace_missing_values(
-                output_history, input_history, array(self.database.get_x_history())
+                output_history, input_history, array(self.database.get_x_vect_history())
             )
 
             dataset.add_variable(
                 output_name,
                 output_history.reshape((n_samples, -1)).real,
                 output_group,
-                cache_as_input=cache_output_as_input,
             )
 
     def __add_database_output_gradients(
@@ -2247,7 +2193,6 @@ class OptimizationProblem:
         output_names: Iterable[str],
         n_samples: int,
         gradient_group: str,
-        cache_output_as_input: bool,
     ) -> None:
         """Add the database output gradients to the dataset.
 
@@ -2258,27 +2203,26 @@ class OptimizationProblem:
                 points where the evaluation failed.
             gradient_group: The dataset group where the variables will
                 be added.
-            cache_output_as_input: If True, cache these data as inputs
-                when the cache is exported to a cache.
         """
         for output_name in output_names:
-            if self.database.is_func_grad_history_empty(output_name):
+            if self.database.check_output_history_is_empty(
+                Database.get_gradient_name(output_name)
+            ):
                 continue
 
-            gradient_history, input_history = self.database.get_func_grad_history(
-                output_name, x_hist=True
+            gradient_history, input_history = self.database.get_gradient_history(
+                output_name, with_x_vect=True
             )
             gradient_history = self.__replace_missing_values(
                 gradient_history,
                 input_history,
-                array(self.database.get_x_history()),
+                array(self.database.get_x_vect_history()),
             )
 
             dataset.add_variable(
                 Database.get_gradient_name(output_name),
                 gradient_history.reshape(n_samples, -1).real,
                 gradient_group,
-                cache_as_input=cache_output_as_input,
             )
 
     @staticmethod
@@ -2379,15 +2323,18 @@ class OptimizationProblem:
         Returns:
             The data related to the variables.
         """
-        dataset = self.export_to_dataset("OptimizationProblem")
-        data = dataset.get_data_by_names(names, as_dict)
+        dataset = self.to_dataset("OptimizationProblem")
+        if as_dict:
+            data = dataset.get_view(variable_names=names).to_dict(orient="list")
+        else:
+            data = dataset.get_view(variable_names=names).to_numpy()
 
         if filter_non_feasible:
             x_feasible, _ = self.get_feasible_points()
-            feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
+            feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
             if as_dict:
                 for key, value in data.items():
-                    data[key] = value[feasible_indexes, :]
+                    data[key] = array(value)[feasible_indexes]
             else:
                 data = data[feasible_indexes, :]
 
@@ -2395,8 +2342,18 @@ class OptimizationProblem:
 
     @property
     def is_mono_objective(self) -> bool:
-        """Whether the optimization problem is mono-objective."""
-        return len(self.objective.outvars) == 1
+        """Whether the optimization problem is mono-objective.
+
+        Raises:
+            ValueError: When the dimension of the objective cannot be determined.
+        """
+        obj_dim = self.objective.dim
+        if obj_dim != 0:
+            return obj_dim == 1
+        n_outvars = len(self.objective.output_names)
+        if n_outvars == 0:
+            raise ValueError("Cannot determine the dimension of the objective.")
+        return n_outvars == 1
 
     def get_functions_dimensions(
         self, names: Iterable[str] | None = None
@@ -2413,7 +2370,7 @@ class OptimizationProblem:
             and the values are the functions dimensions.
         """
         if names is None:
-            names = [self.objective.name] + self.get_constraints_names()
+            names = [self.objective.name] + self.get_constraint_names()
 
         return {name: self.get_function_dimension(name) for name in names}
 
@@ -2439,7 +2396,7 @@ class OptimizationProblem:
             raise ValueError(f"The problem has no function named {name}.")
 
         # Get the dimension of the function output
-        if function.has_dim():
+        if function.dim:
             return function.dim
 
         if self.design_space.has_current_value():
@@ -2466,11 +2423,11 @@ class OptimizationProblem:
         """
         n_unsatisfied = 0
         values, _ = self.evaluate_functions(
-            design_variables, eval_obj=False, normalize=False
+            design_variables, eval_obj=False, eval_observables=False, normalize=False
         )
         for constraint in self.constraints:
             value = atleast_1d(values[constraint.name])
-            if constraint.f_type == MDOFunction.TYPE_EQ:
+            if constraint.f_type == MDOFunction.ConstraintType.EQ:
                 value = numpy.absolute(value)
                 tolerance = self.eq_tolerance
             else:
@@ -2478,22 +2435,22 @@ class OptimizationProblem:
             n_unsatisfied += sum(value > tolerance)
         return n_unsatisfied
 
-    def get_scalar_constraints_names(self) -> list[str]:
+    def get_scalar_constraint_names(self) -> list[str]:
         """Return the names of the scalar constraints.
 
         Returns:
             The names of the scalar constraints.
         """
-        constraints_names = list()
+        constraint_names = list()
         for constraint in self.constraints:
             dimension = self.get_function_dimension(constraint.name)
             if dimension == 1:
-                constraints_names.append(constraint.name)
+                constraint_names.append(constraint.name)
             else:
-                constraints_names.extend(
+                constraint_names.extend(
                     [constraint.get_indexed_name(index) for index in range(dimension)]
                 )
-        return constraints_names
+        return constraint_names
 
     def reset(
         self,
@@ -2519,7 +2476,7 @@ class OptimizationProblem:
             self.current_iter = 0
 
         if database:
-            self.database.clear(current_iter)
+            self.database.clear()
 
         if design_space:
             self.design_space.set_current_value(self.__initial_current_x)
@@ -2556,7 +2513,7 @@ class OptimizationProblem:
         return self.__get_function(
             name,
             from_original_constraints,
-            self.get_constraints_names(),
+            self.get_constraint_names(),
             self.nonproc_constraints,
             self.constraints,
             self.CONSTRAINTS_GROUP,

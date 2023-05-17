@@ -23,24 +23,29 @@ Can be both sequential or parallel execution processes.
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
-from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
-from numpy import dot
 from numpy import ndarray
 from numpy import zeros
+from scipy.sparse import spmatrix
+from strenum import LowercaseStrEnum
+from strenum import StrEnum
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import SerialExecSequence
-from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution import DiscParallelLinearization
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_linearization import (
+    DiscParallelLinearization,
+)
+from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.enumeration import merge_enums
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,37 +53,39 @@ LOGGER = logging.getLogger(__name__)
 class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
-    AVAILABLE_MODES = [
-        derivation_modes.REVERSE_MODE,
-        derivation_modes.AUTO_MODE,
-        MDODiscipline.FINITE_DIFFERENCES,
-        MDODiscipline.COMPLEX_STEP,
-    ]
+    class _DerivationMode(LowercaseStrEnum):
+        """The derivation modes."""
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_coupling_structure",
-        "_last_diff_inouts",
+        REVERSE = "reverse"
+        """The reverse Jacobian accumulation, chain rule from outputs to inputs."""
+
+        AUTO = "auto"
+        """Automatic switch between direct, reverse or adjoint depending on data
+        sizes."""
+
+    LinearizationMode = merge_enums(
+        "LinearizationMode",
+        StrEnum,
+        ApproximationMode,
+        _DerivationMode,
     )
 
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
         self.initialize_grammars()
-        self.default_inputs = {}
-        self._update_default_inputs()
         self._coupling_structure = None
         self._last_diff_inouts = None
 
@@ -104,14 +111,6 @@ class MDOChain(MDODiscipline):
                 discipline.input_grammar, exclude_names=self.output_grammar.keys()
             )
             self.output_grammar.update(discipline.output_grammar)
-
-    def _update_default_inputs(self) -> None:
-        """Compute the default inputs from the disciplines' ones."""
-        self_inputs = self.get_input_data_names()
-        for discipline in self.disciplines:
-            for input_name, input_value in discipline.default_inputs.items():
-                if input_name in self_inputs:
-                    self.default_inputs[input_name] = input_value
 
     def _run(self) -> None:
         for discipline in self.disciplines:
@@ -148,8 +147,8 @@ class MDOChain(MDODiscipline):
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = discipline.get_input_data()
-        # The graph traversal algorithm avoid to force_all linearizations
-        discipline.linearize(last_cached, force_no_exec=True, force_all=False)
+        # The graph traversal algorithm avoid to compute unnecessary Jacobians
+        discipline.linearize(last_cached, execute=False, compute_all_jacobians=False)
 
         for output_name in chain_outputs:
             if output_name in self.jac:
@@ -166,7 +165,7 @@ class MDOChain(MDODiscipline):
                     for new_in, new_jac in discipline.jac[input_name].items():
                         # Chain rule the derivatives
                         # TODO: sum BEFORE dot
-                        loc_dot = dot(curr_jac, new_jac)
+                        loc_dot = curr_jac @ new_jac
                         # when input_name==new_in, we are in the case of an
                         # input being also an output
                         # in this case we must only compose the derivatives
@@ -191,7 +190,9 @@ class MDOChain(MDODiscipline):
                 # Initialize. Make a copy !
                 self.jac[output_name] = MDOChain.copy_jacs(discipline.jac[output_name])
 
-    def _compute_diff_in_outs(self, inputs, outputs):
+    def _compute_diff_in_outs(
+        self, inputs: Iterable[str], outputs: Iterable[str]
+    ) -> None:
         if self._coupling_structure is None:
             self._coupling_structure = MDOCouplingStructure(self.disciplines)
 
@@ -213,8 +214,10 @@ class MDOChain(MDODiscipline):
         # use coupling_structure graph path for that
         last_cached = last_discipline.get_input_data()
 
-        # The graph traversal algorithm avoid to force_all linearizations
-        last_discipline.linearize(last_cached, force_no_exec=True, force_all=False)
+        # The graph traversal algorithm avoid to compute unnecessary Jacobians
+        last_discipline.linearize(
+            last_cached, execute=False, compute_all_jacobians=False
+        )
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines
@@ -262,7 +265,7 @@ class MDOChain(MDODiscipline):
                 jacobian_copy[output_name] = output_jacobian_copy
                 for input_name, derivatives in output_jacobian.items():
                     output_jacobian_copy[input_name] = derivatives.copy()
-            elif isinstance(output_jacobian, ndarray):
+            elif isinstance(output_jacobian, (ndarray, spmatrix)):
                 jacobian_copy[output_name] = output_jacobian.copy()
 
         return jacobian_copy
@@ -307,26 +310,21 @@ class MDOChain(MDODiscipline):
 class MDOParallelChain(MDODiscipline):
     """Chain of processes that executes disciplines in parallel."""
 
-    _ATTR_TO_SERIALIZE: ClassVar[tuple[str]] = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "disciplines",
-        "parallel_execution",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         use_threading: bool = True,
         n_processes: int | None = None,
+        use_deep_copy: bool = False,
     ) -> None:
         """
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -338,6 +336,7 @@ class MDOParallelChain(MDODiscipline):
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
                 If None, uses the number of disciplines.
+            use_deep_copy: Whether to deepcopy the discipline input data.
 
         Note:
             The actual number of processes could be lower than ``n_processes``
@@ -347,9 +346,8 @@ class MDOParallelChain(MDODiscipline):
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self._disciplines = disciplines
+        self._use_deep_copy = use_deep_copy
         self.initialize_grammars()
-        self.default_inputs = {}
-        self._update_default_inputs()
         if n_processes is None:
             n_processes = len(self.disciplines)
 
@@ -370,15 +368,7 @@ class MDOParallelChain(MDODiscipline):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
-    def _update_default_inputs(self) -> None:
-        """Compute the default inputs from the disciplines' ones."""
-        input_names = self.get_input_data_names()
-        for disc in self.disciplines:
-            for disc_input_name, disc_input_value in disc.default_inputs.items():
-                if disc_input_name in input_names:
-                    self.default_inputs[disc_input_name] = disc_input_value
-
-    def _get_input_data_copies(self) -> list[dict[str, ndarray]]:
+    def _get_input_data_copies(self) -> list[DisciplineData]:
         """Return copies of the input data, one per discipline.
 
         Returns:
@@ -388,7 +378,15 @@ class MDOParallelChain(MDODiscipline):
         # The outputs of a discipline may be a coupling, and shall therefore
         # not be passed as input of another since the execution are assumed
         # to be independent here
-        return [deepcopy(self.local_data) for _ in range(len(self.disciplines))]
+        if self._use_deep_copy:
+            return [
+                DisciplineData(deepcopy_dict_of_arrays(self.local_data))
+                for _ in range(len(self._disciplines))
+            ]
+        else:
+            for value in self.local_data.values():
+                value.flags.writeable = False
+            return [self.local_data] * len(self._disciplines)
 
     def _run(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
@@ -502,7 +500,7 @@ class MDOAdditiveChain(MDOParallelChain):
         disciplines: Sequence[MDODiscipline],
         outputs_to_sum: Iterable[str],
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         use_threading: bool = True,
         n_processes: int | None = None,
     ) -> None:
@@ -512,8 +510,7 @@ class MDOAdditiveChain(MDOParallelChain):
             outputs_to_sum: The names of the outputs to sum.
             name: The name of the discipline.
                 If None, use the class name.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -570,3 +567,66 @@ class MDOAdditiveChain(MDOParallelChain):
 
                 assert disciplinary_jacobians
                 self.jac[output_name][input_name] = sum(disciplinary_jacobians)
+
+
+class MDOWarmStartedChain(MDOChain):
+    """Chain capable of warm starting a given list of variables.
+
+    The values of the variables to warm start are stored after each run and used to
+    initialize the next one.
+
+    This Chain cannot be linearized.
+    """
+
+    def __init__(
+        self,
+        disciplines: Sequence[MDODiscipline],
+        variable_names_to_warm_start: Sequence[str],
+        name: str | None = None,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+    ) -> None:
+        """
+        Args:
+            disciplines: The disciplines.
+            variable_names_to_warm_start: The names of the variables to be warm started.
+                These names must be outputs of the disciplines in the chain.
+                If the list is empty, no variables are warm started.
+            name: The name of the discipline.
+                If None, use the class name.
+            grammar_type: The type of the input and output grammars.
+
+        Raises:
+            ValueError: If the variable names to warm start are not outputs of the
+                chain.
+        """  # noqa: D205, D212, D415
+        super().__init__(disciplines=disciplines, name=name, grammar_type=grammar_type)
+        self._variable_names_to_warm_start = variable_names_to_warm_start
+        self._warm_start_variable_names_to_values = {}
+        if variable_names_to_warm_start:
+            if not self.is_all_outputs_existing(variable_names_to_warm_start):
+                all_output_names = self.get_output_data_names()
+                missing_output_names = set(variable_names_to_warm_start).difference(
+                    all_output_names
+                )
+                raise ValueError(
+                    "The following variable names are not "
+                    f"outputs of the chain: {missing_output_names}."
+                    f" Available outputs are: {all_output_names}."
+                )
+
+    def _compute_jacobian(
+        self,
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__} cannot be linearized.")
+
+    def _run(self) -> None:
+        if self._warm_start_variable_names_to_values:
+            self.local_data.update(self._warm_start_variable_names_to_values)
+        super()._run()
+        if self._variable_names_to_warm_start:
+            self._warm_start_variable_names_to_values = {
+                name: self.local_data[name]
+                for name in self._variable_names_to_warm_start
+            }

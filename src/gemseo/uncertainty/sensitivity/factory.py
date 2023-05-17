@@ -25,14 +25,14 @@ from typing import Collection
 from typing import Iterable
 from typing import Mapping
 
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.factory import Factory
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 
 
-class SensitivityAnalysisFactory:
+class SensitivityAnalysisFactory(BaseFactory):
     """Factory to build instances of :class:`.SensitivityAnalysis`.
 
     At initialization, this factory scans the following modules
@@ -48,7 +48,7 @@ class SensitivityAnalysisFactory:
 
     Examples:
         >>> from numpy import pi
-        >>> from gemseo.api import create_discipline, create_parameter_space
+        >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.factory import (
         ...     SensitivityAnalysisFactory
         ... )
@@ -76,8 +76,8 @@ class SensitivityAnalysisFactory:
         >>> indices = analysis.compute_indices()
     """
 
-    def __init__(self) -> None:  # noqa: D107
-        self.factory = Factory(SensitivityAnalysis, ("gemseo.uncertainty.sensitivity",))
+    _CLASS = SensitivityAnalysis
+    _MODULE_NAMES = ("gemseo.uncertainty.sensitivity",)
 
     def create(
         self,
@@ -112,7 +112,7 @@ class SensitivityAnalysisFactory:
         Returns:
             A sensitivity analysis.
         """
-        return self.factory.create(
+        return super().create(
             sensitivity_analysis,
             disciplines=disciplines,
             parameter_space=parameter_space,
@@ -127,18 +127,4 @@ class SensitivityAnalysisFactory:
     @property
     def available_sensitivity_analyses(self) -> list[str]:
         """The available classes for sensitivity analysis."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        sensitivity_analysis: str,
-    ) -> bool:
-        """Check the availability of a SensitivityAnalysis child.
-
-        Args:
-            sensitivity_analysis: The name of the sensitivity analysis.
-
-        Returns:
-            Whether the type of sensitivity analysis is available.
-        """
-        return self.factory.is_available(sensitivity_analysis)
+        return self.class_names

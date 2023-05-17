@@ -21,8 +21,8 @@ from typing import Sequence
 
 from numpy import array
 from numpy import atleast_2d
-from numpy import matmul
 from numpy import ndarray
+from scipy.sparse import spmatrix
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -50,42 +50,55 @@ class MDOLinearFunction(MDOFunction):
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
     """
+    __initial_expression: str | None
+    """The initially provided expression.
+
+    If None the expression is computed.
+    """
 
     def __init__(
         self,
         coefficients: ArrayType,
         name: str,
         f_type: str | None = None,
-        args: Sequence[str] | None = None,
+        input_names: Sequence[str] | None = None,
         value_at_zero: OutputType = 0.0,
         output_names: Sequence[str] | None = None,
+        expr: str | None = None,
     ) -> None:
         """
         Args:
             coefficients: The coefficients :math:`A` of the linear function.
             name: The name of the linear function.
             f_type: The type of the linear function among
-                :attr:`.MDOFunction.AVAILABLE_TYPES`.
+                :attr:`.MDOFunction.FunctionType`.
                 If ``None``, the linear function will have no type.
-            args: The names of the inputs of the linear function.
+            input_names: The names of the inputs of the linear function.
                 If ``None``, the inputs of the linear function will have no names.
             value_at_zero: The value :math:`b` of the linear function output at zero.
             output_names: The names of the outputs of the function.
                 If ``None``, the outputs of the function will have no names.
+            expr: The expression of the linear function.
         """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
+        if isinstance(coefficients, spmatrix):
+            coefficients = coefficients.tocsr()
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
         self.value_at_zero = value_at_zero
-
-        # Generate the arguments strings
-        new_args = self.__class__.generate_args(input_dim, args)
-
-        # Generate the expression string
-        if output_dim == 1:
-            expr = self._generate_1d_expr(new_args)
+        self.__initial_expression = expr
+        if expr is None:
+            # Generate the arguments strings
+            new_input_names = self.__class__.generate_input_names(
+                input_dim, input_names
+            )
+            # Generate the expression string
+            if output_dim == 1:
+                expr = self._generate_1d_expr(new_input_names)
+            else:
+                expr = self._generate_nd_expr(new_input_names)
         else:
-            expr = self._generate_nd_expr(new_args)
+            new_input_names = input_names
 
         super().__init__(
             self._func_to_wrap,
@@ -93,9 +106,9 @@ class MDOLinearFunction(MDOFunction):
             f_type=f_type,
             jac=self._jac_to_wrap,
             expr=expr,
-            args=new_args,
+            input_names=new_input_names,
             dim=output_dim,
-            outvars=output_names,
+            output_names=output_names,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> OutputType:
@@ -106,7 +119,7 @@ class MDOLinearFunction(MDOFunction):
         Args:
             x_vect: The design variables values.
         """
-        value = matmul(self._coefficients, x_vect) + self._value_at_zero
+        value = self._coefficients @ x_vect + self._value_at_zero
         if value.size == 1:
             value = value[0]
         return value
@@ -121,7 +134,7 @@ class MDOLinearFunction(MDOFunction):
         Args:
             _: This argument is not used.
         """
-        if self._coefficients.shape[0] == 1:
+        if self._coefficients.shape[0] == 1 and isinstance(self._coefficients, ndarray):
             return self._coefficients[0, :]
         return self._coefficients
 
@@ -141,9 +154,9 @@ class MDOLinearFunction(MDOFunction):
     def coefficients(self, coefficients: Number | ArrayType) -> None:
         if isinstance(coefficients, Number):
             self._coefficients = atleast_2d(coefficients)
-        elif isinstance(coefficients, ndarray) and coefficients.ndim == 2:
+        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 2:
             self._coefficients = coefficients
-        elif isinstance(coefficients, ndarray) and coefficients.ndim == 1:
+        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 1:
             self._coefficients = coefficients.reshape((1, -1))
         else:
             raise ValueError(
@@ -172,11 +185,11 @@ class MDOLinearFunction(MDOFunction):
         else:
             raise ValueError("Value at zero must be an ndarray or a number.")
 
-    def _generate_1d_expr(self, args: Sequence[str]) -> str:
+    def _generate_1d_expr(self, input_names: Sequence[str]) -> str:
         """Generate the literal expression of the linear function in scalar form.
 
         Args:
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
 
         Returns:
             The literal expression of the linear function in scalar form.
@@ -185,7 +198,12 @@ class MDOLinearFunction(MDOFunction):
         strings = []
         # Build the expression of the linear combination
         first_non_zero_index = -1
-        for index, coefficient in enumerate(self._coefficients[0, :]):
+        if isinstance(self._coefficients, ndarray):
+            iterable = enumerate(self._coefficients[0, :])
+        else:
+            iterable = zip(self._coefficients.indices, self._coefficients.data)
+
+        for index, coefficient in iterable:
             if coefficient != 0.0:
                 if first_non_zero_index == -1:
                     first_non_zero_index = index
@@ -201,7 +219,7 @@ class MDOLinearFunction(MDOFunction):
                 if abs(coefficient) != 1.0:
                     strings.append(f"{pattern.format(abs(coefficient))}*")
                 # Add argument string
-                strings.append(args[index])
+                strings.append(input_names[index])
 
         # Add the offset expression
         value_at_zero = pattern.format(self._value_at_zero[0])
@@ -215,16 +233,16 @@ class MDOLinearFunction(MDOFunction):
 
         return "".join(strings)
 
-    def _generate_nd_expr(self, args: Sequence[str]) -> str:
+    def _generate_nd_expr(self, input_names: Sequence[str]) -> str:
         """Generate the literal expression of the linear function in matrix form.
 
         Args:
-            args: The names of the inputs of the function.
+            input_names: The names of the inputs of the function.
 
         Returns:
             The literal expression of the linear function in matrix form.
         """
-        max_args_len = max(len(arg) for arg in args)
+        max_input_name_len = max(len(input_name) for input_name in input_names)
         out_dim, in_dim = self._coefficients.shape
         strings = []
         for i in range(max(out_dim, in_dim)):
@@ -232,15 +250,21 @@ class MDOLinearFunction(MDOFunction):
                 strings.append("\n")
             # matrix line
             if i < out_dim:
+                if isinstance(self._coefficients, ndarray):
+                    ith_row = self._coefficients[i, :]
+                else:
+                    ith_row = self._coefficients.getrow(i).toarray().flatten()
+
                 coefficients = (
-                    self.COEFF_FORMAT_ND.format(coefficient)
-                    for coefficient in self._coefficients[i, :]
+                    self.COEFF_FORMAT_ND.format(coefficient) for coefficient in ith_row
                 )
                 strings.append(f"[{' '.join(coefficients)}]")
             else:
                 strings.append(" " + " ".join([" " * 3] * in_dim) + " ")
             # vector line
-            strings.append(f"[{args[i]}]" if i < in_dim else " " * (max_args_len + 2))
+            strings.append(
+                f"[{input_names[i]}]" if i < in_dim else " " * (max_input_name_len + 2)
+            )
             # sign
             strings.append(" + " if i == 0 else "   ")
             # value at zero
@@ -255,8 +279,9 @@ class MDOLinearFunction(MDOFunction):
             -self._coefficients,
             f"-{self.name}",
             self.f_type,
-            self.args,
+            self.input_names,
             -self._value_at_zero,
+            expr=self.__initial_expression,
         )
 
     def offset(self, value: OutputType) -> MDOLinearFunction:  # noqa:D102
@@ -264,8 +289,9 @@ class MDOLinearFunction(MDOFunction):
             self._coefficients,
             self.name,
             self.f_type,
-            self.args,
+            self.input_names,
             self._value_at_zero + value,
+            expr=self.__initial_expression,
         )
 
     def restrict(
@@ -287,8 +313,6 @@ class MDOLinearFunction(MDOFunction):
             raise ValueError(
                 "Arrays of frozen indexes and values must have same shape."
             )
-
-        frozen_coefficients = self.coefficients[:, frozen_indexes]
         active_indexes = array(
             [
                 index
@@ -296,11 +320,13 @@ class MDOLinearFunction(MDOFunction):
                 if index not in frozen_indexes
             ]
         )
+        frozen_coefficients = self.coefficients[:, frozen_indexes]
+        new_value_at_zero = frozen_coefficients @ frozen_values + self._value_at_zero
+        new_coefficients = self.coefficients[:, active_indexes]
         return self.__class__(
-            self.coefficients[:, active_indexes],
+            new_coefficients,
             f"{self.name}_restriction",
-            args=[self.args[i] for i in active_indexes],
-            value_at_zero=(
-                matmul(frozen_coefficients, frozen_values) + self._value_at_zero
-            ),
+            input_names=[self.input_names[i] for i in active_indexes],
+            value_at_zero=new_value_at_zero,
+            expr=self.__initial_expression,
         )

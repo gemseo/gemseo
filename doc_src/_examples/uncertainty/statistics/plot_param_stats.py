@@ -36,9 +36,9 @@ These samples are generated from the NumPy library.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_dataset
-from gemseo.uncertainty.api import create_statistics
+from gemseo import configure_logger
+from gemseo import create_dataset
+from gemseo.uncertainty import create_statistics
 from numpy import vstack
 from numpy.random import exponential
 from numpy.random import normal

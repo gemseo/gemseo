@@ -68,16 +68,15 @@ from typing import Iterable
 from typing import NoReturn
 
 from numpy import eye
-from numpy import matmul
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import DefaultTransformerType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
@@ -92,14 +91,14 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType(
         {
-            Dataset.INPUT_GROUP: MinMaxScaler(),
-            Dataset.OUTPUT_GROUP: MinMaxScaler(),
+            IODataset.INPUT_GROUP: MinMaxScaler(),
+            IODataset.OUTPUT_GROUP: MinMaxScaler(),
         }
     )
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
@@ -167,7 +166,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 single_sample = len(input_data.shape) == 1
                 jacobians = predict_jac(self, input_data, *args, **kwargs)
                 if as_dict:
-                    varsizes = self.learning_set.sizes
+                    varsizes = self.learning_set.variable_names_to_n_components
                     if single_sample:
                         jacobians = split_array_to_dict_of_arrays(
                             jacobians, varsizes, self.output_names, self.input_names
@@ -240,14 +239,14 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 else:
                     jac = eye(input_data.shape[1])
 
-                jac = matmul(predict_jac(self, input_data, *args, **kwargs), jac)
+                jac = predict_jac(self, input_data, *args, **kwargs) @ jac
                 output_data = self.predict_raw(input_data)
 
                 outputs = self.learning_set.OUTPUT_GROUP
                 if outputs in self.transformer:
-                    jac = matmul(
-                        self.transformer[outputs].compute_jacobian_inverse(output_data),
-                        jac,
+                    jac = (
+                        self.transformer[outputs].compute_jacobian_inverse(output_data)
+                        @ jac
                     )
                 return jac
 

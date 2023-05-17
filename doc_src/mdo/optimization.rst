@@ -32,7 +32,7 @@ Setting up an :class:`.OptimizationProblem`
 -------------------------------------------
 
 The :class:`.OptimizationProblem` class is composed of at least a
-:class:`~gemseo.algos.design_space.DesignSpace` created from :meth:`~gemseo.api.create_design_space` which describes the :term:`design variables`:
+:class:`~gemseo.algos.design_space.DesignSpace` created from :func:`.create_design_space` which describes the :term:`design variables`:
 
 .. code::
 
@@ -90,7 +90,8 @@ with normalized design space, we have:
                                       normalize_design_space=True)
     print "Optimum = " + str(opt)
 
-Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the extenal `library scipy <https://www.scipy.org/>`_
+Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the external
+library `SciPy <https://scipy.org/>`_
 and interfaced with |g| through the class :class:`~gemseo.algos.opt.lib_scipy.ScipyOpt`.
 
 The list of available algorithms depend on the local setup of |g|, and the installed
@@ -103,11 +104,11 @@ optimization libraries. It can be obtained using :
 
 The optimization history can be saved to the disk for further analysis,
 without having to re execute the optimization.
-For that, we use the function :meth:`.OptimizationProblem.export_hdf`:
+For that, we use the function :meth:`.OptimizationProblem.to_hdf`:
 
 .. code::
 
-    problem.export_hdf("simple_opt.hdf5")
+    problem.to_hdf("simple_opt.hdf5")
 
 Solving the problem by DOE
 --------------------------
@@ -130,7 +131,7 @@ The optimization history can be plotted using one of the post processing tools, 
 
 .. code::
 
-    from gemseo.api import execute_post
+    from gemseo import execute_post
 
     execute_post(problem, "OptHistoryView", save=True, file_path="simple_opt")
 
@@ -152,9 +153,9 @@ DOE algorithms
 
 |g| is interfaced with two packages that provide DOE algorithms:
 `pyDOE <https://pythonhosted.org/pyDOE/>`_, and
-`OpenTURNS <http://www.openturns.org/>`_.
+`OpenTURNS <https://openturns.github.io/www/>`_.
 To list the available DOE algorithms in the current |g| configuration, use
-:meth:`gemseo.api.get_available_doe_algorithms`.
+:meth:`gemseo.get_available_doe_algorithms`.
 
 The set of plots below shows plots using various available algorithms.
 

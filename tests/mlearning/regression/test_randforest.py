@@ -22,10 +22,10 @@ from __future__ import annotations
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import import_regression_model
+from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.random_forest import RandomForestRegressor
 from numpy import allclose
 from numpy import array
@@ -40,13 +40,13 @@ INPUT_VALUES = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
     design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    return discipline.cache.export_to_dataset("dataset_name")
+    return discipline.cache.to_dataset("dataset_name")
 
 
 @pytest.fixture
@@ -114,7 +114,7 @@ def test_model_1d_output(model_1d_output):
 
 def test_save_and_load(model, tmp_wd):
     """Test save and load."""
-    dirname = model.save()
+    dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)
     out2 = imported_model.predict(INPUT_VALUE)

@@ -27,22 +27,23 @@ we will see the basics of :class:`.ParameterSpace`.
 """
 from __future__ import annotations
 
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Create a parameter space
 # ------------------------
 # Firstly,
 # the creation of a :class:`.ParameterSpace` does not require any mandatory argument:
 parameter_space = ParameterSpace()
 
-###############################################################################
+# %%
 # Then, we can add either deterministic variables
 # from their lower and upper bounds
 # (use :meth:`.ParameterSpace.add_variable`)
@@ -52,7 +53,7 @@ parameter_space.add_variable("x", l_b=-2.0, u_b=2.0)
 parameter_space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
 print(parameter_space)
 
-###############################################################################
+# %%
 # We can check that the deterministic and uncertain variables are implemented
 # as deterministic and deterministic variables respectively:
 print("x is deterministic: ", parameter_space.is_deterministic("x"))
@@ -60,7 +61,7 @@ print("y is deterministic: ", parameter_space.is_deterministic("y"))
 print("x is uncertain: ", parameter_space.is_uncertain("x"))
 print("y is uncertain: ", parameter_space.is_uncertain("y"))
 
-###############################################################################
+# %%
 # Sample from the parameter space
 # -------------------------------
 # We can sample the uncertain variables from the :class:`.ParameterSpace`
@@ -71,7 +72,7 @@ print(sample)
 sample = parameter_space.compute_samples(n_samples=4)
 print(sample)
 
-###############################################################################
+# %%
 # Sample a discipline over the parameter space
 # --------------------------------------------
 # We can also sample a discipline over the parameter space.
@@ -79,7 +80,7 @@ print(sample)
 # we instantiate an :class:`.AnalyticDiscipline` from a dictionary of expressions:
 discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 
-###############################################################################
+# %%
 # From these parameter space and discipline,
 # we build a :class:`.DOEScenario`
 # and execute it with a Latin Hypercube Sampling algorithm and 100 samples.
@@ -103,27 +104,27 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "lhs", "n_samples": 100})
 
-###############################################################################
+# %%
 # We can export the optimization problem to a :class:`.Dataset`:
-dataset = scenario.export_to_dataset(name="samples")
+dataset = scenario.to_dataset(name="samples")
 
-###############################################################################
+# %%
 # and visualize it in a tabular way:
-print(dataset.export_to_dataframe())
+print(dataset)
 
-###############################################################################
+# %%
 # or with a graphical post-processing,
 # e.g. a scatter plot matrix:
-dataset.plot("ScatterMatrix")
+ScatterMatrix(dataset).execute(save=False, show=True)
 
-###############################################################################
+# %%
 # Sample a discipline over the uncertain space
 # --------------------------------------------
 # If we want to sample a discipline over the uncertain space,
 # we need to extract it:
 uncertain_space = parameter_space.extract_uncertain_space()
 
-###############################################################################
+# %%
 # Then, we clear the cache, create a new scenario from this parameter space
 # containing only the uncertain variables and execute it.
 scenario = create_scenario(
@@ -131,11 +132,11 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "lhs", "n_samples": 100})
 
-###############################################################################
+# %%
 # Finally,
 # we build a dataset from the disciplinary cache and visualize it.
 # We can see that the deterministic variable 'x' is set to its default value
 # for all evaluations,
 # contrary to the previous case where we were considering the whole parameter space:
-dataset = scenario.export_to_dataset(name="samples")
-print(dataset.export_to_dataframe())
+dataset = scenario.to_dataset(name="samples")
+print(dataset)

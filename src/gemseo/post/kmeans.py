@@ -23,11 +23,11 @@ import logging
 from pathlib import Path
 
 from numpy import array
-from numpy import int as np_int
 from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class KMeans(OptPostProcessor):
         directory_path: str | Path | None = None,
         file_name: str | None = None,
         file_extension: str | None = None,
-        fig_size: tuple[float, float] | None = None,
+        fig_size: FigSizeType | None = None,
         n_clusters: int = 5,
     ) -> None:
         """
@@ -70,14 +70,14 @@ class KMeans(OptPostProcessor):
         Args:
             n_clusters: The number of clusters.
         """
-        x_history = self.database.get_x_history()
+        x_history = self.database.get_x_vect_history()
         x_vars = array(x_history)
         x_vars_sc = StandardScaler().fit_transform(x_vars)
         # estimate bandwidth for mean shift
         algorithm = cluster.MiniBatchKMeans(n_clusters=n_clusters)
         # predict cluster memberships
         algorithm.fit(x_vars_sc)
-        y_pred = algorithm.labels_.astype(np_int)
+        y_pred = algorithm.labels_.astype(int)
         for x_vars, y_vars in zip(x_history, y_pred):
             self.database.store(x_vars, {"KM_cluster": int(y_vars)})
             self.materials_for_plotting[tuple(x_vars.real)] = y_vars

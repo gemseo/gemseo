@@ -51,9 +51,11 @@ import logging
 import numbers
 from copy import deepcopy
 from pathlib import Path
+from typing import Sequence
 
 from numpy import inf
 
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.logging_tools import LoggingContext
@@ -75,18 +77,18 @@ class ScalabilityStudy:
         self,
         objective,
         design_variables,
-        directory="study",
-        prefix="",
+        directory: str = "study",
+        prefix: str = "",
         eq_constraints=None,
         ineq_constraints=None,
-        maximize_objective=False,
-        fill_factor=0.7,
-        active_probability=0.1,
-        feasibility_level=0.8,
-        start_at_equilibrium=True,
-        early_stopping=True,
+        maximize_objective: bool = False,
+        fill_factor: float = 0.7,
+        active_probability: float = 0.1,
+        feasibility_level: float = 0.8,
+        start_at_equilibrium: bool = True,
+        early_stopping: bool = True,
         coupling_variables=None,
-    ):
+    ) -> None:
         """
         The constructor of the ScalabilityStudy class requires two mandatory
         arguments:
@@ -197,7 +199,7 @@ class ScalabilityStudy:
         msg.add("Early stopping: {}", self.early_stopping)
         LOGGER.info("%s", msg)
 
-    def __create_directories(self):
+    def __create_directories(self) -> None:
         """Create the different directories to store results, post-processings, ..."""
         self.directory.mkdir(exist_ok=True)
         post = self.directory / POST_DIRECTORY
@@ -222,23 +224,26 @@ class ScalabilityStudy:
         msg.add("Results: {}", results)
         LOGGER.info("%s", msg)
 
-    def add_discipline(self, data):
+    def add_discipline(self, data: IODataset) -> None:
         """This method adds a disciplinary dataset from a dataset.
 
         :param Dataset data: dataset provided as a dataset.
         """
         self._group_dep[data.name] = {}
-        self._all_data = data.get_all_data()
+        self._all_data = data.get_view().to_numpy()
         self.datasets.append(data)
-        for output_name in data.get_names(data.OUTPUT_GROUP):
+        for output_name in data.get_variable_names(data.OUTPUT_GROUP):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
         inputs = ", ".join(
-            [f"{name}({data.sizes[name]})" for name in data.get_names(data.INPUT_GROUP)]
+            [
+                f"{name}({data.variable_names_to_n_components[name]})"
+                for name in data.get_variable_names(data.INPUT_GROUP)
+            ]
         )
         outputs = ", ".join(
             [
-                f"{name}({data.sizes[name]})"
-                for name in data.get_names(data.OUTPUT_GROUP)
+                f"{name}({data.variable_names_to_n_components[name]})"
+                for name in data.get_variable_names(data.OUTPUT_GROUP)
             ]
         )
         msg = MultiLineString()
@@ -251,7 +256,7 @@ class ScalabilityStudy:
         LOGGER.info("%s", msg)
 
     @property
-    def disciplines_names(self):
+    def discipline_names(self):
         """Get discipline names.
 
         :return: list of discipline names
@@ -260,7 +265,7 @@ class ScalabilityStudy:
         disc_names = [discipline.name for discipline in self.datasets]
         return disc_names
 
-    def set_input_output_dependency(self, discipline, output, inputs):
+    def set_input_output_dependency(self, discipline, output, inputs) -> None:
         """Set the dependency between an output and a set of inputs for a given
         discipline.
 
@@ -273,7 +278,7 @@ class ScalabilityStudy:
         self.__check_inputs(discipline, inputs)
         self._group_dep[discipline][output] = inputs
 
-    def set_fill_factor(self, discipline, output, fill_factor):
+    def set_fill_factor(self, discipline, output, fill_factor) -> None:
         """
         :param str discipline: name of the discipline
         :param str output: name of the output function
@@ -287,30 +292,31 @@ class ScalabilityStudy:
         self._fill_factor[discipline][output] = fill_factor
 
     def __check_discipline(self, discipline):
-        """Check if discipline is a string comprised in the list of disciplines names."""
+        """Check if discipline is a string comprised in the list of disciplines
+        names."""
         if not isinstance(discipline, str):
             raise TypeError("The argument discipline should be a string")
-        disciplines_names = self.disciplines_names
-        if discipline not in disciplines_names:
+        discipline_names = self.discipline_names
+        if discipline not in discipline_names:
             raise ValueError(
                 "The argument discipline should be a string comprised in the list %s",
-                disciplines_names,
+                discipline_names,
             )
 
-    def __check_output(self, discipline, varname):
+    def __check_output(self, discipline, varname: str):
         """Check if a variable is an output of a given discipline."""
         self.__check_discipline(discipline)
         if not isinstance(varname, str):
             raise TypeError(f"{varname} is not a string.")
-        outputs_names = next(
-            dataset.get_names(dataset.OUTPUT_GROUP)
+        output_names = next(
+            dataset.get_variable_names(dataset.OUTPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )
-        if varname not in outputs_names:
+        if varname not in output_names:
             raise ValueError(
                 "'{}' is not an output of {}; available outputs are: {}".format(
-                    varname, discipline, outputs_names
+                    varname, discipline, output_names
                 )
             )
 
@@ -319,18 +325,18 @@ class ScalabilityStudy:
         self.__check_discipline(discipline)
         if not isinstance(inputs, list):
             raise TypeError("The argument 'inputs' must be a list of string.")
-        inputs_names = next(
-            dataset.get_names(dataset.INPUT_GROUP)
+        input_names = next(
+            dataset.get_variable_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )
         for inpt in inputs:
             if not isinstance(inpt, str):
                 raise TypeError(f"{inpt} is not a string.")
-            if inpt not in inputs_names:
+            if inpt not in input_names:
                 raise ValueError(
                     "'{}' is not a discipline input; available inputs are: {}".format(
-                        inpt, inputs_names
+                        inpt, input_names
                     )
                 )
 
@@ -367,12 +373,13 @@ class ScalabilityStudy:
         self,
         algo,
         max_iter,
-        formulation="DisciplinaryOpt",
+        formulation: str = "DisciplinaryOpt",
         algo_options=None,
-        formulation_options=None,
-        top_level_diff="auto",
-    ):
-        """Add both optimization algorithm and MDO formulation, as well as their options.
+        formulation_options: str | None = None,
+        top_level_diff: str = "auto",
+    ) -> None:
+        """Add both optimization algorithm and MDO formulation, as well as their
+        options.
 
         :param str algo: name of the optimization algorithm.
         :param int max_iter: maximum number of iterations
@@ -418,8 +425,8 @@ class ScalabilityStudy:
         coupling_size=None,
         eq_cstr_size=None,
         ineq_cstr_size=None,
-        variables=None,
-    ):
+        variables: list[None] | None = None,
+    ) -> None:
         """Add different scaling strategies.
 
         :param design_size: size of the design variables. Default: None.
@@ -496,7 +503,7 @@ class ScalabilityStudy:
         LOGGER.info("%s", msg)
 
     @staticmethod
-    def __format_scaling(size, n_scaling):
+    def __format_scaling(size: int, n_scaling):
         """Convert a scaling size in a list of integers whose length is equal to the
         number of scalings.
 
@@ -513,7 +520,7 @@ class ScalabilityStudy:
         return formatted_sizes
 
     @staticmethod
-    def __update_var_scaling(scaling, size, varnames):
+    def __update_var_scaling(scaling, size: int, varnames: Sequence[str]) -> None:
         """Update a scaling dictionary for a given list of variables and a given size.
 
         :param dict scaling: scaling dictionary whose keys are variable names
@@ -526,9 +533,9 @@ class ScalabilityStudy:
             scaling.update({varname: size for varname in varnames})
 
     @staticmethod
-    def __check_scaling_consistency(n_var_scaling, n_scaling):
-        """Check that for the different types of variables, the number of scalings is the
-        same or equal to 1.
+    def __check_scaling_consistency(n_var_scaling, n_scaling) -> None:
+        """Check that for the different types of variables, the number of scalings is
+        the same or equal to 1.
 
         :param int n_var_scaling: number of scalings
         :param int n_scaling: expected number of scalings
@@ -536,7 +543,7 @@ class ScalabilityStudy:
         assert n_var_scaling in (n_scaling, 1)
 
     @staticmethod
-    def __check_varsizes_type(varsizes):
+    def __check_varsizes_type(varsizes: Sequence[int]):
         """Check the type of scaling sizes. Integer, list of integers or None is
         expected. Return the number of scalings.
 
@@ -557,7 +564,7 @@ class ScalabilityStudy:
                 length = 1
         return length
 
-    def execute(self, n_replicates=1):
+    def execute(self, n_replicates: int = 1):
         """Execute the scalability study, one or several times to take into account the
         random features of the scalable problems.
 
@@ -631,7 +638,7 @@ class ScalabilityStudy:
                     )
                     fpath = result.get_file_path(self.directory)
                     msg.add("Save statistics in {}", fpath)
-                    result.save(str(self.directory))
+                    result.to_pickle(str(self.directory))
                     LOGGER.debug("%s", msg)
         return self.results
 
@@ -705,7 +712,7 @@ class ScalabilityStudy:
         path.mkdir(exist_ok=True, parents=True)
         return path
 
-    def __create_scalable_problem(self, scaling, seed):
+    def __create_scalable_problem(self, scaling, seed: int):
         """Create a scalable problem.
 
         :param dict scaling: scaling.
@@ -727,7 +734,7 @@ class ScalabilityStudy:
         )
         return problem
 
-    def __create_scenario(self, problem, formulation, opt_index):
+    def __create_scenario(self, problem, formulation, opt_index) -> None:
         """Create scenario for a given formulation.
 
         :param ScalableProblem problem: scalable problem.

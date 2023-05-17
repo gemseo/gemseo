@@ -35,8 +35,8 @@ class IshigamiDiscipline(MDODiscipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.input_grammar.update(["x1", "x2", "x3"])
-        self.output_grammar.update(["y"])
+        self.input_grammar.update_from_names(["x1", "x2", "x3"])
+        self.output_grammar.update_from_names(["y"])
         self.default_inputs.update(
             {name: array([0.0]) for name in self.input_grammar.names}
         )

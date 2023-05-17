@@ -69,7 +69,7 @@ def build_and_run_idf_scenario_with_constraints(
     if dtype == "complex128":
         design_space.to_complex()
     if remove_coupl_from_ds:
-        for var in design_space.variables_names:
+        for var in design_space.variable_names:
             if var.startswith("y_"):
                 design_space.remove_variable(var)
 

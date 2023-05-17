@@ -21,13 +21,12 @@
 """A factory to execute optimization algorithms from their name."""
 from __future__ import annotations
 
-from gemseo.algos.driver_factory import DriverFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.base_algo_factory import BaseAlgoFactory
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 
 
-class OptimizersFactory(DriverFactory):
-    """Optimization  libraries factory, see DriverFactory."""
+class OptimizersFactory(BaseAlgoFactory):
+    """Optimization  libraries factory, see BaseAlgoFactory."""
 
-    def __init__(self):
-        """Test and import optimization library if it is available."""
-        super().__init__(OptimizationLibrary, "gemseo.algos.opt")
+    _CLASS = OptimizationLibrary
+    _MODULE_NAMES = ("gemseo.algos.opt",)

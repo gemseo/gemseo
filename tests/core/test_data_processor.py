@@ -92,8 +92,8 @@ class TestDataProcessor(unittest.TestCase):
 class LocalDisc(MDODiscipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update(["A", "B"])
-        self.output_grammar.update(["O"])
+        self.input_grammar.update_from_names(["A", "B"])
+        self.output_grammar.update_from_names(["O"])
 
     def _run(self):
         self.local_data["o"] = self.local_data["a"] + self.local_data["b"]

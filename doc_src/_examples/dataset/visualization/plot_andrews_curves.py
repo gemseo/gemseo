@@ -25,19 +25,19 @@ Andrews curves
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import load_dataset
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 
 configure_logger()
 
 
-############################################################################
+# %%
 # Load a dataset
 # --------------
-iris = load_dataset("IrisDataset")
+iris = create_benchmark_dataset("IrisDataset")
 
-############################################################################
+# %%
 # Plot Andrews Curves
 # -------------------
 # We can use the :class:`.AndrewsCurves` plot

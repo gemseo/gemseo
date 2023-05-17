@@ -41,7 +41,7 @@ The following example is used to illustrate these features:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc0 = create_discipline('AnalyticDiscipline', name='D0', expressions={'y0':'x0+y10+y2'})
     disc1 = create_discipline('AnalyticDiscipline', name='D1', expressions={'y10':'x0+x1+y2+y10', 'y11':'x0-x1+2*y11'})
@@ -64,7 +64,7 @@ and couplings are links represented by arrows labeled by their coupling variable
 API
 ~~~
 
-The API function :meth:`~gemseo.api.generate_coupling_graph` allows
+The API function :func:`.generate_coupling_graph` allows
 to create these visualizations and save them, from:
 
 - the :class:`.MDODiscipline` instances defining the disciplines of interest,
@@ -80,7 +80,7 @@ Full graph
 
 .. code::
 
-    from gemseo.api import generate_coupling_graph
+    from gemseo import generate_coupling_graph
 
     generate_coupling_graph(disciplines)
 
@@ -125,7 +125,7 @@ or as an interactive visualization of both full and condensed graphs:
 API
 ~~~
 
-The API function :meth:`~gemseo.api.generate_n2_plot` allows
+The API function :func:`.generate_n2_plot` allows
 to create these visualizations and save them, from:
 
 - the :class:`.MDODiscipline` instances defining the disciplines of interest,
@@ -163,7 +163,7 @@ With coupling names
 
 .. code::
 
-    from gemseo.api import generate_n2_plot
+    from gemseo import generate_n2_plot
 
     generate_n2_plot(disciplines)
 
@@ -175,7 +175,7 @@ Without coupling names
 
 .. code::
 
-    from gemseo.api import generate_n2_plot
+    from gemseo import generate_n2_plot
 
     generate_n2_plot(disciplines, show_data_names=False)
 

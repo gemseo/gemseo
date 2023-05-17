@@ -27,14 +27,14 @@ from __future__ import annotations
 import os
 import subprocess
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from numpy import array
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Introduction
 # ------------
 #
@@ -49,7 +49,7 @@ configure_logger()
 # Let's make a discipline out of this from an initial :code:`'inputs.txt'`.
 
 
-###############################################################################
+# %%
 # Implementation of the discipline
 # --------------------------------
 #
@@ -92,8 +92,8 @@ def write_file(data, file_path):
 class ShellExecutableDiscipline(MDODiscipline):
     def __init__(self):
         super().__init__("ShellDisc")
-        self.input_grammar.update(["a", "b"])
-        self.output_grammar.update(["c"])
+        self.input_grammar.update_from_names(["a", "b"])
+        self.output_grammar.update_from_names(["c"])
         self.default_inputs = {"a": array([1.0]), "b": array([2.0])}
 
     def _run(self):
@@ -106,13 +106,13 @@ class ShellExecutableDiscipline(MDODiscipline):
         self.local_data.update(outputs)
 
 
-###############################################################################
+# %%
 # Execution of the discipline
 # ---------------------------
 # Now we can run it with default input values:
 shell_disc = ShellExecutableDiscipline()
 print(shell_disc.execute())
 
-###############################################################################
+# %%
 # or run it with new input values:
 print(shell_disc.execute({"a": array([2.0]), "b": array([3.0])}))

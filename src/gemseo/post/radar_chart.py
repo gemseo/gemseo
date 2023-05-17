@@ -25,7 +25,7 @@ from typing import Iterable
 from numpy import vstack
 from numpy import zeros
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
 from gemseo.post.opt_post_processor import OptPostProcessor
 
@@ -48,8 +48,8 @@ class RadarChart(OptPostProcessor):
         Args:
             constraint_names: The names of the constraints.
                 If None, use all the constraints.
-            iteration: Either a database index in :math:`-N+1,\ldots,-1,0,1,`ldots,N-1`
-                or the tag :attr:`.OPTIMUM` for the database index
+            iteration: Either an iteration in :math:`-N,\ldots,-1,1,`ldots,N`
+                or the tag :attr:`.OPTIMUM` for the iteration
                 at which the optimum is located,
                 where :math:`N` is the length of the database.
             show_names_radially: Whether to write the names of the constraints
@@ -63,11 +63,11 @@ class RadarChart(OptPostProcessor):
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
         if constraint_names is None:
-            constraint_names = self.opt_problem.get_constraints_names()
+            constraint_names = self.opt_problem.get_constraint_names()
         else:
             constraint_names = self.opt_problem.get_function_names(constraint_names)
             invalid_names = sorted(
-                set(constraint_names) - set(self.opt_problem.get_constraints_names())
+                set(constraint_names) - set(self.opt_problem.get_constraint_names())
             )
             if invalid_names:
                 raise ValueError(
@@ -76,18 +76,15 @@ class RadarChart(OptPostProcessor):
                 )
 
         n_iterations = len(self.database)
-        if (
-            iteration != self.OPTIMUM
-            and not -n_iterations + 1 < iteration < n_iterations - 1
-        ):
+        if iteration != self.OPTIMUM and not 1 <= abs(iteration) <= n_iterations:
             raise ValueError(
                 f"The requested iteration {iteration} is neither "
-                f"in ({-n_iterations + 1},...,0,...,{ n_iterations - 1}) "
+                f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
                 f"nor equal to the tag {self.OPTIMUM}."
             )
 
-        constraints_values, constraints_names, _ = self.database.get_history_array(
-            constraint_names, add_dv=False
+        constraint_values, constraint_names, _ = self.database.get_history_array(
+            function_names=constraint_names, with_x_vect=False
         )
 
         if iteration == self.OPTIMUM:
@@ -96,17 +93,17 @@ class RadarChart(OptPostProcessor):
         else:
             title_suffix = ""
 
-        constraints_values = constraints_values[iteration, :].ravel()
+        constraint_values = constraint_values[iteration, :].ravel()
 
-        dataset = Dataset("Constraints")
-        values = vstack((constraints_values, zeros(len(constraints_values))))
+        dataset = Dataset(dataset_name="Constraints")
+        values = vstack((constraint_values, zeros(len(constraint_values))))
         dataset.add_group(
             dataset.DEFAULT_GROUP,
             values,
-            constraints_names,
-            {name: 1 for name in constraints_names},
+            constraint_names,
+            {name: 1 for name in constraint_names},
         )
-        dataset.row_names = ["computed constraints", "limit constraint"]
+        dataset.index = ["computed constraints", "limit constraint"]
 
         if iteration < 0:
             iteration = n_iterations + iteration

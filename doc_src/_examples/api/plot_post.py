@@ -28,36 +28,36 @@ related to graphical post-processing of scenarios.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import execute_post
-from gemseo.api import get_available_post_processings
-from gemseo.api import get_post_processing_options_schema
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_post
+from gemseo import get_available_post_processings
+from gemseo import get_post_processing_options_schema
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
 
 
-##############################################################################
+# %%
 # Get available DOE algorithms
 # ----------------------------
 #
-# The :meth:`~gemseo.api.get_available_post_processings` function returns the list
+# The :func:`.get_available_post_processings` function returns the list
 # of post-processing algorithms available in |g| or in external modules
 print(get_available_post_processings())
 
-##########################################################################
+# %%
 # Get options schema
 # ------------------
 # For a given post-processing algorithm, e.g. :code:`"RadarChart"`,
 # we can get the options; e.g.
 print(get_post_processing_options_schema("RadarChart"))
 
-##########################################################################
+# %%
 # Post-process a scenario
 # -----------------------
-# The API function :meth:`~gemseo.api.execute_post` can generate visualizations
+# The API function :func:`.execute_post` can generate visualizations
 # of the optimization or DOE results. For that, it consider the object to
 # post-process :code:`to_post_proc`, the post processing :code:`post_name`
 # with its :code:`**options`. E.g.

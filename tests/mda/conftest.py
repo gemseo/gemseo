@@ -18,8 +18,8 @@ from __future__ import annotations
 from functools import partial
 
 import pytest
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
@@ -65,7 +65,7 @@ def generate_parallel_doe(
             "algo_options": {"n_processes": 2},
         }
     )
-    return scenario.get_optimum().to_dict()["f_opt"]
+    return scenario.optimization_result.f_opt
 
 
 @pytest.fixture

@@ -15,10 +15,10 @@
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 from __future__ import annotations
 
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import get_available_formulations
-from gemseo.api import get_available_scenario_types
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import get_available_formulations
+from gemseo import get_available_scenario_types
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 get_available_scenario_types()
@@ -56,9 +56,9 @@ scenario = create_scenario(
 
 ###
 
-print(scenario.get_optim_variables_names())
+print(scenario.get_optim_variable_names())
 print(scenario.design_space)
-scenario.xdsmize(monitor=True, print_statuses=True, outdir=None)
+scenario.xdsmize(monitor=True, log_workflow_status=True)
 
 ###
 
@@ -66,7 +66,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 100})
 
 ###
 
-opt_results = scenario.get_optimum()
+opt_results = scenario.optimization_result
 print(
     "The solution of P is (x*,f(x*)) = ({}, {})".format(
         opt_results.x_opt, opt_results.f_opt

@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.api import create_discipline
+from gemseo import create_discipline
 from gemseo.disciplines.concatenater import Concatenater
 from numpy import array
 from numpy import concatenate
@@ -81,7 +81,7 @@ def test_concatenation_discipline_linearization(
     """Check the Jacobian data returned by Concatenater."""
     if coefficients is None:
         coefficients = {"c_1": 1.0, "c_2": 1.0}
-    jac = concatenation_disc.linearize(input_data, force_all=True)
+    jac = concatenation_disc.linearize(input_data, compute_all_jacobians=True)
     var_inputs = list(concatenation_disc.get_input_data_names())
 
     # In Python 2, we cannot assume any order in the var_inputs list
@@ -93,7 +93,7 @@ def test_concatenation_discipline_linearization(
         if var == "c_1":
             c_c1[start:end, :] = coefficients[var] * diag(ones(2))
         start += input_data[var].size
-    assert_array_equal(jac["c"]["c_1"], c_c1)
+    assert_array_equal(jac["c"]["c_1"].toarray(), c_c1)
 
     c_c2 = zeros([5, 3])
     start = 0
@@ -102,7 +102,7 @@ def test_concatenation_discipline_linearization(
             end = start + 3
             c_c2[start:end, :] = coefficients[var] * diag(ones(3))
         start += input_data[var].size
-    assert_array_equal(jac["c"]["c_2"], c_c2)
+    assert_array_equal(jac["c"]["c_2"].toarray(), c_c2)
 
 
 def test_check_gradient(

@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
@@ -28,27 +29,29 @@ from typing import Sequence
 from typing import TYPE_CHECKING
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.factory import Factory
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core.scenario import Scenario
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import arange, copy, empty, in1d, ndarray, where, zeros
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
+class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base MDO formulation class to be extended in subclasses for use.
 
     This class creates the :class:`.MDOFunction` instances
@@ -67,7 +70,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
     The link between the instances of :class:`.MDODiscipline`,
     the design variables and
     the names of the discipline outputs used as constraints, objective and observables
-    is made with the :class:`.MDOFunctionGenerator`,
+    is made with the :class:`.MDODisciplineAdapterGenerator`,
     which generates instances of :class:`.MDOFunction` from the disciplines.
     """
 
@@ -89,7 +92,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         **options: Any,
     ) -> None:
         """
@@ -99,9 +102,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 If multiple names are passed, the objective will be a vector.
             design_space: The design space.
             maximize_objective: Whether to maximize the objective.
-            grammar_type: The type of the input and output grammars,
-                either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+            grammar_type: The type of the input and output grammars.
             **options: The options of the formulation.
         """  # noqa: D205, D212, D415
         self._disciplines = disciplines
@@ -128,7 +129,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
     @staticmethod
     def _check_add_cstr_input(
         output_name: str,
-        constraint_type: str,
+        constraint_type: MDOFunction.ConstraintType,
     ) -> list[str]:
         """Check the output name and constraint type passed to :meth:`.add_constraint`.
 
@@ -136,15 +137,8 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             output_name: The name of the output to be used as a constraint.
                 For instance, if g_1 is given and constraint_type="eq",
                 g_1=0 will be added as a constraint to the optimizer.
-            constraint_type: The type of constraint,
-                either "eq" for equality constraint
-                or "ineq" for inequality constraint.
+            constraint_type: The type of constraint.
         """
-        if constraint_type not in [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ]:
-            raise ValueError(
-                "Constraint type must be either 'eq' or 'ineq',"
-                " got: %s instead" % constraint_type
-            )
         if isinstance(output_name, list):
             output_names = output_name
         else:
@@ -154,7 +148,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
     def add_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -210,7 +204,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if observable_name is not None:
             obs_fun.name = observable_name
-        obs_fun.f_type = MDOFunction.TYPE_OBS
+        obs_fun.f_type = MDOFunction.FunctionType.OBS
         self.opt_problem.add_observable(obs_fun)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:
@@ -254,11 +248,11 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         self,
         output_names: Iterable[str],
         top_level_disc: bool = False,
-    ) -> MDOFunctionGenerator:
+    ) -> MDODisciplineAdapterGenerator:
         """Create a generator of :class:`.MDOFunction` from the names of the outputs.
 
         Find a discipline which computes all the provided outputs
-        and build the associated :class:`.MDOFunctionGenerator`.
+        and build the associated :class:`.MDODisciplineAdapterGenerator`.
 
         Args:
             output_names: The names of the outputs.
@@ -273,7 +267,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             search_among = self.disciplines
         for discipline in search_among:
             if discipline.is_all_outputs_existing(output_names):
-                return MDOFunctionGenerator(discipline)
+                return MDODisciplineAdapterGenerator(discipline)
         raise ValueError(
             "No discipline known by formulation %s"
             " has all outputs named %s" % (type(self).__name__, output_names)
@@ -283,11 +277,11 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         self,
         input_names: Iterable[str],
         top_level_disc: bool = False,
-    ) -> MDOFunctionGenerator:
+    ) -> MDODisciplineAdapterGenerator:
         """Create a generator of :class:`.MDOFunction` from the names of the inputs.
 
         Find a discipline which has all the provided inputs
-        and build the associated :class:`.MDOFunctionGenerator.
+        and build the associated :class:`.MDODisciplineAdapterGenerator.
 
         Args:
             input_names: The names of the inputs.
@@ -302,7 +296,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             search_among = self.disciplines
         for discipline in search_among:
             if discipline.is_all_inputs_existing(input_names):
-                return MDOFunctionGenerator(discipline)
+                return MDODisciplineAdapterGenerator(discipline)
         raise ValueError(
             "No discipline known by formulation %s"
             " has all inputs named %s" % (type(self).__name__, input_names)
@@ -322,7 +316,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The size of the variable.
         """
-        return self.opt_problem.design_space.variables_sizes[variable_name]
+        return self.opt_problem.design_space.variable_sizes[variable_name]
 
     def _get_dv_indices(
         self,
@@ -340,7 +334,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             and last dimension is its size.
         """
         start = end = 0
-        sizes = self.opt_problem.design_space.variables_sizes
+        sizes = self.opt_problem.design_space.variable_sizes
         names_to_indices = {}
         for name in names:
             size = sizes[name]
@@ -377,10 +371,10 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             IndexError: when the sizes of variables are inconsistent.
         """
         if all_data_names is None:
-            all_data_names = self.get_optim_variables_names()
+            all_data_names = self.get_optim_variable_names()
         indices = self._get_dv_indices(all_data_names)
-        variables_sizes = self.opt_problem.design_space.variables_sizes
-        total_size = sum(variables_sizes[var] for var in all_data_names)
+        variable_sizes = self.opt_problem.design_space.variable_sizes
+        total_size = sum(variable_sizes[var] for var in all_data_names)
         if x_full is None:
             x_unmask = zeros(total_size, dtype=x_masked.dtype)
         else:
@@ -450,10 +444,10 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         """
         design_space = self.opt_problem.design_space
         if all_data_names is None:
-            all_data_names = design_space.variables_names
+            all_data_names = design_space.variable_names
 
-        variables_sizes = design_space.variables_sizes
-        total_size = sum(variables_sizes[var] for var in masking_data_names)
+        variable_sizes = design_space.variable_sizes
+        total_size = sum(variable_sizes[var] for var in masking_data_names)
         indices = self._get_dv_indices(all_data_names)
         x_mask = empty(total_size, dtype="int")
         i_masked_min = i_masked_max = 0
@@ -479,7 +473,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         all_inputs = {
             var for disc in disciplines for var in disc.get_input_data_names()
         }
-        for name in set(design_space.variables_names):
+        for name in set(design_space.variable_names):
             if name not in all_inputs:
                 design_space.remove_variable(name)
                 LOGGER.info(
@@ -491,9 +485,9 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
     def _remove_sub_scenario_dv_from_ds(self) -> None:
         """Remove the sub scenarios design variables from the design space."""
         for scenario in self.get_sub_scenarios():
-            loc_vars = scenario.design_space.variables_names
+            loc_vars = scenario.design_space.variable_names
             for var in loc_vars:
-                if var in self.design_space.variables_names:
+                if var in self.design_space.variable_names:
                     self.design_space.remove_variable(var)
 
     def _build_objective_from_disc(
@@ -516,12 +510,12 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         obj_mdo_fun = FunctionFromDiscipline(
             objective_name, self, discipline, top_level_disc
         )
-        obj_mdo_fun.f_type = MDOFunction.TYPE_OBJ
+        obj_mdo_fun.f_type = MDOFunction.FunctionType.OBJ
         self.opt_problem.objective = obj_mdo_fun
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()
 
-    def get_optim_variables_names(self) -> list[str]:
+    def get_optim_variable_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.
 
         This is different from the design variable names provided by the user,
@@ -531,7 +525,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The optimization variable names.
         """
-        return self.opt_problem.design_space.variables_names
+        return self.opt_problem.design_space.variable_names
 
     def get_x_names_of_disc(
         self,
@@ -545,9 +539,9 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
              The names of the design variables.
         """
-        optim_variables_names = self.get_optim_variables_names()
+        optim_variable_names = self.get_optim_variable_names()
         input_names = discipline.get_input_data_names()
-        return [name for name in optim_variables_names if name in input_names]
+        return [name for name in optim_variable_names if name in input_names]
 
     def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
         """Accessor to the sub-disciplines.
@@ -593,6 +587,7 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 }
             )
 
+    @abstractmethod
     def get_expected_workflow(
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
@@ -615,8 +610,8 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             an :class:`.ExecutionSequence`
             or a tuple of :class:`.ExecutionSequence` for concurrent execution.
         """
-        raise NotImplementedError()
 
+    @abstractmethod
     def get_expected_dataflow(
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
@@ -630,10 +625,9 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
             where the i-th item is described by the starting discipline,
             the ending discipline and the coupling variables.
         """
-        raise NotImplementedError()
 
     @classmethod
-    def get_default_sub_options_values(
+    def get_default_sub_option_values(
         cls, **options: str
     ) -> dict:  # pylint: disable=W0613
         """Return the default values of the sub-options of the formulation.
@@ -667,16 +661,8 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         """
 
 
-class BaseFormulationsFactory:
+class BaseFormulationsFactory(BaseFactory):
     """A factory of :class:`~gemseo.core.base_formulation.BaseFormulation`."""
-
-    def __init__(self, cls: type, module_names: Iterable[str] | None = None) -> None:
-        """
-        Args:
-            cls: The base class.
-            module_names: The names of the modules to search in.
-        """  # noqa: D205, D212, D415
-        self.factory = Factory(cls, module_names)
 
     def create(
         self,
@@ -698,7 +684,7 @@ class BaseFormulationsFactory:
             maximize_objective: Whether to maximize the objective.
             **options: The options for the creation of the formulation.
         """
-        return self.factory.create(
+        return super().create(
             formulation_name,
             disciplines=disciplines,
             design_space=design_space,
@@ -710,18 +696,4 @@ class BaseFormulationsFactory:
     @property
     def formulations(self) -> list[str]:
         """The available formulations."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        formulation_name: str,
-    ) -> bool:
-        """Check the availability of a formulation.
-
-        Args:
-            formulation_name: The formulation name to check.
-
-        Returns:
-            Whether the formulation is available.
-        """
-        return self.factory.is_available(formulation_name)
+        return self.class_names

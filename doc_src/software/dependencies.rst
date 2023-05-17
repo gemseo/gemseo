@@ -75,7 +75,6 @@ All these tools are open source with non-viral licenses
    - openturns >=1.16,<=1.18: designs of experiments, machine learning, uncertainty quantification
    - pdfo >=1.0,<=1.2: derivative-free optimization algorithms
    - pydoe2 >=1.0.2,<=1.3.0: design of experiments
-   - pyside6 >=6.3.0,<=6.3.1: grammar editor GUI
    - scikit-learn >=0.18,<=1.1.2: machine learning
    - sympy >=1.5,<=1.11.1: symbolic calculations for analytic disciplines
    - xlwings >=0.27.0,<=0.27.15: Excel reading on Windows

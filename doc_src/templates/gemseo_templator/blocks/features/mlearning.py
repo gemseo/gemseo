@@ -32,14 +32,14 @@ block = Block(
         WebLink("regression", url="machine_learning/regression/regression_models.html"),
         WebLink(
             "quality measures",
-            url="machine_learning/qual_measure/quality_measures.html",
+            url="machine_learning/quality_measures/quality_measures.html",
         ),
         WebLink(
             "data transformation", url="machine_learning/transform/transformer.html"
         ),
     ],
     dependencies=[
-        WebLink("OpenTURNS", url="http://www.openturns.org/"),
+        WebLink("OpenTURNS", url="https://openturns.github.io/www/"),
         WebLink("scikit-learn", url="https://scikit-learn.org/stable/"),
     ],
     examples="examples/mlearning/index.html",

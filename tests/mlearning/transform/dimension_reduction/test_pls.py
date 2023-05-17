@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.dimension_reduction.pls import PLS
+from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from numpy import ndarray
 from numpy import newaxis
 from numpy import sum as npsum

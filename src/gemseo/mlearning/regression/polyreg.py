@@ -88,10 +88,11 @@ from numpy import where
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.utils.compatibility.sklearn import get_n_input_features_
 
 
 class PolynomialRegressor(LinearRegressor):
@@ -101,7 +102,7 @@ class PolynomialRegressor(LinearRegressor):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         degree: int,
         transformer: TransformerType = LinearRegressor.IDENTITY,
         input_names: Iterable[str] | None = None,
@@ -175,7 +176,7 @@ class PolynomialRegressor(LinearRegressor):
         vandermonde = self._poly.transform(input_data)
 
         powers = self._poly.powers_
-        n_inputs = self._poly.n_input_features_
+        n_inputs = get_n_input_features_(self._poly)
         n_powers = self._poly.n_output_features_
         n_outputs = self.algo.coef_.shape[0]
         coefs = self.get_coefficients()

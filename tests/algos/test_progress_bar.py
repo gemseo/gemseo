@@ -27,8 +27,8 @@ from typing import Any
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -115,18 +115,23 @@ def objective_and_problem_for_tests(constraints_before_obj):
     f = MDOFunction(
         func=dummy_sleep_function,
         name="f",
-        f_type=MDOFunction.TYPE_OBJ,
+        f_type=MDOFunction.FunctionType.OBJ,
         expr="f(x)",
     )
     g = MDOFunction(
         func=dummy_sleep_function,
         name="g",
-        f_type=MDOFunction.TYPE_INEQ,
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="g(x)",
     )
     design_space = DesignSpace()
     design_space.add_variable(
-        "x", l_b=0.0, u_b=10.0, value=5.0, size=1, var_type=DesignSpace.FLOAT
+        "x",
+        l_b=0.0,
+        u_b=10.0,
+        value=5.0,
+        size=1,
+        var_type=DesignSpace.DesignVariableType.FLOAT,
     )
     problem = OptimizationProblem(design_space)
     problem.objective = f

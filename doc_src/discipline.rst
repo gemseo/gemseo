@@ -25,6 +25,7 @@ Discipline
    disciplines/autopydiscipline.rst
    disciplines/discipline_from_scratch.rst
    interface/exe_discipline.rst
+   interface/job_schedulers.rst
    disciplines/discipline_interfacing_executable.rst
    disciplines/discipline_matlab.rst
    disciplines/jacobian_assembly.rst

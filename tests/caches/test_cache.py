@@ -27,8 +27,8 @@ from typing import Iterator
 
 import h5py
 import pytest
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
@@ -121,10 +121,10 @@ def test_jac_and_outputs_caching(
 
 
 def test_hdf_cache_read(tmp_wd):
-    cache = HDF5Cache("dummy.h5", "DummyCache")
+    cache = HDF5Cache(hdf_file_path="dummy.h5", hdf_node_path="DummyCache")
 
     with pytest.raises(ValueError):
-        cache.export_to_ggobi(
+        cache.to_ggobi(
             "out.ggobi",
             input_names=["i", "j"],
             output_names=["o"],
@@ -139,11 +139,11 @@ def test_hdf_cache_read(tmp_wd):
     cache.cache_outputs({"i": n * arange(3), "j": array([1.0])}, {"o": n * arange(4)})
 
     assert len(cache) == n
-    cache_read = HDF5Cache("dummy.h5", "DummyCache")
+    cache_read = HDF5Cache(hdf_file_path="dummy.h5", hdf_node_path="DummyCache")
 
     assert len(cache_read) == n
 
-    cache.export_to_ggobi(
+    cache.to_ggobi(
         "out1.ggobi",
         input_names=["i", "j"],
         output_names=["o"],
@@ -155,13 +155,11 @@ def test_hdf_cache_read(tmp_wd):
 
     assert len(cache) == n + 1
     exp_ggobi = Path("out2.ggobi")
-    cache.export_to_ggobi(
-        str(exp_ggobi), input_names=["i", "k"], output_names=["o", "t"]
-    )
+    cache.to_ggobi(str(exp_ggobi), input_names=["i", "k"], output_names=["o", "t"])
     assert exp_ggobi.exists()
 
     with pytest.raises(ValueError):
-        cache.export_to_ggobi(
+        cache.to_ggobi(
             "out3.ggobi",
             input_names=["izgz"],
             output_names=["o"],
@@ -169,8 +167,8 @@ def test_hdf_cache_read(tmp_wd):
 
 
 def test_update_caches(tmp_wd):
-    c1 = HDF5Cache("out11.h5", "DummyCache")
-    c2 = HDF5Cache("out21.h5", "DummyCache")
+    c1 = HDF5Cache(hdf_file_path="out11.h5", hdf_node_path="DummyCache")
+    c2 = HDF5Cache(hdf_file_path="out21.h5", hdf_node_path="DummyCache")
 
     c1.cache_outputs({"i": 10 * arange(3)}, {"o": arange(4)})
 
@@ -187,7 +185,7 @@ def test_update_caches(tmp_wd):
 
 
 def test_collision(tmp_wd):
-    c1 = HDF5Cache("out7.h5", "DummyCache")
+    c1 = HDF5Cache(hdf_file_path="out7.h5", hdf_node_path="DummyCache")
     input_data = {"i": arange(3)}
     output_data = {"o": arange(3)}
     c1.cache_outputs(input_data, output_data)
@@ -307,7 +305,7 @@ def test_read_hashes(tmp_wd):
 
 
 def test_read_group(tmp_wd):
-    cache = HDF5Cache("out3.h5")
+    cache = HDF5Cache(hdf_file_path="out3.h5")
     cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
     cache._read_input_output_data([1], {"x": arange(3), "y": arange(2)})
 
@@ -539,7 +537,7 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     HDF5Cache.update_file_format(deprecated_cache_path)
 
     cache_path = Path("cache.h5")
-    cache = HDF5Cache(cache_path)
+    cache = HDF5Cache(hdf_file_path=cache_path)
     cache.cache_outputs({"x": array([1.0])}, {"y": array([2.0])})
 
     file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION
@@ -619,38 +617,19 @@ def test_export_to_dataset_and_entries(
     second_outputs = {"y": array([2.0])}
     simple_cache[first_inputs] = (first_outputs, first_jacobian)
     simple_cache[second_inputs] = (second_outputs, second_jacobian)
-    dataset = simple_cache.export_to_dataset()
+    dataset = simple_cache.to_dataset()
     assert len(dataset) == 1
-    assert dataset["x"][0, 0] == 1.0
-    assert dataset["y"][0, 0] == 2.0
+    assert dataset.get_view(variable_names="x").to_numpy()[0, 0] == 1.0
+    assert dataset.get_view(variable_names="y").to_numpy()[0, 0] == 2.0
 
-    # Check penultimate_entry and last_entry
-    first_jacobian = first_jacobian or {}
     second_jacobian = second_jacobian or {}
-    if second_outputs:
-        first_outputs = {}
-    if second_jacobian:
-        first_jacobian = {}
-    if not first_jacobian and not first_outputs:
-        first_inputs = {}
-    penultimate_entry = CacheEntry(
-        first_inputs,
-        first_outputs,
-        first_jacobian,
-    )
     last_entry = CacheEntry(second_inputs, second_outputs, second_jacobian or {})
-    assert simple_cache.penultimate_entry == penultimate_entry
     assert simple_cache.last_entry == last_entry
 
     # Check __iter__
     entries = [entry for entry in simple_cache]
-    if first_inputs:
-        assert len(entries) == 2
-        assert entries[0] == penultimate_entry
-        assert entries[1] == last_entry
-    else:
-        assert len(entries) == 1
-        assert entries[0] == last_entry
+    assert len(entries) == 1
+    assert entries[0] == last_entry
 
 
 @pytest.mark.parametrize(

@@ -120,7 +120,7 @@ with the contributions of the following members:
 `Altran <https://www.altran.com/>`_,
 `Capgemini <https://www.capgemini.com/>`_,
 `Cerfacs <https://www.cerfacs.fr/en/>`_,
-`ISAE-SUPAERO <https://www.isae-supaero.fr/en/>`_ & `ICA <https://institut-clement-ader.org/>`_,
+`ISAE-SUPAERO <https://www.isae-supaero.fr/en/>`_ & `ICA <https://ica.cnrs.fr/home/>`_,
 and in collaboration with `ONERA <https://www.onera.fr/en>`_.
 This team developed the core elements of |g| by introducing a new paradigm merging dataflow and workflow strategies in order to make design process automation and reconfiguration possible.
 They added various algorithms (MDA, design of experiments, optimization, MDO formulations, etc.) to apply MDO on several test cases, from state-of-the art to industry-oriented ones.

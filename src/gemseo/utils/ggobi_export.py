@@ -16,12 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-GGOBI : interactive data visualization software
-***********************************************
-
-Export data to the XML file format needed by GGOBI
-"""
+"""Export data to the XML file format needed by GGOBI."""
 from __future__ import annotations
 
 import os
@@ -48,23 +43,22 @@ def prettify(elem):
 
 
 def save_data_arrays_to_xml(
-    variables_names: Sequence[str],
+    variable_names: Sequence[str],
     values_array: ndarray,
     file_path: str | Path = "opt_hist.xml",
 ) -> None:
     """Save an optimization history in NumPy format to a xml file to be read by ggobi.
 
     Args:
-        variables_names: The names of the variables.
+        variable_names: The names of the variables.
         values_array: The history of the variables,
             of the form *(number of variables, number of iterations)*.
         file_path: The file path of the generated xml file.
     """
-
     if os.path.exists(file_path):
         os.remove(file_path)
     nb_records = values_array.shape[0]
-    nb_variables = len(variables_names)
+    nb_variables = len(variable_names)
 
     root = Element("ggobidata")
     comment = Comment('DOCTYPE ggobidata SYSTEM "ggobi.dtd"')
@@ -74,7 +68,7 @@ def save_data_arrays_to_xml(
     data = SubElement(ggobidata, "data", attrib={"name": "opt_history"})
     SubElement(data, "description", attrib={"source": "Optimization history"})
     variables = SubElement(data, "variables", attrib={"count": str(nb_variables)})
-    for var in variables_names:
+    for var in variable_names:
         variables_attr = {"name": str(var)}
         SubElement(variables, "realvariable", attrib=variables_attr)
     records = SubElement(

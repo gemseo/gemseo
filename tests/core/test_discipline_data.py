@@ -20,10 +20,10 @@ from copy import deepcopy
 from typing import Any
 from typing import Mapping
 
-import pandas as pd
 import pytest
 from gemseo.core.discipline_data import DisciplineData
 from numpy.testing import assert_array_equal
+from pandas import DataFrame
 
 
 def to_df_key(
@@ -36,12 +36,12 @@ def to_df_key(
 def test_copy():
     """Verify copy()."""
     leaf_data = [0]
-    df = pd.DataFrame(data={"a": leaf_data})
+    df = DataFrame(data={"a": leaf_data})
     data = {"x": df, "y": 0, "z": [0]}
     d = DisciplineData(deepcopy(data))
     d_copy = d.copy()
 
-    assert d.keys() == d_copy.keys()
+    assert list(d.keys()) == list(d_copy.keys())
 
     # Adding a key is not propagated to the copy.
     d["w"] = 0
@@ -49,13 +49,28 @@ def test_copy():
 
     # Item's values are shared.
     assert d["z"] is d_copy["z"]
-    assert d["x"] is d_copy["x"]
-    assert d["x"]["a"] is d_copy["x"]["a"]
+
+    # For data frames 'is' cannot be used, we check indirectly.
+    d["x~a"][0] = 1
+    assert d_copy["x~a"] == d["x~a"]
+
+
+@pytest.mark.parametrize("with_namespace", (True, False))
+def test_copy_keys_namespace(with_namespace):
+    """Verify the copy with keys and namespace."""
+    data = DisciplineData()
+    data["ns:name"] = 0
+    data["other_name"] = 0
+    data_copy = data.copy(
+        keys=("ns:name", "non-existing-name"), with_namespace=with_namespace
+    )
+    prefix = "ns:" if with_namespace else ""
+    assert data_copy.keys() == {f"{prefix}name"}
 
 
 def assert_getitem(
     d: Mapping[str, Any],
-    df: pd.DataFrame,
+    df: DataFrame,
 ) -> None:
     assert d["x"].equals(df)
     assert_array_equal(d[to_df_key("x", "a")], df["a"])
@@ -68,11 +83,16 @@ def assert_getitem(
         d[to_df_key("x", "foo")]
 
 
-def test_getitem():
+@pytest.mark.parametrize("namespace_mapping", ({}, {"z": "ns:z"}))
+def test_getitem(namespace_mapping):
     """Verify __getitem__()."""
-    df = pd.DataFrame(data={"a": [0]})
+    df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0}
-    d = DisciplineData(data)
+    d = DisciplineData(
+        data,
+        input_to_namespaced=namespace_mapping,
+        output_to_namespaced=namespace_mapping,
+    )
 
     assert_getitem(d, df)
 
@@ -84,7 +104,7 @@ def test_getitem():
 def test_len():
     """Verify len()."""
     length = 2
-    df = pd.DataFrame(data=dict.fromkeys(range(length), [0]))
+    df = DataFrame(data=dict.fromkeys(range(length), [0]))
     data = {"x": df, "y": None}
     d = DisciplineData(data)
     assert len(d) == length + 1
@@ -93,7 +113,7 @@ def test_len():
 def test_iter():
     """Verify __iter__()."""
     length = 2
-    df = pd.DataFrame(data=dict.fromkeys(map(str, range(length)), [0]))
+    df = DataFrame(data=dict.fromkeys(map(str, range(length)), [0]))
     data = {"x": df, "y": None}
     d = DisciplineData(data)
 
@@ -105,7 +125,7 @@ def test_iter():
 def test_delitem():
     """Verify __delitem__()."""
     leaf_data = [0]
-    df = pd.DataFrame(data={"a": leaf_data})
+    df = DataFrame(data={"a": leaf_data, "b": leaf_data})
     data = {"x": df, "y": 0}
     d = DisciplineData(data)
 
@@ -116,7 +136,9 @@ def test_delitem():
         del d[to_df_key("x", "foo")]
 
     del d[to_df_key("x", "a")]
-    del d["x"]
+    assert "x~a" not in d
+    del d[to_df_key("x", "b")]
+    assert "x" not in d
     del d["y"]
 
 
@@ -129,11 +151,11 @@ def test_setitem():
 
     # Create a new data frame.
     d[to_df_key("x", "a")] = [0]
-    assert d["x"].equals(pd.DataFrame(data={"a": [0]}))
+    assert d["x"].equals(DataFrame(data={"a": [0]}))
 
     # Extend the data frame.
     d[to_df_key("x", "b")] = [0]
-    assert d["x"].equals(pd.DataFrame(data={"a": [0], "b": [0]}))
+    assert d["x"].equals(DataFrame(data={"a": [0], "b": [0]}))
 
     msg = "Cannot set {} because y is not bound to a pandas DataFrame.".format(
         to_df_key("y", "a")
@@ -144,7 +166,7 @@ def test_setitem():
 
 def test_repr():
     """Verify __repr__()."""
-    df = pd.DataFrame(data={"a": [0]})
+    df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0}
     d = DisciplineData(data)
 
@@ -162,6 +184,7 @@ def test_keys():
 
 def test_init():
     """Verify that creating a DisciplineData from another one shares contents."""
+    assert not DisciplineData()
     data = {}
     d1 = DisciplineData(data)
     d2 = DisciplineData(d1)
@@ -169,10 +192,17 @@ def test_init():
     assert data["x"] == d2["x"]
 
 
-def test_get_ns():
+def test_init_error():
+    """Verify that creating a DisciplineData with a bad key raises an error."""
+    msg = r"The key bad~key shall not contain ~\."
+    with pytest.raises(KeyError, match=msg):
+        DisciplineData({"bad~key": 0})
+
+
+def test_getitem_ns():
     """Verify access of data from keys without namespaces."""
     data = DisciplineData(
-        {"ns:x": 1, "ns:y": 2},
+        {"ns:x": 1, "ns:y": 2, "z": 0},
         input_to_namespaced={"x": "ns:x"},
         output_to_namespaced={"y": "ns:y"},
     )
@@ -185,3 +215,50 @@ def test_get_ns():
     assert data["y"] == 2
     assert data.get("y") == 2
     assert data.get("ns:y") == 2
+
+
+def test_contains():
+    """Verify that the in operator works."""
+    d = DisciplineData({"x": 0})
+    assert "x" in d
+    assert "y" not in d
+
+
+exclude_names = pytest.mark.parametrize(
+    "exclude_names",
+    [
+        (),
+        ["dummy"],
+        ["name"],
+    ],
+)
+
+
+@exclude_names
+def test_update(exclude_names):
+    """Verify the defaults update."""
+    data = DisciplineData({"name": 0})
+    data_before = dict(data)
+    other_data = {"name": 1}
+    data.update(other_data, exclude=exclude_names)
+    for name, value in data.items():
+        if name in exclude_names:
+            assert value == data_before[name]
+        else:
+            assert value == other_data[name]
+
+
+def test_restrict():
+    """Verify the restriction."""
+    data = DisciplineData()
+    data["name"] = 0
+    data["other_name"] = 0
+    data.restrict("name", "non-existing-name")
+    assert data.keys() == {"name"}
+
+
+def test_wrong_data_type():
+    """Tests that the type of the initial data is well checked."""
+    data = ("a",)
+    with pytest.raises(TypeError, match=f"Invalid type for data, got {type(data)}."):
+        DisciplineData(data)

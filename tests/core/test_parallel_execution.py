@@ -23,13 +23,19 @@ import unittest
 from timeit import default_timer as timer
 
 import pytest
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution import DiscParallelLinearization
-from gemseo.core.parallel_execution import ParallelExecution
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_linearization import (
+    DiscParallelLinearization,
+)
 from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
@@ -62,8 +68,7 @@ class TestParallelExecution(unittest.TestCase):
     def test_functional(self):
         """Test the execution of functions in parallel."""
         n = 10
-        function_list = rosen
-        parallel_execution = ParallelExecution(function_list)
+        parallel_execution = CallableParallelExecution([rosen])
         output_list = parallel_execution.execute([[0.5] * i for i in range(1, n + 1)])
         assert output_list == [rosen([0.5] * i) for i in range(1, n + 1)]
 
@@ -75,7 +80,7 @@ class TestParallelExecution(unittest.TestCase):
         )
 
         function_list = [rosen] * n
-        parallel_execution = ParallelExecution(function_list)
+        parallel_execution = CallableParallelExecution(function_list)
         self.assertRaises(
             TypeError,
             parallel_execution.execute,
@@ -84,18 +89,22 @@ class TestParallelExecution(unittest.TestCase):
         )
 
     def test_callable(self):
-        """Test ParallelExecution with a Callable worker."""
+        """Test CallableParallelExecution with a Callable worker."""
         n = 2
         function_list = [CallableWorker(), CallableWorker()]
-        parallel_execution = ParallelExecution(function_list, use_threading=True)
+        parallel_execution = CallableParallelExecution(
+            function_list, use_threading=True
+        )
         output_list = parallel_execution.execute([1] * n)
         assert output_list == [2] * n
 
     def test_callable_exception(self):
-        """Test ParallelExecution with a Callable worker."""
+        """Test CallableParallelExecution with a Callable worker."""
         n = 2
         function_list = [function_raising_exception, CallableWorker()]
-        parallel_execution = ParallelExecution(function_list, use_threading=True)
+        parallel_execution = CallableParallelExecution(
+            function_list, use_threading=True
+        )
         parallel_execution.execute([1] * n)
 
     def test_disc_parallel_doe_scenario(self):
@@ -114,7 +123,7 @@ class TestParallelExecution(unittest.TestCase):
             }
         )
         assert (
-            len(scenario.formulation.opt_problem.database.get_func_history("y_1"))
+            len(scenario.formulation.opt_problem.database.get_function_history("y_1"))
             == n_samples
         )
 
@@ -123,7 +132,7 @@ class TestParallelExecution(unittest.TestCase):
         s_1 = Sellar1()
         n = 10
         parallel_execution = DiscParallelExecution(
-            s_1, n_processes=2, wait_time_between_fork=0.1
+            [s_1], n_processes=2, wait_time_between_fork=0.1
         )
         input_list = []
         for i in range(n):
@@ -140,10 +149,10 @@ class TestParallelExecution(unittest.TestCase):
 
         assert s_1.n_calls == n
 
-        func_gen = MDOFunctionGenerator(s_1)
+        func_gen = MDODisciplineAdapterGenerator(s_1)
         y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
-        parallel_execution = ParallelExecution(y_0_func)
+        parallel_execution = CallableParallelExecution([y_0_func])
         input_list = [array([i, 0.0], dtype=complex128) for i in range(n)]
         output_list = parallel_execution.execute(input_list)
 
@@ -204,14 +213,14 @@ class TestParallelExecution(unittest.TestCase):
 
     def test_async_call(self):
         disc = create_discipline("SobieskiMission")
-        func = MDOFunctionGenerator(disc).get_function([X_SHARED], ["y_4"])
+        func = MDODisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
 
         x_list = [i * ones(6) for i in range(4)]
 
         def do_work():
             return list(map(func, x_list))
 
-        par = ParallelExecution([func] * 2, n_processes=2)
+        par = CallableParallelExecution([func] * 2, n_processes=2)
         par.execute(
             [i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work
         )
@@ -227,7 +236,7 @@ def test_not_worker(capfd):
         capfd: Fixture capture outputs sent to `stdout` and
             `stderr`.
     """
-    parallel_execution = ParallelExecution(["toto"])
+    parallel_execution = CallableParallelExecution(["toto"])
     parallel_execution.execute([[0.5]])
     _, err = capfd.readouterr()
     assert err
@@ -241,7 +250,7 @@ def test_par_discipline_linearization():
     out_names = ["y_1"]
     sellar_par_lin.add_differentiated_outputs(out_names)
 
-    parallel_execution = DiscParallelLinearization(sellar_par_lin)
+    parallel_execution = DiscParallelLinearization([sellar_par_lin])
 
     input_list = [
         {
@@ -265,7 +274,7 @@ def test_par_discipline_lin_no_jac():
     """Test the parallel linearization for a single worker with no defined outputs."""
     sellar_par_lin = Sellar1()
 
-    parallel_execution = DiscParallelLinearization(sellar_par_lin)
+    parallel_execution = DiscParallelLinearization([sellar_par_lin])
 
     input_list = [
         {
@@ -295,7 +304,7 @@ def f(x: float = 0.0) -> float:
 
 @pytest.mark.parametrize(
     "exceptions,raises_exception",
-    [(None, False), ((ValueError,), True), ((RuntimeError,), False)],
+    [((), False), ((ValueError,), True), ((RuntimeError,), False)],
 )
 def test_re_raise_exceptions(exceptions, raises_exception):
     """Test that exceptions inside workers are properly handled.
@@ -305,7 +314,7 @@ def test_re_raise_exceptions(exceptions, raises_exception):
         raises_exception: Whether the input exception matches the one in the
             reference function.
     """
-    parallel_execution = ParallelExecution(
+    parallel_execution = CallableParallelExecution(
         [f],
         n_processes=2,
         exceptions_to_re_raise=exceptions,

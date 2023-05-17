@@ -29,9 +29,13 @@ from typing import Sequence
 from typing import Sized
 from typing import TYPE_CHECKING
 
-from gemseo.core.derivatives.derivation_modes import AVAILABLE_APPROX_MODES
-from gemseo.core.derivatives.derivation_modes import FINITE_DIFFERENCES
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
+from scipy.sparse import spmatrix
+
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.error_estimators import EPSILON
+from gemseo.utils.derivatives.gradient_approximator_factory import (
+    GradientApproximatorFactory,
+)
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -47,7 +51,6 @@ from numpy import (
     atleast_2d,
     concatenate,
     divide,
-    finfo,
     ndarray,
     zeros,
 )
@@ -58,7 +61,6 @@ from gemseo.utils.data_conversion import (
 )
 from pathlib import Path
 
-EPSILON = finfo(float).eps
 LOGGER = logging.getLogger(__name__)
 
 
@@ -70,13 +72,13 @@ class DisciplineJacApprox:
     def __init__(
         self,
         discipline: MDODiscipline,
-        approx_method: str = FINITE_DIFFERENCES,
+        approx_method: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: Number | Iterable[Number] = 1e-7,
         parallel: bool = False,
         n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0,
-    ):
+    ) -> None:
         """
         Args:
             discipline: The discipline
@@ -99,13 +101,15 @@ class DisciplineJacApprox:
                 you shall use multiprocessing.
             wait_time_between_fork: The time waited between two forks
                 of the process / thread.
-        """
-        from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+        """  # noqa:D205 D212 D415
+        from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+            MDODisciplineAdapterGenerator,
+        )
 
         self.discipline = discipline
         self.approx_method = approx_method
         self.step = step
-        self.generator = MDOFunctionGenerator(discipline)
+        self.generator = MDODisciplineAdapterGenerator(discipline)
         self.func = None
         self.approximator = None
         self.auto_steps = {}
@@ -120,7 +124,7 @@ class DisciplineJacApprox:
         self,
         outputs: Sequence[str],
         inputs: Sequence[str],
-    ):
+    ) -> None:
         """Create the Jacobian approximation class.
 
         Args:
@@ -133,11 +137,7 @@ class DisciplineJacApprox:
         self.func = self.generator.get_function(
             input_names=inputs, output_names=outputs
         )
-        if self.approx_method not in AVAILABLE_APPROX_MODES:
-            raise ValueError(
-                f"Unknown Jacobian approximation method {self.approx_method}."
-            )
-        factory = GradientApproximationFactory()
+        factory = GradientApproximatorFactory()
         self.approximator = factory.create(
             self.approx_method,
             self.func,
@@ -194,7 +194,7 @@ class DisciplineJacApprox:
             )
             LOGGER.info(errors)
         self.discipline.cache_tol = old_cache_tol
-        data = self.discipline.local_data
+        data = self.discipline.default_inputs or self.discipline.local_data
         data_sizes = {key: val.size for key, val in data.items()}
         self.auto_steps = split_array_to_dict_of_arrays(steps_opt, data_sizes, inputs)
         return errors, self.auto_steps
@@ -336,9 +336,9 @@ class DisciplineJacApprox:
         Returns:
             Whether the analytical Jacobian is correct.
         """
-        inputs_indices = input_indices = outputs_indices = None
+        input_names_to_indices = input_indices = output_names_to_indices = None
         if indices is not None:
-            input_indices, inputs_indices = self._compute_variables_indices(
+            input_indices, input_names_to_indices = self._compute_variable_indices(
                 indices,
                 inputs,
                 {name: len(self.discipline.default_inputs[name]) for name in inputs},
@@ -360,26 +360,26 @@ class DisciplineJacApprox:
         succeed = True
 
         if indices is not None:
-            outputs_sizes = {
+            output_sizes = {
                 output_name: output_jacobian[next(iter(output_jacobian))].shape[0]
                 for output_name, output_jacobian in approximated_jacobian.items()
             }
-            output_indices, outputs_indices = self._compute_variables_indices(
-                indices, outputs, outputs_sizes
+            output_indices, output_names_to_indices = self._compute_variable_indices(
+                indices, outputs, output_sizes
             )
 
-        if inputs_indices is None:
-            inputs_indices = Ellipsis
+        if input_names_to_indices is None:
+            input_names_to_indices = Ellipsis
 
-        if outputs_indices is None:
-            outputs_indices = Ellipsis
+        if output_names_to_indices is None:
+            output_names_to_indices = Ellipsis
 
         for output_name, output_jacobian in approximated_jacobian.items():
             for input_name, approx_jac in output_jacobian.items():
                 computed_jac = analytic_jacobian[output_name][input_name]
                 if indices is not None:
-                    row_idx = atleast_2d(outputs_indices[output_name]).T
-                    col_idx = inputs_indices[input_name]
+                    row_idx = atleast_2d(output_names_to_indices[output_name]).T
+                    col_idx = input_names_to_indices[input_name]
                     computed_jac = computed_jac[row_idx, col_idx]
                     approx_jac = approx_jac[row_idx, col_idx]
 
@@ -397,6 +397,8 @@ class DisciplineJacApprox:
                     )
                     LOGGER.error(msg)
                 else:
+                    if isinstance(computed_jac, spmatrix):
+                        computed_jac = computed_jac.toarray()
                     success_loc = allclose(
                         computed_jac, approx_jac, atol=threshold, rtol=threshold
                     )
@@ -443,10 +445,10 @@ class DisciplineJacApprox:
         return succeed
 
     @staticmethod
-    def _compute_variables_indices(
+    def _compute_variable_indices(
         indices: Mapping[str, int | Sequence[int] | Ellipsis | slice],
-        variables_names: Iterable[str],
-        variables_sizes: Mapping[str, int],
+        variable_names: Iterable[str],
+        variable_sizes: Mapping[str, int],
     ) -> list[int]:
         """Return indices.
 
@@ -460,16 +462,16 @@ class DisciplineJacApprox:
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-            variables_names: The names of the variables.
+            variable_names: The names of the variables.
 
         Returns:
             The indices of the variables.
         """
         indices_sequence = []
-        variables_indices = {}
+        names_to_indices = {}
         variable_position = 0
-        for variable_name in variables_names:
-            variable_size = variables_sizes[variable_name]
+        for variable_name in variable_names:
+            variable_size = variable_sizes[variable_name]
             variable_indices = list(range(variable_size))
             indices_sequence.append(indices.get(variable_name, variable_indices))
 
@@ -482,7 +484,7 @@ class DisciplineJacApprox:
             if indices_sequence[-1] in [Ellipsis, None]:
                 indices_sequence[-1] = variable_indices
 
-            variables_indices[variable_name] = indices_sequence[-1]
+            names_to_indices[variable_name] = indices_sequence[-1]
             indices_sequence[-1] = [
                 variable_index + variable_position
                 for variable_index in indices_sequence[-1]
@@ -490,7 +492,7 @@ class DisciplineJacApprox:
             variable_position += variable_size
 
         indices_sequence = [item for sublist in indices_sequence for item in sublist]
-        return indices_sequence, variables_indices
+        return indices_sequence, names_to_indices
 
     @staticmethod
     def __concatenate_jacobian_per_output_names(
@@ -622,109 +624,3 @@ class DisciplineJacApprox:
         )
         save_show_figure(fig, show, file_path)
         return fig
-
-
-def comp_best_step(
-    f_p: ndarray,
-    f_x: ndarray,
-    f_m: ndarray,
-    step: float,
-    epsilon_mach: float = EPSILON,
-) -> tuple[ndarray | None, ndarray | None, float]:
-    r"""Compute the optimal step for finite differentiation.
-
-    Applied to a forward first order finite differences gradient approximation.
-
-    Require a first evaluation of the perturbed functions values.
-
-    The optimal step is reached when the truncation error
-    (cut in the Taylor development),
-    and the numerical cancellation errors
-    (round-off when doing :math:`f(x+step)-f(x))` are equal.
-
-    See Also:
-        https://en.wikipedia.org/wiki/Numerical_differentiation
-        and *Numerical Algorithms and Digital Representation*,
-        Knut Morken, Chapter 11, "Numerical Differenciation"
-
-    Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
-        f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step :math:`x-\\delta_x`.
-        step: The differentiation step :math:`\\delta_x`.
-
-    Returns:
-        The estimation of the truncation error.
-        None if the Hessian approximation is too small to compute the optimal step.
-        The estimation of the cancellation error.
-        None if the Hessian approximation is too small to compute the optimal step.
-        The optimal step.
-    """
-    hess = approx_hess(f_p, f_x, f_m, step)
-
-    if abs(hess) < 1e-10:
-        LOGGER.debug("Hessian approximation is too small, can't compute optimal step.")
-        return None, None, step
-
-    opt_step = 2 * (epsilon_mach * abs(f_x) / abs(hess)) ** 0.5
-    trunc_error = compute_truncature_error(hess, step)
-    cancel_error = compute_cancellation_error(f_x, opt_step)
-    return trunc_error, cancel_error, opt_step
-
-
-def compute_truncature_error(
-    hess: ndarray,
-    step: float,
-) -> ndarray:
-    r"""Estimate the truncation error.
-
-    Defined for a first order finite differences scheme.
-
-    Args:
-        hess: The second-order derivative :math:`d^2f/dx^2`.
-        step: The differentiation step.
-
-    Returns:
-        The truncation error.
-    """
-    return abs(hess) * step / 2
-
-
-def compute_cancellation_error(
-    f_x: ndarray,
-    step: float,
-    epsilon_mach=EPSILON,
-) -> ndarray:
-    r"""Estimate the cancellation error.
-
-    This is the round-off when doing :math:`f(x+\\delta_x)-f(x)`.
-
-    Args:
-        f_x: The value of the function at the current step :math:`x`.
-        step: The step used for the calculations of the perturbed functions values.
-        epsilon_mach: The machine epsilon.
-
-    Returns:
-        The cancellation error.
-    """
-    return 2 * epsilon_mach * abs(f_x) / step
-
-
-def approx_hess(
-    f_p: ndarray,
-    f_x: ndarray,
-    f_m: ndarray,
-    step: float,
-) -> ndarray:
-    r"""Compute the second-order approximation of the Hessian matrix :math:`d^2f/dx^2`.
-
-    Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
-        f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step :math:`x-\\delta_x`.
-        step: The differentiation step :math:`\\delta_x`.
-
-    Returns:
-        The approximation of the Hessian matrix at the current step :math:`x`.
-    """
-    return (f_p - 2 * f_x + f_m) / (step**2)

@@ -27,7 +27,6 @@ from typing import Sequence
 
 from numpy import atleast_2d
 from numpy import concatenate
-from numpy import dot
 from numpy import ndarray
 from numpy.linalg import lstsq
 
@@ -35,7 +34,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
@@ -65,13 +64,6 @@ class MDAJacobi(MDA):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
 
-    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
-        "parallel_execution",
-        "sizes",
-        "acceleration",
-        "n_processes",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -84,7 +76,7 @@ class MDAJacobi(MDA):
         use_threading: bool = True,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
@@ -107,7 +99,7 @@ class MDAJacobi(MDA):
                 This is important to note
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
-        """
+        """  # noqa:D205 D212 D415
         self.n_processes = n_processes
         super().__init__(
             disciplines,
@@ -123,7 +115,6 @@ class MDAJacobi(MDA):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self._set_default_inputs()
         self._compute_input_couplings()
         self.acceleration = acceleration
         self._dx_n = []
@@ -139,10 +130,10 @@ class MDAJacobi(MDA):
     def _compute_input_couplings(self) -> None:
         """Compute all the coupling variables that are inputs of the MDA.
 
-        This must be overloaded here because the Jacobi algorithm induces a delay between
-        the couplings, the strong couplings may be fully resolved but the weak ones may
-        need one more iteration. The base MDA class uses strong couplings only which is
-        not satisfying here if all disciplines are not strongly coupled.
+        This must be overloaded here because the Jacobi algorithm induces a delay
+        between the couplings, the strong couplings may be fully resolved but the weak
+        ones may need one more iteration. The base MDA class uses strong couplings only
+        which is not satisfying here if all disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
@@ -174,7 +165,7 @@ class MDAJacobi(MDA):
         for discipline in self.disciplines:
             self.local_data.update(discipline.get_output_data())
 
-    def get_expected_workflow(self) -> LoopExecSequence:
+    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
         sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)
         if self.n_processes > 1:
             sub_workflow = ExecutionSequenceFactory.parallel(self.disciplines)
@@ -242,7 +233,6 @@ class MDAJacobi(MDA):
         Returns:
             The next iterate.
         """
-
         self._dx_n.append(new_couplings - current_couplings)
         self._g_x_n.append(new_couplings)
         coupl_names = self._input_couplings
@@ -322,7 +312,7 @@ class MDAJacobi(MDA):
             The next iterate.
         """
         d_dxn = dxn - dxn_1
-        acc = (cgn - cgn_1) * dot(d_dxn, dxn) / dot(d_dxn, d_dxn)
+        acc = (cgn - cgn_1) * (d_dxn.T @ dxn) / (d_dxn.T @ d_dxn)
         return cgn - acc
 
     def _compute_m2d_acc(

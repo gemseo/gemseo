@@ -65,7 +65,7 @@ class Power2(OptimizationProblem):
             f_type="obj",
             jac=self.pow2_jac,
             expr="x[0]**2 + x[1]**2 + x[2]**2",
-            args=["x"],
+            input_names=["x"],
         )
         self.add_ineq_constraint(
             MDOFunction(
@@ -74,7 +74,7 @@ class Power2(OptimizationProblem):
                 f_type="ineq",
                 jac=self.ineq_constraint1_jac,
                 expr="0.5 - x[0]**3",
-                args=["x"],
+                input_names=["x"],
             )
         )
 
@@ -85,7 +85,7 @@ class Power2(OptimizationProblem):
                 f_type="ineq",
                 jac=self.ineq_constraint2_jac,
                 expr="0.5 - x[1]**3",
-                args=["x"],
+                input_names=["x"],
             )
         )
 
@@ -96,7 +96,7 @@ class Power2(OptimizationProblem):
                 f_type="eq",
                 jac=self.eq_constraint_jac,
                 expr="0.9 - x[2]**3",
-                args=["x"],
+                input_names=["x"],
             )
         )
         self.iter_error = 0

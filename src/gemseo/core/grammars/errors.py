@@ -16,5 +16,5 @@
 from __future__ import annotations
 
 
-class InvalidDataException(Exception):
-    """Exception raised when data is not valid against grammar rules."""
+class InvalidDataError(Exception):
+    """Error raised when data is not valid against a grammar."""

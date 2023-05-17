@@ -34,7 +34,7 @@ dedicated to the detection of patterns in unlabeled data.
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.unsupervised`,
-   :mod:`~gemseo.mlearning.cluster.cluster`
+   :mod:`~gemseo.mlearning.clustering.clustering`
 
 When data can be separated into at least two categories by a human,
 supervised learning can start with classification
@@ -81,8 +81,8 @@ in such a way that the data properties have the same order of magnitude.
 
 .. seealso::
 
-   :mod:`~gemseo.mlearning.qual_measure.quality_measure`,
-   :mod:`~gemseo.mlearning.transform.transformer`
+   :mod:`~gemseo.mlearning.quality_measures.quality_measure`,
+   :mod:`~gemseo.mlearning.transformers.transformer`
 
 Lastly,
 a machine learning algorithm often depends on hyperparameters
@@ -104,6 +104,7 @@ from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Mapping
 from typing import MutableMapping
 from typing import Optional
@@ -113,12 +114,12 @@ from typing import Union
 
 from numpy import ndarray
 
-from gemseo.core.dataset import Dataset
-from gemseo.mlearning.transform.transformer import Transformer
-from gemseo.mlearning.transform.transformer import TransformerFactory
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.transformers.transformer import Transformer
+from gemseo.mlearning.transformers.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -142,7 +143,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
     """
 
-    learning_set: Dataset
+    learning_set: IODataset
     """The learning dataset."""
 
     parameters: dict[str, MLAlgoParameterType]
@@ -153,8 +154,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     The values are instances of :class:`.Transformer` while the keys are the names of
     either the variables or the groups of variables, e.g. "inputs" or "outputs" in the
-    case of the regression algorithms. If a group is specified, the :class:`.Transformer`
-    will be applied to all the variables of this group.
+    case of the regression algorithms. If a group is specified, the
+    :class:`.Transformer` will be applied to all the variables of this group.
     """
 
     algo: Any
@@ -163,8 +164,9 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     SHORT_ALGO_NAME: ClassVar[str] = "MLAlgo"
     """The short name of the machine learning algorithm, often an acronym.
 
-    Typically used for composite names, e.g. ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"``
-    or ``f"{algo.SHORT_ALGO_NAME}_{discipline.name}"``.
+    Typically used for composite names, e.g.
+    ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"`` or
+    ``f"{algo.SHORT_ALGO_NAME}_{discipline.name}"``.
     """
 
     LIBRARY: ClassVar[str] = ""
@@ -180,7 +182,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = IDENTITY,
         **parameters: MLAlgoParameterType,
     ) -> None:
@@ -214,12 +216,12 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             }
 
         self.algo = None
-        self.sizes = deepcopy(self.learning_set.sizes)
+        self.sizes = deepcopy(self.learning_set.variable_names_to_n_components)
         self._trained = False
         self._learning_samples_indices = range(len(self.learning_set))
         transformer_keys = set(self.transformer)
-        for group in self.learning_set.groups:
-            names = self.learning_set.get_names(group)
+        for group in self.learning_set.group_names:
+            names = self.learning_set.get_variable_names(group)
             if group in self.transformer and transformer_keys & set(names):
                 raise ValueError(
                     "An MLAlgo cannot have both a transformer "
@@ -304,7 +306,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             )
         return str(msg)
 
-    def save(
+    def to_pickle(
         self,
         directory: str | None = None,
         path: str | Path = ".",

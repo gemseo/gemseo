@@ -19,17 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
+from gemseo import execute_algo
+from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import execute_algo
-from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 
 DIR_PATH = Path(__file__).parent
@@ -39,46 +38,58 @@ POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 
 def test_get_constraints():
     """Test that the constraints of the problem are retrieved correctly."""
-    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    problem = OptimizationProblem.from_hdf(POWER2_PATH)
     view = OptHistoryView(problem)
 
     _, cstr = view._get_constraints(["toto", "ineq1"])
     assert len(cstr) == 1
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
-@image_comparison(
+@pytest.mark.parametrize(
+    "obj_relative,baseline_images",
     [
-        "power2_2_variables",
-        "power2_2_objective",
-        "power2_2_x_xstar",
-        "power2_2_hessian_approximation",
-        "power2_2_ineq_constraints",
-        "power2_2_eq_constraints",
-    ]
+        (
+            False,
+            [
+                "power2_2_variables",
+                "power2_2_objective",
+                "power2_2_x_xstar",
+                "power2_2_hessian_approximation",
+                "power2_2_ineq_constraints",
+                "power2_2_eq_constraints",
+            ],
+        ),
+        (
+            True,
+            [
+                "power2_2_variables",
+                "power2_2_objective_relative",
+                "power2_2_x_xstar",
+                "power2_2_hessian_approximation",
+                "power2_2_ineq_constraints",
+                "power2_2_eq_constraints",
+            ],
+        ),
+    ],
 )
-def test_opt_hist_const(pyplot_close_all):
-    """Test that a problem with constraints is properly rendered.
-
-    Args:
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
-    """
-    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+@image_comparison(None)
+def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
+    """Test that a problem with constraints is properly rendered."""
+    problem = OptimizationProblem.from_hdf(POWER2_PATH)
     post = execute_post(
         problem,
         "OptHistoryView",
         show=False,
         save=False,
-        variables_names=["x"],
+        variable_names=["x"],
         file_path="power2_2",
         obj_min=0.0,
         obj_max=5.0,
+        obj_relative=obj_relative,
     )
     post.figures
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "problem_path,baseline_images",
     [
@@ -115,7 +126,7 @@ def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all)
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(problem_path)
+    problem = OptimizationProblem.from_hdf(problem_path)
     post = execute_post(problem, "OptHistoryView", show=False, save=False)
     post.figures
 
@@ -181,7 +192,6 @@ def test_common_scenario(
     opt.execute(save=False)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python 3.8 or greater")
 @pytest.mark.parametrize(
     "case,baseline_images",
     [
@@ -224,7 +234,7 @@ def test_461(case, baseline_images):
         problem.objective = problem.objective = MDOFunction(
             lambda x: array([x[0] ** 2 + x[1] ** 2]), "func"
         )
-    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
     execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
     execute_post(problem, "OptHistoryView", save=False, show=False)

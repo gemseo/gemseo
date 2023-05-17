@@ -56,13 +56,11 @@ class XLSDiscipline(MDODiscipline):
         is only working under Windows and macOS.
     """
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_xls_file_path",
-        "input_names",
-        "output_names",
-        "macro_name",
-        "_copy_xls_at_setstate",
-        "_recreate_book_at_run",
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+        [
+            "_xls_app",
+            "_book",
+        ]
     )
 
     def __init__(
@@ -151,7 +149,7 @@ class XLSDiscipline(MDODiscipline):
         self.__create_book(quit_xls_at_exit=quit_xls_at_exit)
         self._init_grammars()
         self._init_defaults()
-        self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        self.re_exec_policy = self.ReExecutionPolicy.DONE
         if recreate_book_at_run or copy_xls_at_setstate:
             self.__reset_xls_objects()
 
@@ -201,7 +199,7 @@ class XLSDiscipline(MDODiscipline):
                 "that define the outputs of the discipline"
             )
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.__reset_xls_objects()
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:
@@ -245,8 +243,8 @@ class XLSDiscipline(MDODiscipline):
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
         self.input_names = self.__read_sheet_col("Inputs")
         self.output_names = self.__read_sheet_col("Outputs")
-        self.input_grammar.update(self.input_names)
-        self.output_grammar.update(self.output_names)
+        self.input_grammar.update_from_names(self.input_names)
+        self.output_grammar.update_from_names(self.output_names)
 
     def _init_defaults(self) -> None:
         """Initialize the default input values.

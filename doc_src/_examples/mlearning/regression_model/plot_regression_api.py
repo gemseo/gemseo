@@ -27,28 +27,28 @@ applied to regression models.
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_design_space
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.api import get_regression_models
-from gemseo.mlearning.api import get_regression_options
+from gemseo import configure_logger
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.mlearning import create_regression_model
+from gemseo.mlearning import get_regression_models
+from gemseo.mlearning import get_regression_options
 
 configure_logger()
 
 
-###############################################################################
+# %%
 # Get available regression models
 # -------------------------------
 print(get_regression_models())
 
-###############################################################################
+# %%
 # Get regression model options
 # ----------------------------
 print(get_regression_options("GaussianProcessRegressor"))
 
-###############################################################################
+# %%
 # Create regression model
 # -----------------------
 expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
@@ -65,7 +65,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "fullfact", "n_samples": 9})
 
-dataset = scenario.export_to_dataset(opt_naming=False)
+dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", data=dataset)
 model.learn()
 

@@ -86,14 +86,14 @@ To be used, if your :class:`.MDODiscipline` of interest does not exist, you must
 What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once a sub-class of :class:`.MDODiscipline` is defined, an instance of this discipline can be created from the :meth:`~gemseo.api.create_discipline` API function.
+Once a sub-class of :class:`.MDODiscipline` is defined, an instance of this discipline can be created from the :func:`.create_discipline` API function.
 
 Furthermore, many disciplines inheriting from :class:`.MDODiscipline` are already implemented in |g|.
-Use the :meth:`~gemseo.api.get_available_disciplines` API function to discover them:
+Use the :func:`.get_available_disciplines` API function to discover them:
 
 .. code::
 
-   from gemseo.api import get_available_disciplines
+   from gemseo import get_available_disciplines
 
    get_available_disciplines()
 
@@ -121,20 +121,20 @@ which results in:
 How to instantiate an existing :class:`.MDODiscipline`?
 ***************************************************************************
 
-We can easily instantiate an internal discipline by means of the :meth:`~gemseo.api.create_discipline`, e.g.:
+We can easily instantiate an internal discipline by means of the :func:`.create_discipline`, e.g.:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     sellar_system = create_discipline('SellarSystem')
 
-We can easily instantiate multiple built-in disciplines by means of the :meth:`~gemseo.api.create_discipline` method,
+We can easily instantiate multiple built-in disciplines by means of the :func:`.create_discipline` method,
 using a list of discipline names rather than a single discipline name, e.g.:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
@@ -146,12 +146,12 @@ the third one is an instance of :class:`.SellarSystem`.
 .. note::
 
    If the constructor of a discipline has specific arguments,
-   these arguments can be passed into a :code:`dict` to the :meth:`~gemseo.api.create_discipline` method,
+   these arguments can be passed into a :code:`dict` to the :func:`.create_discipline` method,
    e.g.:
 
    .. code::
 
-      from gemseo.api import create_discipline
+      from gemseo import create_discipline
 
       discipline = create_discipline('MyDisciplineWithArguments', **kwargs)
 
@@ -159,11 +159,11 @@ the third one is an instance of :class:`.SellarSystem`.
 
 .. note::
 
-    We can easily instantiate an external discipline by means of the :meth:`~gemseo.api.create_discipline` (see :ref:`extending-gemseo`):
+    We can easily instantiate an external discipline by means of the :func:`.create_discipline` (see :ref:`extending-gemseo`):
 
     .. code::
 
-        from gemseo.api import create_discipline
+        from gemseo import create_discipline
 
         discipline = create_discipline('MyExternalDiscipline')
 
@@ -175,19 +175,19 @@ either using the default cache strategy, e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.SIMPLE_CACHE)
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.SIMPLE)
 
 or the HDF5 cache strategy with the discipline name as node name (here :code:`SellarSystem`), e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.HDF5_CACHE, cache_hdf_file='cached_data.hdf5')
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5')
 
 or the HDF5 cache strategy with a user-defined name as node name (here :code:`node`), e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.HDF5_CACHE, cache_hdf_file='cached_data.hdf5', cache_hdf_node_name='node')
+   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_path='node')
 
 .. note::
 

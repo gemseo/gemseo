@@ -27,9 +27,9 @@ from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
+from gemseo.datasets.dataset import Dataset
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
@@ -43,18 +43,9 @@ class DOEScenario(Scenario):
     This DOE must be implemented in a :class:`.DOELibrary`.
     """
 
-    seed: int
-    """The seed used by the random number generators for reproducibility.
-
-    This seed is initialized at 0 and each call to :meth:`.execute` increments it before
-    using it.
-    """
-
     # Constants for input variables in json schema
     N_SAMPLES = "n_samples"
     EVAL_JAC = "eval_jac"
-    SEED = "seed"
-    _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + ("seed",)
 
     def __init__(  # noqa: D107
         self,
@@ -63,7 +54,7 @@ class DOEScenario(Scenario):
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
@@ -78,16 +69,13 @@ class DOEScenario(Scenario):
             maximize_objective=maximize_objective,
             **formulation_options,
         )
-        self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
-        self.__samples = None
+        self.__samples = ()
 
     def _init_algo_factory(self) -> None:
-        self._algo_factory = DOEFactory()
+        self._algo_factory = DOEFactory(use_cache=True)
 
     def _run_algorithm(self) -> None:
-        self.seed += 1
-
         algo_name = self.local_data[self.ALGO]
         options = self.local_data.get(self.ALGO_OPTIONS)
         if options is None:
@@ -105,39 +93,43 @@ class DOEScenario(Scenario):
             self._lib = lib
             self._algo_name = algo_name
 
-        if self.SEED in lib.opt_grammar and self.SEED not in options:
-            options[self.SEED] = self.seed
-
+        options = dict(options)
         if self.N_SAMPLES in lib.opt_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in options:
                 LOGGER.warning(
-                    "Double definition of algorithm option n_samples, keeping value: %s.",
+                    "Double definition of algorithm option n_samples, "
+                    "keeping value: %s.",
                     n_samples,
                 )
             options[self.N_SAMPLES] = n_samples
 
         self.optimization_result = lib.execute(self.formulation.opt_problem, **options)
         self.__samples = lib.samples
-
         return self.optimization_result
 
-    def _update_grammar_input(self) -> None:
-        self.input_grammar.update(dict(algo=str, n_samples=int, algo_options=dict))
-        for name in ("n_samples", "algo_options"):
-            self.input_grammar.required_names.remove(name)
+    def _update_input_grammar(self) -> None:  # noqa: D102
+        super()._update_input_grammar()
+        if self.grammar_type == self.GrammarType.SIMPLE:
+            self.input_grammar.update_from_types(
+                {
+                    self.EVAL_JAC: bool,
+                    "n_samples": int,
+                    "algo_options": dict,
+                }
+            )
+            for name in ("n_samples", "algo_options"):
+                self.input_grammar.required_names.remove(name)
 
-    def export_to_dataset(  # noqa: D102
+    def to_dataset(  # noqa: D102
         self,
         name: str | None = None,
-        by_group: bool = True,
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,
     ) -> Dataset:
-        return self.formulation.opt_problem.export_to_dataset(
+        return self.formulation.opt_problem.to_dataset(
             name=name,
-            by_group=by_group,
             categorize=categorize,
             opt_naming=opt_naming,
             export_gradients=export_gradients,

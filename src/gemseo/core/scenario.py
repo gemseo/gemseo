@@ -40,18 +40,19 @@ from numpy import ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.datasets.dataset import Dataset
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
@@ -61,25 +62,21 @@ ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, flo
 class Scenario(MDODiscipline):
     """Base class for the scenarios.
 
-    The instantiation of a :class:`.Scenario`
-    creates an :class:`.OptimizationProblem`,
-    by linking :class:`.MDODiscipline` objects with an :class:`.MDOFormulation`
-    and defining both the objective to minimize or maximize
-    and the :class:`.DesignSpace` on which to solve the problem.
-    Constraints can also be added to the :class:`.OptimizationProblem`
-    with the :meth:`.Scenario.add_constraint` method,
-    as well as observables with the :meth:`.Scenario.add_observable` method.
+    The instantiation of a :class:`.Scenario` creates an :class:`.OptimizationProblem`,
+    by linking :class:`.MDODiscipline` objects with an :class:`.MDOFormulation` and
+    defining both the objective to minimize or maximize and the :class:`.DesignSpace` on
+    which to solve the problem. Constraints can also be added to the
+    :class:`.OptimizationProblem` with the :meth:`.Scenario.add_constraint` method, as
+    well as observables with the :meth:`.Scenario.add_observable` method.
 
-    Then,
-    the :meth:`.Scenario.execute` method takes
-    a driver (see :class:`.DriverLib`) with options as input data
-    and uses it to solve the optimization problem.
-    This driver is in charge of executing the multidisciplinary process.
+    Then, the :meth:`.Scenario.execute` method takes a driver (see
+    :class:`.DriverLibrary`) with options as input data and uses it to solve the
+    optimization problem. This driver is in charge of executing the multidisciplinary
+    process.
 
-    To view the results,
-    use the :meth:`.Scenario.post_process` method after execution
-    with one of the available post-processors
-    that can be listed by :attr:`.Scenario.posts`.
+    To view the results, use the :meth:`.Scenario.post_process` method after execution
+    with one of the available post-processors that can be listed by
+    :attr:`.Scenario.posts`.
     """
 
     formulation: MDOFormulation
@@ -94,6 +91,7 @@ class Scenario(MDODiscipline):
     post_factory: PostFactory | None
     """The factory for post-processors if any."""
 
+    DifferentiationMethod = OptimizationProblem.DifferentiationMethod
     # Constants for input variables in json schema
     X_0 = "x_0"
     U_BOUNDS = "u_bounds"
@@ -103,21 +101,14 @@ class Scenario(MDODiscipline):
     activate_input_data_check = True
     activate_output_data_check = True
 
-    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
-        "_algo_name",
-        "_algo_factory",
-        "clear_history_before_run",
-        "formulation",
-    )
-
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str | None = None,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
     ) -> None:
@@ -135,9 +126,6 @@ class Scenario(MDODiscipline):
                 e.g. :class:`.IDF` with the coupling variables).
             name: The name to be given to this scenario.
                 If ``None``, use the name of the class.
-            grammar_type: The type of grammar to declare the input and output variables
-                either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
-                or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options of the :class:`.MDOFormulation`.
         """  # noqa: D205, D212, D415
@@ -220,7 +208,7 @@ class Scenario(MDODiscipline):
 
     def set_differentiation_method(
         self,
-        method: str | None = "user",
+        method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         step: float = 1e-6,
         cast_default_inputs_to_complex: bool = False,
     ) -> None:
@@ -233,18 +221,13 @@ class Scenario(MDODiscipline):
         that they are ``ndarray`` with ``dtype`` ``float64``.
 
         Args:
-            method: The method to use to differentiate the process,
-                either ``"user"``, ``"finite_differences"``, ``"complex_step"`` or
-                ``"no_derivatives"``, which is equivalent to ``None``.
+            method: The method to use to differentiate the process.
             step: The finite difference step.
             cast_default_inputs_to_complex: Whether to cast all float default inputs
                 of the scenario's disciplines if the selected method is
                 ``"complex_step"``.
         """
-        if method is None:
-            method = OptimizationProblem.NO_DERIVATIVES
-
-        elif method == OptimizationProblem.COMPLEX_STEP:
+        if method == self.DifferentiationMethod.COMPLEX_STEP:
             self.formulation.design_space.to_complex()
             if cast_default_inputs_to_complex:
                 self.__cast_default_inputs_to_complex()
@@ -262,7 +245,7 @@ class Scenario(MDODiscipline):
     def add_constraint(
         self,
         output_name: str | Sequence[str],
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -281,9 +264,7 @@ class Scenario(MDODiscipline):
                 `g_1=0` will be added as constraint to the optimizer.
                 If several names are given,
                 a single discipline must provide all outputs.
-            constraint_type: The type of constraint,
-                `"eq"` for equality constraint and
-                `"ineq"` for inequality constraint.
+            constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored.
                 If ``None``, the name of the constraint is generated from the output name.
             value: The value for which the constraint is active.
@@ -293,12 +274,6 @@ class Scenario(MDODiscipline):
         Raises:
             ValueError: If the constraint type is neither 'eq' or 'ineq'.
         """
-        if constraint_type not in [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ]:
-            raise ValueError(
-                "Constraint type must be either 'eq' or 'ineq'; "
-                "got '{}' instead.".format(constraint_type)
-            )
-
         self.formulation.add_constraint(
             output_name,
             constraint_type,
@@ -363,22 +338,13 @@ class Scenario(MDODiscipline):
         )
         self.formulation_name = formulation
 
-    def get_optim_variables_names(self) -> list[str]:
+    def get_optim_variable_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
 
         Returns:
             The optimization variables of the scenario.
         """
-        return self.formulation.get_optim_variables_names()
-
-    def get_optimum(self) -> OptimizationResult | None:
-        """Return the optimization results.
-
-        Returns:
-            The optimal solution found by the scenario if executed,
-            ``None`` otherwise.
-        """
-        return self.optimization_result
+        return self.formulation.get_optim_variable_names()
 
     def save_optimization_history(
         self,
@@ -398,9 +364,9 @@ class Scenario(MDODiscipline):
         """
         opt_pb = self.formulation.opt_problem
         if file_format == OptimizationProblem.HDF5_FORMAT:
-            opt_pb.export_hdf(file_path=file_path, append=append)
+            opt_pb.to_hdf(file_path=file_path, append=append)
         elif file_format == OptimizationProblem.GGOBI_FORMAT:
-            opt_pb.database.export_to_ggobi(file_path=file_path)
+            opt_pb.database.to_ggobi(file_path=file_path)
         else:
             raise ValueError(
                 f"Cannot export optimization history to file format: {file_format}."
@@ -447,8 +413,8 @@ class Scenario(MDODiscipline):
                 )
                 remove(self._opt_hist_backup_path)
             elif pre_load:
-                opt_pb.database.import_hdf(self._opt_hist_backup_path)
-                max_iteration = opt_pb.database.get_max_iteration()
+                opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
+                max_iteration = len(opt_pb.database)
                 if max_iteration != 0:
                     opt_pb.current_iter = max_iteration
 
@@ -565,45 +531,49 @@ class Scenario(MDODiscipline):
     def xdsmize(
         self,
         monitor: bool = False,
-        outdir: str | None = ".",
-        print_statuses: bool = False,
-        outfilename: str = "xdsm.html",
-        latex_output: bool = False,
-        open_browser: bool = False,
-        html_output: bool = True,
-        json_output: bool = False,
-    ) -> None:
-        """Create a JSON file defining the XDSM related to the current scenario.
+        directory_path: str | Path = ".",
+        log_workflow_status: bool = False,
+        file_name: str = "xdsm",
+        show_html: bool = False,
+        save_html: bool = True,
+        save_json: bool = False,
+        save_pdf: bool = False,
+    ) -> XDSM | None:
+        """Create a XDSM diagram of the scenario.
 
         Args:
-            monitor: If ``True``, update the generated file
+            monitor: Whether to update the generated file
                 at each discipline status change.
-            outdir: The directory where the JSON file is generated.
-                If ``None``, the current working directory is used.
-            print_statuses: If ``True``, print the statuses in the console at each update.
-            outfilename: The name of the file of the output.
-                The basename is used and the extension is adapted
-                for the HTML / JSON / PDF outputs.
-            latex_output: If ``True``, build TEX, TIKZ and PDF files.
-            open_browser: If ``True``, open the web browser and display the XDSM.
-            html_output: If ``True``, output a self-contained HTML file.
-            json_output: If ``True``, output a JSON file for XDSMjs.
+            log_workflow_status: Whether to log the evolution of the workflow's status.
+            directory_path: The path of the directory to save the files.
+                If ``show_html=True`` and ``output_directory_path=None``,
+                the HTML file is stored in a temporary directory.
+            file_name: The file name without the file extension.
+            show_html: Whether to open the web browser and display the XDSM.
+            save_html: Whether to save the XDSM as a HTML file.
+            save_json: Whether to save the XDSM as a JSON file.
+            save_pdf: Whether to save the XDSM as a PDF file.
+
+        Returns:
+            A view of the XDSM if ``monitor`` is ``False``.
         """
         from gemseo.utils.xdsmizer import XDSMizer
 
-        if print_statuses:
+        if log_workflow_status:
             monitor = True
 
         if monitor:
-            XDSMizer(self).monitor(outdir=outdir, print_statuses=print_statuses)
+            XDSMizer(self).monitor(
+                directory_path=directory_path, log_workflow_status=log_workflow_status
+            )
         else:
-            XDSMizer(self).run(
-                output_directory_path=outdir,
-                latex_output=latex_output,
-                open_browser=open_browser,
-                html_output=html_output,
-                json_output=json_output,
-                outfilename=outfilename,
+            return XDSMizer(self).run(
+                directory_path=directory_path,
+                save_pdf=save_pdf,
+                show_html=show_html,
+                save_html=save_html,
+                save_json=save_json,
+                file_name=file_name,
             )
 
     def get_expected_dataflow(  # noqa:D102
@@ -625,16 +595,20 @@ class Scenario(MDODiscipline):
 
     def _update_input_grammar(self) -> None:
         """Update the input grammar from the names of available drivers."""
-        if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-            self.input_grammar.update(
-                {"algo": {"type": "string", "enum": self.get_available_driver_names()}}
+        if self.grammar_type == MDODiscipline.GrammarType.JSON:
+            self.input_grammar.update_from_schema(
+                {
+                    "properties": {
+                        "algo": {
+                            "type": "string",
+                            "enum": self.get_available_driver_names(),
+                        }
+                    }
+                }
             )
         else:
-            self._update_grammar_input()
-
-    def _update_grammar_input(self) -> None:
-        """Update the inputs of a Grammar."""
-        raise NotImplementedError()
+            self.input_grammar.update_from_types({"algo": str})
+        self.input_grammar.required_names.add("algo")
 
     @staticmethod
     def is_scenario() -> bool:
@@ -645,10 +619,9 @@ class Scenario(MDODiscipline):
         """
         return True
 
-    def export_to_dataset(
+    def to_dataset(
         self,
-        name: str | None = None,
-        by_group: bool = True,
+        name: str = "",
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,
@@ -664,17 +637,7 @@ class Scenario(MDODiscipline):
 
         Args:
             name: The name to be given to the dataset.
-                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
-            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
-                in the sense of one unique NumPy array per group.
-                If ``categorize`` is ``False``,
-                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
-                If ``categorize`` is ``True``,
-                the groups can be either
-                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
-                if ``opt_naming`` is ``True``,
-                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
-                If ``by_group`` is ``False``, store the data by variable names.
+                If empty, use the name of the :attr:`.OptimizationProblem.database`.
             categorize: Whether to distinguish
                 between the different groups of variables.
                 Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
@@ -690,9 +653,8 @@ class Scenario(MDODiscipline):
         Returns:
             A dataset built from the database of the optimization problem.
         """
-        return self.formulation.opt_problem.export_to_dataset(
+        return self.formulation.opt_problem.to_dataset(
             name=name,
-            by_group=by_group,
             categorize=categorize,
             opt_naming=opt_naming,
             export_gradients=export_gradients,

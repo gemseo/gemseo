@@ -19,14 +19,13 @@
 """The concatenation of several input variables into a single one."""
 from __future__ import annotations
 
+from itertools import accumulate
 from typing import Sequence
 
 from numpy import concatenate
-from numpy import eye
-from numpy import zeros
+from scipy.sparse import csr_array
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.python_compatibility import accumulate
 
 
 class Concatenater(MDODiscipline):
@@ -35,17 +34,17 @@ class Concatenater(MDODiscipline):
     These input variables can be scaled before concatenation.
 
     Example:
-        >>> from gemseo.api import create_discipline
+        >>> from gemseo import create_discipline
         >>> sellar_system_disc = create_discipline('SellarSystem')
-        >>> constraints_names = ['c1', 'c2']
+        >>> constraint_names = ['c1', 'c2']
         >>> output_name = ['c']
         >>> concatenation_disc = create_discipline(
-        ...     'Concatenater', constraints_names, output_name
+        ...     'Concatenater', constraint_names, output_name
         ... )
         >>> disciplines = [sellar_system_disc, concatenation_disc]
         >>> chain = create_discipline('MDOChain', disciplines=disciplines)
         >>> print(chain.execute())
-        >>> print(chain.linearize(force_all=True))
+        >>> print(chain.linearize(compute_all_jacobians=True))
     """
 
     def __init__(
@@ -62,8 +61,8 @@ class Concatenater(MDODiscipline):
                 related to the different input variables.
         """  # noqa: D205 D212 D415
         super().__init__()
-        self.input_grammar.update(input_variables)
-        self.output_grammar.update([output_variable])
+        self.input_grammar.update_from_names(input_variables)
+        self.output_grammar.update_from_names([output_variable])
         self.__output_variable = output_variable
         self.__coefficients = dict.fromkeys(input_variables, 1.0)
         if input_coefficients:
@@ -103,6 +102,9 @@ class Concatenater(MDODiscipline):
         # Instead of manually accumulating, we use the accumulate() iterator.
         jac = self.jac[self.__output_variable]
         for name, size, start in zip(names, sizes, accumulate(sizes, initial=0)):
-            val = zeros([total_size, size])
-            val[start : (start + size), :] = self.__coefficients[name] * eye(size)
-            jac[name] = val
+            row = range(start, start + size)
+            col = range(size)
+            jac[name] = csr_array(
+                ([self.__coefficients[name]] * size, (row, col)),
+                shape=(total_size, size),
+            )

@@ -21,15 +21,13 @@ from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Callable
 from typing import Iterable
 from typing import Mapping
-
-from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
+from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
@@ -37,7 +35,7 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
-from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda import MDA
 from gemseo.mda.mda_factory import MDAFactory
 
@@ -77,7 +75,7 @@ class BiLevel(MDOFormulation):
         apply_cstr_tosub_scenarios: bool = True,
         apply_cstr_to_system: bool = True,
         reset_x0_before_opt: bool = False,
-        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         **main_mda_options: Any,
     ) -> None:
         """
@@ -108,7 +106,7 @@ class BiLevel(MDOFormulation):
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
         )
-        self._shared_dv = list(design_space.variables_names)
+        self._shared_dv = list(design_space.variable_names)
         self._mda1 = None
         self._mda2 = None
         self.reset_x0_before_opt = reset_x0_before_opt
@@ -202,21 +200,21 @@ class BiLevel(MDOFormulation):
         # Output couplings of scenario are given to MDA for speedup
         if output_functions:
             opt_problem = scenario.formulation.opt_problem
-            sc_outvars = opt_problem.objective.outvars
-            sc_constraints = opt_problem.get_constraints_names()
-            sc_out_coupl = sc_outvars + sc_constraints
+            sc_output_names = opt_problem.objective.output_names
+            sc_constraints = opt_problem.get_constraint_names()
+            sc_out_coupl = sc_output_names + sc_constraints
         else:
             sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
 
         # Add private variables from disciplinary scenario design space
-        adapter_outputs = sc_out_coupl + scenario.design_space.variables_names
+        adapter_outputs = sc_out_coupl + scenario.design_space.variable_names
         return adapter_outputs
 
     def _compute_adapter_inputs(
         self,
         scenario: Scenario,
         use_non_shared_vars: bool,
-    ):
+    ) -> list[str]:
         """Compute the scenario adapter inputs.
 
         Args:
@@ -240,7 +238,7 @@ class BiLevel(MDOFormulation):
             & set(set(couplings) | shared_dv | set(mda1_outputs))
         )
         if use_non_shared_vars:
-            nonshared_var = scenario.design_space.variables_names
+            nonshared_var = scenario.design_space.variable_names
             adapter_inputs = list(
                 set(adapter_inputs) | set(top_inputs) & set(nonshared_var)
             )
@@ -281,11 +279,10 @@ class BiLevel(MDOFormulation):
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
-        factory = MDAFactory().factory
-        return factory.get_options_grammar(main_mda_name)
+        return MDAFactory().get_options_grammar(main_mda_name)
 
     @classmethod
-    def get_default_sub_options_values(
+    def get_default_sub_option_values(
         cls, **options: str
     ) -> Mapping[str, str | int | float | bool | None] | None:
         """
@@ -298,8 +295,7 @@ class BiLevel(MDOFormulation):
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
-        factory = MDAFactory().factory
-        return factory.get_default_options_values(main_mda_name)
+        return MDAFactory().get_default_option_values(main_mda_name)
 
     def _build_mdas(
         self,
@@ -385,31 +381,31 @@ class BiLevel(MDOFormulation):
         if self._mda2:
             chain_dis += [self._mda2]
 
-        self.chain = MDOChain(
-            chain_dis, name="bilevel_chain", grammar_type=self._grammar_type
-        )
-
         if not self.reset_x0_before_opt and self._mda1 is not None:
-            run_mda1_orig = self._mda1._run
+            self.chain = MDOWarmStartedChain(
+                chain_dis,
+                name="bilevel_chain",
+                grammar_type=self._grammar_type,
+                variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
+            )
+        else:
+            self.chain = MDOChain(
+                chain_dis, name="bilevel_chain", grammar_type=self._grammar_type
+            )
 
-            def _run_mda() -> Callable[[Mapping[str, ndarray]], None]:
-                """Set mda1 execution to warm start the chain with previous x_local opt.
+    def _get_variable_names_to_warm_start(self) -> list[str]:
+        """Retrieve the names of the variables to warm start.
 
-                Returns:
-                     A reference to the MDA1 _run method.
-                """
-                # TODO : Define a pre run method to be overloaded in MDA maybe
-                # Or use observers at the system driver level to pass the local
-                # vars
-                for scenario in self.get_sub_scenarios():
-                    x_loc_d = scenario.design_space.get_current_value(as_dict=True)
-                    for indata, x_loc in x_loc_d.items():
-                        if self._mda1.is_input_existing(indata):
-                            if x_loc is not None:
-                                self._mda1.local_data[indata] = x_loc
-                return run_mda1_orig()
+        The outputs of all the sub scenarios that shall be warm started.
 
-            self.mda1._run = _run_mda
+        Returns:
+            The names of the variables to warm start.
+        """
+        return [
+            name
+            for adapter in self.scenario_adapters
+            for name in adapter.get_output_data_names()
+        ]
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
@@ -426,7 +422,7 @@ class BiLevel(MDOFormulation):
             couplings = self.mda2.strong_couplings
             design_space = self.opt_problem.design_space
             for coupling in couplings:
-                if coupling in design_space.variables_names:
+                if coupling in design_space.variable_names:
                     design_space.remove_variable(coupling)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
@@ -445,7 +441,7 @@ class BiLevel(MDOFormulation):
     def add_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -490,7 +486,7 @@ class BiLevel(MDOFormulation):
     def _add_system_level_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,
@@ -516,7 +512,7 @@ class BiLevel(MDOFormulation):
     def _add_sub_level_constraint(
         self,
         output_name: str,
-        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
         value: float | None = None,
         positive: bool = False,

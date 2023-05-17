@@ -21,9 +21,8 @@ Create a discipline that uses pandas DataFrames
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from gemseo.core.discipline import MDODiscipline
-from numpy import ndarray
 from pandas import DataFrame
 
 # %%
@@ -66,10 +65,10 @@ configure_logger()
 
 class DataFrameDiscipline(MDODiscipline):
     def __init__(self):
-        super().__init__(grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE)
+        super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        self.input_grammar.update_from_names(["df~x"])
+        self.output_grammar.update_from_names(["df~y"])
         self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
-        self.input_grammar.update({"df~x": ndarray})
-        self.output_grammar.update({"df~y": ndarray})
 
     def _run(self):
         df = self.local_data["df"]

@@ -32,7 +32,7 @@ Create and instantiate the discipline
 *************************************
 
 Then, we create and instantiate the corresponding :class:`.AnalyticDiscipline` inheriting from :class:`.MDODiscipline`
-by means of the API function :meth:`~gemseo.api.create_discipline` with:
+by means of the API function :func:`.create_discipline` with:
 
 - :code:`discipline_name="AnalyticDiscipline"`,
 - :code:`name="analytic"`,
@@ -42,7 +42,7 @@ In practice, we write:
 
 .. code::
 
-    from gemseo.api import create_discipline
+    from gemseo import create_discipline
 
     disc = create_discipline("AnalyticDiscipline", name="analytic", expressions=expressions)
 
@@ -83,7 +83,7 @@ This can be checked easily using :meth:`.MDODiscipline.check_jacobian`:
 .. code::
 
     disc.check_jacobian(input_data,
-                             derr_approx=disc.FINITE_DIFFERENCES,
+                             derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,
                              step=1e-5, threshold=1e-3)
 
 which results in:

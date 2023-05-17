@@ -92,12 +92,21 @@ def test_failure_for_log_zero_without_fast_evaluation():
 def test_absolute_value(fast_evaluation):
     """Check that AnalyticDiscipline handles absolute value."""
     discipline = AnalyticDiscipline({"y": "Abs(x)"}, fast_evaluation=fast_evaluation)
-    assert discipline.linearize({"x": array([2])}, force_all=True)["y"]["x"] == 1
-    assert discipline.linearize({"x": array([-2])}, force_all=True)["y"]["x"] == -1
+    assert (
+        discipline.linearize({"x": array([2])}, compute_all_jacobians=True)["y"]["x"]
+        == 1
+    )
+    assert (
+        discipline.linearize({"x": array([-2])}, compute_all_jacobians=True)["y"]["x"]
+        == -1
+    )
 
     # Be careful: the derivative of sympy.Abs(x) at 0 is equal to 0
     # even if it is not defined at 0 from a mathematical point of view.
-    assert discipline.linearize({"x": array([0])}, force_all=True)["y"]["x"] == 0
+    assert (
+        discipline.linearize({"x": array([0])}, compute_all_jacobians=True)["y"]["x"]
+        == 0
+    )
 
 
 @pytest.mark.parametrize("fast_evaluation", [False, True])
@@ -107,10 +116,45 @@ def test_serialize(tmp_wd, fast_evaluation):
     file_path = "discipline.h5"
 
     discipline = AnalyticDiscipline({"y": "2*x"}, fast_evaluation=fast_evaluation)
-    discipline.serialize(file_path)
+    discipline.to_pickle(file_path)
     discipline.execute(input_data)
 
-    saved_discipline = AnalyticDiscipline.deserialize(file_path)
+    saved_discipline = AnalyticDiscipline.from_pickle(file_path)
     saved_discipline.execute(input_data)
 
     assert_equal(saved_discipline.get_output_data(), discipline.get_output_data())
+
+
+@pytest.mark.parametrize("fast_evaluation", [False, True])
+@pytest.mark.parametrize("add_differentiated_inputs", [False, True])
+@pytest.mark.parametrize("add_differentiated_outputs", [False, True])
+@pytest.mark.parametrize("compute_all_jacobians", [False, True])
+def test_linearize(
+    fast_evaluation,
+    add_differentiated_inputs,
+    add_differentiated_outputs,
+    compute_all_jacobians,
+    caplog,
+):
+    """Check AnalyticDiscipline.linearize()."""
+    discipline = AnalyticDiscipline(
+        {"y": "2*a+3*b", "z": "-2*a-3*b"}, fast_evaluation=fast_evaluation
+    )
+    if add_differentiated_inputs:
+        discipline.add_differentiated_inputs(["a"])
+    if add_differentiated_outputs:
+        discipline.add_differentiated_outputs(["y"])
+
+    discipline.linearize(
+        input_data={"a": array([1]), "b": array([1])},
+        compute_all_jacobians=compute_all_jacobians,
+    )
+    if compute_all_jacobians:
+        assert discipline.jac == {
+            "y": {"a": array([[2.0]]), "b": array([[3.0]])},
+            "z": {"a": array([[-2.0]]), "b": array([[-3.0]])},
+        }
+    elif add_differentiated_inputs and add_differentiated_outputs:
+        assert discipline.jac == {"y": {"a": array([[2.0]])}}
+    else:
+        assert discipline.jac == {}

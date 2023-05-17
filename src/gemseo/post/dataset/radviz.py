@@ -55,7 +55,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
@@ -79,21 +79,22 @@ class Radar(DatasetPlot):
         axes: None | Axes = None,
     ) -> list[Figure]:
         classifier = self._param.classifier
-        if classifier not in self.dataset.variables:
+        if classifier not in self.dataset.variable_names:
             raise ValueError(
                 "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variables)
+                + ", ".join(self.dataset.variable_names)
             )
 
-        dataframe = self.dataset.export_to_dataframe()
+        dataframe = self.dataset
         label, _ = self._get_label(classifier)
-        if self.dataset.strings_encoding[label]:
-            for comp, codes in self.dataset.strings_encoding[label].items():
-                column = (self.dataset.get_group(label), label, str(comp))
-                for key, value in codes.items():
-                    dataframe.loc[dataframe[column] == key, column] = value
+        str_encoder = self.dataset.misc.get("labels", {})
+        if len(str_encoder):
+            for variable, meaning in str_encoder.items():
+                data = self.dataset.get_view(variable_names=variable).to_numpy()
+                self.dataset.update_data(meaning[data.ravel()], variable_names=variable)
 
-        dataframe.columns = self._get_variables_names(dataframe)
+        dataframe.columns = self._get_variable_names(dataframe)
+        dataframe = dataframe.reindex(sorted(dataframe.columns), axis=1)
         fig, axes = self._get_figure_and_axes(fig, axes)
         radviz(dataframe, label, ax=axes)
         axes.set_xlabel(self.xlabel)

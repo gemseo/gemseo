@@ -42,10 +42,10 @@ Store observables
 # All the imports needed for the tutorials are performed here.
 from __future__ import annotations
 
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
 from numpy import array
 from numpy import ones
 
@@ -58,7 +58,7 @@ configure_logger()
 # In this section,
 # we use the available classes :class:`.Sellar1`, :class:`.Sellar2`
 # and :class:`.SellarSystem` to define the disciplines of the problem.
-# The :meth:`~gemseo.api.create_discipline` API function allows us to
+# The :func:`.create_discipline` API function allows us to
 # carry out this task easily, as well as store the instances in a list
 # to be used later on.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
@@ -129,28 +129,24 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # corresponding :class:`.OptimizationProblem`:
 opt_problem = scenario.formulation.opt_problem
 # %%
-# We can easily build a dataset from this :class:`.OptimizationProblem`:
+# We can easily build an :class:`.OptimizationDataset` from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the functions
 # (default option):
-dataset = opt_problem.export_to_dataset("sellar_problem")
+dataset = opt_problem.to_dataset("sellar_problem")
 print(dataset)
 # %%
 # or by considering all features as default parameters:
-dataset = opt_problem.export_to_dataset("sellar_problem", categorize=False)
+dataset = opt_problem.to_dataset("sellar_problem", categorize=False)
 print(dataset)
 # %%
 # or by using an input-output naming rather than an optimization naming:
-dataset = opt_problem.export_to_dataset("sellar_problem", opt_naming=False)
+dataset = opt_problem.to_dataset("sellar_problem", opt_naming=False)
 print(dataset)
 # %%
 # Access observables by name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# We can get the observable data by name,
-# either as a dictionary indexed by the observable names (default option):
-print(dataset.get_data_by_names(["y_1", "y2"]))
-# %%
-# or as an array:
-print(dataset.get_data_by_names(["y_1", "y2"], False))
+# We can get the observable data by variable names:
+print(dataset.get_view(variable_names=["y_1", "y2"]))
 
 # %%
 # Use the observables in a post-processing method

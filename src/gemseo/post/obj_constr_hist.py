@@ -25,7 +25,6 @@ from typing import Sequence
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import LogFormatterSciNotation
-from matplotlib.ticker import MaxNLocator
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -71,15 +70,17 @@ class ObjConstrHist(OptPostProcessor):
         grid = self._get_grid_layout()
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         ax1 = fig.add_subplot(grid[0, 0])
-        ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        n_iterations = len(self.database)
+        ax1.set_xticks([i for i in range(n_iterations)])
+        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
         mng = plt.get_current_fig_manager()
         mng.resize(700, 1000)
 
         # 1. Plot the objective history versus the iterations with a curve.
         problem = self.opt_problem
         objective_name = problem.get_objective_name()
-        obj_history, x_history = self.database.get_func_history(
-            objective_name, x_hist=True
+        obj_history, x_history = self.database.get_function_history(
+            objective_name, with_x_vect=True
         )
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
         if not problem.minimize_objective and not problem.use_standardized_objective:
@@ -117,13 +118,12 @@ class ObjConstrHist(OptPostProcessor):
             axis=1,
         )
         c_max = abs(constraint_history).max()
-        n_iter = len(x_history)
         im1 = ax1.imshow(
             np.atleast_2d(np.amax(constraint_history, axis=1)),
             cmap=RG_SEISMIC,
             interpolation="nearest",
             aspect="auto",
-            extent=[-0.5, n_iter - 0.5, obj_min - margin, obj_max + margin],
+            extent=[-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin],
             norm=SymLogNorm(linthresh=1.0, vmin=-c_max, vmax=c_max),
         )
         # 2.c. Add vertical labels with constraint violation information.
@@ -178,7 +178,7 @@ class ObjConstrHist(OptPostProcessor):
 
         if constraint_names:
             constraint_history, constraint_names, _ = self.database.get_history_array(
-                constraint_names, add_dv=False
+                function_names=constraint_names, with_x_vect=False
             )
         else:
             constraint_history, constraint_names = np.array([]), np.array([])

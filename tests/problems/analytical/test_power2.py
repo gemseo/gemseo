@@ -69,9 +69,9 @@ def test_initial_value():
     )
 
 
-def test_constraints_names(problem):
+def test_constraint_names(problem):
     """Check the names of the constraints."""
-    assert problem.get_constraints_names() == ["ineq1", "ineq2", "eq"]
+    assert problem.get_constraint_names() == ["ineq1", "ineq2", "eq"]
 
 
 @pytest.mark.parametrize(
@@ -121,9 +121,9 @@ def test_function_expression(request, function, expr, value):
 @pytest.mark.parametrize(
     "function", ["objective", "inequality_1", "inequality_2", "equality"]
 )
-def test_function_args(request, function):
+def test_function_input_names(request, function):
     """Check the name of the input of a function.."""
-    assert request.getfixturevalue(function).args == ["x"]
+    assert request.getfixturevalue(function).input_names == ["x"]
 
 
 @pytest.mark.parametrize(

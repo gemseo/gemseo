@@ -29,7 +29,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.testing import image_comparison
+from gemseo.utils.testing.helpers import image_comparison
 
 PARENT_PATH = Path(__file__).parent
 POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
@@ -76,7 +76,7 @@ def test_correlations_import(tmp_wd, factory, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
+    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
         "Correlations",
@@ -131,7 +131,7 @@ def test_correlations_func_names(
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(POWER_HDF5_PATH)
+    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
         "Correlations",
@@ -161,7 +161,7 @@ def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    problem = OptimizationProblem.import_hdf(MOD_SELLAR_HDF5_PATH)
+    problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
     post = factory.execute(
         problem,
         "Correlations",
@@ -179,13 +179,13 @@ def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
 def test_func_order():
     """Test the func_order static method used to sort the function names.
 
-    When the variables (functions and design variables) are sorted using
-    `func_order` as the key, the output should have all the elements ordered
-    following the pattern of `func_names`. Design variables are to be sent
-    to the end of the list, their order is not important.
+    When the variables (functions and design variables) are sorted using `func_order` as
+    the key, the output should have all the elements ordered following the pattern of
+    `func_names`. Design variables are to be sent to the end of the list, their order is
+    not important.
 
-    In this test, the variables are shuffled randomly to simulate the way a user
-    enters the data.
+    In this test, the variables are shuffled randomly to simulate the way a user enters
+    the data.
     """
     variables = [
         "y_1_2",

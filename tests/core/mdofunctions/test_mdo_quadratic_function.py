@@ -28,7 +28,7 @@ def quadratic_function() -> MDOQuadraticFunction:
     return MDOQuadraticFunction(
         array([[1.0, 2.0], [3.0, 4.0]]),
         "f",
-        args=("x", "y"),
+        input_names=("x", "y"),
         linear_coeffs=array([5.0, 6.0]),
         value_at_zero=7.0,
     )
@@ -38,7 +38,7 @@ def quadratic_function() -> MDOQuadraticFunction:
 def quadratic_without_linear_term() -> MDOQuadraticFunction:
     """A quadratic function without a linear term."""
     return MDOQuadraticFunction(
-        array([[1.0, 2.0], [3.0, 4.0]]), "f", args=("x", "y"), value_at_zero=7.0
+        array([[1.0, 2.0], [3.0, 4.0]]), "f", input_names=("x", "y"), value_at_zero=7.0
     )
 
 

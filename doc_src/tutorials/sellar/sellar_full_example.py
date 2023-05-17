@@ -22,8 +22,8 @@ from __future__ import annotations
 
 from math import exp
 
+from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from numpy import array
@@ -36,8 +36,8 @@ class SellarSystem(MDODiscipline):
     def __init__(self):
         super().__init__()
         # Initialize the grammars to define inputs and outputs
-        self.input_grammar.update(["x", "z", "y_0", "y_1"])
-        self.output_grammar.update(["obj", "c_1", "c_2"])
+        self.input_grammar.update_from_names(["x", "z", "y_0", "y_1"])
+        self.output_grammar.update_from_names(["obj", "c_1", "c_2"])
         # Default inputs define what data to use when the inputs are not
         # provided to the execute method
 
@@ -57,8 +57,8 @@ class SellarSystem(MDODiscipline):
 class Sellar1(MDODiscipline):
     def __init__(self, residual_form=False):
         super().__init__()
-        self.input_grammar.update(["x", "z", "y_1"])
-        self.output_grammar.update(["y_0"])
+        self.input_grammar.update_from_names(["x", "z", "y_1"])
+        self.output_grammar.update_from_names(["y_0"])
 
     #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
@@ -73,8 +73,8 @@ class Sellar1(MDODiscipline):
 class Sellar2(MDODiscipline):
     def __init__(self, residual_form=False):
         super().__init__()
-        self.input_grammar.update(["z", "y_0"])
-        self.output_grammar.update(["y_1"])
+        self.input_grammar.update_from_names_from_names(["z", "y_0"])
+        self.output_grammar.update_from_names_from_names(["y_1"])
 
     #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}

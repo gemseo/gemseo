@@ -24,7 +24,7 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from numpy import allclose
@@ -38,10 +38,12 @@ def io_dataset():
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
-    sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
-    groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-    dataset = Dataset("dataset_name")
-    dataset.set_from_array(data, variables, sizes, groups)
+    variable_names_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
+    variable_names_to_group_names = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    dataset = IODataset.from_array(
+        data, variables, variable_names_to_n_components, variable_names_to_group_names
+    )
+    dataset.name = "dataset_name"
     return dataset
 
 
@@ -49,16 +51,29 @@ def test_predict(io_dataset):
     """Test prediction."""
     ml_algo = GaussianProcessRegressor(io_dataset)
     ml_algo.learn()
-    input_data = io_dataset.get_data_by_group("inputs", True)
-    input_data = {key: val[0] for key, val in input_data.items()}
-    output_data = io_dataset.get_data_by_group("outputs", True)
-    output_data = {key: val[0] for key, val in output_data.items()}
+    input_data = io_dataset.get_view(group_names="inputs", indices=0)
+    input_names = list(map(lambda x: x[1], input_data.columns))
+    input_data = {
+        name: io_dataset.get_view(group_names="inputs", variable_names=name).to_numpy()[
+            0
+        ]
+        for name in input_names
+    }
+
+    output_data = io_dataset.get_view(group_names="outputs")
+    output_names = list(map(lambda x: x[1], output_data.columns))
+    output_data = {
+        name: io_dataset.get_view(
+            group_names="outputs", variable_names=name
+        ).to_numpy()[0]
+        for name in output_names
+    }
     prediction = ml_algo.predict(input_data)
     assert allclose(prediction["y_1"], output_data["y_1"])
 
 
 @pytest.fixture(scope="module")
-def dataset_for_jacobian() -> Dataset:
+def dataset_for_jacobian() -> IODataset:
     """The dataset used to check the Jacobian computation."""
     samples = array(
         [
@@ -70,8 +85,8 @@ def dataset_for_jacobian() -> Dataset:
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 2}
     groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-    data = Dataset("dataset_name")
-    data.set_from_array(samples, variables, sizes, groups)
+    data = IODataset.from_array(samples, variables, sizes, groups)
+    data.name = "dataset_name"
     return data
 
 

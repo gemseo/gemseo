@@ -45,6 +45,7 @@ def __stringify(
     key_value_separator: str,
     function: Callable[[Any], str],
     sort: bool,
+    use_and: bool,
 ) -> str:
     """Represent an object with a string.
 
@@ -55,6 +56,7 @@ def __stringify(
         function: A function to represent an object with a string,
             e.g. :func:`str` or :func:`repr`.
         sort: Whether to sort the elements when the object if a collection.
+        use_and: Whether to replace the last delimiter occurrence by ``"and"``.
 
     Returns:
         A string representing the object.
@@ -73,7 +75,10 @@ def __stringify(
     if sort:
         obj = sorted(obj)
 
-    return delimiter.join(obj)
+    if use_and and len(obj) > 1:
+        return f"{delimiter.join(obj[:-1])} and {obj[-1]}"
+    else:
+        return delimiter.join(obj)
 
 
 def pretty_repr(
@@ -81,6 +86,7 @@ def pretty_repr(
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
     sort: bool = True,
+    use_and: bool = False,
 ) -> str:
     """Return an unambiguous string representation of an object based on :func:`repr`.
 
@@ -90,11 +96,12 @@ def pretty_repr(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         sort: Whether to sort the elements when the object if a collection.
+        use_and: Whether to replace the last delimiter occurrence by ``" and "``.
 
     Returns:
          An unambiguous string representation of the object.
     """
-    return __stringify(obj, delimiter, key_value_separator, repr, sort)
+    return __stringify(obj, delimiter, key_value_separator, repr, sort, use_and)
 
 
 def pretty_str(
@@ -102,6 +109,7 @@ def pretty_str(
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
     sort: bool = True,
+    use_and: bool = False,
 ) -> str:
     """Return a readable string representation of an object based on :func:`str`.
 
@@ -111,14 +119,15 @@ def pretty_str(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         sort: Whether to sort the elements when the object if a collection.
+        use_and: Whether to replace the last delimiter occurrence by ``"and"``.
 
     Returns:
          A readable string representation of the object.
     """
-    return __stringify(obj, delimiter, key_value_separator, str, sort)
+    return __stringify(obj, delimiter, key_value_separator, str, sort, use_and)
 
 
-def repr_variable(name: str, index: int, size: int = 0) -> str:
+def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) -> str:
     """Return the string representation of a variable.
 
     Args:
@@ -126,11 +135,17 @@ def repr_variable(name: str, index: int, size: int = 0) -> str:
         index: The component of the variable.
         size: The size of the variable if known.
             Use ``0`` if unknown.
+        simplify: Whether to return ``"[i]"`` when ``i>0`` instead of ``"name[i]"``.
 
     Returns:
         The string representation of the variable.
     """
-    return name if size == 1 else f"{name}[{index}]"
+    if size == 1:
+        return name
+    elif simplify and index != 0:
+        return f"[{index}]"
+    else:
+        return f"{name}[{index}]"
 
 
 class MultiLineString:
@@ -141,10 +156,10 @@ class MultiLineString:
     where the string evaluation cost may be avoided when the logging level dismisses a
     logging message.
 
-    A __add__ method is defined to allow the "+" operator between two instances,
-    that implements the concatenation of two MultiLineString.
-    If the other instance is not MultiLineString, it is first converted to string
-    using its __str__ method and then added as a new line in the result.
+    A __add__ method is defined to allow the "+" operator between two instances, that
+    implements the concatenation of two MultiLineString. If the other instance is not
+    MultiLineString, it is first converted to string using its __str__ method and then
+    added as a new line in the result.
     """
 
     INDENTATION = " " * 3
@@ -154,6 +169,10 @@ class MultiLineString:
         self,
         lines: Iterable[MessageLine] | None = None,
     ) -> None:
+        """
+        Args:
+            lines: The lines from which to create the multi-line string.
+        """  # noqa:D205 D212 D415
         if lines is None:
             self.__lines = []
         else:
@@ -219,7 +238,9 @@ class MultiLineString:
         lines = []
         for line in self.__lines:
             str_format = self.INDENTATION * line.level + line.str_format
-            lines.append(str_format.format(*line.args, **line.kwargs))
+            if line.args or line.kwargs:
+                str_format = str_format.format(*line.args, **line.kwargs)
+            lines.append(str_format)
         return "\n".join(lines)
 
     def __add__(self, other: Any) -> MultiLineString:
@@ -232,6 +253,7 @@ class MultiLineString:
     @classmethod
     @contextmanager
     def offset(cls) -> None:
+        """Create a temporary offset with a context manager."""
         cls.DEFAULT_LEVEL += 1
         try:
             yield

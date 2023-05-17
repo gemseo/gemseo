@@ -52,10 +52,10 @@ Example for exterior penalty applied to the Sobieski test case.
 # All the imports needed for the tutorials are performed here.
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.api import create_discipline
-from gemseo.api import create_scenario
-from gemseo.api import get_available_formulations
+from gemseo import configure_logger
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import get_available_formulations
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
@@ -83,7 +83,7 @@ disciplines = create_discipline(
 # .. tip::
 #
 #    For the disciplines that are not interfaced with |g|, the |g|'s
-#    :mod:`~gemseo.api` eases the creation of disciplines without having
+#    :mod:`~gemseo` eases the creation of disciplines without having
 #    to import them.
 #
 #    See :ref:`api`.
@@ -102,7 +102,7 @@ disciplines = create_discipline(
 #   defines the unknowns of the optimization problem, and their bounds. It contains
 #   all the design variables needed by the :ref:`MDF formulation <mdf_formulation>`.
 #   It can be imported from a text file, or created from scratch with the methods
-#   :meth:`~gemseo.api.create_design_space` and
+#   :func:`.create_design_space` and
 #   :meth:`~gemseo.algos.design_space.DesignSpace.add_variable`. In this case,
 #   we will retrieve it from the ``SobieskiProblem`` already defined in |g|.
 design_space = SobieskiProblem().design_space
@@ -139,7 +139,7 @@ x_0 = design_space.get_current_value(as_dict=True)
 # - The :code:`formulation` classname (here, :code:`"MDF"`) shall be passed to
 #   the scenario to select them.
 # - The list of available formulations can be obtained by using
-#   :meth:`~gemseo.api.get_available_formulations`.
+#   :func:`.get_available_formulations`.
 get_available_formulations()
 # %%
 # - :math:`y\_4` corresponds to the :code:`objective_name`. This name must be one

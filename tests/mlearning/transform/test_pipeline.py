@@ -20,9 +20,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transform.pipeline import Pipeline
-from gemseo.mlearning.transform.scaler.scaler import Scaler
-from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transformers.pipeline import Pipeline
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.transformer import Transformer
 from numpy import allclose
 from numpy import arange
 from numpy import array

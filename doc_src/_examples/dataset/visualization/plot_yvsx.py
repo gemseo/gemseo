@@ -25,8 +25,8 @@ YvsX
 """
 from __future__ import annotations
 
-from gemseo.api import configure_logger
-from gemseo.core.dataset import Dataset
+from gemseo import configure_logger
+from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
 from numpy import linspace
 from numpy import pi
@@ -35,7 +35,7 @@ from numpy import sin
 configure_logger()
 
 
-############################################################################
+# %%
 # Build a dataset
 # ---------------
 inputs = linspace(0, 1, 10)[:, None]
@@ -43,9 +43,9 @@ outputs = sin(2 * pi * inputs)
 
 dataset = Dataset()
 dataset.add_variable("x", inputs, "inputs")
-dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
+dataset.add_variable("y", outputs, "outputs")
 
-############################################################################
+# %%
 # Plot y vs x
 # -----------
 # We can use the :class:`.YvsX` plot

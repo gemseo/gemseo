@@ -19,32 +19,31 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstract class for the computation and analysis of sensitivity indices.
 
-The purpose of a sensitivity analysis is to
-qualify or quantify how the model's uncertain inputs impact its outputs.
+The purpose of a sensitivity analysis is to qualify or quantify how the model's uncertain
+inputs impact its outputs.
 
-This analysis relies on :class:`.SensitivityAnalysis`
-computed from a :class:`.MDODiscipline` representing the model,
-a :class:`.ParameterSpace` describing the uncertain parameters
-and options associated with a particular concrete class
-inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
+This analysis relies on :class:`.SensitivityAnalysis` computed from a
+:class:`.MDODiscipline` representing the model, a :class:`.ParameterSpace` describing the
+uncertain parameters and options associated with a particular concrete class inheriting
+from :class:`.SensitivityAnalysis` which is an abstract one.
 """
 from __future__ import annotations
 
 import pickle
+from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Collection
 from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Mapping
-from typing import NoReturn
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import array
 from numpy import linspace
@@ -52,49 +51,56 @@ from numpy import ndarray
 from numpy import newaxis
 from numpy import vstack
 from numpy.typing import NDArray
+from strenum import StrEnum
 
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
+from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
-IndicesType = Dict[str, List[Dict[str, ndarray]]]
+FirstOrderIndicesType = Dict[str, List[Dict[str, ndarray]]]
+SecondOrderIndicesType = Dict[str, List[Dict[str, Dict[str, ndarray]]]]
 
 
-class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
+class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Sensitivity analysis.
 
-    The :class:`.SensitivityAnalysis` class provides both
-    the values of :attr:`.SensitivityAnalysis.indices`
-    and their graphical representations, from either
-    the :meth:`.SensitivityAnalysis.plot` method,
-    the :meth:`.SensitivityAnalysis.plot_radar` method or
-    the :meth:`.SensitivityAnalysis.plot_bar` method.
+    The :class:`.SensitivityAnalysis` class provides both the values of
+    :attr:`.SensitivityAnalysis.indices` and their graphical representations, from either
+    the :meth:`.SensitivityAnalysis.plot` method, the
+    :meth:`.SensitivityAnalysis.plot_radar` method or the
+    :meth:`.SensitivityAnalysis.plot_bar` method.
 
-    It is also possible to use :meth:`.SensitivityAnalysis.sort_parameters`
-    to get the parameters sorted according to :attr:`.SensitivityAnalysis.main_method`.
-    The :attr:`.SensitivityAnalysis.main_indices` are indices computed with the latter.
+    It is also possible to use :meth:`.SensitivityAnalysis.sort_parameters` to get the
+    parameters sorted according to :attr:`.SensitivityAnalysis.main_method`. The
+    :attr:`.SensitivityAnalysis.main_indices` are indices computed with the latter.
 
-    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows
-    to compare the current :class:`.SensitivityAnalysis` with another one.
+    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows to compare the
+    current :class:`.SensitivityAnalysis` with another one.
     """
 
     default_output: list[str]
     """The default outputs of interest."""
-    dataset: Dataset
+
+    dataset: IODataset
     """The dataset containing the discipline evaluations."""
+
+    Method: ClassVar[type[StrEnum]]
+    """The names of the sensitivity methods."""
 
     DEFAULT_DRIVER = None
 
@@ -134,14 +140,14 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             algo_options or {},
             formulation,
             **(formulation_options or {}),
-        ).export_to_dataset(opt_naming=False)
-        self._main_method = self.__class__.__name__
+        ).to_dataset(opt_naming=False)
+        self._main_method = None
         self._file_path_manager = FilePathManager(
-            FileType.FIGURE,
+            FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
 
-    def save(self, file_path: str | Path) -> None:
+    def to_pickle(self, file_path: str | Path) -> None:
         """Save the current sensitivity analysis on the disk.
 
         Args:
@@ -151,7 +157,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             pickle.dump(self, f)
 
     @staticmethod
-    def load(file_path: str | Path) -> SensitivityAnalysis:
+    def from_pickle(file_path: str | Path) -> SensitivityAnalysis:
         """Load a sensitivity analysis from the disk.
 
         Args:
@@ -236,19 +242,21 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         return scenario
 
     @property
-    def inputs_names(self) -> list[str]:
+    def input_names(self) -> list[str]:
         """The names of the inputs."""
-        return self.dataset.get_names(self.dataset.INPUT_GROUP)
+        return self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
 
+    @abstractmethod
     def compute_indices(
-        self, outputs: Sequence[str] | None = None
-    ) -> dict[str, IndicesType]:
+        self, outputs: str | Sequence[str] | None = None
+    ) -> dict[str, FirstOrderIndicesType]:
         """Compute the sensitivity indices.
 
         Args:
-            outputs: The outputs
-                for which to display sensitivity indices.
-                If None, use the default outputs, that are all the discipline outputs.
+            outputs: The output(s)
+                for which to display the sensitivity indices.
+                If ``None``,
+                use the default outputs set at instantiation.
 
         Returns:
             The sensitivity indices.
@@ -267,10 +275,10 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                     }
                 }
         """
-        raise NotImplementedError
 
     @property
-    def indices(self) -> dict[str, IndicesType]:
+    @abstractmethod
+    def indices(self) -> dict[str, FirstOrderIndicesType]:
         """The sensitivity indices.
 
         With the following structure:
@@ -287,22 +295,21 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 }
             }
         """
-        raise NotImplementedError
 
     @property
-    def main_method(self) -> str:
-        """The name of the main method."""
+    def main_method(self) -> Method:
+        """The name of the main method.
+
+        One of the enum :class:`.Sensitivity.Method`.
+        """
         return self._main_method
 
     @main_method.setter
-    def main_method(
-        self,
-        name: str,
-    ) -> NoReturn:
-        raise NotImplementedError("You cannot change the main method.")
+    def main_method(self, method: Method) -> None:  # noqa: D102
+        self._main_method = method
 
     @property
-    def main_indices(self) -> IndicesType:
+    def main_indices(self) -> FirstOrderIndicesType:
         """The main sensitivity indices.
 
         With the following structure:
@@ -317,7 +324,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 ]
             }
         """
-        raise NotImplementedError
+        return self.indices[self._main_method]
 
     def _outputs_to_tuples(
         self,
@@ -354,7 +361,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         ]
         return [item for sublist in result for item in sublist]
 
-    def sort_parameters(self, output: str | tuple[str, int]) -> list[str]:
+    def sort_parameters(self, output: VariableType) -> list[str]:
         """Return the parameters sorted in descending order.
 
         Args:
@@ -395,7 +402,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot(
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         save: bool = True,
@@ -426,7 +433,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot_field(
         self,
-        output: str | tuple[str, int],
+        output: VariableType,
         mesh: ndarray | None = None,
         inputs: Iterable[str] | None = None,
         standardize: bool = False,
@@ -482,8 +489,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         else:
             output_name, output_component = output
 
-        dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(
+        input_names = self._sort_and_filter_input_parameters(
             (output_name, output_component), inputs
         )
         if standardize:
@@ -492,17 +498,17 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             main_indices = self.main_indices
 
         data = []
-        for input_name in inputs_names:
+        for input_name in input_names:
             data.append(
                 [main_index[input_name] for main_index in main_indices[output_name]]
             )
 
         data = array(data)[:, :, 0]
-        dataset.set_from_array(data, [output_name], sizes={output_name: data.shape[1]})
-        dataset.row_names = inputs_names
+        dataset = Dataset.from_array(data, [output_name], {output_name: data.shape[1]})
+        dataset.index = input_names
         mesh = linspace(0, 1, data.shape[1]) if mesh is None else mesh
-        dataset.set_metadata("mesh", mesh)
-        mesh_dimension = len(dataset.metadata["mesh"].shape)
+        dataset.misc["mesh"] = mesh
+        mesh_dimension = len(dataset.misc["mesh"].shape)
         if mesh_dimension == 1:
             plot = Curves(dataset, mesh="mesh", variable=output_name)
             plot.title = title
@@ -573,22 +579,24 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         """
         outputs = self._outputs_to_tuples(outputs)
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
-        data = {name: [] for name in inputs_names}
+        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
+        data = {name: [] for name in input_names}
         if standardize:
             main_indices = self.standardize_indices(self.main_indices)
         else:
             main_indices = self.main_indices
 
         for output in outputs:
-            for name in inputs_names:
+            for name in input_names:
                 data[name].append(main_indices[output[0]][output[1]][name])
 
-        for name in inputs_names:
+        for name in input_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [
-            repr_variable(*output, size=self.dataset.sizes[output[0]])
+        dataset.index = [
+            repr_variable(
+                *output, size=self.dataset.variable_names_to_n_components[output[0]]
+            )
             for output in outputs
         ]
         plot = BarPlot(dataset, n_digits=2)
@@ -663,8 +671,8 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         """
         outputs = self._outputs_to_tuples(outputs)
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
-        data = {name: [] for name in inputs_names}
+        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
+        data = {name: [] for name in input_names}
         if standardize:
             main_indices = self.standardize_indices(self.main_indices)
         else:
@@ -672,14 +680,16 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
         for output in outputs:
             for name, value in main_indices[output[0]][output[1]].items():
-                if name in inputs_names:
+                if name in input_names:
                     data[name].append(value)
 
-        for name in inputs_names:
+        for name in input_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [
-            repr_variable(*output, size=self.dataset.sizes[output[0]])
+        dataset.index = [
+            repr_variable(
+                *output, size=self.dataset.variable_names_to_n_components[output[0]]
+            )
             for output in outputs
         ]
         plot = RadarChart(dataset)
@@ -732,7 +742,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
     def plot_comparison(
         self,
         indices: list[SensitivityAnalysis],
-        output: str | tuple[str, int],
+        output: VariableType,
         inputs: Iterable[str] | None = None,
         title: str | None = None,
         use_bar_plot: bool = True,
@@ -781,8 +791,8 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
             indices = [indices]
         methods = [self] + indices
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters(output, inputs)
-        for name in inputs_names:
+        input_names = self._sort_and_filter_input_parameters(output, inputs)
+        for name in input_names:
             data = abs(
                 array(
                     [
@@ -792,9 +802,11 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 )
             )
             dataset.add_variable(name, data)
-        data = dataset.data[dataset.PARAMETER_GROUP]
-        dataset.data[dataset.PARAMETER_GROUP] = data / data.max(axis=1)[:, newaxis]
-        dataset.row_names = [method.main_method for method in methods]
+        data = dataset.get_view(group_names=dataset.PARAMETER_GROUP).to_numpy()
+        dataset.update_data(
+            data / data.max(axis=1)[:, newaxis], group_names=dataset.PARAMETER_GROUP
+        )
+        dataset.index = [method.main_method for method in methods]
         if use_bar_plot:
             plot = BarPlot(dataset, n_digits=2)
         else:
@@ -850,24 +862,26 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         save_show_figure(fig, show, file_path)
         return fig
 
-    def export_to_dataset(self) -> Dataset:
+    def to_dataset(self) -> Dataset:
         """Convert :attr:`.SensitivityAnalysis.indices` into a :class:`.Dataset`.
 
         Returns:
-            Dataset: The sensitivity indices.
+            The sensitivity indices.
         """
-        sizes = self.dataset.sizes
+        sizes = self.dataset.variable_names_to_n_components
 
-        rows_names = []
-        for input_name in self.inputs_names:
+        row_names = []
+        for input_name in self.input_names:
             for input_component in range(sizes[input_name]):
-                rows_names.append(
+                row_names.append(
                     repr_variable(
-                        input_name, input_component, size=self.dataset.sizes[input_name]
+                        input_name,
+                        input_component,
+                        size=self.dataset.variable_names_to_n_components[input_name],
                     )
                 )
 
-        dataset = Dataset(by_group=False)
+        dataset = Dataset()
         for method, indices in self.indices.items():
             variables = []
             sizes = {}
@@ -876,19 +890,22 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 variables.append(output)
                 sizes[output] = len(components)
                 for component in components:
-                    data.append(
-                        [component[name].tolist() for name in self.inputs_names]
-                    )
+                    data.append([component[name].tolist() for name in self.input_names])
                     data[-1] = [item for sublist in data[-1] for item in sublist]
             data = array(data).T
-            dataset.add_group(method, data, variables, sizes)
-        dataset.row_names = rows_names
+            dataset.add_group(
+                method,
+                data,
+                [f"{v}" for v in variables],
+                {f"{v}": s for v, s in sizes.items()},
+            )
+        dataset.index = row_names
         return dataset
 
     @staticmethod
     def standardize_indices(
-        indices: IndicesType,
-    ) -> IndicesType:
+        indices: FirstOrderIndicesType,
+    ) -> FirstOrderIndicesType:
         """Standardize the sensitivity indices for each output component.
 
         Each index is replaced by its absolute value divided by the largest index.

@@ -40,6 +40,7 @@ from __future__ import annotations
 
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Union
 
@@ -52,12 +53,12 @@ from numpy import newaxis
 from numpy import sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
+from strenum import StrEnum
 
-from gemseo.core.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.python_compatibility import Final
 
 SavedObjectType = Union[SavedObjectType, float, Callable]
 
@@ -78,31 +79,24 @@ class RBFRegressor(MLRegressionAlgo):
 
     EUCLIDEAN: Final[str] = "euclidean"
 
-    MULTIQUADRIC: Final[str] = "multiquadric"
-    INVERSE_MULTIQUADRIC: Final[str] = "inverse_multiquadric"
-    GAUSSIAN: Final[str] = "gaussian"
-    LINEAR: Final[str] = "linear"
-    CUBIC: Final[str] = "cubic"
-    QUINTIC: Final[str] = "quintic"
-    THIN_PLATE: Final[str] = "thin_plate"
+    class Function(StrEnum):
+        """The radial basis functions."""
 
-    AVAILABLE_FUNCTIONS: list[str] = [
-        MULTIQUADRIC,
-        INVERSE_MULTIQUADRIC,
-        GAUSSIAN,
-        LINEAR,
-        CUBIC,
-        QUINTIC,
-        THIN_PLATE,
-    ]
+        MULTIQUADRIC = "multiquadric"
+        INVERSE_MULTIQUADRIC = "inverse_multiquadric"
+        GAUSSIAN = "gaussian"
+        LINEAR = "linear"
+        CUBIC = "cubic"
+        QUINTIC = "quintic"
+        THIN_PLATE = "thin_plate"
 
     def __init__(
         self,
-        data: Dataset,
+        data: IODataset,
         transformer: TransformerType = MLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
-        function: str | Callable[[float, float], float] = MULTIQUADRIC,
+        function: Function | Callable[[float, float], float] = Function.MULTIQUADRIC,
         der_function: Callable[[ndarray], ndarray] | None = None,
         epsilon: float | None = None,
         smooth: float = 0.0,
@@ -152,8 +146,6 @@ class RBFRegressor(MLRegressionAlgo):
                 scipy.spatial.distance.cdist.html>`_
                 or a function that computes the distance between two points.
         """
-        if isinstance(function, str):
-            function = str(function)
         super().__init__(
             data,
             transformer=transformer,
@@ -409,10 +401,10 @@ class RBFRegressor(MLRegressionAlgo):
     def function(self) -> str:
         """The name of the kernel function.
 
-        The name is possibly different from self.parameters['function'], as it
-        is mapped (scipy). Examples:
+        The name is possibly different from self.parameters['function'], as it is mapped
+        (scipy). Examples:
 
-        'inverse'              -> 'inverse_multiquadric'
-        'InverSE MULtiQuadRIC' -> 'inverse_multiquadric'
+        'inverse'              -> 'inverse_multiquadric' 'InverSE MULtiQuadRIC' ->
+        'inverse_multiquadric'
         """
         return self.algo.function

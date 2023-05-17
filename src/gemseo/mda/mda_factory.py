@@ -25,9 +25,9 @@ from typing import Optional
 from typing import Sequence
 from typing import Union
 
+from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.factory import Factory
 from gemseo.mda.mda import MDA
 
 MDAOptionType = Optional[
@@ -35,11 +35,11 @@ MDAOptionType = Optional[
 ]
 
 
-class MDAFactory:
+class MDAFactory(BaseFactory):
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self) -> None:
-        self.factory = Factory(MDA, ("gemseo.mda",))
+    _CLASS = MDA
+    _MODULE_NAMES = ("gemseo.mda",)
 
     def create(
         self,
@@ -54,24 +54,9 @@ class MDAFactory:
             disciplines: The disciplines.
             **options: The options of the MDA.
         """
-
-        return self.factory.create(mda_name, disciplines=disciplines, **options)
+        return super().create(mda_name, disciplines=disciplines, **options)
 
     @property
     def mdas(self) -> list[str]:
         """The names of the available MDAs."""
-        return self.factory.classes
-
-    def is_available(
-        self,
-        mda_name: str,
-    ) -> bool:
-        """Check the availability of an MDA.
-
-        Args:
-            mda_name: The name of the MDA.
-
-        Returns:
-            Whether the MDA is available.
-        """
-        return self.factory.is_available(mda_name)
+        return self.class_names

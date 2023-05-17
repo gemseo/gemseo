@@ -28,8 +28,8 @@ from scipy.optimize import linprog
 from scipy.optimize import OptimizeResult
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -39,7 +39,9 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a linear optimization algorithm from the SciPy library."""
 
-    problem_type: str = OptimizationProblem.LINEAR_PB
+    problem_type: OptimizationProblem.ProblemType = (
+        OptimizationProblem.ProblemType.LINEAR
+    )
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
     library_name: str = "SciPy"
@@ -64,7 +66,7 @@ class ScipyLinprog(OptimizationLibrary):
 
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor.
 
         Generate the library dictionary that contains the list of algorithms with their
@@ -178,10 +180,10 @@ class ScipyLinprog(OptimizationLibrary):
         obj_coeff = self.problem.nonproc_objective.coefficients[0, :].real
         constraints = self.problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
-            constraints, MDOLinearFunction.TYPE_INEQ
+            constraints, MDOLinearFunction.ConstraintType.INEQ
         )
         eq_lhs, eq_rhs = build_constraints_matrices(
-            constraints, MDOLinearFunction.TYPE_EQ
+            constraints, MDOLinearFunction.ConstraintType.EQ
         )
 
         # |g| is in charge of ensuring max iterations, since it may
@@ -218,11 +220,11 @@ class ScipyLinprog(OptimizationLibrary):
             no_db_no_norm=True,
         )
         f_opt = val_opt[self.problem.objective.name]
-        constraints_values = {
-            key: val_opt[key] for key in self.problem.get_constraints_names()
+        constraint_values = {
+            key: val_opt[key] for key in self.problem.get_constraint_names()
         }
         constraints_grad = {
-            key: jac_opt[key] for key in self.problem.get_constraints_names()
+            key: jac_opt[key] for key in self.problem.get_constraint_names()
         }
         is_feasible = self.problem.is_point_feasible(val_opt)
         optim_result = OptimizationResult(
@@ -230,7 +232,7 @@ class ScipyLinprog(OptimizationLibrary):
             x_opt=x_opt,
             f_opt=f_opt,
             status=linprog_result.status,
-            constraints_values=constraints_values,
+            constraint_values=constraint_values,
             constraints_grad=constraints_grad,
             optimizer_name=self.algo_name,
             message=linprog_result.message,

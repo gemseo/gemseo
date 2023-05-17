@@ -27,7 +27,7 @@ import pytest
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -63,11 +63,11 @@ def test_reset(sellar_mda, sellar_inputs):
     disciplines = sellar_mda.disciplines
     for discipline in disciplines:
         discipline.execute(sellar_inputs)
-        assert discipline.status == MDODiscipline.STATUS_DONE
+        assert discipline.status == MDODiscipline.ExecutionStatus.DONE
 
     sellar_mda.reset_statuses_for_run()
     for discipline in disciplines:
-        assert discipline.status == MDODiscipline.STATUS_PENDING
+        assert discipline.status == MDODiscipline.ExecutionStatus.PENDING
 
 
 def test_input_couplings():
@@ -78,13 +78,13 @@ def test_input_couplings():
 def test_jacobian(sellar_mda, sellar_inputs):
     """Check the Jacobian computation."""
     sellar_mda.use_lu_fact = True
-    sellar_mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
+    sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     with pytest.raises(
         ValueError, match="Unsupported LU factorization for LinearOperators"
     ):
         sellar_mda.linearize(
             sellar_inputs,
-            force_all=True,
+            compute_all_jacobians=True,
         )
 
     sellar_mda.use_lu_fact = False
@@ -168,7 +168,7 @@ def test_consistency_fail(desc, log_message, caplog):
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
 def test_array_couplings(mda_class, grammar_type):
     disciplines = create_disciplines_from_desc(
@@ -178,11 +178,10 @@ def test_array_couplings(mda_class, grammar_type):
 
     a_disc = disciplines[0]
     del a_disc.input_grammar["y1"]
-    a_disc.default_inputs["y1"] = 2.0
     a_disc.input_grammar.update_from_data({"y1": 2.0})
     assert not a_disc.input_grammar.is_array("y1")
 
-    with pytest.raises(InvalidDataException):
+    with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})
 
     with pytest.raises(TypeError, match="must be of type array"):
@@ -199,7 +198,7 @@ def test_convergence_warning(caplog):
     assert not residual_is_small
     assert not max_iter_is_reached
 
-    mda.norm0 = 1.0
+    mda.scaling = "no_scaling"
     mda._compute_residual(np.array([1, 2]), np.array([10, 10]))
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
@@ -241,9 +240,8 @@ def test_log_convergence(caplog):
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-@pytest.mark.parametrize("norm0", [None, 1.0])
-@pytest.mark.parametrize("scale_coupl_active", [True, False])
-def test_scale_res_size(mda_class, norm0, scale_coupl_active):
+@pytest.mark.parametrize("scaling_strategy", MDA.ResidualScaling)
+def test_scale_res_size(mda_class, scaling_strategy):
     coupl_size = 10
     disciplines = create_disciplines_from_desc(
         [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
@@ -251,22 +249,40 @@ def test_scale_res_size(mda_class, norm0, scale_coupl_active):
         outputs_size=coupl_size,
     )
 
+    # Define a reference MDA without scaling
     mda = mda_class(disciplines, max_mda_iter=1)
-    mda.norm0 = 1.0  # Deactivate scaling
+    mda.scaling = "no_scaling"
     mda.execute()
 
-    mda_scale = mda_class(disciplines, max_mda_iter=1)
-    mda.norm0 = norm0
-    mda_scale.set_residuals_scaling_options(scale_coupl_active)
-    mda_scale.execute()
+    # Define MDA with the specified scaling strategy
+    mda_with_scaling = mda_class(disciplines, max_mda_iter=1)
+    mda_with_scaling.scaling = scaling_strategy
+    mda_with_scaling.execute()
 
-    scaled_res = mda.residual_history[-1] / ((2 * coupl_size) ** 0.5)
-    scaled_mda_res = mda_scale.residual_history[-1]
-    assert (abs(scaled_res - scaled_mda_res) < 1e-6) == scale_coupl_active
+    reference_residual = mda.residual_history[-1]
+    scaled_residual = mda_with_scaling.residual_history[-1]
+
+    if scaling_strategy == MDA.ResidualScaling.NO_SCALING:
+        assert scaled_residual == reference_residual
+
+    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_NORM:
+        assert scaled_residual == 1.0
+
+    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
+        assert scaled_residual == 1.0
+
+    elif scaling_strategy == MDA.ResidualScaling.N_COUPLING_VARIABLES:
+        assert scaled_residual == reference_residual / (2 * coupl_size) ** 0.5
+
+    elif scaling_strategy == MDA.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
+        assert scaled_residual == 1.0
+
+    elif scaling_strategy == MDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
+        assert scaled_residual == 1.0
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-@pytest.mark.parametrize("scale_active", [True, False])
+@pytest.mark.parametrize("scale_active", ["initial_residual_norm", "no_scaling"])
 def test_deactivate_scaling(mda_class, scale_active):
     coupl_size = 10
     disciplines = create_disciplines_from_desc(
@@ -276,9 +292,13 @@ def test_deactivate_scaling(mda_class, scale_active):
     )
 
     mda = mda_class(disciplines, max_mda_iter=2)
-    mda.set_residuals_scaling_options(False, scale_active)
+    mda.scaling = scale_active
     mda.execute()
-    assert (mda.residual_history[0] == 1.0) == scale_active
+
+    if scale_active == "no_scaling":
+        assert not (mda.residual_history[0] == 1.0)
+    elif scale_active == "initial_residual_norm":
+        assert mda.residual_history[0] == 1.0
 
 
 def test_not_numeric_couplings():

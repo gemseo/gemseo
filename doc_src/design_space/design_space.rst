@@ -47,7 +47,7 @@ Design space are implemented in |g| through the :class:`.DesignSpace` class.
 1.c. What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A design space can be created from the :meth:`~gemseo.api.create_design_space` and :meth:`~gemseo.api.read_design_space` API functions and then, enhanced by methods of the :class:`.DesignSpace` class. It can be exported to a file by means of the :meth:`~gemseo.api.export_design_space`.
+A design space can be created from the :meth:`~gemseo.create_design_space` and :meth:`~gemseo.read_design_space` API functions and then, enhanced by methods of the :class:`.DesignSpace` class. It can be exported to a file by means of the :meth:`~gemseo.write_design_space`.
 
 1.d. How does |g| handle integer variables?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,7 +80,7 @@ Depending on the problem that is being solved and the algorithm that is being us
 Case 1: the file contains a header line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's consider the *design_space.txt* file containing the following lines:
+Let's consider the *design_space.csv* file containing the following lines:
 
 .. code::
 
@@ -88,13 +88,13 @@ Let's consider the *design_space.txt* file containing the following lines:
     x1 -1. 0. 1. float
     x2 5. 6. 8. float
 
-We can read this file by means of the :meth:`~gemseo.api.read_design_space` function API:
+We can read this file by means of the :meth:`~gemseo.read_design_space` function API:
 
 .. code::
 
-   from gemseo.api import read_design_space
+   from gemseo import read_design_space
 
-   design_space = read_design_space('design_space.txt')
+   design_space = read_design_space('design_space.csv')
 
 and print it:
 
@@ -117,22 +117,22 @@ which results in:
 Case 2: the file does not contain a header line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now, let's consider the *design_space_without_header.txt* file containing the following lines:
+Now, let's consider the *design_space_without_header.csv* file containing the following lines:
 
 .. code::
 
     x1 -1. 0. 1. float
     x2 5. 6. 8. float
 
-We can read this file by means of the :meth:`~gemseo.api.read_design_space` API function
+We can read this file by means of the :meth:`~gemseo.read_design_space` API function
 with the list of labels as optional argument:
 
 .. code::
 
-   from gemseo.api import read_design_space
+   from gemseo import read_design_space
 
    design_space = read_design_space(
-       "design_space_without_header.txt",
+       "design_space_without_header.csv",
        ["name", "lower_bound", "value", "upper_bound", "type"],
    )
 
@@ -191,11 +191,11 @@ Let's imagine that we want to build a design space with the following requiremen
 - *x6* is a one-dimensional unbounded float variable,
 - *x7* is a two-dimensional bounded integer variable with lower bound equal to -1, upper bound equal to 1 and current values to (0,1),
 
-We can create this design space from scratch by means of the :meth:`~gemseo.api.create_design_space` API function and the :meth:`.DesignSpace.add_variable` method of the :class:`.DesignSpace` class:
+We can create this design space from scratch by means of the :meth:`~gemseo.create_design_space` API function and the :meth:`.DesignSpace.add_variable` method of the :class:`.DesignSpace` class:
 
 .. code::
 
-    from gemseo.api import create_design_space
+    from gemseo import create_design_space
     from numpy import ones, array
 
     design_space = create_design_space()
@@ -240,13 +240,13 @@ which results in:
 
 .. note::
 
-   We can get a list of the variable names with theirs indices by means of the :meth:`.DesignSpace.get_indexed_variables_names` method:
+   We can get a list of the variable names with theirs indices by means of the :meth:`.DesignSpace.get_indexed_variable_names` method:
 
    .. code::
 
-      indexed_variables_names = design_space.get_indexed_variables_names()
+      indexed_variable_names = design_space.get_indexed_variable_names()
 
-   and :code:`print(indexed_variables_names)`:
+   and :code:`print(indexed_variable_names)`:
 
    .. code::
 
@@ -642,7 +642,7 @@ and :code:`print(p_point)` to see the result:
 10. How to export a design space to a file?
 *******************************************
 
-When the design space is created, it is possible to export it by means of the :meth:`~gemseo.api.export_design_space` API function with arguments:
+When the design space is created, it is possible to export it by means of the :meth:`~gemseo.write_design_space` API function with arguments:
 
 - :code:`design_space`: design space
 - :code:`output_file`: output file path
@@ -655,6 +655,6 @@ For example:
 
 .. code::
 
-   from gemseo.api import export_design_space
+   from gemseo import write_design_space
 
-   export_design_space(design_space, 'new_design_space.txt')
+   write_design_space(design_space, 'new_design_space.csv')
