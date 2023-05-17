@@ -221,9 +221,9 @@ class Database(Mapping):
                 it can also be a negative integer if counting from the last iteration
                 (e.g. -2 for the penultimate iteration).
         """
-        iteration_m_one = self.__make_iteration_positive(iteration) - 1
+        iteration_index = self.__get_index(iteration)
         for index, x in enumerate(tuple(self.__data.keys())):
-            if index > iteration_m_one:
+            if index > iteration_index:
                 del self.__data[x]
 
     def remove_empty_entries(self) -> None:
@@ -377,12 +377,12 @@ class Database(Mapping):
         Returns:
             The input value at this iteration.
         """
-        iteration = self.__make_iteration_positive(iteration)
+        iteration_index = self.__get_index(iteration)
         # The database dictionary uses the input design variables as keys for the
         # function values. Here we convert it to an iterator that returns the
         # key located at the required iteration using the islice method from
         # itertools.
-        x = next(islice(iter(self.__data), iteration - 1, iteration))
+        x = next(islice(iter(self.__data), iteration_index, iteration_index + 1))
         return x.wrapped_array
 
     def __get_output(
@@ -830,34 +830,27 @@ class Database(Mapping):
     def __str__(self) -> str:
         return str(self.__data)
 
-    def __make_iteration_positive(self, iteration: int) -> int:
-        """Make an iteration positive.
+    def __get_index(self, iteration: int) -> int:
+        """Return the index from an iteration.
 
         Args:
-            iteration: An iteration between 1 and the number of iterations;
-                it can also be a negative integer if counting from the last iteration
-                (e.g. -2 for the penultimate iteration).
+            iteration: The iteration.
 
         Returns:
-            An iteration between 1 and the number of iterations.
+            The index.
 
         Raises:
-            ValueError: When the database is empty
-                or  when the required iteration is higher
-                than the maximum number of iterations in the database.
+            ValueError: If the iteration is out of the possible range of iterations.
         """
-        n_iterations = len(self)
-        if n_iterations == 0:
-            raise ValueError("The database is empty.")
+        len_self = len(self)
 
-        original_iteration = iteration
-        iteration = abs(iteration)
-        if iteration > n_iterations:
+        if iteration == 0 or not (-len_self <= iteration <= len_self):
             raise ValueError(
-                "The iteration must be in {-N, ..., -1, 1, ..., N} "
-                f"where N={n_iterations} is the number of iterations "
-                "stored in the database; "
-                f"got {original_iteration} instead."
+                "The iteration must be within {-N, ..., -1, 1, ..., N} "
+                f"where N={len_self} is the number of iterations."
             )
 
-        return iteration
+        if iteration > 0:
+            return iteration - 1
+
+        return len_self + iteration
