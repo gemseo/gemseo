@@ -1,1 +1,0 @@
-Constraint aggregation MDOFunction is now capable of dealing with complex ndarrays inputs.

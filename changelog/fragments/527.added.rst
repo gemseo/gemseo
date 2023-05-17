@@ -1,5 +1,0 @@
-The argument use_deep_copy has been added to the constructor of MDOParallelChain class.
-This controls the use of deepcopy when running MDOParallelChain.
-By default this is set to False, as a performance improvement has been observed in use cases with a large number of disciplines.
-The old behaviour of using deepcopy of local_data can be enabled by setting this option to True.
-This may be necessary in some rare combination of MDOParallelChain and other disciplines that directly modify the MDODiscipline input data.

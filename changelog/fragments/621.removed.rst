@@ -1,1 +1,0 @@
-API change: :class:`.DOEScenario` no longer has a ``seed`` attribute.

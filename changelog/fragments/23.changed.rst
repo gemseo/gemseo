@@ -1,3 +1,0 @@
-API changes:
-- Removed the useless exception ``NloptRoundOffException``,
-- Renamed ``InvalidDataException`` to ``InvalidDataError``.

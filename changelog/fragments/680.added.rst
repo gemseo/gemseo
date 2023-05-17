@@ -1,1 +1,0 @@
-Documentation: the required parameters of optimization, DOE and linear solver algorithms are documented in dedicated sections.

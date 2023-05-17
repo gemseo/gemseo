@@ -1,2 +1,0 @@
-API change: Removed the method ``_update_grammar_input`` from :class:`.Scenario`,
-:meth:`.Scenario._update_input_grammar` shall be used instead.

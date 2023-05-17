@@ -1,1 +1,0 @@
-:class:`.AutoPyDiscipline` can wrap a Python function with multiline return statements.

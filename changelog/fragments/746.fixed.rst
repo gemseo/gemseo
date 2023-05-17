@@ -1,1 +1,0 @@
-Fix the behavior of DesignSpace.filter_dim method for list of indices containing more than one index.

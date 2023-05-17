@@ -1,2 +1,0 @@
-The MDOLinear function expression can be passed as an argument to the instantiation.
-This can be useful for large numbers of inputs or outputs to avoid long computation times for the expression string.

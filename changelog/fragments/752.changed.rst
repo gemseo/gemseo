@@ -1,1 +1,0 @@
-API change: :meth:`.PostFactory.create` uses ``class_name``, then ``opt_problem`` and ``**options`` as arguments.

@@ -1,1 +1,0 @@
-:class:`.JSchedulerDisciplineWrapper` can submit the execution of disciplines to a HPC job scheduler.

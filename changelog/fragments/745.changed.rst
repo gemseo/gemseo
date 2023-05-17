@@ -1,1 +1,0 @@
-Splitter, Concatenater, Density Filter, and Material Interpolation disciplines use sparse jacobians.

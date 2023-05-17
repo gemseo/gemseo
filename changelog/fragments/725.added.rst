@@ -1,1 +1,0 @@
-:class:`.GradientSensitivity` plots the positive derivatives in red and the negative ones in blue for easy reading.
