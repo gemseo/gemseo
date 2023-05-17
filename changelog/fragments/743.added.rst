@@ -1,1 +1,0 @@
-The argument ``scale`` of :class:`.PCA` allows to scale the data before reducing their dimension.

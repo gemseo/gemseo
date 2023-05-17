@@ -1,2 +1,0 @@
-API change:
-- Added the arguments ``newton_linear_solver`` and ``newton_linear_solver_options`` to the constructor of :class:`MDANewtonRaphson`. These arguments are passed to the linear solver of the Newton solver used to solve the MDA coupling.

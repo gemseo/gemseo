@@ -1,1 +1,0 @@
-:class:`.CorrelationAnalysis` proposes two new sensitivity methods, namely Kendall rank correlation coefficients (:attr:`~.CorrelationAnalysis.kendall`) and squared standard regression coefficients (:attr:`~.CorrelationAnalysis.ssrc`).

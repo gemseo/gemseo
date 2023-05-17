@@ -1,1 +1,0 @@
-:class:`.MDODiscipline` has now a virtual execution mode that returns default_outputs when active.

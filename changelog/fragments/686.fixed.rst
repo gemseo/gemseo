@@ -1,1 +1,0 @@
-Modify the computation of total derivatives in the presence of state variables to avoid unnecessary calculations.

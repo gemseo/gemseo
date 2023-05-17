@@ -1,4 +1,0 @@
-Improve the computation of MDA residuals with the following new strategies:
-- each sub-residual is scaled by the corresponding initial norm,
-- each component is scaled by the corresponding initial component,
-- the euclidean norm of the component-wise division by initial residual scaled by the problem size.

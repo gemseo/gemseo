@@ -1,2 +1,0 @@
-The DOE algorithm ``OT_FACTORIAL`` handles correctly the tuple of parameters (``levels``, ``centers``); this DOE algorithm does not use ``n_samples``.
-The DOE algorithm ``OT_FULLFACT `` handles correctly the use of ``n_samples`` as well as the use of the parameters ``levels``; this DOE algorithm can use either ``n_samples`` or ``levels``.

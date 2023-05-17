@@ -1,1 +1,0 @@
-The different kinds of :class:`.OptPostProcessor` displaying iteration numbers start counting at 1.

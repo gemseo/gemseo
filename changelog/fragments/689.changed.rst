@@ -1,1 +1,0 @@
-API change: :mod:`.utils.python_compatibility` was moved and renamed to :mod:`.utils.compatibility.python`.

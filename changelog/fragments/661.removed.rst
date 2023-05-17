@@ -1,1 +1,0 @@
-API change: remove :meth:`.AutoPyDiscipline.get_return_spec_fromstr`.

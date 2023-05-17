@@ -1,1 +1,0 @@
-:class:`.OTComposedDistribution` can consider any copula offered by OpenTURNS.

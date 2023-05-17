@@ -1,1 +1,0 @@
-API change: Remove :meth:`.Scenario.get_optimum`; use :attr:`.Scenario.optimization_result` instead.

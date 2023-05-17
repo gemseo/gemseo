@@ -1,5 +1,0 @@
-The way non-serializable attributes of an :class:`.MDODiscipline` are treated has changed. From now on, instead of
-defining the attributes to serialize with the class variable ``_ATTR_TO_SERIALIZE``, :class:`.MDODiscipline` and its
-child classes shall define the attributes not to serialize with the class variable ``_ATTR_NOT_TO_SERIALIZE``.
-When a new attribute that is not serializable is added to the list, the methods ``__setstate__`` and ``__getstate__``
-shall be modified to handle its creation properly.

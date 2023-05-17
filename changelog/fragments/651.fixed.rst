@@ -1,2 +1,0 @@
-The bug concerning the linearization of scenario adapters including disciplines that depends both only on scenario adapter inputs and that are linearized in the _run method is solve.
-Tests concerning this behavior where added.

@@ -1,1 +1,0 @@
-Stopping options ``"max_time"`` and ``"stop_crit_n_x"`` can now be used with the global optimizers of SciPy (``"DIFFERENTIAL_EVOLUTION"``, ``"DUAL_ANNEALING"`` and ``"SHGO"``).

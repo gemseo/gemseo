@@ -1,4 +1,0 @@
-API change:
-
-- Rename :meth:`.AutoPyDiscipline.in_names` to :meth:`.AutoPyDiscipline.input_names`.
-- Rename :meth:`.AutoPyDiscipline.out_names` to :meth:`.AutoPyDiscipline.output_names`.
