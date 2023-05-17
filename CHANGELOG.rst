@@ -36,6 +36,7 @@ Added
 -----
 
 - :class:`.PCERegressor` has new arguments:
+
   - ``use_quadrature`` to estimate the coefficients by quadrature rule or least-squares regression.
   - ``use_lars`` to get a sparse PCE with the LARS algorithm in the case of the least-squares regression.
   - ``use_cleaning`` and ``cleaning_options`` to apply a cleaning strategy removing the non-significant terms.
@@ -90,6 +91,7 @@ Added
 - Enable sparse coefficients for MDOLinearFunctions.
   `#756 <https://gitlab.com/gemseo/dev/gemseo/-/issues/756>`_
 - Improve the computation of MDA residuals with the following new strategies:
+
   - each sub-residual is scaled by the corresponding initial norm,
   - each component is scaled by the corresponding initial component,
   - the euclidean norm of the component-wise division by initial residual scaled by the problem size.
@@ -178,7 +180,7 @@ Changed
   `#717 <https://gitlab.com/gemseo/dev/gemseo/-/issues/717>`_
 
 API changes
-***********
+-----------
 
 - ``stieltjes`` and ``strategy`` are no longer arguments of :class:`.PCERegressor`.
 - Removed the useless exception ``NloptRoundOffException``,
@@ -297,16 +299,17 @@ API changes
     - Rename ``outfilename`` to ``file_name`` and do not use suffix.
     - Rename ``outdir`` to ``directory_path``.
 
-- :class:`~.XDSMizer
-- Rename ``latex_output`` to ``save_pdf``.
-- Rename ``open_browser`` to ``show_html``.
-- Rename ``output_dir`` to ``directory_path``.
-`
+- :class:`~.XDSMizer`
+
+    - Rename ``latex_output`` to ``save_pdf``.
+    - Rename ``open_browser`` to ``show_html``.
+    - Rename ``output_dir`` to ``directory_path``.
     - Rename :attr:`~.XDSMizer.outdir` to :attr:`~.XDSMizer.directory_path`.
     - Rename :attr:`~.XDSMizer.outfilename` to :attr:`~.XDSMizer.json_file_name`.
     - Rename :attr:`~.XDSMizer.latex_output` to :attr:`~.XDSMizer.save_pdf`.
 
 - :meth:`~.XDSMizer.monitor`
+
     - Rename ``latex_output`` to ``save_pdf``.
     - Rename ``outfilename`` to ``file_name`` and do not use suffix.
     - Rename ``outdir`` to ``directory_path``.
@@ -352,11 +355,11 @@ API changes
 - Renamed the argument ``input_values`` to ``inputs``.
 - Removed the ``ParallelExecution`` methods:
 
-    - ``_update_local_objects``
-    - ``_run_task``
-    - ``_is_worker``
-    - ``_filter_ordered_outputs``
-    - ``_run_task_by_index``
+  - ``_update_local_objects``
+  - ``_run_task``
+  - ``_is_worker``
+  - ``_filter_ordered_outputs``
+  - ``_run_task_by_index``
 - ``ParallelExecution`` and its derive classes always take a collection of workers and no longer a single worker.
   `#668 <https://gitlab.com/gemseo/dev/gemseo/-/issues/668>`_
 - The visualization :class:`.Lines` uses a specific tuple (color, style, marker, name) per line by default.
@@ -392,131 +395,165 @@ API changes
 - The high-level functions defined in :mod:`gemseo.problems.scalable.data_driven.api` have been moved to :mod:`gemseo.problems.scalable.data_driven`.
   `#707 <https://gitlab.com/gemseo/dev/gemseo/-/issues/707>`_
 - The enumeration :attr:`.MDODiscipline.ExecutionStatus` replaced the constants:
- - ``MDODiscipline.STATUS_VIRTUAL``
- - ``MDODiscipline.STATUS_PENDING``
- - ``MDODiscipline.STATUS_DONE``
- - ``MDODiscipline.STATUS_RUNNING``
- - ``MDODiscipline.STATUS_FAILED``
- - ``MDODiscipline.STATUS_LINEARIZE``
- - ``MDODiscipline.AVAILABLE_STATUSES``
+
+  - ``MDODiscipline.STATUS_VIRTUAL``
+  - ``MDODiscipline.STATUS_PENDING``
+  - ``MDODiscipline.STATUS_DONE``
+  - ``MDODiscipline.STATUS_RUNNING``
+  - ``MDODiscipline.STATUS_FAILED``
+  - ``MDODiscipline.STATUS_LINEARIZE``
+  - ``MDODiscipline.AVAILABLE_STATUSES``
 - The enumeration :attr:`.MDODiscipline.GrammarType` replaced the constants:
- - ``MDODiscipline.JSON_GRAMMAR_TYPE``
- - ``MDODiscipline.SIMPLE_GRAMMAR_TYPE``
+
+  - ``MDODiscipline.JSON_GRAMMAR_TYPE``
+  - ``MDODiscipline.SIMPLE_GRAMMAR_TYPE``
 - The enumeration :attr:`.MDODiscipline.CacheType` replaced the constants:
- - ``MDODiscipline.SIMPLE_CACHE``
- - ``MDODiscipline.HDF5_CACHE``
- - ``MDODiscipline.MEMORY_FULL_CACHE``
- - The value ``None`` indicating no cache is replaced by :attr:`.MDODiscipline.CacheType.NONE`
+
+  - ``MDODiscipline.SIMPLE_CACHE``
+  - ``MDODiscipline.HDF5_CACHE``
+  - ``MDODiscipline.MEMORY_FULL_CACHE``
+  - The value ``None`` indicating no cache is replaced by :attr:`.MDODiscipline.CacheType.NONE`
 - The enumeration :attr:`.MDODiscipline.ReExecutionPolicy` replaced the constants:
- - ``MDODiscipline.RE_EXECUTE_DONE_POLICY``
- - ``MDODiscipline.RE_EXECUTE_NEVER_POLICY``
+
+  - ``MDODiscipline.RE_EXECUTE_DONE_POLICY``
+  - ``MDODiscipline.RE_EXECUTE_NEVER_POLICY``
 - The enumeration :attr:`.derivation_modes.ApproximationMode` replaced the constants:
- - ``derivation_modes.FINITE_DIFFERENCES``
- - ``derivation_modes.COMPLEX_STEP``
- - ``derivation_modes.AVAILABLE_APPROX_MODES``
+
+  - ``derivation_modes.FINITE_DIFFERENCES``
+  - ``derivation_modes.COMPLEX_STEP``
+  - ``derivation_modes.AVAILABLE_APPROX_MODES``
 - The enumeration :attr:`.derivation_modes.DerivationMode` replaced the constants:
- - ``derivation_modes.DIRECT_MODE``
- - ``derivation_modes.REVERSE_MODE``
- - ``derivation_modes.ADJOINT_MODE``
- - ``derivation_modes.AUTO_MODE``
- - ``derivation_modes.AVAILABLE_MODES``
+
+  - ``derivation_modes.DIRECT_MODE``
+  - ``derivation_modes.REVERSE_MODE``
+  - ``derivation_modes.ADJOINT_MODE``
+  - ``derivation_modes.AUTO_MODE``
+  - ``derivation_modes.AVAILABLE_MODES``
 - The enumeration :attr:`.JacobianAssembly.DerivationMode` replaced the constants:
- - ``JacobianAssembly.DIRECT_MODE``
- - ``JacobianAssembly.REVERSE_MODE``
- - ``JacobianAssembly.ADJOINT_MODE``
- - ``JacobianAssembly.AUTO_MODE``
- - ``JacobianAssembly.AVAILABLE_MODES``
+
+  - ``JacobianAssembly.DIRECT_MODE``
+  - ``JacobianAssembly.REVERSE_MODE``
+  - ``JacobianAssembly.ADJOINT_MODE``
+  - ``JacobianAssembly.AUTO_MODE``
+  - ``JacobianAssembly.AVAILABLE_MODES``
 - The enumeration :attr:`.MDODiscipline.ApproximationMode` replaced the constants:
- - ``MDODiscipline.FINITE_DIFFERENCES``
- - ``MDODiscipline.COMPLEX_STEP``
- - ``MDODiscipline.APPROX_MODES``
+
+  - ``MDODiscipline.FINITE_DIFFERENCES``
+  - ``MDODiscipline.COMPLEX_STEP``
+  - ``MDODiscipline.APPROX_MODES``
 - The enumeration :attr:`.MDODiscipline.LinearizationMode` replaced the constants:
- - ``MDODiscipline.FINITE_DIFFERENCE``
- - ``MDODiscipline.COMPLEX_STEP``
- - ``MDODiscipline.AVAILABLE_APPROX_MODES``
+
+  - ``MDODiscipline.FINITE_DIFFERENCE``
+  - ``MDODiscipline.COMPLEX_STEP``
+  - ``MDODiscipline.AVAILABLE_APPROX_MODES``
 - The enumeration :attr:`.DriverLib.DifferentiationMethod` replaced the constants:
- - ``DriverLib.USER_DEFINED_GRADIENT``
- - ``DriverLib.DIFFERENTIATION_METHODS``
+
+  - ``DriverLib.USER_DEFINED_GRADIENT``
+  - ``DriverLib.DIFFERENTIATION_METHODS``
 - The enumeration :attr:`.DriverLib.ApproximationMode` replaced the constants:
- - ``DriverLib.COMPLEX_STEP_METHOD``
- - ``DriverLib.FINITE_DIFF_METHOD``
+
+  - ``DriverLib.COMPLEX_STEP_METHOD``
+  - ``DriverLib.FINITE_DIFF_METHOD``
 - The enumeration :attr:`.OptProblem.ApproximationMode` replaced the constants:
- - ``OptProblem.USER_DEFINED_GRADIENT``
- - ``OptProblem.DIFFERENTIATION_METHODS``
- - ``OptProblem.NO_DERIVATIVES``
- - ``OptProblem.COMPLEX_STEP_METHOD``
- - ``OptProblem.FINITE_DIFF_METHOD``
+
+  - ``OptProblem.USER_DEFINED_GRADIENT``
+  - ``OptProblem.DIFFERENTIATION_METHODS``
+  - ``OptProblem.NO_DERIVATIVES``
+  - ``OptProblem.COMPLEX_STEP_METHOD``
+  - ``OptProblem.FINITE_DIFF_METHOD``
 - The method :meth:`.Scenario.set_differentiation_method` no longer accepts ``None`` for the argument ``method``.
 - The enumeration :attr:`.OptProblem.ProblemType` replaced the constants:
- - ``OptProblem.LINEAR_PB``
- - ``OptProblem.NON_LINEAR_PB``
- - ``OptProblem.AVAILABLE_PB_TYPES``
+
+  - ``OptProblem.LINEAR_PB``
+  - ``OptProblem.NON_LINEAR_PB``
+  - ``OptProblem.AVAILABLE_PB_TYPES``
 - The enumeration :attr:`.DesignSpace.DesignVariableType` replaced the constants:
- - ``DesignSpace.FLOAT``
- - ``DesignSpace.INTEGER``
- - ``DesignSpace.AVAILABLE_TYPES``
+
+  - ``DesignSpace.FLOAT``
+  - ``DesignSpace.INTEGER``
+  - ``DesignSpace.AVAILABLE_TYPES``
 - The namedtuple :attr:`.DesignSpace.DesignVariable` replaced:
- - ``design_space.DesignVariable``
+
+  - ``design_space.DesignVariable``
 - The enumeration :attr:`.MDOFunction.ConstraintType` replaced the constants:
- - ``MDOFunction.TYPE_EQ``
- - ``MDOFunction.TYPE_INEQ``
+
+  - ``MDOFunction.TYPE_EQ``
+  - ``MDOFunction.TYPE_INEQ``
 - The enumeration :attr:`.MDOFunction.FunctionType` replaced the constants:
- - ``MDOFunction.TYPE_EQ``
- - ``MDOFunction.TYPE_INEQ``
- - ``MDOFunction.TYPE_OBJ``
- - ``MDOFunction.TYPE_OBS``
- - The value ``""`` indicating no function type is replaced by :attr:`.MDOFunction.FunctionType.NONE`
+
+  - ``MDOFunction.TYPE_EQ``
+  - ``MDOFunction.TYPE_INEQ``
+  - ``MDOFunction.TYPE_OBJ``
+  - ``MDOFunction.TYPE_OBS``
+  - The value ``""`` indicating no function type is replaced by :attr:`.MDOFunction.FunctionType.NONE`
 - The enumeration :attr:`.RBFRegressor.Function` replaced the constants:
- - ``RBFRegressor.MULTIQUADRIC``
- - ``RBFRegressor.INVERSE_MULTIQUADRIC``
- - ``RBFRegressor.GAUSSIAN``
- - ``RBFRegressor.LINEAR``
- - ``RBFRegressor.CUBIC``
- - ``RBFRegressor.QUINTIC``
- - ``RBFRegressor.THIN_PLATE``
- - ``RBFRegressor.AVAILABLE_FUNCTIONS``
+
+  - ``RBFRegressor.MULTIQUADRIC``
+  - ``RBFRegressor.INVERSE_MULTIQUADRIC``
+  - ``RBFRegressor.GAUSSIAN``
+  - ``RBFRegressor.LINEAR``
+  - ``RBFRegressor.CUBIC``
+  - ``RBFRegressor.QUINTIC``
+  - ``RBFRegressor.THIN_PLATE``
+  - ``RBFRegressor.AVAILABLE_FUNCTIONS``
 - Removed ``StudyAnalysis.AVAILABLE_DISTRIBUTED_FORMULATIONS``.
 - The enumeration :attr:`.RobustnessQuantifier.Approximation` replaced the constant:
- - ``RobustnessQuantifier.AVAILABLE_APPROXIMATIONS``
+
+  - ``RobustnessQuantifier.AVAILABLE_APPROXIMATIONS``
 - The enumeration :attr:`.OTDistributionFitter.DistributionName` replaced the constants:
- - ``OTDistributionFitter.AVAILABLE_DISTRIBUTIONS``
- - ``OTDistributionFitter._AVAILABLE_DISTRIBUTIONS``
+
+  - ``OTDistributionFitter.AVAILABLE_DISTRIBUTIONS``
+  - ``OTDistributionFitter._AVAILABLE_DISTRIBUTIONS``
 - The enumeration :attr:`.OTDistributionFitter.FittingCriterion` replaced the constants:
- - ``OTDistributionFitter.AVAILABLE_FITTING_TESTS``
- - ``OTDistributionFitter._AVAILABLE_FITTING_TESTS``
+
+  - ``OTDistributionFitter.AVAILABLE_FITTING_TESTS``
+  - ``OTDistributionFitter._AVAILABLE_FITTING_TESTS``
 - The enumeration :attr:`.OTDistributionFitter.SignificanceTest` replaced the constant:
- - ``OTDistributionFitter.SIGNIFICANCE_TESTS``
+
+  - ``OTDistributionFitter.SIGNIFICANCE_TESTS``
 - The enumeration :attr:`.ParametricStatistics.DistributionName` replaced the constant:
- - ``ParametricStatistics.AVAILABLE_DISTRIBUTIONS``
+
+  - ``ParametricStatistics.AVAILABLE_DISTRIBUTIONS``
 - The enumeration :attr:`.ParametricStatistics.FittingCriterion` replaced the constant:
- - ``ParametricStatistics.AVAILABLE_FITTING_TESTS``
+
+  - ``ParametricStatistics.AVAILABLE_FITTING_TESTS``
 - The enumeration :attr:`.ParametricStatistics.SignificanceTest` replaced the constant:
- - ``ParametricStatistics.SIGNIFICANCE_TESTS``
+
+  - ``ParametricStatistics.SIGNIFICANCE_TESTS``
 - The enumeration :attr:`.LinearSolver.Solver` replaced the constants:
- - ``LinearSolver.LGMRES``
- - ``LinearSolver.AVAILABLE_SOLVERS``
+
+  - ``LinearSolver.LGMRES``
+  - ``LinearSolver.AVAILABLE_SOLVERS``
 - The enumeration :attr:`.DiscFromExe.Parser` replaced the constants:
- - ``DiscFromExe.Parsers``
- - ``DiscFromExe.Parsers.KEY_VALUE_PARSER``
- - ``DiscFromExe.Parsers.TEMPLATE_PARSER``
+
+  - ``DiscFromExe.Parsers``
+  - ``DiscFromExe.Parsers.KEY_VALUE_PARSER``
+  - ``DiscFromExe.Parsers.TEMPLATE_PARSER``
 - The enumeration :attr:`.SobolAnalysis.Algorithm` replaced the constant:
- - ``SobolAnalysis.Algorithm.Saltelli`` by ``SobolAnalysis.Algorithm.SALTELLI``
- - ``SobolAnalysis.Algorithm.Jansen`` by ``SobolAnalysis.Algorithm.JANSEN``
- - ``SobolAnalysis.Algorithm.MauntzKucherenko`` by ``SobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO``
- - ``SobolAnalysis.Algorithm.Martinez`` by ``SobolAnalysis.Algorithm.MARTINEZ``
+
+  - ``SobolAnalysis.Algorithm.Saltelli`` by ``SobolAnalysis.Algorithm.SALTELLI``
+  - ``SobolAnalysis.Algorithm.Jansen`` by ``SobolAnalysis.Algorithm.JANSEN``
+  - ``SobolAnalysis.Algorithm.MauntzKucherenko`` by ``SobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO``
+  - ``SobolAnalysis.Algorithm.Martinez`` by ``SobolAnalysis.Algorithm.MARTINEZ``
 - The enumeration :attr:`.SobolAnalysis.Method` replaced the constant:
- - ``SobolAnalysis.Method.first`` by ``SobolAnalysis.Method.FIRST``
- - ``SobolAnalysis.Method.total`` by ``SobolAnalysis.Method.TOTAL``
+
+  - ``SobolAnalysis.Method.first`` by ``SobolAnalysis.Method.FIRST``
+  - ``SobolAnalysis.Method.total`` by ``SobolAnalysis.Method.TOTAL``
 - The enumeration :attr:`.FilePathManager.FileType` replaced the constant:
- - ``file_type_manager.FileType``
+
+  - ``file_type_manager.FileType``
 - The enumeration :attr:`.ToleranceInterval.ToleranceIntervalSide` replaced:
- - ``distribution.ToleranceIntervalSide``
+
+  - ``distribution.ToleranceIntervalSide``
 - The namedtuple :attr:`.ToleranceInterval.Bounds` replaced:
- - ``distribution.Bounds``
+
+  - ``distribution.Bounds``
 - The enumeration :attr:`.MatlabEngine.ParallelType` replaced:
- - ``matlab_engine.ParallelType``
+
+  - ``matlab_engine.ParallelType``
 - The enumeration :attr:`.ConstrAggregationDisc.EvaluationFunction` replaced:
- - ``.constraint_aggregation.EvaluationFunction``
+
+  - ``.constraint_aggregation.EvaluationFunction``
   `#710 <https://gitlab.com/gemseo/dev/gemseo/-/issues/710>`_
 - Rename :attr:`.HDF5Cache.hdf_node_name` to :attr:`.HDF5Cache.hdf_node_path`.
 - ``tolerance`` and ``name`` are the first instantiation arguments of :class:`.HDF5Cache`, for consistency with other caches.
@@ -561,16 +598,17 @@ API changes
 - Renamed the instance attribute ``_par_args`` to ``_parallel_args``,
 - Renamed ``GradientApproximationFactory`` to :class:`GradientApproximatorFactory` and moved it to the module ``gradient_approximator_factory.py``,
 - Moved the duplicated functions to ``error_estimators.py``:
-- ``finite_differences.comp_best_step``
-- ``finite_differences.compute_truncature_error``
-- ``finite_differences.compute_cancellation_error``
-- ``finite_differences.approx_hess``
-- ``derivatives_approx.comp_best_step``
-- ``derivatives_approx.compute_truncature_error``
-- ``derivatives_approx.compute_cancellation_error``
-- ``derivatives_approx.approx_hess``
-- ``comp_best_step`` was renamed to ``compute_best_step``
-- ``approx_hess`` was renamed to ``compute_hessian_approximation``
+
+    - ``finite_differences.comp_best_step``
+    - ``finite_differences.compute_truncature_error``
+    - ``finite_differences.compute_cancellation_error``
+    - ``finite_differences.approx_hess``
+    - ``derivatives_approx.comp_best_step``
+    - ``derivatives_approx.compute_truncature_error``
+    - ``derivatives_approx.compute_cancellation_error``
+    - ``derivatives_approx.approx_hess``
+    - ``comp_best_step`` was renamed to ``compute_best_step``
+    - ``approx_hess`` was renamed to ``compute_hessian_approximation``
   `#735 <https://gitlab.com/gemseo/dev/gemseo/-/issues/735>`_
 - To update a grammar from data names that shall be validated against Numpy arrays, the ``update`` method is now replaced by the method ``update_from_names``.
 - To update a :class:`JSONGrammar` from a JSON schema, the ``update`` method is now replaced by the method ``update_from_schema``.
