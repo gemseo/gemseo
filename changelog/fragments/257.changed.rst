@@ -13,6 +13,13 @@ API change:
 - :class:`.Dataset` no longer has the ``is_empty`` method. Use pandas attribute ``empty`` instead.
 - :class:`.Dataset` no longer has the :method:`.export_to_cache` method.
 - :class:`.Dataset` no longer has the ``row_names`` attribute. Use ``index`` instead.
+- :meth:`.Dataset.add_variable` no longer has the ``group`` argument. Use ``group_name`` instead.
+- :meth:`.Dataset.add_variable` no longer has the ``name`` argument. Use ``variable_name`` instead.
+- :meth:`.Dataset.add_variable` no longer has the ``cache_as_input`` argument.
+- :meth:`.Dataset.add_group` no longer has the ``group`` argument. Use ``group_name`` instead.
+- :meth:`.Dataset.add_group` no longer has the ``variables`` argument. Use ``variable_names`` instead.
+- :meth:`.Dataset.add_group` no longer has the ``sizes`` argument. Use ``variable_names_to_n_components`` instead.
+- :meth:`.Dataset.add_group` no longer has the ``cache_as_input`` and ``pattern`` arguments.
 - :meth:`~.gemseo.load_dataset` is renamed: :meth:`~gemseo.create_benchmark_dataset`.
     Can be used to create a Burgers, Iris or Rosenbrock dataset.
 - :class:`.BurgerDataset` no longer exists. Create a Burger dataset with :function:`.create_burgers_dataset`.
