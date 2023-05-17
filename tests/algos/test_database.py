@@ -197,6 +197,7 @@ def test_get_x_at_iteration():
         database.get_iteration(array([123.456]))
     assert_almost_equal(hist_g2[0], 0.92396186, decimal=6)
     assert_almost_equal(hist_g2[1], 0.85259476, decimal=6)
+    assert all(database.get_x_vect(-1) == database.get_x_vect(29))
 
 
 def test_scipy_df0_rosenbrock(problem_and_result):
@@ -709,9 +710,8 @@ def test_get_output_value():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The iteration must be in {-N, ..., -1, 1, ..., N} "
-            "where N=1 is the number of iterations stored in the database; "
-            "got 2 instead."
+            "The iteration must be within {-N, ..., -1, 1, ..., N} "
+            "where N=1 is the number of iterations."
         ),
     ):
         database._Database__get_output(2)
