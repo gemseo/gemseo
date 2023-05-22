@@ -1,0 +1,1 @@
+It is now possible to pass a custom ``name`` to the :class:`.XLSDiscipline` at instantiation.

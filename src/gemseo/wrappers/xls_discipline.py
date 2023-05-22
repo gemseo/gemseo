@@ -66,6 +66,7 @@ class XLSDiscipline(MDODiscipline):
     def __init__(
         self,
         xls_file_path: Path | str,
+        name: str | None = None,
         macro_name: str | None = "execute",
         copy_xls_at_setstate: bool = False,
         recreate_book_at_run: bool = False,
@@ -129,7 +130,7 @@ class XLSDiscipline(MDODiscipline):
         """
         if xlwings is None:
             raise ImportError("cannot import xlwings")
-        super().__init__()
+        super().__init__(name)
         self._xls_file_path = Path(xls_file_path)
         self._xls_app = None
         self.macro_name = macro_name
