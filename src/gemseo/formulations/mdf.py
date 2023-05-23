@@ -20,12 +20,14 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Final
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.mda.mda import MDA
 from gemseo.mda.mda_factory import MDAFactory
 
 
@@ -43,6 +45,21 @@ class MDF(MDOFormulation):
     Note that the multidisciplinary analysis is made at each optimization iteration.
     """
 
+    mda: MDA
+    """The MDA used in the formulation."""
+
+    _main_mda_name: str
+    """The name of the main MDA."""
+
+    _mda_factory: MDAFactory
+    """The MDA factory."""
+
+    DEFAULT_MAIN_MDA_NAME: Final[str] = "MDAChain"
+    """The default name of the main MDA."""
+
+    DEFAULT_INNER_MDA_NAME: Final[str] = "MDAJacobi"
+    """The default name of the inner MDA."""
+
     def __init__(
         self,
         disciplines: list[MDODiscipline],
@@ -50,8 +67,8 @@ class MDF(MDOFormulation):
         design_space: DesignSpace,
         maximize_objective: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        main_mda_name: str = "MDAChain",
-        inner_mda_name: str = "MDAJacobi",
+        main_mda_name: str = DEFAULT_MAIN_MDA_NAME,
+        inner_mda_name: str = DEFAULT_INNER_MDA_NAME,
         **main_mda_options: Any,
     ) -> None:
         """
@@ -71,7 +88,6 @@ class MDF(MDOFormulation):
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
         )
-        self.mda = None
         self._main_mda_name = main_mda_name
         self._mda_factory = MDAFactory()
         self._instantiate_mda(main_mda_name, inner_mda_name, **main_mda_options)
@@ -83,8 +99,8 @@ class MDF(MDOFormulation):
 
     def _instantiate_mda(
         self,
-        main_mda_name: str = "MDAChain",
-        inner_mda_name: str = "MDAJacobi",
+        main_mda_name: str = DEFAULT_MAIN_MDA_NAME,
+        inner_mda_name: str = DEFAULT_INNER_MDA_NAME,
         **mda_options: Any,
     ) -> None:
         """Create the MDA discipline.
