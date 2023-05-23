@@ -25,10 +25,14 @@ block = Block(
     ),
     url="algorithms/opt_algos.html",
     dependencies=[
+        WebLink("GCMMA-MMA", url="https://github.com/arjendeetman/GCMMA-MMA-Python"),
         WebLink(
-            "nlopt",
+            "NLopt",
             url="https://nlopt.readthedocs.io/en/latest/",
         ),
+        WebLink("PDFO", url="https://www.pdfo.net/"),
+        WebLink("pSeven", url="https://www.pseven.io/product/pseven/"),
+        WebLink("pymoo", url="https://pymoo.org/"),
         WebLink("SciPy", url="https://scipy.org/"),
     ],
     examples="examples/optimization_problem/index.html",
