@@ -846,3 +846,42 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     def _reindex(self) -> None:
         """Reindex the dataframe."""
+
+    def to_dict_of_arrays(
+        self, by_group: bool = True
+    ) -> dict[str, ndarray | dict[str, ndarray]]:
+        """Convert the dataset into a dictionary of NumPy arrays.
+
+        Args:
+            by_group: Whether the data are returned as
+                ``{group_name: {variable_name: variable_value}}``.
+                Otherwise,
+                the data are returned either as ``{variable_name: variable_value}``
+                if only one group contains the variable ``variable_name``
+                or as ``{f"{group_name}:{variable_name}": variable_value}``
+                if at least two groups contain the variable ``variable_name``.
+
+        Returns:
+            The dataset expressed as a dictionary of NumPy arrays.
+        """
+        if by_group:
+            return {
+                group_name: {
+                    variable_name: self.get_view(group_name, variable_name).to_numpy()
+                    for variable_name in self.get_variable_names(group_name)
+                }
+                for group_name in self.group_names
+            }
+
+        dict_of_arrays = {}
+        for group_name, variable_name in self.variable_identifiers:
+            if len(self.get_group_names(variable_name)) == 1:
+                name = variable_name
+            else:
+                name = f"{group_name}:{variable_name}"
+
+            dict_of_arrays[name] = self.get_view(
+                group_names=group_name, variable_names=variable_name
+            ).to_numpy()
+
+        return dict_of_arrays
