@@ -717,7 +717,7 @@ Technical improvements
 - Moved ``gemseo.utils.testing.pytest_conftest.concretize_classes`` to :mod:`gemseo.utils.testing.helpers.concretize_classes`.
   `#173 <https://gitlab.com/gemseo/dev/gemseo/-/issues/173>`_
 - :class:`.Dataset` inherits from :class:`DataFrame` and uses multi-indexing columns.
-  Some methods have been added to improve the use of multi-index.
+  Some methods have been added to improve the use of multi-index; :meth:`~.Dataset.transform_variable` has been renamed to :meth:`~.Dataset.transform_data`.
   Two derived classes (:class:`.IODataset` and :class:`.OptimizationDataset`) can be considered for specific usages.
 - :class:`.Dataset` can be imported from ``src.gemseo.datasets.dataset``.
 - :class:`.Dataset` no longer has the ``get_data_by_group``, ``get_all_data`` and ``get_data_by_names`` methods. Use :meth:`~.Dataset.get_view`` instead.
