@@ -195,7 +195,7 @@ class SellarSystem(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         x_local, _, y_1, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_1, Y_2])
         self.jac[C_1][Y_1] = atleast_2d(array([-2.0 * y_1]))
         self.jac[C_2][Y_2] = ones((1, 1))
@@ -244,7 +244,7 @@ class Sellar1(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
         inv_denom = 1.0 / (self.compute_y_1(x_local, x_shared, y_2))
@@ -277,7 +277,7 @@ class Sellar2(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         y_1 = self.get_inputs_by_name(Y_1)
         self.jac[Y_2] = {}
         self.jac[Y_2][X_LOCAL] = zeros((1, 1))

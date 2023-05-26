@@ -69,7 +69,7 @@ class Splitter(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(with_zeros=True)
+        self._init_jacobian()
         self.jac = {}
         identity = csc_array(eye(self.local_data[self.__input_name].size))
         for output_name, input_indices in self.__slicing_structure.items():
