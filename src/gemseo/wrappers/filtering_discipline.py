@@ -85,7 +85,7 @@ class FilteringDiscipline(MDODiscipline):
         outputs: Iterable[str] | None = None,
     ) -> None:
         self.discipline._compute_jacobian(inputs, outputs)
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         jac = self.discipline.jac
         for output_name in self.get_output_data_names():
             for input_name in self.get_input_data_names():

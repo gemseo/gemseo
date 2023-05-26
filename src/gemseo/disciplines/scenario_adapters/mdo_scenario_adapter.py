@@ -514,7 +514,9 @@ class MDOScenarioAdapter(MDODiscipline):
         # Initialize the Jacobian
         diff_inputs = [name for name in inputs if name not in bound_inputs]
         # N.B. there may be only bound inputs
-        self._init_jacobian(diff_inputs, outputs)
+        self._init_jacobian(
+            diff_inputs, outputs, init_type=MDODiscipline.InitJacobianType.EMPTY
+        )
 
         # Compute the Jacobians of the optimization functions
         jacobians = self._compute_auxiliary_jacobians(diff_inputs)

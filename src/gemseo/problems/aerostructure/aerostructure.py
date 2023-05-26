@@ -177,7 +177,7 @@ class Mission(MDODiscipline):
         self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
     ) -> None:
         # Initialize all matrices to zeros
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         drag, lift, mass = self.get_inputs_by_name(["drag", "lift", "mass"])
         self.jac["c_lift"]["lift"] = ones((1, 1))
         self.jac["c_rf"]["reserve_fact"] = ones((1, 1))
@@ -267,7 +267,7 @@ class Aerodynamics(MDODiscipline):
         self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
     ) -> None:
         # Initialize all matrices to zeros
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         sweep, thick_airfoils = self.get_inputs_by_name(["sweep", "thick_airfoils"])
         self.jac["drag"]["sweep"] = atleast_2d(
             array([0.1 * 2.0 * sweep[0] / 360.0**2.0])
@@ -361,7 +361,7 @@ class Structure(MDODiscipline):
         self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
     ) -> None:
         # Initialize all matrices to zeros
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         sweep = self.get_inputs_by_name("sweep")
         self.jac["mass"]["sweep"] = atleast_2d(
             array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3])

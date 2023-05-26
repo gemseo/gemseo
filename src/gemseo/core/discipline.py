@@ -45,6 +45,7 @@ from numpy import empty
 from numpy import ndarray
 from numpy import zeros
 from numpy.typing import NDArray
+from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.caches.cache_factory import CacheFactory
@@ -127,6 +128,18 @@ class MDODiscipline(Serializable):
         MEMORY_FULL = "MemoryFullCache"
         NONE = ""
         """No cache is used."""
+
+    class InitJacobianType(StrEnum):
+        """The way to initialize Jacobian matrices."""
+
+        EMPTY = "empty"
+        """The Jacobian is initialized as an empty NumPy ndarray."""
+
+        DENSE = "dense"
+        """The Jacobian is initialized as a NumPy ndarray filled in with zeros."""
+
+        SPARSE = "sparse"
+        """The Jacobian is initialized as a SciPy CSR array with zero elements."""
 
     ApproximationMode = ApproximationMode
 
@@ -1501,7 +1514,7 @@ class MDODiscipline(Serializable):
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
-        with_zeros: bool = False,
+        init_type: InitJacobianType = InitJacobianType.DENSE,
         fill_missing_keys: bool = False,
     ) -> tuple[list[str], list[str]]:
         """Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
@@ -1514,10 +1527,7 @@ class MDODiscipline(Serializable):
                 If None,
                 the linearization should be performed on all outputs declared differentiable.
                 fill_missing_keys: if True, just fill the missing items
-            with_zeros: If True,
-                the matrices are set to zero
-                otherwise,
-                they are empty matrices.
+            init_type: The type used to initialize the Jacobian.
             fill_missing_keys: If True,
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
@@ -1531,12 +1541,22 @@ class MDODiscipline(Serializable):
         output_values = [self.get_outputs_by_name(name) for name in output_names]
         input_names = self._differentiated_inputs if inputs is None else inputs
         input_values = [self.get_inputs_by_name(name) for name in input_names]
-        default_matrix = zeros if with_zeros else empty
+
+        if init_type == self.InitJacobianType.EMPTY:
+            default_matrix = empty
+        elif init_type == self.InitJacobianType.DENSE:
+            default_matrix = zeros
+        elif init_type == self.InitJacobianType.SPARSE:
+            default_matrix = csr_array
+        else:
+            # Cast the argument so that the enum class raise an explicit error
+            self.InitJacobianType(init_type)
+
         if fill_missing_keys:
             jac = self.jac
             # Only fill the missing sub jacobians
             for output_name, output_value in zip(output_names, output_values):
-                jac_loc = jac.get(output_name, defaultdict(None))
+                jac_loc = jac.setdefault(output_name, defaultdict(None))
                 for input_name, input_value in zip(input_names, input_values):
                     sub_jac = jac_loc.get(input_name)
                     if sub_jac is None:

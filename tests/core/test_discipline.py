@@ -51,6 +51,8 @@ from numpy import array
 from numpy import complex128
 from numpy import ndarray
 from numpy import ones
+from numpy.linalg import norm
+from scipy.sparse import spmatrix
 
 
 def check_jac_equals(
@@ -788,17 +790,49 @@ def test_is_linearized():
     assert aero2.n_calls_linearize == 0
 
 
-def test_init_jacobian():
-    """Test the initialization of the jacobian matrix."""
+def test_init_jacobian_with_incorrect_type():
+    """Test the initialization of the jacobian matrix with incorrect type."""
 
-    def myfunc(x=1, y=2):
+    def myfunc(x=1.0, y=2.0):
         z = x + y
         return z
 
     disc = AutoPyDiscipline(myfunc)
-    disc.jac = {}
+
+    with pytest.raises(ValueError):
+        disc._init_jacobian(init_type="foo")
+
+
+@pytest.mark.parametrize("init_method", MDODiscipline.InitJacobianType)
+@pytest.mark.parametrize("fill_missing_keys", [True, False])
+def test_init_jacobian(init_method, fill_missing_keys):
+    """Test the initialization of the jacobian matrix."""
+
+    def myfunc(x=1.0, y=2.0):
+        z = x + y
+        return z
+
+    disc = AutoPyDiscipline(myfunc)
+
     disc.execute()
-    disc._init_jacobian(outputs=["z"], fill_missing_keys=True)
+    disc._init_jacobian(
+        outputs=["z"],
+        inputs=["x"],
+        init_type=init_method,
+        fill_missing_keys=fill_missing_keys,
+    )
+
+    if not fill_missing_keys:
+        assert not disc.jac["z"].get("y", None)
+
+    if init_method == "empty":
+        assert isinstance(disc.jac["z"]["x"], ndarray)
+    elif init_method == "dense":
+        assert isinstance(disc.jac["z"]["x"], ndarray)
+        assert norm(disc.jac["z"]["x"]) == 0.0
+    elif init_method == "sparse":
+        assert isinstance(disc.jac["z"]["x"], spmatrix)
+        assert disc.jac["z"]["x"].size == 0
 
 
 def test_repr_str():

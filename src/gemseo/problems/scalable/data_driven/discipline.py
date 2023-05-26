@@ -110,7 +110,7 @@ class ScalableDiscipline(MDODiscipline):
         :param outputs: list of output functions.  Default value: None.
         :type outputs: list(str)
         """
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
         jac = self.scalable_model.scalable_derivatives(self.local_data)
         input_names = self.scalable_model.input_names
         jac = {

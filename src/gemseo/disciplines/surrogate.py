@@ -204,5 +204,5 @@ class SurrogateDiscipline(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(inputs, outputs)
+        self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
         self.jac = self.regression_model.predict_jacobian(self.get_input_data())

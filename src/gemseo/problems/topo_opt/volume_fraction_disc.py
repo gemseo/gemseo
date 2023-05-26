@@ -67,5 +67,5 @@ class VolumeFraction(MDODiscipline):
         rho = self.get_inputs_by_name("rho")
         self.local_data["volume fraction"] = array([mean(rho.ravel())])
         self._is_linearized = True
-        self._init_jacobian(with_zeros=True)
+        self._init_jacobian()
         self.jac["volume fraction"] = {"rho": atleast_2d(ones_like(rho).T / size(rho))}
