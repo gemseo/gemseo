@@ -25,6 +25,7 @@ import logging
 from copy import copy
 from copy import deepcopy
 from numbers import Number
+from os import PathLike
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -232,7 +233,7 @@ class JSONGrammar(BaseGrammar):
         if self.__validator is None:
             self._create_validator()
 
-        data_to_check = self.__cast_array_to_list(data)
+        data_to_check = self.__cast_data(data)
 
         try:
             self.__validator(data_to_check)
@@ -273,7 +274,7 @@ class JSONGrammar(BaseGrammar):
         """  # noqa: D205, D212, D415
         if not data:
             return
-        self.__schema_builder.add_object(self.__cast_array_to_list(data), not merge)
+        self.__schema_builder.add_object(self.__cast_data(data), not merge)
         self.__init_dependencies()
 
     def update_from_types(  # noqa: D102
@@ -446,26 +447,26 @@ class JSONGrammar(BaseGrammar):
         self.__init_dependencies()
 
     @classmethod
-    def __cast_array_to_list(
-        cls,
-        data: Data,
-    ) -> DictSchemaType:
-        """Cast the NumPy arrays to lists for dictionary values.
+    def __cast_data(cls, data: Data) -> DictSchemaType:
+        """Cast the NumPy arrays to lists and Path to str for dictionary values.
 
         Args:
             data: The data mapping.
 
         Returns:
             The original mapping cast to a dictionary
-            where NumPy arrays have been replaced with lists.
+            where NumPy arrays have been replaced with lists
+            and Path objects with str ones.
         """
-        dict_of_list = dict(data)
+        _data_dict = dict(data)
         for key, value in data.items():
             if isinstance(value, (ndarray, generic)):
-                dict_of_list[key] = value.real.tolist()
+                _data_dict[key] = value.real.tolist()
+            elif isinstance(value, PathLike):
+                _data_dict[key] = str(value)
             elif isinstance(value, Mapping):
-                dict_of_list[key] = cls.__cast_array_to_list(value)
-        return dict_of_list
+                _data_dict[key] = cls.__cast_data(value)
+        return _data_dict
 
     def __get_names_to_types(self) -> NamesToTypes:
         """Create the mapping from element names to elements types.
