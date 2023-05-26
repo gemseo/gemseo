@@ -829,19 +829,38 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 for column in columns
             ]
 
-    def transform_variable(
-        self, variable_name: str, transformation: Callable[[ndarray], ndarray]
+    def transform_data(
+        self,
+        transformation: Callable[[ndarray], ndarray],
+        group_names: StrColumnType = (),
+        variable_names: StrColumnType = (),
+        components: ComponentType = (),
+        indices: IndexType = (),
     ) -> None:
-        """Transform a variable.
+        """Transform some data of the dataset.
 
         Args:
-            variable_name: The name of the variable.
             transformation: The function transforming the variable,
                 e.g. ``"lambda x: 2*x"``.
+            group_names: The name(s) of the group(s) corresponding to these data.
+                If empty, consider all the groups.
+            variable_names: The name(s) of the variables(s) corresponding to these data.
+                If empty, consider all the variables of the considered groups.
+            components: The component(s) corresponding to these data.
+                If empty, consider all the components of the considered variables.
+            indices: The index (indices) of the dataset corresponding to these data.
+                If empty, consider all the indices.
         """
         self.update_data(
-            transformation(self.get_view(variable_names=variable_name).to_numpy()),
-            variable_names=variable_name,
+            transformation(
+                self.get_view(
+                    group_names, variable_names, components, indices
+                ).to_numpy()
+            ),
+            group_names,
+            variable_names,
+            components,
+            indices,
         )
 
     def _reindex(self) -> None:

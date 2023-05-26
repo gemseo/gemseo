@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import re
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -419,18 +420,33 @@ def test_get_normalized_dataset(
             assert allclose(expected_data, data)
 
 
-def test_transform_variable():
-    """Check the method transform_variable."""
+def test_transform_data():
+    """Check the method transform_data."""
     dataset = Dataset()
     dataset.add_variable("x", 1.0, group_name="a")
     dataset.add_variable("x", 1.0, group_name="b")
-    dataset.transform_variable("x", lambda x: -x)
+    dataset.transform_data(lambda x: -x, variable_names="x")
 
     expected_dataset = Dataset()
     expected_dataset.add_variable("x", -1.0, group_name="a")
     expected_dataset.add_variable("x", -1.0, group_name="b")
 
     assert_frame_equal(dataset, expected_dataset)
+
+    def f(x: ndarray) -> ndarray:
+        """Return the opposite of an array.
+
+        Args:
+            x: The original array.
+
+        Returns:
+            The opposite of the original array.
+        """
+        return -x
+
+    dataset.update_data = MagicMock()
+    dataset.transform_data(f, "a", "x", [0], [0])
+    dataset.update_data.assert_called_with(array([[1.0]]), "a", "x", [0], [0])
 
 
 @pytest.mark.parametrize(
