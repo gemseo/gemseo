@@ -1,0 +1,1 @@
+:class:`.Animation` is a new :class:`.OptPostProcessor` to generate an animated GIF from a :class:`.OptPostProcessor`.

@@ -109,10 +109,26 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.opt_grammar = JSONGrammar("OptPostProcessor")
         self.opt_grammar.update_from_file(join(comp_dir, "OptPostProcessor.json"))
         self.opt_grammar.set_descriptions(get_options_doc(self.execute))
+        self._update_grammar_from_class(self.__class__)
 
-        cls_name = self.__class__.__name__
-        name = cls_name + "_options"
-        f_class = inspect.getfile(self.__class__)
+        # The data required to eventually rebuild the plot in another framework.
+        self.materials_for_plotting = {}
+        default_file_name = FilePathManager.to_snake_case(self.__class__.__name__)
+        self.__file_path_manager = FilePathManager(
+            FilePathManager.FileType.FIGURE, default_file_name
+        )
+        self._output_files = []
+        self.__figures = {}
+        self.__nameless_figure_counter = 0
+
+    def _update_grammar_from_class(self, cls: type) -> None:
+        """Update the grammar based on another class having a JSON grammar.
+
+        Args:
+            cls: The class.
+        """
+        name = f"{cls.__name__}_options"
+        f_class = inspect.getfile(cls)
         comp_dir = abspath(dirname(f_class))
         schema_file = join(comp_dir, f"{name}.json")
         if not exists(schema_file):
@@ -122,27 +138,13 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
                 "Options grammar for optimization post-processor does not exist, "
                 f"expected: {comp_dir} or {join(comp_dir, name)}.json."
             )
-
         descriptions = {}
-
         if hasattr(self.__class__, "_run"):
             descriptions.update(get_options_doc(self.__class__._run))
-
         if hasattr(self.__class__, "_plot"):
             descriptions.update(get_options_doc(self.__class__._plot))
-
         self.opt_grammar.update_from_file(schema_file)
         self.opt_grammar.set_descriptions(descriptions)
-
-        # The data required to eventually rebuild the plot in another framework.
-        self.materials_for_plotting = {}
-        default_file_name = FilePathManager.to_snake_case(self.__class__.__name__)
-        self.__file_path_manager = FilePathManager(
-            FilePathManager.FileType.FIGURE, default_file_name
-        )
-        self.__output_files = []
-        self.__figures = {}
-        self.__nameless_figure_counter = 0
 
     @property
     def _change_obj(self) -> bool:
@@ -160,7 +162,7 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
     @property
     def output_files(self) -> list[str]:
         """The paths to the output files."""
-        return self.__output_files
+        return self._output_files
 
     def _add_figure(
         self,
@@ -219,28 +221,13 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: If the ``opt_problem.database`` is empty.
         """
         # convert file_path to string before grammar-based options checking
-        if isinstance(file_path, Path):
-            file_path_to_be_checked = str(file_path)
-        else:
-            file_path_to_be_checked = file_path
-
-        if isinstance(directory_path, Path):
-            directory_path_to_be_checked = str(directory_path)
-        else:
-            directory_path_to_be_checked = directory_path
-
-        if file_path is not None:
-            file_path = Path(file_path)
-
-        if directory_path is not None:
-            directory_path = Path(directory_path)
 
         self.check_options(
             save=save,
             show=show,
-            file_path=file_path_to_be_checked,
+            file_path=file_path,
             file_name=file_name,
-            directory_path=directory_path_to_be_checked,
+            directory_path=directory_path,
             file_extension=file_extension,
             fig_size=fig_size,
             **options,
@@ -333,7 +320,7 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
                 else:
                     fig_file_path = file_path
 
-                self.__output_files.append(str(fig_file_path))
+                self._output_files.append(str(fig_file_path))
 
             else:
                 fig_file_path = None
