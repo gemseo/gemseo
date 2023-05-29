@@ -219,7 +219,7 @@ dataset.variable_names
 # One can use a function applying to a NumPy array
 # to transform the data associated with a variable,
 # for instance a twofold increase:
-dataset.transform_variable("bar", lambda x: 2 * x)
+dataset.transform_data(lambda x: 2 * x, variable_names="bar")
 
 # %%
 # Get a view of the dataset
