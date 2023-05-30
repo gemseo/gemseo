@@ -12,22 +12,11 @@
 
 .. _gemseo_study:
 
-Study analysis
+Study analyses
 ==============
 
-Objective and scope
--------------------
-
-This section describes how to use :class:`.StudyAnalysis`.
-The idea is to help the users to define the right MDO problem to be solved, even before wrapping any software.
-The result of the study are a :term:`N2` (or :term:`DSM`)
-and :term:`XDSM` diagrams (see more explanations here :ref:`XDSM <xdsm>`),
-with a defined MDO problems including:
-
-- The list of disciplines, with their inputs and outputs
-- The design variables
-- The constraints
-- The objective function(s)
+The :class:`.CouplingStudyAnalysis` and :class:`.MDOStudyAnalysis` are tools based on an Excel file
+to specify and analyze a study, even before wrapping any software.
 
 No executable code is produced, the idea is to assist the discussions with design and field experts,
 customers, to define the MDO problem, from the white sheet. This way, the study may be visualized before
@@ -35,11 +24,32 @@ any process or tool being actually ready.
 
 There is no need to write any line of code to use this tool. A command line executable is available.
 
+Coupling study analysis
+-----------------------
+
+The :class:`.CouplingStudyAnalysis` helps the user to check the couplings between various disciplines.
+
+The user only has to fill an Excel file with one worksheet per discipline defining the input and output names.
+
+The result of the analysis is a :term:`N2` (or :term:`DSM`) diagram
+
+MDO study analysis
+------------------
+
+The :class:`.MDOStudyAnalysis` helps the user to define the right MDO problem to be solved.
+
+The user only has to fill an Excel file with one worksheet per discipline defining the input and output names
+and one worksheet per scenario (at least the main scenario, and multiple scenarios for distributive formulations)
+defining the names of the objectives, constraints, design variables, disciplines, formulation and options.
+
+The result of the analysis are a :term:`N2` (or :term:`DSM`)
+and :term:`XDSM` diagrams (see more explanations here :ref:`XDSM <xdsm>`).
+
 Examples
 --------
 
-The next figure illustrates how this tool can be used to create an MDO study analysis.
-This requires the creation of an excel workbook with one sheet per discipline.
+The next figure illustrates how this tool can be used to create an :class:`.MDOStudyAnalysis`.
+This requires the creation of an Excel workbook with one sheet per discipline.
 The name of the discipline is given by the name of the sheet.
 On each of these sheets, the inputs and outputs of the discipline must be given.
 
@@ -59,7 +69,7 @@ Scenarios are defined by sheet names starting with "Scenario".
 
 The N2 and XDSM diagrams can be generated from such as study file.
 The N2 diagrams are generated as pdf files.
-The XDSM diagrams are generated as standalone HTML files, by default, or as Latex and pdf files as an option (-l).
+The XDSM diagrams are generated as standalone HTML files, by default, or as LaTex and PDF files as an option (-l).
 
 .. figure:: figs/study_n2.png
    :scale: 100 %
@@ -79,7 +89,7 @@ The XDSM diagrams are generated as standalone HTML files, by default, or as Late
 
 For more complex use cases, multi-level formulations can also be used.
 You first need to define the sub-scenarios in dedicated sheets,
-and then add the names of these sheets in the cell block "Disciplines" of the sheet defining the main scenario.
+and then add the names of these sheets in the cell block ``Disciplines`` of the sheet defining the main scenario.
 Finally, a multilevel MDO formulation has to be chosen, e.g. ``"BiLevel"``.
 
 .. figure:: figs/study_2.png
@@ -90,8 +100,8 @@ Finally, a multilevel MDO formulation has to be chosen, e.g. ``"BiLevel"``.
 Class documentation
 -------------------
 
-.. currentmodule:: gemseo.utils.study_analysis
-.. autoclass:: StudyAnalysis
+.. currentmodule:: gemseo.utils.study_analyses.mdo_study_analysis
+.. autoclass:: MDOStudyAnalysis
    :noindex:
 
 
@@ -103,18 +113,24 @@ This tool allows the generation of an N2 chart and an XDSM diagram from an Excel
 
 Its usage is:
 
-``gemseo-study [-h] [-o OUT_DIR] [-x] [-p] [-s FIG_SIZE] study_file``
+``gemseo-study [-h] [-o OUT_DIR] [-x] [-p] [-h HEIGHT] [-w WIDTH] [-t STUDY_TYPE] study_file``
 
 with
 
 positional arguments:
-  study_file            XLS file that describes the study
+  study_file                       The path of the XLS file that describes the study.
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -o OUT_DIR, --out_dir OUT_DIR
-                        The path of the directory to save the files.
-  -x, --xdsm            Whether to generate a XDSM.
-  -p, --save_pdf    Whether to save the XDSM as a PDF file.
-  -s FIG_SIZE, --fig_size FIG_SIZE
-                        The size of the N2 figure, as a tuple (x,y).
+  -h, --help                       show this help message and exit
+  -t, --study-type                 The type of the study (either coupling or mdo).
+  -o OUT_DIR, --out_dir OUT_DIR    The path of the directory to save the files.
+  -x, --xdsm                       Whether to generate an XDSM; compatible only with the study type 'mdo'.
+  -p, --save-pdf                   Whether to save the XDSM as a PDF file.
+  -h HEIGHT, --height HEIGHT       The height of the N2 figure in inches.
+  -w WIDTH, --width WIDTH          The width of the N2 figure in inches.
+
+Excel file templates
+--------------------
+
+- :download:`Coupling study analysis </_static/study_analysis_templates/coupling_study.xlsx>`,
+- :download:`MDO study analysis with MDF </_static/study_analysis_templates/mdo_study_mdf.xlsx>`,

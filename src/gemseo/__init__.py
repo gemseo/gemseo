@@ -215,11 +215,11 @@ def generate_n2_plot(
     Args:
         disciplines: The disciplines from which the N2 chart is generated.
         file_path: The file path to save the static N2 chart.
-            show_data_names: Whether to show the names of the coupling variables
-                between two disciplines;
-                otherwise,
-                circles are drawn,
-                whose size depends on the number of coupling names.
+        show_data_names: Whether to show the names of the coupling variables
+            between two disciplines;
+            otherwise,
+            circles are drawn,
+            whose size depends on the number of coupling names.
         save: Whether to save the static N2 chart.
         show: Whether to show the static N2 chart.
         fig_size: The width and height of the static N2 chart.
