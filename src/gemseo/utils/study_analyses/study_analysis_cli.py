@@ -20,11 +20,18 @@
 from __future__ import annotations
 
 import argparse
-from ast import literal_eval
 from os import getcwd
 from pathlib import Path
+from typing import Final
 
-from gemseo.utils.study_analysis import StudyAnalysis
+from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
+from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
+
+STUDY_ANALYSIS_TYPES: Final[dict[str, CouplingStudyAnalysis]] = {
+    "coupling": CouplingStudyAnalysis,
+    "mdo": MDOStudyAnalysis,
+}
+"""The types of study analyses."""
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,28 +47,45 @@ def parse_args() -> argparse.Namespace:
         help="The path of the XLS file that describes the study.",
         type=str,
     )
-
+    parser.add_argument(
+        "-t",
+        "--study-type",
+        help="The type of the study.",
+        choices=STUDY_ANALYSIS_TYPES.keys(),
+        default="mdo",
+    )
     parser.add_argument(
         "-o",
-        "--out_dir",
+        "--out-dir",
         help="The path of the directory to save the files.",
         type=str,
         default=getcwd(),
     )
-
     parser.add_argument(
-        "-x", "--xdsm", help="Whether to generate a XDSM.", action="store_true"
+        "-x",
+        "--xdsm",
+        help="Whether to generate a XDSM; compatible only with the study type 'mdo'.",
+        action="store_true",
     )
-
     parser.add_argument(
         "-p",
-        "--save_pdf",
+        "--save-pdf",
         help="Whether to save the XDSM as a PDF file.",
         action="store_true",
     )
-
     parser.add_argument(
-        "-s", "--fig_size", help="The size of the N2 figure, as a tuple (x,y)", type=str
+        "-h",
+        "--height",
+        help="The height of the N2 figure in inches.",
+        type=float,
+        default=15.0,
+    )
+    parser.add_argument(
+        "-w",
+        "--width",
+        help="The width of the N2 figure in inches.",
+        type=float,
+        default=10.0,
     )
     return parser.parse_args()
 
@@ -71,13 +95,12 @@ def main() -> None:
     args = parse_args()
     directory_path = Path(args.out_dir)
     directory_path.mkdir(exist_ok=True)
-    study = StudyAnalysis(args.study_file)
-    if args.fig_size is None:
-        study.generate_n2(directory_path / "n2.pdf")
-    else:
-        study.generate_n2(
-            directory_path / "n2.pdf", fig_size=literal_eval(args.fig_size)
-        )
-
+    study = STUDY_ANALYSIS_TYPES[args.study_type](args.study_file)
+    study.generate_n2(directory_path / "n2.pdf", fig_size=(args.h, args.w))
     if args.xdsm:
-        study.generate_xdsm(directory_path, save_pdf=args.save_pdf, show_html=True)
+        if args.study_type == "mdo":
+            study.generate_xdsm(directory_path, save_pdf=args.save_pdf, show_html=True)
+        else:
+            raise ValueError(
+                "The option 'xdsm' is compatible only with the study type 'mdo'."
+            )

@@ -23,8 +23,9 @@ from pathlib import Path
 
 import pytest
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.utils.study_analysis import StudyAnalysis
-from gemseo.utils.study_analysis import XLSStudyParser
+from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
+from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
+from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
 
@@ -41,16 +42,16 @@ has_no_pdflatex = {
 
 
 def test_generate_n2(tmp_wd):
-    study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
     fpath = Path("xls_n2.pdf")
-    study.generate_n2(fpath, fig_size=(5, 5))
+    analysis.generate_n2(fpath, fig_size=(5, 5))
     assert fpath.exists()
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf(tmp_wd):
-    study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
-    study.generate_xdsm(".", save_pdf=True)
+    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
+    analysis.generate_xdsm(".", save_pdf=True)
 
 
 def test_discipline_self_coupled_two_disciplines(tmp_wd):
@@ -59,10 +60,10 @@ def test_discipline_self_coupled_two_disciplines(tmp_wd):
     In this test, two disciplines with one self-coupled discipline are present in the
     MDO process.
     """
-    study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
     fpath = Path("xls_n2.pdf")
-    study.generate_n2(fpath, fig_size=(5, 5))
-    study.generate_xdsm(".")
+    analysis.generate_n2(fpath, fig_size=(5, 5))
+    analysis.generate_xdsm(".")
     assert fpath.exists()
 
 
@@ -71,63 +72,63 @@ def test_discipline_self_coupled_one_disc(tmp_wd):
 
     In this test, only one self-coupled discipline is present in the MDO process.
     """
-    study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
     with pytest.raises(ValueError, match="N2 diagrams need at least two disciplines."):
-        study.generate_n2("xls_n2.pdf", fig_size=(5, 5))
+        analysis.generate_n2("xls_n2.pdf", fig_size=(5, 5))
 
-    study.generate_xdsm(".")
+    analysis.generate_xdsm(".")
     assert Path("xdsm.html").exists()
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf_special_characters(tmp_wd):
-    study = StudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
-    study.generate_xdsm(".", save_pdf=True)
+    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
+    analysis.generate_xdsm(".", save_pdf=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_idf(tmp_wd):
-    study = StudyAnalysis(INPUT_DIR / "disciplines_spec2.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec2.xlsx")
     dnames = ["Discipline1", "Discipline2"]
-    assert list(study.disciplines_descr.keys()) == dnames
+    assert list(analysis.study.disciplines) == dnames
 
-    disc_names = [d.name for d in study.disciplines.values()]
+    disc_names = [d.name for d in analysis.disciplines.values()]
     assert disc_names == disc_names
-    study.generate_xdsm("", save_pdf=True)
+    analysis.generate_xdsm("", save_pdf=True)
 
 
 def test_xdsm_bilevel(tmp_wd):
-    study = StudyAnalysis(INPUT_DIR / "study_bielvel_sobieski.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "study_bielvel_sobieski.xlsx")
     dnames = [
         "SobieskiAerodynamics",
         "SobieskiStructure",
         "SobieskiPropulsion",
         "SobieskiMission",
     ]
-    assert list(study.disciplines_descr.keys()) == dnames
+    assert list(analysis.study.disciplines.keys()) == dnames
 
-    disc_names = [d.name for d in study.disciplines.values()]
+    disc_names = [d.name for d in analysis.disciplines.values()]
     assert dnames == disc_names
-    study.generate_n2()
-    study.generate_xdsm(".")
+    analysis.generate_n2()
+    analysis.generate_xdsm(".")
 
 
 def test_xdsm_bilevel_d(tmp_wd):
-    study = StudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
-    study.generate_n2("n2_d.pdf")
-    study.generate_xdsm(".")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
+    analysis.generate_n2("n2_d.pdf")
+    analysis.generate_xdsm(".")
 
 
 def test_none_inputs():
     with pytest.raises(IOError):
-        StudyAnalysis(INPUT_DIR / "None.xlsx")
+        MDOStudyAnalysis(INPUT_DIR / "None.xlsx")
 
 
 @pytest.mark.parametrize("file_index", range(1, 19))
 def test_wrong_inputs(tmp_wd, file_index):
     fname = f"disciplines_spec_fail{file_index}.xlsx"
     with pytest.raises(ValueError):
-        StudyAnalysis(INPUT_DIR / fname)
+        MDOStudyAnalysis(INPUT_DIR / fname)
 
 
 def test_options():
@@ -136,11 +137,11 @@ def test_options():
     This test also enables to make sure that there is no need to put '' when prescribing
     a string in option values.
     """
-    study = StudyAnalysis(INPUT_DIR / "disciplines_spec_options.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec_options.xlsx")
 
-    mda = study.scenarios["Scenario"].formulation.mda
+    mda = analysis.scenarios["Scenario"].formulation.mda
 
-    assert study.scenarios["Scenario"].name == "my_test_scenario"
+    assert analysis.scenarios["Scenario"].name == "my_test_scenario"
     assert isinstance(mda, MDAGaussSeidel)
     assert mda.warm_start is False
     assert mda.tolerance == pytest.approx(1e-5)
@@ -173,3 +174,12 @@ def test_xls_study_parser(tmp_wd, caplog):
     assert len(expected_lines) == len(lines)
     for expected_line, line in zip(expected_lines, lines):
         assert line == expected_line
+
+
+def test_coupling_study_analysis(tmp_wd):
+    """Check CouplingStudyAnalysis."""
+    analysis = CouplingStudyAnalysis(
+        INPUT_DIR / "disciplines_spec_without_scenario.xlsx"
+    )
+    analysis.generate_n2()
+    assert Path("n2.pdf").exists()

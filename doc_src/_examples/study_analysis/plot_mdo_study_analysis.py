@@ -18,17 +18,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Generate an N2 and XDSM from an Excel description of the MDO problem
-====================================================================
+Generate N2 and XDSM diagrams from an Excel description of the MDO problem
+==========================================================================
 """
 from __future__ import annotations
 
-from os import mkdir
-from os.path import exists
-from os.path import join
-
 from gemseo import configure_logger
-from gemseo.utils.study_analysis import StudyAnalysis
+from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
 
 configure_logger()
 
@@ -37,25 +33,23 @@ configure_logger()
 # Describe your MDO problem in an Excel file
 # ------------------------------------------
 #
-# .. image:: /_images/study_analysis_example/disciplines_spec.png
+# .. image:: /_images/study_analysis_example/mdo_study.png
 #
 
 # %%
 # Visualize this study
 # --------------------
-study = StudyAnalysis("disciplines_spec.xlsx")
-if not exists("outputs"):
-    mkdir("outputs")
+study = MDOStudyAnalysis("mdo_study.xlsx")
 
 # %%
-# Generate N2 chrt
+# Generate the N2 chart
+# ^^^^^^^^^^^^^^^^^^^^^
+study.generate_n2(save=False, show=True)
+
+# %%
+# Generate the XDSM
 # ^^^^^^^^^^^^^^^^^
-study.generate_n2(file_path=join("outputs", "n2.png"), save=False, show=True)
-
-# %%
-# Generate XDSM
-# ^^^^^^^^^^^^^
-study.generate_xdsm("outputs")
+study.generate_xdsm(".")
 # %%
 # .. image:: /_images/study_analysis_example/xdsm.png
 
@@ -67,13 +61,15 @@ study.generate_xdsm("outputs")
 #
 # .. code::
 #
-#    gemseo-study disciplines_spec.xlsx -o outputs -s '(5,5)' -x -l
+#    gemseo-study mdo_study.xlsx -o outputs -h 5 -w 5 -x -l
 #
-# where:
+# where ``gemseo-study`` is an executable provided by |g|
+# and the Excel file path ``mdo_study.xlsx` is the specification of the MDO study.
+# Here, we set some options of ``gemseo-study``:
 #
-# - :code:`gemseo-study` is an executable provided by |g|,
-# - :code:`disciplines_spec.xlsx` is the Excel file path,
 # - :code:`-o outputs` is the output directory,
-# - :code:`-s '(5,5)'` is the size of the N2 chart,
-# - :code:`-x` is an option to create of the XDSM,
+# - :code:`-h 5` is the height of the N2 chart in inches,
+# - :code:`-w 5` is the width of the N2 chart in inches,
+# - :code:`-x` is an option to create of the XDSM
+#   (compatible only with the study type 'mdo'),
 # - :code:`-l` is an option to create a PDF file with the creation of the XDSM.
