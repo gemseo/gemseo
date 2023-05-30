@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from enum import auto
 from multiprocessing import cpu_count
 from pathlib import Path
@@ -47,11 +48,12 @@ from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MDA(MDODiscipline):
+class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     """An MDA analysis."""
 
     N_CPUS = cpu_count()
@@ -814,3 +816,9 @@ class MDA(MDODiscipline):
         save_show_figure(fig, show, filename, fig_size=fig_size)
 
         return fig
+
+    @abstractmethod
+    def _run(self) -> None:  # noqa:D103
+        # MDODiscipline does not declare this method as abstract on purpose,
+        # but for MDAs this makes sense.
+        pass

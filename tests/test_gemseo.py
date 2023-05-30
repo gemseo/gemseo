@@ -486,6 +486,7 @@ def test_get_available_mdas():
     """Test that the available MDA solvers are retrieved correctly."""
     mdas = get_available_mdas()
     assert "MDAGaussSeidel" in mdas
+    assert "MDA" not in mdas
 
 
 def test_get_discipline_inputs_schema():
