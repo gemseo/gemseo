@@ -20,6 +20,11 @@ import sys
 if sys.version_info < (3, 10):  # pragma: >=3.10 no cover
     from typing_extensions import ParamSpecArgs  # noqa: F401
     from typing_extensions import ParamSpecKwargs  # noqa: F401
+
+    EllipsisType = type(Ellipsis)
 else:  # pragma: <3.10 no cover
     from typing import ParamSpecArgs  # noqa: F401
     from typing import ParamSpecKwargs  # noqa: F401
+    from types import EllipsisType
+
+    EllipsisType

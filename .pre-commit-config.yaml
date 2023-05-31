@@ -10,7 +10,7 @@ repos:
       exclude: (LICENSES/headers|tests/core/data/factory/.*\.json)
     - id: check-yaml
       # !reference is specific to gitlab
-      exclude: .gitlab-ci.yml
+      exclude: \.gitlab-ci.yml
     - id: check-added-large-files
     - id: check-json
     - id: check-toml
@@ -39,6 +39,8 @@ repos:
     - id: reorder-python-imports
       name: reorder python imports in src
       files: ^src
+      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
+      exclude: _models?\.py$
       args: [
         --application-directories,
         src,
@@ -48,7 +50,8 @@ repos:
       ]
     - id: reorder-python-imports
       name: reorder python imports out of src
-      exclude: ^src
+      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
+      exclude: (^src|_models?\.py$)
       args: [
         --py38-plus,
         --add-import,
