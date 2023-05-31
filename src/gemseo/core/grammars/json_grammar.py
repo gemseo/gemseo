@@ -46,7 +46,6 @@ from numpy import ndarray
 from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
-from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.string_tools import MultiLineString
@@ -89,7 +88,7 @@ class JSONGrammar(BaseGrammar):
     }
     """The binding from JSON types to Python types."""
 
-    __PYTHON_TO_JSON_TYPES: Final[type, str] = {
+    __PYTHON_TO_JSON_TYPES: Final[dict[type, str]] = {
         ndarray: "array",
         list: "array",
         tuple: "array",
@@ -100,6 +99,12 @@ class JSONGrammar(BaseGrammar):
         float: "number",
     }
     """The binding from Python types to JSON types."""
+
+    __WARNING_TEMPLATE: Final[str] = (
+        "Unsupported %s '%s' in JSONGrammar '%s' "
+        "for property '%s' in conversion to SimpleGrammar."
+    )
+    """The logging warning template for conversion to SimpleGrammar."""
 
     __NUMERIC_TYPE_NAMES: Final[tuple[str]] = ("number", "float", "integer")
 
@@ -124,14 +129,6 @@ class JSONGrammar(BaseGrammar):
             self.update_from_file(file_path)
             self.set_descriptions(descriptions)
 
-    def __delitem__(
-        self,
-        name: str,
-    ) -> None:
-        super().__delitem__(name)
-        del self.__schema_builder[name]
-        self.__init_dependencies()
-
     def __getitem__(self, name: str) -> Any:
         return self.__schema_builder[name]
 
@@ -141,17 +138,17 @@ class JSONGrammar(BaseGrammar):
     def __iter__(self) -> Iterator[Any]:
         return iter(self.__schema_builder)
 
-    def __copy__(self) -> JSONGrammar:
-        grammar = self._copy_base()
+    def _delitem(self, name: str) -> None:  # noqa:D102
+        del self.__schema_builder[name]
+        self.__init_dependencies()
+
+    def _copy(self, grammar: JSONGrammar) -> None:
         # Updating is much faster than deep copying a schema builder.
         grammar.__schema_builder.add_schema(self.__schema_builder, True)
         grammar.__schema = self.__schema.copy()
         grammar.__validator = copy(self.__validator)
-        return grammar
 
-    copy = __copy__
-
-    def rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
+    def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__schema_builder.properties[
             new_name
         ] = self.__schema_builder.properties.pop(current_name)
@@ -160,7 +157,6 @@ class JSONGrammar(BaseGrammar):
             required.remove(current_name)
             required.add(new_name)
         self.__init_dependencies()
-        super().rename_element(current_name, new_name)
 
     def update(
         self,
@@ -170,15 +166,15 @@ class JSONGrammar(BaseGrammar):
     ) -> None:
         """Update the elements from another grammar or names or a schema.
 
-        Args:
-            merge: Whether to merge or update the grammar.
-
         Raises:
             TypeError: If the grammar is not a :class:`JSONGrammar`.
         """  # noqa:D417
         if not isinstance(grammar, JSONGrammar):
             msg = f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
             raise TypeError(msg)
+
+        if not grammar:
+            return
 
         if exclude_names:
             schema_builder = deepcopy(grammar.__schema_builder)
@@ -187,62 +183,10 @@ class JSONGrammar(BaseGrammar):
                     del schema_builder[name]
         else:
             schema_builder = grammar.__schema_builder
+
         self.__schema_builder.add_schema(schema_builder, not merge)
-        self._update_namespaces_from_grammar(grammar)
-        self._defaults.update(grammar._defaults, exclude=exclude_names)
         self.__init_dependencies()
-
-    def clear(self) -> None:  # noqa: D102
-        super().clear()
-        self.__schema_builder = MutableMappingSchemaBuilder()
-        self.__init_dependencies()
-
-    def _repr_required_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, schema in self.items():
-            if name in self.__schema_builder.required:
-                text.add(f"{name}: {schema.to_schema()}")
-
-    def _repr_optional_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, schema in self.items():
-            if name not in self.__schema_builder.required:
-                text.add(f"{name}: {schema.to_schema()}")
-                if name in self._defaults:
-                    text.indent()
-                    text.add(f"default: {self._defaults[name]}")
-                    text.dedent()
-
-    def validate(
-        self,
-        data: Data,
-        raise_exception: bool = True,
-    ) -> None:
-        """
-        Raises:
-            InvalidDataError: If the passed data is not a dictionary,
-                or if the data is not consistent with the grammar.
-        """  # noqa: D205, D212, D415
-        error_message = MultiLineString()
-
-        # Check the required names explicitly to provide a clearer message.
-        missing_names = self.required_names - data.keys()
-        if missing_names:
-            error_message.add(
-                "Missing required names: {}.", ",".join(sorted(missing_names))
-            )
-
-        if self.__validator is None:
-            self._create_validator()
-
-        data_to_check = self.__cast_data(data)
-
-        try:
-            self.__validator(data_to_check)
-        except JsonSchemaException as error:
-            if not error.args[0].startswith("data must contain"):
-                error_message.add(", error: {}", error.args[0])
-            LOGGER.error(error_message)
-            if raise_exception:
-                raise InvalidDataError(str(error_message))
+        super().update(grammar, exclude_names)
 
     def update_from_names(
         self,
@@ -279,7 +223,7 @@ class JSONGrammar(BaseGrammar):
 
     def update_from_types(  # noqa: D102
         self,
-        names_to_types: NamesToTypes,
+        names_to_types: Mapping[str, type],
         merge: bool = False,
     ) -> None:
         if not names_to_types:
@@ -302,13 +246,47 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_schema(schema, not merge)
         self.__init_dependencies()
 
+    def _clear(self) -> None:  # noqa: D102
+        self.__schema_builder = MutableMappingSchemaBuilder()
+        self.__init_dependencies()
+
+    def _repr_required_elements(self, text: MultiLineString) -> None:  # noqa: D102
+        for name, schema in self.items():
+            if name in self.__schema_builder.required:
+                text.add(f"{name}: {schema.to_schema()}")
+
+    def _repr_optional_elements(self, text: MultiLineString) -> None:  # noqa: D102
+        for name, schema in self.items():
+            if name not in self.__schema_builder.required:
+                text.add(f"{name}: {schema.to_schema()}")
+                if name in self._defaults:
+                    text.indent()
+                    text.add(f"default: {self._defaults[name]}")
+                    text.dedent()
+
+    def _validate(  # noqa:D102
+        self,
+        data: Data,
+        error_message: MultiLineString,
+    ) -> bool:
+        if self.__validator is None:
+            self._create_validator()
+
+        try:
+            self.__validator(self.__cast_data(data))
+        except JsonSchemaException as error:
+            if not error.args[0].startswith("data must contain"):
+                error_message.add(f"error: {error.args[0]}")
+            return False
+
+        return True
+
     def is_array(  # noqa: D102
         self,
         name: str,
         numeric_only: bool = False,
     ) -> bool:
         self._check_name(name)
-
         prop = self.schema.get("properties").get(name)
         if prop.get("type") != "array":
             return False
@@ -316,8 +294,8 @@ class JSONGrammar(BaseGrammar):
             return self.__is_array_of_numeric_value(prop)
         return True
 
-    @staticmethod
-    def __is_array_of_numeric_value(prop: Any) -> bool:
+    @classmethod
+    def __is_array_of_numeric_value(cls, prop: Any) -> bool:
         """Whether the array (which can be nested) contains numeric values at the end.
 
         This method is recursive in order to be able to take into account nested arrays.
@@ -334,15 +312,13 @@ class JSONGrammar(BaseGrammar):
             return True
         sub_prop_type = sub_prop.get("type")
         if sub_prop_type == "array":
-            return JSONGrammar.__is_array_of_numeric_value(sub_prop)
-        return sub_prop.get("type") in JSONGrammar.__NUMERIC_TYPE_NAMES
+            return cls.__is_array_of_numeric_value(sub_prop)
+        return sub_prop.get("type") in cls.__NUMERIC_TYPE_NAMES
 
-    def restrict_to(  # noqa: D102
+    def _restrict_to(  # noqa: D102
         self,
         names: Iterable[str],
     ) -> None:
-        super().restrict_to(names)
-        self._check_name(*names)
         for element_name in self.__schema_builder.keys() - names:
             del self.__schema_builder[element_name]
         self.__init_dependencies()
@@ -441,7 +417,11 @@ class JSONGrammar(BaseGrammar):
             description = descriptions.get(property_name)
             if description:
                 schema = property_schema.to_schema()
-                schema["description"] = description
+                if "anyOf" in schema:
+                    for sub_schema in schema["anyOf"]:
+                        sub_schema["description"] = description
+                else:
+                    schema["description"] = description
                 property_schema.add_schema(schema)
 
         self.__init_dependencies()
@@ -470,6 +450,9 @@ class JSONGrammar(BaseGrammar):
 
     def __get_names_to_types(self) -> NamesToTypes:
         """Create the mapping from element names to elements types.
+
+        The elements for which types definitions cannot be expressed as a unique Python
+        type, the type is set to ``None``.
 
         Returns:
             The mapping from element names to elements types.
@@ -516,12 +499,12 @@ class JSONGrammar(BaseGrammar):
         if property_json_type == "array" and "items" in property_description:
             property_json_sub_type = property_description["items"].get("type")
             if property_json_sub_type not in ["number", "integer", None]:
-                message = (
-                    "Unsupported type '%s' in JSONGrammar '%s' "
-                    "for property '%s' in conversion to simple grammar."
-                )
                 LOGGER.warning(
-                    message, property_json_sub_type, self.name, property_name
+                    self.__WARNING_TEMPLATE,
+                    "type",
+                    property_json_sub_type,
+                    self.name,
+                    property_name,
                 )
 
     def __warn_for_items(
@@ -537,11 +520,13 @@ class JSONGrammar(BaseGrammar):
         """
         for feature in ["minItems", "maxItems", "additionalItems", "contains"]:
             if feature in property_description:
-                message = (
-                    "Unsupported feature '%s' in JSONGrammar '%s' "
-                    "for property '%s' in conversion to simple grammar."
+                LOGGER.warning(
+                    self.__WARNING_TEMPLATE,
+                    "feature",
+                    feature,
+                    self.name,
+                    property_name,
                 )
-                LOGGER.warning(message, feature, self.name, property_name)
 
     def __init_dependencies(self) -> None:
         """Resets the validator and schema dict."""

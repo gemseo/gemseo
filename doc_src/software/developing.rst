@@ -330,11 +330,6 @@ Initial setup
   * go to **Settings > CI/CD** and expand the **Runners** section,
   * under **Specific runners**, copy the **registration token** and send it to a maintainer.
 
-* Activate the CI jobs coverage reports:
-
-  * from your account on gitlab.com,
-  * go to **Settings > CI/CD** and expand the **General pipelines** section,
-
 Working on a new feature
 ************************
 

@@ -32,13 +32,17 @@ from typing import MutableMapping
 from typing import Optional
 from typing import TYPE_CHECKING
 
+from typing_extensions import Self
+
 from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.defaults import Defaults
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import update_namespaces
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
 
 NamesToTypes = Mapping[str, Optional[type]]
 
@@ -102,6 +106,45 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         self._repr_optional_elements(text)
         return str(text)
 
+    def __delitem__(
+        self,
+        name: str,
+    ) -> None:
+        self._check_name(name)
+        self._defaults.pop(name, None)
+        self._delitem(name)
+
+    @abstractmethod
+    def _delitem(self, name: str) -> None:
+        """Remove an element but the defaults.
+
+        Args:
+            name: The name of the element to remove.
+        """
+
+    def __copy__(self) -> Self:
+        """Create a shallow copy.
+
+        Returns:
+            The shallow copy.
+        """
+        grammar = self.__class__(self.name)
+        grammar.to_namespaced = copy(self.to_namespaced)
+        grammar.from_namespaced = copy(self.from_namespaced)
+        self._copy(grammar)
+        grammar._defaults.update(self._defaults)
+        return grammar
+
+    copy = __copy__
+
+    @abstractmethod
+    def _copy(self, grammar: BaseGrammar) -> None:
+        """Copy the specific attribute of a derived class.
+
+        Args:
+            grammar: The grammar to be copied into.
+        """
+
     @abstractmethod
     def _repr_required_elements(self, text: MultiLineString) -> None:
         """Represent the required elements for `__repr__`.
@@ -116,35 +159,6 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
 
         Args:
             text: The text to be updated.
-        """
-
-    def __delitem__(
-        self,
-        name: str,
-    ) -> None:
-        self._defaults.pop(name, None)
-
-    def _copy_base(self) -> BaseGrammar:
-        """Create a shallow copy with the attributes of the base class.
-
-        This method is intended to be called from the method that performs a shallow copy
-        of a derived class.
-
-        Returns:
-            The shallow copy.
-        """
-        grammar = self.__class__(self.name)
-        grammar.to_namespaced = copy(self.to_namespaced)
-        grammar.from_namespaced = copy(self.from_namespaced)
-        grammar._defaults = self._defaults.copy()
-        return grammar
-
-    @abstractmethod
-    def __copy__(self) -> BaseGrammar:
-        """Create a shallow copy.
-
-        Returns:
-            The shallow copy.
         """
 
     @property
@@ -166,6 +180,11 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         self.to_namespaced = {}
         self.from_namespaced = {}
         self._defaults = Defaults(self, {})
+        self._clear()
+
+    @abstractmethod
+    def _clear(self) -> None:
+        """Empty the grammar but the defaults and namespace mappings."""
 
     @abstractmethod
     def update(
@@ -179,6 +198,8 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             grammar: The grammar to update from.
             exclude_names: The names of the elements that shall not be updated.
         """
+        self._update_namespaces_from_grammar(grammar)
+        self._defaults.update(grammar._defaults, exclude=exclude_names)
 
     @abstractmethod
     def update_from_types(
@@ -188,13 +209,43 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     ) -> None:
         """Update the grammar from names bound to types.
 
+        The updated elements are required.
+
         Args:
             names_to_types: The mapping defining the data names as keys,
                 and data types as values.
             merge: Whether to merge or update the grammar.
         """
 
+    def update_from_data(
+        self,
+        data: Data,
+    ) -> None:
+        """Update the grammar from name-value pairs.
+
+        The updated elements are required.
+
+        Args:
+            data: The data from which to get the names and types,
+                typically ``{element_name: element_value}``.
+        """
+        if not data:
+            return
+        self.update_from_types({name: type(value) for name, value in data.items()})
+
     @abstractmethod
+    def update_from_names(
+        self,
+        names: Iterable[str],
+    ) -> None:
+        """Update the grammar from names.
+
+        The updated elements are required and bind the names to Numpy arrays.
+
+        Args:
+            names: The names to update from.
+        """
+
     def validate(
         self,
         data: Data,
@@ -210,6 +261,35 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         Raises:
             InvalidDataError: If the validation fails and ``raise_exception`` is
                 ``True``.
+        """
+        error_message = MultiLineString()
+        missing_names = self.required_names.difference(data)
+
+        if missing_names:
+            error_message.add(f"Missing required names: {pretty_str(missing_names)}.")
+            data_is_valid = False
+        else:
+            data_is_valid = self._validate(data, error_message)
+
+        if not data_is_valid:
+            LOGGER.error(error_message)
+            if raise_exception:
+                raise InvalidDataError(str(error_message)) from None
+
+    @abstractmethod
+    def _validate(
+        self,
+        data: Data,
+        error_message: MultiLineString,
+    ) -> bool:
+        """Validate data but for the required names.
+
+        Args:
+            data: The data to be checked.
+            error_message: The error message.
+
+        Returns:
+            Whether the validation passed.
         """
 
     @abstractmethod
@@ -240,34 +320,6 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             A :class:`.SimpleGrammar` version of the current grammar.
         """
 
-    @abstractmethod
-    def update_from_data(
-        self,
-        data: Data,
-    ) -> None:
-        """Update the grammar from name-value pairs.
-
-        Args:
-            data: The data from which to get the names and types,
-                typically ``{element_name: element_value}``.
-
-        Raises:
-            TypeError: If a value has a bad type.
-        """
-
-    @abstractmethod
-    def update_from_names(
-        self,
-        names: Iterable[str],
-    ) -> None:
-        """Update the grammar from names.
-
-        The updated elements of the grammar will bind the names to Numpy arrays.
-
-        Args:
-            names: The names to update from.
-        """
-
     def restrict_to(
         self,
         names: Iterable[str],
@@ -280,7 +332,20 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         Raises:
             KeyError: If a name is not in the grammar.
         """
+        self._check_name(*names)
         self._defaults.restrict(*names)
+        self._restrict_to(names)
+
+    @abstractmethod
+    def _restrict_to(
+        self,
+        names: Iterable[str],
+    ) -> None:
+        """Restrict the grammar to the given names but for the defaults.
+
+        Args:
+            names: The names of the elements to restrict the grammar to.
+        """
 
     @property
     @abstractmethod
@@ -294,7 +359,18 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             current_name: The current name of the element.
             new_name: The new name of the element.
         """
+        self._check_name(current_name)
+        self._rename_element(current_name, new_name)
         self._defaults.rename(current_name, new_name)
+
+    @abstractmethod
+    def _rename_element(self, current_name: str, new_name: str) -> None:
+        """Rename an element without checking its name and ignoring the defaults.
+
+        Args:
+            current_name: The current name of the element.
+            new_name: The new name of the element.
+        """
 
     @abstractmethod
     def _check_name(self, *names: str) -> None:

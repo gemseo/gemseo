@@ -73,9 +73,6 @@ class SobieskiDiscipline(MDODiscipline):
         super().__setstate__(state)
         self.sobieski_problem = SobieskiProblem(self.dtype)
 
-    def _run(self) -> None:
-        raise NotImplementedError()
-
     @classmethod
     def create_with_physical_naming(
         cls, dtype: str = SobieskiBase.DTYPE_DOUBLE

@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import contextlib
+from contextlib import nullcontext
 from typing import Any
 from typing import Final
 
@@ -55,3 +56,15 @@ def concretize_classes(*classes: type) -> None:
     finally:
         for cls, __abstractmethods__ in classes_to___abstractmethods__.items():
             cls.__abstractmethods__ = __abstractmethods__
+
+
+class do_not_raise(nullcontext):  # noqa: N801
+    """Return a context manager like :func:`pytest.raises` but that does nothing."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Args:
+            *args: The arguments to match the signature of :func:`pytest.raises`.
+            **kwargs: The keyword arguments to match the signature of :func:`pytest.raises`.
+        """  # noqa:D205 D212 D415
+        super().__init__()

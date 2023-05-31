@@ -119,6 +119,7 @@ class MDODiscipline(Serializable):
 
         JSON = "JSONGrammar"
         SIMPLE = "SimpleGrammar"
+        PYDANTIC = "PydanticGrammar"
 
     class CacheType(StrEnum):
         """The name of the cache class."""
@@ -444,7 +445,7 @@ class MDODiscipline(Serializable):
         is_input: bool = True,
         name: str | None = None,
         comp_dir: str | Path | None = None,
-    ) -> str:
+    ) -> Path:
         """Use a naming convention to associate a grammar file to the discipline.
 
         Search in the directory ``comp_dir`` for
@@ -484,30 +485,32 @@ class MDODiscipline(Serializable):
 
     @staticmethod
     def __get_grammar_file_path(
-        cls: type, comp_dir: str | Path | None, in_or_out: str, name: str
+        cls: type[MDODiscipline],
+        directory_path: str | Path | None,
+        in_or_out: str,
+        name: str,
     ) -> Path:
         """Return the grammar file path.
 
         Args:
             cls: The class for which the grammar file is searched.
-            comp_dir: The initial directory path if any.
+            directory_path: The initial directory path if any.
             in_or_out: The suffix to look for in the file name, either "in" or "out".
             name: The name to be searched in the file names.
 
         Returns:
             The grammar file path.
         """
-        grammar_directory = comp_dir
-        if grammar_directory is None:
-            grammar_directory = cls.GRAMMAR_DIRECTORY
-
-        if grammar_directory is None:
-            class_module = sys.modules[cls.__module__]
-            grammar_directory = Path(class_module.__file__).parent.absolute()
+        if directory_path is None:
+            if cls.GRAMMAR_DIRECTORY is not None:
+                directory_path = Path(cls.GRAMMAR_DIRECTORY)
+            else:
+                class_module = sys.modules[cls.__module__]
+                directory_path = Path(class_module.__file__).parent.absolute()
         else:
-            grammar_directory = Path(grammar_directory)
+            directory_path = Path(directory_path)
 
-        return grammar_directory / f"{name}_{in_or_out}put.json"
+        return directory_path / f"{name}_{in_or_out}put.json"
 
     def add_differentiated_inputs(
         self,
@@ -790,8 +793,9 @@ class MDODiscipline(Serializable):
         raise NotImplementedError()
 
     def _filter_inputs(
-        self, input_data: dict[str, Any] | None = None
-    ) -> MutableMapping[str, Any]:
+        self,
+        input_data: Mapping[str, Any] | None = None,
+    ) -> DisciplineData:
         """Filter data with the discipline inputs and use the default values if missing.
 
         Args:
@@ -813,7 +817,7 @@ class MDODiscipline(Serializable):
             )
 
         full_input_data = DisciplineData({})
-        for input_name in self.input_grammar:
+        for input_name in self.input_grammar.keys():
             input_value = input_data.get(input_name)
             if input_value is not None:
                 full_input_data[input_name] = input_value
@@ -868,9 +872,9 @@ class MDODiscipline(Serializable):
 
     def __get_input_data_for_cache(
         self,
-        input_data: dict[str, Any],
+        input_data: DisciplineData,
         in_names: Iterable[str],
-    ) -> dict[str, Any]:
+    ) -> DisciplineData:
         """Prepare the input data for caching.
 
         Args:
@@ -1016,9 +1020,9 @@ class MDODiscipline(Serializable):
 
     def __update_local_data_from_cache(
         self,
-        input_data: dict[str, Any],
-        out_cached: dict[str, Any],
-        out_jac: dict[str, ndarray],
+        input_data: DisciplineData,
+        out_cached: DisciplineData,
+        out_jac: dict[str, dict[str, ndarray]],
     ) -> None:
         """Update the local data from the cache.
 
@@ -1602,7 +1606,7 @@ class MDODiscipline(Serializable):
 
     def check_jacobian(
         self,
-        input_data: dict[str, ndarray] | None = None,
+        input_data: Mapping[str, ndarray] | None = None,
         derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-7,
         threshold: float = 1e-8,
@@ -1911,7 +1915,7 @@ class MDODiscipline(Serializable):
 
     def check_input_data(
         self,
-        input_data: dict[str, Any],
+        input_data: Mapping[str, Any],
         raise_exception: bool = True,
     ) -> None:
         """Check the input data validity.

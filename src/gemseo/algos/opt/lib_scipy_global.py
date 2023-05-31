@@ -148,10 +148,10 @@ class ScipyGlobalOpt(OptimizationLibrary):
             updating: The strategy to update the solution vector.
                 If ``"immediate"``, the best solution vector is continuously
                 updated within a single generation.
-                With 'deferred',
+                With ``"deferred"``,
                 the best solution vector is updated once per generation.
-                Only 'deferred' is compatible with parallelization,
-                and the ``workers`` keyword can over-ride this option.
+                Only ``"deferred"`` is compatible with parallelization,
+                and the ``"workers"`` keyword can over-ride this option.
             atol: The absolute tolerance for convergence.
             init: Either the type of population initialization to be used
                 or an array specifying the initial population.

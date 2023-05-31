@@ -105,7 +105,7 @@ class DisciplineData(
         0  2
         >>> type(data['z'])
         <class 'pandas.core.frame.DataFrame'>
-        >>> # DataFrame columns can be deleted.
+        >>> # DataFrame's columns can be deleted.
         >>> del disc_data['z~c']
         >>> data['z']
         Empty DataFrame
@@ -263,6 +263,9 @@ class DisciplineData(
         copy_.input_to_namespaced = copy(self.__input_to_namespaced)
         copy_.output_to_namespaced = copy(self.__output_to_namespaced)
         return copy_
+
+    def clear(self) -> None:  # noqa: D102
+        self.__data.clear()
 
     def copy(
         self,
