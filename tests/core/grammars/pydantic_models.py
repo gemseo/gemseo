@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test models creators."""
+from typing import List
 from typing import Union
 
 from numpy import array
@@ -50,7 +51,7 @@ def get_model3() -> ModelType:
     class Model(BaseModel):
         name1: int
         name2: NDArray[int]
-        name3: list[int]
+        name3: List[int]
 
     return Model
 

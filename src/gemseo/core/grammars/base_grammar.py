@@ -263,8 +263,9 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
                 ``True``.
         """
         error_message = MultiLineString()
-        missing_names = self.required_names.difference(data)
+        error_message.add(f"Grammar {self.name}: validation failed.")
 
+        missing_names = self.required_names.difference(data)
         if missing_names:
             error_message.add(f"Missing required names: {pretty_str(missing_names)}.")
             data_is_valid = False

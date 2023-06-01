@@ -22,6 +22,7 @@ from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import allclose
 from numpy import array
@@ -127,23 +128,29 @@ def test_fullfact_levels(
     "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
 )
 @pytest.mark.parametrize(
-    "options, error_msg",
+    "options, exception, error_msg",
     [
         (
             {},
+            ValueError,
             "Either 'n_samples' or 'levels' is required as an input parameter "
             "for the full-factorial DOE.",
         ),
         (
             {"n_samples": 6, "levels": [2, 2]},
+            ValueError,
             "Only one input parameter among 'n_samples' and 'levels' must be given "
             "for the full-factorial DOE.",
         ),
-        ({"levels": -1}, None),  # Raised by grammar, do not check the message
+        (
+            {"levels": -1},
+            InvalidDataError,
+            None,
+        ),  # Raised by grammar, do not check the message
     ],
 )
 def test_fullfact_error(
-    doe_problem_dim_2, doe_library_class, algo_name, options, error_msg
+    doe_problem_dim_2, doe_library_class, algo_name, options, exception, error_msg
 ):
     """Check that an error is raised if both levels and n_sample are provided, or if
     none of them are provided.
@@ -151,7 +158,7 @@ def test_fullfact_error(
     Also check negative levels
     """
 
-    with pytest.raises(ValueError, match=error_msg):
+    with pytest.raises(exception, match=error_msg):
         doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
 
 
