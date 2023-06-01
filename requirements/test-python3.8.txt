@@ -91,6 +91,8 @@ pluggy==1.0.0
     # via pytest
 psutil==5.9.5
     # via openturns
+pydantic==1.10.8
+    # via gemseo (setup.py)
 pydoe2==1.3.0
     # via gemseo (setup.py)
 pyparsing==3.0.9
@@ -136,7 +138,9 @@ tomli==2.0.1
 tqdm==4.65.0
     # via gemseo (setup.py)
 typing-extensions==4.6.2
-    # via gemseo (setup.py)
+    # via
+    #   gemseo (setup.py)
+    #   pydantic
 tzdata==2023.3
     # via pandas
 urllib3==2.0.2
