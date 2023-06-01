@@ -16,10 +16,12 @@
 from __future__ import annotations
 
 import logging
+import sys
 from copy import copy
 from typing import Any
 from typing import ClassVar
 from typing import Collection
+from typing import Generic
 from typing import get_origin
 from typing import Iterable
 from typing import Iterator
@@ -47,6 +49,18 @@ ModelType = Type[BaseModel]
 LOGGER = logging.getLogger(__name__)
 
 _pydantic_utils.patch_pydantic()
+
+
+if sys.version_info < (3, 9):  # pragma: >=3.9 no cover
+
+    def get_origin(type_: type) -> type | None:  # noqa:F811,D103
+        # The origin of an NDArray is not properly determined in the standard
+        # library, see the source code for the changes.
+        origin = getattr(type_, "__origin__", None)
+        if origin is not None:
+            return origin
+        if type_ is Generic:
+            return Generic
 
 
 class PydanticGrammar(BaseGrammar):

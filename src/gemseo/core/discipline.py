@@ -55,7 +55,6 @@ from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.defaults import Defaults
-from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
@@ -776,12 +775,12 @@ class MDODiscipline(Serializable):
         factory = GrammarFactory()
         self.input_grammar = factory.create(
             grammar_type,
-            name=f"{self.name}_input",
+            name=f"{self.name}_discipline_input",
             file_path=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
-            name=f"{self.name}_output",
+            name=f"{self.name}_discipline_output",
             file_path=output_grammar_file,
         )
 
@@ -1925,14 +1924,7 @@ class MDODiscipline(Serializable):
                 according to the discipline input grammar.
             raise_exception: Whether to raise on error.
         """
-        try:
-            self.input_grammar.validate(input_data, raise_exception)
-        except InvalidDataError as err:
-            err.args = (
-                err.args[0].replace("Invalid data", "Invalid input data")
-                + f" in discipline {self.name}",
-            )
-            raise
+        self.input_grammar.validate(input_data, raise_exception)
 
     def check_output_data(
         self,
@@ -1943,14 +1935,7 @@ class MDODiscipline(Serializable):
         Args:
             raise_exception: Whether to raise an exception when the data is invalid.
         """
-        try:
-            self.output_grammar.validate(self._local_data, raise_exception)
-        except InvalidDataError as err:
-            err.args = (
-                err.args[0].replace("Invalid data", "Invalid output data")
-                + f" in discipline {self.name}",
-            )
-            raise
+        self.output_grammar.validate(self._local_data, raise_exception)
 
     def get_outputs_asarray(self) -> ndarray:
         """Return the local input data as a large NumPy array.

@@ -27,6 +27,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import unique
@@ -57,16 +58,26 @@ def test_library_from_factory():
 
 
 @pytest.mark.parametrize(
-    "levels,msg",
+    "levels,exception,msg",
     [
-        (4, "Invalid options for algorithm OT_COMPOSITE"),
-        ([0.1, 0.2, 1.3], "Levels must belong to [0, 1]; got [0.1, 1.3]."),
-        ([-0.1, 0.2, 1.3], "Invalid options for algorithm OT_COMPOSITE"),
+        (
+            4,
+            InvalidDataError,
+            "Grammar OT_COMPOSITE_algorithm_options: validation failed."
+            "\nerror: data.levels must be array",
+        ),
+        ([0.1, 0.2, 1.3], ValueError, "Levels must belong to [0, 1]; got [0.1, 1.3]."),
+        (
+            [-0.1, 0.2, 1.3],
+            InvalidDataError,
+            "Grammar OT_COMPOSITE_algorithm_options: validation failed."
+            "\nerror: data.levels[0] must be bigger than 0",
+        ),
     ],
 )
-def test_composite_malformed_levels(levels, msg):
+def test_composite_malformed_levels(levels, exception, msg):
     """Check that passing malformed 'levels' raises an exception for Composite DOE."""
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with pytest.raises(exception, match=re.escape(msg)):
         execute_problem(
             DOE_LIB_NAME,
             algo_name="OT_COMPOSITE",
@@ -144,15 +155,24 @@ def test_call():
 
 
 @pytest.mark.parametrize(
-    "options",
+    "options,error",
     [
-        {"criterion": "unknown_criterion"},
-        {"annealing": True, "temperature": "unknown_temperature"},
+        (
+            {"criterion": "unknown_criterion"},
+            "data.criterion must be one of ['C2', 'PhiP', 'MinDist']",
+        ),
+        (
+            {"annealing": True, "temperature": "unknown_temperature"},
+            "data.temperature must be one of ['Geometric', 'Linear']",
+        ),
     ],
 )
-def test_opt_lhs_wrong_properties(options):
+def test_opt_lhs_wrong_properties(options, error):
     """Check that using an optimal LHS with wrong properties raises an error."""
-    with pytest.raises(ValueError, match="Invalid options for algorithm OT_OPT_LHS"):
+    match = re.escape(
+        "Grammar OT_OPT_LHS_algorithm_options: validation failed." f"\nerror: {error}"
+    )
+    with pytest.raises(InvalidDataError, match=match):
         execute_problem(
             doe_algo_name=DOE_LIB_NAME,
             algo_name="OT_OPT_LHS",
