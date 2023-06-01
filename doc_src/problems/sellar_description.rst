@@ -23,7 +23,7 @@ Description of the problem
 
 The Sellar problem is defined by analytical functions:
 
-.. include:: /tutorials/_description/sellar_problem_definition.inc
+.. include:: sellar_problem_definition.inc
 
 The Sellar disciplines are also available with analytic derivatives in |g|, as well as a :class:`~gemseo.algos.design_space.DesignSpace`:
 

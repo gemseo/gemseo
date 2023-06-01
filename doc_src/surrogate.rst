@@ -36,4 +36,4 @@ than regression: clustering, classification, dimension reduction, data scaling, 
 .. toctree::
    :maxdepth: 2
 
-   examples/surrogate/plot_surrogate_discipline.rst
+   examples/surrogate/plot_surrogate_discipline

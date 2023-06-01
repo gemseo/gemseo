@@ -16,13 +16,13 @@
 Uncertainty quantification
 --------------------------
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
 .. toctree::
    :maxdepth: 2
 
-   Introduction <uncertainty/introduction>
-   uncertainty/distribution
-   uncertainty/parameter_space
-   uncertainty/statistics
-   uncertainty/sensitivity
+   Introduction <introduction>
+   distribution
+   parameter_space
+   statistics
+   sensitivity

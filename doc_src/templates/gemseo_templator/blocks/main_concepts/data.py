@@ -17,7 +17,7 @@ from __future__ import annotations
 from gemseo_templator.blocks.template import Block
 
 block = Block(
-    title="Saving &#x26; Storing Data",
+    title="Data persistence",
     description=(
         'Store disciplinary evaluations in a <a href="cache.html">cache</a>,'
         "either in memory or saved in a file. "
@@ -25,5 +25,5 @@ block = Block(
         "and make them easy to handle for visualization, display and query purposes."
     ),
     examples="examples/cache/index.html",
-    info="data_persistence.html",
+    info="data_persistence/index.html",
 )

@@ -11,29 +11,22 @@
           :author: Matthias De Lozzo
 
 :parenttoc: True
-.. _dataset:
 
-Dataset
-=======
+Algorithms
+----------
 
-Basics
-------
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: gemseo.core.dataset
-   :exclude-members: Dataset, ColumnName
-
-Visualization
--------------
-
-.. automodule:: gemseo.post.dataset
-
-Use cases
----------
-
-.. automodule:: gemseo.problems.dataset
-
-Examples
---------
-
-.. include:: examples/dataset/index.rst
-   :start-line: 17
+   doe_algos
+   linear_solver_algos
+   mlearning_algos
+   mda_algos
+   formulation_algos
+   ode_algos
+   opt_algos
+   post_algos
+   surrogate_algos
+   uncertainty_algos

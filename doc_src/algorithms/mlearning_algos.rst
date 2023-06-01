@@ -8,13 +8,13 @@
 
 .. _gen_mlearning_algos:
 
-Machine learning models options
-===============================
+Algorithms of machine learning
+==============================
 
 .. toctree::
    :maxdepth: 2
 
-   classification_algos.rst
-   clustering_algos.rst
-   regression_algos.rst
-   ml_quality_algos.rst
+   classification_algos
+   clustering_algos
+   regression_algos
+   ml_quality_algos

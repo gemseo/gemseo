@@ -16,15 +16,15 @@
 Machine learning
 ----------------
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
 .. toctree::
    :maxdepth: 2
 
-   Introduction <machine_learning/core/machine_learning_overview>
-   API <machine_learning/core/machine_learning_api>
-   machine_learning/core/unsupervised_learning
-   machine_learning/core/supervised_learning
-   machine_learning/quality_measures/quality_measures
-   machine_learning/quality_measures/calibration_and_selection
-   machine_learning/transform/transformer
+   Introduction <core/machine_learning_overview>
+   API <core/machine_learning_api>
+   core/unsupervised_learning
+   core/supervised_learning
+   quality_measures/quality_measures
+   quality_measures/calibration_and_selection
+   transform/transformer

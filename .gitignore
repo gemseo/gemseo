@@ -15,6 +15,7 @@
 tags
 
 doc_src/_modules
+doc_src/algorithms/index.rst
 doc_src/algorithms/**/*.*
 !doc_src/algorithms/gen_opts/*.tmpl
 !doc_src/algorithms/mlearning_algos.rst

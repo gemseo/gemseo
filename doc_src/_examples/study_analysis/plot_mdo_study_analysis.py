@@ -64,7 +64,7 @@ study.generate_xdsm(".")
 #    gemseo-study mdo_study.xlsx -o outputs -h 5 -w 5 -x -l
 #
 # where ``gemseo-study`` is an executable provided by |g|
-# and the Excel file path ``mdo_study.xlsx` is the specification of the MDO study.
+# and the Excel file path ``mdo_study.xlsx`` is the specification of the MDO study.
 # Here, we set some options of ``gemseo-study``:
 #
 # - :code:`-o outputs` is the output directory,

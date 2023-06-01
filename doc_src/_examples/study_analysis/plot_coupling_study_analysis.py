@@ -53,7 +53,7 @@ study.generate_n2(save=False, show=True)
 #    gemseo-study coupling_study.xlsx -t coupling -o outputs -h 5 -w 5
 #
 # where ``gemseo-study`` is an executable provided by |g|
-# and the Excel file path ``coupling_study.xlsx` is the specification
+# and the Excel file path ``coupling_study.xlsx`` is the specification
 # of the coupling study.
 # Here, we set some options of ``gemseo-study``:
 #

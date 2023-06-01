@@ -20,7 +20,7 @@ Main concepts
 .. toctree::
    :maxdepth: 2
 
-   design_space.rst
-   discipline.rst
-   scenario.rst
-   data_persistence.rst
+   design_space
+   discipline
+   scenario
+   data_persistence/index

@@ -23,11 +23,11 @@ discipline.set_cache_policy('SimpleCache') # default option
 \end{python}
 Export cache to dataset:
 \begin{python}
-dataset = discipline.cache.export_to_dataset()
+dataset = discipline.cache.to_dataset()
 \end{python}
 Cache inputs and outputs in an HDF5 file:
 \begin{python}
-from gemseo.core.cache import HDF5Cache
+from gemseo.caches.hdf5_cache import HDF5Cache
 in_data = {'x':array([1.]), 'y':array([2.,3.])}
 out_data = {'z': array([-6])}
 cache = HDF5Cache(hdf_file_path='file.h5', hdf_node_path='node')

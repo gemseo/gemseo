@@ -16,10 +16,10 @@
 Examples and tutorials
 ======================
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
 .. toctree::
    :maxdepth: 2
 
-   list_of_examples.rst
-   list_of_tutorials.rst
+   examples/index.rst
+   tutorials/index.rst

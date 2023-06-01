@@ -20,6 +20,6 @@ Interface a software
 .. toctree::
    :maxdepth: 2
 
-   interface/xls_discipline.rst
-   interface/exe_discipline.rst
-   interface/software_connection.rst
+   interface/xls_discipline
+   interface/exe_discipline
+   interface/software_connection

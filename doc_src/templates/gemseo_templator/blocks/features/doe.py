@@ -18,7 +18,7 @@ from gemseo_templator.blocks.template import Block
 from gemseo_templator.blocks.template import WebLink
 
 block = Block(
-    title="DOE &#x26; Trade-off",
+    title="DOE &#x26; trade-off",
     description=(
         "Define, solve and post-process a trade-off problem "
         "from a DOE (design of experiments) algorithm."

@@ -27,8 +27,8 @@ and allows access to it at any time.
 - the database stores the evaluations of the :class:`.MDOFunction` instances attached to an :class:`.OptimizationProblem`,
 - the dataset is a generic structure facilitating the post-processing of the data.
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
 .. toctree::
    :maxdepth: 2
 

@@ -6,26 +6,25 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+
 ..
    Contributors:
           :author: Matthias De Lozzo
 
 :parenttoc: True
 
-Algorithm options
------------------
+.. _tutorials_sg:
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
+Tutorials
+=========
+
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   algorithms/doe_algos.rst
-   algorithms/formulation_algos.rst
-   algorithms/linear_solver_algos.rst
-   algorithms/mda_algos.rst
-   algorithms/mlearning_algos.rst
-   algorithms/opt_algos.rst
-   algorithms/post_algos.rst
-   algorithms/surrogate_algos.rst
-   algorithms/uncertainty_algos.rst
+   Solve an optimization problem <basics_of_optimization/simple_opt_example>
+   Solve an MDO problem <sellar/nutshell>
+   Carry out a trade-off study <ssbj/doe_scenarios_construction>
+   Build a scalable model (Sellar) <scalable/scalable>
+   Build a scalable model (Aerostructure) <aerostruct/aerostruct_toy_example>

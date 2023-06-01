@@ -18,7 +18,7 @@ from gemseo_templator.blocks.template import Block
 from gemseo_templator.blocks.template import WebLink
 
 block = Block(
-    title="Design Space",
+    title="Design space",
     description="Define a set of parameters, typically design parameters.",
     features=[
         WebLink(

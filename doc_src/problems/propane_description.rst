@@ -87,10 +87,7 @@ The Propane combustion disciplines are available in |g| and can be imported with
 
      from gemseo import  create_discipline
 
-     disciplines = create_discipline(["PropaneComb1",
-                                     "PropaneComb2",
-                                     "PropaneComb3",
-                                     "PropaneReaction"])
+     disciplines = create_discipline(["PropaneComb1", "PropaneComb2", "PropaneComb3", "PropaneReaction"])
 
 A :class:`gemseo.algos.design_space.DesignSpace` file *propane_design_space.csv* is also available in the same folder, which can be read using
 the :meth:`gemseo.read_design_space` method.
