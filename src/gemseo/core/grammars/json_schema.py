@@ -26,7 +26,10 @@ from typing import Mapping
 from genson import SchemaBuilder
 from genson import SchemaNode
 from genson.schema.builder import _MetaSchemaBuilder
+from genson.schema.strategies import Number
 from genson.schema.strategies import Object
+from numpy import float64
+from numpy import int64
 
 
 class _MergeRequiredStrategy(Object):
@@ -136,6 +139,12 @@ class _MultipleMeta(type(abc.Mapping), _MetaSchemaBuilder):
         )
 
 
+class _Number(Number):
+    """A number strategy that handles numpy data."""
+
+    PYTHON_TYPES = Number.PYTHON_TYPES + (float64, int64)
+
+
 class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_MultipleMeta):
     """A mutable genson SchemaBuilder with a dictionary-like interface.
 
@@ -145,7 +154,7 @@ class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_Multipl
     to delete a property.
     """
 
-    EXTRA_STRATEGIES = (_MergeRequiredStrategy,)
+    EXTRA_STRATEGIES = (_MergeRequiredStrategy, _Number)
     NODE_CLASS = _SchemaNode
 
     def __getitem__(self, key: str) -> dict[str, Any]:
