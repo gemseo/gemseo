@@ -28,6 +28,8 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from numpy import array
+from numpy import float64
+from numpy import int64
 from numpy import ndarray
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -121,7 +123,7 @@ def test_getitem_error():
 def test_getitem():
     """Verify getting an item."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
-    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float)
+    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float, float64, int64)
 
 
 @pytest.mark.parametrize(
