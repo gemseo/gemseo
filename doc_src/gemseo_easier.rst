@@ -20,8 +20,8 @@ Make |g| easy to use
 .. toctree::
    :maxdepth: 2
 
-   api.rst
-   discipline_interface_easier.rst
-   mdo_scenario_easier.rst
-   cheat_sheet.rst
-   extending.rst
+   api
+   discipline_interface_easier
+   mdo_scenario_easier
+   cheat_sheet
+   extending

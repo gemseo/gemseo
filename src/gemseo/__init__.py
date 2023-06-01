@@ -1741,7 +1741,7 @@ def create_benchmark_dataset(
 ) -> IODataset:
     """Instantiate a dataset.
 
-    Typically, benchmark datasets can be found in :mod:`gemseo.core.dataset`.
+    Typically, benchmark datasets can be found in :mod:`gemseo.datasets.dataset`.
 
     Args:
         dataset_type: The type of the dataset.

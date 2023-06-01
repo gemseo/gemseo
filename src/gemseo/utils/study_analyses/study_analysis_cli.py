@@ -74,14 +74,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
     )
     parser.add_argument(
-        "-h",
         "--height",
         help="The height of the N2 figure in inches.",
         type=float,
         default=15.0,
     )
     parser.add_argument(
-        "-w",
         "--width",
         help="The width of the N2 figure in inches.",
         type=float,
@@ -96,7 +94,7 @@ def main() -> None:
     directory_path = Path(args.out_dir)
     directory_path.mkdir(exist_ok=True)
     study = STUDY_ANALYSIS_TYPES[args.study_type](args.study_file)
-    study.generate_n2(directory_path / "n2.pdf", fig_size=(args.h, args.w))
+    study.generate_n2(directory_path / "n2.pdf", fig_size=(args.height, args.width))
     if args.xdsm:
         if args.study_type == "mdo":
             study.generate_xdsm(directory_path, save_pdf=args.save_pdf, show_html=True)

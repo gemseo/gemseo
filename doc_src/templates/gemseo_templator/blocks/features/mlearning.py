@@ -43,6 +43,6 @@ block = Block(
         WebLink("scikit-learn", url="https://scikit-learn.org/stable/"),
     ],
     examples="examples/mlearning/index.html",
-    info="machine_learning.html",
+    info="machine_learning/index.html",
     options="algorithms/mlearning_algos.html",
 )

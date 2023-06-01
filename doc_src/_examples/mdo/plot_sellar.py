@@ -36,7 +36,7 @@ A from scratch example on the Sellar problem
 # ------------------
 # We will consider in this example the Sellar problem:
 #
-# .. include:: /tutorials/_description/sellar_problem_definition.inc
+# .. include:: /problems/sellar_problem_definition.inc
 #
 # Imports
 # -------

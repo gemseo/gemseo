@@ -495,28 +495,38 @@ def main(gen_opts_path: str | Path) -> None:
     GEN_OPTS_PATH = gen_opts_path
 
     algos_options_docs = [
-        InitOptionsDoc("clustering", "Clustering", ClusteringModelFactory()),
+        InitOptionsDoc("clustering", "Clustering algorithms", ClusteringModelFactory()),
         InitOptionsDoc(
-            "classification", "Classification", ClassificationModelFactory()
+            "classification", "Classification algorithms", ClassificationModelFactory()
         ),
-        InitOptionsDoc("ml_quality", "Quality measure", MLQualityMeasureFactory()),
-        InitOptionsDoc("mda", "MDA", MDAFactory()),
-        InitOptionsDoc("formulation", "MDO Formulation", MDOFormulationsFactory()),
-        OptPostProcessorAlgoOptionsDoc("post", "Post-processing", PostFactory()),
-        DriverOptionsDoc("doe", "DOE", DOEFactory(), user_guide_anchor="doe"),
-        DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
-        DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
-        DriverOptionsDoc("ode", "Ordinary Differential Equation", ODESolversFactory()),
-        InitOptionsDoc(
-            "distribution", "Probability distribution", DistributionFactory()
+        InitOptionsDoc("ml_quality", "Quality measures", MLQualityMeasureFactory()),
+        InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
+        InitOptionsDoc("formulation", "MDO formulations", MDOFormulationsFactory()),
+        OptPostProcessorAlgoOptionsDoc(
+            "post", "Post-processing algorithms", PostFactory()
+        ),
+        DriverOptionsDoc(
+            "doe", "DOE algorithms", DOEFactory(), user_guide_anchor="doe"
+        ),
+        DriverOptionsDoc("opt", "Optimization algorithms", OptimizersFactory()),
+        DriverOptionsDoc("linear_solver", "Linear solvers", LinearSolversFactory()),
+        DriverOptionsDoc(
+            "ode", "Ordinary differential equations solvers", ODESolversFactory()
         ),
         InitOptionsDoc(
-            "sensitivity", "Sensitivity analysis", SensitivityAnalysisFactory()
+            "distribution", "Probability distributions", DistributionFactory()
+        ),
+        InitOptionsDoc(
+            "sensitivity",
+            "Sensitivity analysis algorithms",
+            SensitivityAnalysisFactory(),
         ),
     ]
     for algos_options_doc in algos_options_docs:
         algos_options_doc.to_rst()
 
-    options_doc = InitOptionsDoc("regression", "Regression", RegressionModelFactory())
+    options_doc = InitOptionsDoc(
+        "regression", "Regression algorithms", RegressionModelFactory()
+    )
     options_doc.to_rst()
     options_doc.to_rst("surrogate_algos_template.tmpl", "surrogate_algos.rst")

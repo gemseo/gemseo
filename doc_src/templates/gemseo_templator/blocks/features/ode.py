@@ -18,7 +18,7 @@ from gemseo_templator.blocks.template import Block
 from gemseo_templator.blocks.template import WebLink
 
 block = Block(
-    title="Ordinary Differential Equation",
+    title="Ordinary differential equation",
     description="Define and solve an ordinary differential equation.",
     url="algorithms/ode_algos.html",
     dependencies=[

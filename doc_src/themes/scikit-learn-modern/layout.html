@@ -31,8 +31,8 @@
   <title>{{ title|striptags|e }}{{ titlesuffix }}</title>
   {% endblock %}
 
-  {% if favicon %}
-  <link rel="shortcut icon" href="{{ pathto('_static/' + favicon, 1) }}"/>
+  {% if favicon_url %}
+  <link rel="shortcut icon" href="{{ favicon_url|e }}"/>
   {% endif %}
 
   <link rel="stylesheet" href="{{ pathto('_static/css/vendor/bootstrap.min.css', 1) }}" type="text/css" />
@@ -57,11 +57,11 @@
     <div id="sk-sidebar-wrapper" class="border-right">
       <div class="sk-sidebar-toc-wrapper">
         <div class="sk-sidebar-toc-logo">
-          {%- if logo %}
+          {%- if logo_url %}
           <a href="{{ pathto('index') }}">
             <img
               class="sk-brand-img"
-              src="{{ pathto('_static/' + logo, 1) }}"
+              src="{{ logo_url|e }}"
               alt="logo"/>
           </a>
           {%- endif %}

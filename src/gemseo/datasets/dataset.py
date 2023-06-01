@@ -12,7 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A generic data structure with entries and variables."""
+"""A generic data structure with entries and variables.
+
+The concept of dataset is a key element for machine learning, post-processing, data
+analysis, ...
+
+A :class:`.Dataset` is a pandas
+`MultiIndex DataFrame <https://pandas.pydata.org/docs/user_guide/advanced.html>`_
+storing series of data
+representing the values of multidimensional features
+belonging to different groups of features.
+
+A :class:`.Dataset` can be set
+either from a file (:meth:`~.Dataset.from_csv` and :meth:`~.Dataset.from_txt`)
+or from a NumPy array (:meth:`~.Dataset.from_array`),
+and can be enriched from a group of variables (:meth:`~.Dataset.add_group`)
+or from a single variable (:meth:`~.Dataset.add_variable`).
+
+An :class:`.AbstractFullCache` or an :class:`.OptimizationProblem`
+can also be exported to a :class:`.Dataset`
+using the methods :meth:`.AbstractFullCache.to_dataset`
+and :meth:`.OptimizationProblem.to_dataset`.
+"""
 from __future__ import annotations
 
 import logging
@@ -61,13 +82,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     ``"a"``, ``"b"``, ``"c"`` and ``"d"``.
 
     A variable belongs to a group of variables (default: :attr:`.DEFAULT_GROUP`).
-
-    Warnings:
-        Two variables can have the same name;
-        only the tuple ``(group_name, variable_name)`` is unique
-        and is therefore called a *variable identifier*.
-
-        A variable or a group can be defined by the empty string.
+    Two variables can have the same name;
+    only the tuple ``(group_name, variable_name)`` is unique
+    and is therefore called a *variable identifier*.
 
     Based on a set of variable identifiers,
     :class:`.Dataset` is a collection of entries

@@ -20,13 +20,13 @@ Discipline
 .. toctree::
    :maxdepth: 2
 
-   disciplines/index.rst
-   disciplines/analytic_discipline.rst
-   disciplines/autopydiscipline.rst
-   disciplines/discipline_from_scratch.rst
-   interface/exe_discipline.rst
-   interface/job_schedulers.rst
-   disciplines/discipline_interfacing_executable.rst
-   disciplines/discipline_matlab.rst
-   disciplines/jacobian_assembly.rst
-   disciplines/namespaces.rst
+   disciplines/index
+   disciplines/analytic_discipline
+   disciplines/autopydiscipline
+   disciplines/discipline_from_scratch
+   interface/exe_discipline
+   interface/job_schedulers
+   disciplines/discipline_interfacing_executable
+   disciplines/discipline_matlab
+   disciplines/jacobian_assembly
+   disciplines/namespaces

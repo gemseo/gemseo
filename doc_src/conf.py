@@ -47,7 +47,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinxcontrib.plantuml",
     "sphinxcontrib.bibtex",
-    "sphinx_gallery.gen_gallery",
     "autodocsumm",
     "add_toctree_functions",
     "gemseo_pre_processor",
@@ -56,39 +55,41 @@ extensions = [
 
 ################################################################################
 # Settings for sphinx_gallery.
-current_dir = Path(__file__).parent
-gallery_dir = current_dir / "examples"
-examples_dir = current_dir / "_examples"
-examples_subdirs = [
-    subdir.name
-    for subdir in examples_dir.iterdir()
-    if (examples_dir / subdir).is_dir()
-    and (examples_dir / subdir / "README.rst").is_file()
-]
+if not os.environ.get("DOC_WITHOUT_GALLERY"):
+    extensions += ["sphinx_gallery.gen_gallery"]
+    current_dir = Path(__file__).parent
+    gallery_dir = current_dir / "examples"
+    examples_dir = current_dir / "_examples"
+    examples_subdirs = [
+        subdir.name
+        for subdir in examples_dir.iterdir()
+        if (examples_dir / subdir).is_dir()
+        and (examples_dir / subdir / "README.rst").is_file()
+    ]
 
-examples_dirs = [str(examples_dir / subdir) for subdir in examples_subdirs]
-gallery_dirs = [str(gallery_dir / subdir) for subdir in examples_subdirs]
+    examples_dirs = [str(examples_dir / subdir) for subdir in examples_subdirs]
+    gallery_dirs = [str(gallery_dir / subdir) for subdir in examples_subdirs]
 
-sphinx_gallery_conf = {
-    # path to your example scripts
-    "examples_dirs": examples_dirs,
-    # path to where to save gallery generated output
-    "gallery_dirs": gallery_dirs,
-    "default_thumb_file": str(current_dir / "_static/icon.png"),
-    "within_subsection_order": ExampleTitleSortKey,
-    "filename_pattern": r"plot_\w+\.py$",
-    "ignore_pattern": r"run\.py",
-    "only_warn_on_example_error": True,
-    "nested_sections": False,
-    # directory where function/class granular galleries are stored
-    "backreferences_dir": "gen_modules/backreferences",
-    # Modules for which function/class level galleries are created. In
-    # this case sphinx_gallery and numpy in a tuple of strings.
-    "doc_module": "gemseo",
-    # objects to exclude from implicit backreferences. The default option
-    # is an empty set, i.e. exclude nothing.
-    "exclude_implicit_doc": {r"gemseo\.configure_logger"},
-}
+    sphinx_gallery_conf = {
+        # path to your example scripts
+        "examples_dirs": examples_dirs,
+        # path to where to save gallery generated output
+        "gallery_dirs": gallery_dirs,
+        "default_thumb_file": str(current_dir / "_static/icon.png"),
+        "within_subsection_order": ExampleTitleSortKey,
+        "filename_pattern": r"plot_\w+\.py$",
+        "ignore_pattern": r"run\.py",
+        "only_warn_on_example_error": True,
+        "nested_sections": False,
+        # directory where function/class granular galleries are stored
+        "backreferences_dir": "gen_modules/backreferences",
+        # Modules for which function/class level galleries are created. In
+        # this case sphinx_gallery and numpy in a tuple of strings.
+        "doc_module": "gemseo",
+        # objects to exclude from implicit backreferences. The default option
+        # is an empty set, i.e. exclude nothing.
+        "exclude_implicit_doc": {r"gemseo\.configure_logger"},
+    }
 
 ################################################################################
 # Settings for autodoc.
@@ -115,9 +116,6 @@ autodoc_mock_imports = [
     "da",
     "pymoo",
     "petsc4py",
-    "jnius",
-    "jnius_config",
-    "jep",
     "scilab2py",
     "pyfmi",
     "pdfo",
@@ -284,20 +282,25 @@ html_context["meta_og_description"] = (
     "Connect your tools. Explore your design space. Find solutions."
 )
 html_context["meta_og_root_url"] = "https://gemseo.readthedocs.io/en"
-html_context["plugins"] = {
-    "gemseo-calibration": "Capability to calibrate GEMSEO disciplines from data",
-    "gemseo-java": "Interfacing Java code",
-    "gemseo-mlearning": "Miscellaneous machine learning capabilities",
-    "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
-    "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
-    "gemseo-scilab": "Interfacing Scilab functions",
-    "gemseo-umdo": "Capability for MDO under uncertainty",
-    "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
-    "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
-    "gemseo-pdfo": "GEMSEO plugin for the PDFO library.",
-    "gemseo-pseven": "GEMSEO plugin for the pSeven library.",
-    "gemseo-matlab": "GEMSEO plugin for MATLAB.",
-}
+
+html_context["plugins"] = {}
+if not os.environ.get("DOC_WITHOUT_PLUGINS"):
+    html_context["plugins"] = {
+        "gemseo-calibration": "Capability to calibrate GEMSEO disciplines from data",
+        "gemseo-mlearning": "Miscellaneous machine learning capabilities",
+        "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
+        "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
+        "gemseo-scilab": "Interfacing Scilab functions",
+        "gemseo-umdo": "Capability for MDO under uncertainty",
+        "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
+        "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
+        "gemseo-pdfo": "GEMSEO plugin for the PDFO library.",
+        "gemseo-pseven": "GEMSEO plugin for the pSeven library.",
+        "gemseo-matlab": "GEMSEO plugin for MATLAB.",
+        "gemseo-template-editor-gui": (
+            "A GUI to create input and output file templates for DiscFromExe."
+        ),
+    }
 html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
 
 ###############################################################################

@@ -251,11 +251,21 @@ class Nlopt(OptimizationLibrary):
             normalize_design_space: If True, normalize the design variables between 0 and 1.
             eq_tolerance: The tolerance on the equality constraints.
             ineq_tolerance: The tolerance on the inequality constraints.
-            init_step: The initial step size for derivative-free algorithms.
-                Increasing init_step will make the initial DOE in COBYLA
-                take wider steps in the design variables. By default, each variable
-                is set to x0 plus a perturbation given by
-                0.25*(ub_i-x0_i) for i=0, …, len(x0)-1.
+            init_step: The initial step size :math:`r` for derivative-free algorithms.
+                Increasing the initial step size
+                will make the initial DOE of size :math:`d+1`
+                take wider steps in the design variables.
+                In details,
+                given a :math:`d`-length design vector initialized to :math:`x_0`,
+                the first value of the design vector will be
+                the initial one :math:`x^{(1)}=x_0`,
+                the second one will be
+                :math:`x^{(2)}=x^{(1)}+(r(\max(x_1)-\min(x_1)),0,\ldots,0)`,
+                ...,
+                the :math:`d+1`-th one will be
+                :math:`x^{(d+1)}=x^{d}+(0,\ldots,0,r(\max(x_d)-\min(x_d)))`.
+                Note that in a normalized design space,
+                :math:`\min(x_i)=0` and :math:`\max(x_i)=1`.
             stop_crit_n_x: The minimum number of design vectors to take into account in
                 the stopping criteria.
             **kwargs: The additional algorithm-specific options.

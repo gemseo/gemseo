@@ -25,10 +25,10 @@ the exercise by executing the script sequentially or modifying the inputs.
 If you are interested in the combination of these features to solve a design
 problem, :ref:`please refer to the tutorials <tutorials_sg>`.
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
+.. include:: /includes/big_toc_css.rst
+.. include:: /tune_toc.rst
 .. toctree::
    :glob:
    :maxdepth: 1
 
-   examples/**/index*
+   **/index*

@@ -11,13 +11,29 @@
           :author: Matthias De Lozzo
 
 :parenttoc: True
+.. _dataset:
 
-Design space
-------------
+Dataset
+=======
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
-.. toctree::
-   :maxdepth: 2
+Basics
+------
 
-   design_space/design_space
+.. automodule:: gemseo.datasets.dataset
+   :exclude-members: Dataset
+
+Visualization
+-------------
+
+.. automodule:: gemseo.post.dataset
+
+Problems
+--------
+
+.. automodule:: gemseo.problems.dataset
+
+Examples
+--------
+
+.. include:: examples/dataset/index.rst
+   :start-line: 17

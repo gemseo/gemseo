@@ -24,16 +24,16 @@ In this section, we describe the |g|'s benchmark MDO problems:
 
 .. _sellar_problem:
 
-.. include:: _description/sellar_description.rst
+.. include:: sellar_description.rst
 
 .. _aerostruct_problem:
 
-.. include:: _description/aerostructure_description.rst
+.. include:: aerostructure_description.rst
 
 .. _sobieski_problem:
 
-.. include:: _description/sobieski_description.rst
+.. include:: sobieski_description.rst
 
 .. _propane_problem:
 
-.. include:: _description/propane_description.rst
+.. include:: propane_description.rst

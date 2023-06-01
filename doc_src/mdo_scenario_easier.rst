@@ -20,4 +20,4 @@ Define an MDO problem
 .. toctree::
    :maxdepth: 2
 
-   interface/study_analysis.rst
+   interface/study_analysis
