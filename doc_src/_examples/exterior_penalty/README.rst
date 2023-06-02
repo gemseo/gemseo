@@ -37,4 +37,4 @@ The reformulated problems become ill-conditioned if these values are increased t
    :maxdepth: 1
    :hidden:
 
-   *
+   **

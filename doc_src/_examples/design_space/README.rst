@@ -16,4 +16,4 @@ Define a set of variables.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

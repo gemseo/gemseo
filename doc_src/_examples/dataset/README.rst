@@ -16,7 +16,6 @@ Use a standard format to post-process data.
    :maxdepth: 1
    :hidden:
 
-   *
-   **/*
+   **
 
 .. start-after-label

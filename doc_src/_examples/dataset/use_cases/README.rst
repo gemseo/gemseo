@@ -8,10 +8,3 @@
 
 Use cases
 ~~~~~~~~~
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   *

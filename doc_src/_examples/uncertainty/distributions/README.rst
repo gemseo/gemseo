@@ -10,10 +10,3 @@ Probability distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Define a probability distribution either from knowledge expert or from data.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   *

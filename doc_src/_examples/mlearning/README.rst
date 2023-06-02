@@ -14,4 +14,4 @@ Machine learning
    :maxdepth: 1
    :hidden:
 
-   *
+   **

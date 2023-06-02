@@ -16,4 +16,4 @@ Use a data-driven scalable discipline for benchmark purposes.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

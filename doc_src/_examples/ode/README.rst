@@ -21,4 +21,4 @@ Below are examples related to ordinary differential equations (ODE).
    :maxdepth: 1
    :hidden:
 
-   *
+   **

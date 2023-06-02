@@ -16,4 +16,4 @@ Make the disciplinary coupling feasible.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

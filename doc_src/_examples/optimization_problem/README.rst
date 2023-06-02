@@ -16,4 +16,4 @@ Interface to optimization and DOE algorithms.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

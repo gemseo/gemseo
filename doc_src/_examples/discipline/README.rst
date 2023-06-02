@@ -16,4 +16,4 @@ Define an input-output process.
    :maxdepth: 1
    :hidden:
 
-   *
+   **
