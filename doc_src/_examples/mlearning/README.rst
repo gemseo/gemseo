@@ -8,3 +8,10 @@
 
 Machine learning
 ================
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *

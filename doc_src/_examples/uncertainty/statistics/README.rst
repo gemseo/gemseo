@@ -10,3 +10,10 @@ Statistics
 ~~~~~~~~~~
 
 Estimate statistics from data or get them from probability distributions.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *

@@ -10,3 +10,10 @@ Scenario adapter
 ================
 
 Adapt a scenario for multiple reuse.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *

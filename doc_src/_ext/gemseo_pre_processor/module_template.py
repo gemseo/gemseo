@@ -125,10 +125,11 @@ def create_tree_file(modules_path, dct, parents, root):
                     else:
                         f.write(" / " + LINK_MSG.format(gparents[1:], parent))
                 f.write("\n\n")
-                if not path.startswith("gemseo.dataset"):
+                is_dataset = path.startswith("gemseo.dataset")
+                if not is_dataset:
                     f.write(".. raw:: html\n\n")
                     f.write(
-                        "   <p align='right';>"
+                        "   <p align='right'; style='position: sticky; top: 50px;'>"
                         f"<a class='btn sk-landing-btn mb-1' href='{path}_.html'>"
                         "Hide inherited members"
                         "</a>"
@@ -145,7 +146,9 @@ def create_tree_file(modules_path, dct, parents, root):
                     for line in lines:
                         f.write(line)
 
-                    if not path.startswith("gemseo.dataset"):
+                    if is_dataset:
+                        f.write("   :no-inherited-members:\n")
+                    else:
                         f.write("   :inherited-members:\n")
 
                 if path != "gemseo.utils.pytest_conftest":
@@ -174,7 +177,7 @@ def create_tree_file(modules_path, dct, parents, root):
             with path_with_inherited_members.open("r") as f:
                 data = f.read()
 
-            if not path.startswith("gemseo.dataset"):
+            if not is_dataset:
                 data = data.replace(
                     "   :inherited-members:\n",
                     "   :no-inherited-members:\n   :noindex:\n",

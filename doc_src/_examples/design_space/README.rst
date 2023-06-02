@@ -10,3 +10,10 @@ Design space
 ============
 
 Define a set of variables.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *

@@ -389,7 +389,7 @@ Finishing a feature
   <https://docs.gitlab.com/ee/user/project/merge_requests/drafts.html>`_.
 * If a review discussion goes beyond the scope of a branch,
   `one
-  <https://docs.gitlab.com/ee/user/discussions/index.html#moving-a-single-thread-to-a-new-issue>`_
+  <https://docs.gitlab.com/ee/user/discussions/index.html#moving-a-single-thread-to-a-new-issue>`__
   or
   `more
   <https://docs.gitlab.com/ee/user/discussions/index.html#move-all-unresolved-threads-in-a-merge-request-to-an-issue>`_
@@ -412,7 +412,7 @@ Reviewing a MR
   <https://docs.gitlab.com/ee/user/project/merge_requests/changes.html>`_.
 * You may leave reviews or comments
   on `one
-  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#review-a-merge-request>`_
+  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#review-a-merge-request>`__
   or `more lines
   <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#comment-on-multiple-lines>`_.
 * You may make code

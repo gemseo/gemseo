@@ -10,3 +10,10 @@ Optimization
 ============
 
 Interface to optimization and DOE algorithms.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *

@@ -10,3 +10,10 @@ Discipline
 ==========
 
 Define an input-output process.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *
