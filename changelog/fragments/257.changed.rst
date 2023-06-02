@@ -1,5 +1,0 @@
-API change:
-
-- :meth:`.Dataset.plot` no longer refers to specific dataset plots, as ScatterMatrix, lines, curves...
-    :meth:`.Dataset.plot` now refers to the standard `pandas plot method <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html>`_.
-    To retrieve ready-to-use plots, please check in :mod:`gemseo.post.dataset`.

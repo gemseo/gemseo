@@ -1,7 +1,0 @@
-The method :meth:`.MDODiscipline._init_jacobian` now supports sparse matrices.
-
-API change:
-
-- The argument ``with_zeros`` is removed.
-- The argument ``init_type`` is added and attached to the enum class :class:`.InitJacobianType`, containing the initialization types: ``EMPTY``, ``DENSE``, ``SPARSE``.
-- The default behavior is now ``InitJacobianType.DENSE`` instead of ``InitJacobianType.EMPTY``.

@@ -1,1 +1,0 @@
-The method :meth:`.Dataset.to_dict_of_arrays` converts a :class:`.Dataset` into a dictionary of NumPy arrays indexed by variable names or group names.

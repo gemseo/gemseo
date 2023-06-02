@@ -1,8 +1,0 @@
-- API changes:
-    - :class:`~.gemseo.utils.study_analysis.StudyAnalysis` has been moved to :mod:`gemseo.utils.study_analyses.mdo_study_analysis` and renamed to :class:`.MDOStudyAnalysis`.
-    - :class:`~.gemseo.utils.study_analysis.XLSStudyParser` has been moved to :mod:`gemseo.utils.study_analyses.xls_study_parser`.
-    - :mod:`gemseo.utils.study_analysis_cli` has been moved to :mod:`gemseo.utils.study_analyses`.
-    - :meth:`.MDOStudyAnalysis.generate_xdsm` no longer returns a :class:`.MDOScenario` but an :class:`.XDSM`.
-    - The option ``fig_size`` of the ``gemseo-study`` has been replaced by the options ``height`` and ``width``.
-
-- The CLI ``gemseo-study`` can be used for MDO studies with ``gemseo-study xls_file_path`` and coupling studies with ``gemseo-study xls_file_path -t coupling``.
