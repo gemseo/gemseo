@@ -73,7 +73,7 @@ should be preferred if :math:`n\ll N`.
 Both the direct and adjoint methods are implemented since |g| v1.0.0.
 
 Derivatives computation in |g|: design and classes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In |g|, the :class:`~gemseo.core.jacobian_assembly.JacobianAssembly` class computes the derivatives of the :ref:`MDAs<mda>`.
 All :ref:`MDA<mda>` classes delegate the coupled derivatives computations to a :class:`~gemseo.core.jacobian_assembly.JacobianAssembly` instance.

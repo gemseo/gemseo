@@ -45,6 +45,7 @@ from numpy import empty
 from numpy import ndarray
 from numpy import zeros
 from numpy.typing import NDArray
+from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.caches.cache_factory import CacheFactory
@@ -54,7 +55,6 @@ from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.defaults import Defaults
-from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
@@ -118,6 +118,7 @@ class MDODiscipline(Serializable):
 
         JSON = "JSONGrammar"
         SIMPLE = "SimpleGrammar"
+        PYDANTIC = "PydanticGrammar"
 
     class CacheType(StrEnum):
         """The name of the cache class."""
@@ -127,6 +128,18 @@ class MDODiscipline(Serializable):
         MEMORY_FULL = "MemoryFullCache"
         NONE = ""
         """No cache is used."""
+
+    class InitJacobianType(StrEnum):
+        """The way to initialize Jacobian matrices."""
+
+        EMPTY = "empty"
+        """The Jacobian is initialized as an empty NumPy ndarray."""
+
+        DENSE = "dense"
+        """The Jacobian is initialized as a NumPy ndarray filled in with zeros."""
+
+        SPARSE = "sparse"
+        """The Jacobian is initialized as a SciPy CSR array with zero elements."""
 
     ApproximationMode = ApproximationMode
 
@@ -431,7 +444,7 @@ class MDODiscipline(Serializable):
         is_input: bool = True,
         name: str | None = None,
         comp_dir: str | Path | None = None,
-    ) -> str:
+    ) -> Path:
         """Use a naming convention to associate a grammar file to the discipline.
 
         Search in the directory ``comp_dir`` for
@@ -471,30 +484,32 @@ class MDODiscipline(Serializable):
 
     @staticmethod
     def __get_grammar_file_path(
-        cls: type, comp_dir: str | Path | None, in_or_out: str, name: str
+        cls: type[MDODiscipline],
+        directory_path: str | Path | None,
+        in_or_out: str,
+        name: str,
     ) -> Path:
         """Return the grammar file path.
 
         Args:
             cls: The class for which the grammar file is searched.
-            comp_dir: The initial directory path if any.
+            directory_path: The initial directory path if any.
             in_or_out: The suffix to look for in the file name, either "in" or "out".
             name: The name to be searched in the file names.
 
         Returns:
             The grammar file path.
         """
-        grammar_directory = comp_dir
-        if grammar_directory is None:
-            grammar_directory = cls.GRAMMAR_DIRECTORY
-
-        if grammar_directory is None:
-            class_module = sys.modules[cls.__module__]
-            grammar_directory = Path(class_module.__file__).parent.absolute()
+        if directory_path is None:
+            if cls.GRAMMAR_DIRECTORY is not None:
+                directory_path = Path(cls.GRAMMAR_DIRECTORY)
+            else:
+                class_module = sys.modules[cls.__module__]
+                directory_path = Path(class_module.__file__).parent.absolute()
         else:
-            grammar_directory = Path(grammar_directory)
+            directory_path = Path(directory_path)
 
-        return grammar_directory / f"{name}_{in_or_out}put.json"
+        return directory_path / f"{name}_{in_or_out}put.json"
 
     def add_differentiated_inputs(
         self,
@@ -760,12 +775,12 @@ class MDODiscipline(Serializable):
         factory = GrammarFactory()
         self.input_grammar = factory.create(
             grammar_type,
-            name=f"{self.name}_input",
+            name=f"{self.name}_discipline_input",
             file_path=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
-            name=f"{self.name}_output",
+            name=f"{self.name}_discipline_output",
             file_path=output_grammar_file,
         )
 
@@ -777,8 +792,9 @@ class MDODiscipline(Serializable):
         raise NotImplementedError()
 
     def _filter_inputs(
-        self, input_data: dict[str, Any] | None = None
-    ) -> MutableMapping[str, Any]:
+        self,
+        input_data: Mapping[str, Any] | None = None,
+    ) -> DisciplineData:
         """Filter data with the discipline inputs and use the default values if missing.
 
         Args:
@@ -800,7 +816,7 @@ class MDODiscipline(Serializable):
             )
 
         full_input_data = DisciplineData({})
-        for input_name in self.input_grammar:
+        for input_name in self.input_grammar.keys():
             input_value = input_data.get(input_name)
             if input_value is not None:
                 full_input_data[input_name] = input_value
@@ -855,9 +871,9 @@ class MDODiscipline(Serializable):
 
     def __get_input_data_for_cache(
         self,
-        input_data: dict[str, Any],
+        input_data: DisciplineData,
         in_names: Iterable[str],
-    ) -> dict[str, Any]:
+    ) -> DisciplineData:
         """Prepare the input data for caching.
 
         Args:
@@ -1003,9 +1019,9 @@ class MDODiscipline(Serializable):
 
     def __update_local_data_from_cache(
         self,
-        input_data: dict[str, Any],
-        out_cached: dict[str, Any],
-        out_jac: dict[str, ndarray],
+        input_data: DisciplineData,
+        out_cached: DisciplineData,
+        out_jac: dict[str, dict[str, ndarray]],
     ) -> None:
         """Update the local data from the cache.
 
@@ -1501,7 +1517,7 @@ class MDODiscipline(Serializable):
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
-        with_zeros: bool = False,
+        init_type: InitJacobianType = InitJacobianType.DENSE,
         fill_missing_keys: bool = False,
     ) -> tuple[list[str], list[str]]:
         """Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
@@ -1514,10 +1530,7 @@ class MDODiscipline(Serializable):
                 If None,
                 the linearization should be performed on all outputs declared differentiable.
                 fill_missing_keys: if True, just fill the missing items
-            with_zeros: If True,
-                the matrices are set to zero
-                otherwise,
-                they are empty matrices.
+            init_type: The type used to initialize the Jacobian.
             fill_missing_keys: If True,
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
@@ -1531,12 +1544,22 @@ class MDODiscipline(Serializable):
         output_values = [self.get_outputs_by_name(name) for name in output_names]
         input_names = self._differentiated_inputs if inputs is None else inputs
         input_values = [self.get_inputs_by_name(name) for name in input_names]
-        default_matrix = zeros if with_zeros else empty
+
+        if init_type == self.InitJacobianType.EMPTY:
+            default_matrix = empty
+        elif init_type == self.InitJacobianType.DENSE:
+            default_matrix = zeros
+        elif init_type == self.InitJacobianType.SPARSE:
+            default_matrix = csr_array
+        else:
+            # Cast the argument so that the enum class raise an explicit error
+            self.InitJacobianType(init_type)
+
         if fill_missing_keys:
             jac = self.jac
             # Only fill the missing sub jacobians
             for output_name, output_value in zip(output_names, output_values):
-                jac_loc = jac.get(output_name, defaultdict(None))
+                jac_loc = jac.setdefault(output_name, defaultdict(None))
                 for input_name, input_value in zip(input_names, input_values):
                     sub_jac = jac_loc.get(input_name)
                     if sub_jac is None:
@@ -1582,7 +1605,7 @@ class MDODiscipline(Serializable):
 
     def check_jacobian(
         self,
-        input_data: dict[str, ndarray] | None = None,
+        input_data: Mapping[str, ndarray] | None = None,
         derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-7,
         threshold: float = 1e-8,
@@ -1891,7 +1914,7 @@ class MDODiscipline(Serializable):
 
     def check_input_data(
         self,
-        input_data: dict[str, Any],
+        input_data: Mapping[str, Any],
         raise_exception: bool = True,
     ) -> None:
         """Check the input data validity.
@@ -1901,14 +1924,7 @@ class MDODiscipline(Serializable):
                 according to the discipline input grammar.
             raise_exception: Whether to raise on error.
         """
-        try:
-            self.input_grammar.validate(input_data, raise_exception)
-        except InvalidDataError as err:
-            err.args = (
-                err.args[0].replace("Invalid data", "Invalid input data")
-                + f" in discipline {self.name}",
-            )
-            raise
+        self.input_grammar.validate(input_data, raise_exception)
 
     def check_output_data(
         self,
@@ -1919,14 +1935,7 @@ class MDODiscipline(Serializable):
         Args:
             raise_exception: Whether to raise an exception when the data is invalid.
         """
-        try:
-            self.output_grammar.validate(self._local_data, raise_exception)
-        except InvalidDataError as err:
-            err.args = (
-                err.args[0].replace("Invalid data", "Invalid output data")
-                + f" in discipline {self.name}",
-            )
-            raise
+        self.output_grammar.validate(self._local_data, raise_exception)
 
     def get_outputs_asarray(self) -> ndarray:
         """Return the local input data as a large NumPy array.

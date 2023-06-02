@@ -10,3 +10,10 @@ Scenario
 ========
 
 Automatically create and execute an MDO process.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

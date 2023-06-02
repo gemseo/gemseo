@@ -79,7 +79,7 @@ class MaterialModelInterpolation(MDODiscipline):
         self.local_data["E"] = young_modulus
         self.local_data["rho"] = rho
         self._is_linearized = True
-        self._init_jacobian(with_zeros=True)
+        self._init_jacobian()
         dyoung_modulus_dxphys = (
             self.penalty * xphys.ravel() ** (self.penalty - 1) * (self.E0 - self.Emin)
         )

@@ -117,7 +117,7 @@ class FininiteElementAnalysis(MDODiscipline):
         ).sum(1)
         self.local_data["compliance"] = array([(em * ce).sum()])
         self._is_linearized = True
-        self._init_jacobian(with_zeros=True)
+        self._init_jacobian()
         self.jac["compliance"] = {}
         self.jac["compliance"]["E"] = atleast_2d(-ce)
 

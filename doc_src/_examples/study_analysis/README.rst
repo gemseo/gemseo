@@ -9,4 +9,11 @@
 Study analysis
 ==============
 
-Analyse an MDO problem from a spreadsheet.
+Analyse a problem from a spreadsheet.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

@@ -89,7 +89,7 @@ class LinearCombination(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(with_zeros=True)
+        self._init_jacobian()
         self.jac = {}
         jac = self.jac[self.__output_name] = {}
         one_matrix = eye(self.local_data[self.__output_name].size)

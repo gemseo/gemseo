@@ -17,14 +17,14 @@
 |g| proposes several datasets containing academic data
 to illustrate its capabilities:
 
-- :class:`.IrisDataset` is a collection of iris plants,
+- :func:`.create_iris_dataset` returns a collection of iris plants,
   mainly used to benchmark clustering and classification algorithms,
-- :class:`.RosenbrockDataset` is a set of evaluations of
+- :func:`.create_rosenbrock_dataset` returns a set of evaluations of
   the `Rosenbrock function <https://en.wikipedia.org/wiki/Rosenbrock_function>`__
   over a regular grid,
   initially introduced to illustrate visualization tools dedicated to surfaces
   such as :class:`.ZvsXY`,
-- :class:`.BurgersDataset` is a set of solutions of
+- :func:`.create_burgers_dataset` returns a set of solutions of
   the `Burgers' equation <https://en.wikipedia.org/wiki/Burgers%27_equation>`__
   at given times,
   initially introduced to illustrate dimension reduction methods,

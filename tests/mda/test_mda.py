@@ -39,6 +39,7 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.utils.testing.helpers import concretize_classes
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -71,7 +72,8 @@ def test_reset(sellar_mda, sellar_inputs):
 
 
 def test_input_couplings():
-    mda = MDA([Sellar1()])
+    with concretize_classes(MDA):
+        mda = MDA([Sellar1()])
     assert len(mda._current_input_couplings()) == 0
 
 
@@ -160,9 +162,8 @@ def test_consistency_fail(desc, log_message, caplog):
         log_message: The expected warning message.
         caplog: Fixture to access and control log capturing.
     """
-    disciplines = analytic_disciplines_from_desc(desc)
-
-    MDA(disciplines)
+    with concretize_classes(MDA):
+        MDA(analytic_disciplines_from_desc(desc))
     assert log_message in caplog.text
 
 
@@ -189,7 +190,8 @@ def test_array_couplings(mda_class, grammar_type):
 
 
 def test_convergence_warning(caplog):
-    mda = MDA([Sellar1()])
+    with concretize_classes(MDA):
+        mda = MDA([Sellar1()])
     mda.tolerance = 1.0
     mda.normed_residual = 2.0
     mda.max_mda_iter = 1
@@ -222,9 +224,8 @@ def test_coupling_structure(sellar_disciplines):
 
 def test_log_convergence(caplog):
     """Check that the boolean log_convergence is correctly set."""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-
-    mda = MDA(disciplines)
+    with concretize_classes(MDA):
+        mda = MDA([Sellar1(), Sellar2(), SellarSystem()])
     assert not mda.log_convergence
 
     mda.log_convergence = True
@@ -318,7 +319,8 @@ def test_not_numeric_couplings():
     with pytest.raises(
         TypeError, match=r"The coupling variables \['y\_1'\] must be of type array\."
     ):
-        MDA([sellar1, sellar2])
+        with concretize_classes(MDA):
+            MDA([sellar1, sellar2])
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])

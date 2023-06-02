@@ -10,3 +10,10 @@ MDO formulation
 ===============
 
 Define both work and data flows from an MDO formulation.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

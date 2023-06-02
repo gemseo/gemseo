@@ -417,7 +417,7 @@ class MDOParallelChain(MDODiscipline):
                     chain_jacobian = {}
                     self.jac[output_name] = chain_jacobian
                 chain_jacobian.update(output_jacobian)
-        self._init_jacobian(inputs, outputs, with_zeros=True, fill_missing_keys=True)
+        self._init_jacobian(inputs, outputs, fill_missing_keys=True)
 
     def add_differentiated_inputs(  # noqa: D102
         self,

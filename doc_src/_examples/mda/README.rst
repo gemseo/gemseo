@@ -10,3 +10,10 @@ Multidisciplinary Analysis (MDA)
 ================================
 
 Make the disciplinary coupling feasible.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

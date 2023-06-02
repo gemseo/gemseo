@@ -15,3 +15,10 @@ ODE problems
 ============
 
 Below are examples related to ordinary differential equations (ODE).
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

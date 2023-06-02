@@ -10,3 +10,10 @@ Coupling
 ========
 
 Look at the coupling graph.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

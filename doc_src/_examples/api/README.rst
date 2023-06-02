@@ -10,3 +10,10 @@ API
 ===
 
 High level functions to use |g|.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

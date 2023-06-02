@@ -28,6 +28,8 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from numpy import array
+from numpy import float64
+from numpy import int64
 from numpy import ndarray
 
 DATA_PATH = Path(__file__).parent / "data"
@@ -121,7 +123,7 @@ def test_getitem_error():
 def test_getitem():
     """Verify getting an item."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
-    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float)
+    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float, float64, int64)
 
 
 @pytest.mark.parametrize(
@@ -196,7 +198,7 @@ def test_update_and_update_from_file(
 ):
     """Verify update and update_from_file."""
     g1 = new_grammar(file_path1)
-    g1_names_before = set(g1.keys())
+    g1_names_before = g1.keys()
     g1_required_names_before = set(g1.required_names)
     g2 = new_grammar(file_path2)
 
@@ -215,7 +217,7 @@ def test_update_and_update_from_file(
     else:
         exclude_names = set(exclude_names)
 
-    assert set(g1.defaults.keys()) == set(g2.defaults.keys()) - exclude_names
+    assert g1.defaults.keys() == g2.defaults.keys() - exclude_names
 
     assert set(g1) == g1_names_before | (set(g2) - exclude_names)
     assert set(g1.required_names) == g1_required_names_before | (
@@ -347,7 +349,7 @@ def test_validate_error(raise_exception, data, error_msg, caplog):
 def test_update_from_names(file_path, names, merge):
     """Verify update with names."""
     g = new_grammar(file_path)
-    names_before = set(g.keys())
+    names_before = g.keys()
     required_names_before = set(g.required_names)
 
     g.update_from_names(names, merge=merge)
@@ -394,7 +396,7 @@ def test_update_from_data_with_empty(data, expected_type, merge):
     """Verify update_from_data from an empty grammar."""
     g = _test_update_from_data(None, data, merge)
 
-    if not g:
+    if not data:
         return
 
     assert g.schema["properties"]["name1"]["type"] == expected_type
@@ -450,7 +452,7 @@ def test_update_from_data_with_non_empty(data, expected_type, merge):
 def _test_update_from_data(file_path: Path | None, data: Data, merge):
     """Helper function for testing update_from_data."""
     g = new_grammar(file_path)
-    names_before = set(g.keys())
+    names_before = g.keys()
     required_names_before = set(g.required_names)
 
     g.update_from_data(data, merge)
@@ -472,9 +474,12 @@ def test_is_array_error():
 
 def test_is_array():
     """Verify is_array."""
-    g = new_grammar(DATA_PATH / "grammar_2.json")
+    g = new_grammar(DATA_PATH / "grammar_4.json")
     assert not g.is_array("name1")
     assert g.is_array("name2")
+    assert g.is_array("name2", numeric_only=True)
+    assert g.is_array("name3")
+    assert not g.is_array("name3", numeric_only=True)
 
 
 def test_restrict_to_error():
@@ -546,12 +551,12 @@ def test_convert_to_simple_grammar_warnings(caplog):
     assert caplog.records[0].levelname == "WARNING"
     assert caplog.messages[0] == (
         "Unsupported type 'string' in JSONGrammar 'g' for property 'name' in "
-        "conversion to simple grammar."
+        "conversion to SimpleGrammar."
     )
     assert caplog.records[1].levelname == "WARNING"
     assert caplog.messages[1] == (
         "Unsupported feature 'contains' in JSONGrammar 'g' for property 'name' in "
-        "conversion to simple grammar."
+        "conversion to SimpleGrammar."
     )
 
 
@@ -669,6 +674,15 @@ def test_rename():
     assert g.defaults == {"new_name1": 1.0}
 
 
+def test_update_from_error():
+    g = JSONGrammar("g")
+    g2 = SimpleGrammar("g")
+    with pytest.raises(
+        TypeError, match="A JSONGrammar cannot be updated from a grammar"
+    ):
+        g.update(g2)
+
+
 @pytest.mark.parametrize(
     "var, check_is_numeric_array, expected",
     [
@@ -772,3 +786,10 @@ def test_from_types_unsupported():
         KeyError, match="Unsupported python type for a JSON Grammar: <class 'complex'>"
     ):
         grammar.update_from_types({"x": complex})
+
+
+@pytest.mark.parametrize("file_path", ["bar", Path("bar")])
+def test_pathlike(file_path):
+    """Check that a JSONGrammar can use PathLike."""
+    grammar = JSONGrammar("foo", DATA_PATH / "grammar_pathlike.json")
+    grammar.validate({"file_path": file_path})

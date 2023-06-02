@@ -93,7 +93,7 @@ class Concatenater(MDODiscipline):
                 If None, linearization should be performed
                 on all outputs (Default value = None)
         """
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
 
         names = self.get_input_data_names()
         sizes = [input.size for input in self.get_all_inputs()]

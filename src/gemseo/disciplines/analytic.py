@@ -229,9 +229,7 @@ class AnalyticDiscipline(MDODiscipline):
     ) -> None:
         # otherwise there may be missing terms
         # if some formula have no dependency
-        input_names, output_names = self._init_jacobian(
-            inputs, outputs, with_zeros=True
-        )
+        input_names, output_names = self._init_jacobian(inputs, outputs)
         input_values = self.__convert_input_values_to_float()
         if self._fast_evaluation:
             for output_name in output_names:

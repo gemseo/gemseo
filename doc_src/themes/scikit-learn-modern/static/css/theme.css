@@ -578,7 +578,8 @@ div.sk-page-content h1 {
 
 div.sk-page-content h2 {
   padding: 0.5rem;
-  background-color: #BED4EB;
+  padding-left: 1rem;
+  background-color: #8db6e3;
   border-radius: 0.3rem;
   font-size: 1.5rem;
   margin-bottom: 1rem;
@@ -587,17 +588,19 @@ div.sk-page-content h2 {
 
 div.sk-page-content h3 {
   padding: 0.3rem;
-  background-color: #eee;
+  padding-left: 3rem;
+  background-color: #b6cbe3;
   border-radius: 0.3rem;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   word-wrap: break-word;
 }
 
 div.sk-page-content h4 {
   padding: 0.2rem;
-  background-color: #F4F4F4;
+  padding-left: 5rem;
+  background-color: #e1edfa;
   border-radius: 0.3rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   word-wrap: break-word;
 }
 
@@ -846,14 +849,6 @@ img.align-right, .figure.align-right, object.align-right {
   clear: right;
   float: right;
   margin-left: 1em;
-}
-
-a.brackets::after, span.brackets > a::after {
-  content: "]";
-}
-
-a.brackets::before, span.brackets > a::before {
-    content: "[";
 }
 
 /* copybutton */

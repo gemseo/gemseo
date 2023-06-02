@@ -10,3 +10,12 @@ Cache
 =====
 
 Store the disciplinary evaluations in different ways.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **
+
+.. start-after-label

@@ -41,6 +41,7 @@ these are:
     - packaging <=21.3
     - pandas >=1.1.0,<=1.5.0
     - pyxdsm >=2.1.0,<=2.2.2
+    - pydantic ==1.10.8
     - requests
     - scipy >=1.4,<=1.9.1
     - tqdm >=4.41,<=4.64.1

@@ -1,0 +1,33 @@
+{
+    "name": "Animation_options",
+    "required": [],
+    "properties": {
+        "frame_rate": {
+            "type": "integer"
+        },
+        "first_iteration": {
+            "type": "integer"
+        },
+        "time_step": {
+            "type": "integer"
+        },
+        "n_repetitions": {
+            "type": ["integer","null"]
+        },
+        "opt_post_processor": {
+            "type": ["string","null"]
+        },
+        "temporary_database_file": {
+            "type": ["string","null"]
+        },
+        "gif_file_path": {
+            "type":  ["string"]
+        },
+        "remove_frames": {
+            "type": "boolean"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

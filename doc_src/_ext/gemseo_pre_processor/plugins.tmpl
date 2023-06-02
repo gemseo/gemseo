@@ -25,7 +25,7 @@ disciplines, optimizers, DOE algorithms, formulations, post-processings, surroga
    * - Name / Repo
      - Description
      - Documentation
-{% for name, description in plugins.items() %}
+{% for name, description in plugins.items()|sort(attribute='0') %}
    * - `{{ name }} <https://gitlab.com/gemseo/dev/{{ name }}>`_
      - {{ description }}
      - :ref:`Modules <{{ name.replace('-', '_') }}>`

@@ -31,3 +31,10 @@ The reformulated problem solution can only be considered as an approximation of 
 The solution to this problem will always violate the constraints. This fact gives this approach its name, since the solution of the reformulated problem approximates the solution from outside the feasible design domain.
 Increasing the value of :math:`\rho_{ineq}`, :math:`\rho_{eq}` and of :math:`f_0` the solution of this problem will tend to the original one.
 The reformulated problems become ill-conditioned if these values are increased too much. This can affect the performance of the optimization solver.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   **

@@ -20,4 +20,4 @@ Design space
 .. toctree::
    :maxdepth: 2
 
-   design_space/design_space.rst
+   design_space/design_space

@@ -15,13 +15,16 @@
 from __future__ import annotations
 
 import inspect
+import shutil
 import sys
 from pathlib import Path
 
 MOD_MSG = (
-    "<li><a href='{}.html'>"
+    "<li>"
+    "<a href='{}.html'>"
     "<span class='fa-li'><i class='far fa-file-alt'></i></span>{}"
-    "</a> - <i><a href='{}.html'>source</a></i></li>\n"
+    "</a>"
+    "</li>\n"
 )
 
 PKG_MSG = (
@@ -79,7 +82,9 @@ def create_tree_file(modules_path, dct, parents, root):
                 if index + 1 == len(items):
                     f.write("   </ul>\n\n")
                     f.write(f".. automodule:: {parent_path}\n")
-                    f.write("   :noindex:\n\n")
+                    f.write("   :members:\n")
+                    f.write("   :undoc-members:\n")
+                    f.write("   :show-inheritance:\n\n")
             with open(modules_path / path_rst, "w") as f:
                 f.write(":orphan:\n\n")
                 f.write(".. {}:\n\n".format(path.replace(".", "-")))
@@ -100,12 +105,13 @@ def create_tree_file(modules_path, dct, parents, root):
             create_tree_file(modules_path, dct[name], parents + [name], root)
         else:  # module
             with open(modules_path / parent_rst, "a") as f:
-                src_path = path.replace(".", "/")
-                f.write("      " + MOD_MSG.format(path, name, src_path))
+                f.write("      " + MOD_MSG.format(path, name))
                 if index + 1 == len(items):
                     f.write("   </ul>\n\n")
                     f.write(f".. automodule:: {parent_path}\n")
-                    f.write("   :noindex:\n\n")
+                    f.write("   :members:\n")
+                    f.write("   :undoc-members:\n")
+                    f.write("   :show-inheritance:\n\n")
             with open(modules_path / f"tmp_{path_rst}", "w") as f:
                 f.write(":orphan:\n\n")
                 f.write(f".. _{path}:\n\n")
@@ -119,6 +125,17 @@ def create_tree_file(modules_path, dct, parents, root):
                     else:
                         f.write(" / " + LINK_MSG.format(gparents[1:], parent))
                 f.write("\n\n")
+                is_dataset = path.startswith("gemseo.dataset")
+                if not is_dataset:
+                    f.write(".. raw:: html\n\n")
+                    f.write(
+                        "   <p align='right'; style='position: sticky; top: 50px;'>"
+                        f"<a class='btn sk-landing-btn mb-1' href='{path}_.html'>"
+                        "Hide inherited members"
+                        "</a>"
+                        "</p>"
+                    )
+                    f.write("\n\n")
                 with open(modules_path / path_rst) as fr:
                     title = fr.readline()
                 title = title.split(".")[-1]
@@ -128,6 +145,11 @@ def create_tree_file(modules_path, dct, parents, root):
                     lines = fr.readlines()[2:]
                     for line in lines:
                         f.write(line)
+
+                    if is_dataset:
+                        f.write("   :no-inherited-members:\n")
+                    else:
+                        f.write("   :inherited-members:\n")
 
                 if path != "gemseo.utils.pytest_conftest":
                     obj_names = [
@@ -147,25 +169,49 @@ def create_tree_file(modules_path, dct, parents, root):
 
             (modules_path / path_rst).unlink()
             old_path = modules_path / f"tmp_{path}.rst"
-            new_path = modules_path / path_rst
-            old_path.rename(new_path)
+            path_with_inherited_members = modules_path / path_rst
+            old_path.rename(path_with_inherited_members)
+            path_without_no_inherited_members = modules_path / f"{path}_.rst"
+            shutil.copy(path_with_inherited_members, path_without_no_inherited_members)
+
+            with path_with_inherited_members.open("r") as f:
+                data = f.read()
+
+            if not is_dataset:
+                data = data.replace(
+                    "   :inherited-members:\n",
+                    "   :no-inherited-members:\n   :noindex:\n",
+                )
+                data = data.replace("_.html'>Hide", ".html'>Show")
+                with path_without_no_inherited_members.open("w") as f:
+                    f.write(data)
 
 
 def main(modules_path, name):
-    lst = [
-        f.name
-        for f in modules_path.iterdir()
-        if f.is_file() and f.name != "modules.rst"
-    ]
+    tree = initialize_file_tree(
+        [
+            f.name
+            for f in modules_path.iterdir()
+            if f.is_file() and f.name != "modules.rst"
+        ]
+    )
 
-    with open(modules_path / Path(name).with_suffix(".rst"), "w") as f:
+    file_path = modules_path / Path(name).with_suffix(".rst")
+    with open(file_path, "w") as f:
         f.write(f".. _{name}:\n\n")
         f.write(".. raw:: html\n\n")
         f.write("   <i class='fa fa-home'></i> \n\n")
         f.write(f"{name}\n")
         f.write(f"{underline(name)}\n\n")
-        f.write(".. raw:: html\n\n")
-        f.write("   <ul class='fa-ul'>\n")
 
-    tree = initialize_file_tree(lst)
-    create_tree_file(modules_path, tree[name], [name], name)
+    sub_tree = tree.get(name)
+    if sub_tree:
+        with open(file_path, "a") as f:
+            f.write(".. raw:: html\n\n")
+            f.write("   <ul class='fa-ul'>\n")
+
+        create_tree_file(modules_path, sub_tree, [name], name)
+    else:
+        with open(file_path, "a") as f:
+            f.write(f".. automodule:: {name}\n")
+            f.write("   :noindex:\n\n")

@@ -19,11 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import array_equal
 from numpy import loadtxt
@@ -92,19 +94,45 @@ def test_lhs_maximin():
 
 
 @pytest.mark.parametrize(
-    "algo_name, options",
+    "algo_name, options, error",
     [
-        ("ccdesign", {"alpha": "unknown_value"}),
-        ("ccdesign", {"face": "unknown_value"}),
-        ("ccdesign", {"center_cc": 1}),
-        ("bbdesign", {"center_bb": (4, 4)}),
-        ("lhs", {"criterion": "corr", "iterations": "unknown_value", "n_samples": 2}),
-        ("lhs", {"criterion": "unknown_value", "n_samples": 2}),
+        (
+            "ccdesign",
+            {"alpha": "unknown_value"},
+            "data.alpha must be one of ['orthogonal', 'o', 'rotatable', 'r']",
+        ),
+        (
+            "ccdesign",
+            {"face": "unknown_value"},
+            "data.face must be one of ['circumscribed', 'ccc', 'inscribed', 'cci', "
+            "'faced', 'ccf']",
+        ),
+        (
+            "ccdesign",
+            {"center_cc": 1},
+            "data.center_cc cannot be validated by any definition",
+        ),
+        (
+            "bbdesign",
+            {"center_bb": (4, 4)},
+            "data.center_bb cannot be validated by any definition",
+        ),
+        (
+            "lhs",
+            {"criterion": "corr", "iterations": "unknown_value", "n_samples": 2},
+            "data.iterations must be integer",
+        ),
+        (
+            "lhs",
+            {"criterion": "unknown_value", "n_samples": 2},
+            "data.criterion cannot be validated by any definition",
+        ),
     ],
 )
-def test_algo_with_unknown_options(algo_name, options):
+def test_algo_with_unknown_options(algo_name, options, error):
     """Check that exceptions are raised when unknown options are passed to an algo."""
-    with pytest.raises(ValueError, match=f"Invalid options for algorithm {algo_name}"):
+    match = f"Grammar {algo_name}_algorithm_options: validation failed.\nerror: {error}"
+    with pytest.raises(InvalidDataError, match=re.escape(match)):
         execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, **options)
 
 

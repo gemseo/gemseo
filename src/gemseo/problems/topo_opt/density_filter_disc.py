@@ -70,7 +70,7 @@ class DensityFilter(MDODiscipline):
         x = self.get_inputs_by_name("x")[:, newaxis]
         self.local_data["xPhys"] = (self.filter_matrix @ x).flatten()
         self._is_linearized = True
-        self._init_jacobian(with_zeros=True)
+        self._init_jacobian()
         self.jac["xPhys"] = {"x": self.filter_matrix}
 
     def _create_filter_matrix(self) -> None:

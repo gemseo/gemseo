@@ -35,6 +35,6 @@ block = Block(
     ],
     dependencies=[WebLink("OpenTURNS", url="https://openturns.github.io/www/")],
     examples="examples/uncertainty/index.html",
-    info="uncertainty.html",
+    info="uncertainty/index.html",
     options="algorithms/uncertainty_algos.html",
 )

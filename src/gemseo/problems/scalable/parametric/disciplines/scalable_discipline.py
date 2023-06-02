@@ -102,7 +102,7 @@ class ScalableDiscipline(BaseDiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian(inputs, outputs, with_zeros=True)
+        self._init_jacobian(inputs, outputs)
         jac = self._discipline(
             self._local_data[SHARED_DESIGN_VARIABLE_NAME],
             self._local_data[self.__x_i_name],

@@ -14,5 +14,5 @@ Uncertainty algorithms
 .. toctree::
    :maxdepth: 2
 
-   distribution_algos.rst
-   sensitivity_algos.rst
+   distribution_algos
+   sensitivity_algos

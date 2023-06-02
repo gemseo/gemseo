@@ -18,15 +18,16 @@ User guide
 .. include:: tune_toc.rst
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
-   gemseo_easier.rst
-   main_concepts.rst
-   optimization.rst
-   doe.rst
-   mdo.rst
-   machine_learning.rst
-   surrogate.rst
-   uncertainty.rst
-   scalable.rst
-   list_algorithms_options.rst
+   gemseo_easier
+   main_concepts
+   optimization
+   doe
+   mdo
+   machine_learning/index
+   surrogate
+   uncertainty/index
+   scalable
+   algorithms/index
+   problems/index

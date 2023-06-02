@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import re
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -24,11 +25,13 @@ from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import concatenate
+from numpy import full
 from numpy import int64 as np_int
 from numpy import ndarray
 from numpy import savetxt
 from numpy import unique
 from numpy import vstack
+from numpy.testing import assert_equal
 from numpy.typing import NDArray
 from packaging import version
 from pandas import __version__ as pandas_version
@@ -417,18 +420,33 @@ def test_get_normalized_dataset(
             assert allclose(expected_data, data)
 
 
-def test_transform_variable():
-    """Check the method transform_variable."""
+def test_transform_data():
+    """Check the method transform_data."""
     dataset = Dataset()
     dataset.add_variable("x", 1.0, group_name="a")
     dataset.add_variable("x", 1.0, group_name="b")
-    dataset.transform_variable("x", lambda x: -x)
+    dataset.transform_data(lambda x: -x, variable_names="x")
 
     expected_dataset = Dataset()
     expected_dataset.add_variable("x", -1.0, group_name="a")
     expected_dataset.add_variable("x", -1.0, group_name="b")
 
     assert_frame_equal(dataset, expected_dataset)
+
+    def f(x: ndarray) -> ndarray:
+        """Return the opposite of an array.
+
+        Args:
+            x: The original array.
+
+        Returns:
+            The opposite of the original array.
+        """
+        return -x
+
+    dataset.update_data = MagicMock()
+    dataset.transform_data(f, "a", "x", [0], [0])
+    dataset.update_data.assert_called_with(array([[1.0]]), "a", "x", [0], [0])
 
 
 @pytest.mark.parametrize(
@@ -926,3 +944,36 @@ def test_get_group_names():
     assert dataset.get_group_names("x") == ["g", "parameters"]
     assert dataset.get_group_names("y") == ["parameters"]
     assert dataset.get_group_names("z") == ["Foo"]
+
+
+@pytest.fixture(scope="module")
+def dataset_for_to_dict_of_arrays() -> Dataset:
+    """A dataset to test the method to_dict_of_arrays."""
+    dataset = Dataset()
+    dataset.add_variable("x", full((2, 2), 1), "A")
+    dataset.add_variable("y", full((2, 1), 2), "A")
+    dataset.add_variable("x", full((2, 3), 3), "B")
+    dataset.add_variable("z", full((2, 1), 4), "B")
+    return dataset
+
+
+def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays):
+    """Test the method to_dict_of_arrays with default options."""
+    result = dataset_for_to_dict_of_arrays.to_dict_of_arrays()
+    expected = {
+        "A": {"x": array([[1, 1], [1, 1]]), "y": array([[2], [2]])},
+        "B": {"x": array([[3, 3, 3], [3, 3, 3]]), "z": array([[4], [4]])},
+    }
+    assert_equal(result, expected)
+
+
+def test_to_dict_of_arrays_by_variable_name(dataset_for_to_dict_of_arrays):
+    """Test the method to_dict_of_arrays without sorting by group."""
+    result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False)
+    expected = {
+        "y": array([[2], [2]]),
+        "z": array([[4], [4]]),
+        "A:x": array([[1, 1], [1, 1]]),
+        "B:x": array([[3, 3, 3], [3, 3, 3]]),
+    }
+    assert_equal(result, expected)

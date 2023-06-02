@@ -66,7 +66,7 @@ configure_logger()
 # ------------------------------------------
 # We will consider in this example the Sellar's problem:
 #
-# .. include:: /tutorials/_description/sellar_problem_definition.inc
+# .. include:: /problems/sellar_problem_definition.inc
 #
 # Definition of the disciplines using Python functions
 # ----------------------------------------------------

@@ -86,4 +86,4 @@ print(dataset)
 #    The groups are specified by means of a dictionary
 #    where indices are the variables names and values are the groups.
 #    If a variable is missing,
-#    the default group class:`.Dataset.DEFAULT_GROUP` is considered.
+#    the default group :attr:`.Dataset.DEFAULT_GROUP` is considered.
