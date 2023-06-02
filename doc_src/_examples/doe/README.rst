@@ -16,4 +16,4 @@ Solve a design problem using a DOE.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

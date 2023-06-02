@@ -16,4 +16,4 @@ Replace a costly discipline with a cheap surrogate model.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

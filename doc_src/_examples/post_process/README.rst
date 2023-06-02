@@ -14,6 +14,6 @@ Post-process an optimization problem
    :maxdepth: 1
    :hidden:
 
-   *
+   **
 
 .. start-after-label

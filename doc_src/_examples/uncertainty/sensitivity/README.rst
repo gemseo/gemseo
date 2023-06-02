@@ -10,10 +10,3 @@ Sensitivity analysis
 ~~~~~~~~~~~~~~~~~~~~
 
 Define, propagate, quantify and manage uncertainties.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   *

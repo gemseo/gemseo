@@ -16,4 +16,4 @@ Automatically create and execute an MDO process.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

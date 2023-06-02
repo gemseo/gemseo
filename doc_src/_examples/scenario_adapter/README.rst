@@ -16,4 +16,4 @@ Adapt a scenario for multiple reuse.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

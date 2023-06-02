@@ -16,4 +16,4 @@ Analyse a problem from a spreadsheet.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

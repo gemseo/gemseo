@@ -16,4 +16,4 @@ How the uncertain inputs of a model impact its outputs.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

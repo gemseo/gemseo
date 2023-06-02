@@ -16,4 +16,4 @@ Define both work and data flows from an MDO formulation.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

@@ -16,4 +16,4 @@ Look at the coupling graph.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

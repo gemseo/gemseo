@@ -16,4 +16,4 @@ Below are galleries of tutorials related to MDO.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

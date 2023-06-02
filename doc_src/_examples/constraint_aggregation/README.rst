@@ -85,4 +85,4 @@ By increasing the value of p, the IKS function will be closer to the maximum and
    :maxdepth: 1
    :hidden:
 
-   *
+   **

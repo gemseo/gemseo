@@ -16,4 +16,4 @@ High level functions to use |g|.
    :maxdepth: 1
    :hidden:
 
-   *
+   **

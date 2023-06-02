@@ -65,4 +65,4 @@ where :math:`F` is the load vector,
    :maxdepth: 1
    :hidden:
 
-   *
+   **
