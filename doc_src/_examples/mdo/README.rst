@@ -10,3 +10,10 @@ MDO problems
 ============
 
 Below are galleries of tutorials related to MDO.
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :hidden:
+
+   *

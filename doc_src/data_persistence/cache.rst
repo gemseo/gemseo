@@ -151,5 +151,5 @@ to explore the data of the cache.
 Examples
 --------
 
-.. include:: examples/cache/index.rst
-   :start-line: 17
+.. include:: /examples/cache/index.rst
+   :start-after: start-after-label

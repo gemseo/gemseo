@@ -35,5 +35,5 @@ Problems
 Examples
 --------
 
-.. include:: examples/dataset/index.rst
-   :start-line: 17
+.. include:: /examples/dataset/index.rst
+   :start-after: start-after-label
