@@ -1,1 +1,0 @@
-:func:`.get_available_mdas` no longer returns the abstract class :class:`.MDA`.

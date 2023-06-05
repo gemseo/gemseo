@@ -1,4 +1,0 @@
-API changes:
-    - :attr:`.StudyAnalysis.disciplines_descr` has been removed; use :attr:`.MDOStudyAnalysis.study.disciplines` instead.
-    - :attr:`.StudyAnalysis.scenarios_descr` has been removed; use :attr:`.MDOStudyAnalysis.study.scenarios` instead.
-    - :attr:`.StudyAnalysis.xls_study_path` has been removed; use :attr:`.CouplingStudyAnalysis.study.xls_study_path` instead.

@@ -1,3 +1,0 @@
-- :class:`.XLSStudyParser` has a new argument ``has_scenario`` whose default value is ``True``; if ``False``, the sheet ``Scenario`` is not required.
-- :class:`.CouplingStudyAnalysis` allows to generate an N2 diagram from an XLS file defining the disciplines in terms of input and output names.
-- :class:`.MDOStudyAnalysis` allows to generate an N2 diagram and an XDSM from an XLS file defining an MDO problem in terms of disciplines, formulation, objective, constraint and design variables.
