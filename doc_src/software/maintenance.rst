@@ -83,7 +83,7 @@ update the requirements for the testing and ``doc`` environments of ``tox``:
 
 .. code-block:: shell
 
-    tox -e update-deps-test-py37,update-deps-test-py38,update-deps-test-py39,update-deps-test-py310,update-deps-doc
+    tox -e update-deps-test-py38,update-deps-test-py39,update-deps-test-py310,update-deps-doc
 
 The dependencies for the ``check`` and ``dist`` environments of ``tox``
 are defined in:
@@ -95,8 +95,7 @@ Update the requirements for the those environments of ``tox``:
 
 .. code-block:: shell
 
-    tox -e update-deps-check
-    tox -e update-deps-dist
+    tox -e update-deps-check,update-deps-dist
 
 Testing pypi packages
 ---------------------
@@ -135,44 +134,32 @@ The update is done with `towncrier <https://github.com/twisted/towncrier>`_:
 
    towncrier build --version <version number>
 
+Publishing process
+------------------
+
+The publishing of the distribution archives of a package at the version X.Y.Z
+(where Z may contain a rcW suffix)
+is done automatically by the CI on the following conditions:
+- a CI variable with a PyPI token has be set,
+- a branch named release-X.Y.Z is merged to the master branch.
+A tag named X.Y.Z is also automatically created on the master branch.
+
 Making a new release
 --------------------
 
-#. Create a release branch.
-#. Make sure the full test suite passes.
+#. Create a release branch named release-X.Y.Z.
+#. For plugins only:
+   #. Update the required gemseo version in :file:`setup.cfg`.
 #. Update the changelog.
 #. Push the branch.
-#. Build the docs for this branch on rtd, check the version and changelog.
-#. Merge to master.
-#. Tag.
-#. Run :command:`tox -e dist` to create the distribution archives.
-#. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
-#. Test the pypi packages.
-#. Merge master to develop so the last tag is a parent commit for defining the dev versions.
-#. Push develop.
-#. Update the recipe for conda-forge once the update bot sends the PR.
-#. Test the conda-forge packages.
-#. Create the anaconda stand alone distribution.
-
-Making a new release for plugins
---------------------------------
-
-#. Create a release branch.
-#. Update the required gemseo version in :file:`setup.cfg`.
-#. Update the environments dependencies (:ref:`update-deps`)
-   while setting the environment variable :command:`GEMSEO_PIP_REQ_SPEC="gemseo"`.
-#. Update the changelog.
-#. Push the branch.
+#. Create a MR to master.
 #. Make sure the full test suite passes.
-#. Merge to master.
-#. Tag.
-#. Run :command:`tox -e dist` to create the distribution archives.
-#. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
-#. Test the pypi packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
-#. Update the environments dependencies (:ref:`update-deps`)
-   **without** setting the environment variable ``GEMSEO_PIP_REQ_SPEC``.
 #. Push develop.
+#. For |g| only:
+   #. Update the recipe for conda-forge once the update bot sends the PR.
+   #. Test the conda-forge packages.
+   #. Create the anaconda stand alone distribution.
 
 Mirroring to github
 -------------------
