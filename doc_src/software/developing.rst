@@ -659,7 +659,7 @@ Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py37,py38
+   tox -e py38,py39
 
 Tests coverage
 ++++++++++++++
