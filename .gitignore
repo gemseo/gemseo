@@ -14,6 +14,11 @@
 .vscode
 tags
 
+/doc_src/examples
+!/doc_src/examples/index.rst
+/doc_src/gen_modules
+/doc_src/authors.rst
+/doc_src/plugins.rst
 doc_src/_modules
 doc_src/algorithms/index.rst
 doc_src/algorithms/**/*.*

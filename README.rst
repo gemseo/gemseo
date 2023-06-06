@@ -92,3 +92,4 @@ Contributors
 - Selime Gürol
 - Reda El Amri
 - Simone Coniglio
+- Loïc Cousin
