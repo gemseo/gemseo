@@ -664,7 +664,7 @@ Optimisation & DOE
 - Rename ``Database.missing_value_tag`` to ``Database.MISSING_VALUE_TAG``.
 - Rename ``Database.get_x_by_iter`` to ``Database.get_x_vect``.
 - Rename ``Database.clean_from_iterate`` to ``Database.clear_from_iteration``.
-- Rename ``Database.get_max_iteration`` to ``Database.n_new_iterations``.
+- Rename ``Database.get_max_iteration`` to ``Database.n_iterations``.
 - Rename ``Database.notify_newiter_listeners`` to ``Database.notify_new_iter_listeners``.
 - Rename ``Database.get_func_history`` to ``Database.get_function_history``.
 - Rename ``Database.get_func_grad_history`` to ``Database.get_gradient_history``.
