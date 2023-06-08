@@ -429,12 +429,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
         grammar.set_descriptions(option_descriptions)
-
-        # Remove args bound to None from the required properties
-        # because they are optional.
-        for opt, val in default_option_values.items():
-            if val is None:
-                grammar.required_names.remove(opt)
+        grammar.defaults = default_option_values
+        for name in default_option_values:
+            grammar.required_names.remove(name)
 
         if write_schema:
             grammar.to_file(schema_path)

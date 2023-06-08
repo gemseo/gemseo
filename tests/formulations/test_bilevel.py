@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
 
 import pytest
@@ -321,3 +322,36 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario):
     assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
     assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
     assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {},
+        {"sub_scenarios_log_level": None},
+        {"sub_scenarios_log_level": logging.INFO},
+        {"sub_scenarios_log_level": logging.WARNING},
+    ],
+)
+def test_scenario_log_level(caplog, options):
+    """Check scenario_log_level."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+    sub_scenario = MDOScenario(
+        [AnalyticDiscipline({"z": "(x+y)**2"})],
+        "DisciplinaryOpt",
+        "z",
+        design_space.filter(["y"], copy=True),
+        name="FooScenario",
+    )
+    sub_scenario.default_inputs = {"algo": "NLOPT_COBYLA", "max_iter": 2}
+    scenario = MDOScenario(
+        [sub_scenario], "BiLevel", "z", design_space.filter(["x"]), **options
+    )
+    scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 2})
+    sub_scenarios_log_level = options.get("sub_scenarios_log_level")
+    if sub_scenarios_log_level == logging.WARNING:
+        assert "Start FooScenario execution" not in caplog.text
+    else:
+        assert "Start FooScenario execution" in caplog.text

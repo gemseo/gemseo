@@ -42,6 +42,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.core.scenario import Scenario
+from gemseo.utils.logging_tools import LoggingContext
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,6 +71,12 @@ class MDOScenarioAdapter(MDODiscipline):
     UPPER_BND_SUFFIX = "_upper_bnd"
     MULTIPLIER_SUFFIX = "_multiplier"
 
+    __scenario_log_level: int | None
+    """The level of the root logger during the scenario execution.
+
+    If ``None``, do not change the level of the root logger.
+    """
+
     def __init__(
         self,
         scenario: Scenario,
@@ -84,6 +91,7 @@ class MDOScenarioAdapter(MDODiscipline):
         name: str | None = None,
         keep_opt_history: bool = False,
         opt_history_file_prefix: str = "",
+        scenario_log_level: int | None = None,
     ) -> None:
         """
         Args:
@@ -111,6 +119,9 @@ class MDOScenarioAdapter(MDODiscipline):
                 i.e the number of stored databases.
                 If empty, the databases are not exported.
                 The databases can be exported only is ``keep_opt_history=True``.
+            scenario_log_level: The level of the root logger
+                during the scenario execution.
+                If ``None``, do not change the level of the root logger.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -163,6 +174,7 @@ class MDOScenarioAdapter(MDODiscipline):
             scenario.design_space.get_current_value(as_dict=True)
         )
         self.post_optimal_analysis = None
+        self.__scenario_log_level = scenario_log_level
 
     def _update_grammars(self) -> None:
         """Update the input and output grammars.
@@ -304,7 +316,8 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def _run(self) -> None:
         self._pre_run()
-        self.scenario.execute()
+        with LoggingContext(level=self.__scenario_log_level):
+            self.scenario.execute()
         self._post_run()
 
     def _pre_run(self) -> None:

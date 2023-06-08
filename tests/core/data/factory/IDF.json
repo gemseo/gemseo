@@ -26,13 +26,5 @@
       "description": "The type of the input and output grammars.",
       "type": "string"
     }
-  },
-  "required": [
-    "grammar_type",
-    "maximize_objective",
-    "n_processes",
-    "normalize_constraints",
-    "start_at_equilibrium",
-    "use_threading"
-  ]
+  }
 }

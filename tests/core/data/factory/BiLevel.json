@@ -37,17 +37,10 @@
     "grammar_type": {
       "description": "The type of the input and output grammars.",
       "type": "string"
+    },
+    "sub_scenarios_log_level": {
+      "description": "The level of the root logger during the sub-scenarios executions. If ``None``, do not change the level of the root logger.",
+      "type": "null"
     }
-  },
-  "required": [
-    "apply_cstr_to_system",
-    "apply_cstr_tosub_scenarios",
-    "grammar_type",
-    "inner_mda_name",
-    "main_mda_name",
-    "maximize_objective",
-    "multithread_scenarios",
-    "parallel_scenarios",
-    "reset_x0_before_opt"
-  ]
+  }
 }

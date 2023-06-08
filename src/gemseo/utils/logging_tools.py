@@ -78,10 +78,25 @@ class LoggingContext:
     logging-cookbook.html#using-a-context-manager-for-selective-logging>`_
     """
 
+    logger: logging.Logger
+    """The logger."""
+
+    level: int | None
+    """The level of the logger to be used on block entry.
+
+    If ``None``, do not change the level of the logger.
+    """
+
+    handler: logging.StreamHandler
+    """An additional handler to be used on block entry."""
+
+    close: bool
+    """Whether to close the handler on block exit."""
+
     def __init__(
         self,
         logger: logging.Logger = logging.root,
-        level: int = logging.WARNING,
+        level: int | None = logging.WARNING,
         handler: logging.StreamHandler | None = None,
         close: bool = True,
     ) -> None:
@@ -89,6 +104,7 @@ class LoggingContext:
         Args:
             logger: The logger.
             level: The level of the logger to be used on block entry.
+                If ``None``, do not change the level of the logger.
             handler: An additional handler to be used on block entry.
             close: Whether to close the handler on block exit.
         """  # noqa:D205 D212 D415
