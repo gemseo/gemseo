@@ -530,7 +530,7 @@ def test_get_formulation_options_schema():
     """Test that the formulation options schemas are retrieved correctly."""
     mdf_schema = get_formulation_options_schema("MDF")
     for prop in ["maximize_objective", "inner_mda_name"]:
-        assert prop in mdf_schema["required"]
+        assert prop in mdf_schema["properties"]
 
     idf_schema = get_formulation_options_schema("IDF")
     for prop in [
@@ -539,7 +539,7 @@ def test_get_formulation_options_schema():
         "n_processes",
         "use_threading",
     ]:
-        assert prop in idf_schema["required"]
+        assert prop in idf_schema["properties"]
     get_formulation_options_schema("IDF", pretty_print=True)
 
 

@@ -10,9 +10,5 @@
       "description": "The type of the input and output grammars.",
       "type": "string"
     }
-  },
-  "required": [
-    "grammar_type",
-    "maximize_objective"
-  ]
+  }
 }

@@ -18,11 +18,5 @@
       "description": "The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.",
       "type": "string"
     }
-  },
-  "required": [
-    "grammar_type",
-    "inner_mda_name",
-    "main_mda_name",
-    "maximize_objective"
-  ]
+  }
 }

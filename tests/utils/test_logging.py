@@ -62,9 +62,13 @@ def test_selective_logging(caplog):
         logger.warning("5. This should not appear.")
         logger.error("6. This should appear.")
 
+    with LoggingContext(level=None):
+        logger.info("7. This should appear.")
+
     assert "1. This should appear." in caplog.text
     assert "2. This should appear." in caplog.text
     assert "3. This should not appear." not in caplog.text
     assert "4. This should appear." in caplog.text
     assert "5. This should not appear." not in caplog.text
     assert "6. This should appear." in caplog.text
+    assert "7. This should appear." in caplog.text

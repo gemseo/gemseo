@@ -112,7 +112,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__grammar_type = grammar_type
 
     @property
-    def _grammar_type(self) -> str:
+    def _grammar_type(self) -> MDODiscipline.GrammarType:
         """The type of the input and output grammars."""
         return self.__grammar_type
 
