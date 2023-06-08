@@ -338,7 +338,7 @@ class MDOParallelChain(MDODiscipline):
                 If None, uses the number of disciplines.
             use_deep_copy: Whether to deepcopy the discipline input data.
 
-        Note:
+        Notes:
             The actual number of processes could be lower than ``n_processes``
             if there are less than ``n_processes`` disciplines.
             ``n_processes`` can be lower than the total number of CPUs on the machine.
@@ -523,7 +523,7 @@ class MDOAdditiveChain(MDOParallelChain):
                 used to parallelize the execution.
                 If None, uses the number of disciplines.
 
-        Note:
+        Notes:
             The actual number of processes could be lower than ``n_processes``
             if there are less than ``n_processes`` disciplines.
             ``n_processes`` can be lower than the total number of CPUs on the machine.

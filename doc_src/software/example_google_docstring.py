@@ -6,7 +6,7 @@ Docstrings may extend over multiple lines.
 Sections are created with a section header and
 a colon followed by a block of indented text.
 
-Example:
+Examples:
     Examples can be given using either the ``Example`` or ``Examples`` sections.
     Sections support any reStructuredText formatting,
     including literal blocks::
@@ -154,7 +154,7 @@ class ExampleClass:
                 Multiple lines are supported.
             arg3: Description of `arg3`.
 
-        Note:
+        Notes:
             Do not include the `self` parameter in the ``Args`` section.
             For the __init__ method only:
             add to the return type annotation
@@ -193,7 +193,7 @@ class ExampleClass:
     ) -> bool:
         """Class methods are similar to regular functions.
 
-        Note:
+        Notes:
             Do not include the `self` parameter in the ``Args`` section.
 
         Args:

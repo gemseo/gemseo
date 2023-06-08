@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 class OTExponentialDistribution(OTDistribution):
     """Create an exponential distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.exponential import (
         ...     OTExponentialDistribution
         ... )

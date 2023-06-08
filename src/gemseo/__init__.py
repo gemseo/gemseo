@@ -1917,7 +1917,7 @@ def configure(
     This could be useful to speed up calculations in presence of cheap disciplines
     such as analytic formula and surrogate models.
 
-    Warning:
+    Warnings:
         This function should be called before calling anything from |g|.
 
     Args:
@@ -1991,7 +1991,7 @@ def wrap_discipline_in_job_scheduler(
     Raises:
         OSError: if the job template does not exist.
 
-    Warning:
+    Warnings:
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in GEMSEO are serializable but it is possible that
         custom ones are not and this will make the submission proess fail.

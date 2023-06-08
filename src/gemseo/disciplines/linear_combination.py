@@ -39,11 +39,11 @@ class LinearCombination(MDODiscipline):
     and the coefficients :math:`a_1,\ldots,a_d` are equal to 1,
     the discipline simply sums the inputs.
 
-    Note:
+    Notes:
         By default,
         the :class:`.LinearCombination` simply sums the inputs.
 
-    Example:
+    Examples:
         >>> discipline = LinearCombination(["alpha", "beta", "gamma"], "delta",
                 input_coefficients={"alpha": 1.,"beta": 2.,"gamma": 3.})
         >>> input_data = {"alpha": array([1.0]), "beta": array([1.0]),

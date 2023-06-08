@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPExponentialDistribution(SPDistribution):
     """Create an exponential distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.exponential import (
         ...     SPExponentialDistribution
         ... )

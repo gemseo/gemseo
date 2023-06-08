@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPNormalDistribution(SPDistribution):
     """Create a normal distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.normal import (
         ...     SPNormalDistribution
         ... )

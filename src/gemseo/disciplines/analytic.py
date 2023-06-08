@@ -47,7 +47,7 @@ class AnalyticDiscipline(MDODiscipline):
 
     Compute the Jacobian matrices by automatically differentiating the expressions.
 
-    Example:
+    Examples:
         >>> from gemseo.disciplines.analytic import AnalyticDiscipline
         >>> discipline = AnalyticDiscipline({'y_1': '2*x**2', 'y_2': '4*x**2+5+z**3'})
     """

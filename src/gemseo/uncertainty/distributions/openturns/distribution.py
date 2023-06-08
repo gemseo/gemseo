@@ -83,7 +83,7 @@ class OTDistribution(Distribution):
     Create a probability distribution for an uncertain variable
     from its dimension and probability distribution name and properties.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.distribution import (
         ...     OTDistribution
         ... )

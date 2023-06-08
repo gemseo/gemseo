@@ -33,7 +33,7 @@ class Concatenater(MDODiscipline):
 
     These input variables can be scaled before concatenation.
 
-    Example:
+    Examples:
         >>> from gemseo import create_discipline
         >>> sellar_system_disc = create_discipline('SellarSystem')
         >>> constraint_names = ['c1', 'c2']

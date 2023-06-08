@@ -53,7 +53,7 @@ class AutoPyDiscipline(MDODiscipline):
     with strong couplings, then the Python function **must** assign default values for
     its input arguments.
 
-    Example:
+    Examples:
         >>> from gemseo.disciplines.auto_py import AutoPyDiscipline
         >>> from numpy import array
         >>> def my_function(x=0., y=0.):
