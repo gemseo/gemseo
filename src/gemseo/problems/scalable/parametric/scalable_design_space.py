@@ -72,7 +72,7 @@ class ScalableDesignSpace(ParameterSpace):
                 where :math:`\epsilon_{i,j}` are independent and identically distributed
                 standard Gaussian variables.
 
-        Note:
+        Notes:
             The lengths of ``n_local`` and ``n_coupling`` must be equal
             and correspond to the number of scalable disciplines.
             ``n_local[i]`` (resp. ``n_coupling[i]``)

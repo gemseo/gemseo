@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPUniformDistribution(SPDistribution):
     """Create a uniform distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.uniform import (
         ...     SPUniformDistribution
         ... )

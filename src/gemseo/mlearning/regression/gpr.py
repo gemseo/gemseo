@@ -261,7 +261,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         Returns:
             The standard deviation at the query points.
 
-        Warning:
+        Warnings:
             If the output variables are transformed before the training stage,
             then the standard deviation is related to this transformed output space
             unlike :meth:`.predict` which returns values in the original output space.

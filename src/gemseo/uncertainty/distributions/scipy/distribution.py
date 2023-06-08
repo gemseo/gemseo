@@ -82,7 +82,7 @@ class SPDistribution(Distribution):
         :class:`.SPTriangularDistribution`
         :class:`.SPUniformDistribution`
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.distribution import (
         ...    SPDistribution
         ... )

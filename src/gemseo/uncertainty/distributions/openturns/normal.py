@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 class OTNormalDistribution(OTDistribution):
     """Create a normal distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.normal import (
         ...     OTNormalDistribution
         >>> )

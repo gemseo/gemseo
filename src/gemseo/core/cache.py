@@ -94,7 +94,7 @@ class AbstractCache(ABCMapping):
       associating output and input names,
       i.e. ``{"output_name": {"input_name": array}}``.
 
-    Example:
+    Examples:
         The evaluation of the function :math:`y=f(x)=(x^2, 2x^3`)`
         and its derivative at :math:`x=1` leads to cache the entry defined by:
 
@@ -120,13 +120,13 @@ class AbstractCache(ABCMapping):
     access (``cache_entry = cache[input_data]``)
     and update (``cache.update(other_cache)``).
 
-    Note:
+    Notes:
         ``cache_entry`` is a :class:`.CacheEntry`
         with the ordered fields *input*, *output* and *jacobian*
         accessible either by index, e.g. ``input_data = cache_entry[0]``,
         or by name, e.g. ``input_data = cache_entry.inputs``.
 
-    Note:
+    Notes:
         If an output name is also an input name,
         the output name is suffixed with ``[out]``.
 

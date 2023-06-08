@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 class OTTriangularDistribution(OTDistribution):
     """Create a triangular distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.triangular import (
         ...     OTTriangularDistribution
         ... )

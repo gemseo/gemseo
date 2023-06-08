@@ -73,7 +73,7 @@ class SchedulersFactory(BaseFactory):
         Raises:
             OSError: If the job template does not exist.
 
-        Warning:
+        Warnings:
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in |g| are serializable but it is possible that custom
         ones are not and this will make the submission process fail.

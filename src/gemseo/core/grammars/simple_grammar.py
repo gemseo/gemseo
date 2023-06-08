@@ -119,7 +119,7 @@ class SimpleGrammar(BaseGrammar):
         merge: bool = False,
     ) -> None:
         """
-        Note:
+        Notes:
             For consistency with :class:`.__init__` behavior, it is assumed that all
             of them are required.
 

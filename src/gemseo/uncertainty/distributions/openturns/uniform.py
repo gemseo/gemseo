@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 class OTUniformDistribution(OTDistribution):
     """Create a uniform distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.uniform import (
         ...     OTUniformDistribution
         >>> )

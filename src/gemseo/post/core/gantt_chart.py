@@ -49,7 +49,7 @@ def create_gantt_chart(
 
     Both executions and linearizations times are plotted.
 
-    Warning:
+    Warnings:
         ``MDODiscipline.activate_time_stamps()`` must be called first.
 
     Args:

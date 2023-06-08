@@ -70,7 +70,7 @@ class OptimizationLibrary(DriverLibrary):
     #. Select the algorithm with :attr:`.algo_name`.
     #. Solve an :class:`.OptimizationProblem` with :meth:`.execute`.
 
-    Note:
+    Notes:
         The missing current values
         of the :class:`.DesignSpace` attached to the :class:`.OptimizationProblem`
         are automatically initialized

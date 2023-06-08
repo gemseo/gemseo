@@ -125,7 +125,7 @@ class PropaneReaction(MDODiscipline):
     This discipline's outputs are
     the objective function and partial terms used in inequality constraints.
 
-    Note:
+    Notes:
         The equations have been decoupled (y_i = y_i(x_shared)).
         Otherwise,
         the solvers may find iterates

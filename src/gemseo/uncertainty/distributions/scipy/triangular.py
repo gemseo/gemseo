@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPTriangularDistribution(SPDistribution):
     """Create a triangular distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.triangular import (
         ...     SPTriangularDistribution
         ... )

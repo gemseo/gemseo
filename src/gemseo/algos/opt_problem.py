@@ -1627,7 +1627,7 @@ class OptimizationProblem(BaseProblem):
     ) -> bool:
         """Check if a point is feasible.
 
-        Note:
+        Notes:
             If the value of a constraint is absent from this point,
             then this constraint will be considered satisfied.
 
