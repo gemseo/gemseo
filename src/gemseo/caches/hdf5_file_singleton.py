@@ -31,6 +31,9 @@ from numpy import bytes_
 from numpy import ndarray
 from numpy import unicode_
 from numpy.core.multiarray import array
+from scipy.sparse import csr_array
+from scipy.sparse import spmatrix
+from strenum import StrEnum
 
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import Data
@@ -64,6 +67,14 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
     _INPUTS_GROUP: ClassVar[str] = AbstractFullCache._INPUTS_GROUP
     """The label for the input variables."""
+
+    class __SparseMatricesAttributes(StrEnum):
+        """Attribute names required to store sparse matrices in CSR format."""
+
+        SPARSE = "sparse"
+        INDICES = "indices"
+        INDPTR = "indptr"
+        SHAPE = "shape"
 
     def __init__(
         self,
@@ -125,6 +136,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 if value is not None:
                     if value.dtype.type is unicode_:
                         group.create_dataset(name, data=value.astype("bytes"))
+                    elif isinstance(value, spmatrix):
+                        self.__write_sparse_array(group, name, value)
                     else:
                         group.create_dataset(name, data=to_real(value))
 
@@ -142,13 +155,37 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         if h5_open_file is None:
             h5_file.close()
 
+    def __write_sparse_array(
+        self, group: h5py.Group, dataset_name: str, value: spmatrix
+    ) -> None:
+        """Store sparse array in HDF5 group.
+
+        Args:
+            group: The name of the group.
+                or :attr:`.AbstractFullCache._JACOBIAN_GROUP`.
+            dataset_name: The name of the dataset to store the sparse array in.
+            value: The sparse array.
+        """
+        value = value.tocsr()
+
+        # Create a dataset containing the non-zero elements of value
+        dataset = group.create_dataset(dataset_name, data=to_real(value.data))
+
+        # Add as attribute the indices, pointers and shape required for reconstruction
+        dataset.attrs.create(self.__SparseMatricesAttributes.INDICES, value.indices)
+        dataset.attrs.create(self.__SparseMatricesAttributes.INDPTR, value.indptr)
+        dataset.attrs.create(self.__SparseMatricesAttributes.SHAPE, value.shape)
+
+        # Add a sparse flag
+        dataset.attrs.create(self.__SparseMatricesAttributes.SPARSE, True)
+
     def read_data(
         self,
         index: int,
         group: str,
         hdf_node_path: str,
         h5_open_file: h5py.File | None = None,
-    ) -> Data | None | int | None:
+    ) -> tuple[Data | None, int | None]:
         """Read the data for given index and group.
 
         Args:
@@ -175,7 +212,14 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             return None, None
 
         entry = root[str(index)]
-        data = {key: array(val) for key, val in entry[group].items()}
+
+        data = {}
+        for key, dataset in entry[group].items():
+            if dataset.attrs.get(self.__SparseMatricesAttributes.SPARSE):
+                data[key] = self.__read_sparse_array(dataset)
+            else:
+                data[key] = array(dataset)
+
         if group == self._INPUTS_GROUP:
             hash_ = entry[self.HASH_TAG]
             hash_ = int(array(hash_)[0])
@@ -190,6 +234,21 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 data[name] = value.astype(unicode_)
 
         return data, hash_
+
+    def __read_sparse_array(self, dataset: h5py.Dataset) -> csr_array:
+        """Read sparse array from a HDF5 dataset.
+
+        Args:
+            dataset: The dataset to the read the data from.
+
+        Returns:
+            The sparse array in CSR format.
+        """
+        indices = dataset.attrs.get(self.__SparseMatricesAttributes.INDICES)
+        indptr = dataset.attrs.get(self.__SparseMatricesAttributes.INDPTR)
+        shape = dataset.attrs.get(self.__SparseMatricesAttributes.SHAPE)
+
+        return csr_array((dataset, indices, indptr), shape)
 
     @staticmethod
     def _has_group(

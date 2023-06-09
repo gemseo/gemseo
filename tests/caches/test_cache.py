@@ -39,12 +39,13 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import arange
 from numpy import array
 from numpy import eye
 from numpy import float64
 from numpy import zeros
-from numpy.linalg import norm
+from scipy.sparse import eye as speye
 
 DIR_PATH = Path(__file__).parent
 
@@ -80,29 +81,32 @@ def test_jac_and_outputs_caching(
     simple_cache, memory_full_cache, memory_full_cache_loc, hdf5_cache
 ):
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
+        # Test the cache are empty
         assert not cache
         assert not cache.last_entry.inputs
-        input_data = {"i": arange(3)}
+
+        # Create input, output and jacobian
+        input_data = {"i1": arange(3), "i2": arange(3)}
         output_data = {"o": arange(4)}
+        jac = {"o": {"i1": eye(4, 3), "i2": speye(4, 3)}}
+
+        # Cache and retrieve output
         cache.cache_outputs(input_data, output_data)
-        _, out, jac = cache[input_data]
-        assert out
-        assert not jac
-        assert_items_equal(out, output_data)
+        _, out_loaded, jac_loaded = cache[input_data]
+        assert out_loaded
+        assert not jac_loaded
+        assert_items_equal(out_loaded, output_data)
 
-        jac = {"o": {"i": eye(4, 3)}}
+        # Cache and retrieve jacobian
         cache.cache_jacobian(input_data, jac)
-
-        _, out, jac_l = cache[input_data]
-        assert jac_l is not None
-        assert norm(jac_l["o"]["i"].flatten() - eye(4, 3).flatten()) == 0.0
-        assert out is not None
+        _, out_loaded, jac_loaded = cache[input_data]
+        assert out_loaded is not None
+        assert compare_dict_of_arrays(jac, jac_loaded)
 
         cache.tolerance = 1e-6
-        _, out_t, jac_t = cache[input_data]
-        assert jac_t is not None
-        assert norm(jac_t["o"]["i"].flatten() - eye(4, 3).flatten()) == 0.0
-        assert out_t is not None
+        _, out_tol, jac_tol = cache[input_data]
+        assert out_loaded is not None
+        assert compare_dict_of_arrays(jac, jac_loaded)
 
         cache.tolerance = 0.0
 
