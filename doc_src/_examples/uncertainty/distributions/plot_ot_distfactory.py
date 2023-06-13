@@ -108,7 +108,8 @@ print("Exponential: ", acceptable, details)
 
 # %%
 # In this case,
-# the :meth:`.OTDistributionFitter.measure` method returns a tuple with two values:
+# the :meth:`.OTDistributionFitter.compute_measure` method
+# returns a tuple with two values:
 #
 # 1. a boolean
 #    indicating if the measured distribution is acceptable to model the data,
