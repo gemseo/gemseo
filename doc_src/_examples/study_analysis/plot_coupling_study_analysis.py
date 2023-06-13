@@ -50,7 +50,7 @@ study.generate_n2(save=False, show=True)
 #
 # .. code::
 #
-#    gemseo-study coupling_study.xlsx -t coupling -o outputs -h 5 -w 5
+#    gemseo-study coupling_study.xlsx -t coupling -o outputs --height 5 --width 5
 #
 # where ``gemseo-study`` is an executable provided by |g|
 # and the Excel file path ``coupling_study.xlsx`` is the specification
@@ -59,5 +59,5 @@ study.generate_n2(save=False, show=True)
 #
 # - :code:`-t coupling` is the type of study (default: ``mdo``),
 # - :code:`-o outputs` is the output directory,
-# - :code:`-h 5` is the height of the N2 chart in inches,
-# - :code:`-w 5` is the width of the N2 chart in inches.
+# - :code:`--height 5` is the height of the N2 chart in inches,
+# - :code:`--width 5` is the width of the N2 chart in inches.
