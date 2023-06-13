@@ -74,7 +74,7 @@ class KMeans(OptPostProcessor):
         x_vars = array(x_history)
         x_vars_sc = StandardScaler().fit_transform(x_vars)
         # estimate bandwidth for mean shift
-        algorithm = cluster.MiniBatchKMeans(n_clusters=n_clusters)
+        algorithm = cluster.MiniBatchKMeans(n_clusters=n_clusters, n_init="auto")
         # predict cluster memberships
         algorithm.fit(x_vars_sc)
         y_pred = algorithm.labels_.astype(int)

@@ -109,6 +109,7 @@ class KMeans(MLPredictiveClusteringAlgo):
                 Otherwise,
                 the integer is used to make the initialization deterministic.
         """
+        n_init = parameters.pop("n_init", "auto")
         super().__init__(
             data,
             transformer=transformer,
@@ -117,7 +118,9 @@ class KMeans(MLPredictiveClusteringAlgo):
             random_state=random_state,
             **parameters,
         )
-        self.algo = SKLKmeans(n_clusters, random_state=random_state, **parameters)
+        self.algo = SKLKmeans(
+            n_clusters, random_state=random_state, n_init=n_init, **parameters
+        )
 
     def _fit(
         self,

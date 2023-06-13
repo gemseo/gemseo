@@ -167,7 +167,7 @@ def test_predict_local_model(model):
     prediction = model.predict_local_model(INPUT_VALUE, 0)
     option_1 = allclose(prediction["y"][0], 11.22893081, atol=ATOL, rtol=RTOL)
     prediction = model.predict_local_model(INPUT_VALUE, 1)
-    option_2 = allclose(prediction["y"][0], 11.22893081, atol=ATOL, rtol=RTOL)
+    option_2 = allclose(prediction["y"][0], 11.494479166666661, atol=ATOL, rtol=RTOL)
     assert option_1 or option_2
     predictions = model.predict_local_model(INPUT_VALUES, 0)
     assert isinstance(predictions, dict)
