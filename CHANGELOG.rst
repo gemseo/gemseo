@@ -39,7 +39,7 @@ Main GEMSEO.API breaking changes
   - ``gemseo.algos.opt.lib_pdfo`` has been moved to `gemseo-pdfo <https://gitlab.com/gemseo/dev/gemseo-pdfo>`_, a GEMSEO plugin for the PDFO library,
   - ``gemseo.algos.opt.lib_pseven`` has been moved to `gemseo-pseven <https://gitlab.com/gemseo/dev/gemseo-pseven>`_, a GEMSEO plugin for the pSeven library,
   - ``gemseo.wrappers.matlab`` has been moved to `gemseo-matlab <https://gitlab.com/gemseo/dev/gemseo-matlab>`_, a GEMSEO plugin for MATLAB,
-  - ``gemseo.wrappers.template_grammar_editor`` has been moved to `gemseo-template-editor-gui <https://gitlab.com/gemseo/dev/gemseo-template-editor-gui>`_, a GUI to create input and output file templates for ``.DiscFromExe``.
+  - ``gemseo.wrappers.template_grammar_editor`` has been moved to `gemseo-template-editor-gui <https://gitlab.com/gemseo/dev/gemseo-template-editor-gui>`_, a GUI to create input and output file templates for ``DiscFromExe``.
 
 Added
 -----
@@ -66,11 +66,9 @@ Post processing
   `#725 <https://gitlab.com/gemseo/dev/gemseo/-/issues/725>`_
 - ``TopologyView`` allows to visualize the solution of a 2D topology optimization problem.
   `#739 <https://gitlab.com/gemseo/dev/gemseo/-/issues/739>`_
-- ``CorrelationAnalysis`` proposes two new sensitivity methods, namely Kendall rank correlation coefficients (``CorrelationAnalysis.kendall``) and squared standard regression coefficients (``CorrelationAnalysis.ssrc``).
-  `#654 <https://gitlab.com/gemseo/dev/gemseo/-/issues/654>`_
 - ``ConstraintsHistory`` uses horizontal black dashed lines for tolerance.
   `#664 <https://gitlab.com/gemseo/dev/gemseo/-/issues/664>`_
-- ``.Animation`` is a new ``.OptPostProcessor`` to generate an animated GIF from a ``.OptPostProcessor``.
+- ``Animation`` is a new ``OptPostProcessor`` to generate an animated GIF from a ``OptPostProcessor``.
   `#740 <https://gitlab.com/gemseo/dev/gemseo/-/issues/740>`_
 
 MDO processes
@@ -95,15 +93,15 @@ MDO processes
 - Add a new grammar type based on `Pydantic <https://docs.pydantic.dev/>`_: ``PydanticGrammar``.
   This new grammar is still experimental and subject to changes, use with cautions.
   `#436 <https://gitlab.com/gemseo/dev/gemseo/-/issues/436>`_
- - ``.XLSStudyParser`` has a new argument ``has_scenario`` whose default value is ``True``; if ``False``, the sheet ``Scenario`` is not required.
-  - ``.CouplingStudyAnalysis`` allows to generate an N2 diagram from an XLS file defining the disciplines in terms of input and output names.
-  - ``.MDOStudyAnalysis`` allows to generate an N2 diagram and an XDSM from an XLS file defining an MDO problem in terms of disciplines, formulation, objective, constraint and design variables.
+ - ``XLSStudyParser`` has a new argument ``has_scenario`` whose default value is ``True``; if ``False``, the sheet ``Scenario`` is not required.
+  - ``CouplingStudyAnalysis`` allows to generate an N2 diagram from an XLS file defining the disciplines in terms of input and output names.
+  - ``MDOStudyAnalysis`` allows to generate an N2 diagram and an XDSM from an XLS file defining an MDO problem in terms of disciplines, formulation, objective, constraint and design variables.
   `#696 <https://gitlab.com/gemseo/dev/gemseo/-/issues/696>`_
-- ``.JSONGrammar`` can validate ``.PathLike`` objects.
+- ``JSONGrammar`` can validate ``PathLike`` objects.
   `#759 <https://gitlab.com/gemseo/dev/gemseo/-/issues/759>`_
 - Enable sparse matrices in the utils.comparisons module.
   `#779 <https://gitlab.com/gemseo/dev/gemseo/-/issues/779>`_
-- The method ``.MDODiscipline._init_jacobian`` now supports sparse matrices.
+- The method ``MDODiscipline._init_jacobian`` now supports sparse matrices.
 
 Optimisation & DOE
 ~~~~~~~~~~~~~~~~~~
@@ -127,7 +125,8 @@ UQ
   ``SobolAnalysis.unscale_indices`` allows to unscale the Sobol' indices using ``SobolAnalysis.output_variances`` or ``SobolAnalysis.output_standard_deviations``.
   ``SobolAnalysis.plot`` now displays the variance of the output variable in the title of the graph.
   `#671 <https://gitlab.com/gemseo/dev/gemseo/-/issues/671>`_
-
+- ``CorrelationAnalysis`` proposes two new sensitivity methods, namely Kendall rank correlation coefficients (``CorrelationAnalysis.kendall``) and squared standard regression coefficients (``CorrelationAnalysis.ssrc``).
+  `#654 <https://gitlab.com/gemseo/dev/gemseo/-/issues/654>`_
 
 Technical improvements
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -149,7 +148,7 @@ Technical improvements
 - A new ``MDOWarmStartedChain`` allows users to warm start some inputs of the chain with the output values of the
   previous run.
   `#665 <https://gitlab.com/gemseo/dev/gemseo/-/issues/665>`_
-- The method ``.Dataset.to_dict_of_arrays`` converts a ``.Dataset`` into a dictionary of NumPy arrays indexed by variable names or group names.
+- The method ``Dataset.to_dict_of_arrays`` converts a ``Dataset`` into a dictionary of NumPy arrays indexed by variable names or group names.
   `#793 <https://gitlab.com/gemseo/dev/gemseo/-/issues/793>`_
 
 Fixed
@@ -192,11 +191,11 @@ MDO processes
 - Corrected typing issues that caused an exception to be raised when a custom parser was passed to the
   ``DiscFromExe`` at instantiation.
   `#767 <https://gitlab.com/gemseo/dev/gemseo/-/issues/767>`_
-- The method ``.MDODiscipline._init_jacobian`` when ``fill_missing_key=True`` now creates the missing keys.
+- The method ``MDODiscipline._init_jacobian`` when ``fill_missing_key=True`` now creates the missing keys.
   `#782 <https://gitlab.com/gemseo/dev/gemseo/-/issues/782>`_
-- It is now possible to pass a custom ``name`` to the ``.XLSDiscipline`` at instantiation.
+- It is now possible to pass a custom ``name`` to the ``XLSDiscipline`` at instantiation.
   `#788 <https://gitlab.com/gemseo/dev/gemseo/-/issues/788>`_
-- ``.get_available_mdas`` no longer returns the abstract class ``.MDA``.
+- ``get_available_mdas`` no longer returns the abstract class ``MDA``.
   `#795 <https://gitlab.com/gemseo/dev/gemseo/-/issues/795>`_
 
 
@@ -315,8 +314,8 @@ Post processing
   `#750 <https://gitlab.com/gemseo/dev/gemseo/-/issues/750>`_
 - ``PostFactory.create`` uses ``class_name``, then ``opt_problem`` and ``**options`` as arguments.
   `#752 <https://gitlab.com/gemseo/dev/gemseo/-/issues/752>`_
-- ``.Dataset.plot`` no longer refers to specific dataset plots, as ScatterMatrix, lines, curves...
-  ``.Dataset.plot`` now refers to the standard `pandas plot method <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html>`_.
+- ``Dataset.plot`` no longer refers to specific dataset plots, as ScatterMatrix, lines, curves...
+  ``Dataset.plot`` now refers to the standard `pandas plot method <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html>`_.
   To retrieve ready-to-use plots, please check in ``gemseo.post.dataset``.
   `#257 <https://gitlab.com/gemseo/dev/gemseo/-/issues/257>`_
 
@@ -639,7 +638,7 @@ Optimisation & DOE
 
 - The enumeration ``ConstrAggregationDisc.EvaluationFunction`` replaced:
 
-  - ``.constraint_aggregation.EvaluationFunction``
+  - ``constraint_aggregation.EvaluationFunction``
 
 - Use ``True`` as default value of ``eval_observables`` in ``OptimizationProblem.evaluate_functions``.
 - Rename ``outvars`` to ``output_names`` and ``args`` to ``input_names`` in ``MDOFunction`` and its subclasses (names of arguments, attributes and methods).
@@ -823,7 +822,7 @@ Technical improvements
 - Rename ``MDOObjScenarioAdapter`` to ``MDOObjectiveScenarioAdapter``.
 - The scenario adapters ``MDOScenarioAdapter`` and ``MDOObjectiveScenarioAdapter`` are now located in the package ``gemseo.disciplines.scenario_adapters``.
   `#407 <https://gitlab.com/gemseo/dev/gemseo/-/issues/407>`_
-- Removed the attribute ``.factory`` of the factories.
+- Removed the attribute ``factory`` of the factories.
 - Removed ``Factory._GEMS_PATH``.
 - Moved ``singleton._Multiton`` to ``factory._FactoryMultitonMeta``
 - Renamed ``Factory.cache_clear`` to ``Factory.clear_cache``.
@@ -848,13 +847,13 @@ Technical improvements
 - Move ``HashableNdarray`` to ``gemseo.algos.hashable_ndarray``.
 - Move the HDF methods of ``Database`` to ``HDFDatabase``.
 - Remove ``BaseEnum.get_member_from_name``; please use ``BaseEnum.__getitem__``.
-- ``.StudyAnalysis.disciplines_descr`` has been removed; use ``.MDOStudyAnalysis.study.disciplines`` instead.
-- ``.StudyAnalysis.scenarios_descr`` has been removed; use ``.MDOStudyAnalysis.study.scenarios`` instead.
-- ``.StudyAnalysis.xls_study_path`` has been removed; use ``.CouplingStudyAnalysis.study.xls_study_path`` instead.
-- ``.gemseo.utils.study_analysis.StudyAnalysis`` has been moved to ``gemseo.utils.study_analyses.mdo_study_analysis`` and renamed to ``.MDOStudyAnalysis``.
-- ``.gemseo.utils.study_analysis.XLSStudyParser`` has been moved to ``gemseo.utils.study_analyses.xls_study_parser``.
+- ``StudyAnalysis.disciplines_descr`` has been removed; use ``MDOStudyAnalysis.study.disciplines`` instead.
+- ``StudyAnalysis.scenarios_descr`` has been removed; use ``MDOStudyAnalysis.study.scenarios`` instead.
+- ``StudyAnalysis.xls_study_path`` has been removed; use ``CouplingStudyAnalysis.study.xls_study_path`` instead.
+- ``gemseo.utils.study_analysis.StudyAnalysis`` has been moved to ``gemseo.utils.study_analyses.mdo_study_analysis`` and renamed to ``MDOStudyAnalysis``.
+- ``gemseo.utils.study_analysis.XLSStudyParser`` has been moved to ``gemseo.utils.study_analyses.xls_study_parser``.
 - ``gemseo.utils.study_analysis_cli`` has been moved to ``gemseo.utils.study_analyses``.
-- ``.MDOStudyAnalysis.generate_xdsm`` no longer returns a ``.MDOScenario`` but an ``.XDSM``.
+- ``MDOStudyAnalysis.generate_xdsm`` no longer returns a ``MDOScenario`` but an ``XDSM``.
 - The option ``fig_size`` of the ``gemseo-study`` has been replaced by the options ``height`` and ``width``.
 - The CLI ``gemseo-study`` can be used for MDO studies with ``gemseo-study xls_file_path`` and coupling studies with ``gemseo-study xls_file_path -t coupling``.
 
