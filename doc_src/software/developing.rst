@@ -142,7 +142,7 @@ Then install `tox`_ and `pre-commit`_:
 
 .. code-block:: console
 
-   pipx install "tox<4"
+   pipx install tox
    pipx install pre-commit
 
 Finally,
