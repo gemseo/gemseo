@@ -5,6 +5,7 @@ variables:
   TEST_ALL_ENVS:
     value: "false"
     description: "Whether to run the tox tests for all python versions and all platforms."
+  TOX_EXE: tox4
 
 .tags:
   - saas-linux-medium-amd64
