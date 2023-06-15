@@ -1,83 +1,97 @@
 {
-    "name": "TNC_options",
-    "required":["max_iter"],
-    "properties": {
-		"xtol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "xtol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-		"max_time":{
-            "type": "number",
-             "minimum": 0.0
-        },
-        "scale": {
-            "type": ["null","array"],
-            "items":	{
-                		"type": "number",
-                		"minItems": 1
-                		}
-        },
-        "offset": {
-            "type": ["null","number"]
-        },
-        "disp": {
-            "type": "number"
-        },
-        "maxCGit": {
-            "type": "integer",
-            "minimum": -1
-        },
-        "max_iter":{
-            "type": "integer",
-            "minimum": 1
-        },
-        "eta": {
-            "type": "number"
-        },
-        "stepmx": {
-            "type": "number"
-        },
-        "minfev": {
-            "type": "number"
-        },
-        "pg_tol": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "eq_tolerance": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ineq_tolerance": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "rescale":{
-            "type": "number"
-        },
-        "kkt_tol_abs": {
-            "type": ["null","number"],
-            "minimum": 0.0
-        },
-        "kkt_tol_rel": {
-            "type": ["null","number"],
-            "minimum": 0.0
-        }
+  "name": "TNC_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "id": "#TNC"
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "scale": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "number",
+        "minItems": 1
+      }
+    },
+    "offset": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "disp": {
+      "type": "number"
+    },
+    "maxCGit": {
+      "type": "integer",
+      "minimum": -1
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "eta": {
+      "type": "number"
+    },
+    "stepmx": {
+      "type": "number"
+    },
+    "minfev": {
+      "type": "number"
+    },
+    "pg_tol": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "eq_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ineq_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "rescale": {
+      "type": "number"
+    },
+    "kkt_tol_abs": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    },
+    "kkt_tol_rel": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "id": "#TNC"
 }

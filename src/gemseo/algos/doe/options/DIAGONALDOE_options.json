@@ -1,36 +1,41 @@
 {
-    "name": "DIAGONALDOE8options",
-    "description": "Diagonal DOE algorithm",
-    "required": ["n_samples"],
-    "properties": {
-         "eval_jac":{
-            "type": "boolean"
-        },
-        "n_processes": {
-        	"type" : "integer",
-        	"minimum":1
-        },
-        "wait_time_between_samples": {
-        	"type" : "number",
-        	"minimum":0
-        },
-        "n_samples":{
-            "type": "integer",
-             "minimum": 2
-        },
-		"max_time":{
-            "type": "number",
-             "minimum": 0.0
-        },
-        "reverse":{
-            "type": ["null", "array"],
-            "items":	{
-                		"type": "string",
-                		"minItems": 1
-                		}
-        }
+  "name": "DIAGONALDOE8options",
+  "description": "Diagonal DOE algorithm",
+  "required": [
+    "n_samples"
+  ],
+  "properties": {
+    "eval_jac": {
+      "type": "boolean"
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "additionalProperties": false,
-    "type": "object"
+    "n_processes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "wait_time_between_samples": {
+      "type": "number",
+      "minimum": 0
+    },
+    "n_samples": {
+      "type": "integer",
+      "minimum": 2
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "reverse": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "string",
+        "minItems": 1
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
 }

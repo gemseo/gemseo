@@ -1,17 +1,19 @@
 {
-    "name": "REVISED_SIMPLEX_options",
-    "required":["max_iter"],
-    "properties": {
-        "disp": {
-            "type": "boolean"
-        },
-        "max_iter":{
-            "type": "integer",
-            "minimum": 1
-        }
+  "name": "REVISED_SIMPLEX_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "disp": {
+      "type": "boolean"
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "additionalProperties": false,
-    "type": "object",
-    "id": "#REVISED_SIMPLEX"
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "id": "#REVISED_SIMPLEX"
 }

@@ -1,16 +1,18 @@
 {
-    "name": "BasicHistory_options",
-    "required": ["variable_names"],
-    "properties": {
-        "variable_names":{
-        	"items": {
-                "type": "string",
-                "minItems": 1
-            },
-            "type": "array"
-        }
-    },
-    "additionalProperties": false,
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object"
+  "name": "BasicHistory_options",
+  "required": [
+    "variable_names"
+  ],
+  "properties": {
+    "variable_names": {
+      "items": {
+        "type": "string",
+        "minItems": 1
+      },
+      "type": "array"
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
 }

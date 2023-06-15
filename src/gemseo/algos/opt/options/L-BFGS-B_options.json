@@ -1,56 +1,64 @@
 {
-    "name": "L-BFGS-B_options",
-    "required":["max_iter"],
-    "properties": {
-        "disp": {
-            "type": "integer",
-             "minimum": 0
-        },
-        "maxcor":{
-            "type": "integer"
-        },
-        "max_ls_step_nb":{
-            "type": "integer"
-        },
-		"xtol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "xtol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-		"max_time":{
-            "type": "number",
-             "minimum": 0.0
-        },
-        "pg_tol": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "max_iter":{
-            "type": "integer",
-            "minimum": 1
-        },
-        "kkt_tol_abs": {
-            "type": ["null","number"],
-            "minimum": 0.0
-        },
-        "kkt_tol_rel": {
-            "type": ["null","number"],
-            "minimum": 0.0
-        }
+  "name": "L-BFGS-B_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "disp": {
+      "type": "integer",
+      "minimum": 0
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "additionalProperties": false,
-    "type": "object",
-    "id": "#L-BFGS-B"
+    "maxcor": {
+      "type": "integer"
+    },
+    "max_ls_step_nb": {
+      "type": "integer"
+    },
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "pg_tol": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "kkt_tol_abs": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    },
+    "kkt_tol_rel": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "id": "#L-BFGS-B"
 }

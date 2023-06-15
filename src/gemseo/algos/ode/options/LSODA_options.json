@@ -44,10 +44,16 @@
       "inclusiveMinimum": 0
     },
     "lband": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "uband": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",

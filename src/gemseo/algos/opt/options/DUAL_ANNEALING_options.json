@@ -1,62 +1,66 @@
 {
-    "name": "DUAL_ANNEALING_options",
-    "required":["max_iter"],
-    "properties": {
-        "xtol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "xtol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "max_iter": {
-            "type": "integer",
-            "minimum": 1
-        },
-        "max_time": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "stop_crit_n_x": {
-            "type": "integer",
-            "minimum": 2
-        },
-        "initial_temp":{
-            "type": "number",
-            "minimum": 0.01,
-            "maximum": 50000
-        },
-        "restart_temp_ratio":{
-            "type":"number",
-            "minimum": 0.0,
-            "maximum": 1.0
-        },
-        "visit":{
-            "type":"number",
-            "minimum": 0.0,
-            "maximum": 3.0
-        },
-        "accept":{
-            "type":"number",
-            "minimum": -0.0001,
-            "maximum": 5.0
-        },
-        "seed":{
-            "type":["null", "integer"]
-        }
-
+  "name": "DUAL_ANNEALING_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "id": "#DUAL_ANNEALING"
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "stop_crit_n_x": {
+      "type": "integer",
+      "minimum": 2
+    },
+    "initial_temp": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 50000
+    },
+    "restart_temp_ratio": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "visit": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 3.0
+    },
+    "accept": {
+      "type": "number",
+      "minimum": -0.0001,
+      "maximum": 5.0
+    },
+    "seed": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "id": "#DUAL_ANNEALING"
 }

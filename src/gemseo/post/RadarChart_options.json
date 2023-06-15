@@ -1,24 +1,39 @@
 {
-    "name": "RadarChart_options",
-    "required": [],
-    "properties": {
-        "iteration": {
-            "anyOf": [
-                {"type": "integer"},
-                {"type": "string", "enum":  ["opt"]}
-            ]
+  "name": "RadarChart_options",
+  "required": [],
+  "properties": {
+    "iteration": {
+      "anyOf": [
+        {
+          "type": "integer"
         },
-        "constraint_names": {
-            "anyOf": [
-                {"type": "null"},
-                {"items": {"type": "string", "minItems": 1}, "type": "array"}
-            ]
-        },
-        "show_names_radially": {
-            "type": "boolean"
+        {
+          "type": "string",
+          "enum": [
+            "opt"
+          ]
         }
+      ]
     },
-    "additionalProperties": false,
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object"
+    "constraint_names": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "items": {
+            "type": "string",
+            "minItems": 1
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "show_names_radially": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
 }

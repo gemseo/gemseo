@@ -8,18 +8,23 @@
       "type": "integer",
       "minimum": 1
     },
-    "preconditioner": {
-    },
+    "preconditioner": {},
     "tol": {
       "type": "number",
       "minimum": 0.0
     },
     "atol": {
-      "type": ["null","number"],
+      "type": [
+        "null",
+        "number"
+      ],
       "minimum": 0.0
     },
     "x0": {
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "number"
       },

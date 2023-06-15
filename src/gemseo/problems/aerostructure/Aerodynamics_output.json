@@ -1,27 +1,31 @@
 {
-    "name": "Aerodynamics_output",
-    "required": ["drag", "forces", "lift"],
-    "properties": {
-        "drag": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        },
-        "forces": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        },
-        "lift": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        }
+  "name": "Aerodynamics_output",
+  "required": [
+    "drag",
+    "forces",
+    "lift"
+  ],
+  "properties": {
+    "drag": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "id": "#Aerodynamics_output"
+    "forces": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    },
+    "lift": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "id": "#Aerodynamics_output"
 }
