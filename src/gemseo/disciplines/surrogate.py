@@ -138,18 +138,6 @@ class SurrogateDiscipline(MDODiscipline):
         LOGGER.info("%s", msg)
 
     def __repr__(self) -> str:
-        arguments = [
-            f"name={self.name}",
-            f"algo={self.regression_model.__class__.__name__}",
-            f"data={self.regression_model.learning_set.name}",
-            f"size={len(self.regression_model.learning_set)}",
-            f"inputs=[{pretty_str(self.regression_model.input_names)}]",
-            f"outputs=[{pretty_str(self.regression_model.output_names)}]",
-            f"jacobian={self.linearization_mode}",
-        ]
-        return f"SurrogateDiscipline({pretty_str(arguments)})"
-
-    def __str__(self) -> str:
         msg = MultiLineString()
         msg.add("Surrogate discipline: {}", self.name)
         msg.indent()
@@ -158,6 +146,7 @@ class SurrogateDiscipline(MDODiscipline):
         msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
         msg.add("Inputs: {}", pretty_str(self.regression_model.input_names))
         msg.add("Outputs: {}", pretty_str(self.regression_model.output_names))
+        msg.add("Linearization mode: {}", self.linearization_mode)
         return str(msg)
 
     def _initialize_grammars(

@@ -25,6 +25,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.utils.string_tools import MultiLineString
 from numpy import allclose
 from numpy import array
 from numpy import concatenate
@@ -68,23 +69,20 @@ def test_constructor_from_algo(dataset):
     assert {"y_1", "y_2"} == set(surr.get_output_data_names())
 
 
-def test_repr(dataset):
-    """Check the __repr__ of a surrogate discipline."""
-    assert repr(SurrogateDiscipline("LinearRegressor", dataset)) == (
-        "SurrogateDiscipline(algo=LinearRegressor, data=func, inputs=[x_1, x_2], "
-        "jacobian=auto, name=LinReg_func, outputs=[y_1, y_2], size=9)"
-    )
-
-
-def test_str(dataset):
-    surr = SurrogateDiscipline("LinearRegressor", dataset)
-    msg = "Surrogate discipline: LinReg_func\n"
-    msg += "   Dataset name: func\n"
-    msg += "   Dataset size: 9\n"
-    msg += "   Surrogate model: LinearRegressor\n"
-    msg += "   Inputs: x_1, x_2\n"
-    msg += "   Outputs: y_1, y_2"
-    assert str(surr) == msg
+def test_repr_str(dataset):
+    """Check the __repr__ and __str__ of a surrogate discipline."""
+    surrogate_discipline = SurrogateDiscipline("LinearRegressor", dataset)
+    msg = MultiLineString()
+    msg.add("Surrogate discipline: LinReg_func")
+    msg.indent()
+    msg.add("Dataset name: func")
+    msg.add("Dataset size: 9")
+    msg.add("Surrogate model: LinearRegressor")
+    msg.add("Inputs: x_1, x_2")
+    msg.add("Outputs: y_1, y_2")
+    msg.add("Linearization mode: auto")
+    assert repr(surrogate_discipline) == str(msg)
+    assert str(surrogate_discipline) == "LinReg_func"
 
 
 def test_execute(dataset):

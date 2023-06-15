@@ -1,0 +1,1 @@
+``SurrogateDiscipline.__str__`` is less verbose by inheriting from ``MDODiscipline``; use ``SurrogateDiscipline.__repr__`` instead of the older ``SurrogateDiscipline.__repr__``.
