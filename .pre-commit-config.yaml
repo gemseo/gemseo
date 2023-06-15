@@ -13,6 +13,11 @@ repos:
       exclude: \.gitlab-ci.yml
     - id: check-added-large-files
     - id: check-json
+    - id: pretty-format-json
+      args: [
+        --autofix,
+        --no-sort-keys,
+      ]
     - id: check-toml
     - id: destroyed-symlinks
     - id: check-symlinks

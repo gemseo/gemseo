@@ -99,33 +99,38 @@ def test_create_bad_option(reset_factory):
         factory.create("MDF", bad_option="bad_value")
 
 
-def test_parse_docstrings(reset_factory, tmp_wd):
+@pytest.mark.parametrize(
+    "formulation_name", ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
+)
+def test_parse_docstrings(reset_factory, tmp_wd, formulation_name):
     factory = MDOFormulationsFactory()
     formulations = factory.class_names
 
     assert len(formulations) > 3
 
-    for formulation_name in ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]:
-        doc = factory.get_options_doc(formulation_name)
-        assert "disciplines" in doc
-        assert "maximize_objective" in doc
+    doc = factory.get_options_doc(formulation_name)
+    assert "disciplines" in doc
+    assert "maximize_objective" in doc
 
-        opt_vals = factory.get_default_option_values(formulation_name)
-        assert len(opt_vals) >= 1
+    opt_vals = factory.get_default_option_values(formulation_name)
+    assert len(opt_vals) >= 1
 
-        grammar = factory.get_options_grammar(formulation_name, write_schema=True)
-        file_name = f"{grammar.name}.json"
-        assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
+    grammar = factory.get_options_grammar(formulation_name, write_schema=True)
+    file_name = f"{grammar.name}.json"
+    assert (
+        Path(DATA / file_name).read_text().split()
+        == Path(file_name).read_text().split()
+    )
 
-        grammar.validate(opt_vals)
+    grammar.validate(opt_vals)
 
-        opt_doc = factory.get_options_doc(formulation_name)
-        data_names = grammar.keys()
-        assert "name" not in data_names
-        assert "design_space" not in data_names
-        assert "objective_name" not in data_names
-        for item in data_names:
-            assert item in opt_doc
+    opt_doc = factory.get_options_doc(formulation_name)
+    data_names = grammar.keys()
+    assert "name" not in data_names
+    assert "design_space" not in data_names
+    assert "objective_name" not in data_names
+    for item in data_names:
+        assert item in opt_doc
 
 
 def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):

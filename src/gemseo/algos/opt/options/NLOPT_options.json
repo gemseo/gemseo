@@ -1,76 +1,87 @@
 {
-    "name": "NLOPT_options",
-     "required":["max_iter"],
-    "properties": {
-        "xtol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "xtol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "stop_crit_n_x": {
-            "anyOf": [
-				{
-					"type": "null"
-				},
-				{
-					"type": "integer",
-					"minimum": 2
-				}
-			],
-            "default": null
-        },
-        "max_iter": {
-            "type": "integer",
-            "minimum": 1
-        },
-        "max_time":{
-            "type": "number",
-             "minimum": 0.0
-        },
-        "stopval":{
-            "type": ["null", "number"]
-        },
-        "ctol_abs":{
-            "type": "number",
-            "minimum": 0.0
-        },
-        "eq_tolerance": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ineq_tolerance": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "init_step": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "inner_maxeval": {
-            "type": "integer",
-            "minimum": 0
-        },
-        "kkt_tol_abs": {
-            "type": ["null","number"],
-            "minimum": 0.0
-        },
-        "kkt_tol_rel": {
-            "type": ["null","number"],
-            "minimum": 0.0
-        }
+  "name": "NLOPT_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "additionalProperties": false,
-    "type": "object"
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "stop_crit_n_x": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 2
+        }
+      ],
+      "default": null
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "stopval": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "ctol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "eq_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ineq_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "init_step": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "inner_maxeval": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kkt_tol_abs": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    },
+    "kkt_tol_rel": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
 }

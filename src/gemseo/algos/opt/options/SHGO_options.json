@@ -1,59 +1,64 @@
 {
-    "name": "SHGO_options",
-    "required":["max_iter"],
-    "properties": {
-        "xtol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "xtol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ftol_abs": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "max_iter": {
-            "type": "integer",
-            "minimum": 1
-        },
-        "max_time": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "stop_crit_n_x": {
-            "type": "integer",
-            "minimum": 2
-        },
-        "n":{
-            "type": "integer",
-            "minimum": 1
-        },
-        "iters":{
-            "type": "integer",
-            "minimum": 1
-        },
-        "eq_tolerance": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "ineq_tolerance": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "sampling_method": {},
-        "seed":{
-            "type":["null", "integer"]
-        },
-        "local_options": {}
+  "name": "SHGO_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "id": "#SHGO"
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "stop_crit_n_x": {
+      "type": "integer",
+      "minimum": 2
+    },
+    "n": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "iters": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "eq_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ineq_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "sampling_method": {},
+    "seed": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "local_options": {}
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "id": "#SHGO"
 }

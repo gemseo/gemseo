@@ -1,22 +1,38 @@
 {
-    "name": "OT_OPT_LHS_options",
-    "description": "Optimal LHS DOE from the OpenTURNS library",
-    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.OptimalLHSExperiment.html",
-    "required": ["n_samples"],
-    "properties": {
-        "n_samples":{
-            "type": "integer",
-             "minimum": 1
+  "name": "OT_OPT_LHS_options",
+  "description": "Optimal LHS DOE from the OpenTURNS library",
+  "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.OptimalLHSExperiment.html",
+  "required": [
+    "n_samples"
+  ],
+  "properties": {
+    "n_samples": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "distribution_name": {
+      "type": "string",
+      "enum": [
+        "Arcsine",
+        "Beta",
+        "Dirichlet",
+        "Normal",
+        "TruncatedNormal",
+        "Triangular",
+        "Trapezoidal",
+        "Uniform"
+      ]
+    },
+    "levels": {
+      "anyOf": [
+        {
+          "type": "null"
         },
-         "distribution_name": {
-            "type": "string",
-            "enum": ["Arcsine","Beta","Dirichlet","Normal","TruncatedNormal",
-					 "Triangular","Trapezoidal","Uniform"]
-        },
-        "levels": {"anyOf":
-        [{"type": "null"},
-          {
-          "type": ["null", "array"],
+        {
+          "type": [
+            "null",
+            "array"
+          ],
           "minItems": 1,
           "items": {
             "type": "number",
@@ -24,64 +40,74 @@
             "exclusiveMinimum": true
           }
         },
-          {"type": "integer",
-            "minimum": 1}
-        ]},
-        "mu":{
-            "type": "number"
-        },
-        "sigma":{
-            "type": "number"
-        },
-         "start":{
-            "type": "number"
-        },
-        "end":{
-            "type": "number"
-        },
-         "temperature": {
-            "type": "string",
-            "enum": ["Geometric", "Linear"]
-        },
-         "criterion": {
-            "type": "string",
-            "enum": ["C2","PhiP","MinDist"]
-        },
-         "annealing":{
-            "type": "boolean"
-        },
-        "n_replicates": {
-        	"type" : "integer",
-        	"minimum":1
-        },
-        "eval_jac":{
-            "type": "boolean"
-        },
-        "n_processes": {
-        	"type" : "integer",
-        	"minimum":1
-        },
-        "wait_time_between_samples": {
-        	"type" : "number",
-        	"minimum":0
-        },
-        "seed": {
-            "anyOf": [
-                {
-                    "type": "null"
-                },
-                {
-                    "type": "integer",
-                    "minimum": 0
-                }
-            ]
-        },
-		"max_time": {
-            "type": "number",
-             "minimum": 0.0
+        {
+          "type": "integer",
+          "minimum": 1
         }
+      ]
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "additionalProperties": false,
-    "type": "object"
+    "mu": {
+      "type": "number"
+    },
+    "sigma": {
+      "type": "number"
+    },
+    "start": {
+      "type": "number"
+    },
+    "end": {
+      "type": "number"
+    },
+    "temperature": {
+      "type": "string",
+      "enum": [
+        "Geometric",
+        "Linear"
+      ]
+    },
+    "criterion": {
+      "type": "string",
+      "enum": [
+        "C2",
+        "PhiP",
+        "MinDist"
+      ]
+    },
+    "annealing": {
+      "type": "boolean"
+    },
+    "n_replicates": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "eval_jac": {
+      "type": "boolean"
+    },
+    "n_processes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "wait_time_between_samples": {
+      "type": "number",
+      "minimum": 0
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 0
+        }
+      ]
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
 }

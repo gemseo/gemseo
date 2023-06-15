@@ -1,9 +1,8 @@
 {
-    "name": "DOEScenario_output",
-    "required": [],
-    "properties": {
-    },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "id": "#DOEScenario_output"
+  "name": "DOEScenario_output",
+  "required": [],
+  "properties": {},
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "id": "#DOEScenario_output"
 }
