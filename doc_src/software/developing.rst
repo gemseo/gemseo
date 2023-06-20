@@ -836,3 +836,24 @@ and change the ``Program:`` entry
 with the path to ``pre-commit`` as installed in :ref:`requirements`:
 
 .. image:: /_images/pycharm/file-watchers-settings.png
+
+Environment variables
++++++++++++++++++++++
+
+Configure `PyCharm`_
+so that the test environments do not open graphical windows during test execution:
+
+#. Click on *Run > Edit Configurations...* in the main menu.
+#. Click
+
+   - on *Edit configuration templates...* on the bottom left
+     and then on *Python tests > pytest* in the tree on the left
+     to set the environment variables for all the Python test environments,
+   - or on *Python tests > {configuration name}*
+     to set the environment variables for a specific Python test environment.
+
+#. Open the section *Configuration > Environment* on the right.
+#. Write *MPLBACKEND=AGG* in the text field *Environment variables*
+   (or click on the button in this field
+   and add a new environment variable
+   with *MPLBACKEND* as name and *AGG* as value).
