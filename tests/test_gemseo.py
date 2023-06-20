@@ -83,7 +83,6 @@ from gemseo.mda.mda import MDA
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import cos
 from numpy import linspace
@@ -657,24 +656,18 @@ def test_print_configuration(capfd):
     out, err = capfd.readouterr()
     assert not err
 
-    expected = MultiLineString()
-    expected.add("Settings")
-    expected.indent()
-    expected.add("MDODiscipline")
-    expected.indent()
-    expected.add("The caches are activated.")
-    expected.add("The counters are activated.")
-    expected.add("The input data are checked before running the discipline.")
-    expected.add("The output data are checked after running the discipline.")
-    expected.dedent()
-    expected.add("MDOFunction")
-    expected.indent()
-    expected.add("The counters are activated.")
-    expected.dedent()
-    expected.add("DriverLibrary")
-    expected.indent()
-    expected.add("The progress bar is activated.")
-    assert str(expected) in out
+    expected = """Settings
+   MDODiscipline
+      The caches are activated.
+      The counters are activated.
+      The input data are checked before running the discipline.
+      The output data are checked after running the discipline.
+   MDOFunction
+      The counters are activated.
+   DriverLibrary
+      The progress bar is activated."""
+
+    assert expected in out
 
     gemseo_modules = [
         "MDODiscipline",

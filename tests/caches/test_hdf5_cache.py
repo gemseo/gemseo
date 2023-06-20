@@ -23,7 +23,6 @@ import h5py
 import pytest
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import ones
 
@@ -87,17 +86,15 @@ def test_str(tmp_wd):
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
     cache[{"i": ones(2)}] = ({"o": ones(2)}, None)
-    expected = MultiLineString()
-    expected.add("Name: Dummy")
-    expected.indent()
-    expected.add("Type: HDF5Cache")
-    expected.add("Tolerance: 0.0")
-    expected.add("Input names: ['i']")
-    expected.add("Output names: ['o']")
-    expected.add("Length: 2")
-    expected.add("HDF file path: dummy.h5")
-    expected.add("HDF node path: Dummy")
-    assert str(cache) == str(expected)
+    expected = """Name: Dummy
+   Type: HDF5Cache
+   Tolerance: 0.0
+   Input names: ['i']
+   Output names: ['o']
+   Length: 2
+   HDF file path: dummy.h5
+   HDF node path: Dummy"""
+    assert str(cache) == expected
 
 
 def test_cache_array_str(tmp_wd):

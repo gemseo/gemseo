@@ -24,7 +24,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.string_tools import MultiLineString
 
 
 def test_from_dict():
@@ -88,39 +87,31 @@ def optimization_result() -> OptimizationResult:
 
 def test_repr(optimization_result):
     """Check the string representation of an optimization result."""
-    expected = MultiLineString()
-    expected.add("Optimization result:")
-    expected.indent()
-    expected.add("Design variables: [0.5]")
-    expected.add("Objective function: 0.5")
-    expected.add("Feasible solution: False")
-    assert repr(optimization_result) == str(expected)
+    expected = """Optimization result:
+   Design variables: [0.5]
+   Objective function: 0.5
+   Feasible solution: False"""
+    assert repr(optimization_result) == expected
 
 
 def test_str(optimization_result):
     """Check the string representation of an optimization result."""
-    expected = MultiLineString()
-    expected.add("Optimization result:")
-    expected.indent()
-    expected.add("Optimizer info:")
-    expected.indent()
-    expected.add("Status: None")
-    expected.add("Message: None")
-    expected.add("Number of calls to the objective function by the optimizer: 1")
-    expected.dedent()
-    expected.add("Solution:")
-    expected.indent()
-    expected.add("The solution is not feasible.")
-    expected.add("Objective: 0.5")
-    expected.add("Standardized constraints:")
-    expected.indent()
-    expected.add("-ineq_p_1 = -0.5")
-    expected.add("-ineq_p_2 + 0.25 = -0.25")
-    expected.add("eq_1 = 0.5")
-    expected.add("eq_2 - 0.25 = 0.25")
-    expected.add("ineq_n_1 - 0.25 = 0.25")
-    expected.add("ineq_n_2 = 0.5")
-    assert str(optimization_result) == str(expected)
+    expected = """Optimization result:
+   Optimizer info:
+      Status: None
+      Message: None
+      Number of calls to the objective function by the optimizer: 1
+   Solution:
+      The solution is not feasible.
+      Objective: 0.5
+      Standardized constraints:
+         -ineq_p_1 = -0.5
+         -ineq_p_2 + 0.25 = -0.25
+         eq_1 = 0.5
+         eq_2 - 0.25 = 0.25
+         ineq_n_1 - 0.25 = 0.25
+         ineq_n_2 = 0.5"""
+    assert str(optimization_result) == expected
 
 
 def test_optimum_index(optimization_result):

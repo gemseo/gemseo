@@ -25,7 +25,6 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.utils.string_tools import MultiLineString
 from numpy import allclose
 from numpy import array
 from numpy import concatenate
@@ -72,16 +71,14 @@ def test_constructor_from_algo(dataset):
 def test_repr_str(dataset):
     """Check the __repr__ and __str__ of a surrogate discipline."""
     surrogate_discipline = SurrogateDiscipline("LinearRegressor", dataset)
-    msg = MultiLineString()
-    msg.add("Surrogate discipline: LinReg_func")
-    msg.indent()
-    msg.add("Dataset name: func")
-    msg.add("Dataset size: 9")
-    msg.add("Surrogate model: LinearRegressor")
-    msg.add("Inputs: x_1, x_2")
-    msg.add("Outputs: y_1, y_2")
-    msg.add("Linearization mode: auto")
-    assert repr(surrogate_discipline) == str(msg)
+    expected = """Surrogate discipline: LinReg_func
+   Dataset name: func
+   Dataset size: 9
+   Surrogate model: LinearRegressor
+   Inputs: x_1, x_2
+   Outputs: y_1, y_2
+   Linearization mode: auto"""
+    assert repr(surrogate_discipline) == expected
     assert str(surrogate_discipline) == "LinReg_func"
 
 

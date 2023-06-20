@@ -294,7 +294,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             fit_transformers: Whether to fit the variable transformers.
         """
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         msg = MultiLineString()
         msg.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
         msg.indent()

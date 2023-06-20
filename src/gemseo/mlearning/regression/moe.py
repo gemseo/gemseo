@@ -743,9 +743,9 @@ class MOERegressor(MLRegressionAlgo):
                 regress_factory.load(directory / f"local_model_{i}")
             )
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         string = MultiLineString()
-        string.add(super().__str__())
+        string.add(super().__repr__())
         string.indent()
         string.indent()
         string.add("Clustering")

@@ -70,14 +70,16 @@ def test_learning_samples(dataset):
 
 @pytest.mark.parametrize("samples", [range(10), [1, 2]])
 @pytest.mark.parametrize("trained", [False, True])
-def test_str(dataset, samples, trained):
-    """Test string representation."""
+def test_repr_str(dataset, samples, trained):
+    """Test string representations."""
     ml_algo = NewMLAlgo(dataset)
     ml_algo._learning_samples_indices = samples
     ml_algo._trained = trained
     expected = "\n".join(["NewMLAlgo()", "   based on the NewLibrary library"])
     if ml_algo.is_trained:
         expected += f"\n   built from {len(samples)} learning samples"
+
+    assert repr(ml_algo) == expected
     assert str(ml_algo) == expected
 
 
