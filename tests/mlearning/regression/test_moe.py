@@ -216,15 +216,21 @@ def test_save_and_load(model, tmp_wd):
         assert allclose(value, out2[name], 1e-3)
 
 
-def test_str(model):
-    """Test str representation."""
-    repres = str(model)
-    assert "MOERegressor" in repres
-    assert "KMeans" in repres
-    assert "KNNClassifier" in repres
-    assert "Local model 0" in repres
-    assert "Local model 1" in repres
-    assert "Local model 2" not in repres
+def test_repr_str_(model):
+    """Test string representations."""
+    msg = """MOERegressor(hard=True)
+   built from 36 learning samples
+      Clustering
+         KMeans(n_clusters=2, random_state=0, var_names=None)
+      Classification
+         KNNClassifier(n_neighbors=5)
+      Regression
+         Local model 0
+            LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)
+         Local model 1
+            LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)"""
+    assert repr(model) == str(msg)
+    assert str(model) == str(msg)
 
 
 def test_moe_with_candidates(dataset):
