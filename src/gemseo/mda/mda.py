@@ -74,7 +74,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     linear_solver_options: dict[str, Any]
     """The options of the linear solver."""
 
-    max_mda_iter: int
+    _max_mda_iter: int
     """The maximum iterations number for the MDA algorithm."""
 
     coupling_structure: MDOCouplingStructure
@@ -248,6 +248,15 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__check_linear_solver_options()
         self._check_coupling_types()
         self._log_convergence = log_convergence
+
+    @property
+    def max_mda_iter(self) -> int:
+        """The maximum iterations number of the MDA algorithm."""
+        return self._max_mda_iter
+
+    @max_mda_iter.setter
+    def max_mda_iter(self, max_mda_iter: int) -> None:
+        self._max_mda_iter = max_mda_iter
 
     def _initialize_grammars(self) -> None:
         """Define all the inputs and outputs of the MDA.

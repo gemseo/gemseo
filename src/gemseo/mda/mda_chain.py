@@ -136,6 +136,17 @@ class MDAChain(MDA):
         for mda in self.inner_mdas:
             mda.tolerance = self.tolerance
 
+    @property
+    def max_mda_iter(self) -> int:
+        """The maximum iterations number of each of the inner MDA algorithms."""
+        return super().max_mda_iter
+
+    @max_mda_iter.setter
+    def max_mda_iter(self, max_mda_iter: int) -> None:  # noqa: D102
+        self._max_mda_iter = max_mda_iter
+        for mda in self.inner_mdas:
+            mda.max_mda_iter = max_mda_iter
+
     @MDA.log_convergence.setter
     def log_convergence(  # noqa: D102
         self,

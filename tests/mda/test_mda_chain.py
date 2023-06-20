@@ -389,3 +389,22 @@ def test_mdachain_parallelmdochain_options(parallel_options):
         mdachain_parallel_options=mdo_parallel_chain_options,
     )
     assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
+
+
+def test_max_mda_iter(sellar_disciplines):
+    """Test that changing the max_mda_iter of a chain modifies all the inner mdas."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-13,
+        max_mda_iter=30,
+        chain_linearize=True,
+        warm_start=True,
+    )
+    assert mda_chain.max_mda_iter == 30
+    for mda in mda_chain.inner_mdas:
+        assert mda.max_mda_iter == 30
+
+    mda_chain.max_mda_iter = 10
+    assert mda_chain.max_mda_iter == 10
+    for mda in mda_chain.inner_mdas:
+        assert mda.max_mda_iter == 10
