@@ -35,8 +35,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 # %%
 # Import
 # ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
+# The first step is to import a high-level function for logging.
 
 configure_logger()
 
@@ -46,7 +45,7 @@ configure_logger()
 #
 # The :class:`.ParetoFront` post-processing generates
 # a plot or a matrix of plots (if there are more than
-# 2 objectives). It indicates in red the locally nondominated points for the
+# 2 objectives). It indicates in red the locally non-dominated points for the
 # current objectives, and in green the globally (all objectives) Pareto optimal
 # points.
 
@@ -54,7 +53,8 @@ configure_logger()
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
+# :class:`.SobieskiPropulsion`, :class:`.SobieskiAerodynamics`,
+# :class:`.SobieskiStructure` and :class:`.SobieskiMission`.
 disciplines = create_discipline(
     [
         "SobieskiPropulsion",
