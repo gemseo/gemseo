@@ -435,7 +435,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: If the group already has the added components
                 of the variable named ``variable_name``.
         """
-        n_components = components if isinstance(components, int) else len(components)
+        n_components = 1 if isinstance(components, int) else len(components)
         data = self.__force_to_2d_array(data, n_components)
 
         if components:
@@ -451,12 +451,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
         self.__transform_multi_index_column_to_single_index_column()
         apply_scalar_to_all_entries = len(data) == 1 and not self.empty
-        for component, data_column in zip(components, data.T):
-            if apply_scalar_to_all_entries:
-                value = data_column[0]
-            else:
-                value = data_column
-            self[(group_name, variable_name, component)] = value
+
+        columns = [(group_name, variable_name, component) for component in components]
+        if apply_scalar_to_all_entries:
+            value = data[0]
+        else:
+            value = data
+        self[columns] = value
 
         self.__transform_single_index_column_to_multi_index_column()
         self._reindex()
