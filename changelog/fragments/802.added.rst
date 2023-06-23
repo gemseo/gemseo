@@ -1,0 +1,1 @@
+The values of the constraints can be passed to method :meth:`.OptimizationProblem.get_number_of_unsatisfied_constraints.`
