@@ -18,22 +18,22 @@
 from __future__ import annotations
 
 from copy import copy
+from copy import deepcopy
 from pathlib import Path
-from pathlib import PurePosixPath
-from pathlib import PureWindowsPath
+from pathlib import PurePath
 from typing import Any
 from typing import Generator
 from typing import Iterable
 from typing import Mapping
 from typing import MutableMapping
 
+from numpy import ndarray
 from pandas import DataFrame
 
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.portable_path import to_os_specific
-
 
 Data = Mapping[str, Any]
 MutableData = MutableMapping[str, Any]
@@ -264,6 +264,22 @@ class DisciplineData(
         copy_.output_to_namespaced = copy(self.__output_to_namespaced)
         return copy_
 
+    def __deepcopy__(self, memo: Mapping | None = None) -> DisciplineData:
+        copy_ = DisciplineData({})
+        data = {}
+        for k, v in self.__data.items():
+            if isinstance(v, DataFrame):
+                data[k] = v.copy(deep=True)
+            elif isinstance(v, ndarray):
+                data[k] = v.copy()
+            else:
+                data[k] = deepcopy(v)
+
+        copy_.__data = data
+        copy_.input_to_namespaced = deepcopy(self.__input_to_namespaced)
+        copy_.output_to_namespaced = deepcopy(self.__output_to_namespaced)
+        return copy_
+
     def clear(self) -> None:  # noqa: D102
         self.__data.clear()
 
@@ -331,7 +347,8 @@ class DisciplineData(
 
     def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
-        state_data = state[f"_{DisciplineData.__name__}__data"]
+        # Work on a copy to avoid changing self.
+        state_data = state[f"_{DisciplineData.__name__}__data"].copy()
         for item_name, item_value in self.__data.items():
             if isinstance(item_value, Path):
                 # This is needed to handle the case where serialization and
@@ -347,5 +364,5 @@ class DisciplineData(
         self.__dict__.update(state)
         state_data = state[f"_{DisciplineData.__name__}__data"]
         for item_name, item_value in state_data.items():
-            if isinstance(item_value, (PureWindowsPath, PurePosixPath)):
+            if isinstance(item_value, PurePath):
                 self.__data[item_name] = Path(item_value)
