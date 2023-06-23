@@ -1150,7 +1150,7 @@ def test_get_functions_dimensions(constrained_problem, names, dimensions):
     assert constrained_problem.get_functions_dimensions(names) == dimensions
 
 
-@pytest.mark.parametrize(
+parametrize_unsatisfied_constraints = pytest.mark.parametrize(
     ["design", "n_unsatisfied"],
     [
         (array([0.0, 0.0]), 0),
@@ -1159,14 +1159,37 @@ def test_get_functions_dimensions(constrained_problem, names, dimensions):
         (array([1.0, 1.0]), 3),
     ],
 )
+
+
+@parametrize_unsatisfied_constraints
 def test_get_number_of_unsatisfied_constraints(
     constrained_problem, design, n_unsatisfied
 ):
     """Check the computation of the number of unsatisfied constraints."""
+    constrained_problem.evaluate_functions = mock.Mock(
+        return_value=({"g": design[0], "h": design}, {})
+    )
     assert (
         constrained_problem.get_number_of_unsatisfied_constraints(design)
         == n_unsatisfied
     )
+    args_list = constrained_problem.evaluate_functions.call_args_list
+    assert len(args_list) == 1 and args_list[0].kwargs["constraint_names"] == {"g", "h"}
+
+
+@parametrize_unsatisfied_constraints
+def test_get_number_of_unsatisfied_constraints_from_passed_values(
+    constrained_problem, design, n_unsatisfied
+):
+    """Check the computation of the number of unsatisfied constraints from values."""
+    constrained_problem.evaluate_functions = mock.Mock()
+    assert (
+        constrained_problem.get_number_of_unsatisfied_constraints(
+            design, {"g": design[0], "h": design}
+        )
+        == n_unsatisfied
+    )
+    constrained_problem.evaluate_functions.assert_not_called()
 
 
 def test_get_scalar_constraint_names(constrained_problem):

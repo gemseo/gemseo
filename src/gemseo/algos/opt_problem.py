@@ -64,12 +64,14 @@ from copy import deepcopy
 from functools import reduce
 from numbers import Number
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
 from typing import Final
 from typing import Iterable
+from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -2412,27 +2414,42 @@ class OptimizationProblem(BaseProblem):
     def get_number_of_unsatisfied_constraints(
         self,
         design_variables: ndarray,
+        values: Mapping[str, float | ndarray] = MappingProxyType({}),
     ) -> int:
         """Return the number of scalar constraints not satisfied by design variables.
 
         Args:
             design_variables: The design variables.
+            values: The values of the constraints.
+                N.B. the missing values will be read from the database or computed.
 
         Returns:
             The number of unsatisfied scalar constraints.
         """
         n_unsatisfied = 0
-        values, _ = self.evaluate_functions(
-            design_variables, eval_obj=False, eval_observables=False, normalize=False
-        )
+        missing_names = set(self.get_constraint_names()).difference(values)
+        if missing_names:
+            constraints_values = self.evaluate_functions(
+                design_variables,
+                eval_obj=False,
+                eval_observables=False,
+                normalize=False,
+                constraint_names=missing_names,
+            )[0]
+            constraints_values.update(values)
+        else:
+            constraints_values = values
+
         for constraint in self.constraints:
-            value = atleast_1d(values[constraint.name])
+            value = atleast_1d(constraints_values[constraint.name])
             if constraint.f_type == MDOFunction.ConstraintType.EQ:
                 value = numpy.absolute(value)
                 tolerance = self.eq_tolerance
             else:
                 tolerance = self.ineq_tolerance
+
             n_unsatisfied += sum(value > tolerance)
+
         return n_unsatisfied
 
     def get_scalar_constraint_names(self) -> list[str]:
