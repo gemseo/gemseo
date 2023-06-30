@@ -298,7 +298,9 @@ class SobolAnalysis(SensitivityAnalysis):
             output_names = [output_names]
 
         inputs = Sample(
-            self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
+            self.dataset.get_view(
+                group_names=self.dataset.INPUT_GROUP, variable_names=self._input_names
+            ).to_numpy()
         )
 
         input_dimension = self.dataset.group_names_to_n_components[
@@ -347,14 +349,13 @@ class SobolAnalysis(SensitivityAnalysis):
         Returns:
             The first-, second- or total-order indices.
         """
-        input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
         names_to_sizes = self.dataset.variable_names_to_n_components
         indices = {
             output_name: [
                 split_array_to_dict_of_arrays(
                     array(getattr(ot_algorithm, method_name)()),
                     names_to_sizes,
-                    input_names,
+                    self._input_names,
                 )
                 for ot_algorithm in self.__output_names_to_sobol_algos[output_name]
             ]
@@ -365,7 +366,7 @@ class SobolAnalysis(SensitivityAnalysis):
                 output_name: [
                     {
                         k: split_array_to_dict_of_arrays(
-                            v.T, names_to_sizes, input_names
+                            v.T, names_to_sizes, self._input_names
                         )
                         for k, v in output_component_indices.items()
                     }
@@ -523,7 +524,6 @@ class SobolAnalysis(SensitivityAnalysis):
                     ]
                 }
         """
-        input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
         names_to_sizes = self.dataset.variable_names_to_n_components
         intervals = {}
         for output_name, sobol_algos in self.__output_names_to_sobol_algos.items():
@@ -535,10 +535,10 @@ class SobolAnalysis(SensitivityAnalysis):
                     interval = sobol_algorithm.getTotalOrderIndicesInterval()
 
                 names_to_lower_bounds = split_array_to_dict_of_arrays(
-                    array(interval.getLowerBound()), names_to_sizes, input_names
+                    array(interval.getLowerBound()), names_to_sizes, self._input_names
                 )
                 names_to_upper_bounds = split_array_to_dict_of_arrays(
-                    array(interval.getUpperBound()), names_to_sizes, input_names
+                    array(interval.getUpperBound()), names_to_sizes, self._input_names
                 )
                 intervals[output_name].append(
                     {
@@ -546,7 +546,7 @@ class SobolAnalysis(SensitivityAnalysis):
                             names_to_lower_bounds[input_name],
                             names_to_upper_bounds[input_name],
                         )
-                        for input_name in input_names
+                        for input_name in self._input_names
                     }
                 )
 

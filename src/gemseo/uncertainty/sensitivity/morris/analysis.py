@@ -408,8 +408,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
-        names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
-        names = self._filter_names(names, inputs)
+        names = self._filter_names(self._input_names, inputs)
         x_val = [self.mu_star[output[0]][output[1]][name] for name in names]
         y_val = [self.sigma[output[0]][output[1]][name] for name in names]
         fig, ax = plt.subplots()
