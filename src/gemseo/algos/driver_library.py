@@ -54,10 +54,8 @@ from strenum import StrEnum
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
-from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.progress_bar import ProgressBar
@@ -306,14 +304,18 @@ class DriverLibrary(AlgorithmLibrary):
         LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
 
     def _post_run(
-        self, problem: LinearProblem, algo_name: str, result, **options: Any
+        self,
+        problem: OptimizationProblem,
+        algo_name: str,
+        result: OptimizationResult,
+        **options: Any,
     ) -> None:
         """To be overridden by subclasses.
 
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-            result: The result of the run, e.g. an :class:`.OptimizationResult`.
+            result: The result of the run.
             **options: The options of the algorithm.
         """
         opt_result_str = result._strings
@@ -374,7 +376,7 @@ class DriverLibrary(AlgorithmLibrary):
 
     def execute(
         self,
-        problem: BaseProblem,
+        problem: OptimizationProblem,
         algo_name: str | None = None,
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,
@@ -442,6 +444,9 @@ class DriverLibrary(AlgorithmLibrary):
             result = self._run(**options)
         except TerminationCriterion as error:
             result = self._termination_criterion_raised(error)
+
+        result.objective_name = problem.objective.name
+        result.design_space = problem.design_space
         self.finalize_iter_observer()
         problem.database.clear_listeners()
         self._post_run(problem, algo_name, result, **options)
@@ -495,8 +500,7 @@ class DriverLibrary(AlgorithmLibrary):
         else:
             message = error.args[0]
 
-        result = self.get_optimum_from_database(message)
-        return result
+        return self.get_optimum_from_database(message)
 
     def get_optimum_from_database(
         self, message=None, status=None
@@ -519,6 +523,9 @@ class DriverLibrary(AlgorithmLibrary):
             and not problem.use_standardized_objective
         ):
             f_opt = -f_opt
+            objective_name = problem.objective.original_name
+        else:
+            objective_name = problem.objective.name
 
         if x_opt is None:
             optimum_index = None
@@ -527,8 +534,11 @@ class DriverLibrary(AlgorithmLibrary):
 
         return OptimizationResult(
             x_0=x_0,
+            x_0_as_dict=problem.design_space.array_to_dict(x_0),
             x_opt=x_opt,
+            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
             f_opt=f_opt,
+            objective_name=objective_name,
             optimizer_name=self.algo_name,
             message=message,
             status=status,
