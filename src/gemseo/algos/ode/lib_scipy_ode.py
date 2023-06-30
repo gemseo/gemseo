@@ -131,7 +131,7 @@ class ScipyODEAlgos(ODESolverLib):
             LOGGER.warning(solution.message)
 
         self.problem.result.state_vector = solution.y
-        self.problem.time_vector = solution.t
+        self.problem.result.time_vector = solution.t
         self.problem.result.n_func_evaluations = solution.nfev
         self.problem.result.n_jac_evaluations = solution.njev
 

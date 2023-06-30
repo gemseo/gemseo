@@ -50,7 +50,7 @@ class ODEProblem(BaseProblem):
     initial_state: NDArray[float]
     r"""The initial conditions :math:`(t_0,s_0)` of the ODE."""
 
-    time_vector: NDArray[float]
+    __time_vector: NDArray[float]
     """The times at which the solution should be evaluated."""
 
     integration_interval: tuple[float, float]
@@ -83,9 +83,10 @@ class ODEProblem(BaseProblem):
         self.func = func
         self.jac = jac
         self.initial_state = asarray(initial_state)
-        self.time_vector = time_vector
+        self.__time_vector = time_vector
         self.integration_interval = (initial_time, final_time)
         self.result = ODEResult(
+            time_vector=empty(0),
             state_vector=empty(0),
             n_func_evaluations=0,
             n_jac_evaluations=0,
@@ -95,6 +96,11 @@ class ODEProblem(BaseProblem):
             solver_options={},
         )
 
+    @property
+    def time_vector(self):
+        """The times at which the solution shall be evaluated."""
+        return self.__time_vector
+
     def check(self) -> None:
         """Ensure the parameters of the problem are consistent.
 
@@ -102,14 +108,14 @@ class ODEProblem(BaseProblem):
             ValueError: If the state and time shapes are inconsistent.
         """
         if self.result.state_vector.size != 0:
-            if self.result.state_vector.shape[1] != self.time_vector.size:
+            if self.result.state_vector.shape[1] != self.result.time_vector.size:
                 raise ValueError("Inconsistent state and time shapes.")
 
     def _func(self, state) -> ndarray:
-        return asarray(self.func(self.time_vector, state))
+        return asarray(self.func(self.result.time_vector, state))
 
     def _jac(self, state) -> ndarray:
-        return asarray(self.jac(self.time_vector, state))
+        return asarray(self.jac(self.result.time_vector, state))
 
     def check_jacobian(
         self,

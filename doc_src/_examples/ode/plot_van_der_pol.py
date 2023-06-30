@@ -140,8 +140,8 @@ ODESolversFactory().execute(ode_problem)
 # can be accessed through the vectors :attr:`.ODEProblem.states` and
 # :attr:`.ODEProblem.times`.
 
-plt.plot(ode_problem.time_vector, ode_problem.result.state_vector[0])
-plt.plot(ode_problem.time_vector, ode_problem.result.state_vector[1])
+plt.plot(ode_problem.result.time_vector, ode_problem.result.state_vector[0])
+plt.plot(ode_problem.result.time_vector, ode_problem.result.state_vector[1])
 plt.show()
 
 # %%
