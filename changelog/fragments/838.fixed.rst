@@ -1,0 +1,5 @@
+- ``OptHistoryView`` can be executed with ``variable_names=None`` to explicitly display all the design variables.
+- The variable names specified with the argument ``variable_names`` of ``OptHistoryView`` are correctly considered.
+- ``OptimizationProblem.from_hdf`` sets ``pb_type`` and ``differentiation_method`` as string.
+- ``OptHistoryView``, ``ObjConstrHist`` and ``ConstraintsHistory`` display a limited number of iterations on the *x*-axis to make it more readable by avoiding xtick overlay.
+- ``DesignSpace`` has a new property ``names_to_indices`` defining the design vector indices associated with variable names.

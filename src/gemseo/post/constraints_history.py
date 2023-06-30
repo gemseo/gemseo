@@ -23,6 +23,7 @@ from math import ceil
 from typing import Sequence
 
 from matplotlib import pyplot
+from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
 from numpy import arange
 from numpy import atleast_2d
@@ -140,6 +141,7 @@ class ConstraintsHistory(OptPostProcessor):
             axe.set_title(f"{constraint_name} ({constraint_type})")
             axe.set_xticks([i for i in range(n_iterations)])
             axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
+            axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
             axe.axhline(tolerance, color="k", linestyle="--")
             axe.axhline(0.0, color="k")
             if is_eq_constraint:
@@ -179,5 +181,4 @@ class ConstraintsHistory(OptPostProcessor):
                     iteration_values = flip(iteration_values)
 
                 axe.axvline(interp(0.0, constraint_values, iteration_values), color="k")
-
         self._add_figure(fig)

@@ -149,6 +149,7 @@ from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.matplotlib_figure import FigSizeType
 
 try:
@@ -159,7 +160,6 @@ except __pkg_resources.DistributionNotFound:
 
 if TYPE_CHECKING:
     from logging import Logger
-    from matplotlib.figure import Figure
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
@@ -1323,7 +1323,7 @@ def execute_post(
     to_post_proc: Scenario | OptimizationProblem | str | Path,
     post_name: str,
     **options: Any,
-) -> dict[str, Figure]:
+) -> OptPostProcessor:
     """Post-process a result.
 
     Args:
@@ -1336,7 +1336,7 @@ def execute_post(
         **options: The post-processing options.
 
     Returns:
-        The figures, to be customized if not closed.
+        The post-processor.
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario, execute_post
@@ -1359,7 +1359,7 @@ def execute_post(
         opt_problem = to_post_proc.formulation.opt_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
-    elif isinstance(to_post_proc, str):
+    elif isinstance(to_post_proc, (str, PathLike)):
         opt_problem = OptimizationProblem.from_hdf(to_post_proc)
     else:
         raise TypeError(f"Cannot post process type: {type(to_post_proc)}")

@@ -556,10 +556,10 @@ def test_export_hdf(tmp_wd):
         assert file_path.exists()
         assert str(imp_pb) == str(problem)
         assert str(imp_pb.solution) == str(problem.solution)
-        assert file_path.exists()
-
-        assert problem.get_eq_cstr_total_dim() == 1
-        assert problem.get_ineq_cstr_total_dim() == 2
+        assert imp_pb.get_eq_cstr_total_dim() == 1
+        assert imp_pb.get_ineq_cstr_total_dim() == 2
+        assert imp_pb.pb_type == "non-linear"
+        assert imp_pb.differentiation_method == "user"
 
     problem.to_hdf(file_path)
 

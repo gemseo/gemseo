@@ -23,8 +23,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from matplotlib.figure import Figure
-
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -81,7 +79,7 @@ class PostFactory(BaseFactory):
         file_name: str | None = None,
         file_extension: str | None = None,
         **options: OptPostProcessorOptionType,
-    ) -> dict[str, Figure]:
+    ) -> OptPostProcessor:
         """Post-process an optimization problem.
 
         Args:
@@ -101,6 +99,9 @@ class PostFactory(BaseFactory):
             file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
             **options: The options of the post-processor.
+
+        Returns:
+            The post-processor.
         """
         if isinstance(opt_problem, str):
             opt_problem = OptimizationProblem.from_hdf(opt_problem)

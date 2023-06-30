@@ -25,6 +25,7 @@ from typing import Sequence
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import LogFormatterSciNotation
+from matplotlib.ticker import MaxNLocator
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -142,6 +143,8 @@ class ObjConstrHist(OptPostProcessor):
                 va="center",
             )
             text.set_bbox(dict(facecolor="white", alpha=0.7, edgecolor="none"))
+
+        ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         # 2.d. Add color map.
         thick_max = int(np.log10(np.abs(c_max)))
         levels_pos = np.append(
