@@ -24,6 +24,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from numpy import array
 
 
 def test_from_dict():
@@ -58,9 +59,9 @@ def test_from_dict():
 @pytest.fixture(scope="module")
 def optimization_result() -> OptimizationResult:
     """An optimization result."""
-    space = DesignSpace()
-    space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
     disc = AnalyticDiscipline(
         {
             "y": "x",
@@ -72,7 +73,7 @@ def optimization_result() -> OptimizationResult:
             "ineq_n_2": "x",
         }
     )
-    scenario = DOEScenario([disc], "DisciplinaryOpt", "y", space)
+    scenario = DOEScenario([disc], "DisciplinaryOpt", "y", design_space)
     scenario.add_constraint("eq_1", constraint_type="eq")
     scenario.add_constraint("eq_2", constraint_type="eq", value=0.25)
     scenario.add_constraint("ineq_p_1", constraint_type="ineq", positive=True)
@@ -85,13 +86,44 @@ def optimization_result() -> OptimizationResult:
     return scenario.optimization_result
 
 
+def test_optimization_result(optimization_result):
+    """Check optimization_result."""
+    assert optimization_result == OptimizationResult(
+        x_0=array([0.5]),
+        x_0_as_dict={"x": array([0.5])},
+        x_opt=array([0.5]),
+        x_opt_as_dict={"x": array([0.5])},
+        f_opt=0.5,
+        objective_name="y",
+        optimizer_name="fullfact",
+        n_obj_call=1,
+        optimum_index=0,
+        constraint_values={
+            "-ineq_p_1": -0.5,
+            "ineq_n_1 - 0.25": 0.25,
+            "-ineq_p_2 + 0.25": -0.25,
+            "ineq_n_2": 0.5,
+            "eq_1": 0.5,
+            "eq_2 - 0.25": 0.25,
+        },
+        constraints_grad={
+            "-ineq_p_1": None,
+            "ineq_n_1 - 0.25": None,
+            "-ineq_p_2 + 0.25": None,
+            "ineq_n_2": None,
+            "eq_1": None,
+            "eq_2 - 0.25": None,
+        },
+    )
+
+
 def test_repr(optimization_result):
     """Check the string representation of an optimization result."""
     expected = """Optimization result:
    Design variables: [0.5]
    Objective function: 0.5
    Feasible solution: False"""
-    assert repr(optimization_result) == expected
+    assert repr(optimization_result) == str(expected)
 
 
 def test_str(optimization_result):
@@ -111,7 +143,7 @@ def test_str(optimization_result):
          eq_2 - 0.25 = 0.25
          ineq_n_1 - 0.25 = 0.25
          ineq_n_2 = 0.5"""
-    assert str(optimization_result) == expected
+    assert str(optimization_result) == str(expected)
 
 
 def test_optimum_index(optimization_result):

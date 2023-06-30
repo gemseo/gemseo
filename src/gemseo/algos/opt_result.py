@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import fields
 from typing import Mapping
 from typing import Union
@@ -37,11 +38,20 @@ class OptimizationResult:
     x_0: ndarray | None = None
     """The initial values of the design variables."""
 
+    x_0_as_dict: dict[str, ndarray] = field(default_factory=dict)
+    """The design variable names bound to the initial design values."""
+
     x_opt: ndarray | None = None
     """The optimal values of the design variables, called the *optimum*."""
 
+    x_opt_as_dict: dict[str, ndarray] = field(default_factory=dict)
+    """The design variable names bound to the optimal design values."""
+
     f_opt: ndarray | None = None
     """The value of the objective function at the optimum."""
+
+    objective_name: str = ""
+    """The name of the objective function."""
 
     status: int | None = None
     """The status of the optimization."""

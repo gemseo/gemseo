@@ -32,7 +32,7 @@ from gemseo.algos.base_problem import BaseProblem
 
 
 class LinearProblem(BaseProblem):
-    """Representation of the linear equations' system ``A.x = b``.
+    r"""Representation of the linear equations' system :math:`Ax = b`.
 
     It also contains the solution, and some properties of the system such as the symmetry
     or positive definiteness.

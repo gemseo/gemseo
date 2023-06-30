@@ -229,8 +229,11 @@ class ScipyLinprog(OptimizationLibrary):
         is_feasible = self.problem.is_point_feasible(val_opt)
         optim_result = OptimizationResult(
             x_0=x_0,
+            x_0_as_dict=self.problem.design_space.array_to_dict(x_0),
             x_opt=x_opt,
+            x_opt_as_dict=self.problem.design_space.array_to_dict(x_opt),
             f_opt=f_opt,
+            objective_name=self.problem.objective.name,
             status=linprog_result.status,
             constraint_values=constraint_values,
             constraints_grad=constraints_grad,
