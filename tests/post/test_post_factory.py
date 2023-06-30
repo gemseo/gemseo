@@ -22,6 +22,7 @@ import unittest
 from os.path import dirname
 from os.path import join
 
+from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.post.post_factory import PostFactory
 
 DIRNAME = dirname(__file__)
@@ -44,4 +45,5 @@ class TestPostFactory(unittest.TestCase):
         assert "Correlations" in available
 
     def test_execute_from_hdf(self):
-        PostFactory().execute(POWER2, "OptHistoryView", save=False)
+        post = PostFactory().execute(POWER2, "OptHistoryView", save=False)
+        assert isinstance(post, OptHistoryView)

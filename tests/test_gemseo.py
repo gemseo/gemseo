@@ -75,11 +75,13 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda import MDA
+from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
@@ -97,6 +99,19 @@ class Observer:
 
     def update(self, atom):
         self.status_changes += 1
+
+
+@pytest.fixture(scope="module")
+def scenario() -> MDOScenario:
+    """An MDO scenario after execution."""
+    scenario = create_scenario(
+        create_discipline("SobieskiMission"),
+        "DisciplinaryOpt",
+        "y_4",
+        SobieskiProblem().design_space,
+    )
+    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    return scenario
 
 
 def test_generate_n2_plot(tmp_wd):
@@ -203,21 +218,31 @@ def test_monitor_scenario():
     )
 
 
-def test_execute_post(tmp_wd):
+@pytest.mark.parametrize("obj_type", [Scenario, str, Path])
+def test_execute_post(scenario, obj_type, tmp_wd):
     """Test the API method to call the post-processing factory.
 
     Args:
+        scenario: An MDO scenario after execution.
+        obj_type: The type of the object to post-process.
         tmp_wd: Fixture to move into a temporary directory.
     """
-    scenario = create_scenario(
-        create_discipline("SobieskiMission"),
-        "DisciplinaryOpt",
-        "y_4",
-        SobieskiProblem().design_space,
-    )
-    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    if obj_type is Scenario:
+        obj = scenario
+    else:
+        file_name = "results.hdf5"
+        scenario.save_optimization_history(file_name)
+        if obj_type == str:
+            obj = file_name
+        else:
+            obj = Path(file_name)
 
-    execute_post(scenario, "OptHistoryView", save=True, show=False)
+    post = execute_post(obj, "OptHistoryView", save=False, show=False)
+    assert isinstance(post, OptHistoryView)
+
+
+def test_execute_post_type_error(scenario):
+    """Test the method execute_post with a wrong typed argument."""
     with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
         execute_post(1234, "OptHistoryView")
 

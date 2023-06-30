@@ -179,6 +179,9 @@ class DesignSpace(collections.abc.MutableMapping):
     __norm_current_value_array: ndarray
     """The norm of the current value stored as a concatenated array."""
 
+    __names_to_indices: dict[str, range]
+    """The names bound to the indices in a design vector."""
+
     def __init__(self, name: str = "") -> None:
         """
         Args:
@@ -209,6 +212,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__has_current_value = False
         self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
         self.__clear_dependent_data()
+        self.__names_to_indices = {}
 
     @property
     def _current_value(self) -> dict[str, ndarray]:
@@ -404,6 +408,8 @@ class DesignSpace(collections.abc.MutableMapping):
             raise ValueError(f"The size of '{name}' should be a positive integer.")
 
         # name and size
+        current_index = self.dimension
+        self.__names_to_indices[name] = range(current_index, current_index + size)
         self.variable_names.append(name)
         self.dimension += size
         self.variable_sizes[name] = size
@@ -440,6 +446,11 @@ class DesignSpace(collections.abc.MutableMapping):
                 raise
 
         self.__update_current_metadata()
+
+    @property
+    def names_to_indices(self) -> dict[str, range]:
+        """The names bound to the indices."""
+        return self.__names_to_indices
 
     def _add_type(
         self,

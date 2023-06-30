@@ -84,6 +84,7 @@ from numpy import any as np_any
 from numpy import argmin
 from numpy import array
 from numpy import array_equal
+from numpy import bytes_
 from numpy import inf
 from numpy import insert
 from numpy import isnan
@@ -196,7 +197,7 @@ class OptimizationProblem(BaseProblem):
     fd_step: float
     """The finite differences step."""
 
-    pb_type: str
+    pb_type: ProblemType
     """The type of optimization problem."""
 
     ineq_tolerance: float
@@ -2029,7 +2030,8 @@ class OptimizationProblem(BaseProblem):
 
             for attr_name, attr in group.items():
                 val = attr[()]
-                val = val.decode() if isinstance(val, bytes) else val
+                if isinstance(val, ndarray) and isinstance(val[0], bytes_):
+                    val = val[0].decode()
                 setattr(opt_pb, attr_name, val)
 
             if opt_pb.SOLUTION_GROUP in h5file:

@@ -3,7 +3,10 @@
   "required": [],
   "properties": {
     "variable_names": {
-      "type": "array"
+      "type": [
+        "array",
+        "null"
+      ]
     },
     "obj_relative": {
       "type": "boolean"
