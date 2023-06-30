@@ -29,6 +29,9 @@ from numpy.typing import NDArray
 class ODEResult:
     """The result of an ODE problem."""
 
+    time_vector: NDArray[float]
+    """The vector of times for the solution."""
+
     state_vector: NDArray[float]
     """The vector of states for the solution.
 
