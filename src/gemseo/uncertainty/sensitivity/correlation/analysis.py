@@ -159,7 +159,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
         input_samples = Sample(
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
-
         self.__correlation = {}
         # For each correlation method
         new_methods = [self.Method.KENDALL, self.Method.SSRC]
@@ -169,7 +168,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
             # The version of OpenTURNS offers this correlation method.
             get_indices = self.__METHODS_TO_FUNCTIONS[method]
-            input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
             sizes = self.dataset.variable_names_to_n_components
             self.__correlation[method] = {
                 output_name: [
@@ -181,7 +179,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                             )
                         ),
                         sizes,
-                        input_names,
+                        self._input_names,
                     )
                     # For each component of the output variable
                     for output_component_samples in self.dataset.get_view(
@@ -380,9 +378,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
         all_indices = tuple(self.Method)
         dataset = Dataset()
-        for input_name in self._filter_names(
-            self.dataset.get_variable_names(self.dataset.INPUT_GROUP), inputs
-        ):
+        for input_name in self._filter_names(self._input_names, inputs):
             # Store all the sensitivity indices
             # related to the tuple (output_name, output_index, input_name)
             # in a 2D NumPy array shaped as (n_indices, input_dimension).

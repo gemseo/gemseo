@@ -80,12 +80,13 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
     def __init__(self):
         self.dataset = IODataset()
         data = array([[1, 2, 3]])
-        variables = ["x1", "x2"]
-        sizes = {"x1": 1, "x2": 2}
-        self.dataset.add_group(self.dataset.INPUT_GROUP, data, variables, sizes)
-        variables = ["y1", "y2"]
-        sizes = {"y1": 1, "y2": 2}
-        self.dataset.add_group(self.dataset.OUTPUT_GROUP, data, variables, sizes)
+        self._input_names = ["x1", "x2"]
+        self.dataset.add_group(
+            self.dataset.INPUT_GROUP, data, self._input_names, {"x1": 1, "x2": 2}
+        )
+        self.dataset.add_group(
+            self.dataset.OUTPUT_GROUP, data, ["y1", "y2"], {"y1": 1, "y2": 2}
+        )
 
     @property
     def indices(self):

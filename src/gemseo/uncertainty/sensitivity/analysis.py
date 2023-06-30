@@ -104,6 +104,9 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     DEFAULT_DRIVER = None
 
+    _input_names: list[str]
+    """The names of the inputs in parameter space order."""
+
     def __init__(
         self,
         disciplines: Collection[MDODiscipline],
@@ -133,6 +136,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._algo_name = algo or self.DEFAULT_DRIVER
         self._output_names = output_names or get_all_outputs(disciplines)
         self.default_output = self._output_names
+        self._input_names = parameter_space.variable_names
         self.dataset = self.__sample_disciplines(
             disciplines,
             parameter_space,
@@ -244,7 +248,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     @property
     def input_names(self) -> list[str]:
         """The names of the inputs."""
-        return self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
+        return self._input_names
 
     @abstractmethod
     def compute_indices(
