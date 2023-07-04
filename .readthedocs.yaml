@@ -38,4 +38,5 @@ build:
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_matlab
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_pseven
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_template_editor_gui
+      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_benchmark
       - sphinx-apidoc -e -M -o doc_src/_modules src/gemseo
