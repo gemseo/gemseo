@@ -93,3 +93,4 @@ Contributors
 - Reda El Amri
 - Simone Coniglio
 - Loïc Cousin
+- Sebastien Bocquet
