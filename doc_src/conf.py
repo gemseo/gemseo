@@ -117,7 +117,7 @@ autodoc_mock_imports = [
     "pymoo",
     "petsc4py",
     "scilab2py",
-    "pyfmi",
+    "fmpy",
     "pdfo",
     "jnius",
     "PySide6",
@@ -289,20 +289,21 @@ html_context["meta_og_root_url"] = "https://gemseo.readthedocs.io/en"
 html_context["plugins"] = {}
 if not os.environ.get("DOC_WITHOUT_PLUGINS"):
     html_context["plugins"] = {
+        "gemseo-benchmark": "A GEMSEO-based package to benchmark optimization algorithm.",
         "gemseo-calibration": "Capability to calibrate GEMSEO disciplines from data",
-        "gemseo-mlearning": "Miscellaneous machine learning capabilities",
-        "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
-        "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
-        "gemseo-scilab": "Interfacing Scilab functions",
-        "gemseo-umdo": "Capability for MDO under uncertainty",
         "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
+        "gemseo-matlab": "GEMSEO plugin for MATLAB.",
+        "gemseo-mlearning": "Miscellaneous machine learning capabilities",
         "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
         "gemseo-pdfo": "GEMSEO plugin for the PDFO library.",
+        "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
         "gemseo-pseven": "GEMSEO plugin for the pSeven library.",
-        "gemseo-matlab": "GEMSEO plugin for MATLAB.",
+        "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
+        "gemseo-scilab": "Interfacing Scilab functions",
         "gemseo-template-editor-gui": (
             "A GUI to create input and output file templates for DiscFromExe."
         ),
+        "gemseo-umdo": "Capability for MDO under uncertainty",
     }
 html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
 

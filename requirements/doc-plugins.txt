@@ -11,3 +11,4 @@ git+https://gitlab.com/gemseo/dev/gemseo-matlab.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pdfo.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pseven.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-template-editor-gui.git@develop
+git+https://gitlab.com/gemseo/dev/gemseo-benchmark.git@develop
