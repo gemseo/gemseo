@@ -22,12 +22,9 @@ Merge or update a JSONGrammar
 from __future__ import annotations
 
 from copy import deepcopy
-from pathlib import Path
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
-
-PATH_TO_PARENT_DIRECTORY = Path(__file__).parent
 
 # %%
 # Create the JSON grammars
@@ -37,10 +34,10 @@ PATH_TO_PARENT_DIRECTORY = Path(__file__).parent
 # The second grammar has the elements `name2` and `name3` that shall be strings.
 
 grammar_1 = JSONGrammar("grammar_1")
-grammar_1.update_from_file(PATH_TO_PARENT_DIRECTORY / "grammar_1.json")
+grammar_1.update_from_file("grammar_1.json")
 
 grammar_2 = JSONGrammar("grammar_2")
-grammar_2.update_from_file(PATH_TO_PARENT_DIRECTORY / "grammar_2.json")
+grammar_2.update_from_file("grammar_2.json")
 
 # %%
 # Keep a pristine copy of the first grammar such that we can experiment more than once
