@@ -115,7 +115,6 @@ from typing import Union
 from numpy import ndarray
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
@@ -143,7 +142,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
     """
 
-    learning_set: IODataset
+    learning_set: Dataset
     """The learning dataset."""
 
     parameters: dict[str, MLAlgoParameterType]
@@ -182,7 +181,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        data: IODataset,
+        data: Dataset,
         transformer: TransformerType = IDENTITY,
         **parameters: MLAlgoParameterType,
     ) -> None:

@@ -294,8 +294,8 @@ class AbstractCache(ABCMapping):
         categorize: bool = True,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
-    ) -> IODataset:
-        """Build a :class:`.IODataset` from the cache.
+    ) -> Dataset:
+        """Build a :class:`.Dataset` from the cache.
 
         Args:
             name: A name for the dataset.
@@ -339,7 +339,7 @@ class AbstractCache(ABCMapping):
 
     def __fill_dataset_by_group(
         self,
-        dataset: IODataset,
+        dataset: Dataset,
         names: list[str],
         group: str,
         is_output_group: bool,

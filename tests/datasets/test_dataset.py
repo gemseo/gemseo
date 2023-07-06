@@ -20,12 +20,13 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+from gemseo import create_dataset
 from gemseo.datasets.dataset import Dataset
+from gemseo.problems.dataset.iris import create_iris_dataset
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import concatenate
-from numpy import full
 from numpy import int64 as np_int
 from numpy import ndarray
 from numpy import savetxt
@@ -950,10 +951,10 @@ def test_get_group_names():
 def dataset_for_to_dict_of_arrays() -> Dataset:
     """A dataset to test the method to_dict_of_arrays."""
     dataset = Dataset()
-    dataset.add_variable("x", full((2, 2), 1), "A")
-    dataset.add_variable("y", full((2, 1), 2), "A")
-    dataset.add_variable("x", full((2, 3), 3), "B")
-    dataset.add_variable("z", full((2, 1), 4), "B")
+    dataset.add_variable("x", array([[1, 1], [-1, -1]]), "A")
+    dataset.add_variable("y", array([[2], [-2]]), "A")
+    dataset.add_variable("x", array([[3, 3, 3], [-3, -3, -3]]), "B")
+    dataset.add_variable("z", array([[4], [-4]]), "B")
     return dataset
 
 
@@ -961,8 +962,8 @@ def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays):
     """Test the method to_dict_of_arrays with default options."""
     result = dataset_for_to_dict_of_arrays.to_dict_of_arrays()
     expected = {
-        "A": {"x": array([[1, 1], [1, 1]]), "y": array([[2], [2]])},
-        "B": {"x": array([[3, 3, 3], [3, 3, 3]]), "z": array([[4], [4]])},
+        "A": {"x": array([[1, 1], [-1, -1]]), "y": array([[2], [-2]])},
+        "B": {"x": array([[3, 3, 3], [-3, -3, -3]]), "z": array([[4], [-4]])},
     }
     assert_equal(result, expected)
 
@@ -971,9 +972,126 @@ def test_to_dict_of_arrays_by_variable_name(dataset_for_to_dict_of_arrays):
     """Test the method to_dict_of_arrays without sorting by group."""
     result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False)
     expected = {
-        "y": array([[2], [2]]),
-        "z": array([[4], [4]]),
-        "A:x": array([[1, 1], [1, 1]]),
-        "B:x": array([[3, 3, 3], [3, 3, 3]]),
+        "y": array([[2], [-2]]),
+        "z": array([[4], [-4]]),
+        "A:x": array([[1, 1], [-1, -1]]),
+        "B:x": array([[3, 3, 3], [-3, -3, -3]]),
     }
     assert_equal(result, expected)
+
+
+def test_to_dict_of_arrays_by_entry_by_variable_name(dataset_for_to_dict_of_arrays):
+    """Test the method to_dict_of_arrays with sorting by entry and by variable name."""
+    result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False, True)
+    expected = [
+        {
+            "y": array([2]),
+            "z": array([4]),
+            "A:x": array([1, 1]),
+            "B:x": array([3, 3, 3]),
+        },
+        {
+            "y": array([-2]),
+            "z": array([-4]),
+            "A:x": array([-1, -1]),
+            "B:x": array([-3, -3, -3]),
+        },
+    ]
+    assert_equal(result, expected)
+
+
+def test_summary():
+    """Test the property summary."""
+    assert create_iris_dataset().summary == (
+        "Iris\n"
+        "   Class: Dataset\n"
+        "   Number of entries: 150\n"
+        "   Number of variable identifiers: 5\n"
+        "   Variables names and sizes by group:\n"
+        "      labels: specy (1)\n"
+        "      parameters: petal_length (1), petal_width (1), sepal_length (1) and "
+        "sepal_width (1)\n"
+        "   Number of dimensions (total = 5) by group:\n"
+        "      labels: 1\n"
+        "      parameters: 4"
+    )
+    assert create_iris_dataset(True).summary == (
+        "Iris\n"
+        "   Class: IODataset\n"
+        "   Number of entries: 150\n"
+        "   Number of variable identifiers: 5\n"
+        "   Variables names and sizes by group:\n"
+        "      inputs: petal_length (1), petal_width (1), sepal_length (1) and "
+        "sepal_width (1)\n"
+        "      outputs: specy (1)\n"
+        "   Number of dimensions (total = 5) by group:\n"
+        "      inputs: 4\n"
+        "      outputs: 1"
+    )
+
+
+def test_create_empty_dataset():
+    """Check the high-level function create_dataset to create an empty dataset."""
+    dataset = create_dataset("foo")
+    assert dataset.empty
+    assert dataset.name == "foo"
+
+
+def test_create_dataset_with_wrong_data():
+    """Check the high-level function create_dataset from a wrong type."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The dataset can be created from an array or a .csv or .txt file, "
+            "not a <class 'int'>."
+        ),
+    ):
+        create_dataset("foo", 123)
+
+
+def test_create_dataset_from_wrong_file_extension():
+    """Check the high-level function create_dataset from a .png file."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The dataset can be created from a file with a .csv or .txt extension, "
+            "not .png."
+        ),
+    ):
+        create_dataset("foo", "file_name.png")
+
+
+def test_create_dataset_from_csv_file(tmp_wd):
+    """Check the high-level function create_dataset from a .csv file."""
+    dataset = create_dataset("foo", array([[1], [2]]))
+    dataset.to_csv("bar.csv", sep="#", index=False)
+    other_dataset = create_dataset("foo", "bar.csv", delimiter="#")
+    assert_frame_equal(dataset.astype("int32"), other_dataset.astype("int32"))
+
+
+@from_array_parameters
+def test_create_dataset_from_txt_file(
+    small_file_dataset,
+    small_data,
+    variable_names,
+    variable_names_to_n_components,
+    variable_names_to_group_names,
+    expected_column_multi_index,
+):
+    """Check the high-level function create_dataset from a .txt file."""
+    dataset = Dataset.from_txt(
+        small_file_dataset,
+        variable_names,
+        variable_names_to_n_components,
+        variable_names_to_group_names,
+        header=False,
+    )
+    other_dataset = create_dataset(
+        "Dataset",
+        small_file_dataset,
+        variable_names,
+        variable_names_to_n_components,
+        variable_names_to_group_names,
+        header=False,
+    )
+    assert_frame_equal(dataset, other_dataset)

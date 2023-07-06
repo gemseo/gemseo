@@ -29,6 +29,7 @@ from gemseo import compute_doe
 from gemseo import configure
 from gemseo import create_benchmark_dataset
 from gemseo import create_cache
+from gemseo import create_dataset
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_mda
@@ -36,6 +37,7 @@ from gemseo import create_parameter_space
 from gemseo import create_scalable
 from gemseo import create_scenario
 from gemseo import create_surrogate
+from gemseo import DatasetClassName
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_coupling_graph
@@ -877,3 +879,14 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
         job_out_filename="run_disc.py",
     )
     assert "y_4" in wrapped.execute()
+
+
+def test_create_dataset_without_name():
+    """Check create_dataset without name."""
+    assert create_dataset().name == "Dataset"
+    assert create_dataset(class_name=DatasetClassName.IODataset).name == "IODataset"
+
+
+def test_create_dataset_class_name():
+    """Check create_dataset with class_name set from the enum DatasetClassName."""
+    isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)

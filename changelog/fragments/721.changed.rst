@@ -1,0 +1,1 @@
+The high-level function ``create_dataset`` raises a ``ValueError`` when the file has a wrong extension.

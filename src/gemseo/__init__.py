@@ -148,6 +148,7 @@ from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.dataset_factory import DatasetFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.matplotlib_figure import FigSizeType
@@ -167,7 +168,6 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
     from gemseo.datasets.dataset import Dataset
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
     from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -1657,21 +1657,26 @@ def create_cache(
     return CacheFactory().create(cache_type, name=name, **options)
 
 
+DatasetClassName = StrEnum("DatasetClassName", DatasetFactory().class_names)
+
+
 def create_dataset(
-    name: str,
-    data: ndarray | str | Path,
+    name: str = "",
+    data: ndarray | str | Path = "",
     variable_names: str | Iterable[str] = (),
     variable_names_to_n_components: dict[str, int] | None = None,
     variable_names_to_group_names: dict[str, str] | None = None,
     delimiter: str = ",",
     header: bool = True,
-) -> IODataset:
+    class_name: DatasetClassName = DatasetClassName.Dataset,
+) -> Dataset:
     """Create a dataset from a NumPy array or a data file.
 
     Args:
         name: The name to be given to the dataset.
         data: The data to be stored in the dataset,
             either a NumPy array or a file path.
+            If empty, return an empty dataset.
         variable_names: The names of the variables.
             If empty, use default names.
         variable_names_to_n_components: The number of components of the variables.
@@ -1683,6 +1688,7 @@ def create_dataset(
         delimiter: The field delimiter.
         header: If True and `data` is a string,
             read the variables names on the first line of the file.
+        class_name: The name of the dataset class.
 
     Returns:
         The dataset generated from the NumPy array or data file.
@@ -1693,22 +1699,26 @@ def create_dataset(
     See Also:
         create_benchmark_dataset
     """
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.datasets.dataset_factory import DatasetFactory
 
-    if isinstance(data, ndarray):
-        dataset = IODataset.from_array(
+    dataset_class = DatasetFactory().get_class(class_name)
+
+    if data == "":
+        dataset = dataset_class()
+    elif isinstance(data, ndarray):
+        dataset = dataset_class.from_array(
             data,
             variable_names,
             variable_names_to_n_components,
             variable_names_to_group_names,
         )
-    elif isinstance(data, PathLike):
+    elif isinstance(data, (PathLike, str)):
         data = Path(data)
         extension = data.suffix
         if extension == ".csv":
-            dataset = IODataset.from_csv(data, delimiter=delimiter)
+            dataset = dataset_class.from_csv(data, delimiter=delimiter)
         elif extension == ".txt":
-            dataset = IODataset.from_txt(
+            dataset = dataset_class.from_txt(
                 data,
                 variable_names,
                 variable_names_to_n_components,
@@ -1717,13 +1727,18 @@ def create_dataset(
                 header,
             )
         else:
-            LOGGER.warning("%s not considered for loading.", str(data))
+            raise ValueError(
+                "The dataset can be created from a file with a .csv or .txt extension, "
+                f"not {extension}."
+            )
     else:
         raise ValueError(
-            f"The dataset can be created from file or array, not {type(data)}."
+            "The dataset can be created from an array or a .csv or .txt file, "
+            f"not a {type(data)}."
         )
 
-    dataset.name = name
+    if name:
+        dataset.name = name
     return dataset
 
 
@@ -1738,7 +1753,7 @@ class DatasetType(StrEnum):
 def create_benchmark_dataset(
     dataset_type: DatasetType,
     **options: Any,
-) -> IODataset:
+) -> Dataset:
     """Instantiate a dataset.
 
     Typically, benchmark datasets can be found in :mod:`gemseo.datasets.dataset`.

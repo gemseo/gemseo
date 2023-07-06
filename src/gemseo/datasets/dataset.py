@@ -61,6 +61,8 @@ from pandas import read_csv
 from pandas.core.frame import Axes
 from pandas.core.frame import Dtype
 
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
@@ -902,40 +904,102 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """Reindex the dataframe."""
 
     def to_dict_of_arrays(
-        self, by_group: bool = True
-    ) -> dict[str, ndarray | dict[str, ndarray]]:
+        self, by_group: bool = True, by_entry: bool = False
+    ) -> (
+        dict[str, ndarray | dict[str, ndarray]]
+        | list[dict[str, ndarray | dict[str, ndarray]]]
+    ):
         """Convert the dataset into a dictionary of NumPy arrays.
 
         Args:
             by_group: Whether the data are returned as
-                ``{group_name: {variable_name: variable_value}}``.
+                ``{group_name: {variable_name: variable_values}}``.
                 Otherwise,
-                the data are returned either as ``{variable_name: variable_value}``
+                the data are returned either as ``{variable_name: variable_values}``
                 if only one group contains the variable ``variable_name``
-                or as ``{f"{group_name}:{variable_name}": variable_value}``
+                or as ``{f"{group_name}:{variable_name}": variable_values}``
                 if at least two groups contain the variable ``variable_name``.
+            by_entry: Whether the data are returned as
+                ``[{group_name: {variable_name: variable_value_1}}, ...]``,
+                ``[{variable_name: variable_value_1}, ...]``
+                or ``[{f"{group_name}:{variable_name}": variable_value_1}, ...]``
+                according to ``by_group``.
+                Otherwise,
+                the data are returned as
+                ``{group_name: {variable_name: variable_value_1}}``,
+                ``{variable_name: variable_value_1}``
+                or ``{f"{group_name}:{variable_name}": variable_value_1}``.
 
         Returns:
             The dataset expressed as a dictionary of NumPy arrays.
         """
+        indices = self.index if by_entry else [()]
         if by_group:
-            return {
-                group_name: {
-                    variable_name: self.get_view(group_name, variable_name).to_numpy()
-                    for variable_name in self.get_variable_names(group_name)
+            list_of_dict_of_arrays = [
+                {
+                    group_name: {
+                        variable_name: self.get_view(
+                            group_name, variable_name, indices=index
+                        ).to_numpy()
+                        for variable_name in self.get_variable_names(group_name)
+                    }
+                    for group_name in self.group_names
                 }
-                for group_name in self.group_names
-            }
+                for index in indices
+            ]
+        else:
+            list_of_dict_of_arrays = []
+            for index in indices:
+                dict_of_arrays = {}
+                for group_name, variable_name in self.variable_identifiers:
+                    if len(self.get_group_names(variable_name)) == 1:
+                        name = variable_name
+                    else:
+                        name = f"{group_name}:{variable_name}"
 
-        dict_of_arrays = {}
-        for group_name, variable_name in self.variable_identifiers:
-            if len(self.get_group_names(variable_name)) == 1:
-                name = variable_name
-            else:
-                name = f"{group_name}:{variable_name}"
+                    dict_of_arrays[name] = self.get_view(
+                        group_names=group_name,
+                        variable_names=variable_name,
+                        indices=index,
+                    ).to_numpy()
+                list_of_dict_of_arrays.append(dict_of_arrays)
 
-            dict_of_arrays[name] = self.get_view(
-                group_names=group_name, variable_names=variable_name
-            ).to_numpy()
+        if by_entry:
+            return [
+                {k: v.ravel() for k, v in d.items()} for d in list_of_dict_of_arrays
+            ]
+        else:
+            return list_of_dict_of_arrays[0]
 
-        return dict_of_arrays
+    @property
+    def summary(self) -> str:
+        """A summary of the dataset."""
+        string = MultiLineString()
+        string.add(self.name)
+        string.indent()
+        string.add("Class: {}", self.__class__.__name__)
+        string.add("Number of entries: {}", len(self))
+        string.add("Number of variable identifiers: {}", len(self.variable_identifiers))
+        string.add("Variables names and sizes by group:")
+        string.indent()
+        for group_name in self.group_names:
+            variable_names = self.get_variable_names(group_name)
+            variable_names_and_sizes = []
+            for variable_name in variable_names:
+                variable_size = len(
+                    self.get_variable_components(group_name, variable_name)
+                )
+                variable_names_and_sizes.append(f"{variable_name} ({variable_size})")
+            if variable_names_and_sizes:
+                string.add(
+                    "{}: {}",
+                    group_name,
+                    pretty_str(variable_names_and_sizes, use_and=True),
+                )
+        total = sum(self.group_names_to_n_components.values())
+        string.dedent()
+        string.add("Number of dimensions (total = {}) by group:", total)
+        string.indent()
+        for group_name, group_size in sorted(self.group_names_to_n_components.items()):
+            string.add("{}: {}", group_name, group_size)
+        return str(string)
