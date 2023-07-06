@@ -50,7 +50,7 @@ from gemseo.datasets.optimization_dataset import OptimizationDataset
 
 def create_rosenbrock_dataset(
     n_samples: int = 100, opt_naming: bool = True, categorize: bool = True
-) -> IODataset | OptimizationDataset:
+) -> Dataset:
     """Rosenbrock dataset parametrization.
 
     Args:

@@ -144,7 +144,11 @@ def test_create_mlearning_model(dataset, classification_data, cluster_data):
     assert model.algo is not None
     data, variables, groups = classification_data
     dataset = create_dataset(
-        "dataset_name", data, variables, variable_names_to_group_names=groups
+        "dataset_name",
+        data,
+        variables,
+        variable_names_to_group_names=groups,
+        class_name="IODataset",
     )
     model = create_classification_model("KNNClassifier", dataset)
     assert model.algo is not None
@@ -179,7 +183,11 @@ def test_create_classification_model(classification_data):
     """Test creation of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset(
-        "dataset_name", data, variables, variable_names_to_group_names=groups
+        "dataset_name",
+        data,
+        variables,
+        variable_names_to_group_names=groups,
+        class_name="IODataset",
     )
     model = create_classification_model("KNNClassifier", dataset)
     assert model.algo is not None
@@ -209,7 +217,11 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
     assert hasattr(loaded_model, "parameters")
     data, variables, groups = classification_data
     dataset = create_dataset(
-        "dataset_name", data, variables, variable_names_to_group_names=groups
+        "dataset_name",
+        data,
+        variables,
+        variable_names_to_group_names=groups,
+        class_name="IODataset",
     )
     model = create_mlearning_model("RandomForestClassifier", dataset)
     model.learn()
@@ -253,7 +265,11 @@ def test_import_classification_model(classification_data, tmp_wd):
     """Test import of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset(
-        "dataset_name", data, variables, variable_names_to_group_names=groups
+        "dataset_name",
+        data,
+        variables,
+        variable_names_to_group_names=groups,
+        class_name="IODataset",
     )
     model = create_classification_model("KNNClassifier", dataset)
     model.learn()

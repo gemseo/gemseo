@@ -55,13 +55,14 @@ from pathlib import Path
 from numpy import int64 as np_int64
 from pandas import factorize
 
+from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 
 
 def create_iris_dataset(
     as_io: bool = False,
     as_numeric: bool = True,
-) -> IODataset:
+) -> Dataset:
     """Iris dataset parametrization.
 
     Args:
@@ -72,7 +73,11 @@ def create_iris_dataset(
         The Iris dataset.
     """
     file_path = Path(__file__).parent / "iris.data"
-    dataset = IODataset.from_csv(file_path)
+    if as_io:
+        cls = IODataset
+    else:
+        cls = Dataset
+    dataset = cls.from_csv(file_path)
     dataset.name = "Iris"
 
     if as_numeric:

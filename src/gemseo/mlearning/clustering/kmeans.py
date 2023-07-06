@@ -80,7 +80,7 @@ from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
-from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
 
@@ -95,7 +95,7 @@ class KMeans(MLPredictiveClusteringAlgo):
 
     def __init__(
         self,
-        data: IODataset,
+        data: Dataset,
         transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_clusters: int = 5,

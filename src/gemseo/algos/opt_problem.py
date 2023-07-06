@@ -2074,7 +2074,7 @@ class OptimizationProblem(BaseProblem):
         opt_naming: bool = True,
         export_gradients: bool = False,
         input_values: Iterable[ndarray] = (),
-    ) -> OptimizationDataset | IODataset:
+    ) -> Dataset:
         """Export the database of the optimization problem to a :class:`.Dataset`.
 
         The variables can be classified into groups:
