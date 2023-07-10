@@ -1703,15 +1703,15 @@ def create_dataset(
 
     dataset_class = DatasetFactory().get_class(class_name)
 
-    if data == "":
-        dataset = dataset_class()
-    elif isinstance(data, ndarray):
+    if isinstance(data, ndarray):
         dataset = dataset_class.from_array(
             data,
             variable_names,
             variable_names_to_n_components,
             variable_names_to_group_names,
         )
+    elif data == "":
+        dataset = dataset_class()
     elif isinstance(data, (PathLike, str)):
         data = Path(data)
         extension = data.suffix

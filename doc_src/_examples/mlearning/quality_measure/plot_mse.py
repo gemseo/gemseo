@@ -86,10 +86,18 @@ data = hstack([x[:, None], y[:, None]])
 variables = ["x", "y"]
 groups = {"x": IODataset.INPUT_GROUP, "y": IODataset.OUTPUT_GROUP}
 dataset = create_dataset(
-    "synthetic_data", data[train], variables, variable_names_to_group_names=groups
+    "synthetic_data",
+    data[train],
+    variables,
+    variable_names_to_group_names=groups,
+    class_name="IODataset",
 )
 dataset_test = create_dataset(
-    "synthetic_data", data[test], variables, variable_names_to_group_names=groups
+    "synthetic_data",
+    data[test],
+    variables,
+    variable_names_to_group_names=groups,
+    class_name="IODataset",
 )
 
 # %%
