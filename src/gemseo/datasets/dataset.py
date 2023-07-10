@@ -378,7 +378,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         components: ComponentType = (),
         indices: IndexType = (),
     ) -> None:
-        """Replace the data of some existing indices and columns by a deepcopy of ``data``.
+        """Replace some existing indices and columns by a deepcopy of ``data``.
 
         Args:
             data: The new data to be inserted in the dataset.

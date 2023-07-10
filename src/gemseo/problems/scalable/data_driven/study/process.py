@@ -523,9 +523,8 @@ class ScalabilityStudy:
     def __update_var_scaling(scaling, size: int, varnames: Sequence[str]) -> None:
         """Update a scaling dictionary for a given list of variables and a given size.
 
-        :param dict scaling: scaling dictionary whose keys are variable names
-            and values are dictionary with scaling properties,
-            e.g. {'size': val}
+        :param dict scaling: scaling dictionary whose keys are variable names and values
+            are dictionary with scaling properties, e.g. {'size': val}
         :param int size: size of the variable
         :param list(str) varnames: list of variable names
         """
@@ -568,8 +567,7 @@ class ScalabilityStudy:
         """Execute the scalability study, one or several times to take into account the
         random features of the scalable problems.
 
-        :param int n_replicates: number of times the scalability study
-            is repeated. Default: 1.
+        :param int n_replicates: number of times the scalability study is repeated.
         """
         plural = "s" if n_replicates > 1 else ""
         LOGGER.info("Execute scalability study %s time%s", n_replicates, plural)

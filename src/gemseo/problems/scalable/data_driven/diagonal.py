@@ -135,9 +135,9 @@ class ScalableDiagonalModel(ScalableModel):
     def __build_dependencies(self):
         """Build dependencies.
 
-        :return: matrix that establishes the selection of a single original
-            component for each scalable component, dependency matrix that
-            establishes the dependency of outputs wrt inputs.
+        :return: matrix that establishes the selection of a single original component
+            for each scalable component, dependency matrix that establishes the
+            dependency of outputs wrt inputs.
         :rtype: ndarray, ndarray
         """
         comp_dep = self.parameters["comp_dep"]
@@ -149,8 +149,7 @@ class ScalableDiagonalModel(ScalableModel):
     def scalable_function(self, input_value=None):
         """Evaluate the scalable functions.
 
-        :param dict input_value: input values.
-            If None, use default inputs.
+        :param dict input_value: input values. If None, use default inputs.
         :return: evaluation of the scalable functions.
         :rtype: dict
         """
@@ -162,8 +161,7 @@ class ScalableDiagonalModel(ScalableModel):
     def scalable_derivatives(self, input_value=None):
         """Evaluate the scalable derivatives.
 
-        :param dict input_value: input values.
-            If None, use default inputs.
+        :param dict input_value: input values. If None, use default inputs.
         :return: evaluation of the scalable derivatives.
         :rtype: dict
         """

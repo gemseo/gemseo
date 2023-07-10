@@ -66,9 +66,9 @@ def test_ode_problem_1d(time_vector):
     r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
-    :math:`f(0) = 1`. Compare the solution returned by the solver to the
-    known analytical solution :math:`f: s \mapsto \exp(s)`. Root-mean-square of
-    difference bewteen analytical and approximated solutions should be small.
+    :math:`f(0) = 1`. Compare the solution returned by the solver to the known
+    analytical solution :math:`f: s \mapsto \exp(s)`. Root-mean-square of difference
+    bewteen analytical and     approximated solutions should be small.
     """
 
     def _func(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100

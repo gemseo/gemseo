@@ -43,8 +43,9 @@ configure_logger()
 def display_result(res, mda_name):
     """Display coupling and output variables in logger.
 
-    @param res: result (dict) of MDA
-    @param mda_name: name of the current MDA
+    Args:
+        res: result of MDA
+        mda_name: name of the current MDA
     """
     # names of the coupling variables
     coupling_names = [

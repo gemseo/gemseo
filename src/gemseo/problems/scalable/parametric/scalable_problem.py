@@ -49,7 +49,7 @@ class ScalableProblem(_ScalableProblem):
     It builds a set of strongly coupled scalable disciplines completed by a system
     discipline computing the objective function and the constraints.
 
-    These disciplines are defined on an unit design space, i.e. design variables belongs
+    These disciplines are defined on a unit design space, i.e. design variables belongs
     to :math:`[0, 1]`.
     """
 

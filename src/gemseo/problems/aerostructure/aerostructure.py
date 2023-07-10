@@ -235,8 +235,7 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_forces(sweep, thick_airfoils, displ):
-        r"""Compute the coupling
-        :math:`forces=10*sweep + 0.2*thick\\_airfoils-0.2*displ`
+        r"""Compute the coupling :math:`forces=10*sweep + 0.2*thick\\_airfoils-0.2*displ`
 
         Args:
             sweep: The sweep.
@@ -250,8 +249,8 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_lift(sweep, thick_airfoils, displ):
-        r"""Compute the coupling
-        :math:`lift=(sweep + 0.2*thick\\_airfoils-2.*displ)/3000.`
+        r"""Compute the coupling :math:`lift=(sweep +
+        0.2*thick\\_airfoils-2.*displ)/3000.`
 
         Args:
             sweep: The sweep.
