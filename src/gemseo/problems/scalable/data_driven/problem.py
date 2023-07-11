@@ -98,8 +98,8 @@ class ScalableProblem:
         :param list(str) eq_constraints: equality constraints. Default: None.
         :param list(str) eq_constraints: inequality constraints. Default: None.
         :param bool maximize_objective: maximize objective. Default: False.
-        :param dict sizes: sizes of input and output variables.
-            If None, use the original sizes. Default: None.
+        :param dict sizes: sizes of input and output variables. If None, use the
+            original sizes. Default: None.
         :param parameters: optional parameters for the scalable model.
         """
         self.disciplines = [dataset.name for dataset in datasets]
@@ -219,8 +219,7 @@ class ScalableProblem:
     def _build_scalable_disciplines(self, sizes=None, **parameters) -> None:
         """Build scalable disciplines.
 
-        :param dict sizes: dictionary whose keys are variable names
-            and variables sizes.
+        :param dict sizes: dictionary whose keys are variable names and variables sizes.
         :param parameters: options.
         """
         copied_parameters = deepcopy(parameters)
@@ -406,8 +405,8 @@ class ScalableProblem:
     ) -> None:
         """Add inequality constraints.
 
-        :param float active_probability: probability to set the inequality
-            constraints as active at initial step of the optimization
+        :param float active_probability: probability to set the inequality constraints
+            as active at initial step of the optimization
         :param float feasibility_level: offset of satisfaction for inequality
             constraints
         :param dict equilibrium: starting point at equilibrium

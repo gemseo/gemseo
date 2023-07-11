@@ -89,11 +89,10 @@ class ScalabilityResult:
         :param dict formulation_options: options of the MDO formulation
         :param scaling: scaling strategy
         :param list(int) n_calls: number of calls for each discipline
-        :param list(int) n_calls_linearize: number of linearization
-            for each discipline
+        :param list(int) n_calls_linearize: number of linearization for each discipline
         :param list(int) n_calls_top_level: number of calls for each discipline
-        :param list(int) n_calls_linearize_top_level: number of linearization
-            for each discipline
+        :param list(int) n_calls_linearize_top_level: number of linearization for each
+            discipline
         :param float exec_time: execution time
         :param int status: status of the optimization scenario
         :param bool is_feasible: feasibility of the optimization solution

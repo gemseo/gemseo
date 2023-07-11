@@ -57,8 +57,7 @@ SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 class MLClusteringAlgo(MLUnsupervisedAlgo):
     """Clustering algorithm.
 
-    The inheriting classes shall overload the
-    :meth:`!MLUnsupervisedAlgo._fit` method.
+    The inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method.
     """
 
     labels: list[int]
@@ -100,9 +99,8 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 class MLPredictiveClusteringAlgo(MLClusteringAlgo):
     """Predictive clustering algorithm.
 
-    The inheriting classes shall overload the
-    :meth:`!MLUnsupervisedAlgo._fit` method, and the
-    :meth:`!MLClusteringAlgo._predict` and
+    The inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method,
+    and the :meth:`!MLClusteringAlgo._predict` and
     :meth:`!MLClusteringAlgo._predict_proba` methods if possible.
     """
 

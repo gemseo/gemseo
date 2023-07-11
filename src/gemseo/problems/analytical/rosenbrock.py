@@ -40,8 +40,8 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 class Rosenbrock(OptimizationProblem):
-    r"""**Rosenbrock** :class:`.OptimizationProblem`
-    uses the Rosenbrock objective function
+    r"""**Rosenbrock** :class:`.OptimizationProblem` uses the Rosenbrock objective
+    function.
 
     .. math::
 

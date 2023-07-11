@@ -199,8 +199,8 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = 1/\sqrt{r^2 + 1}`.
+            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) =
+            1/\sqrt{r^2 + 1}`.
 
             Args:
                 input_data: The 1D input data.
@@ -219,8 +219,8 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = \exp(-r^2)`.
+            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) =
+            \exp(-r^2)`.
 
             Args:
                 input_data: The 1D input data.
@@ -239,9 +239,8 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            """Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = r`.
-            If :math:`x=0`, return 0 (determined up to a tolerance).
+            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r`. If
+            :math:`x=0`, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.
@@ -265,8 +264,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            """Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = r^3`.
+            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^3`.
 
             Args:
                 input_data: The 1D input data.
@@ -285,8 +283,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            """Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = r^5`.
+            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^5`.
 
             Args:
                 input_data: The 1D input data.
@@ -305,9 +302,8 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = r^2 \log(r)`.
-            If :math:`x=0`, return 0 (determined up to a tolerance).
+            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^2
+            \log(r)`. If :math:`x=0`, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.

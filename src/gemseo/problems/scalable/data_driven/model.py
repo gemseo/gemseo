@@ -90,8 +90,8 @@ class ScalableModel:
     def scalable_function(self, input_value=None):
         """Evaluate the scalable function.
 
-        :param dict input_value: input values.
-            If None, use default inputs. Default: None.
+        :param dict input_value: input values. If None, use default inputs. Default:
+            None.
         :return: evaluation of the scalable function.
         :rtype: dict
         """
@@ -100,8 +100,8 @@ class ScalableModel:
     def scalable_derivatives(self, input_value=None):
         """Evaluate the scalable derivatives.
 
-        :param dict input_value: input values.
-            If None, use default inputs. Default: None
+        :param dict input_value: input values. If None, use default inputs. Default:
+            None
         :return: evaluation of the scalable derivatives.
         :rtype: dict
         """
