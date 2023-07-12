@@ -84,7 +84,7 @@ selector.add_candidate(
 # Select best candidate
 # ---------------------
 best_algo = selector.select()
-print(best_algo)
+best_algo
 
 # %%
 # Plot results

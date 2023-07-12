@@ -83,5 +83,4 @@ execute_post(
 
 # %%
 # Note that you can get all the optimization algorithms names:
-algo_list = DOEFactory().algorithms
-print("Available algorithms ", algo_list)
+DOEFactory().algorithms

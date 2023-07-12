@@ -95,7 +95,9 @@ formulation_options = {
 #   idem we need full convergence
 #
 design_space = SobieskiProblem().design_space
-print(design_space)
+design_space
+
+# %%
 scenario = create_scenario(
     disciplines,
     "MDF",

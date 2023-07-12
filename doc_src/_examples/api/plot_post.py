@@ -45,14 +45,14 @@ configure_logger()
 #
 # The :func:`.get_available_post_processings` function returns the list
 # of post-processing algorithms available in |g| or in external modules
-print(get_available_post_processings())
+get_available_post_processings()
 
 # %%
 # Get options schema
 # ------------------
 # For a given post-processing algorithm, e.g. :code:`"RadarChart"`,
 # we can get the options; e.g.
-print(get_post_processing_options_schema("RadarChart"))
+get_post_processing_options_schema("RadarChart")
 
 # %%
 # Post-process a scenario

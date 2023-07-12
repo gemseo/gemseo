@@ -76,7 +76,7 @@ pprint.pprint(sensitivity_analysis.main_indices)
 # %%
 # These main indices are used to sort the input parameters
 # by decreasing order of influence:
-print(sensitivity_analysis.sort_parameters("y"))
+sensitivity_analysis.sort_parameters("y")
 
 # %%
 # Lastly,

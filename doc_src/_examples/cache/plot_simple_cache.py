@@ -47,7 +47,7 @@ configure_logger()
 cache = SimpleCache()
 
 # The cache information can be displayed easily:
-print(cache)
+cache
 
 # %%
 # Cache
@@ -61,31 +61,31 @@ cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 # still one. Indeed, as previously mentioned, the :class:`.SimpleCache` only
 # enable to store one evaluation.
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
-print(cache)
+cache
 
 # %%
 # Get all data
 # ------------
-# We can display the lenght and the data contained in the cache. As mentionned
-# before, we can see that only the last inputs and outputs cached are
-# available:
-print(len(cache))
-for data in cache:
-    print(data)
+# We can display the length and the data contained in the cache:
+len(cache)
+
+# %%
+# As mentioned before,
+# we can see that only the last inputs and outputs cached are available:
+[entry for entry in cache]
 
 # %%
 # Get last cached data
 # --------------------
 # We can also print the last cached input and output data. For this cache, the
-# last cached inputs and ouputs are also the only ones cached.
+# last cached inputs and outputs are also the only ones cached.
 
 last_entry = cache.last_entry
-print(last_entry.inputs)
-print(last_entry.outputs)
+last_entry.inputs, last_entry.outputs
 
 # %%
 # Clear
 # -----
 # It is also possible to clear the cache, by using the following lines:
 cache.clear()
-print(cache)
+cache

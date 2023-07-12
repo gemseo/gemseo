@@ -216,7 +216,7 @@ class AbstractCache(ABCMapping):
 
         return self.__names_to_sizes
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         msg = MultiLineString()
         msg.add("Name: {}", self.name)
         msg.indent()

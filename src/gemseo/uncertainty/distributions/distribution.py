@@ -212,7 +212,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         msg.add("Dimension: {}", dimension)
         LOGGER.debug("%s", msg)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"{self.distribution_name}({pretty_str(self.standard_parameters)})"
 
     @abstractmethod

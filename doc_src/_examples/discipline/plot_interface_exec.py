@@ -111,8 +111,8 @@ class ShellExecutableDiscipline(MDODiscipline):
 # ---------------------------
 # Now we can run it with default input values:
 shell_disc = ShellExecutableDiscipline()
-print(shell_disc.execute())
+shell_disc.execute()
 
 # %%
 # or run it with new input values:
-print(shell_disc.execute({"a": array([2.0]), "b": array([3.0])}))
+shell_disc.execute({"a": array([2.0]), "b": array([3.0])})

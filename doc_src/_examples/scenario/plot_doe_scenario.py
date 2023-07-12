@@ -103,26 +103,19 @@ scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 # access them with :attr:`.Scenario.optimization_result`:
 
 optimization_result = scenario.optimization_result
-print(
-    "The solution of P is "
-    f"(x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
-)
+f"The solution of P is (x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
 
 # %%
 # Available DOE algorithms
 # ------------------------
 # In order to get the list of available DOE algorithms, use:
-
-algo_list = get_available_doe_algorithms()
-print(f"Available algorithms: {algo_list}")
+get_available_doe_algorithms()
 
 # %%
 # Available post-processing
 # -------------------------
 # In order to get the list of available post-processing algorithms, use:
-
-post_list = get_available_post_processings()
-print(f"Available algorithms: {post_list}")
+get_available_post_processings()
 
 # %%
 # You can also look at the examples:

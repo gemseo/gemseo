@@ -65,7 +65,7 @@ data = vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T
 
 variables = ["x_0", "x_1", "x_2", "x_3"]
 
-print(data)
+data
 
 # %%
 # Create a :class:`.ParametricStatistics` object
@@ -78,17 +78,17 @@ dataset = create_dataset("Dataset", data, variables)
 # %%
 # and a list of names of candidate probability distributions:
 # exponential, normal and uniform distributions
-# (see :meth:`.ParametricStatistics.get_available_distributions`).
+# (see :attr:`.ParametricStatistics.DistributionName`).
 # We do not use the default
 # fitting criterion ('BIC') but 'Kolmogorov'
-# (see :meth:`.ParametricStatistics.get_available_criteria`
-# and :meth:`.ParametricStatistics.get_significance_tests`).
+# (see :attr:`.ParametricStatistics.FittingCriterion`
+# and :attr:`.ParametricStatistics.SignificanceTest`).
 
 tested_distributions = ["Exponential", "Normal", "Uniform"]
 analysis = create_statistics(
     dataset, tested_distributions=tested_distributions, fitting_criterion="Kolmogorov"
 )
-print(analysis)
+analysis
 
 # %%
 # Print the fitting matrix
@@ -101,7 +101,7 @@ print(analysis)
 # as well as the selected distribution for each variable.
 # Note that in the case of significance tests,
 # the goodness-of-fit measures are the p-values.
-print(analysis.get_fitting_matrix())
+analysis.get_fitting_matrix()
 
 # %%
 # One can also plot the tested distributions over an histogram of the data
@@ -119,13 +119,13 @@ analysis.plot_criteria("x_0")
 # Get minimum
 # ~~~~~~~~~~~
 # Here is the minimum value for the different variables:
-print(analysis.compute_minimum())
+analysis.compute_minimum()
 
 # %%
 # Get maximum
 # ~~~~~~~~~~~
 # Here is the minimum value for the different variables:
-print(analysis.compute_maximum())
+analysis.compute_maximum()
 
 # %%
 # Get range
@@ -133,56 +133,56 @@ print(analysis.compute_maximum())
 # Here is the range,
 # i.e. the difference between the minimum and maximum values,
 # for the different variables:
-print(analysis.compute_range())
+analysis.compute_range()
 
 # %%
 # Get mean
 # ~~~~~~~~
 # Here is the mean value for the different variables:
-print(analysis.compute_mean())
+analysis.compute_mean()
 
 # %%
 # Get standard deviation
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Here is the standard deviation for the different variables:
-print(analysis.compute_standard_deviation())
+analysis.compute_standard_deviation()
 
 # %%
 # Get variance
 # ~~~~~~~~~~~~
 # Here is the variance for the different variables:
-print(analysis.compute_variance())
+analysis.compute_variance()
 
 # %%
 # Get quantile
 # ~~~~~~~~~~~~
 # Here is the quantile with level 80% for the different variables:
-print(analysis.compute_quantile(0.8))
+analysis.compute_quantile(0.8)
 
 # %%
 # Get quartile
 # ~~~~~~~~~~~~
 # Here is the second quartile for the different variables:
-print(analysis.compute_quartile(2))
+analysis.compute_quartile(2)
 
 # %%
 # Get percentile
 # ~~~~~~~~~~~~~~
 # Here is the 50th percentile for the different variables:
-print(analysis.compute_percentile(50))
+analysis.compute_percentile(50)
 
 # %%
 # Get median
 # ~~~~~~~~~~
 # Here is the median for the different variables:
-print(analysis.compute_median())
+analysis.compute_median()
 
 # %%
 # Get tolerance interval
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Here is the two-sided tolerance interval with a coverage level equal to 50%
 # with a confidence level of 95% for the different variables:
-print(analysis.compute_tolerance_interval(0.5))
+analysis.compute_tolerance_interval(0.5)
 
 # %%
 # Get B-value
@@ -190,4 +190,4 @@ print(analysis.compute_tolerance_interval(0.5))
 # Here is the B-value for the different variables, which is a left-sided
 # tolerance interval with a coverage level equal to 90%
 # with a confidence level of 95%:
-print(analysis.compute_b_value())
+analysis.compute_b_value()

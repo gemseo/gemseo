@@ -43,11 +43,13 @@ configure_logger()
 # We import the Iris benchmark dataset through the API.
 iris = create_benchmark_dataset("IrisDataset")
 
+# %%
 # Extract inputs as a new dataset
 data = iris.get_view(group_names=iris.PARAMETER_GROUP).to_numpy()
 variables = iris.get_variable_names(iris.PARAMETER_GROUP)
-print(variables)
+variables
 
+# %%
 dataset = Dataset.from_array(data, variables)
 
 # %%
@@ -57,7 +59,7 @@ dataset = Dataset.from_array(data, variables)
 # We will thus try to identify three clusters.
 model = create_clustering_model("GaussianMixture", data=dataset, n_components=3)
 model.learn()
-print(model)
+model
 
 # %%
 # Predict output
@@ -70,7 +72,7 @@ input_value = {
     "petal_width": array([0.2]),
 }
 output_value = model.predict(input_value)
-print(output_value)
+output_value
 
 # %%
 # Plot clusters

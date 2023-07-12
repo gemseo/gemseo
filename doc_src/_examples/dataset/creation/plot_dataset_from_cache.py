@@ -48,11 +48,11 @@ cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 # This cache can be converted to an :class:`.IODataset`
 # using its method :meth:`~.MemoryFullCache.to_dataset`:
 dataset = cache.to_dataset("toy_cache")
-print(dataset)
+dataset
 
 # %%
 # The input variables belong to the input group
 # and the output variables to the output group.
 # We can avoid this categorization and simply build a :class:`.Dataset`:
 dataset = cache.to_dataset("toy_cache", categorize=False)
-print(dataset)
+dataset

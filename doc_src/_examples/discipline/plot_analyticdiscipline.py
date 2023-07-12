@@ -81,9 +81,7 @@ disc = create_discipline("AnalyticDiscipline", expressions=expressions)
 # ----------------------
 # Lastly, we can execute this discipline any other:
 input_data = {"x": array([2.0]), "z": array([3.0])}
-out = disc.execute(input_data)
-print(("y_1 =", out["y_1"]))
-print(("y_2 =", out["y_2"]))
+disc.execute(input_data)
 
 # %%
 # About the analytic jacobian

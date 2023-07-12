@@ -2096,7 +2096,7 @@ class DesignSpace(collections.abc.MutableMapping):
         design_space.check()
         return design_space
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return (
             f"Design space: {self.name}\n"
             + self.get_pretty_table(with_index=True).get_string()

@@ -122,7 +122,7 @@ model.learn()
 # a :class:`.KMeans` with four clusters has been selected for the clustering stage,
 # as well as a :class:`.RandomForestClassifier` for the classification stage
 # and a :class:`.RBFRegressor` for each cluster.
-print(model)
+model
 
 # %%
 # .. note::

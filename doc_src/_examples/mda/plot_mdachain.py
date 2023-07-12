@@ -56,11 +56,7 @@ def display_result(res, mda_name):
         "y_34",
     ]
     for coupling_var in coupling_names:
-        print(
-            "{}, coupling variable {}: {}".format(
-                mda_name, coupling_var, res[coupling_var]
-            ),
-        )
+        print(f"{mda_name}, coupling variable {coupling_var}: {res[coupling_var]}")
 
     # names of the output variables
     output_names = ["y_1", "y_2", "y_3", "y_4", "g_1", "g_2", "g_3"]

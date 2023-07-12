@@ -133,20 +133,20 @@ opt_problem = scenario.formulation.opt_problem
 # either by separating the design parameters from the functions
 # (default option):
 dataset = opt_problem.to_dataset("sellar_problem")
-print(dataset)
+dataset
 # %%
 # or by considering all features as default parameters:
 dataset = opt_problem.to_dataset("sellar_problem", categorize=False)
-print(dataset)
+dataset
 # %%
 # or by using an input-output naming rather than an optimization naming:
 dataset = opt_problem.to_dataset("sellar_problem", opt_naming=False)
-print(dataset)
+dataset
 # %%
 # Access observables by name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the observable data by variable names:
-print(dataset.get_view(variable_names=["y_1", "y2"]))
+dataset.get_view(variable_names=["y_1", "y2"])
 
 # %%
 # Use the observables in a post-processing method

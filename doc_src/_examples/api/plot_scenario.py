@@ -52,14 +52,14 @@ configure_logger()
 # The high-level function :func:`~gemseo.get_available_scenario_types` can be used
 # to get the available scenario types (:class:`.MDOScenario` and
 # :class:`.DOEScenario`).
-print(get_available_scenario_types())
+get_available_scenario_types()
 
 # %%
 # Get scenario options schema
 # ---------------------------
 # The :func:`.get_scenario_options_schema` function can be used
 # to get the options of a given scenario type:
-print(get_scenario_options_schema("MDO"))
+get_scenario_options_schema("MDO")
 
 # %%
 # Create a scenario
@@ -106,14 +106,14 @@ scenario.post_process(
 # %%
 # - The :func:`.get_scenario_inputs_schema` function can be used
 #   to get the inputs of a scenario:
-print(get_scenario_inputs_schema(scenario))
+get_scenario_inputs_schema(scenario)
 
 # %%
 # Get scenario differentiation modes
 # ----------------------------------
 # The :func:`.get_scenario_differentiation_modes` can be used to
 # get the available differentiation modes of a scenario:
-print(get_scenario_differentiation_modes())
+get_scenario_differentiation_modes()
 
 # %%
 # Monitor a scenario

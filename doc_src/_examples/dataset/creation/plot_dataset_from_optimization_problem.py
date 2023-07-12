@@ -43,18 +43,18 @@ execute_algo(optimization_problem, "SLSQP", max_iter=10)
 # can be converted to an :class:`.OptimizationDataset`
 # using its method :meth:`~.OptimizationDataset.to_dataset`:
 dataset = optimization_problem.to_dataset()
-print(dataset)
+dataset
 
 # %%
 # The design variables and output variables are in separate groups.
 # You can also use an :class:`.IODataset` instead of an :class:`.OptimizationDataset`:
 dataset = optimization_problem.to_dataset(opt_naming=False)
-print(dataset)
+dataset
 
 # %%
 # or simply do not separate the variables
 dataset = optimization_problem.to_dataset(categorize=False)
-print(dataset)
+dataset
 # %%
 # .. note::
 #     Only design variables and functions (objective function, constraints) are

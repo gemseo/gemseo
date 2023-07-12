@@ -67,11 +67,11 @@ disc = create_discipline("AutoPyDiscipline", py_func=f)
 # Execute the discipline
 # ----------------------
 # Then, we can execute it easily, either considering default inputs:
-print(disc.execute())
+disc.execute()
 
 # %%
 # or using new inputs:
-print(disc.execute({"x": array([1.0]), "y": array([-3.2])}))
+disc.execute({"x": array([1.0]), "y": array([-3.2])})
 
 # %%
 # Optional arguments
@@ -101,4 +101,4 @@ def dfdxy(x=0.0, y=0.0):
 
 # %%
 # that we can execute with default inputs for example:
-print(dfdxy())
+dfdxy()

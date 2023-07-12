@@ -83,8 +83,7 @@ print("Optimum = ", opt)
 
 # %%
 # Note that you can get all the optimization algorithms names:
-algo_list = OptimizersFactory().algorithms
-print("Available algorithms ", algo_list)
+OptimizersFactory().algorithms
 
 # %%
 # Save the optimization results

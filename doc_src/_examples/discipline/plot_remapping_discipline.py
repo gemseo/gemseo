@@ -96,14 +96,12 @@ clearer_fruit_counting = RemappingDiscipline(
 # We can execute this discipline with the original default input values,
 # namely 1 pear, 2 Gala apples and 3 Fuji apples:
 clearer_fruit_counting.execute()
-print(clearer_fruit_counting.get_input_data())
-print(clearer_fruit_counting.get_output_data())
+clearer_fruit_counting.get_input_data(), clearer_fruit_counting.get_output_data()
 
 # %%
 # or with new input data:
 clearer_fruit_counting.execute({"pear": array([4]), "apples": array([3, 1])})
-print(clearer_fruit_counting.get_input_data())
-print(clearer_fruit_counting.get_output_data())
+clearer_fruit_counting.get_input_data(), clearer_fruit_counting.get_output_data()
 
 # %%
 # To be even more clear,
@@ -124,5 +122,4 @@ even_clearer_fruit_counting = RemappingDiscipline(
 even_clearer_fruit_counting.execute(
     {"pear": array([4]), "gala": array([3]), "fuji": array([1])}
 )
-print(even_clearer_fruit_counting.get_input_data())
-print(even_clearer_fruit_counting.get_output_data())
+even_clearer_fruit_counting.get_input_data(), even_clearer_fruit_counting.get_output_data()

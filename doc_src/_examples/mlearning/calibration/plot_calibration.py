@@ -63,13 +63,13 @@ calibration = MLAlgoCalibration(
 calibration.execute({"algo": "fullfact", "n_samples": 10})
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
-print("optimal degree:", x_opt["degree"][0])
-print("optimal criterion:", f_opt)
+degree = x_opt["degree"][0]
+f"optimal degree = {degree}; optimal criterion = {f_opt}"
 
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset)
+calibration.dataset
 
 # %%
 # Visualize the results
@@ -106,13 +106,12 @@ calibration = MLAlgoCalibration(
 calibration.execute({"algo": "fullfact", "n_samples": 10})
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
-print("optimal penalty_level:", x_opt["penalty_level"][0])
-print("optimal criterion:", f_opt)
+x_opt["penalty_level"][0], f_opt
 
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset)
+calibration.dataset
 
 # %%
 # Visualize the results
@@ -150,13 +149,12 @@ calibration = MLAlgoCalibration(
 calibration.execute({"algo": "fullfact", "n_samples": 10})
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
-print("optimal penalty_level:", x_opt["penalty_level"][0])
-print("optimal criterion:", f_opt)
+x_opt["penalty_level"][0], f_opt
 
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset)
+calibration.dataset
 
 # %%
 # Visualize the results
@@ -194,14 +192,12 @@ calibration = MLAlgoCalibration(
 calibration.execute({"algo": "fullfact", "n_samples": 100})
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
-print("optimal penalty_level:", x_opt["penalty_level"][0])
-print("optimal l2_penalty_ratio:", x_opt["l2_penalty_ratio"][0])
-print("optimal criterion:", f_opt)
+x_opt["penalty_level"][0], x_opt["l2_penalty_ratio"][0], f_opt
 
 # %%
 # Get the history
 # ^^^^^^^^^^^^^^^
-print(calibration.dataset)
+calibration.dataset
 
 # %%
 # Visualize the results

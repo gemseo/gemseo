@@ -85,7 +85,7 @@ model = create_regression_model(
     "PCERegressor", data=dataset, probability_space=prob_space, transformer=None
 )
 model.learn()
-print(model)
+model
 
 # %%
 # Predict output
@@ -93,7 +93,7 @@ print(model)
 # Once it is built, we can use it for prediction.
 input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
 output_value = model.predict(input_value)
-print(output_value)
+output_value
 
 # %%
 # Save the regression model
@@ -106,10 +106,10 @@ directory = model.to_pickle()
 # -------------------------
 # In an other study, we could load this model.
 loaded_model = import_regression_model(directory)
-print(loaded_model)
+loaded_model
 
 # %%
 # Use the loaded regression model
 # -------------------------------
 # And use it!
-print(loaded_model.predict(input_value))
+loaded_model.predict(input_value)

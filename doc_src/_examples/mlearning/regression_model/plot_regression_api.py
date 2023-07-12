@@ -41,12 +41,12 @@ configure_logger()
 # %%
 # Get available regression models
 # -------------------------------
-print(get_regression_models())
+get_regression_models()
 
 # %%
 # Get regression model options
 # ----------------------------
-print(get_regression_options("GaussianProcessRegressor"))
+get_regression_options("GaussianProcessRegressor")
 
 # %%
 # Create regression model
@@ -68,5 +68,4 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", data=dataset)
 model.learn()
-
-print(model)
+model

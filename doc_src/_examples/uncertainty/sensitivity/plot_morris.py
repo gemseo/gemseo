@@ -69,7 +69,7 @@ pprint.pprint(sensitivity_analysis.outputs_bounds)
 
 # %%
 # We can also sort the input parameters by decreasing order of influence:
-print(sensitivity_analysis.sort_parameters("y"))
+sensitivity_analysis.sort_parameters("y")
 
 # %%
 # Lastly,

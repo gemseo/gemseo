@@ -46,18 +46,18 @@ discipline = AutoPyDiscipline(f)
 # %%
 # We can execute it with its default input values:
 discipline.execute()
-print(discipline.local_data)
+discipline.local_data
 
 # %%
 # or with custom ones:
 discipline.execute({"a": array([1.0])})
-print(discipline.local_data)
+discipline.local_data
 
 # %%
 # Then,
 # we use the method :meth:`.MDODiscipline.linearize` to compute the derivatives:
 jacobian_data = discipline.linearize()
-print(jacobian_data)
+jacobian_data
 
 # %%
 # There is no Jacobian data
@@ -72,7 +72,7 @@ print(jacobian_data)
 discipline.add_differentiated_inputs(["a"])
 discipline.add_differentiated_outputs(["z"])
 jacobian_data = discipline.linearize()
-print(jacobian_data)
+jacobian_data
 
 # %%
 # We can have a quick look at the values of these derivatives
@@ -84,13 +84,13 @@ print(jacobian_data)
 # for which to compute the Jacobian one.
 # We can change them with ``input_data``:
 jacobian_data = discipline.linearize(input_data={"a": array([1.0])})
-print(jacobian_data)
+jacobian_data
 
 # %%
 # We can also force the discipline to compute
 # the derivatives of all the outputs with respect to all the inputs:
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
-print(jacobian_data)
+jacobian_data
 
 # %%
 # Lastly,
@@ -99,4 +99,4 @@ discipline.set_jacobian_approximation(
     jac_approx_type=discipline.ApproximationMode.COMPLEX_STEP
 )
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
-print(jacobian_data)
+jacobian_data

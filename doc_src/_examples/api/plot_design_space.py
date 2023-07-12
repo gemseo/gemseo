@@ -48,7 +48,7 @@ configure_logger()
 # - This function does not take any argument.
 # - This function returns an empty instance of :class:`.DesignSpace`.
 design_space = create_design_space()
-print(design_space)
+design_space
 
 # %%
 # Once built, we can add variables. E.g.
@@ -56,7 +56,7 @@ print(design_space)
 design_space.add_variable(
     "x", 2, l_b=array([0.0] * 2), u_b=array([1.0] * 2), value=array([0.5] * 2)
 )
-print(design_space)
+design_space
 
 # %%
 # Read a design space
@@ -80,4 +80,4 @@ loaded_design_space = read_design_space("saved_design_space.csv")
 # the :func:`.write_design_space` API function can be used:
 loaded_design_space.add_variable("y", l_b=-1, u_b=3, value=0.0)
 write_design_space(loaded_design_space, "saved_design_space.csv")
-print(read_design_space("saved_design_space.csv"))
+read_design_space("saved_design_space.csv")

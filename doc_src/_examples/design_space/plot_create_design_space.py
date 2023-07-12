@@ -40,10 +40,7 @@ configure_logger()
 #
 # The user can create an instance of the :class:`.DesignSpace`
 # using the high-level function :func:`.create_design_space`.
-
-
 design_space = create_design_space()
-
 
 # %%
 # Add design variables
@@ -54,19 +51,16 @@ design_space = create_design_space()
 # define the lower and upper bound of the variable.
 # It is then possible to plot the :class:`.DesignSpace` instance either using a
 # print statement or by using the logger.
-
 design_space.add_variable("x", l_b=array([-2.0]), u_b=array([2.0]), value=array([0.0]))
-
-print(design_space)
+design_space
 
 # %%
 # The user can also add design variables with dimension greater than one. To do
 # that, the user can use the `size` keyword:
-
 design_space.add_variable(
     "y", l_b=array([-2.0, -1.0]), u_b=array([2.0, 1.0]), value=array([0.0, 0.0]), size=2
 )
-print(design_space)
+design_space
 
 # %%
 # By default, each variable infers its type from the given values. One may also
@@ -87,7 +81,7 @@ design_space.add_variable(
     size=2,
     var_type=["integer", "integer"],
 )
-print(design_space)
+design_space
 
 # %%
 # .. note::
@@ -98,13 +92,11 @@ print(design_space)
 #
 #    For additional information on how |g| handles integer variables, refer to
 #    :ref:`nutshell_design_space`.
-
-# %%
+#
 # Remove design variables
 # -----------------------
 #
 # The user can also remove a variable in the design space using the
 # :meth:`.DesignSpace.remove_variable` method:
-
 design_space.remove_variable("x")
-print(design_space)
+design_space

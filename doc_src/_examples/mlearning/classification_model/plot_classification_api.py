@@ -39,12 +39,12 @@ configure_logger()
 # %%
 # Get available classification models
 # -----------------------------------
-print(get_classification_models())
+get_classification_models()
 
 # %%
 # Get classification model options
 # --------------------------------
-print(get_classification_options("KNNClassifier"))
+get_classification_options("KNNClassifier")
 
 # %%
 # Create classification model
@@ -53,5 +53,4 @@ iris = create_benchmark_dataset("IrisDataset", as_io=True)
 
 model = create_classification_model("KNNClassifier", data=iris)
 model.learn()
-
-print(model)
+model

@@ -55,7 +55,7 @@ dataset.add_observable_variable("o", [[-3.0], [8.0]])
 # %%
 # as well as another variable:
 dataset.add_variable("a", [[10.0], [20.0]])
-print(dataset)
+dataset
 
 # %%
 # We could also do the same with the methods
@@ -71,34 +71,35 @@ dataset.add_objective_group([[-1.0], [-2.0]], ["f"])
 dataset.add_constraint_group([[-0.5], [0.1]], ["c"])
 dataset.add_observable_group([[-3.0], [8.0]], ["o"])
 dataset.add_variable("a", [[10.0], [20.0]])
-print(dataset)
+dataset
 
 # %%
 # Then,
-# we can easily access the names of the input and output variables:
-print(dataset.design_variable_names)
-print(dataset.constraint_names)
-print(dataset.objective_names)
-print(dataset.observable_names)
+# we can easily access the names of the different input variables
+dataset.design_variable_names
 # %%
-# and those of all variables:
-print(dataset.variable_names)
+# the names of the output variables
+dataset.constraint_names, dataset.objective_names, dataset.observable_names
+# %%
+# and the names of all variables:
+dataset.variable_names
 
 # %%
 # The :class:`.OptimizationDataset` provides also the number of iterations:
-print(dataset.n_iterations)
+dataset.n_iterations
 # %%
 # and the iterations:
-print(dataset.iterations)
+dataset.iterations
 
 # %%
 # Lastly,
 # we can get the design data as an :class:`.OptimizationDataset` view:
-print(dataset.design_dataset)
-
+dataset.design_dataset
 
 # %%
-# and the same for the other data groups:
-print(dataset.constraint_dataset)
-print(dataset.objective_dataset)
-print(dataset.observable_dataset)
+# and the same for the other data groups,
+dataset.constraint_dataset
+# %%
+dataset.objective_dataset
+# %%
+dataset.observable_dataset
