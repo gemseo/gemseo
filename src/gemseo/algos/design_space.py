@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import collections
 import logging
+import re
 from copy import deepcopy
 from numbers import Number
 from pathlib import Path
@@ -188,7 +189,7 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name to be given to the design space.
                 If empty, the design space is unnamed.
         """  # noqa: D205, D212, D415
-        self.name = name or ""
+        self.name = name
         self.variable_names = []
         self.dimension = 0
         self.variable_sizes = {}
@@ -2096,11 +2097,28 @@ class DesignSpace(collections.abc.MutableMapping):
         design_space.check()
         return design_space
 
-    def __repr__(self) -> str:
+    def __get_string_representation(self, use_html: bool) -> str:
+        """Return the string representation of the design space.
+
+        Args:
+            use_html: Whether the string representation is HTML code.
+
+        Returns:
+            The string representation of the design space.
+        """
+        new_line_symbol = "<br/>" if use_html else "\n"
+        method_name = "get_html_string" if use_html else "get_string"
+        title = " ".join(re.findall("[A-Z][^A-Z]*", self.__class__.__name__)).lower()
         return (
-            f"Design space: {self.name}\n"
-            + self.get_pretty_table(with_index=True).get_string()
+            f"{title.capitalize()}: {self.name}{new_line_symbol}"
+            + getattr(self.get_pretty_table(with_index=True), method_name)()
         )
+
+    def __repr__(self) -> str:
+        return self.__get_string_representation(False)
+
+    def _repr_html_(self):
+        return self.__get_string_representation(True)
 
     def project_into_bounds(
         self,

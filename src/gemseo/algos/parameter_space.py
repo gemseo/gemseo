@@ -72,8 +72,10 @@ from copy import deepcopy
 from typing import Any
 from typing import Iterable
 from typing import Mapping
+from typing import Sequence
 from typing import TYPE_CHECKING
 
+from gemseo.third_party.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.distribution import Distribution
 
 if TYPE_CHECKING:
@@ -401,8 +403,12 @@ class ParameterSpace(DesignSpace):
                 if (value > 1.0).any() or (value < 0.0).any():
                     raise ValueError(error_msg)
 
-    def __repr__(self) -> str:
-        table = super().get_pretty_table()
+    def get_pretty_table(  # noqa: D102
+        self,
+        fields: Sequence[str] | None = None,
+        with_index: bool = False,
+    ) -> PrettyTable:
+        table = super().get_pretty_table(fields=fields, with_index=with_index)
         distribution = []
         for variable in self.variable_names:
             if variable in self.uncertain_variables:
@@ -414,9 +420,7 @@ class ParameterSpace(DesignSpace):
                     distribution.append(self._BLANK)
 
         table.add_column(self._INITIAL_DISTRIBUTION, distribution)
-        table.title = self._PARAMETER_SPACE
-        desc = str(table)
-        return desc
+        return table
 
     def get_tabular_view(
         self,
