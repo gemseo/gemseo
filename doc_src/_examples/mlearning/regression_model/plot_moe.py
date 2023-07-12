@@ -61,13 +61,13 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 # ~~~~~~~~~~~~~~~~~
 # Information about the dataset can easily be displayed by printing the
 # dataset directly.
-print(dataset)
+dataset
 
 # %%
 # Show dataset
 # ~~~~~~~~~~~~
 # The dataset object can present the data in tabular form.
-print(dataset)
+dataset
 
 # %%
 # Mixture of experts (MoE)

@@ -51,7 +51,7 @@ grammar_1_copy = deepcopy(grammar_1)
 # By default, the update method acts like for a dictionary, i.e. an already existing
 # key has its value overriden. Here the value for the element `name2` is now string.
 grammar_1.update(grammar_2)
-print(repr(grammar_1))
+grammar_1
 
 # %%
 # On validation, the allowed type is only the one from the second grammar.
@@ -73,7 +73,7 @@ grammar_1 = grammar_1_copy
 # When merging elements, an already existing element of the grammar will have both the
 # old and the new value.
 grammar_1.update(grammar_2, merge=True)
-print(repr(grammar_1))
+grammar_1
 
 # %%
 # On validation, the allowed types can be any of the types from the original grammars,

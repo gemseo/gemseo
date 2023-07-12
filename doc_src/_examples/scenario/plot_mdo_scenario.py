@@ -64,10 +64,9 @@ discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
-# and outputs) with Python's ``print()`` function. Moreover, we can get the default
+# and outputs) with their string representations. Moreover, we can get the default
 # input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
-print(discipline)
-print(f"Default inputs: {discipline.default_inputs}")
+discipline, discipline.default_inputs
 
 # %%
 # Now, we can to minimize this :class:`.MDODiscipline` over a design space,
@@ -121,10 +120,7 @@ scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 # access them with :attr:`.Scenario.optimization_result`:
 
 optimization_result = scenario.optimization_result
-print(
-    "The solution of P is "
-    f"(x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
-)
+f"The solution of P is (x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
 
 # %%
 # .. seealso::
@@ -137,15 +133,13 @@ print(
 # Available algorithms
 # --------------------
 # In order to get the list of available optimization algorithms, use:
-algo_list = get_available_opt_algorithms()
-print(f"Available algorithms: {algo_list}")
+get_available_opt_algorithms()
 
 # %%
 # Available post-processing
 # -------------------------
 # In order to get the list of available post-processing algorithms, use:
-post_list = get_available_post_processings()
-print(f"Available algorithms: {post_list}")
+get_available_post_processings()
 
 # %%
 # Exporting the problem data.

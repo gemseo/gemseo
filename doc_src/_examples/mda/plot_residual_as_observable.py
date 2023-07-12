@@ -96,9 +96,10 @@ residual_history
 # just like the couplings.
 # To get the normed MDA residual,
 # the key registered by :attr:`~.MDA.RESIDUALS_NORM` (``""MDA residuals norm"``) can be used.
-#
+f"The normed residual key is: {mda.RESIDUALS_NORM}."
+
+# %%
 # This normed residual can be used as a constraint in an MDO scenario,
 # or can simply be retrieved as a scenario observable.
-print(f"The normed residual key is: {mda.RESIDUALS_NORM}.")
 normed_residual = output_data[mda.RESIDUALS_NORM]
 normed_residual

@@ -43,12 +43,12 @@ configure_logger()
 # %%
 # Get available clustering models
 # -------------------------------
-print(get_clustering_models())
+get_clustering_models()
 
 # %%
 # Get clustering model options
 # ----------------------------
-print(get_clustering_options("GaussianMixture"))
+get_clustering_options("GaussianMixture")
 
 # %%
 # Create clustering model
@@ -57,5 +57,4 @@ iris = create_benchmark_dataset("IrisDataset")
 
 model = create_clustering_model("KMeans", data=iris, n_clusters=3)
 model.learn()
-
-print(model)
+model

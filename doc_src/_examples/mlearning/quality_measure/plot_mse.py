@@ -76,8 +76,7 @@ n_train = int(amount_train * n_samples)
 n_test = n_samples - n_train
 train = sort(choice(samples, n_train, False))
 test = sort([sample for sample in samples if sample not in train])
-print("Train:", train)
-print("Test:", test)
+train, test
 
 # %%
 # Build datasets
@@ -104,7 +103,7 @@ dataset_test = create_dataset(
 # Build regression model
 # ----------------------
 model = create_regression_model("PolynomialRegressor", dataset, degree=max_pow)
-print(model)
+model
 
 # %%
 # Predictions errors
@@ -113,9 +112,7 @@ measure = MSEMeasure(model)
 
 mse_train = measure.evaluate_learn()
 mse_test = measure.evaluate_test(dataset_test)
-
-print("Training error:", mse_train)
-print("Test error:", mse_test)
+mse_train, mse_test
 
 # %%
 # Compute predictions
@@ -167,5 +164,4 @@ plt.show()
 
 # %%
 # Grid search
-print(test_errors)
-print("Power for minimal test error:", argmin(test_errors))
+test_errors, f"Power for minimal test error: {argmin(test_errors)}"

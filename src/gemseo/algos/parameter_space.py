@@ -401,7 +401,7 @@ class ParameterSpace(DesignSpace):
                 if (value > 1.0).any() or (value < 0.0).any():
                     raise ValueError(error_msg)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         table = super().get_pretty_table()
         distribution = []
         for variable in self.variable_names:

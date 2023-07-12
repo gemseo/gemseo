@@ -40,10 +40,7 @@ configure_logger()
 #
 # Create a parameter space
 # ------------------------
-
-
 parameter_space = ParameterSpace()
-
 
 # %%
 # Then, we can add either deterministic variables from their lower and upper
@@ -53,25 +50,25 @@ parameter_space = ParameterSpace()
 
 parameter_space.add_variable("x", l_b=-2.0, u_b=2.0)
 parameter_space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-print(parameter_space)
+parameter_space
 
 # %%
-# We can check that the deterministic and uncertain variables are implemented
-# as deterministic and deterministic variables respectively:
-print("x is deterministic: ", parameter_space.is_deterministic("x"))
-print("y is deterministic: ", parameter_space.is_deterministic("y"))
-print("x is uncertain: ", parameter_space.is_uncertain("x"))
-print("y is uncertain: ", parameter_space.is_uncertain("y"))
+# We can check that the variables *x* and *y* are implemented
+# as deterministic and uncertain variables respectively:
+parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
 
 # %%
 # Sample from the parameter space
 # -------------------------------
 # We can sample the uncertain variables from the :class:`.ParameterSpace` and
-# get values either as an array (default value) or as a dictionary:
+# get values either as an array (default value):
 sample = parameter_space.compute_samples(n_samples=2, as_dict=True)
-print(sample)
+sample
+
+# %%
+# or as a dictionary:
 sample = parameter_space.compute_samples(n_samples=4)
-print(sample)
+sample
 
 # %%
 # Sample a discipline over the parameter space
@@ -79,7 +76,6 @@ print(sample)
 # We can also sample a discipline over the parameter space. For simplicity,
 # we instantiate an :class:`.AnalyticDiscipline` from a dictionary of
 # expressions.
-
 discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 
 # %%
@@ -93,8 +89,7 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 #    with all variables available in the :class:`.ParameterSpace`.
 #    Thus, if we do not filter the uncertain variables, the
 #    :class:`.DOEScenario` will consider all variables. In particular, the
-#    deterministic variables will be consider as uniformly distributed.
-
+#    deterministic variables will be considered as uniformly distributed.
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
 )
@@ -107,7 +102,7 @@ dataset = scenario.to_dataset(opt_naming=False)
 
 # %%
 # This visualization can be tabular for example:
-print(dataset)
+dataset
 
 # %%
 # or graphical by means of a scatter plot matrix for example:
@@ -134,4 +129,4 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # value for all evaluations, contrary to the previous case where we were
 # considering the whole parameter space.
 dataset = scenario.to_dataset(opt_naming=False)
-print(dataset)
+dataset

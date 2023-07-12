@@ -51,26 +51,25 @@ parameter_space = ParameterSpace()
 # (use :meth:`.ParameterSpace.add_random_variable`)
 parameter_space.add_variable("x", l_b=-2.0, u_b=2.0)
 parameter_space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-print(parameter_space)
+parameter_space
 
 # %%
-# We can check that the deterministic and uncertain variables are implemented
+# We can check that the variables *x* and *y* are implemented
 # as deterministic and deterministic variables respectively:
-print("x is deterministic: ", parameter_space.is_deterministic("x"))
-print("y is deterministic: ", parameter_space.is_deterministic("y"))
-print("x is uncertain: ", parameter_space.is_uncertain("x"))
-print("y is uncertain: ", parameter_space.is_uncertain("y"))
+parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
 
 # %%
 # Sample from the parameter space
 # -------------------------------
 # We can sample the uncertain variables from the :class:`.ParameterSpace`
 # and get values either as a NumPy array (by default)
-# or as a dictionary of NumPy arrays indexed by the names of the variables:
 sample = parameter_space.compute_samples(n_samples=2, as_dict=True)
-print(sample)
+sample
+
+# %%
+# or as a dictionary of NumPy arrays indexed by the names of the variables:
 sample = parameter_space.compute_samples(n_samples=4)
-print(sample)
+sample
 
 # %%
 # Sample a discipline over the parameter space
@@ -110,7 +109,7 @@ dataset = scenario.to_dataset(name="samples")
 
 # %%
 # and visualize it in a tabular way:
-print(dataset)
+dataset
 
 # %%
 # or with a graphical post-processing,
@@ -139,4 +138,4 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # for all evaluations,
 # contrary to the previous case where we were considering the whole parameter space:
 dataset = scenario.to_dataset(name="samples")
-print(dataset)
+dataset

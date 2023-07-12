@@ -129,10 +129,14 @@ disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
-# and outputs) with Python's ``print()`` function. Moreover, we can get the default
-# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
-print(disc_sellar_1)
-print(f"Default inputs: {disc_sellar_1.default_inputs}")
+# and outputs) with their string representations:
+disc_sellar_1
+
+# %%
+# Moreover,
+# we can get the default input values of a discipline
+# with the attribute :attr:`.MDODiscipline.default_inputs`:
+disc_sellar_1.default_inputs
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
@@ -163,7 +167,7 @@ design_space.add_variable("x_shared_1", l_b=-10, u_b=10.0, value=array([4.0]))
 design_space.add_variable("x_shared_2", l_b=0.0, u_b=10.0, value=array([3.0]))
 design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
 design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
-print(design_space)
+design_space
 
 # %%
 # Definition of the MDO scenario

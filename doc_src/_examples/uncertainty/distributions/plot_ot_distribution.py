@@ -37,13 +37,13 @@ configure_logger()
 # First of all,
 # we can access the names of the available probability distributions from the API:
 all_distributions = get_available_distributions()
-print(all_distributions)
+all_distributions
 
 # %%
 # and filter the ones based on the OpenTURNS library
 # (their names start with the acronym 'OT'):
 ot_distributions = [dist for dist in all_distributions if dist.startswith("OT")]
-print(ot_distributions)
+ot_distributions
 
 # %%
 # Create a distribution
@@ -53,7 +53,7 @@ print(ot_distributions)
 # whose components are independent and distributed
 # as the standard normal distribution (mean = 0 and standard deviation = 1):
 distribution_0_1 = create_distribution("x", "OTNormalDistribution", 2)
-print(distribution_0_1)
+distribution_0_1
 
 # %%
 # or create another distribution with mean = 1 and standard deviation = 2
@@ -61,7 +61,7 @@ print(distribution_0_1)
 distribution_1_2 = create_distribution(
     "x", "OTNormalDistribution", 2, mu=1.0, sigma=2.0
 )
-print(distribution_1_2)
+distribution_1_2
 
 # %%
 # We could also use the generic :class:`.OTDistribution`
@@ -70,7 +70,7 @@ print(distribution_1_2)
 distribution_1_2 = create_distribution(
     "x", "OTDistribution", 2, interfaced_distribution="Normal", parameters=(1.0, 2.0)
 )
-print(distribution_1_2)
+distribution_1_2
 
 # %%
 # Plot the distribution
@@ -91,41 +91,43 @@ distribution_0_1.plot()
 # Get mean
 # --------
 # We can access the mean of the distribution:
-print(distribution_0_1.mean)
+distribution_0_1.mean
 
 # %%
 # Get standard deviation
 # ----------------------
 # We can access the standard deviation of the distribution:
-print(distribution_0_1.standard_deviation)
+distribution_0_1.standard_deviation
 
 # %%
 # Get numerical range
 # -------------------
-# We can access the range, ie. the difference between the numerical minimum and maximum,
+# We can access the range,
+# i.e. the difference between the numerical minimum and maximum,
 # of the distribution:
-print(distribution_0_1.range)
+distribution_0_1.range
 
 # %%
 # Get mathematical support
 # ------------------------
-# We can access the range, ie. the difference between the minimum and maximum,
+# We can access the range,
+# i.e. the difference between the minimum and maximum,
 # of the distribution:
-print(distribution_0_1.support)
+distribution_0_1.support
 
 # %%
 # Generate samples
 # ----------------
 # We can generate 10 samples of the distribution:
-print(distribution_0_1.compute_samples(10))
+distribution_0_1.compute_samples(10)
 
 # %%
 # Compute CDF
 # -----------
 # We can compute the cumulative density function component per component
 # (here the probability that the first component is lower than 0.
-# and that the second one is lower than 1.)::
-print(distribution_0_1.compute_cdf([0.0, 1.0]))
+# and that the second one is lower than 1.):
+distribution_0_1.compute_cdf([0.0, 1.0])
 
 # %%
 # Compute inverse CDF
@@ -134,4 +136,4 @@ print(distribution_0_1.compute_cdf([0.0, 1.0]))
 # component per component
 # (here the quantile at 50% for the first component
 # and the quantile at 97.5% for the second one):
-print(distribution_0_1.compute_inverse_cdf([0.5, 0.975]))
+distribution_0_1.compute_inverse_cdf([0.5, 0.975])

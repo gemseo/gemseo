@@ -67,7 +67,7 @@ grammar = PydanticGrammar("grammar", model=Model)
 
 # %%
 # Show the contents of the grammar.
-print(repr(grammar))
+grammar
 
 # %%
 # Validate data against the grammar
@@ -102,7 +102,7 @@ grammar.validate(
 # ----------------
 # As compared to the other types of grammars, the grammar defaults are be defined
 # in the pydantic model and does not require to be manually defined from the grammar.
-print(grammar.defaults)
+grammar.defaults
 
 # %%
 # Model inheritance
@@ -126,4 +126,4 @@ grammar = PydanticGrammar("grammar", model=Model2)
 
 # %%
 # Show the contents of the grammar.
-print(repr(grammar))
+grammar

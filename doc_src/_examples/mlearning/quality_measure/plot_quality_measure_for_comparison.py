@@ -186,7 +186,7 @@ X_1_refined, X_2_refined = meshgrid(x_refined, x_refined)
 x_1_refined, x_2_refined = X_1_refined.flatten(), X_2_refined.flatten()
 x_refined = hstack((x_1_refined[:, None], x_2_refined[:, None]))
 
-print(dataset)
+dataset
 
 # %%
 # Create regression algorithms

@@ -54,7 +54,7 @@ data = concatenate((inputs, outputs), 1)
 # We create a :class:`.Dataset` from the NumPy array only
 # and let GEMSEO give default names to its columns:
 dataset = Dataset.from_array(data)
-print(dataset)
+dataset
 
 # %%
 # A dataset with custom names
@@ -62,7 +62,7 @@ print(dataset)
 # We can also pass the names and sizes of the variables:
 names_to_sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
 dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], names_to_sizes)
-print(dataset)
+dataset
 
 # %%
 # .. warning::
@@ -78,7 +78,7 @@ print(dataset)
 # We can also use the notions of groups of variables:
 groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
 dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], names_to_sizes, groups)
-print(dataset)
+dataset
 
 # %%
 # .. note::

@@ -81,7 +81,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", data=dataset, transformer=None)
 model.learn()
-print(model)
+model
 
 # %%
 # Predict output
@@ -89,14 +89,14 @@ print(model)
 # Once it is built, we can use it for prediction.
 input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
 output_value = model.predict(input_value)
-print(output_value)
+output_value
 
 # %%
 # Predict jacobian
 # ----------------
 # We can also use it to predict the jacobian of the discipline.
 jacobian_value = model.predict_jacobian(input_value)
-print(jacobian_value)
+jacobian_value
 
 # %%
 # Get intercept
@@ -104,8 +104,7 @@ print(jacobian_value)
 # In addition, it is possible to access the intercept of the model,
 # either directly or by means of a method returning either a dictionary
 # (default option) or an array.
-print(model.intercept)
-print(model.get_intercept())
+model.intercept, model.get_intercept()
 
 # %%
 # Get coefficients
@@ -113,5 +112,4 @@ print(model.get_intercept())
 # In addition, it is possible to access the coefficients of the model,
 # either directly or by means of a method returning either a dictionary
 # (default option) or an array.
-print(model.coefficients)
-print(model.get_coefficients())
+model.coefficients, model.get_coefficients()

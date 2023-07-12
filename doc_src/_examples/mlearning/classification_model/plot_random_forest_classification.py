@@ -49,7 +49,7 @@ iris = create_benchmark_dataset("IrisDataset", as_io=True)
 # displays this model.
 model = create_classification_model("RandomForestClassifier", data=iris)
 model.learn()
-print(model)
+model
 
 # %%
 # Predict output
@@ -62,4 +62,4 @@ input_value = {
     "petal_width": array([0.2]),
 }
 output_value = model.predict(input_value)
-print(output_value)
+output_value

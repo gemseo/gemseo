@@ -74,7 +74,9 @@ generate_n2_plot(disciplines, save=False, show=True)
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 design_space = SobieskiProblem().design_space
-print(design_space)
+design_space
+
+# %%
 scenario = create_scenario(
     disciplines,
     "IDF",

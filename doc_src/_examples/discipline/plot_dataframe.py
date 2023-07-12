@@ -88,8 +88,8 @@ discipline = DataFrameDiscipline()
 # Execute the discipline
 # ----------------------
 # Then, we can execute it easily, either considering default inputs:
-print(discipline.execute())
+discipline.execute()
 
 # %%
 # or using new inputs:
-print(discipline.execute({"df~x": [1.0]}))
+discipline.execute({"df~x": [1.0]})

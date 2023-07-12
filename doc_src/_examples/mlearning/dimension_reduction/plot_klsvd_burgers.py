@@ -38,8 +38,9 @@ configure_logger()
 # Load dataset
 # ~~~~~~~~~~~~
 dataset = create_burgers_dataset(n_samples=20)
-print(dataset)
+dataset
 
+# %%
 t = dataset.input_dataset.to_numpy()[:, 0]
 u_t = dataset.output_dataset.to_numpy()
 t_split = 0.87
@@ -78,8 +79,7 @@ klsvd = KLSVD(dataset.misc["x"], n_modes)
 klsvd.fit(u_t)
 u_t_reduced = klsvd.transform(u_t)
 u_t_restored = klsvd.inverse_transform(u_t_reduced)
-
-print(f"Dimension of the reduced space: {klsvd.output_dimension}")
+f"Dimension of the reduced space: {klsvd.output_dimension}"
 
 # %%
 # Plot restored data

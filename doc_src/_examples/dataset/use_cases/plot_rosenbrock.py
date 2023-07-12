@@ -55,23 +55,23 @@ configure_logger()
 # by means of the high-level function :func:`.create_benchmark_dataset`:
 
 dataset = create_benchmark_dataset("RosenbrockDataset")
-print(dataset)
+dataset
 
 # %%
 # Show the design data
 # --------------------
-print(dataset.design_dataset)
+dataset.design_dataset
 
 # %%
 # Show the objective data
 # -----------------------
-print(dataset.objective_dataset)
+dataset.objective_dataset
 
 # %%
 # Load the data with an input-output naming
 # -----------------------------------------
 dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
-print(dataset)
+dataset
 
 # %%
 # Plot the data

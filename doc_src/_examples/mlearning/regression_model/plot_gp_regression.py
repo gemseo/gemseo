@@ -78,7 +78,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("GaussianProcessRegressor", data=dataset)
 model.learn()
-print(model)
+model
 
 # %%
 # Predict output
@@ -86,4 +86,4 @@ print(model)
 # Once it is built, we can use it for prediction.
 input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
 output_value = model.predict(input_value)
-print(output_value)
+output_value

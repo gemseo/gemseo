@@ -89,8 +89,7 @@ model = create_surrogate("GaussianProcessRegressor", data=dataset)
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction, either with default inputs
+model.execute()
+# %%
 # or with user-defined ones.
-print(model.execute())
-input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-output_value = model.execute(input_value)
-print(output_value)
+model.execute({"x_1": array([1.0]), "x_2": array([2.0])})

@@ -179,7 +179,7 @@ synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
 # Then, we execute it as any :class:`.MDODiscipline`:
 input_data = {"x": array([2.0])}
 out = synthetic_surrogate.execute(input_data)
-print(out["y"])
+out["y"]
 
 # %%
 # In our study case, from the :term:`DOE` built at Step 1,
