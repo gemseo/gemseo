@@ -71,7 +71,6 @@ cache
 # cache manually.
 # Here, we provide to the cache the data dictionary, and we set `x` as input
 # and `y` as output.
-
 cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
 cache

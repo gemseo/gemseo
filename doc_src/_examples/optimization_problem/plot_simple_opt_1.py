@@ -56,8 +56,7 @@ objective = f_1 - f_2
 #    The following operators are implemented: :math:`+`, :math:`-`
 #    and :math:`*`. The minus operator is also defined.
 #
-
-print("Objective function = ", objective)
+objective
 
 # %%
 # Minimize the objective function
@@ -73,5 +72,4 @@ print("Objective function = ", objective)
 
 x_0 = -ones(1)
 opt = optimize.fmin_l_bfgs_b(objective, x_0, fprime=objective.jac, bounds=[(-0.2, 2.0)])
-
-print("Optimum = ", opt)
+opt

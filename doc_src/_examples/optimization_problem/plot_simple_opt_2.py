@@ -78,8 +78,7 @@ problem.objective = objective
 # Solve the problem
 # ^^^^^^^^^^^^^^^^^
 opt = OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
-
-print("Optimum = ", opt)
+opt
 
 # %%
 # Note that you can get all the optimization algorithms names:
@@ -108,4 +107,4 @@ execute_post(problem, "OptHistoryView", show=True, save=False)
 # We can also see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE).
 opt = DOEFactory().execute(problem, "lhs", n_samples=10, normalize_design_space=True)
-print("Optimum = ", opt)
+opt
