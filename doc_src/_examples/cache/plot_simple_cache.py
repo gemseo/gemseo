@@ -46,6 +46,7 @@ configure_logger()
 # following line:
 cache = SimpleCache()
 
+# %%
 # The cache information can be displayed easily:
 cache
 
