@@ -752,7 +752,7 @@ def table_template() -> str:
 """.strip()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def design_space_2() -> DesignSpace:
     """Return a design space with scalar and vectorial variables."""
     design_space = DesignSpace()
@@ -1367,3 +1367,40 @@ def test_export_import_with_none_value(tmp_wd):
     design_space.to_csv("foo.csv")
     txt_design_space = DesignSpace.from_csv("foo.csv")
     assert txt_design_space == design_space
+
+
+def test_repr_html(design_space_2):
+    """Check the HTML representation of a design space."""
+    assert (
+        design_space_2._repr_html_()
+        == """Design space: <br/><table>
+    <tr>
+        <th>name</th>
+        <th>lower_bound</th>
+        <th>value</th>
+        <th>upper_bound</th>
+        <th>type</th>
+    </tr>
+    <tr>
+        <td>x</td>
+        <td>-inf</td>
+        <td>None</td>
+        <td>inf</td>
+        <td>float</td>
+    </tr>
+    <tr>
+        <td>y[0]</td>
+        <td>-inf</td>
+        <td>None</td>
+        <td>inf</td>
+        <td>float</td>
+    </tr>
+    <tr>
+        <td>y[1]</td>
+        <td>-inf</td>
+        <td>None</td>
+        <td>inf</td>
+        <td>float</td>
+    </tr>
+</table>"""
+    )
