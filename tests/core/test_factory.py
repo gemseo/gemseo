@@ -165,11 +165,10 @@ def test_ext_plugin_gemseo_path(monkeypatch, reset_factory):
     assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
-def test_wanted_classes(monkeypatch, reset_factory):
-    """Verify that the classes found are the expected ones."""
-    monkeypatch.setenv("GEMSEO_PATH", DATA)
-    # There could be more classes available with the plugins
-    assert "DummyBiLevel" in MDOFormulationsFactory().class_names
+def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory):
+    """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
+    monkeypatch.setenv("GEMSEO_PATH", DATA / "gemseo_dummy_plugins")
+    assert MDOFormulationsFactory().failed_imports == {"bad": "division by zero"}
 
 
 def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):

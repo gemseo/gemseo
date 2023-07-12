@@ -201,15 +201,6 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
                     cls, cls.__module__.split(".")[0]
                 )
 
-    def __log_import_failure(self, pkg_name: str) -> None:
-        """Log import failures.
-
-        Args:
-            pkg_name: The name of a package that failed to be imported.
-        """
-        LOGGER.debug("Failed to import package %s", pkg_name)
-        self.failed_imports[pkg_name] = ""
-
     def __import_modules_from_env_var(self) -> list[str]:
         """Import the modules from the path given by an environment variable.
 
@@ -245,20 +236,33 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Args:
             pkg_name: The name of the package.
         """
-        pkg = importlib.import_module(pkg_name)
+        try:
+            pkg = importlib.import_module(pkg_name)
+        except Exception as error:
+            self.__record_import_failure(pkg_name, error)
+            return
 
         if not hasattr(pkg, "__path__"):
             # not a package so no more module to import
             return
 
         for _, mod_name, _ in pkgutil.walk_packages(
-            pkg.__path__, pkg.__name__ + ".", self.__log_import_failure
+            pkg.__path__, pkg.__name__ + ".", self.__record_import_failure
         ):
             try:
                 importlib.import_module(mod_name)
-            except Exception as err:  # pylint: disable=(broad-except
-                LOGGER.debug("Failed to import module: %s", mod_name, exc_info=True)
-                self.failed_imports[mod_name] = str(err)
+            except Exception as error:
+                self.__record_import_failure(mod_name, error)
+
+    def __record_import_failure(self, name: str, error: Exception | str = "") -> None:
+        """Record an import failure.
+
+        Args:
+            name: The name of the module or package to be imported.
+            error: The exception object raised while importing the module or package.
+        """
+        LOGGER.debug("Failed to import module: %s", name, exc_info=True)
+        self.failed_imports[name] = str(error)
 
     def __get_sub_classes(self, cls: type) -> dict[str, type]:
         """Find all the subclasses of a class.
