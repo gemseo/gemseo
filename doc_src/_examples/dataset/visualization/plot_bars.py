@@ -36,16 +36,20 @@ configure_logger()
 # %%
 # Build a dataset
 # ---------------
+# Let us consider two series of values for the variables *x1*, *x2* and *x3*
+# which we arrange in rows in a :class:`.Dataset`:
 dataset = Dataset()
 dataset.add_variable("x1", array([[0.25, 0.35], [0.75, 0.85]]))
 dataset.add_variable("x2", array([[0.5], [0.5]]))
 dataset.add_variable("x3", array([[0.75], [0.25]]))
-dataset.row_names = ["series_1", "series_2"]
+dataset.index = ["series_1", "series_2"]
+dataset
 
 # %%
-# Plot the two series on a radar chart
-# ------------------------------------
-# We can use the :class:`.BarPlot` plot
+# Plot the two series on a bar chart
+# ----------------------------------
+# We can use the :class:`.BarPlot` to display these series,
+# with one color per series and the values grouped by variable name:
 plot = BarPlot(dataset, n_digits=2)
 plot.colormap = "PiYG"
 plot.execute(save=False, show=True)

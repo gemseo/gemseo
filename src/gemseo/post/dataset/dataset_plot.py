@@ -285,8 +285,10 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Create the post-processing and save or display it.
 
         Args:
-            save: If True, save the plot on the disk.
-            show: If True, display the plot.
+            save: Whether to save the plot on the disk;
+                not used if ``fig`` and ``axes`` are ``None``.
+            show: Whether to display the plot;
+                not used if ``fig`` and ``axes`` are ``None``.
             file_path: The file path.
             fig: The figure to plot the data.
                 If ``None``, create a new one.
@@ -476,6 +478,8 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         fig: Figure | None,
         axes: Axes | None,
         fig_size: FigSizeType | None = None,
+        n_rows: int = 1,
+        n_cols: int = 1,
     ) -> tuple[Figure, Axes]:
         """Return the figure and axes to plot the data.
 
@@ -486,6 +490,8 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If ``None``, create new ones.
             fig_size: The width and height of the figure in inches.
                 If ``None``, use the default ``fig_size``.
+            n_rows: The number of rows of the subplot grid.
+            n_cols: The number of cols of the subplot grid.
 
         Returns:
             The figure and axis to plot the data.
@@ -496,7 +502,9 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
                     "The figure associated with the given axes is missing."
                 )
 
-            return plt.subplots(figsize=fig_size or self.fig_size)
+            return plt.subplots(
+                nrows=n_rows, ncols=n_cols, figsize=fig_size or self.fig_size
+            )
 
         if axes is None:
             raise ValueError("The axes associated with the given figure are missing.")
