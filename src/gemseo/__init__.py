@@ -148,10 +148,11 @@ from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.datasets.dataset_factory import DatasetFactory
+from gemseo.datasets.dataset_factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.matplotlib_figure import FigSizeType
+
+# TODO: API: protect these import under TYPE_CHECKING.
 
 try:
     __version__ = __pkg_resources.get_distribution("package-name").version
@@ -161,6 +162,7 @@ except __pkg_resources.DistributionNotFound:
 
 if TYPE_CHECKING:
     from logging import Logger
+    from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
@@ -1657,7 +1659,7 @@ def create_cache(
     return CacheFactory().create(cache_type, name=name, **options)
 
 
-DatasetClassName = StrEnum("DatasetClassName", DatasetFactory().class_names)
+DatasetClassName = StrEnum("DatasetClassName", __DatasetFactory().class_names)
 
 
 def create_dataset(
