@@ -1,0 +1,1 @@
+``BarPlot`` handles now correctly a ``Dataset`` whose number of rows is higher than the number of variables.
