@@ -24,7 +24,7 @@ from uuid import uuid1
 
 from strenum import StrEnum
 
-from gemseo.utils.portable_path import PLATFORM_IS_WINDOWS
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 FoldersIter = StrEnum("FoldersIter", "NUMBERED UUID")
 

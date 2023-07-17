@@ -21,23 +21,25 @@ from __future__ import annotations
 
 import logging
 import multiprocessing as mp
-import os
 import queue
 import sys
 import threading as th
 import time
 import traceback
+from multiprocessing import get_context
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Final
 from typing import Sequence
 from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+from strenum import StrEnum
 
 from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
-IS_WIN: Final[bool] = os.name == "nt"
 
 SUBPROCESS_NAME: Final[str] = "subprocess"
 
@@ -110,6 +112,25 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
 
     The inputs must be independent objects.
     """
+
+    class MultiProcessingStartMethod(StrEnum):
+        """The multiprocessing start method."""
+
+        FORK = "fork"
+        SPAWN = "spawn"
+        FORKSERVER = "forkserver"
+
+    MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod]
+    """The start method used for multiprocessing.
+
+    The default is :attr:`.MultiProcessingStartMethod.SPAWN` on Windows,
+    :attr:`.MultiProcessingStartMethod.FORK` otherwise.
+    """
+
+    if PLATFORM_IS_WINDOWS:
+        MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.SPAWN
+    else:
+        MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.FORK
 
     N_CPUS: Final[int] = mp.cpu_count()
     """The number of CPUs."""
@@ -240,7 +261,8 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             queue_in = manager.Queue()
             queue_out = manager.Queue()
             tasks = manager.list(tasks)
-            processor = mp.Process
+            self.__check_multiprocessing_start_method()
+            processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process
 
         task_callables = _TaskCallables(self.workers, self.inputs)
 
@@ -303,3 +325,22 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             raise output
 
         return ordered_outputs
+
+    def __check_multiprocessing_start_method(self):
+        """Check the multiprocessing start method with respect to the platform.
+
+        Raises:
+            ValueError: If the start method is different from ``spawn`` on
+                Windows platform.
+        """
+        if (
+            PLATFORM_IS_WINDOWS
+            and self.MULTI_PROCESSING_START_METHOD
+            != self.MultiProcessingStartMethod.SPAWN
+        ):
+            raise ValueError(
+                f"The multiprocessing start method "
+                f"{self.MULTI_PROCESSING_START_METHOD.value} "
+                f"cannot be used on the Windows platform. "
+                f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
+            )

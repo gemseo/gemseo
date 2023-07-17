@@ -24,7 +24,6 @@ from gemseo.core.discipline_data import Data
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import IS_WIN
 
 
 class DiscParallelExecution(CallableParallelExecution):
@@ -72,7 +71,11 @@ class DiscParallelExecution(CallableParallelExecution):
         if len(self._disciplines) == 1 or not len(self._disciplines) == len(
             self.inputs
         ):
-            if IS_WIN and not self.use_threading:
+            if (
+                not self.use_threading
+                and self.MULTI_PROCESSING_START_METHOD
+                == self.MultiProcessingStartMethod.SPAWN
+            ):
                 self._disciplines[0].n_calls += len(self.inputs)
         else:
             for disc, output in zip(self._disciplines, ordered_outputs):

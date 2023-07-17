@@ -27,7 +27,6 @@ from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import IS_WIN
 
 
 class _Functor:
@@ -105,7 +104,11 @@ class DiscParallelLinearization(CallableParallelExecution):
             if len(self._disciplines) == 1:
                 self.workers[0].local_data = ordered_outputs[0][0]
                 self.workers[0].jac = ordered_outputs[0][1]
-            if IS_WIN and not self.use_threading:
+            if (
+                not self.use_threading
+                and self.MULTI_PROCESSING_START_METHOD
+                == self.MultiProcessingStartMethod.SPAWN
+            ):
                 disc = self._disciplines[0]
                 # Only increase the number of calls if the Jacobian was computed.
                 if ordered_outputs[0][0]:
