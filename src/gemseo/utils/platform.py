@@ -13,29 +13,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Nicolas Roussouly
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A set of functions to handle OS dependent path operations."""
+"""Platform utilities."""
 from __future__ import annotations
 
-from pathlib import Path
-from pathlib import PurePosixPath
-from pathlib import PureWindowsPath
+import platform
+from typing import Final
 
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-
-
-def to_os_specific(path: Path) -> PureWindowsPath | PurePosixPath:
-    """Cast a path to PureWindowsPath on Windows platforms, PurePosixPath otherwise.
-
-    Args:
-        path: The path to cast.
-
-    Returns:
-        The casted path.
-    """
-    if PLATFORM_IS_WINDOWS:
-        return PureWindowsPath(path)
-    else:
-        return PurePosixPath(path)
+PLATFORM_IS_WINDOWS: Final[bool] = platform.platform().startswith("Windows")
