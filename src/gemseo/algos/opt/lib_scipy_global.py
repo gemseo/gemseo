@@ -167,7 +167,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
             n: The number of sampling points
                 used in the construction of the simplicial complex.
             seed: The seed to be used for repeatable minimizations.
-                If None, the ``numpy.random.RandomState`` singleton is used.
+                If ``None``, the ``numpy.random.RandomState`` singleton is used.
             polish: Whether to use the L-BFGS-B algorithm
                 to polish the best population member at the end.
             mutation: The mutation constant.

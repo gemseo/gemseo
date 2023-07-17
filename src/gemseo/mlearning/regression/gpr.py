@@ -154,7 +154,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             optimizer: The optimization algorithm to find the parameter length scales.
             n_restarts_optimizer: The number of restarts of the optimizer.
             random_state: The seed used to initialize the centers.
-                If None, the random number generator is the RandomState instance
+                If ``None``, the random number generator is the RandomState instance
                 used by `numpy.random`.
         """
         super().__init__(
