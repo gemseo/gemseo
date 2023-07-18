@@ -743,27 +743,31 @@ class MOERegressor(MLRegressionAlgo):
                 regress_factory.load(directory / f"local_model_{i}")
             )
 
-    def __repr__(self) -> str:
-        string = MultiLineString()
-        string.add(super().__repr__())
-        string.indent()
-        string.indent()
-        string.add("Clustering")
-        string.indent()
-        string.add(str(self.clusterer).split("\n")[0])
-        string.dedent()
-        string.add("Classification")
-        string.indent()
-        string.add(str(self.classifier).split("\n")[0])
-        string.dedent()
-        string.add("Regression")
-        string.indent()
+    @property
+    def __string_representation(self) -> MultiLineString:
+        mls = super()._string_representation
+        mls.add("Clustering")
+        mls.indent()
+        mls.add(str(self.clusterer).split("\n")[0])
+        mls.dedent()
+        mls.add("Classification")
+        mls.indent()
+        mls.add(str(self.classifier).split("\n")[0])
+        mls.dedent()
+        mls.add("Regression")
+        mls.indent()
         for i, local_model in enumerate(self.regress_models):
-            string.add("Local model {}", i)
-            string.indent()
-            string.add(str(local_model).split("\n")[0])
-            string.dedent()
-        return str(string)
+            mls.add("Local model {}", i)
+            mls.indent()
+            mls.add(str(local_model).split("\n")[0])
+            mls.dedent()
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
         objects = super()._get_objects_to_save()

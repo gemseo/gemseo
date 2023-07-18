@@ -176,12 +176,10 @@ class AtomicExecSequence(ExecutionSequence):
         self._observer = None
 
     def __str__(self) -> str:
-        return self.discipline.name + "(" + str(self.status) + ")"
+        return f"{self.discipline.name}({self.status})"
 
     def __repr__(self) -> str:
-        return (
-            self.discipline.name + "(" + str(self.status) + ", " + str(self.uuid) + ")"
-        )
+        return f"{self.discipline.name}({self.status}, {self.uuid})"
 
     def accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).

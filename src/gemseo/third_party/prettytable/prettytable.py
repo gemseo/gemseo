@@ -1926,7 +1926,7 @@ class PrettyTable(object):
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "        <th>%s</th>" %
+                    "        <th style='text-align: left;'>%s</th>" %
                     escape(field).replace(
                         "\n",
                         linebreak))
@@ -2007,7 +2007,7 @@ class PrettyTable(object):
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "        <th style=\"padding-left: %dem; padding-right: %dem; text-align: center\">%s</th>" % (
+                    "        <th style=\"padding-left: %dem; padding-right: %dem; text-align: left;\">%s</th>" % (
                         lpad, rpad, escape(field).replace("\n", linebreak)))
             lines.append("    </tr>")
 

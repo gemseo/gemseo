@@ -216,16 +216,24 @@ class AbstractCache(ABCMapping):
 
         return self.__names_to_sizes
 
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the cache."""
+        mls = MultiLineString()
+        mls.add("Name: {}", self.name)
+        mls.indent()
+        mls.add("Type: {}", self.__class__.__name__)
+        mls.add("Tolerance: {}", self.tolerance)
+        mls.add("Input names: {}", self.input_names)
+        mls.add("Output names: {}", self.output_names)
+        mls.add("Length: {}", len(self))
+        return mls
+
     def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Name: {}", self.name)
-        msg.indent()
-        msg.add("Type: {}", self.__class__.__name__)
-        msg.add("Tolerance: {}", self.tolerance)
-        msg.add("Input names: {}", self.input_names)
-        msg.add("Output names: {}", self.output_names)
-        msg.add("Length: {}", len(self))
-        return str(msg)
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def __setitem__(
         self,

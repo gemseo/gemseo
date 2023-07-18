@@ -38,6 +38,7 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_default_option_values
 from gemseo.utils.source_parsing import get_options_doc
 
@@ -479,8 +480,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     def __str__(self) -> str:
         return f"Factory of {self._CLASS.__name__} objects"
 
-    def __repr__(self) -> str:
-        # Display the successfully loaded modules and the failed imports with the reason
+    @property
+    def __pretty_table_representation(self) -> PrettyTable:
+        """The successfully loaded modules and the failed imports with the reason."""
         table = PrettyTable(
             ["Module", "Is available?", "Purpose or error message"],
             title=self._CLASS.__name__,
@@ -510,4 +512,12 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         for name in sorted(names_to_import_statuses.keys()):
             table.add_row(names_to_import_statuses[name])
 
-        return table.get_string()
+        return table
+
+    def __repr__(self) -> str:
+        return self.__pretty_table_representation.get_string()
+
+    def _repr_html_(self) -> str:
+        return REPR_HTML_WRAPPER.format(
+            self.__pretty_table_representation.get_html_string()
+        )

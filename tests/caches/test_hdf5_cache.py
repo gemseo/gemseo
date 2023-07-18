@@ -23,6 +23,7 @@ import h5py
 import pytest
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import ones
 
@@ -81,7 +82,7 @@ def test_hasgroup(tmp_wd):
     )
 
 
-def test_str(tmp_wd):
+def test_repr(tmp_wd):
     """Check string representation."""
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
@@ -94,7 +95,26 @@ def test_str(tmp_wd):
    Length: 2
    HDF file path: dummy.h5
    HDF node path: Dummy"""
-    assert str(cache) == expected
+    assert repr(cache) == str(cache) == expected
+
+
+def test_repr_html():
+    """Check HDF5Cache._repr_html."""
+    cache = create_cache()
+    cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
+    cache[{"i": ones(2)}] = ({"o": ones(2)}, None)
+    assert cache._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Name: Dummy<br/>"
+        "<ul>"
+        "<li>Type: HDF5Cache</li>"
+        "<li>Tolerance: 0.0</li>"
+        "<li>Input names: ['i']</li>"
+        "<li>Output names: ['o']</li>"
+        "<li>Length: 2</li>"
+        "<li>HDF file path: dummy.h5</li>"
+        "<li>HDF node path: Dummy</li>"
+        "</ul>"
+    )
 
 
 def test_cache_array_str(tmp_wd):

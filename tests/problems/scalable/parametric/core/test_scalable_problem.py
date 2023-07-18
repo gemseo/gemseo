@@ -19,6 +19,7 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.scalable_problem import ScalableProblem
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy.random import get_state
 from numpy.random import rand
@@ -72,7 +73,55 @@ def test_str(default_scalable_problem):
          y_1 (1)
       Outputs
          y_2 (1)"""
-    assert str(default_scalable_problem) == expected
+    assert repr(default_scalable_problem) == str(default_scalable_problem) == expected
+
+
+def test_repr_html(default_scalable_problem):
+    """Check the string representation of a scalable problem."""
+    assert default_scalable_problem._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Scalable problem<br/>"
+        "<ul>"
+        "<li>MainDiscipline</li>"
+        "<ul>"
+        "<li>Inputs</li>"
+        "<ul>"
+        "<li>x_0 (1)</li>"
+        "<li>y_1 (1)</li>"
+        "<li>y_2 (1)</li>"
+        "</ul>"
+        "<li>Outputs</li>"
+        "<ul>"
+        "<li>f (1)</li>"
+        "<li>c_1 (1)</li>"
+        "<li>c_2 (1)</li>"
+        "</ul>"
+        "<li>ScalableDiscipline[1]</li>"
+        "<ul>"
+        "<li>Inputs</li>"
+        "<ul>"
+        "<li>x_0 (1)</li>"
+        "<li>x_1 (1)</li>"
+        "<li>y_2 (1)</li>"
+        "</ul>"
+        "<li>Outputs</li>"
+        "<ul>"
+        "<li>y_1 (1)</li>"
+        "</ul>"
+        "<li>ScalableDiscipline[2]</li>"
+        "<ul>"
+        "<li>Inputs</li>"
+        "<ul>"
+        "<li>x_0 (1)</li>"
+        "<li>x_2 (1)</li>"
+        "<li>y_1 (1)</li>"
+        "</ul>"
+        "<li>Outputs</li>"
+        "<ul>"
+        "<li>y_2 (1)</li>"
+        "</ul>"
+        "</ul>"
+        "</ul>"
+    )
 
 
 def test_instance_seed(default_scalable_problem):

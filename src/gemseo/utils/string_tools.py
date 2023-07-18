@@ -29,6 +29,8 @@ from typing import Any
 from typing import Callable
 from typing import Iterable
 
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+
 # to store the raw ingredients of a string to be formatted later
 MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
 
@@ -204,6 +206,29 @@ class MultiLineString:
     def reset(self) -> None:
         """Reset the indentation."""
         self.__level = self.DEFAULT_LEVEL
+
+    def _repr_html_(self) -> str:
+        msg = ""
+        level = self.DEFAULT_LEVEL
+        for line in self.__lines:
+            if line.level > level:
+                msg += "<ul>"
+            elif line.level < level:
+                msg += "</ul>"
+
+            level = line.level
+            str_format = line.str_format
+            if line.args or line.kwargs:
+                str_format = str_format.format(*line.args, **line.kwargs)
+
+            if level == self.DEFAULT_LEVEL:
+                msg += f"{str_format}<br/>"
+            else:
+                msg += f"<li>{str_format}</li>"
+
+        if level > self.DEFAULT_LEVEL:
+            msg += "</ul>" * (level - self.DEFAULT_LEVEL)
+        return REPR_HTML_WRAPPER.format(msg)
 
     def indent(self) -> None:
         """Increase the indentation."""

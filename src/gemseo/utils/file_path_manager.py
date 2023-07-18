@@ -81,15 +81,23 @@ class FilePathManager:
 
         self.__file_type = file_type
 
-    def __str__(self) -> str:
-        string = MultiLineString()
-        string.add(self.__class__.__name__)
-        string.indent()
-        string.add("File type: {}", self.__file_type.name)
-        string.add("Default file name: {}", self.__default_name)
-        string.add("Default file extension: {}", self.__default_extension)
-        string.add("Default directory: {}", self.__default_directory)
-        return str(string)
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the object."""
+        mls = MultiLineString()
+        mls.add(self.__class__.__name__)
+        mls.indent()
+        mls.add("File type: {}", self.__file_type.name)
+        mls.add("Default file name: {}", self.__default_name)
+        mls.add("Default file extension: {}", self.__default_extension)
+        mls.add("Default directory: {}", self.__default_directory)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     def create_file_path(
         self,

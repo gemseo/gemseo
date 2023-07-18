@@ -28,6 +28,7 @@ from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import inf
@@ -72,13 +73,29 @@ def statistics(dataset, tested_distributions) -> ParametricStatistics:
     return ParametricStatistics(dataset, tested_distributions)
 
 
-def test_str(statistics):
-    """Check __str__."""
-    assert str(statistics) == (
-        "ParametricStatistics_Dataset\n"
-        "   n_samples: 100\n"
-        "   n_variables: 3\n"
-        "   variables: x_1, x_2, x_3"
+def test_repr(statistics):
+    """Check __repr__."""
+    assert (
+        repr(statistics)
+        == str(statistics)
+        == (
+            "ParametricStatistics_Dataset\n"
+            "   n_samples: 100\n"
+            "   n_variables: 3\n"
+            "   variables: x_1, x_2, x_3"
+        )
+    )
+
+
+def test_repr_html_(statistics):
+    """Check _repr_html_."""
+    assert statistics._repr_html_() == REPR_HTML_WRAPPER.format(
+        "ParametricStatistics_Dataset<br/>"
+        "<ul>"
+        "<li>n_samples: 100</li>"
+        "<li>n_variables: 3</li>"
+        "<li>variables: x_1, x_2, x_3</li>"
+        "</ul>"
     )
 
 

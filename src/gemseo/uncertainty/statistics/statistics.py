@@ -163,14 +163,22 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.names = variable_names or dataset.variable_names
         self.n_variables = len(self.names)
 
-    def __str__(self) -> str:
-        msg = MultiLineString()
-        msg.add(self.name)
-        msg.indent()
-        msg.add("n_samples: {}", self.n_samples)
-        msg.add("n_variables: {}", self.n_variables)
-        msg.add("variables: {}", pretty_str(self.names))
-        return str(msg)
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the object."""
+        mls = MultiLineString()
+        mls.add(self.name)
+        mls.indent()
+        mls.add("n_samples: {}", self.n_samples)
+        mls.add("n_variables: {}", self.n_variables)
+        mls.add("variables: {}", pretty_str(self.names))
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     def compute_tolerance_interval(
         self,

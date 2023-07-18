@@ -29,6 +29,7 @@ from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
@@ -75,12 +76,19 @@ def test_repr_str(dataset, samples, trained):
     ml_algo = NewMLAlgo(dataset)
     ml_algo._learning_samples_indices = samples
     ml_algo._trained = trained
-    expected = "\n".join(["NewMLAlgo()", "   based on the NewLibrary library"])
+    expected = "NewMLAlgo()\n   based on the NewLibrary library"
     if ml_algo.is_trained:
         expected += f"\n   built from {len(samples)} learning samples"
 
-    assert repr(ml_algo) == expected
+    assert repr(ml_algo) == str(ml_algo) == expected
     assert str(ml_algo) == expected
+
+
+def test_repr_html(dataset):
+    """Check the HTML representation of an ML algorithm."""
+    assert NewMLAlgo(dataset)._repr_html_() == REPR_HTML_WRAPPER.format(
+        "NewMLAlgo()<br/><ul><li>based on the NewLibrary library</li></ul>"
+    )
 
 
 @pytest.mark.parametrize(

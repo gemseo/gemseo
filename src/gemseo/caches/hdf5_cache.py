@@ -86,13 +86,12 @@ class HDF5Cache(AbstractFullCache):
         """The path to the HDF node."""
         return self.__hdf_node_path
 
-    def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add(super().__repr__())
-        msg.indent()
-        msg.add("HDF file path: {}", self.__hdf_file.hdf_file_path)
-        msg.add("HDF node path: {}", self.__hdf_node_path)
-        return str(msg)
+    @property
+    def _string_representation(self) -> MultiLineString:
+        mls = super()._string_representation
+        mls.add("HDF file path: {}", self.__hdf_file.hdf_file_path)
+        mls.add("HDF node path: {}", self.__hdf_node_path)
+        return mls
 
     def __getstate__(self) -> dict[str, float | str]:
         # Pickle __init__ arguments so to call it when unpickling.
