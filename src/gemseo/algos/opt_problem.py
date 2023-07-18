@@ -78,6 +78,7 @@ from typing import Tuple
 
 import h5py
 import numpy
+from h5py import Group
 from numpy import abs as np_abs
 from numpy import all as np_all
 from numpy import any as np_any
@@ -348,6 +349,7 @@ class OptimizationProblem(BaseProblem):
         else:
             self.database = Database.from_hdf(input_database)
         self.solution = None
+        # TODO: API: initialize with OptimizationResult()
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
             design_space.get_current_value(as_dict=True)
@@ -1934,32 +1936,35 @@ class OptimizationProblem(BaseProblem):
         group.create_dataset(dataset_name, data=data_array, dtype=dtype)
 
     @classmethod
-    def __store_attr_h5data(
-        cls,
-        obj: Any,
-        group: str,
-    ) -> None:
-        """Store an object that has a to_dict attribute in the hdf5 dataset.
+    def __store_attr_h5data(cls, obj: Any, group: Group) -> None:
+        """Store an object in the HDF5 dataset.
+
+        The object shall be a mapping or have a method to_dict().
 
         Args:
             obj: The object to store
             group: The hdf5 group.
         """
-        data_dict = obj.to_dict()
-        for attr_name, attr in data_dict.items():
+        data = obj if isinstance(obj, Mapping) else obj.to_dict()
+        for name, value in data.items():
             dtype = None
-            is_arr_n = isinstance(attr, ndarray) and issubdtype(attr.dtype, np_number)
-            if isinstance(attr, str):
-                attr = attr.encode("ascii", "ignore")
-            elif isinstance(attr, bytes):
-                attr = attr.decode()
-            elif hasattr(attr, "__iter__") and not is_arr_n:
-                attr = [
+            if isinstance(value, str):
+                value = value.encode("ascii", "ignore")
+            elif isinstance(value, bytes):
+                value = value.decode()
+            elif isinstance(value, Mapping) and not isinstance(value, DesignSpace):
+                cls.__store_attr_h5data(value, group.require_group(f"/{name}"))
+                continue
+            elif hasattr(value, "__iter__") and not (
+                isinstance(value, ndarray) and issubdtype(value.dtype, np_number)
+            ):
+                value = [
                     att.encode("ascii", "ignore") if isinstance(att, str) else att
-                    for att in attr
+                    for att in value
                 ]
                 dtype = h5py.special_dtype(vlen=str)
-            cls.__store_h5data(group, attr, attr_name, dtype)
+
+            cls.__store_h5data(group, value, name, dtype)
 
     def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
         """Export the optimization problem to an HDF file.
@@ -1998,6 +2003,7 @@ class OptimizationProblem(BaseProblem):
                         self.__store_attr_h5data(observable, o_subgroup)
 
                 if hasattr(self.solution, "to_dict"):
+                    # TODO: API: initialize with OptimizationResult() and avoid hasattr
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
@@ -2036,6 +2042,14 @@ class OptimizationProblem(BaseProblem):
 
             if opt_pb.SOLUTION_GROUP in h5file:
                 group_data = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
+                if "x_0_as_dict" in h5file:
+                    group_data["x_0_as_dict"] = cls.__h5_group_to_dict(
+                        h5file, "x_0_as_dict"
+                    )
+                if "x_opt_as_dict" in h5file:
+                    group_data["x_opt_as_dict"] = cls.__h5_group_to_dict(
+                        h5file, "x_opt_as_dict"
+                    )
                 attr = OptimizationResult.from_dict(group_data)
                 opt_pb.solution = attr
 
