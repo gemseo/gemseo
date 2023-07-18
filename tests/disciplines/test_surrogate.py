@@ -25,6 +25,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import allclose
 from numpy import array
 from numpy import concatenate
@@ -132,7 +133,7 @@ def test_parallel_execute(dataset):
 
 
 def test_serialize(dataset, tmp_wd):
-    """Check the serialization of a surroate discipline."""
+    """Check the serialization of a surrogate discipline."""
     file_path = "discipline.pkl"
     discipline = SurrogateDiscipline("LinearRegressor", dataset)
     discipline.to_pickle(file_path)
@@ -142,3 +143,20 @@ def test_serialize(dataset, tmp_wd):
 
     for name in discipline.local_data:
         assert allclose(discipline.local_data[name], loaded_discipline.local_data[name])
+
+
+def test_repr_html(dataset):
+    """Check SurrogateDiscipline._repr_html_."""
+    assert SurrogateDiscipline(
+        "LinearRegressor", dataset
+    )._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Surrogate discipline: LinReg_func<br/>"
+        "<ul>"
+        "<li>Dataset name: func</li>"
+        "<li>Dataset size: 9</li>"
+        "<li>Surrogate model: LinearRegressor</li>"
+        "<li>Inputs: x_1, x_2</li>"
+        "<li>Outputs: y_1, y_2</li>"
+        "<li>Linearization mode: auto</li>"
+        "</ul>"
+    )

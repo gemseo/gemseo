@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import pretty_str
@@ -162,3 +163,34 @@ def test_repr_variable_custom_settings(size, expected):
 def test_repr_variable_simplify(index, expected):
     """Check repr_variable() with argument simplify."""
     assert repr_variable("x", index, simplify=True) == expected
+
+
+def test_repr_html():
+    """Check MultiLineString._repr_html_."""
+    mls = MultiLineString()
+    mls.add("a")
+    mls.add("b")
+    mls.indent()
+    mls.add("c")
+    mls.add("d")
+    mls.indent()
+    mls.add("e")
+    mls.dedent()
+    mls.add("f")
+    mls.indent()
+    mls.add("h")
+    assert mls._repr_html_() == REPR_HTML_WRAPPER.format(
+        "a<br/>"
+        "b<br/>"
+        "<ul>"
+        "<li>c</li>"
+        "<li>d</li>"
+        "<ul>"
+        "<li>e</li>"
+        "</ul>"
+        "<li>f</li>"
+        "<ul>"
+        "<li>h</li>"
+        "</ul>"
+        "</ul>"
+    )

@@ -18,9 +18,10 @@ from pathlib import Path
 
 import pytest
 from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 
-def test_str():
+def test_repr():
     """Verify the string representation of a FileManager."""
     manager = FilePathManager(FilePathManager.FileType.FIGURE)
     expected = [
@@ -30,7 +31,22 @@ def test_str():
         "   Default file extension: png",
         f"   Default directory: {Path.cwd()}",
     ]
-    assert str(manager) == "\n".join(expected)
+    assert repr(manager) == str(manager) == "\n".join(expected)
+
+
+def test_repr_html():
+    """Check FileManager._repr_html_."""
+    assert FilePathManager(
+        FilePathManager.FileType.FIGURE, default_directory="."
+    )._repr_html_() == REPR_HTML_WRAPPER.format(
+        "FilePathManager<br/>"
+        "<ul>"
+        "<li>File type: FIGURE</li>"
+        "<li>Default file name: figure</li>"
+        "<li>Default file extension: png</li>"
+        "<li>Default directory: .</li>"
+        "</ul>"
+    )
 
 
 @pytest.fixture(scope="module")

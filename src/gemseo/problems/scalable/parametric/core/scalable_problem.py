@@ -287,25 +287,33 @@ class ScalableProblem:
         """The scalable disciplines."""
         return self.disciplines[1:]
 
-    def __str__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Scalable problem")
-        msg.indent()
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the scalable problem."""
+        mls = MultiLineString()
+        mls.add("Scalable problem")
+        mls.indent()
         for discipline in self.disciplines:
-            msg.add(discipline.name)
-            msg.indent()
-            msg.add("Inputs")
-            msg.indent()
+            mls.add(discipline.name)
+            mls.indent()
+            mls.add("Inputs")
+            mls.indent()
             for name in discipline.input_names:
-                msg.add(f"{name} ({discipline.names_to_sizes[name]})")
+                mls.add(f"{name} ({discipline.names_to_sizes[name]})")
 
-            msg.dedent()
-            msg.add("Outputs")
-            msg.indent()
+            mls.dedent()
+            mls.add("Outputs")
+            mls.indent()
             for name in discipline.output_names:
-                msg.add(f"{name} ({discipline.names_to_sizes[name]})")
+                mls.add(f"{name} ({discipline.names_to_sizes[name]})")
 
-            msg.dedent()
-            msg.dedent()
+            mls.dedent()
+            mls.dedent()
 
-        return str(msg)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()

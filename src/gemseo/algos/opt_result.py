@@ -91,14 +91,22 @@ class OptimizationResult:
     __CONSTRAINTS_GRAD = "constraints_grad"
     __NOT_DICT_KEYS = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
 
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the optimization result."""
+        mls = MultiLineString()
+        mls.add("Optimization result:")
+        mls.indent()
+        mls.add("Design variables: {}", self.x_opt)
+        mls.add("Objective function: {}", self.f_opt)
+        mls.add("Feasible solution: {}", self.is_feasible)
+        return mls
+
     def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Optimization result:")
-        msg.indent()
-        msg.add("Design variables: {}", self.x_opt)
-        msg.add("Objective function: {}", self.f_opt)
-        msg.add("Feasible solution: {}", self.is_feasible)
-        return str(msg)
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     @property
     def _strings(self) -> list[MultiLineString]:

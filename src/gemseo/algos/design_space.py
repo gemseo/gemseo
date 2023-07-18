@@ -86,6 +86,7 @@ from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
@@ -2117,8 +2118,8 @@ class DesignSpace(collections.abc.MutableMapping):
     def __repr__(self) -> str:
         return self.__get_string_representation(False)
 
-    def _repr_html_(self):
-        return self.__get_string_representation(True)
+    def _repr_html_(self) -> str:
+        return REPR_HTML_WRAPPER.format(self.__get_string_representation(True))
 
     def project_into_bounds(
         self,

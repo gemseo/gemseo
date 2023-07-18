@@ -334,13 +334,21 @@ class MDODiscipline(Serializable):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the object."""
+        mls = MultiLineString()
+        mls.add(self.name)
+        mls.indent()
+        mls.add("Inputs: {}", pretty_str(self.get_input_data_names()))
+        mls.add("Outputs: {}", pretty_str(self.get_output_data_names()))
+        return mls
+
     def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add(self.name)
-        msg.indent()
-        msg.add("Inputs: {}", pretty_str(self.get_input_data_names()))
-        msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
-        return str(msg)
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def _init_shared_memory_attrs(self) -> None:
         self._n_calls = Value("i", 0)

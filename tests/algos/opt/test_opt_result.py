@@ -24,6 +24,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 
 
@@ -118,12 +119,26 @@ def test_optimization_result(optimization_result):
 
 
 def test_repr(optimization_result):
-    """Check the string representation of an optimization result."""
-    expected = """Optimization result:
+    """Check OptimizationResult.__repr__."""
+    assert (
+        repr(optimization_result)
+        == """Optimization result:
    Design variables: [0.5]
    Objective function: 0.5
    Feasible solution: False"""
-    assert repr(optimization_result) == str(expected)
+    )
+
+
+def test_repr_html(optimization_result):
+    """Check OptimizationResult._repr_html_."""
+    assert optimization_result._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Optimization result:<br/>"
+        "<ul>"
+        "<li>Design variables: [0.5]</li>"
+        "<li>Objective function: 0.5</li>"
+        "<li>Feasible solution: False</li>"
+        "</ul>"
+    )
 
 
 def test_str(optimization_result):

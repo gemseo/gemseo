@@ -31,6 +31,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import array_equal
 from numpy import inf
@@ -1371,15 +1372,14 @@ def test_export_import_with_none_value(tmp_wd):
 
 def test_repr_html(design_space_2):
     """Check the HTML representation of a design space."""
-    assert (
-        design_space_2._repr_html_()
-        == """Design space: <br/><table>
+    assert design_space_2._repr_html_() == REPR_HTML_WRAPPER.format(
+        """Design space: <br/><table>
     <tr>
-        <th>name</th>
-        <th>lower_bound</th>
-        <th>value</th>
-        <th>upper_bound</th>
-        <th>type</th>
+        <th style='text-align: left;'>name</th>
+        <th style='text-align: left;'>lower_bound</th>
+        <th style='text-align: left;'>value</th>
+        <th style='text-align: left;'>upper_bound</th>
+        <th style='text-align: left;'>type</th>
     </tr>
     <tr>
         <td>x</td>

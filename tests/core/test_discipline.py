@@ -47,6 +47,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import complex128
 from numpy import ndarray
@@ -1296,3 +1297,14 @@ def test_path_serialization(tmp_path):
     state = data.__getstate__()
     data.__setstate__(state)
     assert isinstance(data["path"], Path)
+
+
+def test_repr_html():
+    """Check MDODiscipline._repr_html_."""
+    assert Sellar1()._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Sellar1<br/>"
+        "<ul>"
+        "<li>Inputs: x_local, x_shared, y_2</li>"
+        "<li>Outputs: y_1</li>"
+        "</ul>"
+    )

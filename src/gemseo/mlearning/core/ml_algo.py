@@ -293,17 +293,25 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             fit_transformers: Whether to fit the variable transformers.
         """
 
-    def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
-        msg.indent()
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the algorithm."""
+        mls = MultiLineString()
+        mls.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
+        mls.indent()
         if self.LIBRARY:
-            msg.add("based on the {} library", self.LIBRARY)
+            mls.add("based on the {} library", self.LIBRARY)
         if self.is_trained:
-            msg.add(
+            mls.add(
                 "built from {} learning samples", len(self._learning_samples_indices)
             )
-        return str(msg)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def to_pickle(
         self,

@@ -137,17 +137,25 @@ class SurrogateDiscipline(MDODiscipline):
             msg.add("Jacobian: use finite differences")
         LOGGER.info("%s", msg)
 
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the object."""
+        mls = MultiLineString()
+        mls.add("Surrogate discipline: {}", self.name)
+        mls.indent()
+        mls.add("Dataset name: {}", self.regression_model.learning_set.name)
+        mls.add("Dataset size: {}", len(self.regression_model.learning_set))
+        mls.add("Surrogate model: {}", self.regression_model.__class__.__name__)
+        mls.add("Inputs: {}", pretty_str(self.regression_model.input_names))
+        mls.add("Outputs: {}", pretty_str(self.regression_model.output_names))
+        mls.add("Linearization mode: {}", self.linearization_mode)
+        return mls
+
     def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Surrogate discipline: {}", self.name)
-        msg.indent()
-        msg.add("Dataset name: {}", self.regression_model.learning_set.name)
-        msg.add("Dataset size: {}", len(self.regression_model.learning_set))
-        msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
-        msg.add("Inputs: {}", pretty_str(self.regression_model.input_names))
-        msg.add("Outputs: {}", pretty_str(self.regression_model.output_names))
-        msg.add("Linearization mode: {}", self.linearization_mode)
-        return str(msg)
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def _initialize_grammars(
         self,

@@ -1871,10 +1871,12 @@ class OptimizationProblem(BaseProblem):
             x_opt, f_opt, c_opt, c_opt_d = self.__get_optimum_feas(feas_x, feas_f)
         return f_opt, x_opt, is_feas, c_opt, c_opt_d
 
-    def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Optimization problem:")
-        msg.indent()
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the optimization problem."""
+        mls = MultiLineString()
+        mls.add("Optimization problem:")
+        mls.indent()
 
         # objective representation
         if self.minimize_objective or self.use_standardized_objective:
@@ -1885,24 +1887,30 @@ class OptimizationProblem(BaseProblem):
             start = 1
 
         objective_function = [line for line in repr(self.objective).split("\n") if line]
-        msg.add(optimize_verb + objective_function[0][start:])
+        mls.add(optimize_verb + objective_function[0][start:])
         for line in objective_function[1:]:
-            msg.add(" " * len(optimize_verb) + line)
+            mls.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add("with respect to {}", pretty_str(self.design_space.variable_names))
+        mls.add("with respect to {}", pretty_str(self.design_space.variable_names))
         if self.has_constraints():
-            msg.add("subject to constraints:")
-            msg.indent()
+            mls.add("subject to constraints:")
+            mls.indent()
             for constraints in self.get_ineq_constraints():
                 constraints = [cstr for cstr in str(constraints).split("\n") if cstr]
                 for constraint in constraints:
-                    msg.add(constraint)
+                    mls.add(constraint)
             for constraints in self.get_eq_constraints():
                 constraints = [cstr for cstr in str(constraints).split("\n") if cstr]
                 for constraint in constraints:
-                    msg.add(constraint)
-        return str(msg)
+                    mls.add(constraint)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     @staticmethod
     def __store_h5data(

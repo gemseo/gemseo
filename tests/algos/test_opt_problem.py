@@ -49,6 +49,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
@@ -1866,3 +1867,31 @@ def test_optimization_result_save_nested_dict(tmp_wd):
     problem = OptimizationProblem.from_hdf("problem.hdf5")
     assert compare_dict_of_arrays(x_0_as_dict, problem.solution.x_0_as_dict)
     assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
+
+
+def test_repr_html():
+    """Check the string and HTML representation of an optimization problem."""
+    problem = Power2()
+    assert (
+        repr(problem)
+        == str(problem)
+        == """Optimization problem:
+   minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2
+   with respect to x
+   subject to constraints:
+      ineq1(x): 0.5 - x[0]**3 <= 0.0
+      ineq2(x): 0.5 - x[1]**3 <= 0.0
+      eq(x): 0.9 - x[2]**3 == 0.0"""
+    )
+    assert problem._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Optimization problem:<br/>"
+        "<ul>"
+        "<li>minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2</li>"
+        "<li>with respect to x</li><li>subject to constraints:</li>"
+        "<ul>"
+        "<li>ineq1(x): 0.5 - x[0]**3 <= 0.0</li>"
+        "<li>ineq2(x): 0.5 - x[1]**3 <= 0.0</li>"
+        "<li>eq(x): 0.9 - x[2]**3 == 0.0</li>"
+        "</ul>"
+        "</ul>"
+    )
