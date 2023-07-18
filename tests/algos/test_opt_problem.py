@@ -48,6 +48,7 @@ from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
@@ -1853,3 +1854,15 @@ def test_is_multi_objective():
 
     problem.objective.output_names = ["x", "x"]
     assert not problem.is_mono_objective
+
+
+def test_optimization_result_save_nested_dict(tmp_wd):
+    """Check that the nested dictionaries of OptimizationResult are correctly saved."""
+    problem = Power2()
+    execute_algo(problem, "SLSQP")
+    problem.to_hdf("problem.hdf5")
+    x_0_as_dict = problem.solution.x_0_as_dict
+    x_opt_as_dict = problem.solution.x_opt_as_dict
+    problem = OptimizationProblem.from_hdf("problem.hdf5")
+    assert compare_dict_of_arrays(x_0_as_dict, problem.solution.x_0_as_dict)
+    assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
