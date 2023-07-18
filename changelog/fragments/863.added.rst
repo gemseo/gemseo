@@ -1,0 +1,1 @@
+``ScalableProblem.create_quadratic_programming_problem`` handles the case where uncertain vectors are added in the coupling equations.
