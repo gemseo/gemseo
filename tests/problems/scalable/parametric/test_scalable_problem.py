@@ -137,3 +137,43 @@ def test_create_quadratic_optimization_problem_with_coupling(scalable_problem):
     )
     execute_algo(qp_problem, algo_name="lhs", n_samples=3, algo_type="doe")
     assert qp_problem.database.get_function_history("coupling").shape == (3, 2)
+
+
+def test_create_quadratic_optimization_problem_uncertainty_default(scalable_problem):
+    """Check quadratic problem with uncertainties."""
+    qp_problem = scalable_problem.create_quadratic_programming_problem(
+        covariance_matrices=(array([[1]]), array([[1.25]]))
+    )
+    x = array([1.0, 2.0, 3.0])
+    assert_almost_equal(qp_problem.objective(x), array(5.839), decimal=3)
+    assert_almost_equal(qp_problem.constraints[0](x), array([3.288, 2.367]), decimal=3)
+
+
+@pytest.mark.parametrize(
+    "options,expected",
+    [
+        ({}, [3.288, 2.367]),
+        ({"margin_factor": 3.0}, [4.288, 3.501]),
+        ({"use_margin": False}, [3.614, 2.737]),
+        ({"use_margin": False, "tolerance": 0.1}, [2.57, 1.553]),
+    ],
+)
+def test_robust_quadratic_optimization(scalable_problem, options, expected):
+    """Check quadratic optimization problem with uncertainties."""
+    qp_problem = scalable_problem.create_quadratic_programming_problem(
+        covariance_matrices=(array([[1]]), array([[1.25]])), **options
+    )
+    x = array([1.0, 2.0, 3.0])
+    assert_almost_equal(qp_problem.objective(x), array(5.839), decimal=3)
+    assert_almost_equal(qp_problem.constraints[0](x), array(expected), decimal=3)
+
+
+def test_compute_y(scalable_problem):
+    """Check the method compute_y."""
+    assert_almost_equal(
+        scalable_problem.compute_y(array([1, 2, 3])), array([-1.5553805, -0.3679164])
+    )
+    assert_almost_equal(
+        scalable_problem.compute_y(array([1, 2, 3]), array([0.1, 0.2])),
+        array([-1.4553555, -0.1492858]),
+    )

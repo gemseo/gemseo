@@ -177,7 +177,7 @@ class ScalableProblem:
 
             row_start = row_end
 
-        inv_C = inv(C)  # noqa: N806
+        self._inv_C = inv(C)  # noqa: N806
 
         # Define the matrices \alpha and \beta.
         D = zeros((self._p, d))  # noqa: N806
@@ -191,8 +191,8 @@ class ScalableProblem:
             row_start = row_end
             col_start = col_end
 
-        self.__alpha = inv_C @ concatenate(a_i)
-        self.__beta = -inv_C @ D
+        self.__alpha = self._inv_C @ concatenate(a_i)
+        self.__beta = -self._inv_C @ D
 
         q = quantile(
             [self.compute_y(x).min() for x in rand(self.__N_SAMPLES, sum(d_i) + d_0)],
@@ -266,16 +266,23 @@ class ScalableProblem:
 
         self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
 
-    def compute_y(self, x: NDArray[float]) -> NDArray[float]:
+    def compute_y(
+        self, x: NDArray[float], u: NDArray[float] | None = None
+    ) -> NDArray[float]:
         r"""Compute the coupling vector :math:`y`.
 
         Args:
             x: A design point.
+            u: An uncertain point, if any.
 
         Returns:
-            The coupling vector associated with the design point :math:`x`.
+            The coupling vector associated with the design point :math:`x`
+            and the uncertain vector :math:`U` if any.
         """
-        return self.__alpha + self.__beta @ x
+        y = self.__alpha + self.__beta @ x
+        if u is not None:
+            y += self._inv_C @ u
+        return y
 
     @property
     def main_discipline(self) -> _MAIN_DISCIPLINE_CLASS:
