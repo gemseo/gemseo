@@ -315,9 +315,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             A random number generator.
         """
         self.__default_seed += 1
-        if seed is None:
-            seed = self.__default_seed
-        return default_rng(seed)
+        return default_rng(self.__default_seed if seed is None else seed)
 
     def _train_algo(self, samples: Sequence[int] | None) -> None:
         """Train the original algorithm if necessary.

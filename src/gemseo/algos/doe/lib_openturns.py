@@ -290,14 +290,14 @@ class OpenTURNS(DOELibrary):
             n_samples: The number of samples.
                 If None, set from the options.
             seed: The seed to be used.
-                If None, use :attr:`.seed`.
+                If ``None``, use :attr:`.seed`.
             **options: The options for the DOE algorithm, see associated JSON file.
 
         Returns:
             The samples for the DOE.
         """
         self.seed += 1
-        openturns.RandomGenerator.SetSeed(seed or self.seed)
+        openturns.RandomGenerator.SetSeed(self.seed if seed is None else seed)
 
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
             return self.__generate_lhs(n_samples, dimension, **options)

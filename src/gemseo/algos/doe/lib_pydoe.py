@@ -209,9 +209,10 @@ class PyDOE(DOELibrary):
         """
         self.seed += 1
         if self.algo_name == self.PYDOE_LHS:
+            seed = options[self.SEED]
             return pyDOE.lhs(
                 options[self.DIMENSION],
-                random_state=RandomState(options[self.SEED] or self.seed),
+                random_state=RandomState(self.seed if seed is None else seed),
                 samples=options["n_samples"],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),
