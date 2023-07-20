@@ -40,11 +40,13 @@ from numpy import ascontiguousarray
 from numpy import complex128
 from numpy import concatenate
 from numpy import float64
+from numpy import hstack
 from numpy import int32
 from numpy import int64
 from numpy import ndarray
 from numpy import uint8
 from numpy import vstack
+from pandas import MultiIndex
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.core.discipline_data import Data
@@ -315,61 +317,44 @@ class AbstractCache(ABCMapping):
         """
         dataset_name = name or self.name
         if categorize:
-            dataset = IODataset(dataset_name=dataset_name)
-            input_group = dataset.INPUT_GROUP
-            output_group = dataset.OUTPUT_GROUP
+            dataset_class = IODataset
+            input_group = IODataset.INPUT_GROUP
+            output_group = IODataset.OUTPUT_GROUP
         else:
-            dataset = Dataset(dataset_name=dataset_name)
-            input_group = output_group = dataset.DEFAULT_GROUP
+            dataset_class = Dataset
+            input_group = output_group = Dataset.DEFAULT_GROUP
 
-        self.__fill_dataset_by_group(
-            dataset,
-            input_names or self.input_names,
-            input_group,
-            is_output_group=False,
+        data = []
+        columns = []
+        for variable_names, group_name, is_output_group in zip(
+            [input_names or self.input_names, output_names or self.output_names],
+            [input_group, output_group],
+            [False, True],
+        ):
+            for variable_name in variable_names:
+                cache_entries = []
+                for cache_entry in self:
+                    if cache_entry.outputs:
+                        if is_output_group:
+                            selected_cache_entry = cache_entry.outputs[variable_name]
+                        else:
+                            selected_cache_entry = cache_entry.inputs[variable_name]
+                        cache_entries.append(selected_cache_entry)
+
+                new_data = vstack(cache_entries)
+                data.append(new_data)
+                columns.extend(
+                    [(group_name, variable_name, i) for i in range(new_data.shape[1])]
+                )
+
+        return dataset_class(
+            hstack(data),
+            dataset_name=dataset_name,
+            columns=MultiIndex.from_tuples(
+                columns,
+                names=dataset_class.COLUMN_LEVEL_NAMES,
+            ),
         )
-        self.__fill_dataset_by_group(
-            dataset,
-            output_names or self.output_names,
-            output_group,
-            is_output_group=True,
-        )
-
-        return dataset
-
-    def __fill_dataset_by_group(
-        self,
-        dataset: Dataset,
-        names: list[str],
-        group: str,
-        is_output_group: bool,
-    ) -> None:
-        """Fill a group of a dataset with cache variables.
-
-        If the same variable name occurs in the input and the output,
-        suffix the output name to make it unique.
-
-        Args:
-            dataset: The dataset to be filled.
-            names: The variable names of the group to be added to the dataset.
-            group: The group of variables to be added to the dataset.
-            is_output_group: Whether ``group`` is a group of output variables.
-        """
-        for name in names:
-            cache_entries = []
-            for cache_entry in self:
-                if cache_entry.outputs:
-                    if is_output_group:
-                        selected_cache_entry = cache_entry.outputs[name]
-                    else:
-                        selected_cache_entry = cache_entry.inputs[name]
-                    cache_entries.append(selected_cache_entry)
-            data = vstack(cache_entries)
-            if is_output_group:
-                final_name = name
-                dataset.add_variable(final_name, data, group)
-            else:
-                dataset.add_variable(name, data, group)
 
 
 class AbstractFullCache(AbstractCache):
