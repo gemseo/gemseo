@@ -839,6 +839,23 @@ def test_get_variables_indexes(design_space, names, expected):
     assert (design_space.get_variables_indexes(names) == array(expected)).all()
 
 
+@pytest.mark.parametrize(
+    ["use_design_space_order", "expected"],
+    [(True, array([0, 1, 2, 3, 4, 5])), (False, array([3, 4, 0, 1, 2, 5]))],
+)
+def test_get_variables_indexes_in_user_order(
+    design_space, use_design_space_order, expected
+):
+    """Test the variables indexes getter in user order."""
+    design_space.filter(["x10", "x11", "x12"])
+    assert_equal(
+        design_space.get_variables_indexes(
+            ["x11", "x10", "x12"], use_design_space_order
+        ),
+        expected,
+    )
+
+
 def test_gradient_normalization(design_space):
     """Check that the normalization of the gradient performs well."""
     design_space.filter(["x18", "x19"])
