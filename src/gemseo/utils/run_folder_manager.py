@@ -18,7 +18,6 @@ from __future__ import annotations
 from ast import literal_eval
 from multiprocessing import Lock
 from multiprocessing import Value
-from os import listdir
 from pathlib import Path
 from uuid import uuid1
 
@@ -110,13 +109,21 @@ class RunFolderManager:
     def __get_max_outdir(self) -> int:
         """Get the maximum current index of output folders.
 
+        Different files or directories can be contained in the ``output_folder_basepath``.
+
         Returns:
              The maximum index in the output folders.
         """
-        outs = listdir(self.__output_folder_basepath)
-        if not outs:
+        # Only keep directories which are a number.
+        out_dirs = [
+            path.name
+            for path in self.__output_folder_basepath.iterdir()
+            if path.is_dir() and path.name.isdigit()
+        ]
+
+        if not out_dirs:
             return 0
-        return max(literal_eval(n) for n in outs)
+        return max(literal_eval(n) for n in out_dirs)
 
     def __check_base_path_on_windows(self) -> None:
         """Check that the base path can be used.

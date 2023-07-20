@@ -231,7 +231,7 @@ class DiscFromExe(MDODiscipline):
         self.input_filename = input_filename
         self.output_filename = output_filename
         self.executable_command = executable_command
-        self.__use_shell = use_shell
+        self._use_shell = use_shell
         if parse_outfile_method == Parser.TEMPLATE:
             self.parse_outfile = parse_outfile
         elif parse_outfile_method == Parser.KEY_VALUE:
@@ -288,14 +288,14 @@ class DiscFromExe(MDODiscipline):
             self._in_lines,
         )
 
-        if self.__use_shell:
+        if self._use_shell:
             executable_command = self.executable_command
         else:
             executable_command = self.executable_command.split()
 
         err = subprocess.call(
             executable_command,
-            shell=self.__use_shell,
+            shell=self._use_shell,
             stderr=subprocess.STDOUT,
             cwd=out_dir,
         )
