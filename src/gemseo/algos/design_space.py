@@ -78,6 +78,7 @@ from numpy import string_
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
+from numpy._typing import NDArray
 from strenum import StrEnum
 
 from gemseo.algos.opt_result import OptimizationResult
@@ -277,9 +278,20 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable to be removed.
         """
         self.__norm_data_is_computed = False
-        self.dimension -= self.variable_sizes[name]
+        size = self.variable_sizes.pop(name)
+        self.dimension -= size
+        del self.__names_to_indices[name]
+        for variable_name in reversed(self.variable_names):
+            if variable_name == name:
+                break
+
+            indices = self.__names_to_indices[variable_name]
+            # N.B. the steps of the ranges of indices are assumed equal to 1
+            self.__names_to_indices[variable_name] = range(
+                indices.start - size, indices.stop - size
+            )
+
         self.variable_names.remove(name)
-        del self.variable_sizes[name]
         del self.variable_types[name]
         del self.normalize[name]
         if name in self._lower_bounds:
@@ -1173,23 +1185,26 @@ class DesignSpace(collections.abc.MutableMapping):
     def get_variables_indexes(
         self,
         variable_names: Iterable[str],
-    ) -> ndarray:
-        """Return the indexes of a design array corresponding to the variables names.
+        use_design_space_order: bool = True,
+    ) -> NDArray[int]:
+        """Return the indexes of a design array corresponding to variables names.
 
         Args:
             variable_names: The names of the variables.
+            use_design_space_order: Whether to order the indexes according to
+                the order of the variables names in the design space.
+                Otherwise the indexes will be ordered in the same order as
+                the variables names were required.
 
         Returns:
             The indexes of a design array corresponding to the variables names.
         """
-        indexes = list()
-        index = 0
-        for name in self.variable_names:
-            var_size = self.get_size(name)
-            if name in variable_names:
-                indexes.extend(range(index, index + var_size))
-            index += var_size
-        return array(indexes)
+        if use_design_space_order:
+            names = [name for name in self.variable_names if name in variable_names]
+        else:
+            names = variable_names
+
+        return concatenate([self.__names_to_indices[name] for name in names])
 
     def __update_normalization_vars(self) -> None:
         """Compute the inner attributes used for normalization and unnormalization."""
