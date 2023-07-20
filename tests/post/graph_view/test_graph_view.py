@@ -76,3 +76,10 @@ def test_clean_up(tmp_wd, clean_up):
     """Check the argument clean_up."""
     GraphView().visualize(show=False, clean_up=clean_up)
     assert Path("graph_view.dot").exists() is not clean_up
+
+
+def test_repr_html():
+    """Check _repr_html_."""
+    graph = GraphView()
+    graph.edge("A", "B", "foo")
+    assert "<title>B</title>" in graph._repr_html_()

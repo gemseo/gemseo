@@ -132,3 +132,6 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
             view=show,
             cleanup=clean_up,
         )
+
+    def _repr_html_(self) -> str:
+        return self._repr_image_svg_xml()
