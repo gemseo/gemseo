@@ -86,6 +86,7 @@ from numpy import argmin
 from numpy import array
 from numpy import array_equal
 from numpy import bytes_
+from numpy import hstack
 from numpy import inf
 from numpy import insert
 from numpy import isnan
@@ -98,6 +99,7 @@ from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
 from numpy.typing import NDArray
+from pandas import MultiIndex
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
@@ -118,7 +120,6 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -2130,18 +2131,18 @@ class OptimizationProblem(BaseProblem):
         # Set the different groups
         if categorize:
             if opt_naming:
-                dataset = OptimizationDataset(dataset_name=dataset_name)
-                input_group = dataset.DESIGN_GROUP
-                output_group = dataset.FUNCTION_GROUP
-                gradient_group = dataset.GRADIENT_GROUP
+                dataset_class = OptimizationDataset
+                input_group = OptimizationDataset.DESIGN_GROUP
+                output_group = OptimizationDataset.FUNCTION_GROUP
+                gradient_group = OptimizationDataset.GRADIENT_GROUP
             else:
-                dataset = IODataset(dataset_name=dataset_name)
-                input_group = dataset.INPUT_GROUP
-                output_group = dataset.OUTPUT_GROUP
-                gradient_group = dataset.GRADIENT_GROUP
+                dataset_class = IODataset
+                input_group = IODataset.INPUT_GROUP
+                output_group = IODataset.OUTPUT_GROUP
+                gradient_group = IODataset.GRADIENT_GROUP
         else:
-            dataset = Dataset(dataset_name=dataset_name)
-            input_group = output_group = gradient_group = dataset.DEFAULT_GROUP
+            dataset_class = Dataset
+            input_group = output_group = gradient_group = Dataset.DEFAULT_GROUP
 
         # Add database inputs
         input_names = self.design_space.variable_names
@@ -2149,107 +2150,84 @@ class OptimizationProblem(BaseProblem):
         input_history = array(self.database.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
-        offset = int(opt_naming)
+        offset = int(categorize & opt_naming)
         for input_value in input_values:
             _positions = where((input_history == input_value).all(axis=1))[0]
             positions.extend((_positions + offset).tolist())
 
-        input_history = split_array_to_dict_of_arrays(
-            input_history, names_to_sizes, input_names
-        )
-        for input_name, input_value in input_history.items():
-            dataset.add_variable(input_name, input_value.real, input_group)
+        data = [input_history.real]
+        columns = [
+            (input_group, name, index)
+            for name in input_names
+            for index in range(names_to_sizes[name])
+        ]
 
         # Add database outputs
         variable_names = self.database.get_function_names()
         output_names = [name for name in variable_names if name not in input_names]
-
-        self.__add_database_outputs(
-            dataset,
-            output_names,
-            n_samples,
-            output_group,
+        self.__add_data_to_database(
+            data, columns, output_names, n_samples, output_group, False
         )
 
         # Add database output gradients
         if export_gradients:
-            self.__add_database_output_gradients(
-                dataset,
-                output_names,
-                n_samples,
-                gradient_group,
+            self.__add_data_to_database(
+                data, columns, output_names, n_samples, gradient_group, True
             )
 
-        return dataset.get_view(indices=positions)
+        return dataset_class(
+            hstack(data),
+            dataset_name=dataset_name,
+            columns=MultiIndex.from_tuples(
+                columns,
+                names=dataset_class.COLUMN_LEVEL_NAMES,
+            ),
+        ).get_view(indices=positions)
 
-    def __add_database_outputs(
+    def __add_data_to_database(
         self,
-        dataset: Dataset,
+        data: list[NDArray[float]],
+        columns: list[tuple[str, str, int]],
         output_names: Iterable[str],
         n_samples: int,
-        output_group: str,
-    ) -> None:
-        """Add the database outputs to the dataset.
-
-        Args:
-            dataset: The dataset where the outputs will be added.
-            output_names: The names of the outputs in the database.
-            n_samples: The total number of samples, including possible
-                points where the evaluation failed.
-            output_group: The dataset group where the variables will
-                be added.
-        """
-        for output_name in output_names:
-            output_history, input_history = self.database.get_function_history(
-                output_name, with_x_vect=True
-            )
-            output_history = self.__replace_missing_values(
-                output_history, input_history, array(self.database.get_x_vect_history())
-            )
-
-            dataset.add_variable(
-                output_name,
-                output_history.reshape((n_samples, -1)).real,
-                output_group,
-            )
-
-    def __add_database_output_gradients(
-        self,
-        dataset: Dataset,
-        output_names: Iterable[str],
-        n_samples: int,
-        gradient_group: str,
+        group: str,
+        store_gradient: bool,
     ) -> None:
         """Add the database output gradients to the dataset.
 
         Args:
-            dataset: The dataset where the outputs will be added.
+            data: The sequence of data arrays to be augmented with the output data.
+            columns: The multi-index columns to be augmented with the output names.
             output_names: The names of the outputs in the database.
-            n_samples: The total number of samples, including possible
-                points where the evaluation failed.
-            gradient_group: The dataset group where the variables will
-                be added.
+            n_samples: The total number of samples,
+                including possible points where the evaluation failed.
+            group: The dataset group where the variables will be added.
+            store_gradient: Whether the variable of interest
+                is the gradient of the output.
         """
+        x_vect_history = array(self.database.get_x_vect_history())
         for output_name in output_names:
-            if self.database.check_output_history_is_empty(
-                Database.get_gradient_name(output_name)
-            ):
-                continue
+            if store_gradient:
+                function_name = Database.get_gradient_name(output_name)
+                if self.database.check_output_history_is_empty(function_name):
+                    continue
+            else:
+                function_name = output_name
 
-            gradient_history, input_history = self.database.get_gradient_history(
-                output_name, with_x_vect=True
+            history, input_history = self.database.get_function_history(
+                function_name=function_name, with_x_vect=True
             )
-            gradient_history = self.__replace_missing_values(
-                gradient_history,
-                input_history,
-                array(self.database.get_x_vect_history()),
+            history = (
+                self.__replace_missing_values(
+                    history,
+                    input_history,
+                    x_vect_history,
+                )
+                .reshape((n_samples, -1))
+                .real
             )
-
-            dataset.add_variable(
-                Database.get_gradient_name(output_name),
-                gradient_history.reshape(n_samples, -1).real,
-                gradient_group,
-            )
+            data.append(history)
+            columns.extend([(group, function_name, i) for i in range(history.shape[1])])
 
     @staticmethod
     def __replace_missing_values(

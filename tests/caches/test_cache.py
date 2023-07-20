@@ -36,6 +36,7 @@ from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
@@ -609,8 +610,9 @@ def test_setitem_empty_data(simple_cache, caplog):
 @pytest.mark.parametrize("first_jacobian", [None, {"y": {"x": array([[4.0]])}}])
 @pytest.mark.parametrize("second_jacobian", [None, {"y": {"x": array([[4.0]])}}])
 @pytest.mark.parametrize("first_outputs", [None, {"y": array([3.0])}])
+@pytest.mark.parametrize("categorize", [False, True])
 def test_export_to_dataset_and_entries(
-    simple_cache, first_jacobian, second_jacobian, first_outputs
+    simple_cache, first_jacobian, second_jacobian, first_outputs, categorize
 ):
     """Check exporting a simple cache to a dataset and entries.
 
@@ -621,8 +623,15 @@ def test_export_to_dataset_and_entries(
     second_outputs = {"y": array([2.0])}
     simple_cache[first_inputs] = (first_outputs, first_jacobian)
     simple_cache[second_inputs] = (second_outputs, second_jacobian)
-    dataset = simple_cache.to_dataset()
+    dataset = simple_cache.to_dataset(categorize=categorize)
     assert len(dataset) == 1
+    if categorize:
+        assert isinstance(dataset, IODataset)
+        assert "x" in dataset.input_names
+        assert "y" in dataset.output_names
+    else:
+        assert dataset.group_names == [dataset.PARAMETER_GROUP]
+
     assert dataset.get_view(variable_names="x").to_numpy()[0, 0] == 1.0
     assert dataset.get_view(variable_names="y").to_numpy()[0, 0] == 2.0
 

@@ -129,7 +129,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     misc: dict[str, Any]
     """Miscellaneous information specific to the dataset, and not to an entry."""
 
-    _COLUMN_LEVEL_NAMES: Final[tuple[str, str, str]] = (
+    COLUMN_LEVEL_NAMES: Final[tuple[str, str, str]] = (
         "GROUP",
         "VARIABLE",
         "COMPONENT",
@@ -181,11 +181,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             columns = MultiIndex(
                 levels=[[], [], []],
                 codes=[[], [], []],
-                names=self._COLUMN_LEVEL_NAMES,
+                names=self.COLUMN_LEVEL_NAMES,
             )
         super().__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
+        self._reindex()
         self.name = dataset_name or self.__class__.__name__
         self.misc = {}
 
@@ -699,7 +700,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def __transform_single_index_column_to_multi_index_column(self) -> None:
         """Transform the tuple columns into multi-index columns."""
         self.columns = MultiIndex.from_tuples(
-            self.columns, names=self._COLUMN_LEVEL_NAMES
+            self.columns, names=self.COLUMN_LEVEL_NAMES
         )
 
     @classmethod
@@ -751,7 +752,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 ]
             )
 
-        index = MultiIndex.from_tuples(columns, names=cls._COLUMN_LEVEL_NAMES)
+        index = MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
         dataset = cls(data, columns=index)
         dataset._reindex()
         return dataset
@@ -829,7 +830,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
 
         dataset = cls(dataframe)
-        dataset.columns = dataset.columns.set_names(cls._COLUMN_LEVEL_NAMES)
+        dataset.columns = dataset.columns.set_names(cls.COLUMN_LEVEL_NAMES)
         dataset._reindex()
         return dataset
 
