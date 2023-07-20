@@ -1,0 +1,3 @@
+The ``RunFolderManager`` can now work with a non-empty ``output_folder_basepath``
+when using ``folders_iter = FoldersIter.NUMBERED``.
+Their name can be different from a number.
