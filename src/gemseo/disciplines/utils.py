@@ -64,7 +64,7 @@ def get_all_inputs(
     Returns:
         The names of the inputs.
     """
-    return list(
+    return sorted(
         set.union(
             *(
                 set(discipline.get_input_data_names())
@@ -90,7 +90,7 @@ def get_all_outputs(
     Returns:
         The names of the outputs.
     """
-    return list(
+    return sorted(
         set.union(
             *(
                 set(discipline.get_output_data_names())
