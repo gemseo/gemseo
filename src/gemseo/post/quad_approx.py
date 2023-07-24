@@ -27,17 +27,18 @@ from math import ceil
 import numpy as np
 from matplotlib import pyplot
 from matplotlib import pyplot as plt
+from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 from numpy import array
+from numpy import e
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -141,7 +142,7 @@ class QuadApprox(OptPostProcessor):
             hessian,
             cmap=PARULA,
             interpolation="nearest",
-            norm=SymLogNorm(linthresh=linear_threshold, vmin=-vmax, vmax=vmax),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold, base=e),
         )
         ticks = arange(self.opt_problem.dimension)
         design_variable_names = self._get_design_variable_names(simplify=True)

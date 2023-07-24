@@ -23,12 +23,14 @@ from math import ceil
 from typing import Sequence
 
 from matplotlib import pyplot
+from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
 from numpy import arange
 from numpy import atleast_2d
 from numpy import atleast_3d
 from numpy import diff
+from numpy import e
 from numpy import flip
 from numpy import interp
 from numpy import max as np_max
@@ -39,7 +41,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 
 class ConstraintsHistory(OptPostProcessor):
@@ -160,7 +161,7 @@ class ConstraintsHistory(OptPostProcessor):
                 cmap=cmap,
                 interpolation="nearest",
                 aspect="auto",
-                norm=SymLogNorm(linthresh=1.0, vmin=-maximum, vmax=maximum),
+                norm=SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0, base=e),
                 extent=[-0.5, n_iterations - 0.5, -maximum - margin, maximum + margin],
                 alpha=0.6,
             )

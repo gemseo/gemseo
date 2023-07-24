@@ -24,8 +24,10 @@ from typing import Sequence
 
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
+from numpy import e
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -33,7 +35,6 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ class ObjConstrHist(OptPostProcessor):
             interpolation="nearest",
             aspect="auto",
             extent=[-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin],
-            norm=SymLogNorm(linthresh=1.0, vmin=-c_max, vmax=c_max),
+            norm=SymLogNorm(vmin=-c_max, vmax=c_max, linthresh=1.0, base=e),
         )
         # 2.c. Add vertical labels with constraint violation information.
         constraint_names = np.concatenate((ineq_names, eq_names))

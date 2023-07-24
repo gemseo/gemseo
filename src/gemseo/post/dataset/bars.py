@@ -20,7 +20,6 @@
 r"""Draw a bar plot from a :class:`.Dataset`."""
 from __future__ import annotations
 
-import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import arange
@@ -28,6 +27,7 @@ from numpy import linspace
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.compatibility.matplotlib import get_color_map
 
 
 class BarPlot(DatasetPlot):
@@ -55,8 +55,8 @@ class BarPlot(DatasetPlot):
         n_series, n_features = all_data.shape
         series_names = self.dataset.index
         if not self.color:
-            colormap = plt.cm.get_cmap(self.colormap)
-            self.color = [colormap(color) for color in linspace(0, 1, n_series)]
+            color_map = get_color_map(self.colormap)
+            self.color = [color_map(color) for color in linspace(0, 1, n_series)]
 
         fig, axes = self._get_figure_and_axes(fig, axes)
         axes.tick_params(labelsize=self.font_size)
