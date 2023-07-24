@@ -68,7 +68,7 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.core.execution_sequence import SerialExecSequence
+    from gemseo.core.execution_sequence import AtomicExecSequence
 
 LOGGER = logging.getLogger(__name__)
 
@@ -716,7 +716,7 @@ class MDODiscipline(Serializable):
         """
         return get_sub_disciplines(self._disciplines, recursive)
 
-    def get_expected_workflow(self) -> SerialExecSequence:
+    def get_expected_workflow(self) -> AtomicExecSequence:
         """Return the expected execution sequence.
 
         This method is used for the XDSM representation.
@@ -734,7 +734,7 @@ class MDODiscipline(Serializable):
         # avoid circular dependency
         from gemseo.core.execution_sequence import ExecutionSequenceFactory
 
-        return ExecutionSequenceFactory.serial(self)
+        return ExecutionSequenceFactory.atom(self)
 
     def get_expected_dataflow(
         self,

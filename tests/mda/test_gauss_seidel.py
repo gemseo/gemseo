@@ -19,13 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from copy import deepcopy
+
 import pytest
 from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
@@ -60,6 +65,60 @@ def test_expected_workflow():
     expected = (
         "{MDAGaussSeidel(None), [MDODiscipline(None), "
         "MDODiscipline(None), MDODiscipline(None), ], }"
+    )
+    assert str(mda.get_expected_workflow()) == expected
+
+
+def test_expected_workflow_with_adapter():
+    discs = create_discipline(
+        [
+            "SobieskiPropulsion",
+            "SobieskiStructure",
+            "SobieskiAerodynamics",
+            "SobieskiMission",
+        ]
+    )
+    design_space = SobieskiProblem().design_space
+    scn_propu = create_scenario(
+        discs,
+        "DisciplinaryOpt",
+        "y_4",
+        design_space=deepcopy(design_space).filter("x_3"),
+        name="PropulsionScenario",
+    )
+    adapter_propu = MDOScenarioAdapter(scn_propu, ["x_1", "x_2"], ["x_3"])
+    scn_aero = create_scenario(
+        discs,
+        "DisciplinaryOpt",
+        "y_4",
+        design_space=deepcopy(design_space).filter("x_2"),
+        name="AeroScenario",
+    )
+    adapter_aero = MDOScenarioAdapter(scn_aero, ["x_1", "x_3"], ["x_2"])
+    scn_struct = create_scenario(
+        discs,
+        "DisciplinaryOpt",
+        "y_4",
+        design_space=deepcopy(design_space).filter("x_1"),
+        name="StructureScenario",
+    )
+    adapter_struct = MDOScenarioAdapter(scn_struct, ["x_2", "x_3"], ["x_1"])
+    adapters = [adapter_propu, adapter_aero, adapter_struct]
+
+    mda = MDAGaussSeidel(adapters)
+
+    expected = (
+        "{MDAGaussSeidel(None), ["
+        + "{PropulsionScenario(None), [SobieskiPropulsion(None), "
+        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        + "SobieskiMission(None), ], }, "
+        + "{AeroScenario(None), [SobieskiPropulsion(None), "
+        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        + "SobieskiMission(None), ], }, "
+        + "{StructureScenario(None), [SobieskiPropulsion(None), "
+        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        + "SobieskiMission(None), ], }, "
+        + "], }"
     )
     assert str(mda.get_expected_workflow()) == expected
 
