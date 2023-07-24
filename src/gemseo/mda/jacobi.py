@@ -166,9 +166,14 @@ class MDAJacobi(MDA):
             self.local_data.update(discipline.get_output_data())
 
     def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)
         if self.n_processes > 1:
-            sub_workflow = ExecutionSequenceFactory.parallel(self.disciplines)
+            sub_workflow = ExecutionSequenceFactory.parallel()
+        else:
+            sub_workflow = ExecutionSequenceFactory.serial()
+
+        for discipline in self.disciplines:
+            sub_workflow.extend(discipline.get_expected_workflow())
+
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self) -> None:
