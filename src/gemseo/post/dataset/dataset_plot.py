@@ -42,6 +42,7 @@ from typing import Union
 from matplotlib.axes import Axes
 from numpy import linspace
 
+from gemseo.utils.compatibility.matplotlib import get_color_map
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -431,9 +432,8 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             n_items: The number of items to be plotted.
         """
-        colormap = plt.cm.get_cmap(self.colormap)
-        color = [colormap(color) for color in linspace(0, 1, n_items)]
-        self.color = self.color or color
+        color_map = get_color_map(self.colormap)
+        self.color = self.color or [color_map(c) for c in linspace(0, 1, n_items)]
         if isinstance(self.color, str):
             self.color = [self.color] * n_items
 

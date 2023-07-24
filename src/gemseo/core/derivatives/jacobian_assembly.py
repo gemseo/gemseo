@@ -43,12 +43,12 @@ from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import norm
 from scipy.sparse import bmat
+from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import eye
 from scipy.sparse import spmatrix
 from scipy.sparse import vstack
-from scipy.sparse.csc import csc_matrix
 from scipy.sparse.linalg import factorized
 from scipy.sparse.linalg import LinearOperator
 from strenum import StrEnum

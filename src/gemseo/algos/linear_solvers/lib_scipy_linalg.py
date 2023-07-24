@@ -26,8 +26,8 @@ from typing import Mapping
 
 from numpy import find_common_type
 from numpy import ndarray
+from scipy.sparse import issparse
 from scipy.sparse import spmatrix
-from scipy.sparse.base import issparse
 from scipy.sparse.linalg import bicg
 from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import gmres

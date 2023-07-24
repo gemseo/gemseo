@@ -22,13 +22,14 @@ from __future__ import annotations
 from typing import Iterable
 
 from matplotlib.axes import Axes
+from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
+from numpy import e
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 
 class ColorEvolution(DatasetPlot):
@@ -79,7 +80,7 @@ class ColorEvolution(DatasetPlot):
 
         if self._param.use_log:
             maximum = abs(data).max()
-            norm = SymLogNorm(linthresh=1.0, vmin=-maximum, vmax=maximum)
+            norm = SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0, base=e)
         else:
             norm = None
 

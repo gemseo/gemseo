@@ -30,6 +30,7 @@ from typing import MutableSequence
 from typing import Sequence
 
 from matplotlib import pyplot as plt
+from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
@@ -40,6 +41,7 @@ from numpy import argmin
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import e
 from numpy import full
 from numpy import isnan
 from numpy import log10 as np_log10
@@ -60,7 +62,6 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.compatibility.matplotlib import SymLogNorm
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
@@ -562,7 +563,7 @@ class OptHistoryView(OptPostProcessor):
             cmap=cmap,
             interpolation="nearest",
             aspect="auto",
-            norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0, base=e),
         )
         if hasnan > 0:
             x_absc_nan = where(idx_nan.any(axis=0))[0]
@@ -672,7 +673,7 @@ class OptHistoryView(OptPostProcessor):
             cmap=self.cmap,
             interpolation="nearest",
             aspect="auto",
-            norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linthresh, base=e),
         )
 
         # colorbar
