@@ -1,0 +1,1 @@
+``get_all_inputs`` and ``get_all_outputs`` return sorted names and so are now deterministic.

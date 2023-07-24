@@ -45,8 +45,7 @@ def disciplines_and_scenario() -> list[MDODiscipline]:
 )
 def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
     """Check get_all_inputs."""
-    all_inputs = get_all_inputs(disciplines_and_scenario, skip_scenarios=skip_scenarios)
-    assert set(all_inputs) == set(expected)
+    assert get_all_inputs(disciplines_and_scenario, skip_scenarios) == expected
 
 
 @pytest.mark.parametrize(
@@ -54,7 +53,4 @@ def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
 )
 def test_get_all_outputs(disciplines_and_scenario, skip_scenarios, expected):
     """Check get_all_outputs."""
-    all_inputs = get_all_outputs(
-        disciplines_and_scenario, skip_scenarios=skip_scenarios
-    )
-    assert set(all_inputs) == set(expected)
+    assert get_all_outputs(disciplines_and_scenario, skip_scenarios) == expected
