@@ -154,7 +154,9 @@ class OptHistoryView(OptPostProcessor):
         self._create_x_star_plot(x_history, n_iter)
 
         # Hessian plot
-        if not self.database.check_output_history_is_empty(self._standardized_obj_name):
+        if not self.database.check_output_history_is_empty(
+            self.database.get_gradient_name(self._standardized_obj_name)
+        ):
             self._create_hessian_approx_plot(
                 self.database, self._standardized_obj_name, variable_names
             )

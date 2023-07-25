@@ -1,0 +1,1 @@
+``OptHistoryView`` no longer logs a warning when post-processing an optimization problem whose objective gradient history is empty.

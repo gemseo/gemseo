@@ -261,3 +261,18 @@ def test_variable_names(pyplot_close_all):
         save=False,
         show=False,
     )
+
+
+def test_no_gradient_history(caplog):
+    """Check that OptHistoryView works without gradient history."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=-1, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.database.store(array([-1]), {"f": array([1])})
+    problem.database.store(array([0]), {"f": array([0])})
+    problem.database.store(array([1]), {"f": array([1])})
+    post_processor = execute_post(problem, "OptHistoryView", save=False, show=False)
+    assert set(post_processor.figures.keys()) == {"variables", "objective", "x_xstar"}
+    assert "Failed to create Hessian approximation." not in caplog.text
