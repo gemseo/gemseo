@@ -75,7 +75,8 @@ class TestMDFFormulation(FormulationsBaseTest):
             "tolerance": 1e-10,
             "max_mda_iter": 50,
             "warm_start": True,
-            "use_lu_fact": True,
+            "use_lu_fact": False,
+            "linear_solver_tolerance": 1e-14,
         }
 
         obj = self.build_and_run_mdf_scenario_with_constraints(

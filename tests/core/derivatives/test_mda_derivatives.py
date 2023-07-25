@@ -107,7 +107,7 @@ def test_chain_jac_self_coupled(descriptions):
     """Test the jacobian with self-couplings."""
     seed(1)
     disciplines = create_disciplines_from_desc(descriptions)
-    mda = MDAChain(disciplines)
+    mda = MDAChain(disciplines, tolerance=1e-14)
     assert mda.check_jacobian(inputs=["x"], outputs=["o"])
 
 
