@@ -181,6 +181,7 @@ if TYPE_CHECKING:
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
         JobSchedulerDisciplineWrapper,
     )
+    from gemseo.post._graph_view import GraphView
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -247,7 +248,7 @@ def generate_coupling_graph(
     disciplines: Sequence[MDODiscipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
-) -> None:
+) -> GraphView:
     """Generate a graph of the couplings between disciplines.
 
     Args:
@@ -255,6 +256,9 @@ def generate_coupling_graph(
         file_path: The path of the file to save the figure.
         full: If True, generate the full coupling graph.
             Otherwise, generate the condensed one.
+
+    Returns:
+        The graph of the couplings between disciplines.
 
     Examples:
         >>> from gemseo import create_discipline, generate_coupling_graph
@@ -268,9 +272,9 @@ def generate_coupling_graph(
 
     coupling_structure = MDOCouplingStructure(disciplines)
     if full:
-        coupling_structure.graph.export_initial_graph(file_path)
+        return coupling_structure.graph.export_initial_graph(file_path)
     else:
-        coupling_structure.graph.export_reduced_graph(file_path)
+        return coupling_structure.graph.export_reduced_graph(file_path)
 
 
 def get_available_formulations() -> list[str]:

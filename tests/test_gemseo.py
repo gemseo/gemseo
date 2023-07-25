@@ -83,6 +83,7 @@ from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda import MDA
+from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
@@ -135,12 +136,9 @@ def test_generate_n2_plot(tmp_wd):
     assert Path(file_path).exists()
 
 
-def test_generate_coupling_graph(tmp_wd):
-    """Test the coupling graph with the Sobieski problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+@pytest.mark.parametrize("full", [False, True])
+def test_generate_coupling_graph(tmp_wd, full):
+    """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
     disciplines = create_discipline(
         [
@@ -151,7 +149,7 @@ def test_generate_coupling_graph(tmp_wd):
         ]
     )
     file_path = "coupl.pdf"
-    generate_coupling_graph(disciplines, file_path)
+    assert isinstance(generate_coupling_graph(disciplines, file_path, full), GraphView)
     assert Path(file_path).exists()
     assert Path("coupl.dot").exists()
 

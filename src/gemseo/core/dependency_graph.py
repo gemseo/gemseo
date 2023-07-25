@@ -222,7 +222,7 @@ class DependencyGraph:
             input_names.update(disc.get_input_data_names())
         return output_names & input_names
 
-    def __write_graph(self, graph: DiGraph, file_path: str, is_full: bool) -> None:
+    def __write_graph(self, graph: DiGraph, file_path: str, is_full: bool) -> GraphView:
         """Write the representation of a graph.
 
         Args:
@@ -281,24 +281,31 @@ class DependencyGraph:
 
         # 4. Write the dot and target files.
         graph_view.visualize(show=False, file_path=file_path, clean_up=False)
+        return graph_view
 
-    def write_full_graph(self, file_path: str) -> None:
+    def write_full_graph(self, file_path: str) -> GraphView:
         """Write a representation of the full graph.
 
         Args:
-            file_path (str): A path to the file.
+            file_path: A path to the file.
+
+        Returns:
+            The full graph.
         """
-        self.__write_graph(self.__graph, file_path, True)
+        return self.__write_graph(self.__graph, file_path, True)
 
     export_initial_graph = write_full_graph
 
-    def write_condensed_graph(self, file_path: str) -> None:
+    def write_condensed_graph(self, file_path: str) -> GraphView:
         """Write a representation of the condensed graph.
 
         Args:
-            file_path (str): A path to the file.
+            file_path: A path to the file.
+
+        Returns:
+            The condensed graph.
         """
-        self.__write_graph(self.__create_condensed_graph(), file_path, False)
+        return self.__write_graph(self.__create_condensed_graph(), file_path, False)
 
     export_reduced_graph = write_condensed_graph
 
