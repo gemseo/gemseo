@@ -88,6 +88,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
+from typing import Mapping
 
 from numpy import array
 from numpy import atleast_1d
@@ -298,7 +299,11 @@ class PCERegressor(MLRegressionAlgo):
         self.__hyperbolic_parameter = hyperbolic_parameter
         self.__degree = degree
         self.__composed_distribution = ComposedDistribution(
-            [distributions[name].distribution for name in self.input_names]
+            [
+                marginal
+                for input_name in self.input_names
+                for marginal in distributions[input_name].marginals
+            ]
         )
 
         if use_quadrature:
@@ -411,6 +416,26 @@ class PCERegressor(MLRegressionAlgo):
                 evaluation_strategy,
             )
 
+    @staticmethod
+    def __simplify_sobol_indices(
+        x: list[float] | list[list[float]],
+    ) -> float | list[float] | list[list[float]]:
+        """Simplify Sobol' indices into a unique Sobol' index if possible.
+
+        Args:
+            x: The Sobol' indices.
+
+        Returns:
+            Either several Sobol' indices or a unique Sobol' index.
+        """
+        if isinstance(x[0], float):
+            return x[0] if len(x) == 1 else x
+
+        if len(x) == 1 and len(x[0]) == 1:
+            return x[0][0]
+
+        return x
+
     def _fit(
         self,
         input_data: ndarray,
@@ -430,36 +455,104 @@ class PCERegressor(MLRegressionAlgo):
         self._standard_deviation = self._variance**0.5
 
         # Compute some sensitivity indices.
-        sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
-        self._first_order_sobol_indices = [
-            {
-                name: sensitivity_analysis.getSobolIndex(index, output_index)
-                for index, name in enumerate(self.input_names)
-            }
-            for output_index in range(self.output_dimension)
-        ]
+        names_to_positions = {}
+        start = 0
+        for name in self.input_names:
+            stop = start + self.learning_set.variable_names_to_n_components[name]
+            names_to_positions[name] = range(start, stop)
+            start = stop
+
+        ot_sobol_indices = FunctionalChaosSobolIndices(self.algo)
+        self.__compute_first_or_total_order_indices(
+            names_to_positions, ot_sobol_indices, True
+        )
+        self.__compute_second_order_indices(names_to_positions, ot_sobol_indices)
+        self.__compute_first_or_total_order_indices(
+            names_to_positions, ot_sobol_indices, False
+        )
+
+    def __compute_second_order_indices(
+        self,
+        names_to_positions: Mapping[str, Iterable[int]],
+        ot_sobol_indices: FunctionalChaosSobolIndices,
+    ) -> None:
+        """Compute the second-order Sobol' indices.
+
+        Args:
+            names_to_positions: The input names
+                bound to the positions in the uncertain input vector.
+            ot_sobol_indices: The Sobol' indices.
+        """
         self._second_order_sobol_indices = [
             {
                 first_name: {
-                    second_name: sensitivity_analysis.getSobolGroupedIndex(
-                        [first_index, second_index], output_index
+                    second_name: self.__simplify_sobol_indices(
+                        [
+                            [
+                                (
+                                    ot_sobol_indices.getSobolGroupedIndex(
+                                        [first_index, second_index], output_index
+                                    )
+                                    - ot_sobol_indices.getSobolIndex(
+                                        first_index, output_index
+                                    )
+                                    - ot_sobol_indices.getSobolIndex(
+                                        second_index, output_index
+                                    )
+                                )
+                                if first_index != second_index
+                                else 0
+                                for second_index in names_to_positions[second_name]
+                            ]
+                            for first_index in names_to_positions[first_name]
+                        ]
                     )
-                    - sensitivity_analysis.getSobolIndex(first_index, output_index)
-                    - sensitivity_analysis.getSobolIndex(second_index, output_index)
-                    for second_index, second_name in enumerate(self.input_names)
-                    if second_index != first_index
+                    for second_name in self.input_names
                 }
-                for first_index, first_name in enumerate(self.input_names)
+                for first_name in self.input_names
             }
             for output_index in range(self.output_dimension)
         ]
-        self._total_order_sobol_indices = [
+        for names_to_names_to_indices in self._second_order_sobol_indices:
+            for input_name, names_to_indices in names_to_names_to_indices.items():
+                if not isinstance(names_to_indices[input_name], list):
+                    names_to_indices.pop(input_name)
+
+    def __compute_first_or_total_order_indices(
+        self,
+        names_to_positions: Mapping[str, Iterable[int]],
+        ot_sobol_indices: FunctionalChaosSobolIndices,
+        use_first: True,
+    ) -> None:
+        """Compute either the first- or total-order Sobol' indices.
+
+        Args:
+            names_to_positions: The input names
+                bound to the positions in the uncertain input vector.
+            ot_sobol_indices: The Sobol' indices.
+            use_first: Whether to compute the first-order Sobol' indices.
+        """
+        method = (
+            ot_sobol_indices.getSobolIndex
+            if use_first
+            else ot_sobol_indices.getSobolTotalIndex
+        )
+        indices = [
             {
-                name: sensitivity_analysis.getSobolTotalIndex(index, output_index)
-                for index, name in enumerate(self.input_names)
+                input_name: self.__simplify_sobol_indices(
+                    [
+                        method(input_index, output_index)
+                        for input_index in names_to_positions[input_name]
+                    ]
+                )
+                for input_name in self.input_names
             }
             for output_index in range(self.output_dimension)
         ]
+        if use_first:
+            self._first_order_sobol_indices = indices
+        else:
+            self._total_order_sobol_indices = indices
 
     def _predict(self, input_data: ndarray) -> ndarray:
         return array(self._prediction_function(input_data))

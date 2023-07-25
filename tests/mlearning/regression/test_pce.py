@@ -31,12 +31,15 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mlearning import import_regression_model
+from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.pce import CleaningOptions
 from gemseo.mlearning.regression.pce import PCERegressor
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
 from numpy import pi
+from numpy import sin
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 from openturns import FunctionalChaosRandomVector
@@ -577,3 +580,89 @@ def test_save_load(pce, tmp_wd):
     assert model._first_order_sobol_indices
     assert model._second_order_sobol_indices
     assert model._total_order_sobol_indices
+
+
+def test_multidimensional_variables():
+    """Check that a PCERegressor can be built from multidimensional variables."""
+
+    # First,
+    # build a PCE of the Ishigami function with 3 scalar inputs.
+    def f(x1=0, x2=0, x3=0):
+        y = sin(x1) + 7 * sin(x2) ** 2 + 0.1 * x3**4 * sin(x1)
+        return y
+
+    discipline = AutoPyDiscipline(f)
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable(
+        "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
+    )
+    parameter_space.add_random_variable(
+        "x2", "OTUniformDistribution", minimum=-pi, maximum=pi
+    )
+    parameter_space.add_random_variable(
+        "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
+    )
+
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", parameter_space)
+    scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 100})
+    dataset = scenario.to_dataset(opt_naming=False)
+
+    pce = PCERegressor(dataset, parameter_space)
+    pce.learn()
+    r2 = R2Measure(pce)
+    reference_r2 = r2.evaluate_learn()
+    reference_first_sobol_indices = pce.first_sobol_indices[0]
+    reference_second_sobol_indices = pce.second_sobol_indices[0]
+    reference_total_sobol_indices = pce.total_sobol_indices[0]
+
+    # Then,
+    # build a PCE of the Ishigami function
+    # with a 2-length input vector and a scalar input.
+    def f(a=array([0, 0]), b=array([0])):  # noqa: B008
+        y = array([sin(a[0]) + 7 * sin(a[1]) ** 2 + 0.1 * b[0] ** 4 * sin(a[0])])
+        return y
+
+    discipline = AutoPyDiscipline(f, use_arrays=True)
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable(
+        "a", "OTUniformDistribution", 2, minimum=-pi, maximum=pi
+    )
+    parameter_space.add_random_variable(
+        "b", "OTUniformDistribution", minimum=-pi, maximum=pi
+    )
+
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", parameter_space)
+    scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 100})
+    dataset = scenario.to_dataset(opt_naming=False)
+
+    pce = PCERegressor(dataset, parameter_space)
+    pce.learn()
+    r2 = R2Measure(pce)
+    assert r2.evaluate_learn() == reference_r2
+    first_sobol_indices = pce.first_sobol_indices[0]
+    assert first_sobol_indices["a"] == [
+        reference_first_sobol_indices["x1"],
+        reference_first_sobol_indices["x2"],
+    ]
+    assert reference_first_sobol_indices["x3"] == first_sobol_indices["b"]
+    second_sobol_indices = pce.second_sobol_indices[0]
+    assert second_sobol_indices["a"]["b"] == [
+        [
+            reference_second_sobol_indices["x1"]["x3"],
+        ],
+        [
+            reference_second_sobol_indices["x2"]["x3"],
+        ],
+    ]
+    assert second_sobol_indices["b"]["a"] == [
+        [
+            reference_second_sobol_indices["x3"]["x1"],
+            reference_second_sobol_indices["x3"]["x2"],
+        ],
+    ]
+    total_sobol_indices = pce.total_sobol_indices[0]
+    assert total_sobol_indices["a"] == [
+        reference_total_sobol_indices["x1"],
+        reference_total_sobol_indices["x2"],
+    ]
+    assert total_sobol_indices["b"] == reference_total_sobol_indices["x3"]
