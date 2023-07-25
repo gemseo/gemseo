@@ -19,7 +19,6 @@
 """A Jacobi algorithm for solving MDAs."""
 from __future__ import annotations
 
-from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import Any
 from typing import Mapping
@@ -27,7 +26,10 @@ from typing import Sequence
 
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import isnan
 from numpy import ndarray
+from numpy import zeros
+from numpy.linalg import LinAlgError
 from numpy.linalg import lstsq
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -142,7 +144,7 @@ class MDAJacobi(MDA):
 
         inputs = self.get_input_data_names()
         strong_cpl = self.coupling_structure.all_couplings
-        self._input_couplings = set(strong_cpl) & set(inputs)
+        self._input_couplings = sorted(set(strong_cpl) & set(inputs))
 
     def execute_all_disciplines(
         self,
@@ -156,11 +158,11 @@ class MDAJacobi(MDA):
         self.reset_disciplines_statuses()
         if self.n_processes > 1:
             self.parallel_execution.execute(
-                [deepcopy(input_local_data) for _ in range(len(self.disciplines))]
+                [input_local_data for _ in range(len(self.disciplines))]
             )
         else:
             for discipline in self.disciplines:
-                discipline.execute(deepcopy(input_local_data))
+                discipline.execute(input_local_data)
 
         for discipline in self.disciplines:
             self.local_data.update(discipline.get_output_data())
@@ -191,7 +193,7 @@ class MDAJacobi(MDA):
         self._g_x_n = []
         # execute the disciplines
         current_couplings = self._current_input_couplings()
-        self.execute_all_disciplines(deepcopy(self.local_data))
+        self.execute_all_disciplines(self.local_data)
         new_couplings = self._current_input_couplings()
         self._dx_n.append(new_couplings - current_couplings)
         self._g_x_n.append(new_couplings)
@@ -204,7 +206,7 @@ class MDAJacobi(MDA):
         current_couplings = new_couplings
 
         while not self._stop_criterion_is_reached:
-            self.execute_all_disciplines(deepcopy(self.local_data))
+            self.execute_all_disciplines(self.local_data)
             new_couplings = self._current_input_couplings()
 
             self._compute_residual(
@@ -289,9 +291,14 @@ class MDAJacobi(MDA):
 
         Returns:
             The extrapolation coefficients of the 2-delta method.
+            Whether the rank of the matrix is full and the computation converged.
         """
         mat = concatenate((atleast_2d(dxn - dxn_1), atleast_2d(dxn_1 - dxn_2)))
-        return lstsq(mat.T, dxn, rcond=None)[0]
+        try:
+            x, _, rank, _ = lstsq(mat.T, dxn, rcond=None)
+        except LinAlgError:
+            return zeros(2), False
+        return x, rank == 2
 
     @staticmethod
     def _compute_secant_acc(
@@ -318,7 +325,10 @@ class MDAJacobi(MDA):
         """
         d_dxn = dxn - dxn_1
         acc = (cgn - cgn_1) * (d_dxn.T @ dxn) / (d_dxn.T @ d_dxn)
-        return cgn - acc
+        if isnan(acc).any():
+            return cgn
+        else:
+            return cgn - acc
 
     def _compute_m2d_acc(
         self,
@@ -336,6 +346,9 @@ class MDAJacobi(MDA):
         fixed point iterations",  Isabelle Ramiere, Thomas Helfer
         page 22 eq (50)
 
+        If the least square problem is degenerated or failed to be solved,
+        returns no acceleration.
+
         Args:
             dxn: The delta couplings at last iteration.
             dxn_1: The delta couplings at last iteration-1.
@@ -347,6 +360,9 @@ class MDAJacobi(MDA):
         Returns:
             The next iterate.
         """
-        lamba_min = self._minimize_2md(dxn, dxn_1, dxn_2)
-        acc = lamba_min[0] * (g_n - gn_1) + lamba_min[1] * (gn_1 - gn_2)
-        return g_n - acc
+        lamba_min, solve_ok = self._minimize_2md(dxn, dxn_1, dxn_2)
+        if solve_ok:
+            acc = lamba_min[0] * (g_n - gn_1) + lamba_min[1] * (gn_1 - gn_2)
+            return g_n - acc
+        else:
+            return g_n
