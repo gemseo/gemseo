@@ -730,8 +730,10 @@ def test_to_from_file(tmp_wd, suffix):
 
 def test_import_error_with_missing_file():
     """Check that a missing HDF file cannot be imported."""
+    hdf_file_name = "i_dont_exist.h5"
+    assert not Path(hdf_file_name).exists()
     with pytest.raises(FileNotFoundError):
-        DesignSpace.from_hdf("dummy.h5")
+        DesignSpace.from_hdf(hdf_file_name)
 
 
 def test_fail_import():

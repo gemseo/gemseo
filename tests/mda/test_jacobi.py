@@ -30,6 +30,8 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from numpy import array
 from numpy import isclose
+from numpy import ones
+from numpy import zeros
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -70,9 +72,27 @@ def test_secant_acceleration(tmp_wd):
     assert nit3 < nit2
 
 
+def test_m2d_acceleration_linalg_error():
+    """Verify the linalg error handling."""
+    mda = SobieskiMDAJacobi(acceleration="m2d")
+    sol, ok = mda._minimize_2md(1.0, zeros(2), zeros(2))
+    assert not ok
+    assert (sol == zeros(2)).all()
+
+
+def test_secant_acceleration_linalg_error():
+    """Verify the nan handling."""
+    mda = SobieskiMDAJacobi(acceleration="secant")
+    sol = mda._compute_secant_acc(zeros(2), zeros(2), ones(2), zeros(2))
+    assert (sol == ones(2)).all()
+
+
 def test_mda_jacobi_parallel():
     """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
     mda_seq = SobieskiMDAJacobi()
+    sorted_c = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
+    assert mda_seq._input_couplings == sorted_c
+
     outdata_seq = mda_seq.execute()
 
     mda_parallel = SobieskiMDAJacobi(n_processes=4)

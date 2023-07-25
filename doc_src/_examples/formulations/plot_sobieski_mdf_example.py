@@ -76,11 +76,11 @@ generate_n2_plot(disciplines, save=False, show=True)
 # During the instantiation of the scenario, we provide some options for the
 # MDF formulations:
 formulation_options = {
-    "tolerance": 1e-10,
+    "tolerance": 1e-14,
     "max_mda_iter": 50,
     "warm_start": True,
-    "use_lu_fact": True,
-    "linear_solver_tolerance": 1e-15,
+    "use_lu_fact": False,
+    "linear_solver_tolerance": 1e-14,
 }
 
 # %%
@@ -140,7 +140,7 @@ algo_options = {
     "ineq_tolerance": 2e-3,
     "normalize_design_space": True,
 }
-scn_inputs = {"max_iter": 10, "algo": "SLSQP", "algo_options": algo_options}
+scn_inputs = {"max_iter": 15, "algo": "SLSQP", "algo_options": algo_options}
 
 # %%
 # .. seealso::

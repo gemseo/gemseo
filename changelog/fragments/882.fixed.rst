@@ -1,0 +1,2 @@
+The MDAJacobi executions are now deterministic.
+The MDAJacobi m2d acceleration is deactivated when the least square problem is not well solved.

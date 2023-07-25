@@ -24,6 +24,7 @@ import pytest
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo import execute_post
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
@@ -34,6 +35,7 @@ from numpy import array
 from numpy import ones
 from numpy import power
 
+CURRENT_DIR = Path(__file__).parent
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 pytestmark = pytest.mark.skipif(
@@ -126,23 +128,10 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-    design_space = create_design_space()
-    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
-    design_space.add_variable(
-        "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
-    )
-    design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
-    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
-    scenario = create_scenario(
-        disciplines, "MDF", objective_name="obj", design_space=design_space
-    )
-    scenario.add_constraint("c_1", "ineq")
-    scenario.add_constraint("c_2", "ineq")
-    scenario.set_differentiation_method("finite_differences")
-    scenario.default_inputs = {"max_iter": 10, "algo": "SLSQP"}
-    scenario.execute()
-    post = scenario.post_process(
+
+    infile = CURRENT_DIR / (baseline_images[0] + ".h5")
+    post = execute_post(
+        infile,
         "ScatterPlotMatrix",
         save=False,
         file_path="scatter_sellar",

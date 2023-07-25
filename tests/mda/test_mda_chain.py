@@ -245,7 +245,7 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
             {"obj": "x+c1"},
         )
     )
-    mda = MDAChain(disciplines)
+    mda = MDAChain(disciplines, tolerance=1e-14, linear_solver_tolerance=1e-14)
     mda.matrix_type = matrix_type
     assert mda.check_jacobian(
         inputs=["x"], outputs=["obj"], linearization_mode=linearization_mode

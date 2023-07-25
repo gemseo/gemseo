@@ -24,6 +24,7 @@ import os
 
 import numpy as np
 import pytest
+from gemseo import create_discipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
@@ -75,6 +76,21 @@ def test_input_couplings():
     with concretize_classes(MDA):
         mda = MDA([Sellar1()])
     assert len(mda._current_input_couplings()) == 0
+
+    with concretize_classes(MDA):
+        mda = MDA(
+            create_discipline(
+                [
+                    "SobieskiPropulsion",
+                    "SobieskiAerodynamics",
+                    "SobieskiMission",
+                    "SobieskiStructure",
+                ]
+            )
+        )
+        mda._compute_input_couplings()
+        sorted_c = ["y_12", "y_21", "y_23", "y_31", "y_32"]
+        assert mda._input_couplings == sorted_c
 
 
 def test_jacobian(sellar_mda, sellar_inputs):
