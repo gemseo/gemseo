@@ -393,3 +393,14 @@ def test_partial_execution_from_backup(
         }
     )
     assert len(other_doe_scenario.formulation.opt_problem.database) == expected
+
+
+def test_scenario_without_initial_design_value():
+    """Check that a DOEScenario can work without initial design value."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    discipline = AnalyticDiscipline({"y": "x"})
+    discipline.default_inputs = {}
+    scenario = DOEScenario([discipline], "MDF", "y", design_space)
+    scenario.execute({"algo": "lhs", "n_samples": 3})
+    assert len(scenario.formulation.opt_problem.database) == 3

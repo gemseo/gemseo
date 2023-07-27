@@ -267,7 +267,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             search_among = self.disciplines
         for discipline in search_among:
             if discipline.is_all_outputs_existing(output_names):
-                return MDODisciplineAdapterGenerator(discipline)
+                return MDODisciplineAdapterGenerator(
+                    discipline, self.design_space.variable_sizes
+                )
         raise ValueError(
             "No discipline known by formulation %s"
             " has all outputs named %s" % (type(self).__name__, output_names)
@@ -296,7 +298,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             search_among = self.disciplines
         for discipline in search_among:
             if discipline.is_all_inputs_existing(input_names):
-                return MDODisciplineAdapterGenerator(discipline)
+                return MDODisciplineAdapterGenerator(
+                    discipline, self.design_space.variable_sizes
+                )
         raise ValueError(
             "No discipline known by formulation %s"
             " has all inputs named %s" % (type(self).__name__, input_names)

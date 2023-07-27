@@ -24,6 +24,7 @@ import logging
 from numbers import Number
 from typing import Callable
 from typing import Mapping
+from typing import MutableMapping
 from typing import Sequence
 from typing import Union
 
@@ -48,12 +49,26 @@ class MDODisciplineAdapterGenerator:
     It uses closures to generate functions instances from a discipline execution.
     """
 
-    def __init__(self, discipline: MDODiscipline) -> None:
+    discipline: MDODiscipline
+    """The discipline from which to generate functions."""
+
+    __names_to_sizes: MutableMapping[str, int] | None = None
+    """The names of the inputs bound to their sizes, if known."""
+
+    def __init__(
+        self,
+        discipline: MDODiscipline,
+        names_to_sizes: MutableMapping[str, int] | None = None,
+    ) -> None:
         """
         Args:
             discipline: The discipline from which the generator builds the functions.
+            names_to_sizes: The sizes of the input variables.
+                If ``None``, guess them from the default inputs and local data
+                of the discipline :class:`.MDODiscipline`.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
+        self.__names_to_sizes = names_to_sizes
 
     def get_function(
         self,
@@ -115,5 +130,9 @@ class MDODisciplineAdapterGenerator:
             self.discipline.add_differentiated_outputs(output_names)
 
         return MDODisciplineAdapter(
-            input_names, output_names, default_inputs, self.discipline
+            input_names,
+            output_names,
+            default_inputs,
+            self.discipline,
+            self.__names_to_sizes,
         )

@@ -267,6 +267,12 @@ class MorrisAnalysis(SensitivityAnalysis):
             self.__n_replicates = n_replicates
         else:
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
+            if self.__n_replicates == 0:
+                raise ValueError(
+                    f"The number of samples ({n_samples}) must be "
+                    "at least equal to the dimension of the input space plus one "
+                    f"({parameter_space.dimension}+1={parameter_space.dimension+1})."
+                )
 
         disciplines = list(disciplines)
         if not output_names:
@@ -284,7 +290,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         super().__init__(
             [discipline],
             parameter_space,
-            n_samples=n_replicates,
+            n_samples=self.__n_replicates,
             algo=algo,
             algo_options=algo_options,
         )

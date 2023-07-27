@@ -833,8 +833,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The names of the constraints.
         """
-        names = [constraint.name for constraint in self.constraints]
-        return names
+        return [constraint.name for constraint in self.constraints]
 
     def get_nonproc_constraints(self) -> list[MDOFunction]:
         """Retrieve the non-processed constraints.

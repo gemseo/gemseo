@@ -282,3 +282,18 @@ def test_get_sub_disciplines_recursive(recursive, expected):
     ]
 
     assert set(classes) == expected
+
+
+@pytest.mark.parametrize("top_level_disc", [False, True])
+def test_get_generator_with_inputs(top_level_disc):
+    """Check that _get_generator_with_inputs works properly."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+
+    discipline = AnalyticDiscipline({"y": "x"})
+    with concretize_classes(MDOFormulation):
+        formulation = MDOFormulation([discipline], "y", design_space)
+
+    generator = formulation._get_generator_with_inputs("x", top_level_disc)
+    assert generator.discipline == discipline
+    assert generator._MDODisciplineAdapterGenerator__names_to_sizes == {"x": 1}
