@@ -19,10 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
@@ -49,22 +52,30 @@ FUNCTION = {
 }
 
 
-@pytest.fixture
-def morris():
-    """Morris analysis for the Ishigami function."""
-    discipline = create_discipline(
+@pytest.fixture(scope="module")
+def discipline() -> AnalyticDiscipline:
+    """The discipline used by the main Morris analysis."""
+    return create_discipline(
         "AnalyticDiscipline",
         expressions=FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 
+
+@pytest.fixture(scope="module")
+def parameter_space() -> ParameterSpace:
+    """The parameter space used by the main Morris analysis."""
     space = ParameterSpace()
     for variable in FUNCTION["variables"]:
         space.add_random_variable(**FUNCTION["distributions"][variable])
+    return space
 
-    analysis = MorrisAnalysis([discipline], space, n_samples=None)
+
+@pytest.fixture
+def morris(discipline, parameter_space):
+    """Morris analysis for the Ishigami function."""
+    analysis = MorrisAnalysis([discipline], parameter_space, n_samples=None)
     analysis.compute_indices()
-
     return analysis
 
 
@@ -352,7 +363,16 @@ def test_morris_multiple_disciplines():
         "fd!y2!x2",
         "fd!y2!x3",
     ]
-    assert morris.dataset.n_samples == 5
+    assert morris.dataset.n_samples == 1
+
+
+@pytest.mark.parametrize("n_samples,expected_n_samples", [(None, 5), (8, 2), (9, 2)])
+def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples):
+    """Check the effect of n_samples."""
+    n_calls = discipline.n_calls
+    analysis = MorrisAnalysis([discipline], parameter_space, n_samples=n_samples)
+    assert len(analysis.dataset) == expected_n_samples
+    assert discipline.n_calls - n_calls == expected_n_samples * 4
 
 
 def test_save_load(morris, tmp_wd):
@@ -368,3 +388,35 @@ def test_save_load(morris, tmp_wd):
 def test_compute_indices_output_names(morris):
     """Check compute_indices with different types for output_names."""
     assert morris.compute_indices(["y1"]).keys() == morris.compute_indices("y1").keys()
+
+
+def test_too_few_samples(discipline, parameter_space):
+    """Check that the MorrisAnalysis raises a ValueError is n_samples is too small."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The number of samples (2) must be "
+            "at least equal to the dimension of the input space plus one (3+1=4)."
+        ),
+    ):
+        MorrisAnalysis([discipline], parameter_space, n_samples=2)
+
+
+def test_output_names():
+    """Check that the argument output_names is correctly taken into account.
+
+    See https://gitlab.com/gemseo/dev/gemseo/-/issues/866
+    """
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable(name="x", distribution="SPUniformDistribution")
+    sensitivity_analysis = MorrisAnalysis(
+        disciplines=[discipline],
+        parameter_space=parameter_space,
+        n_samples=None,
+        output_names=["y"],
+    )
+    sensitivity_analysis.compute_indices()
+    mu_ = sensitivity_analysis.mu_
+    assert_almost_equal(mu_["y"][0]["x"], array([0.05]))
+    assert "z" not in mu_

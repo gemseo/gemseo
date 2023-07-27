@@ -85,7 +85,9 @@ class FunctionFromDiscipline(MDOFunction):
             )
             self.__discipline = self.__gen.discipline
         else:
-            self.__gen = MDODisciplineAdapterGenerator(self.__discipline)
+            self.__gen = MDODisciplineAdapterGenerator(
+                self.__discipline, self.__mdo_formulation.design_space.variable_sizes
+            )
 
         if self.__x_names is None:
             self.__x_names = self.__mdo_formulation.get_x_names_of_disc(

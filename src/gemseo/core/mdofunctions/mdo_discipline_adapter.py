@@ -24,6 +24,7 @@ import logging
 from numbers import Number
 from typing import Callable
 from typing import Mapping
+from typing import MutableMapping
 from typing import Sequence
 from typing import Union
 
@@ -50,7 +51,7 @@ class MDODisciplineAdapter(MDOFunction):
         output_names: Sequence[str],
         default_inputs: Mapping[str, ndarray] | None,
         discipline: MDODiscipline,
-        names_to_sizes: dict[str, int] | None = None,
+        names_to_sizes: MutableMapping[str, int] | None = None,
     ) -> None:
         """
         Args:
