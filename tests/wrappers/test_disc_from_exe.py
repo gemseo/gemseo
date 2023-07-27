@@ -23,9 +23,12 @@ import sys
 from copy import deepcopy
 from os.path import dirname
 from os.path import join
+from pathlib import Path
 
 import pytest
 from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.algos.design_space import DesignSpace
 from gemseo.utils.run_folder_manager import FoldersIter
 from gemseo.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.wrappers.disc_from_exe import parse_outfile
@@ -329,3 +332,45 @@ def test_parse_outfile():
     output_mod[0] = output_mod[0][:-1]
     values2 = parse_outfile(out_pos, output_mod)
     assert values2["out 1"] == 1.0
+
+
+def test_parallel_execution(xfail_if_windows_unc_issue, tmp_wd):
+    """Check if a :class:`~.DiscFromExe` executed within a multiprocess DOE can generate
+    unique folders in :attr:`~.FoldersIter.NUMBERED` mode.
+
+    The check is focused on this topic since the multiprocess features of
+    :class:`~.DiscFromExe` are used there.
+    """
+    nb_process = 2
+    sum_path = join(DIRNAME, "sum_data.py")
+    exec_cmd = f"python {sum_path} -i input.json -o output.json"
+
+    disc = create_discipline(
+        "DiscFromExe",
+        input_template=join(DIRNAME, "input.json.template"),
+        output_template=join(DIRNAME, "output.json.template"),
+        output_folder_basepath=str(tmp_wd),
+        executable_command=exec_cmd,
+        input_filename="input.json",
+        output_filename="output.json",
+        use_shell=True,
+        folders_iter=FoldersIter.NUMBERED,
+    )
+
+    design_space = DesignSpace()
+    design_space.add_variable("a", 1, l_b=1, u_b=2, value=1.02)
+
+    scenario = create_scenario(
+        disc, "DisciplinaryOpt", "out", design_space, scenario_type="DOE"
+    )
+
+    scenario.execute(
+        {
+            "algo": "OT_LHS",
+            "n_samples": 2,
+            "n_processes": nb_process,
+        }
+    )
+
+    for i in range(nb_process):
+        assert Path(f"{i+1}").is_dir()
