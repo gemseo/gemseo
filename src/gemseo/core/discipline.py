@@ -35,6 +35,7 @@ from typing import Any
 from typing import ClassVar
 from typing import Generator
 from typing import Iterable
+from typing import Iterator
 from typing import Mapping
 from typing import MutableMapping
 from typing import NoReturn
@@ -1987,7 +1988,7 @@ class MDODiscipline(Serializable):
 
     def get_outputs_by_name(
         self,
-        data_names: Iterable[str],
+        data_names: Iterator[str],
     ) -> list[Any]:
         """Return the local data associated with output variables.
 
@@ -2163,7 +2164,7 @@ class MDODiscipline(Serializable):
     def get_data_list_from_dict(
         keys: str | Iterable,
         data_dict: dict[str, Any],
-    ) -> Any | Generator[Any]:
+    ) -> Any | Iterator[Any]:
         """Filter the dict from a list of keys or a single key.
 
         If keys is a string, then the method return the value associated to the
