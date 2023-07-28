@@ -197,9 +197,6 @@ class TestExecSequence(unittest.TestCase):
         self.assertEqual(seq.status, MDODiscipline.ExecutionStatus.FAILED)
 
     def status_of(self, seq, disc, n=0):
-        #         print seq
-        #         print seq.disc_to_uuids[disc]
-        #         print seq.get_statuses()
         return seq.get_statuses()[seq.disc_to_uuids[disc][n]]
 
     def test_sub_scenario(self):
@@ -219,33 +216,29 @@ class TestExecSequence(unittest.TestCase):
         d1.status = MDODiscipline.ExecutionStatus.PENDING
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.PENDING)
         self.assertEqual(self.status_of(seq, sc_prop), None)
-        self.assertEqual(self.status_of(seq, d1, 1), None)
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
         d1.status = MDODiscipline.ExecutionStatus.RUNNING
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.RUNNING)
         self.assertEqual(self.status_of(seq, sc_prop), None)
-        self.assertEqual(self.status_of(seq, d1, 1), None)
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
         d1.status = MDODiscipline.ExecutionStatus.DONE
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
         self.assertEqual(
             self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.PENDING
         )
-        self.assertEqual(self.status_of(seq, d1, 1), None)
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
         sc_prop.status = MDODiscipline.ExecutionStatus.RUNNING
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
         self.assertEqual(
             self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.RUNNING
         )
-        self.assertEqual(
-            self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.PENDING
-        )
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
         d1.status = MDODiscipline.ExecutionStatus.RUNNING
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
         self.assertEqual(
             self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.RUNNING
         )
-        self.assertEqual(
-            self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.RUNNING
-        )
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
         d1.status = MDODiscipline.ExecutionStatus.DONE
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
         self.assertEqual(
@@ -253,15 +246,13 @@ class TestExecSequence(unittest.TestCase):
         )
         # when done iteration_sequence is enabled again thus atom is in pending
         # state and not done
-        self.assertEqual(
-            self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.PENDING
-        )
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
         sc_prop.status = MDODiscipline.ExecutionStatus.DONE
         self.assertEqual(self.status_of(seq, d1), MDODiscipline.ExecutionStatus.DONE)
         self.assertEqual(
             self.status_of(seq, sc_prop), MDODiscipline.ExecutionStatus.DONE
         )
-        self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.ExecutionStatus.DONE)
+        self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
 
     def test_visitor_pattern(self):
         class Visitor:

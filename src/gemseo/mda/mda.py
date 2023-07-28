@@ -429,7 +429,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.reset_disciplines_statuses()
 
     def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        disc_exec_seq = ExecutionSequenceFactory.serial(self.disciplines)
+        disc_exec_seq = ExecutionSequenceFactory.serial()
+        for disc in self.disciplines:
+            disc_exec_seq.extend(disc.get_expected_workflow())
         return ExecutionSequenceFactory.loop(self, disc_exec_seq)
 
     def get_expected_dataflow(  # noqa:D102
@@ -439,6 +441,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         all_disc.extend(self.disciplines)
         graph = DependencyGraph(all_disc)
         res = graph.get_disciplines_couplings()
+        for discipline in self.disciplines:
+            res.extend(discipline.get_expected_dataflow())
         return res
 
     def _compute_jacobian(

@@ -422,7 +422,6 @@ class XDSMizer:
                 varnames = set(atom.discipline.get_output_data_names()) & set(
                     function_varnames
                 )
-                # print set(disc.get_output_data_names()), set(function_name)
                 if varnames:
                     add_edge(self.to_id[atom], OPT_ID, varnames)
 

@@ -457,7 +457,7 @@ class MDOScenarioAdapter(MDODiscipline):
     def get_expected_dataflow(  # noqa: D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return self.scenario.get_expected_dataflow()
+        return []
 
     def _compute_jacobian(
         self,

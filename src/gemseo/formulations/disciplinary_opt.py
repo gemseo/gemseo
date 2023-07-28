@@ -62,14 +62,16 @@ class DisciplinaryOpt(MDOFormulation):
         self,
     ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         if self.chain is None:
-            return ExecutionSequenceFactory.serial(self.disciplines[0])
+            return ExecutionSequenceFactory.serial().extend(
+                self.disciplines[0].get_expected_workflow()
+            )
         return self.chain.get_expected_workflow()
 
     def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         if self.chain is None:
-            return []
+            return self.disciplines[0].get_expected_dataflow()
         return self.chain.get_expected_dataflow()
 
     def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102

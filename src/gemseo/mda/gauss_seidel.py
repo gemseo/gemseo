@@ -26,8 +26,6 @@ from typing import Sequence
 from gemseo.core.chain import MDOChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.mda.mda import MDA
 
 
@@ -140,10 +138,3 @@ class MDAGaussSeidel(MDA):
 
         for discipline in self.disciplines:  # Update all outputs without relax
             self.local_data.update(discipline.get_output_data())
-
-    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        sequence = ExecutionSequenceFactory.serial()
-        for discipline in self.disciplines:
-            sequence.extend(discipline.get_expected_workflow())
-
-        return ExecutionSequenceFactory.loop(self, sequence)
