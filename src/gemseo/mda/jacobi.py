@@ -175,7 +175,6 @@ class MDAJacobi(MDA):
 
         for discipline in self.disciplines:
             sub_workflow.extend(discipline.get_expected_workflow())
-
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self) -> None:

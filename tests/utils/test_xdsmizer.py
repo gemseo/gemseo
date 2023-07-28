@@ -27,13 +27,20 @@ from typing import Mapping
 
 import pytest
 from gemseo import create_discipline
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.mdo_scenario import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problems.scalable.linear.disciplines_generator import (
+    create_disciplines_from_desc,
+)
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
@@ -293,6 +300,179 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
     assert_xdsm(nested_chains, **options)
 
 
+def test_xdsmize_nested_mda(tmp_wd):
+    """Test the XDSM representation of nested ``MDA``s.
+
+    Here, we build a 2-levels nested mda with Jacobi and GaussSeidel.
+    """
+
+    disciplines = create_disciplines_from_desc(
+        [
+            (
+                "D1",
+                ["y2", "y3", "x0"],
+                ["y1"],
+            ),
+            (
+                "D2",
+                ["y1", "y3", "x0"],
+                ["y2", "y2_bis"],
+            ),
+            (
+                "D3",
+                ["y2_bis", "x0"],
+                ["y3"],
+            ),
+        ]
+    )
+
+    inner_mda = MDAGaussSeidel([disciplines[0], disciplines[1]])
+
+    design_space = DesignSpace()
+    design_space.add_variable("x0")
+
+    scenario = MDOScenario(
+        [disciplines[2], inner_mda],
+        formulation="MDF",
+        objective_name="y3",
+        design_space=design_space,
+    )
+
+    options = {
+        "save_html": False,
+        "save_json": True,
+        "file_name": "xdsmized_nested_mda",
+    }
+
+    assert_xdsm(scenario, **options)
+
+
+def test_xdsmize_nested_adapter(tmp_wd):
+    """Test the XDSM representation of nested ``MDOScenarioAdapter``s.
+
+    Here, we build a 4-levels nested adapter.
+    """
+
+    disciplines = create_disciplines_from_desc(
+        [
+            ("D1", ["x0", "x1"], ["z1", "y1"]),
+            ("D2", ["x0", "x2", "y3", "y1"], ["z2", "y2"]),
+            ("D3", ["x0", "x3", "y2", "z4"], ["y3", "z3"]),
+            ("D4", ["x0", "x4", "x3"], ["z4"]),
+        ]
+    )
+
+    # -- level 3
+    ds_depth3 = DesignSpace()
+    ds_depth3.add_variable("x4")
+
+    sce_depth3 = create_scenario(
+        [disciplines[3]],
+        formulation="MDF",
+        objective_name="z4",
+        design_space=ds_depth3,
+    )
+
+    # -- level 2
+    ds_depth2 = DesignSpace()
+    ds_depth2.add_variable("x3")
+
+    adapter_depth2 = MDOScenarioAdapter(
+        sce_depth3, input_names=["x3"], output_names=["z4"]
+    )
+
+    sce_depth2 = create_scenario(
+        [disciplines[2], adapter_depth2],
+        formulation="MDF",
+        objective_name="z3",
+        design_space=ds_depth2,
+    )
+
+    # -- level 1
+    ds_depth1 = DesignSpace()
+    ds_depth1.add_variable("x2")
+
+    adapter_depth1 = MDOScenarioAdapter(
+        sce_depth2, input_names=["y2"], output_names=["y3"]
+    )
+
+    sce_depth1 = create_scenario(
+        [disciplines[1], adapter_depth1],
+        formulation="MDF",
+        objective_name="z2",
+        design_space=ds_depth1,
+    )
+
+    # -- level 0
+    ds_depth0 = DesignSpace()
+    ds_depth0.add_variable("x0")
+
+    adapter_depth0 = MDOScenarioAdapter(
+        sce_depth1, input_names=["x0", "y1"], output_names=["z2"]
+    )
+
+    sce_glob = create_scenario(
+        [disciplines[0], adapter_depth0],
+        formulation="MDF",
+        objective_name="z2",
+        design_space=ds_depth0,
+    )
+
+    options = {
+        "save_html": False,
+        "save_json": True,
+        "file_name": "xdsmized_nested_adapter",
+    }
+    assert_xdsm(sce_glob, **options)
+
+
+def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd):
+    """Test that an XDSM with a DisciplinaryOpt formulation involving a single adapter
+    is generated correctly."""
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0)
+
+    disciplines = create_disciplines_from_desc(
+        [
+            ("D1", ["x", "n"], ["y"]),
+            ("D2", ["y"], ["z"]),
+        ]
+    )
+
+    scenario = create_scenario(
+        disciplines=disciplines,
+        formulation="MDF",
+        objective_name="z",
+        design_space=design_space,
+        scenario_type="MDO",
+    )
+
+    adapter = MDOScenarioAdapter(
+        scenario,
+        input_names=["n"],
+        output_names=["x", "y", "z"],
+    )
+
+    design_space_discrete = DesignSpace()
+    design_space_discrete.add_variable("n", var_type="integer")
+
+    top_scenario = create_scenario(
+        disciplines=[adapter],
+        formulation="DisciplinaryOpt",
+        objective_name="z",
+        design_space=design_space_discrete,
+        scenario_type="DOE",
+    )
+
+    options = {
+        "save_html": False,
+        "save_json": True,
+        "file_name": "xdsmized_disciplinary_opt_adapter",
+    }
+    assert_xdsm(top_scenario, **options)
+
+
 def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
     """Test the XDSM representation of nested ``MDOParallelChain``s.
 
@@ -334,7 +514,7 @@ def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
     assert_xdsm(nested_chains, **options)
 
 
-def assert_xdsm(scenario: MDOScenario, **options: Mapping[str, Any]) -> None:
+def assert_xdsm(scenario: Scenario, **options: Mapping[str, Any]) -> None:
     """Build and check the XDSM representation generated from a scenario.
 
     Args:
