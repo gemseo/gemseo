@@ -24,17 +24,11 @@ disciplines, optimizers, DOE algorithms, formulations, post-processings, surroga
 
    * - Name / Repo
      - Description
-     - Modules
      - Documentation
 {% for name, value in plugins.items()|sort(attribute='0') %}
    * - `{{ name }} <https://gitlab.com/gemseo/dev/{{ name }}>`_
      - {{ value[0] }}
-     - :ref:`Modules <{{ name.replace('-', '_') }}>`
-    {% if value[1] %}
-     - `Documentation <https://gemseo.gitlab.io/dev/{{ name }}>`_
-    {% else %}
-     - None
-    {% endif %}
+     - {% if value[1] %}`Documentation <https://gemseo.gitlab.io/dev/{{ name }}>`_{% else %}:ref:`Modules <{{ name.replace('-', '_') }}>`{% endif %}
 {% endfor %}
 
 .. seealso::
