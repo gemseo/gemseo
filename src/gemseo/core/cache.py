@@ -21,11 +21,11 @@
 from __future__ import annotations
 
 import abc
-import itertools
 import logging
 import sys
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
+from itertools import chain
 from multiprocessing import RLock
 from multiprocessing import Value
 from typing import ClassVar
@@ -205,7 +205,7 @@ class AbstractCache(ABCMapping):
         """
         if not self.__names_to_sizes:
             last_entry = self.last_entry
-            for name, data in itertools.chain(
+            for name, data in chain(
                 last_entry.inputs.items(), last_entry.outputs.items()
             ):
                 if isinstance(data, ndarray):
@@ -688,9 +688,7 @@ class AbstractFullCache(AbstractCache):
     @property
     def _all_groups(self) -> list[int]:
         """Sorted the indices of the entries."""
-        return sorted(
-            itertools.chain(*(v.tolist() for v in self._hashes_to_indices.values()))
-        )
+        return sorted(chain(*(v.tolist() for v in self._hashes_to_indices.values())))
 
     @synchronized
     def __iter__(self) -> Generator[CacheEntry]:
@@ -773,14 +771,19 @@ class AbstractFullCache(AbstractCache):
                 variable_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
 
         cache_as_array = vstack(
-            concatenate(
-                [all_input_data[index][name].flatten() for name in shared_input_names]
-                + [
-                    all_output_data[index][name].flatten()
-                    for name in shared_output_names
-                ]
-            )
-            for index in range(len(all_input_data))
+            [
+                concatenate(
+                    [
+                        all_input_data[index][name].flatten()
+                        for name in shared_input_names
+                    ]
+                    + [
+                        all_output_data[index][name].flatten()
+                        for name in shared_output_names
+                    ]
+                )
+                for index in range(len(all_input_data))
+            ]
         )
         save_data_arrays_to_xml(variable_names, cache_as_array, file_path)
 

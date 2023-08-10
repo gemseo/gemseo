@@ -35,7 +35,7 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy.dual import norm
+from numpy.linalg import norm
 
 
 class TestMDOFormulation(unittest.TestCase):

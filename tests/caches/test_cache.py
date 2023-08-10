@@ -310,9 +310,14 @@ def test_read_hashes(tmp_wd):
 
 
 def test_read_group(tmp_wd):
+    """Check that a group is correctly read."""
     cache = HDF5Cache(hdf_file_path="out3.h5")
-    cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
-    cache._read_input_output_data([1], {"x": arange(3), "y": arange(2)})
+    input_data = {"x": arange(3), "y": arange(3)}
+    output_data = {"f": array([1])}
+    cache.cache_outputs(input_data, output_data)
+    cache_entry = cache._read_input_output_data([1], {"x": arange(3), "y": arange(3)})
+    assert_items_equal(cache_entry.inputs, input_data)
+    assert_items_equal(cache_entry.outputs, output_data)
 
 
 def test_get_all_data(

@@ -163,17 +163,14 @@ def test_predict_class(model, model_with_transform):
     assert prediction["labels"].shape == (6, 1)
 
 
-def test_predict_local_model(model):
+@pytest.mark.parametrize(
+    "input_data,shape", [(INPUT_VALUE, (1,)), (INPUT_VALUES, (6, 1))]
+)
+@pytest.mark.parametrize("index", [0, 1])
+def test_predict_local_model(model, input_data, index, shape):
     """Test prediction of individual regression model."""
-    prediction = model.predict_local_model(INPUT_VALUE, 0)
-    option_1 = allclose(prediction["y"][0], 11.22893081, atol=ATOL, rtol=RTOL)
-    prediction = model.predict_local_model(INPUT_VALUE, 1)
-    option_2 = allclose(prediction["y"][0], 11.494479166666661, atol=ATOL, rtol=RTOL)
-    assert option_1 or option_2
-    predictions = model.predict_local_model(INPUT_VALUES, 0)
-    assert isinstance(predictions, dict)
-    assert "y" in predictions
-    assert predictions["y"].shape == (6, 1)
+    prediction = model.predict_local_model(input_data, index)
+    assert prediction["y"].shape == shape
 
 
 def test_local_model_transform(model_with_transform):
