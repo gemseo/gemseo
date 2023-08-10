@@ -43,7 +43,7 @@ while the (i,i) subplot represents the empirical distribution of the samples
 by means of an histogram or a kernel density estimator.
 
 A variable name can be passed to the :meth:`.DatasetPlot.execute` method
-by means of the :code:`classifier` keyword in order to color the curves
+by means of the ``classifier`` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """

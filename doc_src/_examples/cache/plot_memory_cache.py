@@ -21,7 +21,7 @@
 """
 Memory full cache
 =================
-This example shows how to manipulate a :class:`.MemoryFullCache` object.
+This example shows how to manipulate an :class:`.MemoryFullCache` object.
 """
 from __future__ import annotations
 

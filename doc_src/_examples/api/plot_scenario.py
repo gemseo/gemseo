@@ -69,20 +69,20 @@ get_scenario_options_schema("MDO")
 #
 # - The four first arguments are mandatory:
 #
-#   - :code:`disciplines`: the list of :class:`.MDODiscipline`
+#   - ``disciplines``: the list of :class:`.MDODiscipline`
 #     (or possibly, a single :class:`.MDODiscipline`),
-#   - :code:`formulation`: the formulation name,
-#   - :code:`objective_name`: the name of the objective function
+#   - ``formulation``: the formulation name,
+#   - ``objective_name``: the name of the objective function
 #     (one of the discipline outputs)
-#   - :code:`design_space`: the :class:`.DesignSpace` or
+#   - ``design_space``: the :class:`.DesignSpace` or
 #     the file path of the design space
 #
 # - The other arguments are optional:
 #
-#   - :code:`name`: scenario name,
-#   - :code:`scenario_type`: type of scenario,
+#   - ``name``: scenario name,
+#   - ``scenario_type``: type of scenario,
 #     either `"MDO"` (default) or `"DOE"` ,
-#   - :code:`**options`: options passed to the formulation.
+#   - ``**options``: options passed to the formulation.
 #
 # - This function returns an instance of :class:`.MDOScenario` or
 #   :class:`.DOEScenario`.

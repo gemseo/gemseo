@@ -85,13 +85,13 @@ formulation_options = {
 
 # %%
 #
-# - :code:`'warm_start`: warm starts MDA,
-# - :code:`'warm_start`: optimize the adjoints resolution by storing
+# - ``'warm_start``: warm starts MDA,
+# - ``'warm_start``: optimize the adjoints resolution by storing
 #   the Jacobian matrix LU factorization for the multiple RHS
 #   (objective + constraints). This saves CPU time if you can pay for
 #   the memory and have the full Jacobians available, not just matrix vector
 #   products.
-# - :code:`'linear_solver_tolerance'`: set the linear solver tolerance,
+# - ``'linear_solver_tolerance'``: set the linear solver tolerance,
 #   idem we need full convergence
 #
 design_space = SobieskiProblem().design_space

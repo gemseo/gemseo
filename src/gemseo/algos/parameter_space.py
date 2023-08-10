@@ -45,7 +45,7 @@ variables (a.k.a. random variables) from:
 - a distribution name
   (see :func:`.uncertainty.get_available_distributions`),
 - an optional variable size,
-- optional distribution parameters (:code:`parameters` set as
+- optional distribution parameters (``parameters`` set as
   a tuple of positional arguments for :class:`.OTDistribution`
   or a dictionary of keyword arguments for :class:`.SPDistribution`,
   or keyword arguments for standard probability distribution such
@@ -217,7 +217,7 @@ class ParameterSpace(DesignSpace):
             the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
             For instance,
             one cannot mix a random variable
-            distributed as a :class:`.OTUniformDistribution` with identifier ``"OT"``
+            distributed as an :class:`.OTUniformDistribution` with identifier ``"OT"``
             and a random variable
             distributed as a :class:`.SPNormalDistribution` with identifier ``"SP"``.
 

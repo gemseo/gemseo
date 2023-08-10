@@ -111,7 +111,7 @@ scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 # :class:`.MDOScenario` defined above by minimizing the objective function over
 # the :class:`.DesignSpace`. Precisely, we choose the `L-BFGS-B algorithm
 # <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the
-# function :code:`scipy.optimize.fmin_l_bfgs_b`.
+# function ``scipy.optimize.fmin_l_bfgs_b``.
 
 scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 

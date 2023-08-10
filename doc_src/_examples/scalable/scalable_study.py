@@ -105,9 +105,9 @@ study.add_discipline(datasets["Mission"])
 # Then, we define the different optimization strategies we want to compare:
 # In this case, the strategies are:
 #
-# - :class:`.MDF` formulation with the :code:`"NLOPT_SLSQP"` optimization algorithm
+# - :class:`.MDF` formulation with the ``"NLOPT_SLSQP"`` optimization algorithm
 #   and no more than 100 iterations,
-# - :class:`.IDF` formulation with the :code:`"NLOPT_SLSQP"` optimization algorithm
+# - :class:`.IDF` formulation with the ``"NLOPT_SLSQP"`` optimization algorithm
 #   and no more than 100 iterations,
 #
 # Note that in this case, we compare MDO formulations
@@ -125,22 +125,22 @@ study.add_optimization_strategy("NLOPT_SLSQP", 100, "IDF")
 # 1. All design parameters have a size equal to 1,
 # 2. All design parameters have a size equal to 20.
 #
-# To do that, we pass :code:`design_size=[1, 20]`
+# To do that, we pass ``design_size=[1, 20]``
 # to the :meth:`.ScalabilityStudy.add_scaling_strategies` method.
-# :code:`design_size` expects either:
+# ``design_size`` expects either:
 #
 # - a list of integer where the ith component is the size for the ith scaling strategy,
-# - an integer changing the fixed size (if :code:`None`, use the original size).
+# - an integer changing the fixed size (if ``None``, use the original size).
 #
 # Note that we could also compare the optimization strategies while
 #
-# - varying the size of the different coupling variables (use :code:`coupling_size`),
-# - varying the size of the different equality constraints (use :code:`eq_size`),
-# - varying the size of the different inequality constraints (use :code:`ineq_size`),
-# - varying the size of any variable (use :code:`variables`),
+# - varying the size of the different coupling variables (use ``coupling_size``),
+# - varying the size of the different equality constraints (use ``eq_size``),
+# - varying the size of the different inequality constraints (use ``ineq_size``),
+# - varying the size of any variable (use ``variables``),
 #
-# where the corresponding arguments works in the same way as :code:`design_size`,
-# except for :code:`variables` which expects a list of dictionary
+# where the corresponding arguments works in the same way as ``design_size``,
+# except for ``variables`` which expects a list of dictionary
 # whose keys are variables names and values are variables sizes.
 # In this way, we can use this argument to fine-tune a scaling strategy
 # to very specific variables, e.g. local variables.
@@ -160,7 +160,7 @@ study.execute(n_replicates=2)
 # Look at the dependency matrices
 # -------------------------------
 # Here are the dependency matrices obtained with the 1st replicate when
-# :code:`design_size=10`.
+# ``design_size=10``.
 #
 # Aerodynamics
 # ~~~~~~~~~~~~
@@ -178,7 +178,7 @@ study.execute(n_replicates=2)
 # Look at optimization histories
 # ------------------------------
 # Here are the optimization histories obtained with the 1st replicate when
-# :code:`design_size=10`, where the left side represents the :class:`.MDF` formulation
+# ``design_size=10``, where the left side represents the :class:`.MDF` formulation
 # while the right one represents the :class:`.IDF` formulation.
 #
 # Objective function

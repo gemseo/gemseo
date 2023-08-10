@@ -46,6 +46,6 @@ get_available_doe_algorithms()
 # %%
 # Get options schema
 # ------------------
-# For a given optimization algorithm, e.g. :code:`"DiagonalDOE"`,
+# For a given optimization algorithm, e.g. ``"DiagonalDOE"``,
 # we can get the options; e.g.
 get_algorithm_options_schema("DiagonalDOE")

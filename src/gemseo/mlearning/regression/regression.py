@@ -276,9 +276,9 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         """Predict the Jacobians of the regression model at input_data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the NumPy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;

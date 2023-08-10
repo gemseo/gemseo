@@ -98,7 +98,7 @@ print(problem)
 #
 #    We could also provide options to the :class:`.ScalableModel` objects
 #    by means of the constructor of :class:`.ScalableProblem`,
-#    e.g. :code:`fill_factor` in the frame of the :class:`.ScalableDiagonalModel`.
+#    e.g. ``fill_factor`` in the frame of the :class:`.ScalableDiagonalModel`.
 #    In this example, we use the standard ones.
 
 # %%
@@ -110,7 +110,7 @@ problem.plot_n2_chart(save=False, show=True)
 # %%
 # Create an MDO scenario
 # ----------------------
-# Lastly, we create a :class:`.MDOScenario` with the :class:`.MDF` formulation
+# Lastly, we create an :class:`.MDOScenario` with the :class:`.MDF` formulation
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.
 scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
@@ -119,13 +119,13 @@ scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
 # .. note::
 #
 #    We could also provide options for the scalable models to the constructor
-#    of :class:`.ScalableProblem`, e.g. :code:`fill_factor` in the frame of
+#    of :class:`.ScalableProblem`, e.g. ``fill_factor`` in the frame of
 #    the :class:`.ScalableDiagonalModel`.
 #    In this example, we use the standard ones.
 
 # %%
 # Once the scenario is created, we can execute it as any scenario.
-# Here, we use the :code:`NLOPT_SLSQP` optimization algorithm
+# Here, we use the ``NLOPT_SLSQP`` optimization algorithm
 # with no more than 100 iterations.
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 

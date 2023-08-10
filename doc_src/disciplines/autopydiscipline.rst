@@ -29,7 +29,7 @@ Then, we can consider the :class:`.AutoPyDiscipline` to convert it into an :clas
 Create and instantiate the discipline
 *************************************
 
-For that, we can use the :func:`.create_discipline` API function with :code:`AutoPyDiscipline` as first argument:
+For that, we can use the :func:`.create_discipline` API function with ``AutoPyDiscipline`` as first argument:
 
 .. code::
 
@@ -75,9 +75,9 @@ Optional arguments
 
 Optional arguments are:
 
-- :code:`py_jac=None`: The Python function to compute the Jacobian which must return a 2D numpy array,
-- :code:`use_arrays=False`: if :code:`True`, the function is expected to take arrays as inputs and give outputs as arrays,
-- :code:`grammar_type=MDODiscipline.GrammarType.JSON`: The type of grammar to be used.
+- ``py_jac=None``: The Python function to compute the Jacobian which must return a 2D numpy array,
+- ``use_arrays=False``: if ``True``, the function is expected to take arrays as inputs and give outputs as arrays,
+- ``grammar_type=MDODiscipline.GrammarType.JSON``: The type of grammar to be used.
 
 Here is an example of Jacobian function, returning a 2D matrix.
 The rows of the matrix correspond to the derivatives of the outputs,

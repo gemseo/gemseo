@@ -246,8 +246,8 @@ calling :meth:`!MDODiscipline._run`.
     misssion = SobieskiMission()
     misssion.execute(input_data={"y_14": [1.0, "a"]})
 
-The :code:`y_14` value shall be an array of numbers.
-:code:`"a"` is not a number and this prevents the execution of the discipline.
+The ``y_14`` value shall be an array of numbers.
+``"a"`` is not a number and this prevents the execution of the discipline.
 |g| raises an exception,
 the invalid property of the schema is highlighted,
 as well as the rules.
@@ -273,11 +273,11 @@ Note that all errors are displayed before raising the exception.
 This avoids to have to rerun the process multiple times to debug data errors
 one by one.
 In a single pass,
-we learn that the data :code:`x_shared`,
-:code:`y_24`,
-:code:`y_34` are required and missing,
+we learn that the data ``x_shared``,
+``y_24``,
+``y_34`` are required and missing,
 and that the
-second component of :code:`y_14` is of the wrong type.
+second component of ``y_14`` is of the wrong type.
 
 .. code-block:: python
 
@@ -333,11 +333,11 @@ It shall implement,
 in the subclasses,
 the calculation of outputs for given inputs.
 When |g| needs to execute the discipline,
-it will call the public :code:`execute` method,
+it will call the public ``execute`` method,
 that will:
 
 #. Add default inputs to the input_data if some inputs are not defined
-   in :code:`input_data` but exist in :attr:`!MDODiscipline.default_inputs`.
+   in ``input_data`` but exist in :attr:`!MDODiscipline.default_inputs`.
 #. Check if the last execution of the discipline was called with
    identical inputs,
    buffered in :attr:`!MDODiscipline._in_buffered`,
@@ -345,7 +345,7 @@ that will:
    directly
    return :attr:`!MDODiscipline._out_buffered`.
 #. Cache the inputs,
-   *i.e.* stores :code:`input_data` in :attr:`!MDODiscipline.cache`.
+   *i.e.* stores ``input_data`` in :attr:`!MDODiscipline.cache`.
 #. Check the input data against  :attr:`!MDODiscipline.input_grammar`.
 #. If :attr:`!MDODiscipline.data_processor` is not None: run the data pre-processor,
    to eventually convert data from |g| types (typically numpy arrays) to discipline types as needed by the :meth:`!MDODiscipline._run` method.

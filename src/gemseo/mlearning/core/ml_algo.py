@@ -60,7 +60,7 @@ a regression model can predict the outputs corresponding to new inputs values.
    :mod:`~gemseo.mlearning.regression.regression`
 
 The quality of a machine learning algorithm can be measured
-using a :class:`.MLQualityMeasure`
+using an :class:`.MLQualityMeasure`
 either with respect to the learning dataset
 or to a test dataset or using resampling methods,
 such as K-folds or leave-one-out cross-validation techniques.

@@ -30,7 +30,7 @@ with two inputs and two outputs:
 - :math:`y_2=-1-2x_1-3x_2`
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
-For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegressionAlgo`
+For that, we use a :class:`.SurrogateDiscipline` relying on an :class:`.MLRegressionAlgo`
 """
 from __future__ import annotations
 

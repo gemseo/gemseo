@@ -43,7 +43,7 @@ The constructor has also optional arguments:
 
 - a variable dimension (default: 1),
 - a standard representation of these parameters
-  (default: use :code:`parameters`).
+  (default: use ``parameters``).
 """
 from __future__ import annotations
 

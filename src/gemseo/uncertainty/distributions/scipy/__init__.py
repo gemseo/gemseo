@@ -33,16 +33,16 @@ in a user-friendly way: :class:`.SPExponentialDistribution`,
 and :class:`.SPUniformDistribution`. More precisely,
 the argument whose nature is a dictionary of keyword parameters
 is replaced with several user-defined keyword arguments.
-In this way, the use writes :code:`SPUniformDistribution('x', -1., 3.)`
-or :code:`SPUniformDistribution('x', minimum=-1., maximum=3.)`
-instead of  :code:`SPDistribution('x', 'Uniform', {"loc": -1, "scale": 4})`.
+In this way, the use writes ``SPUniformDistribution('x', -1., 3.)``
+or ``SPUniformDistribution('x', minimum=-1., maximum=3.)``
+instead of  ``SPDistribution('x', 'Uniform', {"loc": -1, "scale": 4})``.
 Furthermore, these classes inheriting from :class:`.SPDistribution`
 are documented in such a way that a newbie could easily apprehend them.
 
 Composed distribution
 ---------------------
 
-A :code:`SPDistribution` has a :attr:`.SPDistribution._COMPOSED_DISTRIBUTION`
+A ``SPDistribution`` has a :attr:`.SPDistribution._COMPOSED_DISTRIBUTION`
 attribute referencing :class:`.SPComposedDistribution`
 which is a class to build a composed distribution
 related to given random variables from a list of :class:`.SPDistribution` objects

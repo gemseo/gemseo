@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SurrogateDiscipline(MDODiscipline):
-    """A :class:`.MDODiscipline` approximating another one with a surrogate model.
+    """An :class:`.MDODiscipline` approximating another one with a surrogate model.
 
     This surrogate model is a regression model implemented as a
     :class:`.MLRegressionAlgo`. This :class:`.MLRegressionAlgo` is built from an input-

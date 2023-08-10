@@ -55,7 +55,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 # we will illustrate this use at the :class:`.OptimizationProblem` level
 # which can be useful for developers.
 #
-# Let us consider a :class:`.MDODiscipline` representing the function :math:`y=x^2`:
+# Let us consider an :class:`.MDODiscipline` representing the function :math:`y=x^2`:
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x**2"})
 
 # %%
@@ -109,7 +109,7 @@ scenario._lib.seed
 # --------------------
 # Basic
 # ~~~~~
-# Let us consider a :class:`.MDOFunction` representing the function :math:`y=x^2`:
+# Let us consider an :class:`.MDOFunction` representing the function :math:`y=x^2`:
 function = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
 
 # %%

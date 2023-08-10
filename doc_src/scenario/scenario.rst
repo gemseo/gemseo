@@ -41,10 +41,10 @@ inheriting from the :class:`.MDODiscipline` class and derived classes:
 
 A :class:`.Scenario` is defined by four main elements:
 
-- the :code:`disciplines` attribute: the list of :class:`.MDODiscipline`,
-- the :code:`formulation` attribute: the multidisciplinary formulation based on :class:`~gemseo.algos.design_space.DesignSpace`,
-- the :code:`optimization_result` attribute: the optimization results,
-- the :code:`post_factory` attribute: the post-processing set of methods.
+- the ``disciplines`` attribute: the list of :class:`.MDODiscipline`,
+- the ``formulation`` attribute: the multidisciplinary formulation based on :class:`~gemseo.algos.design_space.DesignSpace`,
+- the ``optimization_result`` attribute: the optimization results,
+- the ``post_factory`` attribute: the post-processing set of methods.
 
 1.c. What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,14 +52,14 @@ A :class:`.Scenario` is defined by four main elements:
 After the instantiation of the different :class:`.MDODiscipline`,
 an instance of this scenario can be created from the :meth:`~gemseo.create_scenario` API function whose arguments are:
 
-- :code:`disciplines`: the ``list`` of instantiated :class:`.MDODiscipline`,
-- :code:`formulation`: the multidisciplinary formulation name (:code:`str`)
-- :code:`objective_name`: the objective name (:code:`str`)
-- :code:`design_space`: the instantiated :class:`~gemseo.algos.design_space.DesignSpace`,
-- :code:`name=None`: the optional name of the scenario (:code:`str`),
-- :code:`scenario_type='MDO'`: the optional type of scenario (:code:`'MDO'` or :code:`'DOE'`),
-- :code:`maximize_objective=False`: the choice between maximizing or minimizing the objective function (:code:`bool`),
-- :code:`**formulation_options`: options passed to the multidisciplinary formulation.
+- ``disciplines``: the ``list`` of instantiated :class:`.MDODiscipline`,
+- ``formulation``: the multidisciplinary formulation name (``str``)
+- ``objective_name``: the objective name (``str``)
+- ``design_space``: the instantiated :class:`~gemseo.algos.design_space.DesignSpace`,
+- ``name=None``: the optional name of the scenario (``str``),
+- ``scenario_type='MDO'``: the optional type of scenario (``'MDO'`` or ``'DOE'``),
+- ``maximize_objective=False``: the choice between maximizing or minimizing the objective function (``bool``),
+- ``**formulation_options``: options passed to the multidisciplinary formulation.
 
 The types of scenarios already implemented in |g| can be obtained by means of the :meth:`~gemseo.get_available_scenario_types` API function:
 
@@ -79,7 +79,7 @@ which results in:
 2. How to create a scenario?
 ****************************
 
-We can easily create a :class:`.MDOScenario` or a :class:`.DOEScenario`
+We can easily create an :class:`.MDOScenario` or a :class:`.DOEScenario`
 from the :meth:`~gemseo.create_scenario` API function.
 
 2.a. Instantiate the disciplines
@@ -147,7 +147,7 @@ which yields:
 
 .. note::
 
-   :code:`argument=value` formulation options can also be passed to the :meth:`~gemseo.create_scenario` API function.
+   ``argument=value`` formulation options can also be passed to the :meth:`~gemseo.create_scenario` API function.
    Available options for the different formulations are presented in :ref:`gen_formulation_algos`.
 
 2.e. Choose the type of scenario
@@ -236,7 +236,7 @@ The simplest way to visualize how the :class:`.Scenario` manages the workflow an
 is to log them in the console or in a file using |g|'s logger.
 
 The method :meth:`.Scenario.xdsmize` of the :class:`.Scenario`
-can be used to this aim (:code:`monitor=True`).
+can be used to this aim (``monitor=True``).
 
 If ``save_html`` (default True), will generate a self contained HTML file, that can be automatically open using the option ``show_html=True``.
 If ``save_json`` is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
@@ -266,14 +266,14 @@ and
    :scale: 65 %
 
 Moreover, you can export a static version of the XDSM in both TIKZ, LaTeX and PDF files
-by means of the :code:`save_pdf` boolean argument of the
+by means of the ``save_pdf`` boolean argument of the
 :meth:`.Scenario.xdsmize` method:
 
 .. code::
 
     scenario.xdsmize(save_pdf=True)
 
-eventually specifying the output directory :code:`directory_path='SOME_PATH'`.
+eventually specifying the output directory ``directory_path='SOME_PATH'``.
 
 3. How to execute a scenario?
 *****************************
@@ -300,14 +300,14 @@ or sampling the problem, e.g.
 .. note::
 
    :meth:`.MDOScenario.execute` and :meth:`.DOEScenario.execute` use input data defined as a dictionary
-   with at least an algorithm name :code:`algo` (see :meth:`.Scenario.get_available_driver_names` for a complete list).
-   A :class:`.MDOScenario` also requires the mandatory parameter :code:`max_iter`
+   with at least an algorithm name ``algo`` (see :meth:`.Scenario.get_available_driver_names` for a complete list).
+   an :class:`.MDOScenario` also requires the mandatory parameter ``max_iter``
    corresponding to the maximum number of iterations of the optimization algorithm;
    the other parameters can be passed as a dictionary of options (see :ref:`gen_opt_algos`),
    e.g. ``{"algo": "SLSQP", "max_iter": 100, "algo_options": dict_of_options}``.
    On the other hand,
    depending on the DOE algorithm,
-   :class:`.DOEScenario` can require either :code:`n_samples`
+   :class:`.DOEScenario` can require either ``n_samples``
    or other arguments to be mandatory.
    The other optional parameters can be passed as a dictionary (see :ref:`gen_doe_algos`),
    e.g. ``{"algo": "lhs", "n_samples": 10, "algo_options": dict_of_options}``.

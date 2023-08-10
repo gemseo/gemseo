@@ -74,12 +74,12 @@ class MDOFunction(Serializable):
     to define the objective function, the constraints and the observables
     of an :class:`.OptimizationProblem`.
 
-    A :class:`.MDOFunction` is initialized from an optional callable and a name,
-    e.g. :code:`func = MDOFunction(lambda x: 2*x, "my_function")`.
+    an :class:`.MDOFunction` is initialized from an optional callable and a name,
+    e.g. ``func = MDOFunction(lambda x: 2*x, "my_function")``.
 
     .. note::
 
-       The callable can be set to :code:`None`
+       The callable can be set to ``None``
        when the user does not want to use a callable
        but a database to browse for the output vector corresponding to an input vector
        (see :meth:`.MDOFunction.set_pt_from_database`).
@@ -87,14 +87,14 @@ class MDOFunction(Serializable):
     The following information can also be provided at initialization:
 
     - the type of the function,
-      e.g. :code:`f_type="obj"` if the function will be used as an objective
+      e.g. ``f_type="obj"`` if the function will be used as an objective
       (see :attr:`.MDOFunction.FunctionType`),
     - the function computing the Jacobian matrix,
-      e.g. :code:`jac=lambda x: array([2.])`,
+      e.g. ``jac=lambda x: array([2.])``,
     - the literal expression to be used for the string representation of the object,
-      e.g. :code:`expr="2*x"`,
+      e.g. ``expr="2*x"``,
     - the names of the inputs and outputs of the function,
-      e.g. :code:`input_names=["x"]` and :code:`output_names=["y"]`.
+      e.g. ``input_names=["x"]`` and ``output_names=["y"]``.
 
     .. warning::
 
@@ -112,23 +112,23 @@ class MDOFunction(Serializable):
     can be accessed with the properties :attr:`.MDOFunction.func`
     and :attr:`.MDOFunction.jac`.
 
-    A :class:`.MDOFunction` is callable:
-    :code:`output = func(array([3.])) # expected: array([6.])`.
+    an :class:`.MDOFunction` is callable:
+    ``output = func(array([3.])) # expected: array([6.])``.
 
     Elementary operations can be performed with :class:`.MDOFunction` instances:
-    addition (:code:`func = func1 + func2` or :code:`func = func1 + offset`),
-    subtraction (:code:`func = func1 - func2` or :code:`func = func1 - offset`),
-    multiplication (:code:`func = func1 * func2` or :code:`func = func1 * factor`)
-    and opposite  (:code:`func = -func1`).
-    It is also possible to build a :class:`.MDOFunction`
+    addition (``func = func1 + func2`` or ``func = func1 + offset``),
+    subtraction (``func = func1 - func2`` or ``func = func1 - offset``),
+    multiplication (``func = func1 * func2`` or ``func = func1 * factor``)
+    and opposite  (``func = -func1``).
+    It is also possible to build an :class:`.MDOFunction`
     as a concatenation of :class:`.MDOFunction` objects:
-    :code:`func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"`).
+    ``func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"``).
 
-    Moreover, a :class:`.MDOFunction` can be approximated
+    Moreover, an :class:`.MDOFunction` can be approximated
     with either a first-order or second-order Taylor polynomial at a given input vector,
     using respectively :meth:`.MDOFunction.linear_approximation`
     and :meth:`quadratic_approx`;
-    such an approximation is also a :class:`.MDOFunction`.
+    such an approximation is also an :class:`.MDOFunction`.
 
     Lastly, the user can check the Jacobian function by means of approximation methods
     (see :meth:`.MDOFunction.check_grad`).

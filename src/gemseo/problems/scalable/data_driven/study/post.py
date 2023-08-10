@@ -25,7 +25,7 @@ contained in the study directory are graphically post-processed. This class
 provides several methods to easily change graphical properties, notably
 the plot labels. It also makes it possible to define a cost function per
 MDO formulation, converting the numbers of executions and linearizations
-of the different disciplines required by a MDO process in an estimation
+of the different disciplines required by an MDO process in an estimation
 of the computational cost associated with what would be a scaled version
 of the true problem.
 

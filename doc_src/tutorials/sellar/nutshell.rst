@@ -455,7 +455,7 @@ with their bounds and values:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the API function :meth:`gemseo.create_scenario`,
-we create the process which is a :class:`.MDOScenario`.
+we create the process which is an :class:`.MDOScenario`.
 The scenario delegates the creation of an :class:`.OptimizationProblem`
 to the  :class:`.MDOFormulation`.
 We choose the :term:`MDF` formulation,

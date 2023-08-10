@@ -37,7 +37,7 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 
 # %%
 # For that purpose,
-# we will use a :class:`.MOERegressor` in an advanced way:
+# we will use an :class:`.MOERegressor` in an advanced way:
 # we will not set the clustering, classification and regression algorithms
 # but select them according to their performance
 # from several candidates that we will provide.
@@ -50,7 +50,7 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 # Initialization
 # --------------
 # First,
-# we initialize a :class:`.MOERegressor` with soft classification
+# we initialize an :class:`.MOERegressor` with soft classification
 # by means of the high-level machine learning function :func:`.create_regression_model`.
 model = create_regression_model("MOERegressor", dataset, hard=False)
 

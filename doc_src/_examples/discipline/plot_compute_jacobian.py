@@ -23,7 +23,7 @@ Compute the Jacobian of a discipline analytically
 =================================================
 
 In this example,
-we will compute the Jacobians of some outputs of a :class:`.MDODiscipline`
+we will compute the Jacobians of some outputs of an :class:`.MDODiscipline`
 with respect to some inputs, based on its analytical derivatives.
 """
 from __future__ import annotations

@@ -35,7 +35,7 @@ from numpy import array
 configure_logger()
 
 # %%
-# Let us consider a :class:`.MemoryFullCache` storing two parameters:
+# Let us consider an :class:`.MemoryFullCache` storing two parameters:
 #
 # - x with dimension 1 which is a cache input,
 # - y with dimension 2 which is a cache output.

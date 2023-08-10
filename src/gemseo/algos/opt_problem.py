@@ -26,7 +26,7 @@ The :class:`.OptimizationProblem` class operates on a :class:`.DesignSpace` defi
 - an initial guess :math:`x_0` for the design variables,
 - the bounds :math:`l_b \leq x \leq u_b` of the design variables.
 
-A (possible vector) objective function with a :class:`.MDOFunction` type
+A (possible vector) objective function with an :class:`.MDOFunction` type
 is set using the ``objective`` attribute.
 If the optimization problem looks for the maximum of this objective function,
 the :meth:`.OptimizationProblem.change_objective_sign`
@@ -147,7 +147,7 @@ class OptimizationProblem(BaseProblem):
 
     - a :class:`.DesignSpace` specifying the design variables
       in terms of names, lower bounds, upper bounds and initial guesses,
-    - the objective function as a :class:`.MDOFunction`,
+    - the objective function as an :class:`.MDOFunction`,
       which can be a vector,
 
     execute it from an algorithm provided by a :class:`.DriverLibrary`,
@@ -978,7 +978,7 @@ class OptimizationProblem(BaseProblem):
             input_function: The function to be tested.
 
         Raises:
-            TypeError: If the function is not a :class:`.MDOFunction`.
+            TypeError: If the function is not an :class:`.MDOFunction`.
         """
         if not isinstance(input_function, MDOFunction):
             raise TypeError(
@@ -1474,7 +1474,7 @@ class OptimizationProblem(BaseProblem):
             The scaled linear function.
 
         Raises:
-            TypeError: If the original function is not a :class:`.MDOLinearFunction`.
+            TypeError: If the original function is not an :class:`.MDOLinearFunction`.
         """
         if not isinstance(orig_func, MDOLinearFunction):
             raise TypeError("Original function must be linear")

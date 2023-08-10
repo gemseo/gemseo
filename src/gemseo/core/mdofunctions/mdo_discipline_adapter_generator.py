@@ -41,9 +41,9 @@ OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
 class MDODisciplineAdapterGenerator:
-    """Generator of :class:`.MDOFunction` objects executing a :class:`.MDODiscipline`.
+    """Generator of :class:`.MDOFunction` objects executing an :class:`.MDODiscipline`.
 
-    It creates a :class:`.MDODisciplineAdapter` evaluating some of the outputs of the
+    It creates an :class:`.MDODisciplineAdapter` evaluating some of the outputs of the
     discipline from some of its
 
     It uses closures to generate functions instances from a discipline execution.

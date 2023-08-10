@@ -17,7 +17,7 @@ Optimization and DOE framework
 
 In this section we describe |g|'s optimization and DOE framework.
 
-The standard way to use |g| is through a :class:`.MDOScenario`, which
+The standard way to use |g| is through an :class:`.MDOScenario`, which
 automatically creates an :class:`.OptimizationProblem` from a :ref:`MDO formulation <mdo_formulations>` and a set of :class:`~gemseo.core.discipline.MDODiscipline`.
 
 However, one may be interested in directly creating an :class:`.OptimizationProblem` using the class :class:`.OptimizationProblem`,

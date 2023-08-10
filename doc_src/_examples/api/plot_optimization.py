@@ -47,6 +47,6 @@ get_available_opt_algorithms()
 # %%
 # Get options schema
 # ------------------
-# For a given optimization algorithm, e.g. :code:`"NLOPT_SLSQP"`,
+# For a given optimization algorithm, e.g. ``"NLOPT_SLSQP"``,
 # we can get the options; e.g.
 get_algorithm_options_schema("NLOPT_SLSQP")

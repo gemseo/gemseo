@@ -40,7 +40,7 @@ In this subsection, we will see how to use **|g|** to solve this problem :math:`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :func:`.create_discipline` API function,
-we create a :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
+we create an :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code::
@@ -155,7 +155,7 @@ Firstly, we create the objective function and its gradient as standard python fu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now, we can to minimize this :class:`.MDODiscipline` over its design space by means of
-the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the function :code:`scipy.optimize.fmin_l_bfgs_b`.
+the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the function ``scipy.optimize.fmin_l_bfgs_b``.
 
 .. code-block:: python
 
@@ -204,7 +204,7 @@ from `SciPy <https://scipy.org/>`_ called through the optimization interface of 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :func:`.create_discipline` API function,
-we create a :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
+we create an :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code-block:: python
@@ -244,7 +244,7 @@ by using its :meth:`~.DesignSpace.add_variable` method.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the :func:`.create_scenario` API function,
-we define a :class:`.MDOScenario` from the :class:`.MDODiscipline`
+we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
 and the :class:`.DesignSpace` defined above:
 
 .. code::
@@ -261,7 +261,7 @@ and the :class:`.DesignSpace` defined above:
 Lastly, we solve the :class:`.OptimizationProblem` included in the :class:`.MDOScenario`
 defined above by minimizing the objective function over the :class:`.DesignSpace`.
 Precisely, we choose the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
-implemented in the function :code:`scipy.optimize.fmin_l_bfgs_b` and
+implemented in the function ``scipy.optimize.fmin_l_bfgs_b`` and
 indirectly called by means of the class :class:`.OptimizersFactory` and of its function :meth:`~.BaseAlgoFactory.execute`:
 
 .. code-block:: python

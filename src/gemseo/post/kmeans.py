@@ -38,8 +38,8 @@ class KMeans(OptPostProcessor):
     The default number of clusters is 5 and can be modified in option.
 
     The k-means construction depends
-    on the :code:`MiniBatchKMeans` class
-    of the :code:`cluster` module of the
+    on the ``MiniBatchKMeans`` class
+    of the ``cluster`` module of the
     `scikit-learn library <https://scikit-learn.org/stable/modules/generated/
     sklearn.cluster.MiniBatchKMeans.html>`_ .
     """

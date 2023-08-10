@@ -111,9 +111,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """Predict the clusters from the input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -165,9 +165,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specify these input data either as a numpy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;

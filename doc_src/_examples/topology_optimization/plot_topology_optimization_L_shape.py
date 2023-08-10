@@ -73,7 +73,7 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # %%
 # Solve the topology optimization problem
 # ---------------------------------------
-# Generate a :class:`.MDOScenario`:
+# Generate an :class:`.MDOScenario`:
 scenario = create_scenario(
     disciplines,
     formulation="DisciplinaryOpt",

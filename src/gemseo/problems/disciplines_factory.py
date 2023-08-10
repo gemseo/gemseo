@@ -65,7 +65,7 @@ class DisciplinesFactory(BaseFactory):
         self.__base_grammar_names = self.__base_grammar.keys()
 
     def create(self, discipline_name: str, **options):
-        """Create a :class:`.MDODiscipline` from its name.
+        """Create an :class:`.MDODiscipline` from its name.
 
         Args:
             discipline_name: The name of the discipline

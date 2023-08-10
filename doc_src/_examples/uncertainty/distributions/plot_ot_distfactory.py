@@ -121,7 +121,7 @@ acceptable, details = fitter.compute_measure(exp_dist, "Kolmogorov")
 # .. note::
 #     We can also change the significance level for significance tests
 #     whose default value is 0.05.
-#     For that, use the :code:`level` argument.
+#     For that, use the ``level`` argument.
 
 # %%
 # Select an optimal distribution
