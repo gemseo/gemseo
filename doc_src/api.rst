@@ -75,7 +75,7 @@ Create a discipline
 
 The :func:`.create_discipline` function can create an :class:`.MDODiscipline`
 or a list of :class:`.MDODiscipline` by using its name alone;
-specific :code:`**options` can be provided in argument;
+specific ``**options`` can be provided in argument;
 e.g.:
 
 .. code::
@@ -87,8 +87,8 @@ e.g.:
 Get discipline schemas for inputs, outputs and options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- The function :func:`.get_discipline_inputs_schema` can get the JSON schema of the inputs of a :code:`discipline`;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`,  this method returns a JSON string, otherwise it returns a dictionary;
+- The function :func:`.get_discipline_inputs_schema` can get the JSON schema of the inputs of a ``discipline``;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``,  this method returns a JSON string, otherwise it returns a dictionary;
   e.g.:
 
 .. code::
@@ -96,8 +96,8 @@ Get discipline schemas for inputs, outputs and options
    >>> get_discipline_inputs_schema(disciplines[0])
    {u'name': u'SobieskiPropulsion_input', 'required': [u'x_3', u'x_shared', u'y_23'], u'id': u'#SobieskiPropulsion_input', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'x_shared': {'items': {'type': u'number'}, 'type': u'array'}, u'y_23': {'items': {'type': u'number'}, 'type': u'array'}, u'x_3': {'items': {'type': u'number'}, 'type': u'array'}}}
 
-- The function :func:`.get_discipline_outputs_schema` can get the JSON schema of the outputs of a :code:`discipline`;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`,  this method returns a JSON string, otherwise it returns a dictionary;
+- The function :func:`.get_discipline_outputs_schema` can get the JSON schema of the outputs of a ``discipline``;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``,  this method returns a JSON string, otherwise it returns a dictionary;
   e.g.:
 
 .. code::
@@ -106,8 +106,8 @@ Get discipline schemas for inputs, outputs and options
    {u'name': u'SobieskiPropulsion_output', 'required': [u'g_3', u'y_3', u'y_31', u'y_32', u'y_34'], u'id': u'#SobieskiPropulsion_output', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'y_31': {'items': {'type': u'number'}, 'type': u'array'}, u'y_32': {'items': {'type': u'number'}, 'type': u'array'}, u'y_3': {'items': {'type': u'number'}, 'type': u'array'}, u'y_34': {'items': {'type': u'number'}, 'type': u'array'}, u'g_3': {'items': {'type': u'number'}, 'type': u'array'}}}
 
 
-- The function :func:`.get_discipline_options_schema` can get the JSON schema of the options of a :code:`discipline`;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`,  this method returns a JSON string, otherwise it returns a dictionary;
+- The function :func:`.get_discipline_options_schema` can get the JSON schema of the options of a ``discipline``;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``,  this method returns a JSON string, otherwise it returns a dictionary;
   e.g.:
 
 .. code::
@@ -115,7 +115,7 @@ Get discipline schemas for inputs, outputs and options
    >>> get_discipline_options_schema('SobieskiMission')
    {u'$schema': u'http://json-schema.org/draft-04/schema', 'required': ['dtype'], 'type': u'object', u'name': u'MDODiscipline_options', 'properties': {u'linearization_mode': {u'enum': [u'auto', u'direct', u'reverse', u'adjoint'], 'type': u'string'}, u'cache_tolerance': {u'minimum': 0, 'type': u'number', 'description': u'Numerical tolerance on the relative norm of input vectors \n to consider that two sets of inputs are equal, and that the outputs may therefore be returned from the cache without calculations.'}, u'jac_approx_n_processes': {u'minimum': 1, 'type': u'integer', 'description': u'maximum number of processors or threads on \nwhich the jacobian approximation is performed\n by default, 1 means no parallel calculations'}, u'cache_type': {u'enum': [u'HDF5_cache', u'simple_cache'], 'type': u'string', 'description': u'Type of cache to be used.  \nBy default, simple cache stores the last execution inputs and outputs  \nin memory only to avoid computation of the outputs if the inputs are identical.\n To store more executions, use HDF5 caches, which stores data on the disk.\n There is a hashing mechanism which avoids reading on the disk for every calculation.'}, 'dtype': {'type': 'string'}, u'cache_hdf_file': {'type': u'string', 'description': u'Path to the HDF5 file to store the cache data.', u'format': u'uri'}, u'jac_approx_use_threading': {'type': u'boolean', 'description': u'if True, use Threads instead of processes\n to parallelize the execution. \nMultiprocessing will serialize all the disciplines, \nwhile multithreading will share all the memory.\n This is important to note if you want to execute the same\n  discipline multiple times, you shall use multiprocessing'}, u'cache_hdf_node_path': {'type': u'string', 'description': u'Name of the HDF dataset to store the discipline\n data. If None, the discipline name is used.'}, u'jac_approx_type': {u'enum': [u'finite_differences', u'complex_step'], 'type': u'string'}, u'jax_approx_step': {'type': u'number', u'minimum': 0, u'exclusiveMinimum': True, 'description': u'Step for finite differences or complex step for Jacobian approximation'}, u'jac_approx_wait_time': {u'minimum': 0, 'type': u'number', 'description': u'Time waited between two forks of the process or thread when using parallel jacobian approximations (parallel=True)'}}}
 
-- The function :func:`.get_discipline_options_defaults` can get the default values of the JSON schema of the options of a discipline :code:`discipline_name`;
+- The function :func:`.get_discipline_options_defaults` can get the default values of the JSON schema of the options of a discipline ``discipline_name``;
   e.g.:
 
 .. code
@@ -155,7 +155,7 @@ Get the surrogate schema for options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The function :func:`.get_surrogate_options_schema` can get the JSON schema of a surrogate;
-if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`,  this method returns a JSON string, otherwise it returns a dictionary;
+if the argument ``output_json`` (default: ``False``) is set to ``True``,  this method returns a JSON string, otherwise it returns a dictionary;
 e.g.:
 
 .. code::
@@ -170,16 +170,16 @@ Create surrogate disciplines
 
   - The mandatory arguments are:
 
-    - :code:`surrogate_name`: name of the surrogate model (the class name)
-    - :code:`hdf_file_path`: path to the HDF file to be used to train the surrogate
-    - :code:`hdf_node_path`: node name in the HDF, by default the original discipline name
+    - ``surrogate_name``: name of the surrogate model (the class name)
+    - ``hdf_file_path``: path to the HDF file to be used to train the surrogate
+    - ``hdf_node_path``: node name in the HDF, by default the original discipline name
 
   - The optional arguments are:
 
-    - :code:`input_names`: list of input names among all inputs in the HDF. By default, takes all inputs in the HDF (defaut: :code:`None`)
-    - :code:`output_names`: list of output names among all outputs in the HDF. By default, takes all outputs in the HDF
-    - :code:`disc_name`: surrogate discipline name
-    - :code:`**options`: additional options to be passed to the surrogate for its construction
+    - ``input_names``: list of input names among all inputs in the HDF. By default, takes all inputs in the HDF (defaut: ``None``)
+    - ``output_names``: list of output names among all outputs in the HDF. By default, takes all outputs in the HDF
+    - ``disc_name``: surrogate discipline name
+    - ``**options``: additional options to be passed to the surrogate for its construction
 
 .. seealso::
 
@@ -238,9 +238,9 @@ The function :func:`.get_available_formulations` returns the list of available :
 Get formulation schemas for (sub-)options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a given :ref:`MDO formulation <mdo_formulations>` named :code:`formulation_name`, e.g. :code:`"MDF"`, we can:
+For a given :ref:`MDO formulation <mdo_formulations>` named ``formulation_name``, e.g. ``"MDF"``, we can:
 
-- get its list of option by means of the function  :func:`.get_formulation_options_schema`; if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`,
+- get its list of option by means of the function  :func:`.get_formulation_options_schema`; if the argument ``output_json`` (default: ``False``) is set to ``True``,
   this method returns a JSON string, otherwise it returns a dictionary; e.g.:
 
 .. code::
@@ -248,9 +248,9 @@ For a given :ref:`MDO formulation <mdo_formulations>` named :code:`formulation_n
    >>> get_formulation_options_schema("MDF")
    {'$schema': 'http://json-schema.org/schema#', 'type': 'object', 'properties': {'maximize_objective': {'description': 'If True, the objective function is maximized.', 'type': 'boolean'}, 'grammar_type': {'description': 'The type of the input and output grammars, either :attr:`.MDODiscipline.GrammarType.JSON` or :attr:`.MDODiscipline.GrammarType.SIMPLE`.', 'type': 'string'}, 'main_mda_name': {'description': 'The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.', 'type': 'string'}, 'inner_mda_name': {'description': 'The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.', 'type': 'string'}}, 'required': ['grammar_type', 'inner_mda_name', 'main_mda_name', 'maximize_objective']}
 
-- get its list of sub-options by means of the function  :func:`.get_formulation_sub_options_schema` when the :code:`**options` of :code:`formulation_name` are provided in argument;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary.
-- get its list of default option values by means of :func:`.get_formulations_options_defaults`; if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`,
+- get its list of sub-options by means of the function  :func:`.get_formulation_sub_options_schema` when the ``**options`` of ``formulation_name`` are provided in argument;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary.
+- get its list of default option values by means of :func:`.get_formulations_options_defaults`; if the argument ``output_json`` (default: ``False``) is set to ``True``,
   this method returns a JSON string, otherwise it returns a dictionary.
 
 .. code::
@@ -258,8 +258,8 @@ For a given :ref:`MDO formulation <mdo_formulations>` named :code:`formulation_n
    >>> get_formulations_options_defaults("MDF")
    {'maximize_objective': False, 'grammar_type': 'JSONGrammar', 'main_mda_name': 'MDAChain', 'inner_mda_name': 'MDAJacobi'}
 
-- get its list of default sub-option values by means of :func:`.get_formulations_sub_options_defaults` when the :code:`**options` of :code:`formulation_name` are provided in argument;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary.
+- get its list of default sub-option values by means of :func:`.get_formulations_sub_options_defaults` when the ``**options`` of ``formulation_name`` are provided in argument;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary.
 
 About scenario
 --------------
@@ -278,7 +278,7 @@ Get scenario schema for inputs and options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The function :func:`.get_scenario_options_schema` can be used to get the options of a given scenario:
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary;
   e.g.:
 
 .. code::
@@ -286,8 +286,8 @@ Get scenario schema for inputs and options
    >>> print(get_scenario_options_schema("MDO"))
    {u'$schema': u'http://json-schema.org/draft-04/schema', 'required': ['name'], 'type': u'object', u'name': u'MDODiscipline_options', 'properties': {u'linearization_mode': {u'enum': [u'auto', u'direct', u'reverse', u'adjoint'], 'type': u'string'}, u'cache_tolerance': {u'minimum': 0, 'type': u'number', 'description': u'Numerical tolerance on the relative norm of input vectors \n to consider that two sets of inputs are equal, and that the outputs may therefore be returned from the cache without calculations.'}, u'jac_approx_n_processes': {u'minimum': 1, 'type': u'integer', 'description': u'maximum number of processors or threads on \nwhich the jacobian approximation is performed\n by default, 1 means no parallel calculations'}, u'cache_type': {u'enum': [u'HDF5_cache', u'simple_cache'], 'type': u'string', 'description': u'Type of cache to be used.  \nBy default, simple cache stores the last execution inputs and outputs  \nin memory only to avoid computation of the outputs if the inputs are identical.\n To store more executions, use HDF5 caches, which stores data on the disk.\n There is a hashing mechanism which avoids reading on the disk for every calculation.'}, u'cache_hdf_file': {'type': u'string', 'description': u'Path to the HDF5 file to store the cache data.', u'format': u'uri'}, u'jac_approx_use_threading': {'type': u'boolean', 'description': u'if True, use Threads instead of processes\n to parallelize the execution. \nMultiprocessing will serialize all the disciplines, \nwhile multithreading will share all the memory.\n This is important to note if you want to execute the same\n  discipline multiple times, you shall use multiprocessing'}, u'cache_hdf_node_path': {'type': u'string', 'description': u'Name of the HDF dataset to store the discipline\n data. If None, the discipline name is used.'}, u'jac_approx_type': {u'enum': [u'finite_differences', u'complex_step'], 'type': u'string'}, u'jac_approx_wait_time': {u'minimum': 0, 'type': u'number', 'description': u'Time waited between two forks of the process or thread when using parallel jacobian approximations (parallel=True)'}, u'jax_approx_step': {'type': u'number', u'minimum': 0, u'exclusiveMinimum': True, 'description': u'Step for finite differences or complex step for Jacobian approximation'}, 'name': {'description': 'scenario name\n'}}}
 
-- The function :func:`.get_scenario_inputs_schema` can be used to get the JSONSchema of the inputs of a :code:`scenario`;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary.
+- The function :func:`.get_scenario_inputs_schema` can be used to get the JSONSchema of the inputs of a ``scenario``;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary.
 
 Get scenario differentiation modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -306,17 +306,17 @@ The function :meth:`~gemseo.create_scenario` can be used to create a scenario:
 
 - The four first arguments are mandatory:
 
-  #. :code:`disciplines`: either a list of :class:`.MDODiscipline` or a single :class:`MDODiscipline`,
-  #. :code:`formulation`: the formulation name (available formulations can be listed by using the function :meth:`gemseo.get_available_formulations`),
-  #. :code:`objective_name`: the name of the objective function (one of the discipline outputs, which can be listed by using the function :meth:`gemseo.disciplines.utils.get_all_outputs`)
-  #. :code:`design_space`: the :class:`.DesignSpace` or the file path of the design space
+  #. ``disciplines``: either a list of :class:`.MDODiscipline` or a single :class:`MDODiscipline`,
+  #. ``formulation``: the formulation name (available formulations can be listed by using the function :meth:`gemseo.get_available_formulations`),
+  #. ``objective_name``: the name of the objective function (one of the discipline outputs, which can be listed by using the function :meth:`gemseo.disciplines.utils.get_all_outputs`)
+  #. ``design_space``: the :class:`.DesignSpace` or the file path of the design space
      the design variables are a subset of all the discipline inputs, which can be obtained by using :meth:`~gemseo.disciplines.utils.get_all_inputs` .
 
 - The other arguments are optional:
 
-  - :code:`name`: scenario name,
-  - :code:`scenario_type`: type of scenario, either ``"MDO"`` (default) or ``"DOE"``,
-  - :code:`**options`: options passed to the formulation,
+  - ``name``: scenario name,
+  - ``scenario_type``: type of scenario, either ``"MDO"`` (default) or ``"DOE"``,
+  - ``**options``: options passed to the formulation,
 
 - This function returns an instance of :class:`.MDOScenario` or :class:`.DOEScenario`.
 
@@ -324,9 +324,9 @@ The function :meth:`~gemseo.create_scenario` can be used to create a scenario:
 
    See :ref:`this part of the Sellar's tutorial <sellar_mdo_create_scenario>` for more details about the function :meth:`~gemseo.create_scenario`.
 
-- The function :meth:`~gemseo.monitor_scenario` can be used to add an observer to a :code:`scenario`;
+- The function :meth:`~gemseo.monitor_scenario` can be used to add an observer to a ``scenario``;
   the observer must have an "update(atom)" method that  handles the execution status change of atom ; update(atom) is called everytime an atom execution changes;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary.
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary.
 
 Monitor a scenario
 ~~~~~~~~~~~~~~~~~~
@@ -362,8 +362,8 @@ To execute a scenario, a driver must be selected. Here are the functions for tha
    >>> get_available_doe_algorithms()
    ['ff2n', 'OT_FACTORIAL', 'OT_FAURE', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'ccdesign', 'OT_SOBOL', 'fullfact', 'OT_FULLFACT', 'OT_AXIAL', 'lhs', 'OT_LHSC', 'OT_MONTE_CARLO', 'OT_RANDOM', 'OT_COMPOSITE', 'CustomDOE', 'pbdesign', 'OT_LHS', 'bbdesign']
 
-- The function :meth:`~gemseo.get_algorithm_options_schema` can list the available options of the algorithm :code:`algorithm_name`;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary;
+- The function :meth:`~gemseo.get_algorithm_options_schema` can list the available options of the algorithm ``algorithm_name``;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary;
   e.g.:
 
 .. code::
@@ -427,7 +427,7 @@ Here are the functions for :ref:`MDA <mda>`.
    ['MDANewtonRaphson', 'MDAChain', 'MDARoot', 'MDAQuasiNewton', 'MDAGaussSeidel', 'MDAGSNewton', 'MDASequential', 'MDAJacobi']
 
 - The function :meth:`~gemseo.get_mda_options_schema` can list the available options of an MDA;
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary;
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary;
   e.g.
 
 .. code::
@@ -435,8 +435,8 @@ Here are the functions for :ref:`MDA <mda>`.
    >>> get_mda_options_schema('MDAGaussSeidel')
    {'required': ['grammar_type', 'linear_solver_tolerance', 'max_mda_iter', 'tolerance', 'use_lu_fact', 'warm_start'], 'type': 'object', 'properties': {'warm_start': {'type': 'boolean', 'description': 'if True, the second iteration and ongoing\nstart from the previous coupling solution\n:type warm_start: bool\n'}, 'name': {'description': 'the name of the chain\n:type name: str\n'}, 'use_lu_fact': {'type': 'boolean', 'description': 'if True, when using adjoint/forward\ndifferenciation, store a LU factorization of the matrix\nto solve faster multiple RHS problem\n:type use_lu_fact: bool'}, 'grammar_type': {'type': 'string', 'description': 'the type of grammar to use for IO declaration\neither GrammarType.JSON or GrammarType.SIMPLE\n:type grammar_type: MDODiscipline.GrammarType\n'}, 'linear_solver_tolerance': {'type': 'number', 'description': 'Tolerance of the linear solver\nin the adjoint equation\n:type linear_solver_tolerance: float\n'}, 'max_mda_iter': {'type': 'integer', 'description': 'maximum number of iterations\n:type max_mda_iter: int\n'}, 'tolerance': {'type': 'number', 'description': 'tolerance of the iterative direct coupling solver,\nnorm of the current residuals divided by initial residuals norm\nshall be lower than the tolerance to stop iterating\n:type tolerance: float\n'}}}
 
-- The function :meth:`~gemseo.create_mda` can create a :ref:`MDA <mda>` called :code:`mda_name`, from a list of :code:`disciplines`
-  and additional :code:`**options`.
+- The function :meth:`~gemseo.create_mda` can create a :ref:`MDA <mda>` called ``mda_name``, from a list of ``disciplines``
+  and additional ``**options``.
 
 .. seealso::
 
@@ -455,8 +455,8 @@ About post processing
    >>> get_available_post_processings()
    ['ScatterPlotMatrix', 'VariableInfluence', 'RadarChart', 'ConstraintsHistory', 'SOM', 'Correlations', 'Robustness', 'KMeans', 'ParallelCoordinates', 'GradientSensitivity', 'OptHistoryView', 'BasicHistory', 'ObjConstrHist', 'QuadApprox']
 
-- The function :meth:`~gemseo.get_post_processing_options_schema` can list the available options of the post processing :code:`post_proc_name`; e.g.:
-  if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary;
+- The function :meth:`~gemseo.get_post_processing_options_schema` can list the available options of the post processing ``post_proc_name``; e.g.:
+  if the argument ``output_json`` (default: ``False``) is set to ``True``, this method returns a JSON string, otherwise it returns a dictionary;
   e.g.:
 
 .. code::
@@ -466,7 +466,7 @@ About post processing
 
 
 - The function :meth:`~gemseo.execute_post` can generate visualizations of the MDO results.
-  For that, it consider the object to post process :code:`to_post_proc`, the post processing :code:`post_name` with its :code:`**options`;
+  For that, it consider the object to post process ``to_post_proc``, the post processing ``post_name`` with its ``**options``;
   e.g.:
 
 .. autofunction:: gemseo.execute_post

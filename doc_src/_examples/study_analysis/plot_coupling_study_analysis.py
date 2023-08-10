@@ -57,7 +57,7 @@ study.generate_n2(save=False, show=True)
 # of the coupling study.
 # Here, we set some options of ``gemseo-study``:
 #
-# - :code:`-t coupling` is the type of study (default: ``mdo``),
-# - :code:`-o outputs` is the output directory,
-# - :code:`--height 5` is the height of the N2 chart in inches,
-# - :code:`--width 5` is the width of the N2 chart in inches.
+# - ``-t coupling`` is the type of study (default: ``mdo``),
+# - ``-o outputs`` is the output directory,
+# - ``--height 5`` is the height of the N2 chart in inches,
+# - ``--width 5`` is the width of the N2 chart in inches.

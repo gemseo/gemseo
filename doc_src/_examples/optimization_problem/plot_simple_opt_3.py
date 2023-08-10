@@ -45,7 +45,7 @@ LOGGER = configure_logger()
 # Define the objective function
 # -----------------------------
 # We define the objective function :math:`f(x)=\sum_{i=1}^dx_i`
-# using a :class:`.MDOFunction`.
+# using an :class:`.MDOFunction`.
 objective = MDOFunction(np_sum, name="f", expr="sum(x)")
 
 # %%

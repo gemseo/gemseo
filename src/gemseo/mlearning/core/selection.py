@@ -139,7 +139,7 @@ class MLAlgoSelection:
             name: The name of a machine learning algorithm.
             calib_space: The design space
                 defining the parameters to be calibrated
-                with a :class:`.MLAlgoCalibration`.
+                with an :class:`.MLAlgoCalibration`.
                 If None, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,

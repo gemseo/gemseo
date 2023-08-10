@@ -33,16 +33,16 @@ in a user-friendly way: :class:`.OTExponentialDistribution`,
 and :class:`.OTUniformDistribution`. More precisely,
 the argument whose nature is a tuple of positional parameters
 is replaced with several user-defined keyword arguments.
-In this way, the use writes :code:`OTUniformDistribution('x', -1., 3.)`
-or :code:`OTUniformDistribution('x', minimum=-1., maximum=3.)`
-instead of :code:`OTDistribution('x', 'Uniform', (-1., 3.))`.
+In this way, the use writes ``OTUniformDistribution('x', -1., 3.)``
+or ``OTUniformDistribution('x', minimum=-1., maximum=3.)``
+instead of ``OTDistribution('x', 'Uniform', (-1., 3.))``.
 Furthermore, these classes inheriting from :class:`.OTDistribution`
 are documented in such a way that a newbie could easily apprehend them.
 
 Composed distribution
 ---------------------
 
-A :code:`OTDistribution` has a :attr:`.OTDistribution._COMPOSED_DISTRIBUTION`
+A ``OTDistribution`` has a :attr:`.OTDistribution._COMPOSED_DISTRIBUTION`
 attribute referencing :class:`.OTComposedDistribution`
 which is a class to build a composed distribution
 related to given random variables from a list of :class:`.OTDistribution` objects
@@ -59,7 +59,7 @@ Distribution fitting
 --------------------
 
 The class :class:`.OTDistributionFitter` offers the possibility
-to fit an :class:`.OTDistribution` from :code:`numpy.array` data,
+to fit an :class:`.OTDistribution` from ``numpy.array`` data,
 based on the OpenTURNS capabilities.
 """
 from __future__ import annotations

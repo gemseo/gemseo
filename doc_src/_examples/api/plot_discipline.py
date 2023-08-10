@@ -61,7 +61,7 @@ get_available_disciplines()
 # -------------------
 # The :func:`.create_discipline` function can create a
 # :class:`.MDODiscipline` or a list of :class:`.MDODiscipline`
-# by using its class name. Specific :code:`**options` can be provided in
+# by using its class name. Specific ``**options`` can be provided in
 # argument. E.g.
 disciplines = create_discipline(
     [
@@ -84,14 +84,14 @@ addition.execute({"x1": array([1.0]), "x2": array([2.0])})
 # ----------------------
 # The :func:`~gemseo.disciplines.utils.get_all_inputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
-# argument :code:`recursive` (default: :code:`False`) is :code:`True`,
+# argument ``recursive`` (default: ``False``) is ``True``,
 # merging the input data from the discipline grammars. E.g.
 get_all_inputs(disciplines)
 
 # %%
 # The :func:`~gemseo.disciplines.utils.get_all_outputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
-# argument :code:`recursive` (default: :code:`False`) is :code:`True`,
+# argument ``recursive`` (default: ``False``) is ``True``,
 # merging the input data from the discipline grammars. E.g.
 get_all_outputs(disciplines)
 

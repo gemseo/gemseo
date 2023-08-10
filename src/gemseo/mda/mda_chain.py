@@ -216,9 +216,9 @@ class MDAChain(MDA):
         Depending on the number and type of disciplines provided,
         as well as the options provided by the user,
         the process may be a sole discipline,
-        a :class:`.MDA`,
-        a :class:`MDOChain`,
-        or a :class:`MDOParallelChain`.
+        an :class:`.MDA`,
+        an :class:`MDOChain`,
+        or an :class:`MDOParallelChain`.
 
         Args:
             disciplines: The disciplines.
@@ -257,7 +257,7 @@ class MDAChain(MDA):
         This method computes the parallel disciplines,
         if any.
         If there is any coupled disciplines in a parallel task,
-        a :class:`.MDA` is created,
+        an :class:`.MDA` is created,
         based on the :class:`.MDA` options provided.
 
         Args:
@@ -298,7 +298,7 @@ class MDAChain(MDA):
 
         Depending on the number of disciplines and the options provided,
         the returned GEMSEO process can be a sole :class:`.MDODiscipline` instance,
-        a :class:`.MDOChain` or a :class:`.MDOParallelChain`.
+        an :class:`.MDOChain` or an :class:`.MDOParallelChain`.
 
         Args:
             parallel_disciplines: The parallel disciplines.
@@ -396,7 +396,7 @@ class MDAChain(MDA):
         mdachain_parallelize_tasks: bool,
         mdachain_parallel_options: dict[str, int | float | str] | None,
     ) -> MDOChain | MDOParallelChain:
-        """Create a :class:`.MDOChain' or :class:`.MDOParallelChain`.
+        """Create an :class:`.MDOChain` or :class:`.MDOParallelChain`.
 
         Args:
             parallel_disciplines: The parallel disciplines.
@@ -405,7 +405,7 @@ class MDAChain(MDA):
             mdachain_parallel_options: The :class:`MDOParallelChain options.
 
         Returns:
-            Either a :class:`.MDOChain` or :class:`.MDOParallelChain instance.
+            Either an :class:`.MDOChain` or :class:`.MDOParallelChain instance.
         """
         if mdachain_parallelize_tasks:
             return self.__create_mdo_parallel_chain(
@@ -419,14 +419,14 @@ class MDAChain(MDA):
         parallel_disciplines: Sequence[MDODiscipline],
         mdachain_parallel_options: dict[str, int | float | str] | None,
     ) -> MDOParallelChain:
-        """Create a :class:`.MDOParallelChain`.
+        """Create an :class:`.MDOParallelChain`.
 
         Args:
             parallel_disciplines: The parallel disciplines.
             mdachain_parallel_options: The :class:`.MDOParallelChain` options.
 
         Returns:
-            A :class:`.MDOParallelChain` instance.
+            an :class:`.MDOParallelChain` instance.
         """
         if mdachain_parallel_options is None:
             mdachain_parallel_options = {}

@@ -156,15 +156,15 @@ which results in:
 
 .. warning::
 
-   - User must provide the following minimal fields in the file defining the design space: :code:`'name'`, :code:`'lower_bound'` and :code:`'upper_bound'`.
-   - The inequality :code:`'lower_bound'` <= :code:`'name'` <= :code:`'upper_bound'` must be satisfied.
+   - User must provide the following minimal fields in the file defining the design space: ``'name'``, ``'lower_bound'`` and ``'upper_bound'``.
+   - The inequality ``'lower_bound'`` <= ``'name'`` <= ``'upper_bound'`` must be satisfied.
 
 .. note::
 
-   - Available fields are :code:`'name'`, :code:`'lower_bound'`, :code:`'upper_bound'`, :code:`'value'` and :code:`'type'`.
-   - The :code:`'value'` field is optional. By default, it is set at :code:`None`.
-   - The :code:`'type'` field is optional. By default, it is set at :code:`float`.
-   - Each dimension of a variable must be provided. E.g. when the :code:`'size'` of :code:`'x1'` is 2:
+   - Available fields are ``'name'``, ``'lower_bound'``, ``'upper_bound'``, ``'value'`` and ``'type'``.
+   - The ``'value'`` field is optional. By default, it is set at ``None``.
+   - The ``'type'`` field is optional. By default, it is set at ``float``.
+   - Each dimension of a variable must be provided. E.g. when the ``'size'`` of ``'x1'`` is 2:
 
      .. code::
 
@@ -175,8 +175,8 @@ which results in:
 
 .. note::
 
-   - Lower infinite bound is encoded :code:`-inf'` or :code:`'-Inf'`.
-   - Upper infinite bound is encoded :code:`'inf'`, :code:`'Inf'`, :code:`'+inf'` or :code:`'+Inf'`.
+   - Lower infinite bound is encoded ``-inf'`` or ``'-Inf'``.
+   - Upper infinite bound is encoded ``'inf'``, ``'Inf'``, ``'+inf'`` or ``'+Inf'``.
 
 3. How to create a design space from scratch?
 *********************************************
@@ -236,7 +236,7 @@ which results in:
 
 .. note::
 
-   For a variable whose :code:`'size'` is greater than 1, each dimension of this variable is printed (e.g. :code:`'x3'` and :code:`'x7'`).
+   For a variable whose ``'size'`` is greater than 1, each dimension of this variable is printed (e.g. ``'x3'`` and ``'x7'``).
 
 .. note::
 
@@ -246,13 +246,13 @@ which results in:
 
       indexed_variable_names = design_space.get_indexed_variable_names()
 
-   and :code:`print(indexed_variable_names)`:
+   and ``print(indexed_variable_names)``:
 
    .. code::
 
       ['x1', 'x2', 'x3!0', 'x3!1', 'x4', 'x5', 'x6', 'x7!0', 'x7!1']
 
-   We see that the multidimensional variables have an index (here :code:`'0'` and :code:`'1'`) preceded by a :code:`'!'` separator.
+   We see that the multidimensional variables have an index (here ``'0'`` and ``'1'``) preceded by a ``'!'`` separator.
 
 4. How to get information about the design space?
 *************************************************
@@ -266,7 +266,7 @@ We can get the size of a variable by means of the :meth:`.DesignSpace.get_size` 
 
    x3_size = design_space.get_size('x3')
 
-and :code:`print(x3_size)` to see the result:
+and ``print(x3_size)`` to see the result:
 
 .. code::
 
@@ -281,7 +281,7 @@ We can get the type of a variable by means of the :meth:`.DesignSpace.get_type` 
 
    x3_type = design_space.get_type('x3')
 
-and :code:`print(x3_type)` to see the result:
+and ``print(x3_type)`` to see the result:
 
 .. code::
 
@@ -297,7 +297,7 @@ We can get the lower and upper bounds of a variable by means of the :meth:`.Desi
    x3_lb = design_space.get_lower_bound('x3')
    x3_ub = design_space.get_upper_bound('x3')
 
-and :code:`print(x3_lb, x3_ub)` to see the result:
+and ``print(x3_lb, x3_ub)`` to see the result:
 
 .. code::
 
@@ -313,7 +313,7 @@ We can get the lower and upper bounds of a set of variables by means of the :met
     x1x3_lb = design_space.get_lower_bounds(['x1', 'x3'])
     x1x3_ub = design_space.get_upper_bounds(['x1', 'x3'])
 
-and :code:`print(x1x3_lb, x1x3_ub)` to see the result:
+and ``print(x1x3_lb, x1x3_ub)`` to see the result:
 
 .. code::
 
@@ -328,7 +328,7 @@ We can get the current value of the design parameters by means of the :meth:`.De
 
    current_x = design_space.get_current_value()
 
-and :code:`print(current_x)` to see the result:
+and ``print(current_x)`` to see the result:
 
 .. code::
 
@@ -337,13 +337,13 @@ and :code:`print(current_x)` to see the result:
 How to get the current dictionary value of the design parameter vector?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the current value of the design parameters with :code:`dict` format by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_current_value` method:
+We can get the current value of the design parameters with ``dict`` format by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_current_value` method:
 
 .. code::
 
    dict_current_x = design_space.get_current_value(as_dict=True)
 
-and :code:`print(dict_current_x)` to see the result:
+and ``print(dict_current_x)`` to see the result:
 
 .. code::
 
@@ -358,7 +358,7 @@ We can get the normalized current value of the design parameters by means of the
 
    normalized_current_x = design_space.get_current_value(normalize=True)
 
-and :code:`print(normalized_current_x)` to see the result:
+and ``print(normalized_current_x)`` to see the result:
 
 .. code::
 
@@ -373,7 +373,7 @@ We can get the active bounds by means of the :meth:`.DesignSpace.get_active_boun
 
    active_at_current_x = design_space.get_active_bounds()
 
-and :code:`print(active_at_current_x)` to see the result:
+and ``print(active_at_current_x)`` to see the result:
 
 .. code::
 
@@ -385,7 +385,7 @@ or at a given point:
 
    active_at_given_point = design_space.get_active_bounds(array([1., 10, 1., 1.]))
 
-and :code:`print(active_at_given_point)` to see the result:
+and ``print(active_at_given_point)`` to see the result:
 
 .. code..
 
@@ -397,7 +397,7 @@ and :code:`print(active_at_given_point)` to see the result:
 How to remove a variable from a design space?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's consider the previous design space and assume that we want to remove the :code:`'x4'` variable.
+Let's consider the previous design space and assume that we want to remove the ``'x4'`` variable.
 
 For that, we can use the :meth:`.DesignSpace.remove_variable` method:
 
@@ -405,7 +405,7 @@ For that, we can use the :meth:`.DesignSpace.remove_variable` method:
 
    design_space.remove_variable('x4')
 
-and :code:`print(design_space)` to see the result:
+and ``print(design_space)`` to see the result:
 
 .. code::
 
@@ -426,13 +426,13 @@ and :code:`print(design_space)` to see the result:
 How to filter the entries of a design space?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can keep only a subset of variables, e.g. :code:`'x1'`, :code:`'x2'`, :code:`'x3'` and :code:`'x6'`, by means of the :meth:`gemseo.algos.design_space.DesignSpace.filter` method:
+We can keep only a subset of variables, e.g. ``'x1'``, ``'x2'``, ``'x3'`` and ``'x6'``, by means of the :meth:`gemseo.algos.design_space.DesignSpace.filter` method:
 
 .. code::
 
    design_space.filter(['x1', 'x2', 'x3', 'x6']) # keep the x1, x2, x3 and x6 variables
 
-and :code:`print(design_space)` to see the result:
+and ``print(design_space)`` to see the result:
 
 .. code::
 
@@ -447,13 +447,13 @@ and :code:`print(design_space)` to see the result:
     | x6   |     -inf    |   1   |     inf     | float   |
     +------+-------------+-------+-------------+---------+
 
-We can also keep only a subset of components for a given variable, e.g. the first component of the variable :code:`'x3'`,  by means of the :meth:`gemseo.algos.design_space.DesignSpace.filter_dim` method:
+We can also keep only a subset of components for a given variable, e.g. the first component of the variable ``'x3'``,  by means of the :meth:`gemseo.algos.design_space.DesignSpace.filter_dim` method:
 
 .. code::
 
    design_space.filer_dim('x3', [0]) # keep the first dimension of x3
 
-and :code:`print(design_space)` to see the result:
+and ``print(design_space)`` to see the result:
 
 .. code::
 
@@ -485,7 +485,7 @@ We can change the current values and bounds contained in a design space by means
     design_space.set_upper_bound('x3', array([10.]))
     design_space.set_upper_bound('x6', array([10.]))
 
-and :code:`print(design_space)` to see the result:
+and ``print(design_space)`` to see the result:
 
 .. code::
 
@@ -502,13 +502,13 @@ and :code:`print(design_space)` to see the result:
 6. How to (un)normalize a parameter vector?
 *******************************************
 
-Let's consider the parameter vector :code:`x_vect = array([1.,10.,1.,1.])`. We can normalize this vector by means of the :meth:`.DesignSpace.normalize_vect`:
+Let's consider the parameter vector ``x_vect = array([1.,10.,1.,1.])``. We can normalize this vector by means of the :meth:`.DesignSpace.normalize_vect`:
 
 .. code::
 
    normalized_x_vect = design_space.normalize_vect(x_vect)
 
-and :code:`print(normalized_x_vect)`:
+and ``print(normalized_x_vect)``:
 
 .. code::
 
@@ -526,7 +526,7 @@ Conversely, we can unnormalize this normalized vector by means of the :meth:`.De
 
 .. note::
 
-   Both methods takes an optional argument denoted :code:`'minus_lb'` which is :code:`True` by default. If :code:`True`, the normalization of the normalizable variables is of the form :code:`(x-lb_x)/(ub_x-lb_x)`. Otherwise, it is of the form :code:`x/(ub_x-lb_x)`. Here, when :code:`minus_lb` is :code:`False`, the normalize parameter vector is:
+   Both methods takes an optional argument denoted ``'minus_lb'`` which is ``True`` by default. If ``True``, the normalization of the normalizable variables is of the form ``(x-lb_x)/(ub_x-lb_x)``. Otherwise, it is of the form ``x/(ub_x-lb_x)``. Here, when ``minus_lb`` is ``False``, the normalize parameter vector is:
 
    .. code::
 
@@ -538,14 +538,14 @@ Conversely, we can unnormalize this normalized vector by means of the :meth:`.De
 How to cast a design point from array to dict?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can cast a design point from :code:`array` to :code:`dict` by means of the :meth:`.DesignSpace.array_to_dict` method:
+We can cast a design point from ``array`` to ``dict`` by means of the :meth:`.DesignSpace.array_to_dict` method:
 
 .. code::
 
     array_point = array([1, 2, 3, 4])
     dict_point = design_space.array_to_dict(array_point)
 
-and :code:`print(dict_point)` to see the result:
+and ``print(dict_point)`` to see the result:
 
 .. code::
 
@@ -554,13 +554,13 @@ and :code:`print(dict_point)` to see the result:
 How to cast a design point from dict to array?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can cast a design point from :code:`dict` to :code:`array` by means of the :meth:`.DesignSpace.dict_to_array` method:
+We can cast a design point from ``dict`` to ``array`` by means of the :meth:`.DesignSpace.dict_to_array` method:
 
 .. code::
 
    new_array_point = design_space.dict_to_array(dict_point)
 
-and :code:`print(new_array_point)` to see the result:
+and ``print(new_array_point)`` to see the result:
 
 .. code::
 
@@ -568,7 +568,7 @@ and :code:`print(new_array_point)` to see the result:
 
 .. note::
 
-   An optional argument denoted :code:`'variable_names'`, which is a list of string and set at :code:`None` by default, lists all of the variables to consider. If :code:`None`, all design variables are considerd.
+   An optional argument denoted ``'variable_names'``, which is a list of string and set at ``None`` by default, lists all of the variables to consider. If ``None``, all design variables are considerd.
 
 How to cast the current value to complex?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -598,7 +598,7 @@ For a given vector where some components should be integer, it is possible to ro
    vector = array([1.3, 3.4,3.6, -1.4])
    rounded_vector =  design_space.round_vect(vector)
 
-and :code:`print(rounded_vector)` to see the result:
+and ``print(rounded_vector)`` to see the result:
 
 .. code::
 
@@ -607,7 +607,7 @@ and :code:`print(rounded_vector)` to see the result:
 8. How to test if the current value is defined?
 ***********************************************
 
-We can test if the design parameter set has a current :code:`'value'` by means of the :meth:`.DesignSpace.has_current_value`:
+We can test if the design parameter set has a current ``'value'`` by means of the :meth:`.DesignSpace.has_current_value`:
 
 .. code::
 
@@ -621,7 +621,7 @@ which results in:
 
 .. note::
 
-   The result returned by :meth:`.DesignSpace.has_current_value` is :code:`False` as long as at least one component of one variable is :code:`None`.
+   The result returned by :meth:`.DesignSpace.has_current_value` is ``False`` as long as at least one component of one variable is ``None``.
 
 9. How to project a point into bounds?
 **************************************
@@ -633,7 +633,7 @@ Sometimes, components of a design vector are greater than the upper bounds or lo
    point = array([1.,3,-15.,23.])
    p_point = design_space.project_into_bounds(point)
 
-and :code:`print(p_point)` to see the result:
+and ``print(p_point)`` to see the result:
 
 .. code::
 
@@ -644,12 +644,12 @@ and :code:`print(p_point)` to see the result:
 
 When the design space is created, it is possible to export it by means of the :meth:`~gemseo.write_design_space` API function with arguments:
 
-- :code:`design_space`: design space
-- :code:`output_file`: output file path
-- :code:`export_hdf`: export to a hdf file (True, default) or a txt file (False)
-- :code:`fields`: list of fields to export, by default all
-- :code:`append`: if :code:`True`, appends the data in the file
-- :code:`table_options`: dictionary of options for the :class:`~gemseo.third_party.prettytable.prettytable.PrettyTable`
+- ``design_space``: design space
+- ``output_file``: output file path
+- ``export_hdf``: export to a hdf file (True, default) or a txt file (False)
+- ``fields``: list of fields to export, by default all
+- ``append``: if ``True``, appends the data in the file
+- ``table_options``: dictionary of options for the :class:`~gemseo.third_party.prettytable.prettytable.PrettyTable`
 
 For example:
 

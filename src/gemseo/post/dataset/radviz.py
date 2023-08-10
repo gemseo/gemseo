@@ -40,12 +40,12 @@ on its circumference. Each parameter influence varies from 0 to 1
 and can be interpreted compared to the others.
 
 A variable name is required by the :meth:`.DatasetPlot.execute` method
-by means of the :code:`classifier` keyword in order to color the curves
+by means of the ``classifier`` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled or when we are looking for the samples for which the classifier value
-is comprised in some interval specified by the :code:`lower` and :code:`upper`
+is comprised in some interval specified by the ``lower`` and ``upper``
 arguments
-(default values are set to :code:`-inf` and :code:`inf` respectively).
+(default values are set to ``-inf`` and ``inf`` respectively).
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """

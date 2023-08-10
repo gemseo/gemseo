@@ -48,7 +48,7 @@ To import the Sellar design space, use the class ``create_discipline``:
     from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
     design_space = SellarDesignSpace()
 
-Then, you can visualize it with :code:`print(design_space)`:
+Then, you can visualize it with ``print(design_space)``:
 
 .. code-block:: bash
 

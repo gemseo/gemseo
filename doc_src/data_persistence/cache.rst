@@ -33,7 +33,7 @@ Caching disciplinary data helps to avoid wasting computing resources.
 The basics
 ----------
 
-In |g|, a :class:`.MDODiscipline` is composed of a :attr:`~.MDODiscipline.cache` to store these evaluations
+In |g|, an :class:`.MDODiscipline` is composed of a :attr:`~.MDODiscipline.cache` to store these evaluations
 expressed in terms of input, output and Jacobian data.
 
 The caching mechanism
@@ -87,7 +87,7 @@ The data can be cached either:
   - the :class:`.HDF5Cache` stores in a node of an HDF file
     the data associated with all the calls to :meth:`.MDODiscipline.execute`.
 
-The cache strategy of a :class:`.MDODiscipline` can be changed with the method :meth:`.MDODiscipline.set_cache_policy`
+The cache strategy of an :class:`.MDODiscipline` can be changed with the method :meth:`.MDODiscipline.set_cache_policy`
 by passing as first argument the name of the cache class, e.g. ``"MemoryFullCache"``.
 
 .. note::

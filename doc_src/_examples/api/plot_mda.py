@@ -49,7 +49,7 @@ get_available_mdas()
 # %%
 # Get MDA options schema
 # ----------------------
-# For a given MDA algorithm, e.g. :code:`"MDAGaussSeidel"`,
+# For a given MDA algorithm, e.g. ``"MDAGaussSeidel"``,
 # we can get the options; e.g.
 get_mda_options_schema("MDAGaussSeidel")
 

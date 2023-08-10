@@ -53,7 +53,7 @@ def f(x=0.0, y=0.0):
 # :class:`.AutoPyDiscipline` class
 # to convert it into an :class:`.MDODiscipline`.
 # For that, we can use the :func:`.create_discipline` API function
-# with :code:`'AutoPyDiscipline'` as first argument:
+# with ``'AutoPyDiscipline'`` as first argument:
 disc = create_discipline("AutoPyDiscipline", py_func=f)
 
 # %%
@@ -78,11 +78,11 @@ disc.execute({"x": array([1.0]), "y": array([-3.2])})
 # ------------------
 # The optional arguments passed to the constructor are:
 #
-# - :code:`py_jac=None`: pointer to the jacobian function which must returned
+# - ``py_jac=None``: pointer to the jacobian function which must returned
 #   a 2D numpy array (see below),
-# - :code:`use_arrays=False`: if :code:`True`, the function is expected to take
+# - ``use_arrays=False``: if ``True``, the function is expected to take
 #   arrays as inputs and give outputs as arrays,
-# - :code:`write_schema=False`: if :code:`True`, write the json schema on the
+# - ``write_schema=False``: if ``True``, write the json schema on the
 #   disk.
 
 # %%

@@ -45,7 +45,7 @@ Setting the input and output grammars
 -------------------------------------
 
 Then, we define the :attr:`!MDODiscipline.input_grammar`
-and :attr:`!MDODiscipline.output_grammar` created by the superconstructor with :code:`None` value.
+and :attr:`!MDODiscipline.output_grammar` created by the superconstructor with ``None`` value.
 We have different ways to do that.
 
 Setting the grammars from data names
@@ -70,8 +70,8 @@ Setting the grammars from JSON files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A more complicated approach is to define the grammar into JSON input and output files
-with name :code:`'NewDiscipline_inputs.json'` and :code:`'NewDiscipline_outputs.json'`,
-put these files in the same directory as the module implementing the :code:`NewDiscipline` and
+with name ``'NewDiscipline_inputs.json'`` and ``'NewDiscipline_outputs.json'``,
+put these files in the same directory as the module implementing the ``NewDiscipline`` and
 pass an optional argument to the superconstructor:
 
 .. code::
@@ -84,7 +84,7 @@ pass an optional argument to the superconstructor:
             super(NewDiscipline, self).__init__(auto_detect_grammar_files=True)
             # TO BE COMPLETED
 
-where the :code:`'NewDiscipline_inputs.json'` file is defined as follows:
+where the ``'NewDiscipline_inputs.json'`` file is defined as follows:
 
 .. parsed-literal::
 
@@ -110,7 +110,7 @@ where the :code:`'NewDiscipline_inputs.json'` file is defined as follows:
         "id": "#NewDiscipline_input"
     }
 
-and where the :code:`'NewDiscipline_outputs.json'` file is defined as follows:
+and where the ``'NewDiscipline_outputs.json'`` file is defined as follows:
 
 .. parsed-literal::
 
@@ -140,7 +140,7 @@ Setting the grammars from a dictionary data example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An intermediate approach is to apply the :meth:`.JSONGrammar.update_from_data` method
-with a :code:`dict` data example:
+with a ``dict`` data example:
 
 .. code::
 
@@ -156,9 +156,9 @@ with a :code:`dict` data example:
 
 .. note::
 
-   Variable type is deduced from the values written in the :code:`dict` data example, either :code:`'float`'
-   (e.g. :code:`'x'` and :code:`'y'` in :code:`{'x': array([0]), 'z': array([0.])}`) of :code:`'integer'`
-   (e.g. :code:`'x'` in :code:`{'x': array([0]), 'z': array([0.])}`).
+   Variable type is deduced from the values written in the ``dict`` data example, either ``'float``'
+   (e.g. ``'x'`` and ``'y'`` in ``{'x': array([0]), 'z': array([0.])}``) of ``'integer'``
+   (e.g. ``'x'`` in ``{'x': array([0]), 'z': array([0.])}``).
 
 Checking the grammars
 ^^^^^^^^^^^^^^^^^^^^^
@@ -298,7 +298,7 @@ To store the multiple Jacobian matrices associated to all the inputs and outputs
 This data structure is sparse and makes easy the access and the iteration over the elements
 of the Jacobian.
 
-The method :meth:`!MDODiscipline._init_jacobian` fills the :code:`dict` of :code:`dict` structure
+The method :meth:`!MDODiscipline._init_jacobian` fills the ``dict`` of ``dict`` structure
 with dense null matrices of the right sizes.
 Note that all Jacobians must be 2D matrices, which avoids
 ambiguity.

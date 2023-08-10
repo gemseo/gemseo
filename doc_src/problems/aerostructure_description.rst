@@ -47,7 +47,7 @@ To import the aerostructure design space, use the class ``create_discipline``:
     from gemseo.problems.aerostructure.aerostructure_design_space import AerostructureDesignSpace
     design_space = AerostructureDesignSpace()
 
-Then, you can visualize it with :code:`print(design_space)`:
+Then, you can visualize it with ``print(design_space)``:
 
 .. code-block:: bash
 

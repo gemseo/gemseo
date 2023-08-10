@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The factory to create the machine learning algorithms.
 
-This module contains a factory to instantiate a :class:`.MLAlgo` from its class name.
+This module contains a factory to instantiate an :class:`.MLAlgo` from its class name.
 This factory also provides a list of available machine learning algorithms and allows
 testing if a machine learning algorithm is available.
 """
@@ -37,7 +37,7 @@ from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class MLAlgoFactory(BaseFactory):
-    """This factory instantiates a :class:`.MLAlgo` from its class name.
+    """This factory instantiates an :class:`.MLAlgo` from its class name.
 
     The class can be either internal or external. In this second case, it can be either
     implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class

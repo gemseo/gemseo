@@ -58,7 +58,7 @@ correlation.compute_indices()
 
 # %%
 # Then,
-# we create a :class:`.MorrisAnalysis` and compute the sensitivity indices:
+# we create an :class:`.MorrisAnalysis` and compute the sensitivity indices:
 morris = MorrisAnalysis([discipline], uncertain_space, 10)
 morris.compute_indices()
 

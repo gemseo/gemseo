@@ -48,7 +48,7 @@ get_available_formulations()
 # %%
 # Get formulation schemas for (sub-)options
 # -----------------------------------------
-# For a given MDO formulation, e.g. :code:`"MDF"`, we can:
+# For a given MDO formulation, e.g. ``"MDF"``, we can:
 #
 # - get the options of an MDO formulation using the
 #   :func:`.get_formulation_options_schema` function; e.g.

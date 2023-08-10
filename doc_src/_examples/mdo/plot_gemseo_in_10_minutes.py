@@ -254,7 +254,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # .. note::
 #
 #    Such post-processings can be exported in PDF format,
-#    by setting :code:`save` to :code:`True` and potentially additional
+#    by setting ``save`` to ``True`` and potentially additional
 #    settings (see the :meth:`.Scenario.post_process` options).
 
 # %%

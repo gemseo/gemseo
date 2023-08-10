@@ -14,7 +14,7 @@ How to manually create a discipline interfacing an external executable?
 Presentation of the problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's consider a binary software computing the float output :math:`c = a^2 + b^2` from two float inputs : :code:`'a'` and :code:`'b'`.
+Let's consider a binary software computing the float output :math:`c = a^2 + b^2` from two float inputs : ``'a'`` and ``'b'``.
 
 The inputs are read in the :file:`inputs.txt` file which looks like: ``a=1 b=2`` and the output is written to: :file:`outputs.txt` which looks like ``c=5``.
 
@@ -53,7 +53,7 @@ The construction of an :class:`.MDODiscipline` consists in three steps:
 The :class:`!MDODiscipline._run` method consists in three steps:
 
 1. Get the input data from :attr:`!MDODiscipline.local_data` and write the :file:`inputs.txt` file,
-2. Run the executable using the :code:`os.system()` command (`https://docs.python.org/3/library/os.html#os.system`_),
+2. Run the executable using the ``os.system()`` command (`https://docs.python.org/3/library/os.html#os.system`_),
 3. Get the output values and store them to :attr:`!MDODiscipline.local_data`.
 
 Now you can implement the discipline in the following way:
@@ -86,7 +86,7 @@ Now you can implement the discipline in the following way:
             # Store the outputs
             self.local_data.update_from_names(outputs)
 
-where :code:`parse_file()` and :code:`write_file()` functions are defined by:
+where ``parse_file()`` and ``write_file()`` functions are defined by:
 
 .. code:: python
 

@@ -140,19 +140,19 @@ the jacobian matrix must be defined as :attr:`!MDODiscipline.jac`.
 
 The differentiation method is set by the method :meth:`~gemseo.core.scenario.Scenario.set_differentiation_method` of :class:`~gemseo.core.scenario.Scenario`:
 
-- for :code:`"finite_differences"` (default value):
+- for ``"finite_differences"`` (default value):
 
 .. code::
 
     scenario.set_differentiation_method("finite_differences")
 
-- for the :code:`"complex_step"` method (each discipline must handle complex numbers):
+- for the ``"complex_step"`` method (each discipline must handle complex numbers):
 
 .. code::
 
     scenario.set_differentiation_method("complex_step")
 
-- for linearized version of the disciplines (:code:`"user"`): switching from direct mode to reverse mode is automatic, depending on the number of inputs and outputs. It can also be set by the user, setting :attr:`~gemseo.core.discipline.MDODiscipline.linearization_mode` at :code:`"direct"` or :code:`"adjoint"`).
+- for linearized version of the disciplines (``"user"``): switching from direct mode to reverse mode is automatic, depending on the number of inputs and outputs. It can also be set by the user, setting :attr:`~gemseo.core.discipline.MDODiscipline.linearization_mode` at ``"direct"`` or ``"adjoint"``).
 
 .. code::
 
@@ -173,5 +173,5 @@ against finite differences or complex step method, by means of the method :meth:
     sr = SobieskiMission("complex128")
     sr.check_jacobian(indata, threshold=1e-12)
 
-In order to be relevant, :code:`threshold` value should be kept at a low level
+In order to be relevant, ``threshold`` value should be kept at a low level
 (:math:`<10^{-10}`).

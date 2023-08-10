@@ -51,7 +51,7 @@ The simplest way to monitor a change in the statuses of the disciplines is to lo
 Use :func:`.configure_logger` to configure the logger to log in a file.
 
 The method :meth:`~.Scenario.xdsmize` of the :class:`.Scenario`
-can be used to this aim (:code:`monitor=True`).
+can be used to this aim (``monitor=True``).
 If the option ``save_html`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``show_html=True``.
 If ``save_pdf`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
 If will log the status of the workflow if ``log_workflow_status=True``:
@@ -82,7 +82,7 @@ Graphical monitoring using `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
 
 An :ref:`xdsm` diagram with the status of the :class:`.MDODiscipline` can be generated at each status change
 of the :class:`.MDODiscipline`. See :ref:`xdsm` for setting up the :ref:`XDSM <xdsm>` generation in a web browser.
-To trigger this mode in a scenario, use :meth:`~.Scenario.xdsmize`, with the :code:`monitor` argument set to :code:`True`.
+To trigger this mode in a scenario, use :meth:`~.Scenario.xdsmize`, with the ``monitor`` argument set to ``True``.
 The path to the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ library must be set to the folder containing the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ :term:`HTML` files.
 
 
@@ -125,8 +125,8 @@ The monitoring interface can be used to generate events every time that the proc
 One can observe these events and program a platform to react and display information to the user, or store data in a database.
 The observer design pattern is used.
 
-In the following code, we create an :code:`Observer` object that implements an update method.
-Then, by means of the API function :func:`.monitor_scenario`, we create a :class:`.Monitoring`
+In the following code, we create an ``Observer`` object that implements an update method.
+Then, by means of the API function :func:`.monitor_scenario`, we create an :class:`.Monitoring`
 and add the observer to the list of the listeners that are notified by |g| monitoring system.
 
 .. code::

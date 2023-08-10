@@ -50,7 +50,7 @@ get_available_post_processings()
 # %%
 # Get options schema
 # ------------------
-# For a given post-processing algorithm, e.g. :code:`"RadarChart"`,
+# For a given post-processing algorithm, e.g. ``"RadarChart"``,
 # we can get the options; e.g.
 get_post_processing_options_schema("RadarChart")
 
@@ -59,8 +59,8 @@ get_post_processing_options_schema("RadarChart")
 # -----------------------
 # The API function :func:`.execute_post` can generate visualizations
 # of the optimization or DOE results. For that, it consider the object to
-# post-process :code:`to_post_proc`, the post processing :code:`post_name`
-# with its :code:`**options`. E.g.
+# post-process ``to_post_proc``, the post processing ``post_name``
+# with its ``**options``. E.g.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 design_space = SellarDesignSpace()
 scenario = create_scenario(disciplines, "MDF", "obj", design_space, "SellarMDFScenario")

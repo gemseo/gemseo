@@ -265,7 +265,7 @@ class MDAQuasiNewton(MDARoot):
     <https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`__,
     ...).
     The name of the variant should be provided
-    as a parameter :code:`method` of the class.
+    as a parameter ``method`` of the class.
 
     The new iterate is given by:
 

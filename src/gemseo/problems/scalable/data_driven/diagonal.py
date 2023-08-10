@@ -313,10 +313,10 @@ class ScalableDiagonalModel(ScalableModel):
         there are 15 basis functions. And so on.
         This method allows to plot the basis functions associated
         with all outputs or only part of them,
-        either on screen (:code:`show=True`), in a file (:code:`save=True`)
+        either on screen (``show=True``), in a file (``save=True``)
         or both.
-        We can also specify the discretization :code:`step`
-        whose default value is :code:`0.01`.
+        We can also specify the discretization ``step``
+        whose default value is ``0.01``.
 
         :param bool save: if True, export the plot as a PDF file
             (Default value = False)

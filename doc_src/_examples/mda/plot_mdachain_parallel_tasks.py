@@ -21,7 +21,7 @@
 MDAChain with independent parallel MDAs
 =======================================
 
-This example illustrates the possibility to parallelize MDAs in a MDAChain,
+This example illustrates the possibility to parallelize MDAs in an MDAChain,
 given that these MDA are independent and can be run in parallel.
 """
 from __future__ import annotations
@@ -36,7 +36,7 @@ configure_logger()
 # Introduction
 # ----------------------------------------------
 #
-# In a :class:`.MDAChain`,
+# In an :class:`.MDAChain`,
 # there may be an opportunity to parallelize the execution of :class:`.MDA`
 # that can be executed independently.
 # As an example,
@@ -58,7 +58,7 @@ disciplines_expressions = [
 # We can easily observe in these disciplines,
 # that the :math:`x_1` and :math:`y_1` variables are strongly coupled.
 # It follows that the second and third disciplines are strongly coupled and
-# constitute a :class:`.MDA`.
+# constitute an :class:`.MDA`.
 #
 #
 # The same statement can be done for the disciplines that provide the output variables

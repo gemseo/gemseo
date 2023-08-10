@@ -44,7 +44,7 @@ configure_logger()
 # ---------------------
 # First, we create an :class:`.AnalyticDiscipline`
 # implementing the function: :math:`f(x)=2x-3\sin(2\pi y)`
-# and set its cache policy to :code:`"MemoryFullCache"`.
+# and set its cache policy to ``"MemoryFullCache"``.
 
 discipline = create_discipline(
     "AnalyticDiscipline", expressions={"z": "2*x-3*sin(2*pi*y)"}

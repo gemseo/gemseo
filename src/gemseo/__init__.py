@@ -1335,7 +1335,7 @@ def execute_post(
     Args:
         to_post_proc: The result to be post-processed,
             either a DOE scenario,
-            a MDO scenario,
+            an MDO scenario,
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
         post_name: The name of the post-processing.
@@ -2018,7 +2018,7 @@ def wrap_discipline_in_job_scheduler(
         custom ones are not and this will make the submission proess fail.
 
     Examples:
-        This example execute a DOE of 100 points on a MDA, each MDA is executed on 24 CPUS
+        This example execute a DOE of 100 points on an MDA, each MDA is executed on 24 CPUS
         using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
         everytime a point of the DOE is computed, another one is submitted to the queue.
 

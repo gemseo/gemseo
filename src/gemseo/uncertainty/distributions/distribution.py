@@ -109,9 +109,9 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     that these components are stochastically independent.
 
     The string representation of a distribution interfacing a distribution called
-    :code:`'MyDistribution'` with parameters :code:`(2,3)` is 'MyDistribution(2, 3)` if
+    ``'MyDistribution'`` with parameters ``(2,3)`` is 'MyDistribution(2, 3)` if
     no standard parameters are passed. If the standard parameters are :code:`{a: 2, b:
-    3}` (resp. :code:`{a_inv: 2, b: 3}`), then the standard representation is:
+    3}` (resp. ``{a_inv: 2, b: 3}``), then the standard representation is:
     'MyDistribution(a=2, b=3)` (resp. 'MyDistribution(a_inv=0.5, b=3)`) Standard
     parameters are useful to redefine the name of the parameters. For example, some
     exponential distributions consider the notion of rate while other ones consider the

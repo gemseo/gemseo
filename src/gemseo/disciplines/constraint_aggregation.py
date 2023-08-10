@@ -48,7 +48,7 @@ class ConstraintAggregation(MDODiscipline):
     An efficient alternative to constraint aggregation in the optimization problem is to
     aggregate the constraint in a discipline.
 
-    This can be included in a MDO formulation, and in particular in an MDA, so only one
+    This can be included in an MDO formulation, and in particular in an MDA, so only one
     adjoint calculation can be performed for the aggregated constraint instead of one
     adjoint per original constraint dimension.
 

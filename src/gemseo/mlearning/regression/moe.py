@@ -464,9 +464,9 @@ class MOERegressor(MLRegressionAlgo):
         """Predict classes from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         The output data type will be consistent with the input data type.
 
@@ -487,9 +487,9 @@ class MOERegressor(MLRegressionAlgo):
         """Predict output data from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         The output data type will be consistent with the input data type.
 

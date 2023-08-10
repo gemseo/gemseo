@@ -26,7 +26,7 @@ This module implements the concept of scalable problem by means of the
 
 Given
 
-- a MDO scenario based on a set of sampled disciplines
+- an MDO scenario based on a set of sampled disciplines
   with a particular problem dimension,
 - a new problem dimension (= number of inputs and outputs),
 
@@ -387,7 +387,7 @@ class ScalableProblem:
         return design_space
 
     def __get_equilibrium(self, mda_name: str = "MDAJacobi", **options):
-        """Get the equilibrium point from a MDA method.
+        """Get the equilibrium point from an MDA method.
 
         :param str mda_name: MDA name (default: 'MDAJacobi')
         :return: equilibrium point
