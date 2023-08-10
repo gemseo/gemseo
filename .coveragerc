@@ -1,0 +1,14 @@
+[run]
+plugins = covdefaults
+source = gemseo
+omit =
+    # those paths are the installed ones, eventually under the env site-package
+    */gemseo/third_party/*
+    */gemseo/post/core/colormaps.py
+    */gemseo/wrappers/xls_discipline.py
+    */gemseo/utils/pytest_conftest.py
+    */gemseo/utils/compatibility/*.py
+
+[report]
+# Override covdefaults.
+fail_under = 1

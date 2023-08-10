@@ -205,10 +205,10 @@ def test_simple_grammar_type(in_gtype):
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
 
-    assert type(mda.input_grammar) == SimpleGrammar
-    assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
+    assert isinstance(mda.input_grammar, SimpleGrammar)
+    assert isinstance(mda.mdo_chain.input_grammar, SimpleGrammar)
     for inner_mda in mda.inner_mdas:
-        assert type(inner_mda.input_grammar) == SimpleGrammar
+        assert isinstance(inner_mda.input_grammar, SimpleGrammar)
 
 
 def test_mix_sim_jsongrammar(sellar_disciplines):
@@ -216,12 +216,12 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
         sellar_disciplines,
         grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
-    assert type(mda_chain_s.input_grammar) == SimpleGrammar
+    assert isinstance(mda_chain_s.input_grammar, SimpleGrammar)
 
     out_1 = mda_chain_s.execute()
 
     mda_chain = MDAChain(sellar_disciplines)
-    assert type(mda_chain.input_grammar) == JSONGrammar
+    assert isinstance(mda_chain.input_grammar, JSONGrammar)
 
     out_2 = mda_chain.execute()
 

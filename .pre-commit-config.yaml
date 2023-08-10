@@ -76,7 +76,7 @@ repos:
       ]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.9.0
+  rev: v3.10.1
   hooks:
     - id: pyupgrade
       args: [--py38-plus]
@@ -87,7 +87,7 @@ repos:
     - id: black
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0
+  rev: 6.1.0
   hooks:
     - id: flake8
       additional_dependencies:
@@ -98,13 +98,13 @@ repos:
         - pep8-naming==0.13.3
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: 3.5.2
+  rev: 3.6.0
   hooks:
     - id: commitizen
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.1
+  rev: v1.5.3
   hooks:
     - id: insert-license
       name: insert LGPL license
