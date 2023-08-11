@@ -23,6 +23,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import ClassVar
 
+from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.matplotlib_figure import FigSizeType
@@ -122,3 +123,15 @@ class CouplingStudyAnalysis:
             fig_size,
             show_html,
         )
+
+    def generate_coupling_graph(
+        self, file_path: str | Path = "coupling_graph.pdf", full: bool = True
+    ) -> None:
+        """Generate the coupling graph based on the disciplines.
+
+        Args:
+            file_path: The file path to save the coupling graph.
+            full: Whether to generate the full coupling graph.
+                Otherwise, generate the condensed one.
+        """
+        generate_coupling_graph(list(self.disciplines.values()), file_path, full)

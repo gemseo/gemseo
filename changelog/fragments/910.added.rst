@@ -1,0 +1,2 @@
+- ``CouplingStudyAnalysis`` has a new method ``generate_coupling_graph``.
+- The CLI ``gemseo-study`` generates the condensed and full coupling graphs as PDF files.
