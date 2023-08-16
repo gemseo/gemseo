@@ -98,7 +98,7 @@ def test_repr(tmp_wd):
     assert repr(cache) == str(cache) == expected
 
 
-def test_repr_html():
+def test_repr_html(tmp_wd):
     """Check HDF5Cache._repr_html."""
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
