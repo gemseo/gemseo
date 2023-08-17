@@ -354,13 +354,15 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     def create(
         self,
         class_name: str,
-        **options: Any,
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """Return an instance of a class.
 
         Args:
             class_name: The name of the class.
-            **options: The arguments to be passed to the class constructor.
+            **args: The positional arguments to be passed to the class constructor.
+            **kwargs: The keyword arguments to be passed to the class constructor.
 
         Returns:
             The instance of the class.
@@ -370,10 +372,17 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         """
         cls = self.get_class(class_name)
         try:
-            return cls(**options)
+            return cls(*args, **kwargs)
         except TypeError:
             LOGGER.error(
-                "Failed to create class %s with arguments %s", class_name, options
+                (
+                    "Failed to create class %s "
+                    "with positional arguments %s "
+                    "and keyword arguments %s."
+                ),
+                class_name,
+                args,
+                kwargs,
             )
             raise
 
