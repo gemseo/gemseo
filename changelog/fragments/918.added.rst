@@ -1,0 +1,1 @@
+``BaseFactory.create`` supports positional arguments.

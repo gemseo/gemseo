@@ -27,6 +27,7 @@ from importlib import metadata
 from pathlib import Path
 
 import pytest
+from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.base_factory import _FactoryMultitonMeta
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
@@ -205,3 +206,22 @@ def test_str():
     """Verify str() on a factory."""
     factory = MDOFormulationsFactory()
     assert str(factory) == "Factory of MDOFormulation objects"
+
+
+def test_positional_arguments():
+    """Check that BaseFactory supports the positional arguments."""
+    cache = CacheFactory().create("SimpleCache", 0.1)
+    assert cache.tolerance == 0.1
+
+
+def test_creation_error(caplog):
+    """Check that BaseFactory logs a message in the case of a creation error."""
+    with pytest.raises(TypeError):
+        CacheFactory().create("SimpleCache", 1, 2, 3, a=2)
+
+    record_tuple = caplog.record_tuples[0]
+    assert record_tuple[1] == 40
+    assert record_tuple[2] == (
+        "Failed to create class SimpleCache with positional arguments (1, 2, 3) "
+        "and keyword arguments {'a': 2}."
+    )
