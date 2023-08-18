@@ -688,7 +688,7 @@ def test_check_disciplines():
         ValueError,
         match="Two disciplines, among "
         f"which {discipline_2.name}, "
-        "compute the same output: {'y'}",
+        "compute the same outputs: {'y'}",
     ):
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
 
