@@ -193,8 +193,8 @@ class OptimizationProblem(BaseProblem):
     nonproc_new_iter_observables: list[MDOFunction]
     """The non-processed observables to be called at each new iterate."""
 
-    minimize_objective: bool
-    """Whether to maximize the objective."""
+    __minimize_objective: bool
+    """Whether to minimize the objective."""
 
     fd_step: float
     """The finite differences step."""
@@ -332,7 +332,7 @@ class OptimizationProblem(BaseProblem):
         self.new_iter_observables = []
         self.nonproc_observables = []
         self.nonproc_new_iter_observables = []
-        self.minimize_objective = True
+        self.__minimize_objective = True
         self.fd_step = fd_step
         self.__differentiation_method = None
         self.differentiation_method = differentiation_method
@@ -432,6 +432,16 @@ class OptimizationProblem(BaseProblem):
                 "must be an MDOLinearFunction."
             )
         self._objective = func
+
+    @property
+    def minimize_objective(self) -> bool:
+        """Whether to minimize the objective."""
+        return self.__minimize_objective
+
+    @minimize_objective.setter
+    def minimize_objective(self, value: bool) -> None:
+        if self.__minimize_objective != value:
+            self.change_objective_sign()
 
     @staticmethod
     def repr_constraint(
@@ -1596,6 +1606,7 @@ class OptimizationProblem(BaseProblem):
                 )
                 self.fd_step = self.fd_step.real
 
+    # TODO: API: to be deprecated in favor of self.minimize_objective
     def change_objective_sign(self) -> None:
         """Change the objective function sign in order to minimize its opposite.
 
@@ -1604,7 +1615,7 @@ class OptimizationProblem(BaseProblem):
         performance function to maximize must be converted into a cost function to
         minimize, by means of this method.
         """
-        self.minimize_objective = not self.minimize_objective
+        self.__minimize_objective = not self.__minimize_objective
         self.objective = -self.objective
 
     def _satisfied_constraint(
@@ -2042,14 +2053,6 @@ class OptimizationProblem(BaseProblem):
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
         with h5py.File(file_path) as h5file:
-            group = get_hdf5_group(h5file, opt_pb.OPT_DESCR_GROUP)
-
-            for attr_name, attr in group.items():
-                val = attr[()]
-                if isinstance(val, ndarray) and isinstance(val[0], bytes_):
-                    val = val[0].decode()
-                setattr(opt_pb, attr_name, val)
-
             if opt_pb.SOLUTION_GROUP in h5file:
                 group_data = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
                 if "x_0_as_dict" in h5file:
@@ -2072,6 +2075,18 @@ class OptimizationProblem(BaseProblem):
                 opt_pb.database, design_space, x_tolerance=x_tolerance
             )
             opt_pb.objective = attr
+
+            group = get_hdf5_group(h5file, opt_pb.OPT_DESCR_GROUP)
+            for attr_name, attr in group.items():
+                val = attr[()]
+                if isinstance(val, ndarray) and isinstance(val[0], bytes_):
+                    val = val[0].decode()
+
+                # Set the private attribute __minimize_objective instead of the property
+                # to avoid an unnecessary change of sign of the objective function.
+                if attr_name == "minimize_objective":
+                    attr_name = "_OptimizationProblem__minimize_objective"
+                setattr(opt_pb, attr_name, val)
 
             if opt_pb.CONSTRAINTS_GROUP in h5file:
                 group = get_hdf5_group(h5file, opt_pb.CONSTRAINTS_GROUP)

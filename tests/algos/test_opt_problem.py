@@ -1895,3 +1895,21 @@ def test_repr_html():
         "</ul>"
         "</ul>"
     )
+
+
+@pytest.mark.parametrize("minimize", [True, False])
+def test_minimize_objective(pow2_problem, minimize):
+    """Test the minimize objective setter."""
+    initial_minimize = pow2_problem.minimize_objective
+    x_0 = np.ones(3)
+    f_0 = pow2_problem.objective(x_0)
+
+    pow2_problem.minimize_objective = minimize
+    f_1 = pow2_problem.objective(x_0)
+
+    assert pow2_problem.minimize_objective == minimize
+
+    if initial_minimize == minimize:
+        assert f_0 == f_1
+    else:
+        assert f_0 == -f_1
