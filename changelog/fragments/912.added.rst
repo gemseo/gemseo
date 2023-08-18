@@ -1,0 +1,2 @@
+- The ``check_disciplines_consistency`` function checks if two disciplines compute the same output and raises an error or logs a message if this is the case.
+- ``MDOCouplingStructure`` logs a message with ``FATAL`` level if two disciplines compute the same output.

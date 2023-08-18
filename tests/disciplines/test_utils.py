@@ -14,13 +14,35 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import re
+
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
+
+
+class Discipline(MDODiscipline):
+    def __init__(self, input_name: str, output_name: str, discipline_name: str) -> None:
+        super().__init__(discipline_name)
+        self.input_grammar.update_from_names([input_name])
+        self.output_grammar.update_from_names([output_name])
+
+
+@pytest.fixture(scope="module")
+def consistent_disciplines() -> tuple[Discipline, Discipline]:
+    """Two consistent disciplines."""
+    return Discipline("a", "y", "Foo"), Discipline("b", "z", "Bar")
+
+
+@pytest.fixture(scope="module")
+def inconsistent_disciplines() -> tuple[Discipline, Discipline]:
+    """Two inconsistent disciplines."""
+    return Discipline("a", "y", "Foo"), Discipline("b", "y", "Bar")
 
 
 @pytest.fixture(scope="module")
@@ -54,3 +76,35 @@ def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
 def test_get_all_outputs(disciplines_and_scenario, skip_scenarios, expected):
     """Check get_all_outputs."""
     assert get_all_outputs(disciplines_and_scenario, skip_scenarios) == expected
+
+
+@pytest.mark.parametrize("log_message", [False, True])
+@pytest.mark.parametrize("raise_error", [False, True])
+def test_check_disciplines_consistency(
+    consistent_disciplines, log_message, raise_error
+):
+    """Test check_disciplines_consistency with consistent disciplines."""
+    assert check_disciplines_consistency(
+        consistent_disciplines, log_message, raise_error
+    )
+
+
+def test_check_disciplines_consistency_log(inconsistent_disciplines, caplog):
+    """Test check_disciplines_consistency with inconsistent disciplines and log mode."""
+    assert not check_disciplines_consistency(inconsistent_disciplines, True, False)
+    record = caplog.record_tuples[0]
+    assert record[1] == 50
+    assert (
+        record[2] == "Two disciplines, among which Bar, compute the same outputs: {'y'}"
+    )
+
+
+def test_check_disciplines_consistency_error(inconsistent_disciplines, caplog):
+    """Test check_disciplines_consistency with inconsistent disciplines and log mode."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Two disciplines, among which Bar, compute the same outputs: {'y'}"
+        ),
+    ):
+        check_disciplines_consistency(inconsistent_disciplines, False, True)

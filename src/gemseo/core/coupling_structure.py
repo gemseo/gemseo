@@ -37,6 +37,7 @@ from matplotlib.figure import Figure
 from matplotlib.text import Text
 
 from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.utils.matplotlib_figure import FigSizeType
 
 if TYPE_CHECKING:
@@ -74,6 +75,7 @@ class MDOCouplingStructure:
         Args:
             disciplines: The disciplines that possibly exchange coupling variables.
         """  # noqa: D205, D212, D415
+        check_disciplines_consistency(disciplines, True, False)
         self.disciplines = disciplines
         self.graph = DependencyGraph(disciplines)
         self.sequence = self.graph.get_execution_sequence()
