@@ -58,43 +58,43 @@ def test_constructor(measure, dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_evaluate_learn(measure):
+def test_compute_learning_measure(measure):
     """Test evaluate learn method."""
-    quality = measure.evaluate_learn(multioutput=False)
+    quality = measure.compute_learning_measure(multioutput=False)
     assert quality > 0
 
 
-def test_evaluate_learn_fail(measure):
+def test_compute_learning_measure_fail(measure):
     """Test evaluate learn method; should fail if multioutput is True."""
     with pytest.raises(
         NotImplementedError,
         match="The SilhouetteMeasure does not support the multioutput case.",
     ):
-        measure.evaluate_learn(multioutput=True)
+        measure.compute_learning_measure(multioutput=True)
 
 
-def test_evaluate_test(measure, dataset_test):
+def test_compute_test_measure(measure, dataset_test):
     """Test evaluate test method."""
     with pytest.raises(NotImplementedError):
-        measure.evaluate_test(dataset_test, multioutput=False)
+        measure.compute_test_measure(dataset_test, multioutput=False)
 
 
-def test_evaluate_loo(measure):
+def test_compute_leave_one_out_measure(measure):
     """Test evaluate leave one out method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.evaluate_loo(multioutput=False)
+        quality = measure.compute_leave_one_out_measure(multioutput=False)
         assert quality > 0
 
 
-def test_evaluate_kfolds(measure):
+def test_compute_cross_validation_measure(measure):
     """Test evaluate k-folds method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.evaluate_kfolds(multioutput=False)
+        quality = measure.compute_cross_validation_measure(multioutput=False)
         assert quality > 0
 
 
-def test_evaluate_bootstrap(measure):
+def test_compute_bootstrap_measure(measure):
     """Test evaluate bootstrap method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.evaluate_bootstrap(multioutput=False)
+        quality = measure.compute_bootstrap_measure(multioutput=False)
         assert quality > 0

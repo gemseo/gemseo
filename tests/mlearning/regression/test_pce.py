@@ -610,7 +610,7 @@ def test_multidimensional_variables():
     pce = PCERegressor(dataset, parameter_space)
     pce.learn()
     r2 = R2Measure(pce)
-    reference_r2 = r2.evaluate_learn()
+    reference_r2 = r2.compute_learning_measure()
     reference_first_sobol_indices = pce.first_sobol_indices[0]
     reference_second_sobol_indices = pce.second_sobol_indices[0]
     reference_total_sobol_indices = pce.total_sobol_indices[0]
@@ -638,7 +638,7 @@ def test_multidimensional_variables():
     pce = PCERegressor(dataset, parameter_space)
     pce.learn()
     r2 = R2Measure(pce)
-    assert r2.evaluate_learn() == reference_r2
+    assert r2.compute_learning_measure() == reference_r2
     first_sobol_indices = pce.first_sobol_indices[0]
     assert first_sobol_indices["a"] == [
         reference_first_sobol_indices["x1"],

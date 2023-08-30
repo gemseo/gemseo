@@ -173,7 +173,7 @@ class MLAlgoAssessor(MDODiscipline):
         )
         algo.learn()
         measure = self.measure(algo)
-        learning = measure.evaluate_learn(multioutput=False)
+        learning = measure.compute_learning_measure(multioutput=False)
         evaluate = getattr(
             measure, f"evaluate_{self.__measure_evaluation_method_name.lower()}"
         )

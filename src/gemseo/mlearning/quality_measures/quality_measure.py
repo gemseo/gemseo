@@ -119,7 +119,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__default_seed = 0
 
     @abstractmethod
-    def evaluate_learn(
+    def compute_learning_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -137,7 +137,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @abstractmethod
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -156,7 +156,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             The value of the quality measure.
         """
 
-    def evaluate_loo(
+    def compute_leave_one_out_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -172,14 +172,14 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The value of the quality measure.
         """
-        return self.evaluate_kfolds(
+        return self.compute_cross_validation_measure(
             samples=samples,
             n_folds=len(self.algo.learning_set),
             multioutput=multioutput,
         )
 
     @abstractmethod
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -205,7 +205,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @abstractmethod
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
@@ -326,6 +326,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         if not self.algo.is_trained:
             self.algo.learn(samples)
+
+    # TODO: API: remove these aliases in the next major release.
+    evaluate_loo = compute_leave_one_out_measure
 
 
 class MLQualityMeasureFactory(BaseFactory):

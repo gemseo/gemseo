@@ -62,36 +62,36 @@ def test_constructor(dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_evaluate_learn(dataset):
+def test_compute_learning_measure(dataset):
     """Test evaluate learn method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate_learn(multioutput=False)
+    measure.compute_learning_measure(multioutput=False)
 
 
-def test_evaluate_test(dataset, dataset_test):
+def test_compute_test_measure(dataset, dataset_test):
     """Test evaluate test method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate_test(test_data=dataset_test, multioutput=False)
+    measure.compute_test_measure(test_data=dataset_test, multioutput=False)
 
 
-def test_evaluate_loo(dataset):
+def test_compute_leave_one_out_measure(dataset):
     """Test evaluate leave one out method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate_loo(multioutput=False)
+    measure.compute_leave_one_out_measure(multioutput=False)
 
 
-def test_evaluate_kfolds(dataset):
+def test_compute_cross_validation_measure(dataset):
     """Test evaluate k-folds method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate_kfolds(multioutput=False)
+    measure.compute_cross_validation_measure(multioutput=False)
 
 
-def test_evaluate_bootstrap(dataset):
+def test_compute_bootstrap_measure(dataset):
     """Test evaluate bootstrap method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
-    measure.evaluate_bootstrap(multioutput=False)
+    measure.compute_bootstrap_measure(multioutput=False)

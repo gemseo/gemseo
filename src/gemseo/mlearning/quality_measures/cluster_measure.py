@@ -54,7 +54,7 @@ class MLClusteringMeasure(MLQualityMeasure):
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def evaluate_learn(
+    def compute_learning_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -94,6 +94,9 @@ class MLClusteringMeasure(MLQualityMeasure):
             variable_names=self.algo.var_names
         ).to_numpy()
 
+    # TODO: API: remove this alias in the next major release.
+    evaluate_learn = compute_learning_measure
+
 
 class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     """An abstract clustering measure for predictive clustering algorithms."""
@@ -109,7 +112,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -119,7 +122,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         data = test_data.get_view(variable_names=self.algo.var_names).to_numpy()
         return self._compute_measure(data, self.algo.predict(data), multioutput)
 
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -144,7 +147,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
         return sum(qualities) / len(qualities)
 
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
@@ -176,3 +179,8 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
             qualities.append(quality)
 
         return sum(qualities) / len(qualities)
+
+    # TODO: API: remove these aliases in the next major release.
+    evaluate_test = compute_test_measure
+    evaluate_kfolds = compute_cross_validation_measure
+    evaluate_bootstrap = compute_bootstrap_measure

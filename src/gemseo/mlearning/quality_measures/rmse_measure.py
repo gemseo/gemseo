@@ -61,19 +61,19 @@ class RMSEMeasure(MSEMeasure):
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def evaluate_learn(
+    def compute_learning_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         as_dict: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
-            super().evaluate_learn(
+            super().compute_learning_measure(
                 samples=samples, multioutput=multioutput, as_dict=as_dict
             )
         )
 
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: IODataset,
         samples: Sequence[int] | None = None,
@@ -81,12 +81,12 @@ class RMSEMeasure(MSEMeasure):
         as_dict: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
-            super().evaluate_test(
+            super().compute_test_measure(
                 test_data, samples=samples, multioutput=multioutput, as_dict=as_dict
             )
         )
 
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -96,7 +96,7 @@ class RMSEMeasure(MSEMeasure):
         as_dict: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
-            super().evaluate_kfolds(
+            super().compute_cross_validation_measure(
                 n_folds=n_folds,
                 samples=samples,
                 multioutput=multioutput,
@@ -106,7 +106,7 @@ class RMSEMeasure(MSEMeasure):
             )
         )
 
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
@@ -115,7 +115,7 @@ class RMSEMeasure(MSEMeasure):
         as_dict: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
-            super().evaluate_bootstrap(
+            super().compute_bootstrap_measure(
                 n_replicates=n_replicates,
                 samples=samples,
                 multioutput=multioutput,
