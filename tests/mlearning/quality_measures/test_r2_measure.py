@@ -73,16 +73,16 @@ def test_constructor(dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_evaluate_learn(dataset):
+def test_compute_learning_measure(dataset):
     """Test evaluate learn method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_train = measure.evaluate_learn()
+    r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_train = measure.evaluate_learn()
+    r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -91,20 +91,20 @@ def test_evaluate_learn(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = R2Measure(algo)
-    r2_train = measure.evaluate_learn()
+    r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_2
 
 
-def test_evaluate_test(dataset, dataset_test):
+def test_compute_test_measure(dataset, dataset_test):
     """Test evaluate test method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_test = measure.evaluate_test(dataset_test)
+    r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_test = measure.evaluate_test(dataset_test)
+    r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -113,33 +113,33 @@ def test_evaluate_test(dataset, dataset_test):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = R2Measure(algo)
-    r2_test = measure.evaluate_test(dataset_test)
+    r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
 
-def test_evaluate_loo(dataset):
+def test_compute_leave_one_out_measure(dataset):
     """Test evaluate leave one out method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_loo = measure.evaluate_loo()
+    r2_loo = measure.compute_leave_one_out_measure()
     assert r2_loo > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_loo = measure.evaluate_loo()
+    r2_loo = measure.compute_leave_one_out_measure()
     assert r2_loo < 1 - TOL_DEG_3
 
 
-def test_evaluate_kfolds(dataset):
+def test_compute_cross_validation_measure(dataset):
     """Test evaluate k-folds method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_kfolds = measure.evaluate_kfolds()
+    r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds > 1 - TOL_DEG_2
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = R2Measure(algo)
-    r2_kfolds = measure.evaluate_kfolds()
+    r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds < 1 - TOL_DEG_3
 
     algo = PolynomialRegressor(
@@ -148,16 +148,16 @@ def test_evaluate_kfolds(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = R2Measure(algo)
-    r2_kfolds = measure.evaluate_kfolds()
+    r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds > 1 - TOL_DEG_2
 
 
-def test_evaluate_bootstrap(dataset):
+def test_compute_bootstrap_measure(dataset):
     """Test evaluate bootstrap method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
     with pytest.raises(NotImplementedError):
-        measure.evaluate_bootstrap()
+        measure.compute_bootstrap_measure()
 
 
 @pytest.mark.parametrize("fit", [False, True])
@@ -169,4 +169,10 @@ def test_fit_transformers(algo_for_transformer, fit):
     """
     m1 = R2Measure(algo_for_transformer)
     m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
-    assert allclose(m1.evaluate_kfolds(seed=0), m2.evaluate_kfolds(seed=0)) is fit
+    assert (
+        allclose(
+            m1.compute_cross_validation_measure(seed=0),
+            m2.compute_cross_validation_measure(seed=0),
+        )
+        is fit
+    )

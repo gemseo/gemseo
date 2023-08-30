@@ -65,7 +65,7 @@ class MLErrorMeasure(MLQualityMeasure):
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def evaluate_learn(
+    def compute_learning_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -87,7 +87,7 @@ class MLErrorMeasure(MLQualityMeasure):
             as_dict,
         )
 
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: IODataset,
         samples: Sequence[int] | None = None,
@@ -118,7 +118,7 @@ class MLErrorMeasure(MLQualityMeasure):
             as_dict,
         )
 
-    def evaluate_loo(
+    def compute_leave_one_out_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -129,14 +129,14 @@ class MLErrorMeasure(MLQualityMeasure):
             as_dict: Whether to express the measure as a dictionary
                 whose keys are the output names.
         """
-        return self.evaluate_kfolds(
+        return self.compute_cross_validation_measure(
             samples=samples,
             n_folds=self.algo.learning_set.n_samples,
             multioutput=multioutput,
             as_dict=as_dict,
         )
 
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -173,7 +173,7 @@ class MLErrorMeasure(MLQualityMeasure):
             sum(qualities) / len(qualities), multioutput, as_dict
         )
 
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
@@ -262,3 +262,10 @@ class MLErrorMeasure(MLQualityMeasure):
         return split_array_to_dict_of_arrays(
             data, self.algo.learning_set.variable_names_to_n_components, names
         )
+
+    # TODO: API: remove these aliases in the next major release.
+    evaluate_learn = compute_learning_measure
+    evaluate_test = compute_test_measure
+    evaluate_kfolds = compute_cross_validation_measure
+    evaluate_loo = compute_leave_one_out_measure
+    evaluate_bootstrap = compute_bootstrap_measure
