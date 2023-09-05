@@ -36,7 +36,7 @@ from numpy import ones
 from numpy import power
 
 CURRENT_DIR = Path(__file__).parent
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+POWER2 = CURRENT_DIR / "power2_opt_pb.h5"
 
 pytestmark = pytest.mark.skipif(
     not PostFactory().is_available("ScatterPlotMatrix"),
@@ -131,7 +131,7 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
 
     infile = CURRENT_DIR / (baseline_images[0] + ".h5")
     post = execute_post(
-        infile,
+        str(infile),
         "ScatterPlotMatrix",
         save=False,
         file_path="scatter_sellar",
