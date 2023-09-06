@@ -140,8 +140,10 @@ Publishing process
 The publishing of the distribution archives of a package at the version X.Y.Z
 (where Z may contain a rcW suffix)
 is done automatically by the CI on the following conditions:
+
 - a CI variable with a PyPI token has be set,
 - a branch named release-X.Y.Z is merged to the master branch.
+
 A tag named X.Y.Z is also automatically created on the master branch.
 
 Making a new release
@@ -157,6 +159,7 @@ Making a new release
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
 #. Push develop.
 #. For |g| only:
+
    #. Update the recipe for conda-forge once the update bot sends the PR.
    #. Test the conda-forge packages.
    #. Create the anaconda stand alone distribution.
