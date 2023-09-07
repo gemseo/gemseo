@@ -220,7 +220,7 @@ def test_ot_distribution(dataset):
         ValueError,
         match=(
             "The probability distributions of the random variables x1, x2 "
-            "are not instances of OTDistribution."
+            "are not instances of OTComposedDistribution."
         ),
     ):
         PCERegressor(dataset, probability_space)

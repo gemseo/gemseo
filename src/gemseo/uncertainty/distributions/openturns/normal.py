@@ -40,7 +40,7 @@ class OTNormalDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         mu: float = 0.0,
         sigma: float = 1.0,
         dimension: int = 1,
@@ -51,19 +51,9 @@ class OTNormalDistribution(OTDistribution):
     ) -> None:
         """
         Args:
-            variable: The name of the normal random variable.
             mu: The mean of the normal random variable.
             sigma: The standard deviation
                 of the normal random variable.
-            dimension: The dimension of the normal random variable.
-            transformation: A transformation
-                applied to the random variable,
-                e.g. 'sin(x)'. If None, no transformation.
-            lower_bound: A lower bound to truncate the distribution.
-                If None, no lower truncation.
-            upper_bound: An upper bound to truncate the distribution.
-                If None, no upper truncation.
-            threshold: A threshold in [0,1].
         """  # noqa: D205,D212,D415
         standard_parameters = {self._MU: mu, self._SIGMA: sigma}
         super().__init__(
