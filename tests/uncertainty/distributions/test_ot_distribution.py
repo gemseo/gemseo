@@ -49,7 +49,7 @@ from openturns import RandomGenerator
 
 def test_composed_distribution():
     """Check the composed distribution associated with a OTDistribution."""
-    assert OTDistribution._COMPOSED_DISTRIBUTION == OTComposedDistribution
+    assert OTDistribution.COMPOSED_DISTRIBUTION_CLASS == OTComposedDistribution
 
 
 def test_constructor():

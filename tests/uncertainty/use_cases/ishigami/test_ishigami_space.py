@@ -25,6 +25,7 @@ def test_ishigami_space():
     assert space.variable_names == ["x1", "x2", "x3"]
     for distribution in space.distributions.values():
         assert len(distribution.marginals) == 1
-        distribution = distribution.marginals[0]
+        assert len(distribution.marginals[0].marginals) == 1
+        distribution = distribution.marginals[0].marginals[0]
         assert distribution.kwds == {"loc": -pi, "scale": 2 * pi}
         assert distribution.dist.__class__.__name__ == "uniform_gen"

@@ -120,7 +120,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
@@ -276,16 +276,18 @@ class PCERegressor(MLRegressionAlgo):
             raise ValueError("PCERegressor does not support input transformers.")
 
         distributions = probability_space.distributions
-        input_names = [
+        wrongly_distributed_random_variable_names = [
             input_name
             for input_name in self.input_names
-            if not isinstance(distributions.get(input_name, None), OTDistribution)
+            if not isinstance(
+                distributions.get(input_name, None), OTComposedDistribution
+            )
         ]
-        if input_names:
+        if wrongly_distributed_random_variable_names:
             raise ValueError(
-                "The probability distributions "
-                f"of the random variables {pretty_str(input_names)} "
-                f"are not instances of OTDistribution."
+                "The probability distributions of the random variables "
+                f"{pretty_str(wrongly_distributed_random_variable_names)} "
+                "are not instances of OTComposedDistribution."
             )
 
         self.__variable_sizes = probability_space.variable_sizes
@@ -302,7 +304,8 @@ class PCERegressor(MLRegressionAlgo):
             [
                 marginal
                 for input_name in self.input_names
-                for marginal in distributions[input_name].marginals
+                for distribution in distributions[input_name].marginals
+                for marginal in distribution.marginals
             ]
         )
 

@@ -21,20 +21,12 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.uncertainty.distributions.distribution import ParametersType
-from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.utils.string_tools import pretty_str
-
-DistributionParametersType = Union[
-    int, ParametersType, Optional[StandardParametersType], float
-]
 
 
 class DistributionFactory(BaseFactory):
@@ -70,7 +62,7 @@ class DistributionFactory(BaseFactory):
         self,
         distribution_name: str,
         variable: str,
-        **parameters: DistributionParametersType,
+        **parameters: Any,
     ) -> Distribution:
         """Create a marginal probability distribution for a given random variable.
 

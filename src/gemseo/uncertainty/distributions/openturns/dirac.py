@@ -28,7 +28,7 @@ class OTDiracDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         variable_value: float = 0.0,
         dimension: int = 1,
         transformation: str | None = None,
@@ -49,4 +49,5 @@ class OTDiracDistribution(OTDistribution):
             transformation=transformation,
             lower_bound=lower_bound,
             upper_bound=upper_bound,
+            threshold=threshold,
         )

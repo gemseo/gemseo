@@ -78,9 +78,12 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Any
 from typing import Callable
+from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Tuple
+from typing import TYPE_CHECKING
 from typing import Union
 
 import matplotlib.pyplot as plt
@@ -95,6 +98,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
+if TYPE_CHECKING:
+    from gemseo.uncertainty.distributions.composed import ComposedDistribution
 LOGGER = logging.getLogger(__name__)
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
@@ -102,22 +107,7 @@ ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 
 
 class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
-    """Probability distribution related to a random variable.
-
-    The dimension of the random variable can be greater than 1. In this case, the same
-    distribution is applied to all components of the random variable under the hypothesis
-    that these components are stochastically independent.
-
-    The string representation of a distribution interfacing a distribution called
-    ``'MyDistribution'`` with parameters ``(2,3)`` is 'MyDistribution(2, 3)` if
-    no standard parameters are passed. If the standard parameters are :code:`{a: 2, b:
-    3}` (resp. ``{a_inv: 2, b: 3}``), then the standard representation is:
-    'MyDistribution(a=2, b=3)` (resp. 'MyDistribution(a_inv=0.5, b=3)`) Standard
-    parameters are useful to redefine the name of the parameters. For example, some
-    exponential distributions consider the notion of rate while other ones consider the
-    notion of scale, which is the inverse of the rate... even in the background, the
-    distribution is the same!
-    """
+    """Probability distribution related to a random variable."""
 
     math_lower_bound: ndarray
     """The mathematical lower bound of the random variable."""
@@ -164,7 +154,13 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     _RATE = "rate"
     _LOC = "loc"
 
-    _COMPOSED_DISTRIBUTION = None
+    DEFAULT_VARIABLE_NAME: Final[str] = "x"
+    """The default name of the variable."""
+
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = None
+    """The class of the joint distribution associated with this distribution, if any."""
+
+    # TODO: remove the argument dimension / use ComposedDistribution for random vectors
 
     def __init__(
         self,
@@ -180,11 +176,32 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
             interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
                 such as ``"Normal"`` for OpenTURNS or ``"norm"`` for SciPy.
-            parameters: The parameters of the class
-                related to distribution.
+            parameters: The parameters of the probability distribution.
             dimension: The dimension of the random variable.
-            standard_parameters: The standard representation
-                of the parameters of the probability distribution.
+                If greater than 1,
+                the probability distribution is applied
+                to all components of the random variable under the hypothesis
+                that these components are stochastically independent.
+                To be removed in a future version;
+                use a :class:`.ComposedDistribution` instead.
+            standard_parameters: The parameters of the probability distribution
+                used for string representation only
+                (use ``parameters`` for computation).
+                If ``None``, use ``parameters`` instead.
+                For instance,
+                let us consider an interfaced distribution
+                named ``"Dirac"``
+                with positional parameters
+                (this is the case of :class:`.OTDistribution`).
+                Then,
+                the string representation of
+                ``Distribution("x", "Dirac", (1,), 1, {"loc": 1})``
+                is ``"Dirac(loc=1)"``
+                while the string representation of
+                ``Distribution("x", "Dirac", (1,))``
+                is ``"Dirac(1)"``.
+                The same mechanism works for keyword parameters
+                (this is the case of :class:`.SPDistribution`).
         """  # noqa: D205,D212,D415
         self.math_lower_bound = None
         self.math_upper_bound = None
@@ -196,7 +213,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.variable_name = variable
         self.distribution_name = interfaced_distribution
         self.transformation = variable
-        self.parameters = parameters
+        self.parameters = parameters or self._get_empty_parameter_set()
         if standard_parameters is None:
             self.standard_parameters = self.parameters
         else:
@@ -211,6 +228,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         msg.add("Distribution: {}", self)
         msg.add("Dimension: {}", dimension)
         LOGGER.debug("%s", msg)
+
+    def _get_empty_parameter_set(self) -> dict:
+        """Return an empty parameter set."""
+        return {}
 
     def __repr__(self) -> str:
         return f"{self.distribution_name}({pretty_str(self.standard_parameters)})"
