@@ -29,6 +29,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.wrappers.xls_discipline import XLSDiscipline
 from numpy import array
 from numpy import exp
+from numpy import isclose
 from numpy import ones
 
 DIR_PATH = Path(__file__).parent
@@ -185,6 +186,7 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
         objective_name="obj",
         design_space=design_space,
         scenario_type="DOE",
+        tolerance=1e-14,
     )
     scenario.add_constraint("c_1", "ineq")
     scenario.add_constraint("c_2", "ineq")
@@ -194,7 +196,7 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
         "algo_options": {"n_processes": 2},
     }
     scenario.execute(doe_input)
-    assert scenario.optimization_result.f_opt == 101.0
+    assert isclose(scenario.optimization_result.f_opt, 101.0, 1e-8, 1e-8)
 
 
 #         def test_macro(self):

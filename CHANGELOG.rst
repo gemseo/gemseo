@@ -27,6 +27,23 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 5.0.1 (2023-09-07)
+**************************
+
+Added
+-----
+
+- The MDAJacobi performance and memory usage was improved.
+  `#882 <https://gitlab.com/gemseo/dev/gemseo/-/issues/882>`_
+
+Fixed
+-----
+
+- The MDAJacobi executions are now deterministic.
+  The MDAJacobi m2d acceleration is deactivated when the least square problem is not well solved.
+  `#882 <https://gitlab.com/gemseo/dev/gemseo/-/issues/882>`_
+
+
 Version 5.0.0 (2023-06-02)
 **************************
 
