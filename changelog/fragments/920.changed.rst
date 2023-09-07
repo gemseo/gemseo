@@ -1,4 +1,3 @@
-API changes:
 - Renamed ``MLQualityMeasure.evaluate_learn`` to ``MLQualityMeasure.compute_learning_measure``.
 - Renamed ``MLQualityMeasure.evaluate_test`` to ``MLQualityMeasure.compute_test_measure``.
 - Renamed ``MLQualityMeasure.evaluate_kfolds`` to ``MLQualityMeasure.compute_cross_validation_measure``.

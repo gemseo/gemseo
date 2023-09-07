@@ -187,8 +187,10 @@ def check_disciplines_consistency(
                 )
 
             if log_message:
-                LOGGER.fatal(
-                    message.format(discipline.name, already_existing_output_names)
+                LOGGER.warning(
+                    message.replace("{}", "%s"),
+                    discipline.name,
+                    already_existing_output_names,
                 )
 
             return False
