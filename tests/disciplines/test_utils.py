@@ -14,6 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import logging
 import re
 
 import pytest
@@ -93,7 +94,7 @@ def test_check_disciplines_consistency_log(inconsistent_disciplines, caplog):
     """Test check_disciplines_consistency with inconsistent disciplines and log mode."""
     assert not check_disciplines_consistency(inconsistent_disciplines, True, False)
     record = caplog.record_tuples[0]
-    assert record[1] == 50
+    assert record[1] == logging.WARNING
     assert (
         record[2] == "Two disciplines, among which Bar, compute the same outputs: {'y'}"
     )
