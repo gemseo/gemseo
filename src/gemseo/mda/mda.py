@@ -343,7 +343,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def _compute_input_couplings(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
         input_couplings = set(self.strong_couplings) & set(self.get_input_data_names())
-        self._input_couplings = list(input_couplings)
+        self._input_couplings = sorted(input_couplings)
 
     def _current_input_couplings(self) -> ndarray:
         """Return the current values of the input coupling variables."""
