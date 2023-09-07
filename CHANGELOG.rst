@@ -275,9 +275,9 @@ Surrogate models
 - The high-level functions defined in ``gemseo.mlearning.api`` have been moved to ``gemseo.mlearning``.
 - ``stieltjes`` and ``strategy`` are no longer arguments of ``PCERegressor``.
 - Rename ``MLAlgo.save`` to ``MLAlgo.to_pickle``.
-- The name of the method to evaluate the quality measure is passed to ``MLAlgoAssessor`` with the argument ``measure_evaluation_method``.
-- The name of the method to evaluate the quality measure is passed to ``MLAlgoSelection`` with the argument ``measure_evaluation_method``.
-- The name of the method to evaluate the quality measure is passed to ``MLAlgoCalibration`` with the argument ``measure_evaluation_method``.
+- The name of the method to evaluate the quality measure is passed to ``MLAlgoAssessor`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"].
+- The name of the method to evaluate the quality measure is passed to ``MLAlgoSelection`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"].
+- The name of the method to evaluate the quality measure is passed to ``MLAlgoCalibration`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"].
 - The names of the methods to evaluate a quality measure can be accessed with ``MLAlgoQualityMeasure.EvaluationMethod``.
   `#464 <https://gitlab.com/gemseo/dev/gemseo/-/issues/464>`_
 - Rename ``gemseo.mlearning.qual_measure`` to ``gemseo.mlearning.quality_measures``.
@@ -335,6 +335,7 @@ MDO processes
 - Rename ``AbstractCache.export_to_ggobi`` to ``AbstractCache.to_ggobi``.
 - Rename ``Scenario.export_to_dataset`` to ``Scenario.to_dataset``.
 
+- Rename ``MDODiscipline._default_inputs`` to ``MDODiscipline.default_inputs``.
 - Rename ``MDODiscipline.serialize`` to ``MDODiscipline.to_pickle``.
 - Rename ``MDODiscipline.deserialize`` to ``MDODiscipline.from_pickle`` which is a static method.
 - Rename ``ScalabilityResult.save`` to ``ScalabilityResult.to_pickle``.
@@ -525,7 +526,7 @@ MDO processes
 - Renamed the argument ``schema_path`` to ``file_path`` for the ``JSONGrammar`` constructor.
 - To update a ``SimpleGrammar`` or a ``JSONGrammar`` from a names and types, the ``update`` method is now replaced by the method ``update_from_types``.
   `#741 <https://gitlab.com/gemseo/dev/gemseo/-/issues/741>`_
-- Rename ``HDF5Cache.hdf_node_name`` to ``HDF5Cache.hdf_node_path``.
+- Renamed ``HDF5Cache.hdf_node_name`` to ``HDF5Cache.hdf_node_path``.
 - ``tolerance`` and ``name`` are the first instantiation arguments of ``HDF5Cache``, for consistency with other caches.
 - Added the arguments ``newton_linear_solver`` and ``newton_linear_solver_options`` to the constructor of ``MDANewtonRaphson``. These arguments are passed to the linear solver of the Newton solver used to solve the MDA coupling.
   `#715 <https://gitlab.com/gemseo/dev/gemseo/-/issues/715>`_
@@ -794,10 +795,20 @@ Technical improvements
 - ``Dataset`` inherits from ``DataFrame`` and uses multi-indexing columns.
   Some methods have been added to improve the use of multi-index; ``Dataset.transform_variable`` has been renamed to ``Dataset.transform_data``.
   Two derived classes (``IODataset`` and ``OptimizationDataset``) can be considered for specific usages.
-- ``Dataset`` can be imported from ``src.gemseo.datasets.dataset``.
+- ``Dataset`` can be imported from ``gemseo.datasets.dataset``.
+- The default group of ``Dataset`` is ``parameters``.
 - ``Dataset`` no longer has the ``get_data_by_group``, ``get_all_data`` and ``get_data_by_names`` methods. Use ``Dataset.get_view``` instead.
   It returns a sliced ``Dataset``, to focus on some parts.
   Different formats can be used to extract data using pandas default methods.
+  For instance, ``get_data_by_names`` can be replaced by ``get_view(variable_names=var_name).to_numpy()``.
+- In a ``Dataset``, a variable is identified by a tuple ``(group_name, variable_name)``.
+  This tuple called *variable identifier* is unique, contrary to a variable name as it can be used in several groups.
+  The size of a variable corresponds to its number of components.
+  dataset.variable_names_to_n_components[variable_name]`` returns the size of all the variables named ``variable_name``
+  while ``len(dataset.get_variable_components(group_name, variable_name))`` returns the size of the variable named
+  ``variable_name`` and belonging to ``group_name``.
+- The methods ``to_dataset`` no longer have an argument ``by_group`` as the ``Dataset`` no longer stores the data by group
+  (the previous ``Dataset`` stored the data in a dictionary indexed by either variable names or group names).
 - ``Dataset`` no longer has the ``export_to_dataframe`` method, since it is a ``DataFrame`` itself.
 - ``Dataset`` no longer has the ``length``; use ``len(dataset)`` instead.
 - ``Dataset`` no longer has the ``is_empty`` method. Use pandas attribute ``empty`` instead.
@@ -810,6 +821,10 @@ Technical improvements
 - ``Dataset.add_group`` no longer has the ``variables`` argument. Use ``variable_names`` instead.
 - ``Dataset.add_group`` no longer has the ``sizes`` argument. Use ``variable_names_to_n_components`` instead.
 - ``Dataset.add_group`` no longer has the ``cache_as_input`` and ``pattern`` arguments.
+- Renamed ``Dataset.set_from_array`` to ``Dataset.from_array``.
+- Renamed ``Dataset.get_names`` to ``Dataset.get_variable_names``.
+- Renamed ``Dataset.set_metadata`` to ``Dataset.misc``.
+- Removed ``Dataset.n_samples`` in favor of ``len()``.
 - ``gemseo.load_dataset`` is renamed: ``gemseo.create_benchmark_dataset``.
   Can be used to create a Burgers, Iris or Rosenbrock dataset.
 - ``BurgerDataset`` no longer exists. Create a Burger dataset with ``create_burgers_dataset``.
@@ -822,6 +837,7 @@ Technical improvements
 - Rename ``MDOObjScenarioAdapter`` to ``MDOObjectiveScenarioAdapter``.
 - The scenario adapters ``MDOScenarioAdapter`` and ``MDOObjectiveScenarioAdapter`` are now located in the package ``gemseo.disciplines.scenario_adapters``.
   `#407 <https://gitlab.com/gemseo/dev/gemseo/-/issues/407>`_
+- Moved ``gemseo.core.factory.Factory`` to ``gemseo.core.base_factory.BaseFactory``
 - Removed the attribute ``factory`` of the factories.
 - Removed ``Factory._GEMS_PATH``.
 - Moved ``singleton._Multiton`` to ``factory._FactoryMultitonMeta``
