@@ -203,6 +203,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             formulation_options,
             parameter_space,
         )
+        algo_options["log_problem"] = False
         scenario.execute(
             {
                 "algo": self._algo_name,
@@ -212,8 +213,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         return scenario
 
-    @staticmethod
     def _create_scenario(
+        self,
         disciplines: Iterable[MDODiscipline],
         observable_names: Sequence[str],
         formulation: str,
@@ -237,6 +238,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             formulation,
             observable_names[0],
             parameter_space,
+            name=f"{self.__class__.__name__}SamplingPhase",
             **formulation_options,
         )
         for discipline in disciplines:
