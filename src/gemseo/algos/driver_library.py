@@ -140,6 +140,12 @@ class DriverLibrary(AlgorithmLibrary):
     """Whether to reset the iteration counters of the OptimizationProblem before each
     execution."""
 
+    __log_problem: bool
+    """Whether to log the definition and result of the problem."""
+
+    __LOG_PROBLEM: Final[str] = "log_problem"
+    """The name of the option to log the definition and result of the problem."""
+
     def __init__(self) -> None:  # noqa:D107
         # Library settings and check
         super().__init__()
@@ -152,6 +158,7 @@ class DriverLibrary(AlgorithmLibrary):
         self.__message = None
         self.__is_current_iteration_logged = True
         self.__reset_iteration_counters = True
+        self.__log_problem = True
 
     @classmethod
     def _get_unsuitability_reason(
@@ -211,34 +218,38 @@ class DriverLibrary(AlgorithmLibrary):
             x_vect: The design variables values.
                 If None, consider the objective at the last iteration.
         """
-        if x_vect is None:
-            value = self.problem.objective.last_eval
-        else:
-            value = self.problem.database.get_function_value(
-                self.problem.objective.name, x_vect
-            )
-
-        if value is not None:
-            self.__is_current_iteration_logged = True
-            # if maximization problem: take the opposite
-            if (
-                not self.problem.minimize_objective
-                and not self.problem.use_standardized_objective
-            ):
-                value = -value
-            self.__progress_bar.n += 1
-            if isinstance(value, ndarray):
-                if len(value) == 1:
-                    value = value[0]
-            self.__progress_bar.set_postfix(refresh=True, obj=value)
-            #
-        else:
-            if self.__is_current_iteration_logged:
-                self.__is_current_iteration_logged = False
+        if self.__log_problem:
+            if x_vect is None:
+                obj = self.problem.objective.last_eval
             else:
-                self.__is_current_iteration_logged = True
+                obj = self.problem.database.get_function_value(
+                    self.problem.objective.name, x_vect
+                )
+
+        if self.__log_problem and obj is None:
+            self.__is_current_iteration_logged = not self.__is_current_iteration_logged
+            if self.__is_current_iteration_logged:
                 self.__progress_bar.n += 1
-                self.__progress_bar.set_postfix(refresh=True, obj="Not evaluated")
+                obj = "Not evaluated"
+        else:
+            self.__is_current_iteration_logged = True
+            self.__progress_bar.n += 1
+            if self.__log_problem:
+                # if maximization problem: take the opposite
+                if (
+                    not self.problem.minimize_objective
+                    and not self.problem.use_standardized_objective
+                ):
+                    obj = -obj
+
+                if isinstance(obj, ndarray) and len(obj) == 1:
+                    obj = obj[0]
+
+        if self.__is_current_iteration_logged:
+            if self.__log_problem:
+                self.__progress_bar.set_postfix(refresh=True, obj=obj)
+            else:
+                self.__progress_bar.set_postfix(refresh=True)
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Iterate the progress bar, implement the stop criteria.
@@ -293,15 +304,20 @@ class DriverLibrary(AlgorithmLibrary):
                 see the associated JSON file.
         """
         self._max_time = options.get(self.MAX_TIME, 0.0)
-        LOGGER.info("%s", problem)
-        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-            log = MultiLineString()
-            log.indent()
-            log.add("over the design space:")
-            for line in str(problem.design_space).split("\n")[1:]:
-                log.add(line)
-            LOGGER.info("%s", log)
-        LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
+        if self.__log_problem:
+            LOGGER.info("%s", problem)
+            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+                log = MultiLineString()
+                log.indent()
+                log.add("over the design space:")
+                for line in str(problem.design_space).split("\n")[1:]:
+                    log.add(line)
+                LOGGER.info("%s", log)
+                LOGGER.info(
+                    "Solving optimization problem with algorithm %s:", algo_name
+                )
+        else:
+            LOGGER.info("Running the algorithm %s:", algo_name)
 
     def _post_run(
         self,
@@ -318,24 +334,27 @@ class DriverLibrary(AlgorithmLibrary):
             result: The result of the run.
             **options: The options of the algorithm.
         """
-        opt_result_str = result._strings
-        LOGGER.info("%s", opt_result_str[0])
-        if result.constraint_values:
-            if result.is_feasible:
-                LOGGER.info("%s", opt_result_str[1])
-            else:
-                LOGGER.warning("%s", opt_result_str[1])
-        LOGGER.info("%s", opt_result_str[2])
         problem.solution = result
         if result.x_opt is not None:
             problem.design_space.set_current_value(result)
-        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-            log = MultiLineString()
-            log.indent()
-            log.indent()
-            for line in str(problem.design_space).split("\n"):
-                log.add(line)
-            LOGGER.info("%s", log)
+
+        if self.__log_problem:
+            opt_result_str = result._strings
+            LOGGER.info("%s", opt_result_str[0])
+            if result.constraint_values:
+                if result.is_feasible:
+                    LOGGER.info("%s", opt_result_str[1])
+                else:
+                    LOGGER.warning("%s", opt_result_str[1])
+
+            LOGGER.info("%s", opt_result_str[2])
+            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+                log = MultiLineString()
+                log.indent()
+                log.indent()
+                for line in str(problem.design_space).split("\n"):
+                    log.add(line)
+                LOGGER.info("%s", log)
 
     def _check_integer_handling(
         self,
@@ -422,6 +441,7 @@ class DriverLibrary(AlgorithmLibrary):
         self.__reset_iteration_counters = options.pop(
             self.__RESET_ITERATION_COUNTERS_OPTION, True
         )
+        self.__log_problem = options.pop(self.__LOG_PROBLEM, True)
 
         options = self._update_algorithm_options(**options)
         self.internal_algo_name = self.descriptions[
