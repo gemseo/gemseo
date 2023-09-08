@@ -39,8 +39,9 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
-OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 MeasureType = Union[float, ndarray, Dict[str, ndarray]]
+OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
+MeasureOptionsType = Dict[str, OptionType]
 
 
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -87,6 +88,15 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         BOOTSTRAP = "BOOTSTRAP"
         """The name of the method to evaluate the measure by bootstrap."""
 
+    class EvaluationFunctionName(StrEnum):
+        """The name of the function associated with an evaluation method."""
+
+        LEARN = "evaluate_learn"
+        TEST = "evaluate_test"
+        LOO = "evaluate_loo"
+        KFOLDS = "evaluate_kfolds"
+        BOOTSTRAP = "evaluate_bootstrap"
+
     SMALLER_IS_BETTER: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
 
@@ -129,8 +139,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
@@ -149,8 +160,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             test_data: The test dataset.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
@@ -166,8 +178,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
@@ -193,12 +206,13 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
             randomize: Whether to shuffle the samples before dividing them in folds.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
-                then an unpredictable generator will be used.
+                an unpredictable generator is used.
 
         Returns:
             The value of the quality measure.
@@ -218,11 +232,12 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             n_replicates: The number of bootstrap replicates.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
-                then an unpredictable generator will be used.
+                an unpredictable generator will be used.
 
         Returns:
             The value of the quality measure.
@@ -292,7 +307,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
                 e.g. [2, 3], [1, 5] and [0, 4].
             seed: The seed to initialize the random generator used for shuffling.
                 If ``None``,
-                then an unpredictable random generator will be pulled from the OS.
+                an unpredictable random generator will be pulled from the OS.
 
         Returns:
             * The folds defined as sub-sets of ``samples``.

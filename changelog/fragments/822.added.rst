@@ -1,0 +1,2 @@
+- ``MLErrorMeasureFactory`` is a factory of ``MLErrorMeasure``.
+- ``SurrogateDiscipline.get_error_measure`` returns an ``MLErrorMeasure`` to assess the quality of a ``SurrogateDiscipline``; use one of its evaluation methods to compute it, e.g. ``evaluate_learn`` to compute a learning error.

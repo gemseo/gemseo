@@ -73,8 +73,12 @@ class MLErrorMeasure(MLQualityMeasure):
     ) -> MeasureType:
         """
         Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
         """
         self._train_algo(samples)
         return self._post_process_measure(
@@ -96,8 +100,12 @@ class MLErrorMeasure(MLQualityMeasure):
     ) -> MeasureType:
         """
         Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
         """
         self._train_algo(samples)
         return self._post_process_measure(
@@ -125,9 +133,12 @@ class MLErrorMeasure(MLQualityMeasure):
         as_dict: bool = False,
     ) -> MeasureType:
         """
-        Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+        as_dict: Whether the full quality measure is returned
+            as a mapping from ``algo.output names`` to quality measures.
+            Otherwise,
+            the full quality measure as an array
+            stacking these quality measures
+            according to the order of ``algo.output_names``.
         """
         return self.compute_cross_validation_measure(
             samples=samples,
@@ -146,9 +157,12 @@ class MLErrorMeasure(MLQualityMeasure):
         as_dict: bool = False,
     ) -> MeasureType:
         """
-        Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+        as_dict: Whether the full quality measure is returned
+            as a mapping from ``algo.output names`` to quality measures.
+            Otherwise,
+            the full quality measure as an array
+            stacking these quality measures
+            according to the order of ``algo.output_names``.
         """
         self._train_algo(samples)
         samples = self._assure_samples(samples)
@@ -183,8 +197,12 @@ class MLErrorMeasure(MLQualityMeasure):
     ) -> MeasureType:
         """
         Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
         """
         samples = self._assure_samples(samples)
         self._train_algo(samples)
@@ -229,8 +247,9 @@ class MLErrorMeasure(MLQualityMeasure):
         Args:
             outputs: The reference data.
             predictions: The predicted labels.
-            multioutput: Whether to return the quality measure
-                for each output component. If not, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
@@ -243,10 +262,15 @@ class MLErrorMeasure(MLQualityMeasure):
 
         Args:
             measure: The measure to post-process.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
-            as_dict: Whether to return the measure as is or as a dictionary
-                whose keys are the output names.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
 
         Returns:
             The post-processed measure.

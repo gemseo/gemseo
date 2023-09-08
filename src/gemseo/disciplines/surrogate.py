@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 from typing import Iterable
 from typing import Mapping
 
@@ -30,6 +31,10 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
+from gemseo.mlearning.quality_measures.error_measure_factory import (
+    MLErrorMeasureFactory,
+)
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.string_tools import MultiLineString
@@ -39,12 +44,35 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SurrogateDiscipline(MDODiscipline):
-    """An :class:`.MDODiscipline` approximating another one with a surrogate model.
+    """A discipline wrapping a regression model built from a dataset.
 
-    This surrogate model is a regression model implemented as a
-    :class:`.MLRegressionAlgo`. This :class:`.MLRegressionAlgo` is built from an input-
-    output :class:`.Dataset` composed of evaluations of the original discipline.
+    Examples:
+        >>> import numpy as np
+        >>> from gemseo.datasets.io_dataset import IODataset
+        >>> from gemseo.disciplines.surrogate import SurrogateDiscipline
+        >>>
+        >>> # Create an input-output dataset.
+        >>> dataset = IODataset()
+        >>> dataset.add_input_variable("x", np.array([[1.], [2.], [3.]]))
+        >>> dataset.add_output_variable("y", np.array([[3.], [5.], [6.]]))
+        >>>
+        >>> # Build a surrogate discipline relying on a linear regression model.
+        >>> surrogate_discipline = SurrogateDiscipline("LinearRegressor", dataset)
+        >>>
+        >>> # Assess its quality with the R2 measure.
+        >>> r2 = surrogate_discipline.get_error_measure("R2Measure")
+        >>> learning_r2 = r2.evaluate_learn()
+        >>>
+        >>> # Execute the surrogate discipline, with default or custom input values.
+        >>> surrogate_discipline.execute()
+        >>> surrogate_discipline.execute({"x": np.array([1.5])})
     """
+
+    regression_model: MLRegressionAlgo
+    """The regression model called by the surrogate discipline."""
+
+    __error_measure_factory: MLErrorMeasureFactory
+    """The factory of error measures."""
 
     def __init__(
         self,
@@ -59,8 +87,9 @@ class SurrogateDiscipline(MDODiscipline):
     ) -> None:
         """
         Args:
-            surrogate: Either the class name
-                or the instance of the :class:`.MLRegressionAlgo`.
+            surrogate: Either the name of a class
+                deriving from :class:`.MLRegressionAlgo`
+                or the instance of an :class:`.MLRegressionAlgo`.
             data: The learning dataset to train the regression model.
                 If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
@@ -91,6 +120,7 @@ class SurrogateDiscipline(MDODiscipline):
             ValueError: If the learning dataset is missing
                 whilst the regression model is not trained.
         """  # noqa: D205, D212, D415
+        self.__error_measure_factory = MLErrorMeasureFactory()
         if isinstance(surrogate, MLRegressionAlgo):
             self.regression_model = surrogate
             name = self.regression_model.learning_set.name
@@ -203,3 +233,21 @@ class SurrogateDiscipline(MDODiscipline):
     ) -> None:
         self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
         self.jac = self.regression_model.predict_jacobian(self.get_input_data())
+
+    def get_error_measure(
+        self,
+        measure_name: str,
+        **measure_options: Any,
+    ) -> MLErrorMeasure:
+        """Return an error measure.
+
+        Args:
+            measure_name: The class name of the error measure.
+            **measure_options: The options of the error measure.
+
+        Returns:
+            The error measure.
+        """
+        return self.__error_measure_factory.create(
+            measure_name, algo=self.regression_model, **measure_options
+        )

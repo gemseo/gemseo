@@ -22,6 +22,9 @@ from __future__ import annotations
 
 import pytest
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.quality_measures.error_measure_factory import (
+    MLErrorMeasureFactory,
+)
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
@@ -123,3 +126,9 @@ def test_subset_of_inputs_and_outputs(
             assert compare_dict_of_arrays(
                 result, {"y1#y2": array([expected])}, tolerance=1e-3
             )
+
+
+def test_factory():
+    """Test the MLErrorMeasureFactory."""
+    assert MLErrorMeasureFactory().is_available("R2Measure")
+    assert not MLErrorMeasureFactory().is_available("SilhouetteMeasure")
