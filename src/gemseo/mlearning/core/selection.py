@@ -172,9 +172,12 @@ class MLAlgoSelection:
             params = dict(zip(keys, prodvalues))
             if not calib_space:
                 algo_new = self.factory.create(name, data=self.dataset, **params)
+                measure = self.measure(algo_new)
                 evaluate = getattr(
-                    self.measure(algo_new),
-                    f"evaluate_{self.__measure_evaluation_method_name.lower()}",
+                    measure,
+                    measure.EvaluationFunctionName[
+                        self.__measure_evaluation_method_name
+                    ],
                 )
                 quality_new = evaluate(**self.measure_options)
             else:

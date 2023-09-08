@@ -77,8 +77,9 @@ class MLClusteringMeasure(MLQualityMeasure):
         Args:
             data: The reference data.
             labels: The predicted labels.
-            multioutput: Whether to return the quality measure
-                for each output component; if not, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
