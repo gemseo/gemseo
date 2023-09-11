@@ -26,7 +26,6 @@ from gemseo.post.dataset.scatter import Scatter
 from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 from numpy import array
-from scipy.interpolate import Rbf
 
 
 @pytest.fixture(scope="module")
@@ -100,19 +99,3 @@ def test_plot(
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
     plot.execute(save=False, properties=properties, fig=fig, axes=axes)
-
-
-@pytest.mark.parametrize(
-    "trend, baseline_images",
-    [
-        ("linear", ["Scatter_linear_trend"]),
-        ("quadratic", ["Scatter_quadratic_trend"]),
-        ("cubic", ["Scatter_cubic_trend"]),
-        ("rbf", ["Scatter_rbf_trend"]),
-        (lambda x, y: Rbf(x, y), ["Scatter_custom_trend"]),
-    ],
-)
-@image_comparison(None)
-def test_trend(trend, quadratic_dataset, baseline_images, pyplot_close_all):
-    """Check the use of a trend."""
-    Scatter(quadratic_dataset, "x", "y", trend=trend).execute(save=False)

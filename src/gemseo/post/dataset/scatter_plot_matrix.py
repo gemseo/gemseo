@@ -49,10 +49,7 @@ labeled.
 """
 from __future__ import annotations
 
-from typing import Any
-from typing import Callable
 from typing import Sequence
-from typing import Union
 
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -60,19 +57,11 @@ from matplotlib.figure import Figure
 from pandas.plotting import scatter_matrix
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset._trend import Trend as _Trend
-from gemseo.post.dataset._trend import TREND_FUNCTIONS
-from gemseo.post.dataset._trend import TrendFunctionCreator
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-ScatterMatrixOption = Union[bool, int, str, None, Sequence[str]]
 
 
 class ScatterMatrix(DatasetPlot):
     """Scatter plot matrix."""
-
-    Trend = _Trend
-    """The type of trend."""
 
     def __init__(
         self,
@@ -84,8 +73,6 @@ class ScatterMatrix(DatasetPlot):
         marker: str = "o",
         plot_lower: bool = True,
         plot_upper: bool = True,
-        trend: Trend | TrendFunctionCreator = Trend.NONE,
-        **options: Any,
     ) -> None:
         """
         Args:
@@ -97,9 +84,6 @@ class ScatterMatrix(DatasetPlot):
             marker: The marker for the points.
             plot_lower: Whether to plot the lower part.
             plot_upper: Whether to plot the upper part.
-            trend: The trend function to be added on the scatter plots
-                or a function creating a trend function from a set of *xy*-points.
-            **options: The options of the underlying pandas scatter matrix.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
@@ -110,8 +94,6 @@ class ScatterMatrix(DatasetPlot):
             marker=marker,
             plot_lower=plot_lower,
             plot_upper=plot_upper,
-            trend=trend,
-            options=options,
         )
 
     def _plot(
@@ -140,14 +122,13 @@ class ScatterMatrix(DatasetPlot):
             diagonal = "hist"
 
         dataframe = self.dataset.get_view(variable_names=variable_names)
+        kwargs = {}
         if classifier is not None:
             palette = dict(enumerate("bgrcmyk"))
             groups = self.dataset.get_view(variable_names=[classifier]).to_numpy()[
                 :, 0:1
             ]
-            self._param.options["color"] = [
-                palette[group[0] % len(palette)] for group in groups
-            ]
+            kwargs["color"] = [palette[group[0] % len(palette)] for group in groups]
             _, variable_name = self._get_label(classifier)
             dataframe = dataframe.drop(labels=variable_name, axis=1)
 
@@ -156,62 +137,40 @@ class ScatterMatrix(DatasetPlot):
         fig, axes = self._get_figure_and_axes(
             fig, axes, self.fig_size, n_rows=n_rows, n_cols=n_cols
         )
-        axes = scatter_matrix(
+        sub_axes = scatter_matrix(
             dataframe,
             diagonal=diagonal,
             s=size,
             marker=marker,
             figsize=self.fig_size,
             ax=axes,
-            **self._param.options,
+            **kwargs,
         )
 
-        trend_function_creator = self._param.trend
-        if trend_function_creator != _Trend.NONE:
-            if not isinstance(trend_function_creator, Callable):
-                trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
-
-            for i_row, row in enumerate(axes):
-                for i_col, ax in enumerate(row):
-                    if i_col == i_row:
-                        continue
-
-                    collection = ax.collections[0]
-                    collection.set_zorder(3)
-                    data = collection.get_offsets()
-                    x_data = data[:, 0]
-                    trend_function = trend_function_creator(x_data, data[:, 1])
-                    ax.plot(
-                        x_data,
-                        trend_function(x_data),
-                        color="gray",
-                        linestyle="--",
-                    )
-
-        n_cols = axes.shape[0]
+        n_cols = sub_axes.shape[0]
         if not (self._param.plot_lower and self._param.plot_upper):
             for i in range(n_cols):
                 for j in range(n_cols):
-                    axes[i, j].get_xaxis().set_visible(False)
-                    axes[i, j].get_yaxis().set_visible(False)
+                    sub_axes[i, j].get_xaxis().set_visible(False)
+                    sub_axes[i, j].get_yaxis().set_visible(False)
 
         if not self._param.plot_lower:
             for i in range(n_cols):
                 for j in range(i):
-                    axes[i, j].set_visible(False)
+                    sub_axes[i, j].set_visible(False)
 
             for i in range(n_cols):
-                axes[i, i].get_xaxis().set_visible(True)
-                axes[i, i].get_yaxis().set_visible(True)
+                sub_axes[i, i].get_xaxis().set_visible(True)
+                sub_axes[i, i].get_yaxis().set_visible(True)
 
         if not self._param.plot_upper:
             for i in range(n_cols):
                 for j in range(i + 1, n_cols):
-                    axes[i, j].set_visible(False)
+                    sub_axes[i, j].set_visible(False)
 
             for i in range(n_cols):
-                axes[-1, i].get_xaxis().set_visible(True)
-                axes[i, 0].get_yaxis().set_visible(True)
+                sub_axes[-1, i].get_xaxis().set_visible(True)
+                sub_axes[i, 0].get_yaxis().set_visible(True)
 
         plt.suptitle(self.title)
         return [fig]
