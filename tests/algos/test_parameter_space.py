@@ -603,11 +603,14 @@ def test_sp_random_vector(kwargs, upper_bound):
         ),
     ],
 )
-def test_ot_random_vector_interfaced_distribution(kwargs, samples):
+@pytest.mark.parametrize("use_parameters", [False, True])
+def test_ot_random_vector_interfaced_distribution(kwargs, samples, use_parameters):
     """Check add_random_vector with interfaced_distribution and different settings.
 
     Use OpenTURNS.
     """
+    if use_parameters:
+        kwargs["parameters"] = kwargs.pop("interfaced_distribution_parameters")
     parameter_space = ParameterSpace()
     parameter_space.add_random_vector(
         "x", "OTDistribution", interfaced_distribution="Dirac", **kwargs
@@ -633,11 +636,14 @@ def test_ot_random_vector_interfaced_distribution(kwargs, samples):
         ),
     ],
 )
-def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound):
+@pytest.mark.parametrize("use_parameters", [False, True])
+def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound, use_parameters):
     """Check add_random_vector with interfaced_distribution.
 
     Use SciPy.
     """
+    if use_parameters:
+        kwargs["parameters"] = kwargs.pop("interfaced_distribution_parameters")
     parameter_space = ParameterSpace()
     parameter_space.add_random_vector(
         "x", "SPDistribution", interfaced_distribution="uniform", **kwargs
@@ -645,6 +651,29 @@ def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound):
     assert_array_equal(
         parameter_space.distribution.math_upper_bound, array(upper_bound)
     )
+
+
+@pytest.mark.parametrize("method", ["add_random_vector", "add_random_variable"])
+def test_parameters_and_interfaced_distribution_parameters(method):
+    """Check that parameters and interfaced_distribution_parameters cannot be used at
+    the same time."""
+    parameter_space = ParameterSpace()
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "'interfaced_distribution_parameters' is the new name of 'parameters' "
+            "which will be removed in the next major release; "
+            "you cannot use both names at the same time; "
+            "please use 'interfaced_distribution_parameters'."
+        ),
+    ):
+        getattr(parameter_space, method)(
+            "x",
+            "SPDistribution",
+            interfaced_distribution="uniform",
+            interfaced_distribution_parameters={"scale": [1], "loc": [2]},
+            parameters={"scale": [1], "loc": [2]},
+        )
 
 
 @pytest.mark.parametrize(
@@ -673,16 +702,19 @@ def test_random_vector_getitem(obj, args, expected):
         ("SPDistribution", "uniform", {"scale": 2, "loc": 2}),
     ],
 )
-def test_random_variable_interface_distribution(
-    distribution, interfaced_distribution, interfaced_distribution_parameters
+@pytest.mark.parametrize("use_parameters", [False, True])
+def test_random_variable_interfaced_distribution(
+    distribution,
+    interfaced_distribution,
+    interfaced_distribution_parameters,
+    use_parameters,
 ):
     """Test adding a random variable from an interfaced distribution."""
     parameter = ParameterSpace()
+    keyword = "parameters" if use_parameters else "interfaced_distribution_parameters"
+    kwargs = {keyword: interfaced_distribution_parameters}
     parameter.add_random_variable(
-        "x",
-        distribution,
-        interfaced_distribution=interfaced_distribution,
-        interfaced_distribution_parameters=interfaced_distribution_parameters,
+        "x", distribution, interfaced_distribution=interfaced_distribution, **kwargs
     )
     marginal = parameter.distributions["x"].marginals[0]
     assert marginal.distribution_name == interfaced_distribution
