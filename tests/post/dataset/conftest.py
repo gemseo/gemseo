@@ -16,33 +16,17 @@ from __future__ import annotations
 
 import pytest
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
 from numpy import array
-from numpy import linspace
-from numpy import newaxis
 
 
 @pytest.fixture(scope="module")
-def dataset() -> Dataset:
+def dataset():
     """Dataset: A dataset containing 4 samples of variables x, y and z and cluster c."""
-    return Dataset.from_array(
-        array(
-            [
-                [0.0, 0.0, 0.0, 1],
-                [1.0, 1.0, -1.0, 2],
-                [2.0, 2.0, -2.0, 2],
-                [3.0, 3.0, -3.0, 1],
-            ]
-        ),
-        ["x", "y", "z", "c"],
+    sample1 = [0.0, 0.0, 0.0, 1]
+    sample2 = [1.0, 1.0, -1.0, 2]
+    sample3 = [2.0, 2.0, -2.0, 2]
+    sample4 = [3.0, 3.0, -3.0, 1]
+    dataset = Dataset.from_array(
+        array([sample1, sample2, sample3, sample4]), ["x", "y", "z", "c"]
     )
-
-
-@pytest.fixture(scope="module")
-def quadratic_dataset() -> IODataset:
-    """A dataset containing 10 equispaced evaluations of f(x)=x**2 over [0,1]."""
-    x = linspace(0, 1, 10)[:, newaxis]
-    dataset = IODataset()
-    dataset.add_input_group(x, "x")
-    dataset.add_output_group(x**2, "y")
     return dataset

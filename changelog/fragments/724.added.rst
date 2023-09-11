@@ -1,3 +1,0 @@
-- ``ScatterMatrix`` can set any option of the pandas ``scatter_matrix`` function.
-- ``ScatterMatrix`` can add trend curves on the scatter plots, with either the enumeration ``ScatterMatrix.Trend`` or a custom fitting technique.
-- ``Scatter`` can add a trend curve, with either the enumeration ``Scatter.Trend`` or a custom fitting technique.

@@ -37,7 +37,6 @@ from gemseo.mlearning.quality_measures.error_measure_factory import (
 )
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -234,14 +233,6 @@ class SurrogateDiscipline(MDODiscipline):
     ) -> None:
         self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
         self.jac = self.regression_model.predict_jacobian(self.get_input_data())
-
-    def get_quality_viewer(self) -> MLRegressorQualityViewer:
-        """Return a viewer of the quality of the underlying regressor.
-
-        Returns:
-            A viewer of the quality of the underlying regressor.
-        """
-        return MLRegressorQualityViewer(self.regression_model)
 
     def get_error_measure(
         self,

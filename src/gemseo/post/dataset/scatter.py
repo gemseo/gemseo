@@ -25,15 +25,10 @@ where the color of points can be heterogeneous.
 """
 from __future__ import annotations
 
-from typing import Callable
-
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset._trend import Trend as _Trend
-from gemseo.post.dataset._trend import TREND_FUNCTIONS
-from gemseo.post.dataset._trend import TrendFunctionCreator
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
 
@@ -41,15 +36,11 @@ from gemseo.post.dataset.dataset_plot import VariableType
 class Scatter(DatasetPlot):
     """Plot curve y versus x."""
 
-    Trend = _Trend
-    """The type of trend."""
-
     def __init__(
         self,
         dataset: Dataset,
         x: VariableType,
         y: VariableType,
-        trend: Trend | TrendFunctionCreator = Trend.NONE,
     ) -> None:
         """
         Args:
@@ -59,14 +50,11 @@ class Scatter(DatasetPlot):
             y: The name of the variable on the y-axis,
                 with its optional component if not ``0``,
                 e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
-            trend: The trend function to be added on the scatter plots
-                or a function creating a trend function from a set of *xy*-points.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             x=self._force_variable_to_tuple(x),
             y=self._force_variable_to_tuple(y),
-            trend=trend,
         )
 
     def _plot(
@@ -81,20 +69,7 @@ class Scatter(DatasetPlot):
         y_data = self.dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
 
         fig, axes = self._get_figure_and_axes(fig, axes)
-        scatter = axes.scatter(x_data, y_data, color=color)
-        scatter.set_zorder(3)
-        trend_function_creator = self._param.trend
-        if trend_function_creator != self.Trend.NONE:
-            if not isinstance(trend_function_creator, Callable):
-                trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
-
-            trend_function = trend_function_creator(x_data, y_data)
-            axes.plot(
-                x_data,
-                trend_function(x_data),
-                color="gray",
-                linestyle="--",
-            )
+        axes.scatter(x_data, y_data, color=color)
 
         if self.dataset.variable_names_to_n_components[x] == 1:
             axes.set_xlabel(self.xlabel or x)

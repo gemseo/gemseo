@@ -836,7 +836,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     def get_columns(
         self, variable_names: Iterable[str] = (), as_tuple: bool = False
-    ) -> list[str | tuple[str, str, int]]:
+    ) -> list[str]:
         """Return the columns based on variable names.
 
         Args:
