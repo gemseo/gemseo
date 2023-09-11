@@ -41,7 +41,7 @@ dataset = create_rosenbrock_dataset(opt_naming=False, n_samples=25)
 # ------------------
 configure_logger()
 test_dataset = create_rosenbrock_dataset(opt_naming=False)
-measure_evaluation_method_name = "test"
+measure_evaluation_method_name = "TEST"
 measure_options = {"test_data": test_dataset}
 
 # %%
