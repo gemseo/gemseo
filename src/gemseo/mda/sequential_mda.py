@@ -27,7 +27,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.mda import MDA
-from gemseo.mda.newton import MDANewtonRaphson
+from gemseo.mda.newton_raphson import MDANewtonRaphson
 
 
 class MDASequential(MDA):

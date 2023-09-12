@@ -33,7 +33,6 @@
 from __future__ import annotations
 
 import pytest
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.chain import MDOChain
@@ -214,7 +213,6 @@ def test_chain_disc_ns_twice(grammar_type, chain_type):
 )
 def test_mda_with_namespaces(grammar_type):
     """Tests MDAs and namespaces."""
-    configure_logger()
     disc_1 = create_discipline(
         "AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1, grammar_type=grammar_type
     )

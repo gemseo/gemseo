@@ -340,12 +340,14 @@ def test_not_numeric_couplings():
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-def test_get_sub_disciplines(mda_class, sellar_disciplines):
+def test_get_sub_disciplines(
+    mda_class,
+):
     """Test the get_sub_disciplines method.
 
     Args:
         mda_class: The specific MDA to be tested.
-        sellar_disciplines: Fixture that returns the disciplines of the Sellar problem.
     """
-    mda = mda_class(sellar_disciplines)
-    assert mda.get_sub_disciplines() == mda.disciplines == sellar_disciplines
+    disciplines = [Sellar1(), Sellar2()]
+    mda = mda_class(disciplines)
+    assert mda.get_sub_disciplines() == mda.disciplines == disciplines

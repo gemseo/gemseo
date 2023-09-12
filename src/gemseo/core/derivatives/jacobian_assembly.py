@@ -23,10 +23,12 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
+from multiprocessing import cpu_count
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Collection
+from typing import Final
 from typing import Generator
 from typing import Iterable
 from typing import Mapping
@@ -34,13 +36,13 @@ from typing import NamedTuple
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-from numpy import atleast_2d
 from numpy import concatenate
 from numpy import empty
 from numpy import fill_diagonal
 from numpy import int8
 from numpy import ndarray
 from numpy import zeros
+from numpy._typing import NDArray
 from numpy.linalg import norm
 from scipy.sparse import bmat
 from scipy.sparse import csc_matrix
@@ -176,13 +178,13 @@ class JacobianAssembly:
     coupled_system: CoupledSystem
     """The coupled derivative system of residuals."""
 
-    n_newton_linear_resolutions: int
-    """The number of Newton linear resolutions."""
-
     __linear_solver_factory: LinearSolversFactory
     """The linear solver factory."""
 
     DerivationMode = derivation_modes.DerivationMode
+
+    N_CPUS: Final[int] = cpu_count()
+    """The number of available CPUs."""
 
     class JacobianType(StrEnum):
         """The available types for the Jacobian matrix."""
@@ -225,7 +227,6 @@ class JacobianAssembly:
         self.__last_diff_inouts = tuple()
         self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
-        self.n_newton_linear_resolutions = 0
         self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
 
     def __check_inputs(
@@ -320,11 +321,8 @@ class JacobianAssembly:
         Raises:
             ValueError: When the size of some variables could not be determined.
         """
-        self.sizes = {}
-        self.disciplines = {}
         # search for the functions/variables/couplings in the
         # Jacobians of the disciplines
-
         if residual_variables:
             outputs = itertools.chain(
                 functions,
@@ -746,32 +744,18 @@ class JacobianAssembly:
             j_split[function] = sub_jac
         return j_split
 
-    # Newton step computation
-    def compute_newton_step(
+    def set_newton_differentiated_ios(
         self,
-        in_data: Mapping[str, Any],
         couplings: Collection[str],
-        relax_factor: float | int,
-        linear_solver: str = "DEFAULT",
-        matrix_type: JacobianType = JacobianType.MATRIX,
-        **linear_solver_options: Any,
-    ) -> dict[str, ndarray]:
-        """Compute the Newton step for the coupled system of disciplines residuals.
+    ) -> None:
+        """Set the differentiated inputs and outputs for the Newton algorithm.
+
+        Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
+        the coupling sizes needed for Newton.
 
         Args:
-            in_data: The input data.
             couplings: The coupling variables.
-            relax_factor: The relaxation factor.
-            linear_solver: The name of the linear solver.
-            matrix_type: The representation of the matrix ∂R/∂y (sparse or
-                linear operator).
-            **linear_solver_options: The options passed to the linear solver factory.
-
-        Returns:
-            The Newton step -[∂R/∂y]^-1 . R as a dict of steps
-            per coupling variable.
         """
-        # linearize the disciplines
         for disc in self.coupling_structure.disciplines:
             inputs_to_linearize = set(disc.get_input_data_names()).intersection(
                 couplings
@@ -784,19 +768,35 @@ class JacobianAssembly:
             if inputs_to_linearize and outputs_to_linearize:
                 disc.add_differentiated_inputs(inputs_to_linearize)
                 disc.add_differentiated_outputs(outputs_to_linearize)
-                disc.linearize(in_data)
-            # Otherwise,
-            # Execute and populate with empty dicts the Jacobian
-            # with the outputs to linearize
-            # This will be needed when creating the dRes/dCoupling matrix.
-            else:
-                disc.execute(in_data)
-                disc.jac = {}
-                for out in outputs_to_linearize:
-                    disc.jac[out] = {}
 
         self.compute_sizes(couplings, couplings, couplings)
 
+    # Newton step computation
+    def compute_newton_step(
+        self,
+        in_data: Mapping[str, NDArray[float]],
+        couplings: Collection[str],
+        linear_solver: str = "DEFAULT",
+        matrix_type: JacobianType = JacobianType.MATRIX,
+        residuals: ndarray | None = None,
+        **linear_solver_options: Any,
+    ) -> tuple[ndarray, bool]:
+        """Compute the Newton step for the coupled system of disciplines residuals.
+
+        Args:
+            in_data: The input data.
+            couplings: The coupling variables.
+            linear_solver: The name of the linear solver.
+            matrix_type: The representation of the matrix ∂R/∂y (sparse or
+                linear operator).
+            residuals: The residuals vector, if ``None`` use :attr:`.residuals`.
+            **linear_solver_options: The options passed to the linear solver factory.
+
+        Returns:
+            The Newton step - relax_factor . [∂R/∂y]^-1 . R as an array of steps
+            for which the order is given by the `couplings` argument.
+            Whether the linear solver converged.
+        """
         # compute the partial derivatives of the residuals
         dres_dy = self.assemble_jacobian(
             couplings,
@@ -805,24 +805,14 @@ class JacobianAssembly:
             jacobian_type=matrix_type,
         )
         # form the residuals
-        res = self.residuals(in_data, couplings)
+        if residuals is None:
+            residuals = self.residuals(in_data, couplings)
         # solve the linear system
-        linear_problem = LinearProblem(dres_dy, -relax_factor * res)
+        linear_problem = LinearProblem(dres_dy, -residuals)
         self.__linear_solver_factory.execute(
             linear_problem, linear_solver, **linear_solver_options
         )
-        newton_step = linear_problem.solution
-        self.n_newton_linear_resolutions += 1
-
-        # split the array of steps
-        couplings_to_steps = {}
-        component = 0
-        for coupling in couplings:
-            size = self.sizes[coupling]
-            couplings_to_steps[coupling] = newton_step[component : component + size]
-            component += size
-
-        return couplings_to_steps
+        return linear_problem.solution, linear_problem.is_converged
 
     def residuals(
         self, in_data: Mapping[str, Any], var_names: Iterable[str]
@@ -851,10 +841,10 @@ class JacobianAssembly:
                 # Find associated discipline
                 if name in discipline.get_output_data_names():
                     residuals.append(
-                        atleast_2d(discipline.get_outputs_by_name(name) - in_data[name])
+                        discipline.get_outputs_by_name(name) - in_data[name]
                     )
 
-        return concatenate(residuals, axis=1)[0, :]
+        return concatenate(residuals)
 
     # plot method
     def plot_dependency_jacobian(
