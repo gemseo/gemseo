@@ -1,0 +1,9 @@
+Acceleration methods for MDAs are defined in dedicated classes inheriting from :class:`.SequenceTransformer`.
+
+Available sequence transformers are:
+- The alternate 2-δ method: :class:`.Alternate2Delta`.
+- The alternate δ² method: :class:`.AlternateDeltaSquared`.
+- The secante method: :class:`.Secante`.
+- The Aitken method: :class:`.Aitken`.
+- The minimum polynomial method: :class:`.MinimumPolynomial`.
+- The over-relaxation: :class:`.OverRelaxation`.
