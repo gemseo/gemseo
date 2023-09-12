@@ -356,17 +356,15 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _current_input_couplings(self) -> ndarray:
         """Return the current values of the input coupling variables."""
-        input_couplings = list(self.get_outputs_by_name(self._input_couplings))
-        if not input_couplings:
+        if not self._input_couplings:
             return array([])
-        return concatenate(input_couplings)
+        return concatenate([self.local_data[name] for name in self._input_couplings])
 
     def _current_strong_couplings(self) -> ndarray:
         """Return the current values of the strong coupling variables."""
-        couplings = list(self.get_outputs_by_name(self.strong_couplings))
-        if not couplings:
+        if not self.strong_couplings:
             return array([])
-        return concatenate(couplings)
+        return concatenate([self.local_data[name] for name in self.strong_couplings])
 
     def _retrieve_diff_inouts(
         self, compute_all_jacobians: bool = False
