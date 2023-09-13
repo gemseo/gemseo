@@ -79,7 +79,7 @@ disciplines = create_discipline(
     ]
 )
 mda1 = create_mda("MDAJacobi", disciplines, max_mda_iter=1)
-mda2 = create_mda("MDANewtonRaphson", disciplines)
+mda2 = create_mda("MDAGaussSeidel", disciplines)
 mda_sequence = [mda1, mda2]
 mda = create_mda("MDASequential", disciplines, mda_sequence=mda_sequence)
 res = mda.execute()
