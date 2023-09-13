@@ -56,7 +56,7 @@ def display_result(res, mda_name):
         print(f"{mda_name}, coupling variable {coupling_var}: {res[coupling_var]}")
 
     # names of the output variables
-    output_names = ["y_1", "y_2", "y_3", "y_4", "g_1", "g_2", "g_3"]
+    output_names = ["y_1", "y_2", "y_3", "g_1", "g_2", "g_3"]
     for output_name in output_names:
         print(
             f"{mda_name}, output variable {output_name}: {res[output_name]}",
@@ -71,14 +71,9 @@ def display_result(res, mda_name):
 # Default inputs of the disciplines
 
 disciplines = create_discipline(
-    [
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ]
+    ["SobieskiStructure", "SobieskiPropulsion", "SobieskiAerodynamics"]
 )
-mda = create_mda("MDANewtonRaphson", disciplines, relax_factor=0.9)
+mda = create_mda("MDANewtonRaphson", disciplines, relax_factor=0.99)
 res = mda.execute()
 display_result(res, mda.name)
 mda.plot_residual_history(
