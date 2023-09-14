@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from functools import partial
 from re import fullmatch
 from typing import Sequence
@@ -233,7 +234,10 @@ class Correlations(OptPostProcessor):
             and the function name associated to that index.
         """
         for func_index, func_name in enumerate(func_names):
-            if fullmatch(rf"{func_name}(_\d+)?", x):
+            # Escape special characters that may be present in the function name,
+            # typically [, ], -
+            regex_func_name = re.escape(func_name)
+            if fullmatch(rf"{regex_func_name}((_\d+)|(\[\d\]))?", x):
                 return func_index, x.replace(func_name, "")
 
         return len(func_names) + 1, x

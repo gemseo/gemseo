@@ -47,6 +47,7 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
+from gemseo.core.mdofunctions._operations import _OperationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
@@ -619,13 +620,14 @@ class MDOFunction(Serializable):
         """
         jac = self._min_jac if self.has_jac else None
 
+        name = f"-{self.name}"
         if self.expr:
-            name = "-" + self.name.translate({ord("-"): "+", ord("+"): "-"})
-            expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
+            expr = f"-({self.expr})"
         else:
-            name = expr = f"-{self.name}"
             if self.input_names:
-                expr = f"-{self.name}({pretty_str(self.input_names, sort=False)})"
+                expr = f"{name}({pretty_str(self.input_names, sort=False)})"
+            else:
+                expr = name
 
         return MDOFunction(
             self._min_pt,
@@ -669,22 +671,6 @@ class MDOFunction(Serializable):
         """
         return _MultiplicationFunctionMaker(MDOFunction, self, other).function
 
-    @staticmethod
-    def _compute_operation_expression(
-        operand_1: str, operator: str, operand_2: str | float | int
-    ) -> str:
-        """Return the string expression of an operation between two operands.
-
-        Args:
-            operand_1: The first operand.
-            operator: The operator applying to both operands.
-            operand_2: The second operand.
-
-        Returns:
-            The string expression of the sum of the operands.
-        """
-        return f"{operand_1} {operator} {operand_2}"
-
     def offset(self, value: OutputType) -> MDOFunction:
         """Add an offset value to the function.
 
@@ -705,10 +691,10 @@ class MDOFunction(Serializable):
 
         function = self + value
         name = f"{self.name}({pretty_str(self.input_names, sort=False)})"
-        function.name = self._compute_operation_expression(
-            self.name, operator, second_operand
+        function.name = _OperationFunctionMaker.get_string_representation(
+            self.name, operator, second_operand, True
         )
-        function.expr = self._compute_operation_expression(
+        function.expr = _OperationFunctionMaker.get_string_representation(
             self.expr or name, operator, second_operand
         )
         return function
