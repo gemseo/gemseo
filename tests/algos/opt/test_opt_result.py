@@ -101,19 +101,19 @@ def test_optimization_result(optimization_result):
         optimum_index=0,
         constraint_values={
             "-ineq_p_1": -0.5,
-            "ineq_n_1 - 0.25": 0.25,
-            "-ineq_p_2 + 0.25": -0.25,
+            "[ineq_n_1-0.25]": 0.25,
+            "-[ineq_p_2-0.25]": -0.25,
             "ineq_n_2": 0.5,
             "eq_1": 0.5,
-            "eq_2 - 0.25": 0.25,
+            "[eq_2-0.25]": 0.25,
         },
         constraints_grad={
             "-ineq_p_1": None,
-            "ineq_n_1 - 0.25": None,
-            "-ineq_p_2 + 0.25": None,
+            "[ineq_n_1-0.25]": None,
+            "-[ineq_p_2-0.25]": None,
             "ineq_n_2": None,
             "eq_1": None,
-            "eq_2 - 0.25": None,
+            "[eq_2-0.25]": None,
         },
     )
 
@@ -152,11 +152,11 @@ def test_str(optimization_result):
       The solution is not feasible.
       Objective: 0.5
       Standardized constraints:
+         -[ineq_p_2-0.25] = -0.25
          -ineq_p_1 = -0.5
-         -ineq_p_2 + 0.25 = -0.25
+         [eq_2-0.25] = 0.25
+         [ineq_n_1-0.25] = 0.25
          eq_1 = 0.5
-         eq_2 - 0.25 = 0.25
-         ineq_n_1 - 0.25 = 0.25
          ineq_n_2 = 0.5"""
     assert str(optimization_result) == str(expected)
 

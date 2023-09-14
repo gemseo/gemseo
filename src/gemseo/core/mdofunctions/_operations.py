@@ -19,6 +19,10 @@ from abc import abstractmethod
 from numbers import Number
 from operator import mul
 from operator import truediv
+from re import compile
+from re import Pattern
+from re import search
+from typing import Final
 from typing import TYPE_CHECKING
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -35,6 +39,13 @@ if TYPE_CHECKING:
 
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
     """A helper to create a function applying an operation to another function."""
+
+    __SUM_SUBTRACTION_PATTERN: Final[Pattern] = compile(
+        r"""^([^\(].*[+-].*[^\)])$| # Sum/subtraction with one or many parentheses
+            ^(.+[+-].*[^\)])$| # Sum/subtraction with one or many end parentheses
+            ^([^\(].*[+-].+)$ # Sum/subtraction with one or many starting parentheses"""
+    )
+    """The pattern used to search for a sum or subtraction in a function expression."""
 
     def __init__(
         self,
@@ -71,7 +82,6 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
                 f"Unsupported {operator_repr} operator "
                 f"for MDOFunction and {type(self._second_operand)}."
             )
-
         if self._second_operand_is_func:
             self._second_operand_expr = self._second_operand.expr
             self._second_operand_name = self._second_operand.name
@@ -124,24 +134,56 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             else "",
         )
 
+    @classmethod
+    def __rewrite_expression(cls, expression: str) -> str:
+        """Add grouping parentheses to an expression.
+
+        The expression is modified only if it includes a sum or subtraction.
+
+        Args:
+            expression: The expression to be checked and potentially rewritten.
+
+        Returns:
+            The rewritten expression, if the original one included a sum or subtraction,
+            otherwise return the unchanged expression.
+        """
+        is_sum_subtraction = bool(
+            search(
+                cls.__SUM_SUBTRACTION_PATTERN,
+                expression,
+            )
+        )
+        return f"({expression})" if is_sum_subtraction else expression
+
     def _compute_expr(self) -> str:
         """Compute the string expression of the function.
 
         Returns:
             The string expression of the function.
         """
-        return (
-            self._first_operand.expr + self._operator_repr + self._second_operand_expr
-        )
+        expr_1 = self._first_operand.expr
+        expr_2 = self._second_operand_expr
+        if self._operator_repr in ["*", "/"]:
+            expr_1 = self.__rewrite_expression(expr_1)
+            expr_2 = self.__rewrite_expression(expr_2)
+        elif self._operator_repr == "-":
+            expr_2 = self.__rewrite_expression(expr_2)
+        return self.get_string_representation(expr_1, self._operator_repr, expr_2)
 
     def _compute_name(self) -> str:
         """Compute the name of the function.
 
+        Given two functions named ``"f"`` and ``"g"``,
+        the name of the function summing them will be ``"[f+g]"``.
+
         Returns:
             The name of the function.
         """
-        return (
-            self._first_operand.name + self._operator_repr + self._second_operand_name
+        return self.get_string_representation(
+            self._first_operand.name,
+            self._operator_repr,
+            self._second_operand_name,
+            True,
         )
 
     def _compute_operation(self, input_value: ArrayType) -> OutputType:
@@ -170,6 +212,30 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             The Jacobian of the operation.
         """
         ...
+
+    @staticmethod
+    def get_string_representation(
+        operand_1: str,
+        operator: str,
+        operand_2: str | float | int,
+        use_brackets: bool = False,
+    ) -> str:
+        """Return the string representation of an operation between two operands.
+
+        Args:
+            operand_1: The first operand.
+            operator: The operator applying to both operands.
+            operand_2: The second operand.
+            use_brackets: Whether to add brackets to the expression.
+
+        Returns:
+            The string expression of the sum of the operands.
+        """
+        return (
+            f"[{operand_1}{operator}{operand_2}]"
+            if use_brackets
+            else f"{operand_1}{operator}{operand_2}"
+        )
 
 
 class _AdditionFunctionMaker(_OperationFunctionMaker):

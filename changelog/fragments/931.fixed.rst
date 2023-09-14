@@ -1,0 +1,2 @@
+The ``Correlations`` plot now labels its subplots correctly when the constraints of the
+optimization problem include an offset.

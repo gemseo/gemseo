@@ -1640,10 +1640,10 @@ def test_objective_name():
     [
         (None, False, "c"),
         (None, True, "-c"),
-        (1.0, True, "-c + 1.0"),
-        (-1.0, True, "-c - 1.0"),
-        (1.0, False, "c - 1.0"),
-        (-1.0, False, "c + 1.0"),
+        (1.0, True, "-[c-1.0]"),
+        (-1.0, True, "-[c+1.0]"),
+        (1.0, False, "[c-1.0]"),
+        (-1.0, False, "[c+1.0]"),
     ],
 )
 def test_constraint_names(has_default_name, value, positive, cstr_type, name):
@@ -1662,10 +1662,10 @@ def test_constraint_names(has_default_name, value, positive, cstr_type, name):
 
     assert problem.constraint_names[original_name] == [cstr_name]
 
-    if not has_default_name:
-        assert cstr_name == "c"
-    else:
+    if has_default_name:
         assert cstr_name == name
+    else:
+        assert cstr_name == "c"
 
 
 def test_constraint_names_with_aggregation():
