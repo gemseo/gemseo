@@ -234,7 +234,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         return {}
 
     def __repr__(self) -> str:
-        return f"{self.distribution_name}({pretty_str(self.standard_parameters)})"
+        return f"{self.distribution_name}({pretty_str(self.standard_parameters, sort=False)})"
 
     @abstractmethod
     def compute_samples(

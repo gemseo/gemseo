@@ -1,0 +1,1 @@
+The string representation of a ``Distribution`` no longer sorts the parameters.
