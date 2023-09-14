@@ -6,9 +6,7 @@
 #
 attrs==23.1.0
     # via check-wheel-contents
-bleach==6.0.0
-    # via readme-renderer
-build==0.10.0
+build==1.0.3
     # via -r requirements/dist.in
 certifi==2023.7.22
     # via requests
@@ -18,7 +16,7 @@ charset-normalizer==3.2.0
     # via requests
 check-wheel-contents==0.4.0
     # via -r requirements/dist.in
-click==8.1.6
+click==8.1.7
     # via check-wheel-contents
 cryptography==41.0.3
     # via secretstorage
@@ -28,6 +26,7 @@ idna==3.4
     # via requests
 importlib-metadata==6.8.0
     # via
+    #   build
     #   keyring
     #   twine
 jaraco-classes==3.3.0
@@ -44,6 +43,8 @@ mdurl==0.1.2
     # via markdown-it-py
 more-itertools==10.1.0
     # via jaraco-classes
+nh3==0.2.14
+    # via readme-renderer
 packaging==23.1
     # via
     #   build
@@ -60,7 +61,7 @@ pygments==2.16.1
     #   rich
 pyproject-hooks==1.0.0
     # via build
-readme-renderer==40.0
+readme-renderer==42.0
     # via twine
 requests==2.31.0
     # via
@@ -74,8 +75,6 @@ rich==13.5.2
     # via twine
 secretstorage==3.3.3
     # via keyring
-six==1.16.0
-    # via bleach
 tomli==2.0.1
     # via
     #   build
@@ -89,8 +88,6 @@ urllib3==2.0.4
     # via
     #   requests
     #   twine
-webencodings==0.5.1
-    # via bleach
 wheel-filename==1.4.1
     # via check-wheel-contents
 zipp==3.16.2
