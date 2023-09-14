@@ -211,7 +211,7 @@ def test_uniform():
 
 def test_exponential():
     distribution = OTExponentialDistribution("x")
-    assert str(distribution) == "Exponential(loc=0.0, rate=1.0)"
+    assert str(distribution) == "Exponential(rate=1.0, loc=0.0)"
 
 
 def test_triangular():
