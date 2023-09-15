@@ -142,22 +142,20 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         dataset: Dataset,
-        variable_names: Iterable[str] | None = None,
-        name: str | None = None,
+        variable_names: Iterable[str] = (),
+        name: str = "",
     ) -> None:
         """
         Args:
             dataset: A dataset.
-            variable_names: The variables of interest.
-                Default: consider all the variables available in the dataset.
-            name: A name for the object.
-                Default: use the concatenation of the class and dataset names.
+            variable_names: The names of the variables for which to compute statistics.
+                If empty, consider all the variables of the dataset.
+            name: A name for the toolbox computing statistics.
+                If empty, concatenate the names of the dataset and the name of the class.
         """  # noqa: D205,D212,D415
         class_name = self.__class__.__name__
-        default_name = f"{class_name}_{dataset.name}"
-        self.name = name or default_name
-        msg = f"Create {self.name}, a {class_name} library."
-        LOGGER.info(msg)
+        self.name = name or f"{class_name}({dataset.name})"
+        LOGGER.info("Create %s, a %s library.", self.name, class_name)
         self.dataset = dataset
         self.n_samples = len(dataset)
         self.names = variable_names or dataset.variable_names

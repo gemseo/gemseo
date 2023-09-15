@@ -96,7 +96,7 @@ class BarPlot(DatasetPlot):
                     va="bottom",
                 )
 
-        axes.set_xticks(first_series_positions)
+        axes.set_xticks([position + 0.375 for position in first_series_positions])
         axes.set_xticklabels(feature_names)
         axes.set_xlabel(self.xlabel)
         axes.set_ylabel(self.ylabel)

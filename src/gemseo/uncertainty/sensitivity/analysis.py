@@ -33,6 +33,7 @@ import pickle
 from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
 from typing import Collection
@@ -46,11 +47,13 @@ from typing import Union
 
 from matplotlib.figure import Figure
 from numpy import array
+from numpy import hstack
 from numpy import linspace
 from numpy import ndarray
 from numpy import newaxis
 from numpy import vstack
 from numpy.typing import NDArray
+from pandas import MultiIndex
 from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOELibraryOptionType
@@ -93,7 +96,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     current :class:`.SensitivityAnalysis` with another one.
     """
 
-    default_output: list[str]
+    # TODO: API: rename to default_outputs or default_output_names
+    default_output: Iterable[str]
     """The default outputs of interest."""
 
     dataset: IODataset
@@ -107,14 +111,26 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     _input_names: list[str]
     """The names of the inputs in parameter space order."""
 
+    _output_names: Iterable[str]
+    """The disciplines' outputs to be considered for the analysis."""
+
+    _algo_name: str
+    """The name of the DOE algorithm to sample the discipline."""
+
+    _file_path_manager: FilePathManager
+    """The file path manager for the figures."""
+
+    _main_method: Method
+    """The name of the main sensitivity analysis method."""
+
     def __init__(
         self,
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None = None,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
@@ -125,9 +141,9 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             n_samples: A number of samples.
                 If ``None``, the number of samples is computed by the algorithm.
             output_names: The disciplines' outputs to be considered for the analysis.
-                If ``None``, use all the outputs.
+                If empty, use all the outputs.
             algo: The name of the DOE algorithm.
-                If ``None``, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
+                If empty, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
             formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
             **formulation_options: The options of the :class:`.MDOFormulation`.
@@ -141,7 +157,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             disciplines,
             parameter_space,
             n_samples,
-            algo_options or {},
+            algo_options,
             formulation,
             **(formulation_options or {}),
         ).to_dataset(opt_naming=False)
@@ -203,6 +219,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             formulation_options,
             parameter_space,
         )
+        algo_options = algo_options or dict()
         algo_options["log_problem"] = False
         scenario.execute(
             {
@@ -254,7 +271,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_indices(
-        self, outputs: str | Sequence[str] | None = None
+        self, outputs: str | Sequence[str] = ()
     ) -> dict[str, FirstOrderIndicesType]:
         """Compute the sensitivity indices.
 
@@ -362,7 +379,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             return [(output, index) for index in range(len(self.main_indices[output]))]
 
         result = [
-            output if isinstance(output, tuple) else get_all(output)
+            [output] if isinstance(output, tuple) else get_all(output)
             for output in outputs
         ]
         return [item for sublist in result for item in sublist]
@@ -409,12 +426,12 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     def plot(
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        file_format: str = "",
     ) -> None:
         """Plot the sensitivity indices.
 
@@ -423,17 +440,19 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 for which to display sensitivity indices,
                 either a name or a tuple of the form (name, component).
                 If name, its first component is considered.
-            inputs: The inputs to display. If None, display all.
-            title: The title of the plot. If None, no title.
+            inputs: The uncertain input variables
+                for which to display the sensitivity indices.
+                If empty, display all the uncertain input variables.
+            title: The title of the plot, if any.
             save: If True, save the figure.
             show: If True, show the figure.
             file_path: A file path.
                 Either a complete file path, a directory name or a file name.
-                If None, use a default file name and a default directory.
+                If empty, use a default file name and a default directory.
                 The file extension is inferred from filepath extension, if any.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 Used when ``file_path`` does not have any extension.
-                If None, use a default file extension.
+                If empty, use a default file extension.
         """
         raise NotImplementedError
 
@@ -441,16 +460,16 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         output: VariableType,
         mesh: ndarray | None = None,
-        inputs: Iterable[str] | None = None,
+        inputs: Iterable[str] = (),
         standardize: bool = False,
-        title: str | None = None,
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
-        properties: Mapping[str, DatasetPlotPropertyType] = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
+        properties: Mapping[str, DatasetPlotPropertyType] = MappingProxyType({}),
     ) -> Curves | Surfaces:
         """Plot the sensitivity indices related to a 1D or 2D functional output.
 
@@ -466,21 +485,23 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
                 or a (p, 2) array for a 2D one. If None, assume a 1D functional output.
-            inputs: The inputs to display. If None, display all inputs.
-            standardize: If True, standardize the indices between 0 and 1 for each output.
-            title: The title of the plot. If None, no title is displayed.
+            inputs: The uncertain input variables
+                for which to display the sensitivity indices.
+                If empty, display all the uncertain input variables.
+            standardize: Whether to scale the indices to :math:`[0,1]`.
+            title: The title of the plot, if any.
             save: If True, save the figure.
             show: If True, show the figure.
             file_path: The path of the file to save the figures.
-                If None,
+                If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_extension``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If empty, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
+                If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If empty, use a default file extension.
             properties: The general properties of a :class:`.DatasetPlot`.
 
         Returns:
@@ -517,12 +538,12 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         mesh_dimension = len(dataset.misc["mesh"].shape)
         if mesh_dimension == 1:
             plot = Curves(dataset, mesh="mesh", variable=output_name)
-            plot.title = title
         elif mesh_dimension == 2:
             plot = Surfaces(dataset, mesh="mesh", variable=output_name)
         else:
             raise NotImplementedError
 
+        plot.title = title
         plot.execute(
             save=save,
             show=show,
@@ -537,15 +558,17 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     def plot_bar(
         self,
         outputs: OutputsType,
-        inputs: Iterable[str] | None = None,
+        inputs: Iterable[str] = (),
         standardize: bool = False,
-        title: str | None = None,
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
+        sort: bool = True,
+        sorting_output: VariableType = "",
         **options: int,
     ) -> BarPlot:
         """Plot the sensitivity indices on a bar chart.
@@ -563,49 +586,39 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
                 If None, use the default outputs.
-            inputs: The inputs to display. If None, display all.
-            standardize: If True, standardize the indices between 0 and 1 for each output.
-            title: The title of the plot. If None, no title.
+            inputs: The uncertain input variables
+                for which to display the sensitivity indices.
+                If empty, display all the uncertain input variables.
+            standardize: Whether to scale the indices to :math:`[0,1]`.
+            title: The title of the plot, if any.
             save: If True, save the figure.
             show: If True, show the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
-                If None,
+                If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_extension``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If empty, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
+                If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If empty, use a default file extension.
+            sort: Whether to sort the uncertain variables
+                by decreasing order of the sensitivity indices
+                associated with the sorting output variable.
+            sorting_output: The sorting output variable
+                If empty, use the first one.
 
         Returns:
             A bar chart representing the sensitivity indices.
         """
-        outputs = self._outputs_to_tuples(outputs)
-        dataset = Dataset()
-        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
-        data = {name: [] for name in input_names}
-        if standardize:
-            main_indices = self.standardize_indices(self.main_indices)
-        else:
-            main_indices = self.main_indices
-
-        for output in outputs:
-            for name in input_names:
-                data[name].append(main_indices[output[0]][output[1]][name])
-
-        for name in input_names:
-            dataset.add_variable(name, vstack(data[name]))
-
-        dataset.index = [
-            repr_variable(
-                *output, size=self.dataset.variable_names_to_n_components[output[0]]
-            )
-            for output in outputs
-        ]
-        plot = BarPlot(dataset, n_digits=2)
+        plot = BarPlot(
+            self.__create_dataset_to_plot(
+                inputs, outputs, standardize, sort, sorting_output
+            ),
+            n_digits=2,
+        )
         plot.title = title
         plot.execute(
             save=save,
@@ -618,20 +631,104 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         return plot
 
+    def __create_dataset_to_plot(
+        self,
+        inputs: Iterable[str],
+        outputs: OutputsType,
+        standardize: bool,
+        sort: True,
+        sorting_output: VariableType,
+    ) -> Dataset:
+        r"""Create the dataset to plot.
+
+        Args:
+            inputs: The uncertain input variables
+                for which to display the sensitivity indices.
+                If empty, display all the uncertain input variables.
+            outputs: The outputs
+                for which to display sensitivity indices,
+                either a name,
+                a list of names,
+                a (name, component) tuple,
+                a list of such tuples or
+                a list mixing such tuples and names.
+                When a name is specified, all its components are considered.
+                If None, use the default outputs.
+            standardize: Whether to scale the indices to :math:`[0,1]`.
+            sort: Whether to sort the uncertain variables
+                by decreasing order of the sensitivity indices
+                associated with the sorting output variable.
+            sorting_output: The sorting output variable
+                If empty, use the first one.
+
+        Returns:
+            The dataset to plot.
+        """
+        outputs = self._outputs_to_tuples(outputs)
+        if standardize:
+            main_indices = self.standardize_indices(self.main_indices)
+        else:
+            main_indices = self.main_indices
+
+        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
+        data = {name: [] for name in input_names}
+        for output_name, output_component in outputs:
+            indices = main_indices[output_name][output_component]
+            for input_name in input_names:
+                data[input_name].append(indices[input_name])
+
+        dataset = Dataset(
+            hstack([vstack(data[input_name]) for input_name in input_names]),
+            columns=MultiIndex.from_tuples(
+                [
+                    (Dataset.PARAMETER_GROUP, input_name, index)
+                    for input_name in input_names
+                    for index in range(
+                        self.dataset.variable_names_to_n_components[input_name]
+                    )
+                ],
+                names=Dataset.COLUMN_LEVEL_NAMES,
+            ),
+        )
+
+        dataset.index = [
+            repr_variable(
+                *output, size=self.dataset.variable_names_to_n_components[output[0]]
+            )
+            for output in outputs
+        ]
+        if sort:
+            if sorting_output:
+                if isinstance(sorting_output, str):
+                    sorting_output = (sorting_output, 0)
+
+                sorting_output = self._outputs_to_tuples([sorting_output])[0]
+                by = repr_variable(
+                    *sorting_output,
+                    size=self.dataset.variable_names_to_n_components[sorting_output[0]],
+                )
+            else:
+                by = dataset.index[0]
+            dataset = dataset.sort_values(by=by, ascending=False, axis=1)
+
+        return dataset
+
     def plot_radar(
         self,
         outputs: OutputsType,
-        inputs: Iterable[str] | None = None,
+        inputs: Iterable[str] = (),
         standardize: bool = False,
-        title: str | None = None,
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         min_radius: float | None = None,
         max_radius: float | None = None,
+        sort: bool = True,
+        sorting_output: VariableType = "",
         **options: bool,
     ) -> RadarChart:
         """Plot the sensitivity indices on a radar chart.
@@ -652,53 +749,40 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
                 If None, use the default outputs.
-            inputs: The inputs to display.
-                If None, display all.
-            standardize: If True, standardize the indices between 0 and 1 for each output.
-            title: The title of the plot. If None, no title.
+            inputs: The uncertain input variables
+                for which to display the sensitivity indices.
+                If empty, display all the uncertain input variables.
+            standardize: Whether to scale the indices to :math:`[0,1]`.
+            title: The title of the plot, if any.
             save: If True, save the figure.
             show: If True, show the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
-                If None,
+                If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_extension``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If empty, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
+                If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If empty, use a default file extension.
             min_radius: The minimal radial value. If None, from data.
             max_radius: The maximal radial value. If None, from data.
+            sort: Whether to sort the uncertain variables
+                by decreasing order of the sensitivity indices
+                associated with the sorting output variable.
+            sorting_output: The sorting output variable
+                If empty, use the first one.
 
         Returns:
             A radar chart representing the sensitivity indices.
         """
-        outputs = self._outputs_to_tuples(outputs)
-        dataset = Dataset()
-        input_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
-        data = {name: [] for name in input_names}
-        if standardize:
-            main_indices = self.standardize_indices(self.main_indices)
-        else:
-            main_indices = self.main_indices
-
-        for output in outputs:
-            for name, value in main_indices[output[0]][output[1]].items():
-                if name in input_names:
-                    data[name].append(value)
-
-        for name in input_names:
-            dataset.add_variable(name, vstack(data[name]))
-
-        dataset.index = [
-            repr_variable(
-                *output, size=self.dataset.variable_names_to_n_components[output[0]]
+        plot = RadarChart(
+            self.__create_dataset_to_plot(
+                inputs, outputs, standardize, sort, sorting_output
             )
-            for output in outputs
-        ]
-        plot = RadarChart(dataset)
+        )
         plot.title = title
         plot.rmin = min_radius
         plot.rmax = max_radius
@@ -727,7 +811,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The filtered names.
         """
-        if names_to_keep is not None:
+        if names_to_keep:
             names = [item for item in names if item in set(names_to_keep)]
         return names
 
@@ -749,15 +833,15 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         indices: list[SensitivityAnalysis],
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         use_bar_plot: bool = True,
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         **options: bool,
     ) -> BarPlot | RadarChart:
         """Plot a comparison between the current sensitivity indices and other ones.
@@ -770,22 +854,24 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 for which to display sensitivity indices,
                 either a name or a tuple of the form (name, component).
                 If name, its first component is considered.
-            inputs: The inputs to display. If None, display all.
-            title: The title of the plot. If None, no title.
+            inputs: The uncertain input variables
+                for which to display the sensitivity indices.
+                If empty, display all the uncertain input variables.
+            title: The title of the plot, if any.
             use_bar_plot: The type of graph.
                 If True, use a bar plot. Otherwise, use a radar chart.
             save: If True, save the figure.
             show: If True, show the figure.
             file_path: The path of the file to save the figures.
-                If None,
+                If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_format``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If empty, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
+                If empty, use a default one generated by the post-processing.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If empty, use a default file extension.
             **options: The options passed to the underlying :class:`.DatasetPlot`.
 
         Returns:
@@ -830,10 +916,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         fig: Figure,
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
     ) -> Figure:
         """Save or show the plot.
 
@@ -842,15 +928,15 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             save: If True, save the figure.
             show: If True, show the figure.
             file_path: The path of the file to save the figures.
-                If None,
+                If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_format``.
             directory_path: The path of the directory to save the figures.
-                If None, use the current working directory.
+                If empty, use the current working directory.
             file_name: The name of the file to save the figures.
-                If None, use a default one generated by the post-processing.
+                If empty, use a default one generated by the post-processing.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
-                If None, use a default file extension.
+                If empty, use a default file extension.
 
         Returns:
             The figure.
@@ -863,7 +949,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 file_extension=file_format,
             )
         else:
-            file_path = None
+            file_path = ""
 
         save_show_figure(fig, show, file_path)
         return fig

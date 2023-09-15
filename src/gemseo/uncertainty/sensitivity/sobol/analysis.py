@@ -99,6 +99,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
 from typing import Collection
@@ -204,9 +205,9 @@ class SobolAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         formulation: str = "MDF",
         compute_second_order: bool = True,
         use_asymptotic_distributions: bool = True,
@@ -238,9 +239,7 @@ class SobolAnalysis(SensitivityAnalysis):
              to ensure a better estimation of the first- and second-order indices.
         """  # noqa: D205, D212, D415
         self.__output_names_to_sobol_algos = {}
-        if algo_options is None:
-            algo_options = {}
-
+        algo_options = algo_options or {}
         algo_options["eval_second_order"] = compute_second_order
         super().__init__(
             disciplines,
@@ -284,7 +283,7 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: str | Sequence[str] | None = None,
+        outputs: str | Sequence[str] = (),
         algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
     ) -> dict[str, FirstOrderIndicesType]:
@@ -565,14 +564,14 @@ class SobolAnalysis(SensitivityAnalysis):
     def plot(
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         sort: bool = True,
         sort_by_total: bool = True,
     ) -> None:
@@ -582,11 +581,12 @@ class SobolAnalysis(SensitivityAnalysis):
         with their confidence intervals.
 
         Args:
-            sort: The sorting option.
-                If True, sort variables before display.
-            sort_by_total: The type of sorting.
-                If True, sort variables according to total-order Sobol' indices.
-                Otherwise, use first-order Sobol' indices.
+            title: The title of the plot.
+                If empty, use a default one.
+            sort: Whether to sort the uncertain variables by decreasing order.
+            sort_by_total: Whether to sort according to the total-order Sobol' indices
+                when ``sort`` is ``True``.
+                Otherwise, use the first-order Sobol' indices.
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
@@ -684,7 +684,7 @@ class SobolAnalysis(SensitivityAnalysis):
             output_component,
             len(self.total_order_indices[output_name]),
         )
-        if title is None:
+        if not title:
             title = f"Sobol' indices for the output {pretty_output_name}"
         variance = self.output_variances[output_name][output_component]
         ax.set_title(f"{title}\nVar[{pretty_output_name}]={variance:.1e}")

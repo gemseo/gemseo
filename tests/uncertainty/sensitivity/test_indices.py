@@ -206,6 +206,15 @@ BARPLOT_TEST_PARAMETERS = {
     ),
     "outputs": ({"outputs": ["y1", "y2"]}, ["bar_plot_outputs"]),
     "n_digits": ({"outputs": "y2", "n_digits": 1}, ["bar_plot_n_digits"]),
+    "do_not_sort": ({"outputs": ["y1", "y2"], "sort": False}, ["bar_plot_do_not_sort"]),
+    "sorting_output_as_str": (
+        {"outputs": ["y1", "y2"], "sorting_output": "y2"},
+        ["bar_plot_sorting_output_as_str"],
+    ),
+    "sorting_output_as_tuple": (
+        {"outputs": ["y1", "y2"], "sorting_output": ("y2", 1)},
+        ["bar_plot_sorting_output_as_tuple"],
+    ),
 }
 
 

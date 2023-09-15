@@ -79,7 +79,7 @@ def test_repr(statistics):
         repr(statistics)
         == str(statistics)
         == (
-            "ParametricStatistics_Dataset\n"
+            "ParametricStatistics(Dataset)\n"
             "   n_samples: 100\n"
             "   n_variables: 3\n"
             "   variables: x_1, x_2, x_3"
@@ -90,7 +90,7 @@ def test_repr(statistics):
 def test_repr_html_(statistics):
     """Check _repr_html_."""
     assert statistics._repr_html_() == REPR_HTML_WRAPPER.format(
-        "ParametricStatistics_Dataset<br/>"
+        "ParametricStatistics(Dataset)<br/>"
         "<ul>"
         "<li>n_samples: 100</li>"
         "<li>n_variables: 3</li>"
