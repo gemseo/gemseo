@@ -1283,7 +1283,7 @@ class MDODiscipline(Serializable):
         compute_all_jacobians: bool = False,
         print_errors: bool = False,
         numerical_error: float = EPSILON,
-    ):
+    ) -> ndarray:
         """Compute the optimal finite-difference step.
 
         Compute the optimal step

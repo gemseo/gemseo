@@ -1,11 +1,16 @@
 include:
   - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/main/base.yml"
+  - template: Jobs/SAST.gitlab-ci.yml
+
+sast:
+  stage: check
 
 variables:
   TEST_ALL_ENVS:
     value: "false"
     description: "Whether to run the tox tests for all python versions and all platforms."
   TOX_EXE: tox4
+  SAST_EXCLUDED_ANALYZERS: flawfinder
 
 .tags:
   - saas-linux-medium-amd64

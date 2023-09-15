@@ -675,7 +675,7 @@ class BaseFormulationsFactory(BaseFactory):
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        **options,
+        **options: Any,
     ) -> BaseFormulation:
         """Create a formulation.
 

@@ -814,7 +814,7 @@ class MDOFunction(Serializable):
         return repr_dict
 
     @staticmethod
-    def init_from_dict_repr(**attributes) -> MDOFunction:
+    def init_from_dict_repr(**attributes: Any) -> MDOFunction:
         """Initialize a new function.
 
         This is typically used for deserialization.

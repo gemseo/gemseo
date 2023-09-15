@@ -444,11 +444,15 @@ git will perform predefined actions:
 * fix the Python import order,
 * fix the Python code formatting,
 * check for Python coding issues (see :ref:`coding-style`),
+* fix some of the above coding issues.
+* fix outdated Python syntax,
 * check the commit message (see :ref:`commit-msg`),
 * check for forbidden :func:`print` usage,
 * check for misused :mod:`logging` formatting,
 * check for :file:`.rst` files issues.
-* check or fix license headers
+* check or fix license headers,
+* check for docstrings formatting,
+* check for docstrings coverage,
 
 Those actions will eventually modify the files about to be committed.
 In this case your commit is denied
