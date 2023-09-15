@@ -1984,7 +1984,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__update_common_dtype()
 
     @classmethod
-    def from_file(cls, file_path: str | Path, **options) -> DesignSpace:
+    def from_file(cls, file_path: str | Path, **options: Any) -> DesignSpace:
         """Create a design space from a file.
 
         Args:
