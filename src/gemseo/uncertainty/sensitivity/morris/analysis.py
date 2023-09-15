@@ -70,6 +70,7 @@ This methodology relies on the :class:`.MorrisAnalysis` class.
 from __future__ import annotations
 
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import Collection
 from typing import Iterable
@@ -233,9 +234,9 @@ class MorrisAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         n_replicates: int = 5,
         step: float = 0.05,
         formulation: str = "MDF",
@@ -310,7 +311,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: str | Sequence[str] | None = None,
+        outputs: str | Sequence[str] = (),
         normalize: bool = False,
     ) -> dict[str, FirstOrderIndicesType]:
         """
@@ -387,14 +388,14 @@ class MorrisAnalysis(SensitivityAnalysis):
     def plot(
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         offset: float = 1,
         lower_mu: float | None = None,
         lower_sigma: float | None = None,

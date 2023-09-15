@@ -20,6 +20,7 @@
 """Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import Any
 from typing import Collection
 from typing import Iterable
@@ -85,9 +86,9 @@ class SensitivityAnalysisFactory(BaseFactory):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None = None,
-        output_names: Iterable[str] = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> SensitivityAnalysis:
@@ -101,9 +102,9 @@ class SensitivityAnalysisFactory(BaseFactory):
             n_samples: A number of samples.
                 If ``None``, the number of samples is computed by the algorithm.
             output_names: The disciplines' outputs to be considered for the analysis.
-                If ``None``, use all the outputs.
+                If empty, use all the outputs.
             algo: The name of the DOE algorithm.
-                If ``None``, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
+                If empty, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
             formulation: The name of the :class:`.MDOFormulation` to sample the
                 disciplines.

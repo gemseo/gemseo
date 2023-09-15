@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import Callable
 from typing import Collection
@@ -130,9 +131,9 @@ class CorrelationAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
@@ -150,7 +151,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         self.main_method = self.Method.SPEARMAN
 
     def compute_indices(  # noqa: D102
-        self, outputs: str | Sequence[str] | None = None
+        self, outputs: str | Sequence[str] = ()
     ) -> dict[str, FirstOrderIndicesType]:
         output_names = outputs or self.default_output
         if isinstance(output_names, str):
@@ -362,14 +363,14 @@ class CorrelationAnalysis(SensitivityAnalysis):
     def plot(  # noqa: D102
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
     ) -> None:
         if isinstance(output, str):
             output_name, output_index = output, 0
@@ -422,14 +423,14 @@ class CorrelationAnalysis(SensitivityAnalysis):
     def plot_radar(  # noqa: D102
         self,
         outputs: OutputsType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         min_radius: float = -1.0,
         max_radius: float = 1.0,
         **options: bool,

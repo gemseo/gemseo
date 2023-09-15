@@ -34,6 +34,7 @@ def dataset() -> Dataset:
 
 TEST_PARAMETERS = {
     "default": ({}, {}, ["BarPlot"]),
+    "xtick_rotation": ({}, {"xtick_rotation": 45}, ["BarPlot_xtick_rotation"]),
 }
 
 

@@ -145,6 +145,9 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     If ``None``, compute it from data.
     """
 
+    xtick_rotation: float
+    """The rotation angle in degrees for the x-ticks."""
+
     def __init__(
         self,
         dataset: Dataset,
@@ -182,6 +185,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.zlabel = ""
         self.zmin = None
         self.zmax = None
+        self.xtick_rotation = 0.0
         self.fig_size = (6.4, 4.8)
         self.__file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
@@ -217,7 +221,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
+        file_path: str | Path = "",
         directory_path: str | Path | None = None,
         file_name: str | None = None,
         file_format: str | None = None,
@@ -232,7 +236,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             save: If True, save the plot.
             show: If True, display the plot.
             file_path: The path of the file to save the figures.
-                If None,
+                If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_format``.
             directory_path: The path of the directory to save the figures.
@@ -263,7 +267,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
                 )
             setattr(self, name, value)
 
-        if file_path is not None:
+        if file_path:
             file_path = Path(file_path)
 
         file_path = self.__file_path_manager.create_file_path(
@@ -307,6 +311,11 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         figures = self._plot(fig=fig, axes=axes)
         if fig or axes:
             return []
+
+        if self.xtick_rotation:
+            for figure in figures:
+                for ax in figure.axes:
+                    ax.tick_params(axis="x", labelrotation=self.xtick_rotation)
 
         for index, sub_figure in enumerate(figures):
             if save:
