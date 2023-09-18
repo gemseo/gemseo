@@ -21,6 +21,9 @@ build:
     - graphviz
     - plantuml
   jobs:
+    post_checkout:
+      # Tags are necessary for setuptools-scm to determine the version.
+      - git fetch --tags
     post_install:
       - pip install --no-deps -r requirements/doc-plugins.txt
     pre_build:
