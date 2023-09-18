@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Copyright 2023 Capgemini Engineering
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
@@ -103,7 +104,8 @@ def test_init_from_dict_repr():
         ValueError,
         match=re.escape(
             "Cannot initialize MDOFunction attribute: foo, "
-            "allowed ones are: dim, expr, f_type, input_names, name, special_repr."
+            "allowed ones are: dim, expr, f_type, input_names, name, output_names, "
+            "special_repr."
         ),
     ):
         MDOFunction.init_from_dict_repr(foo="sin")

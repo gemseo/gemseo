@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Copyright 2023 Capgemini Engineering
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
@@ -167,6 +168,7 @@ class MDOFunction(Serializable):
         "input_names",
         "dim",
         "special_repr",
+        "output_names",
     ]
     """The names of the attributes to be serialized."""
 
