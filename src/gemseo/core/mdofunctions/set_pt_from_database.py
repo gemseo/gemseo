@@ -42,8 +42,8 @@ class SetPtFromDatabase:
             database: The database to read.
             design_space: The design space used for normalization.
             mdo_function: The function where the data from the database will be set.
-            normalize: If True, the values of the inputs are unnormalized before call.
-            jac: If True, a Jacobian pointer is also generated.
+            normalize: If ``True``, the values of the inputs are unnormalized before call.
+            jac: If ``True``, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """  # noqa: D205, D212, D415
         self.__database = database

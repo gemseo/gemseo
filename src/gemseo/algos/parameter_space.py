@@ -598,7 +598,7 @@ class ParameterSpace(DesignSpace):
         Args:
             n_samples: A number of samples.
             as_dict: The type of the returned object.
-                If True, return a dictionary.
+                If ``True``, return a dictionary.
                 Otherwise, return an array.
 
         Returns:
@@ -628,7 +628,7 @@ class ParameterSpace(DesignSpace):
             value: The values of the uncertain variables
                 passed as a dictionary whose keys are the names of the variables.
             inverse: The type of function to evaluate.
-                If True, compute the cumulative density function.
+                If ``True``, compute the cumulative density function.
                 Otherwise, compute the inverse cumulative density function.
 
         Returns:
@@ -797,7 +797,7 @@ class ParameterSpace(DesignSpace):
             use_dist: Whether to unnormalize the components of the random variables
                 with their inverse cumulative probability distributions.
             out: The array to store the unnormalized vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             The unnormalized vector.
@@ -861,11 +861,11 @@ class ParameterSpace(DesignSpace):
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If True, remove the lower bounds at normalization.
-            use_dist: If True, normalize the components of the random variables
+            minus_lb: If ``True``, remove the lower bounds at normalization.
+            use_dist: If ``True``, normalize the components of the random variables
                 with their cumulative probability distributions.
             out: The array to store the normalized vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             The normalized vector.
@@ -907,7 +907,7 @@ class ParameterSpace(DesignSpace):
         """Define a new :class:`.DesignSpace` from the uncertain variables only.
 
         Args:
-            as_design_space: If False,
+            as_design_space: If ``False``,
                 return a :class:`.ParameterSpace`
                 containing the original uncertain variables as is;
                 otherwise,
@@ -957,7 +957,7 @@ class ParameterSpace(DesignSpace):
         Args:
             dataset: The dataset used for the initialization.
             groups: The groups of the dataset to be considered.
-                If None, consider all the groups.
+                If ``None``, consider all the groups.
             uncertain: Whether the variables should be uncertain or not.
             copula: A name of copula defining the dependency between random variables.
         """

@@ -34,7 +34,7 @@ def __get_all_disciplines(
 
     Args:
         disciplines: The disciplines including potentially :class:`.Scenario` objects.
-        skip_scenarios: If True, skip the :class:`.Scenario` objects.
+        skip_scenarios: If ``True``, skip the :class:`.Scenario` objects.
             Otherwise, return their disciplines.
 
     Returns:
@@ -61,7 +61,7 @@ def get_all_inputs(
 
     Args:
         disciplines: The disciplines including potentially :class:`.Scenario` objects.
-        skip_scenarios: If True, skip the :class:`.Scenario` objects.
+        skip_scenarios: If ``True``, skip the :class:`.Scenario` objects.
             Otherwise, consider their disciplines.
 
     Returns:
@@ -87,7 +87,7 @@ def get_all_outputs(
 
     Args:
         disciplines: The disciplines including potentially :class:`.Scenario` objects.
-        skip_scenarios: If True, skip the :class:`.Scenario` objects.
+        skip_scenarios: If ``True``, skip the :class:`.Scenario` objects.
             Otherwise, consider their disciplines.
 
     Returns:

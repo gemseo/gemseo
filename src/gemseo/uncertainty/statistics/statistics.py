@@ -493,7 +493,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             variable_name: The name of the variable, e.g. ``"X"``.
             statistic_name: The name of the statistic, e.g. ``"probability"``.
-            show_name: If True, show option names.
+            show_name: If ``True``, show option names.
                 Otherwise, only show option values.
             **options: The options passed to the statistical function,
                 e.g. ``{"greater": True, "thresh": 1.0}``.

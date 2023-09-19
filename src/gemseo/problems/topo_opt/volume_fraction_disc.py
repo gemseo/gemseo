@@ -54,7 +54,7 @@ class VolumeFraction(MDODiscipline):
             full_elements: The index of the full element
                 ids that are not part of the design space.
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
         """  # noqa: D205, D212, D415
         super().__init__(name=name)
         self.n_x = n_x

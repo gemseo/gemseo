@@ -409,9 +409,9 @@ class MorrisAnalysis(SensitivityAnalysis):
             offset: The offset to display the inputs names,
                 expressed as a percentage applied to both x-range and y-range.
             lower_mu: The lower bound for :math:`\mu`.
-                If None, use a default value.
+                If ``None``, use a default value.
             lower_sigma: The lower bound for :math:`\sigma`.
-                If None, use a default value.
+                If ``None``, use a default value.
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)

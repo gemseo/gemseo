@@ -52,7 +52,7 @@ class ScatterPlotMatrix(OptPostProcessor):
             variable_names: The functions names or design variables to plot.
                 If the list is empty,
                 plot all design variables.
-            filter_non_feasible: If True, remove the non-feasible
+            filter_non_feasible: If ``True``, remove the non-feasible
                 points from the data.
 
         Raises:

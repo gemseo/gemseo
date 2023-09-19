@@ -47,7 +47,7 @@ class RadarChart(OptPostProcessor):
         r"""
         Args:
             constraint_names: The names of the constraints.
-                If None, use all the constraints.
+                If ``None``, use all the constraints.
             iteration: Either an iteration in :math:`-N,\ldots,-1,1,`ldots,N`
                 or the tag :attr:`.OPTIMUM` for the iteration
                 at which the optimum is located,

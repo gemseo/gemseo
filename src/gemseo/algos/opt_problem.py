@@ -313,7 +313,7 @@ class OptimizationProblem(BaseProblem):
             design_space: The design space on which the functions are evaluated.
             pb_type: The type of the optimization problem.
             input_database: A database to initialize that of the optimization problem.
-                If None, the optimization problem starts from an empty database.
+                If ``None``, the optimization problem starts from an empty database.
             differentiation_method: The default differentiation method to be applied
                 to the functions of the optimization problem.
             fd_step: The step to be used by the step-based differentiation methods.
@@ -456,8 +456,8 @@ class OptimizationProblem(BaseProblem):
             func: The constraint function.
             cstr_type: The type of the constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
-            positive: If True, then the inequality constraint is positive.
+                If ``None``, this value is 0.
+            positive: If ``True``, then the inequality constraint is positive.
 
         Returns:
             A string representation of the constraint.
@@ -505,9 +505,9 @@ class OptimizationProblem(BaseProblem):
         Args:
             cstr_func: The constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
+                If ``None``, this value is 0.
             cstr_type: The type of the constraint.
-            positive: If True, then the inequality constraint is positive.
+            positive: If ``True``, then the inequality constraint is positive.
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
@@ -560,7 +560,7 @@ class OptimizationProblem(BaseProblem):
         Args:
             cstr_func: The constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
+                If ``None``, this value is 0.
         """
         self.add_constraint(cstr_func, value, cstr_type=MDOFunction.ConstraintType.EQ)
 
@@ -575,8 +575,8 @@ class OptimizationProblem(BaseProblem):
         Args:
             cstr_func: The constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
-            positive: If True, then the inequality constraint is positive.
+                If ``None``, this value is 0.
+            positive: If ``True``, then the inequality constraint is positive.
         """
         self.add_constraint(
             cstr_func,
@@ -720,7 +720,7 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             obs_func: An observable to be observed.
-            new_iter: If True, then the observable will be called at each new iterate.
+            new_iter: If ``True``, then the observable will be called at each new iterate.
         """
         name = obs_func.name
         if name in self.__observable_names:
@@ -1079,8 +1079,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             callback_func: A function to be called after some event.
-            each_new_iter: If True, then callback at every iteration.
-            each_store: If True,
+            each_new_iter: If ``True``, then callback at every iteration.
+            each_store: If ``True``,
                 then callback at every call to :meth:`.Database.store`.
         """
         if each_store:
@@ -1136,7 +1136,7 @@ class OptimizationProblem(BaseProblem):
                 If ``observable_names`` is not ``None`` then the value of
                 ``eval_observables`` is ignored.
             normalize: Whether to consider the input vector ``x_vect`` normalized.
-            no_db_no_norm: If True, then do not use the pre-processed functions,
+            no_db_no_norm: If ``True``, then do not use the pre-processed functions,
                 so we have no database, nor normalization.
             constraint_names: The names of the constraints to evaluate.
                 If ``None`` then all the constraints are evaluated.
@@ -1438,9 +1438,9 @@ class OptimizationProblem(BaseProblem):
             func: The scaled and derived function to be pre-processed.
             is_function_input_normalized: Whether to consider the function input as
                 normalized and unnormalize it before the evaluation takes place.
-            use_database: If True, then the function is wrapped in the database.
-            round_ints: If True, then round the integer variables.
-            is_observable: If True, new_iter_listeners are not called
+            use_database: If ``True``, then the function is wrapped in the database.
+            round_ints: If ``True``, then round the integer variables.
+            is_observable: If ``True``, new_iter_listeners are not called
                 when function is called (avoid recursive call)
 
         Returns:
@@ -1650,7 +1650,7 @@ class OptimizationProblem(BaseProblem):
         Args:
             out_val: The values of the objective function, and eventually constraints.
             constraints: The constraints whose values are to be tested.
-                If None, then take all constraints of the problem.
+                If ``None``, then take all constraints of the problem.
 
         Returns:
             The feasibility of the point.
@@ -1936,7 +1936,7 @@ class OptimizationProblem(BaseProblem):
             group: The group pointer.
             data_array: The data to be stored.
             dataset_name: The name of the dataset to store the array.
-            dtype: Numpy dtype or string. If None, dtype('f') will be used.
+            dtype: Numpy dtype or string. If ``None``, dtype('f') will be used.
         """
         if data_array is None or (
             isinstance(data_array, Iterable) and not len(data_array)
@@ -1992,7 +1992,7 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             file_path: The path of the file to store the data.
-            append: If True, then the data are appended to the file if not empty.
+            append: If ``True``, then the data are appended to the file if not empty.
         """
         LOGGER.info("Export optimization problem to file: %s", str(file_path))
 
@@ -2336,8 +2336,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             names: The names of the variables.
-            as_dict: If True, return values as dictionary.
-            filter_non_feasible: If True, remove the non-feasible points from
+            as_dict: If ``True``, return values as dictionary.
+            filter_non_feasible: If ``True``, remove the non-feasible points from
                 the data.
 
         Returns:
@@ -2382,7 +2382,7 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             names: The names of the functions.
-                If None, then the objective and all the constraints are considered.
+                If ``None``, then the objective and all the constraints are considered.
 
         Returns:
             The dimensions of the outputs of the problem functions.

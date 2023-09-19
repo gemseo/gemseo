@@ -230,7 +230,7 @@ class PolynomialRegressor(LinearRegressor):
         """Return the regression coefficients of the linear model.
 
         Args:
-            as_dict: If True, return the coefficients as a dictionary of Numpy arrays
+            as_dict: If ``True``, return the coefficients as a dictionary of Numpy arrays
                 indexed by the names of the coefficients.
                 Otherwise, return the coefficients as a Numpy array.
                 For now the only valid value is False.

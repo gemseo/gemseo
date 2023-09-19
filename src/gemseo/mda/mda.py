@@ -190,7 +190,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             disciplines: The disciplines from which to compute the MDA.
             max_mda_iter: The maximum iterations number for the MDA algorithm.
             name: The name to be given to the MDA.
-                If None, use the name of the class.
+                If ``None``, use the name of the class.
             grammar_type: The type of the input and output grammars.
             tolerance: The tolerance of the iterative direct coupling solver;
                 the norm of the current residuals divided by initial residuals norm
@@ -203,7 +203,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 when using adjoint/forward differentiation.
                 to solve faster multiple RHS problem.
             coupling_structure: The coupling structure to be used by the MDA.
-                If None, it is created from `disciplines`.
+                If ``None``, it is created from `disciplines`.
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
             linear_solver: The name of the linear solver.
@@ -619,16 +619,16 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             input_data: The input values.
-                If None, use the default input values.
+                If ``None``, use the default input values.
             derr_approx: The derivative approximation method.
             threshold: The acceptance threshold for the Jacobian error.
             linearization_mode: The mode of linearization,
                 either "direct", "adjoint" or "auto" switch
                 depending on dimensions of inputs and outputs.
             inputs: The names of the inputs with respect to which to differentiate.
-                If None, use the inputs of the MDA.
+                If ``None``, use the inputs of the MDA.
             outputs: The outputs to differentiate.
-                If None, use all the outputs of the MDA.
+                If ``None``, use all the outputs of the MDA.
             step: The step
                 for finite differences or complex step differentiation methods.
             parallel: Whether to execute the MDA in parallel.
@@ -664,7 +664,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If None, consider all the components of all the ``inputs`` and ``outputs``.
+                If ``None``, consider all the components of all the ``inputs`` and ``outputs``.
 
         Returns:
             Whether the passed Jacobian is correct.
@@ -771,11 +771,11 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             show: Whether to display the plot on screen.
             save: Whether to save the plot as a PDF file.
             n_iterations: The number of iterations on the *x* axis.
-                If None, use all the iterations.
+                If ``None``, use all the iterations.
             logscale: The limits of the *y* axis.
-                If None, do not change the limits of the *y* axis.
+                If ``None``, do not change the limits of the *y* axis.
             filename: The name of the file to save the figure.
-                If None, use "{mda.name}_residual_history.pdf".
+                If ``None``, use "{mda.name}_residual_history.pdf".
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
 
         Returns:

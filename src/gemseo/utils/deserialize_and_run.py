@@ -30,7 +30,7 @@ def _parse_inputs(args: Iterable[str] | None = None) -> tuple[Path, Path, Path, 
     """Parse the arguments of the command.
 
     Args:
-        args: The command line arguments. If None, uses sys.argv[1:]
+        args: The command line arguments. If ``None``, uses sys.argv[1:]
 
     Returns:
         The path to the workdir, the path to the serialized discipline, the path

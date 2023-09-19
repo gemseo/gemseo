@@ -604,7 +604,7 @@ class JacobianAssembly:
                 unsupported for linear operator mode.
             exec_cache_tol: The discipline cache tolerance to
                 when calling the linearize method.
-                If None, no tolerance is set (equivalent to tol=0.0).
+                If ``None``, no tolerance is set (equivalent to tol=0.0).
             execute: Whether to start by executing the discipline
                 with the input data for which to compute the Jacobian;
                 this allows to ensure that the discipline was executed
@@ -866,7 +866,7 @@ class JacobianAssembly:
             show: Whether the plot is displayed.
             save: Whether the plot is saved in a PDF file.
             filepath: The file name to save to.
-                If None, ``coupled_jacobian.pdf`` is used, otherwise
+                If ``None``, ``coupled_jacobian.pdf`` is used, otherwise
                 ``coupled_jacobian_ + filepath + .pdf``.
             markersize: size of the markers
 

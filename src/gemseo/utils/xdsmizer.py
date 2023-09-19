@@ -115,7 +115,7 @@ class XDSMizer:
 
         Args:
             workflow: The composite execution sequence.
-                If None, use the scenario's one.
+                If ``None``, use the scenario's one.
         """
         self.sub_xdsmizers = []
         # Find disciplines from workflow structure

@@ -99,7 +99,7 @@ class MLAlgoSelection:
                 to evaluate the quality measure.
             samples: The indices of the learning samples to consider.
                 Other indices are neither used for training nor for testing.
-                If None, use all the samples.
+                If ``None``, use all the samples.
             **measure_options: The options for the method
                 to evaluate the quality measure.
                 The option 'multioutput' will be set to False.
@@ -140,11 +140,11 @@ class MLAlgoSelection:
             calib_space: The design space
                 defining the parameters to be calibrated
                 with an :class:`.MLAlgoCalibration`.
-                If None, do not perform calibration.
+                If ``None``, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
                 e.g. {"algo": "fullfact", "n_samples": 10}.
-                If None, do not perform calibration.
+                If ``None``, do not perform calibration.
             **option_lists: The parameters
                 for the machine learning algorithm candidate.
                 Each parameter has to be enclosed within a list.

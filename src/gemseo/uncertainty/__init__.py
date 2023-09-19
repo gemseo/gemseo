@@ -144,7 +144,7 @@ def create_statistics(
     Args:
         dataset: A dataset.
         variable_names: The variables of interest.
-            If None, consider all the variables from dataset.
+            If ``None``, consider all the variables from dataset.
         tested_distributions: The names of
             the tested distributions.
         fitting_criterion: The name of a goodness-of-fit criterion,
@@ -159,7 +159,7 @@ def create_statistics(
             that is an incorrect rejection of a true null hypothesis,
             for criteria based on a test hypothesis.
         name: A name for the statistics toolbox instance.
-            If None, use the concatenation of class and dataset names.
+            If ``None``, use the concatenation of class and dataset names.
 
     Returns:
         A statistics toolbox.

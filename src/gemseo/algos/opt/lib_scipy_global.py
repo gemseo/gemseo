@@ -181,7 +181,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 temperature is decreasing,
                 when it reaches ``initial_temp * restart_temp_ratio``,
                 the reannealing process is triggered.
-            normalize_design_space: If True, variables are scaled in [0, 1].
+            normalize_design_space: If ``True``, variables are scaled in [0, 1].
             eq_tolerance: The tolerance on equality constraints.
             ineq_tolerance: The tolerance on inequality constraints.
             n: The number of sampling points used in the construction

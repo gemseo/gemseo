@@ -341,8 +341,8 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Plot both probability and cumulative density functions for all components.
 
         Args:
-            save: If True, save the figure.
-            show: If True, display the figure.
+            save: If ``True``, save the figure.
+            show: If ``True``, display the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
                 If empty,
@@ -387,8 +387,8 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             index: The index of a component of the random variable.
-            save: If True, save the figure.
-            show: If True, display the figure.
+            save: If ``True``, save the figure.
+            show: If ``True``, display the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
                 If empty,

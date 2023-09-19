@@ -304,8 +304,8 @@ class ParametricStatistics(Statistics):
         Args:
             variable: The name of the variable.
             title: The title of the plot, if any.
-            save: If True, save the plot on the disk.
-            show: If True, show the plot.
+            save: If ``True``, save the plot on the disk.
+            show: If ``True``, show the plot.
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
             fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.

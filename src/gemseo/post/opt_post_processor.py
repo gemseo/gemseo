@@ -196,8 +196,8 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Post-process the optimization problem.
 
         Args:
-            save: If True, save the figure.
-            show: If True, display the figure.
+            save: If ``True``, save the figure.
+            show: If ``True``, display the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
                 If ``None``,
@@ -281,8 +281,8 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Run the post-processor.
 
         Args:
-            save: If True, save the figure.
-            show: If True, display the figure.
+            save: If ``True``, save the figure.
+            show: If ``True``, display the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use ``file_extension``.
                 If ``None``,

@@ -80,7 +80,7 @@ class MDOChain(MDODiscipline):
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
             grammar_type: The type of the input and output grammars.
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
@@ -323,7 +323,7 @@ class MDOParallelChain(MDODiscipline):
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
             grammar_type: The type of the input and output grammars.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
@@ -335,7 +335,7 @@ class MDOParallelChain(MDODiscipline):
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
-                If None, uses the number of disciplines.
+                If ``None``, uses the number of disciplines.
             use_deep_copy: Whether to deepcopy the discipline input data.
 
         Notes:
@@ -509,7 +509,7 @@ class MDOAdditiveChain(MDOParallelChain):
             disciplines: The disciplines.
             outputs_to_sum: The names of the outputs to sum.
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
             grammar_type: The type of the input and output grammars.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
@@ -521,7 +521,7 @@ class MDOAdditiveChain(MDOParallelChain):
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
-                If None, uses the number of disciplines.
+                If ``None``, uses the number of disciplines.
 
         Notes:
             The actual number of processes could be lower than ``n_processes``
@@ -592,7 +592,7 @@ class MDOWarmStartedChain(MDOChain):
                 These names must be outputs of the disciplines in the chain.
                 If the list is empty, no variables are warm started.
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
             grammar_type: The type of the input and output grammars.
 
         Raises:

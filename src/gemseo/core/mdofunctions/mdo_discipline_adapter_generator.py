@@ -85,10 +85,10 @@ class MDODisciplineAdapterGenerator:
             output_names: The names of outputs of the discipline
                 to be returned by the function.
             default_inputs: The default values of the inputs.
-                If None,
+                If ``None``,
                 use the default values of the inputs
                 specified by the discipline.
-            differentiable: If True, then inputs and outputs are added
+            differentiable: If ``True``, then inputs and outputs are added
                 to the variables to be differentiated.
 
         Returns:

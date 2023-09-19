@@ -53,7 +53,7 @@ class MDOLinearFunction(MDOFunction):
     __initial_expression: str | None
     """The initially provided expression.
 
-    If None the expression is computed.
+    If ``None`` the expression is computed.
     """
 
     def __init__(

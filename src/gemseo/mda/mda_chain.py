@@ -87,7 +87,7 @@ class MDAChain(MDA):
                 while in direct mode, linearizing the chain may be cheaper.
             sub_coupling_structures: The coupling structures to be used by the
                 inner-MDAs.
-                If None, they are created from the sub-disciplines.
+                If ``None``, they are created from the sub-disciplines.
             mdachain_parallelize_tasks: Whether to parallelize the
                 parallel tasks, if any.
             mdachain_parallel_options: The options of the MDOParallelChain
@@ -172,7 +172,7 @@ class MDAChain(MDA):
             disciplines: The disciplines.
             sub_coupling_structures: The coupling structures to be used by the
                 inner-MDAs.
-                If None, they are created from the sub-disciplines.
+                If ``None``, they are created from the sub-disciplines.
             mdachain_parallelize_tasks: Whether to parallelize the
                 parallel tasks,
                 if any.

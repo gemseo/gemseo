@@ -78,7 +78,7 @@ class ScatterMatrix(DatasetPlot):
         Args:
             classifier: The name of the variable to build the cluster.
             kde: The type of the distribution representation.
-                If True, plot kernel-density estimator on the diagonal.
+                If ``True``, plot kernel-density estimator on the diagonal.
                 Otherwise, use histograms.
             size: The size of the points.
             marker: The marker for the points.

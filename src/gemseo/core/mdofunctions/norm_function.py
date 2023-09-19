@@ -50,7 +50,7 @@ class NormFunction(MDOFunction):
             orig_func: The original function.
             normalize: Whether to unnormalize the input vector
                 before evaluating the original function.
-            round_ints: If True, then round the integer variables.
+            round_ints: If ``True``, then round the integer variables.
             optimization_problem: The optimization problem object that contains
                 the function.
 
