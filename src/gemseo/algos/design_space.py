@@ -405,11 +405,11 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type: Either the type of the variable
                 or the types of its components.
             l_b: The lower bound of the variable.
-                If None, use :math:`-\infty`.
+                If ``None``, use :math:`-\infty`.
             u_b: The upper bound of the variable.
-                If None, use :math:`+\infty`.
+                If ``None``, use :math:`+\infty`.
             value: The default value of the variable.
-                If None, do not use a default value.
+                If ``None``, do not use a default value.
 
         Raises:
             ValueError: Either if the variable already exists
@@ -684,7 +684,7 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable.
             size: The size of the variable.
             bound: The bound of the variable.
-            is_lower: If True, the bound is a lower bound.
+            is_lower: If ``True``, the bound is a lower bound.
                 Otherwise, it is an upper bound.
 
         Raises:
@@ -827,7 +827,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             x_vect: The values of the variables.
             variable_names: The names of the variables.
-                If None, use the names of the variables of the design space.
+                If ``None``, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of the values vector is wrong,
@@ -904,7 +904,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             x_dict: The values of the variables.
             variable_names: The names of the variables.
-                If None, use the names of the variables of the design space.
+                If ``None``, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of an array is wrong,
@@ -1022,7 +1022,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             variable_names: The names of the variables.
-                If None, use the names of the variables of the design space.
+                If ``None``, use the names of the variables of the design space.
 
         Raises:
             ValueError: If the names of the variables of the current design value
@@ -1256,9 +1256,9 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If True, remove the lower bounds at normalization.
+            minus_lb: If ``True``, remove the lower bounds at normalization.
             out: The array to store the normalized vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             The normalized vector.
@@ -1394,7 +1394,7 @@ class DesignSpace(collections.abc.MutableMapping):
             minus_lb: Whether to remove the lower bounds at normalization.
             no_check: Whether to check if the components are in :math:`[0,1]`.
             out: The array to store the unnormalized vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             The unnormalized vector.
@@ -1468,7 +1468,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             vector: A point of the design space.
             out: The array to store the transformed vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             A vector with components in :math:`[0,1]`.
@@ -1487,7 +1487,7 @@ class DesignSpace(collections.abc.MutableMapping):
             vector: A vector with components in :math:`[0,1]`.
             no_check: Whether to check if the components are in :math:`[0,1]`.
             out: The array to store the untransformed vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             A point of the variables space.
@@ -1658,7 +1658,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             variable_names: The names of the variables
                 of which the lower bounds are required.
-                If None, use the variables of the design space.
+                If ``None``, use the variables of the design space.
 
         Returns:
             The lower bounds of the variables.
@@ -1676,7 +1676,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             variable_names: The names of the variables
                 of which the upper bounds are required.
-                If None, use the variables of the design space.
+                If ``None``, use the variables of the design space.
 
         Returns:
             The upper bounds of the variables.
@@ -1795,7 +1795,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             design_values: The design point to be converted.
             variable_names: The variables to be considered.
-                If None, use the variables of the design space.
+                If ``None``, use the variables of the design space.
 
         Returns:
             The point as an array.
@@ -1871,7 +1871,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             file_path: The path to the file to export the design space.
-            append: If True, appends the data in the file.
+            append: If ``True``, appends the data in the file.
         """
         mode = "a" if append else "w"
 
@@ -2028,7 +2028,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             output_file: The path to the file.
             fields: The fields to be exported.
-                If None, export all fields.
+                If ``None``, export all fields.
             header_char: The header character.
             **table_options: The names and values of additional attributes
                 for the :class:`.PrettyTable` view
@@ -2144,7 +2144,7 @@ class DesignSpace(collections.abc.MutableMapping):
         """Project a vector onto the bounds, using a simple coordinate wise approach.
 
         Args:
-            normalized: If True, then the vector is assumed to be normalized.
+            normalized: If ``True``, then the vector is assumed to be normalized.
             x_c: The vector to be projected onto the bounds.
 
         Returns:

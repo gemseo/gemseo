@@ -49,7 +49,7 @@ class MDOScenario(Scenario):
     """
 
     clear_history_before_run: bool
-    """If True, clear history before run."""
+    """If ``True``, clear history before run."""
 
     # Constants for input variables in json schema
     MAX_ITER = "max_iter"

@@ -98,14 +98,14 @@ class MDOScenarioAdapter(MDODiscipline):
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.
             output_names: The outputs to get from the sub-scenario execution.
-            reset_x0_before_opt: If True, reset the initial guess
+            reset_x0_before_opt: If ``True``, reset the initial guess
                 before running the sub optimization.
-            set_x0_before_opt: If True, set the initial guess of the sub-scenario.
+            set_x0_before_opt: If ``True``, set the initial guess of the sub-scenario.
                 This is useful for multi-start optimization.
-            set_bounds_before_opt: If True, set the bounds of the design space.
+            set_bounds_before_opt: If ``True``, set the bounds of the design space.
                 This is useful for trust regions.
             cache_type: The type of cache policy.
-            output_multipliers: If True,
+            output_multipliers: If ``True``,
                 the Lagrange multipliers of the scenario optimal solution are computed
                 and added to the outputs.
             name: The name of the scenario adapter.
@@ -289,7 +289,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         Args:
             variable_name: The name of the variable.
-            is_upper: If True, return name of the upper bound-constraint multiplier.
+            is_upper: If ``True``, return name of the upper bound-constraint multiplier.
                 Otherwise, return the name of the lower bound-constraint multiplier.
 
         Returns:
@@ -474,9 +474,9 @@ class MDOScenarioAdapter(MDODiscipline):
 
         Args:
             inputs: The linearization should be performed with respect to these inputs.
-                If None, the linearization should be performed w.r.t. all inputs.
+                If ``None``, the linearization should be performed w.r.t. all inputs.
             outputs: The linearization should be performed on these outputs.
-                If None, the linearization should be performed on all outputs.
+                If ``None``, the linearization should be performed on all outputs.
 
         Raises:
             ValueError: Either
@@ -559,7 +559,7 @@ class MDOScenarioAdapter(MDODiscipline):
         Args:
             inputs: The names of the inputs w.r.t. which differentiate.
             func_names: The names of the functions to differentiate
-                If None, then all the optimizations functions are differentiated.
+                If ``None``, then all the optimizations functions are differentiated.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,

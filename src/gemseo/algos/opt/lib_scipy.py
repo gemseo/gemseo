@@ -168,17 +168,17 @@ class ScipyOpt(OptimizationLibrary):
                 stop if max_i (grad_i)<eps_mach \* factr, where eps_mach is the
                 machine precision.
             maxcor: The maximum BFGS updates.
-            normalize_design_space: If True, scales variables to [0, 1].
+            normalize_design_space: If ``True``, scales variables to [0, 1].
             eq_tolerance: The equality tolerance.
             ineq_tolerance: The inequality tolerance.
             stepmx: The maximum step for the line search.
             minfev: The minimum function value estimate.
             scale: The scaling factor to apply to each variable.
-                If None, the factors are up-low for interval bounded variables
+                If ``None``, the factors are up-low for interval bounded variables
                 and 1+|x| for the others.
             rescale: The scaling factor (in log10) used to trigger f value
                 rescaling.
-            offset: Value to subtract from each variable. If None, the offsets are
+            offset: Value to subtract from each variable. If ``None``, the offsets are
                 (up+low)/2 for interval bounded variables and x for the others.
             kkt_tol_abs: The absolute tolerance on the KKT residual norm.
                 If ``None`` this criterion is not activated.

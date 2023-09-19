@@ -96,7 +96,7 @@ class N2JSON:
         Args:
             names: The names of the variables.
             variable_sizes: The sizes of the variables.
-                If None, display only the names.
+                If ``None``, display only the names.
 
         Return:
             The HTML representation of the sorted variables.

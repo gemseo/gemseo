@@ -92,10 +92,10 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             x_vect: The input vector.
             step: The differentiation step.
-                If None, use the default differentiation step.
+                If ``None``, use the default differentiation step.
             x_indices: The components of the input vector
                 to be used for the differentiation.
-                If None, use all the components.
+                If ``None``, use all the components.
             **kwargs: The optional arguments for the function.
 
         Returns:
@@ -181,9 +181,9 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
             x_vect: The input vector.
             x_indices: The components of the input vector
                 to be used for the differentiation.
-                If None, use all the components.
+                If ``None``, use all the components.
             step: The differentiation step.
-                If None, use the default differentiation step.
+                If ``None``, use the default differentiation step.
 
         Returns:
             * The input perturbations.

@@ -216,7 +216,7 @@ class DriverLibrary(AlgorithmLibrary):
 
         Args:
             x_vect: The design variables values.
-                If None, consider the objective at the last iteration.
+                If ``None``, consider the objective at the last iteration.
         """
         if self.__log_problem:
             if x_vect is None:
@@ -255,7 +255,7 @@ class DriverLibrary(AlgorithmLibrary):
         """Iterate the progress bar, implement the stop criteria.
 
         Args:
-            x_vect: The design variables values. If None, use the values of the
+            x_vect: The design variables values. If ``None``, use the values of the
                 last iteration.
 
         Raises:
@@ -406,7 +406,7 @@ class DriverLibrary(AlgorithmLibrary):
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-                If None, use the algo_name attribute
+                If ``None``, use the algo_name attribute
                 which may have been set by the factory.
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
             skip_int_check: Whether to skip the integer variable handling check

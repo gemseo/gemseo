@@ -254,7 +254,7 @@ def generate_coupling_graph(
     Args:
         disciplines: The disciplines from which the graph is generated.
         file_path: The path of the file to save the figure.
-        full: If True, generate the full coupling graph.
+        full: If ``True``, generate the full coupling graph.
             Otherwise, generate the condensed one.
 
     Returns:
@@ -1259,7 +1259,7 @@ def create_surrogate(
             If a group is specified,
             the :class:`.Transformer` will be applied
             to all the variables of this group.
-            If None, do not transform the variables.
+            If ``None``, do not transform the variables.
             The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
@@ -1692,7 +1692,7 @@ def create_dataset(
             If ``None``,
             use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
         delimiter: The field delimiter.
-        header: If True and `data` is a string,
+        header: If ``True`` and `data` is a string,
             read the variables names on the first line of the file.
         class_name: The name of the dataset class.
 

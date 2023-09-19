@@ -73,7 +73,7 @@ class IDF(MDOFormulation):
     ) -> None:
         """
         Args:
-            normalize_constraints: If True,
+            normalize_constraints: If ``True``,
                 the outputs of the coupling consistency constraints are scaled.
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
@@ -85,7 +85,7 @@ class IDF(MDOFormulation):
                 This is important to note
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
-            start_at_equilibrium: If True,
+            start_at_equilibrium: If ``True``,
                 an MDA is used to initialize the coupling variables.
         """  # noqa: D205, D212, D415
         super().__init__(

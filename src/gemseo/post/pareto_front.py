@@ -58,10 +58,10 @@ class ParetoFront(OptPostProcessor):
         """
         Args:
             objectives: The functions names or design variables to plot.
-                If None, use the objective function (maybe a vector).
+                If ``None``, use the objective function (maybe a vector).
             objectives_labels: The labels of the objective components.
-                If None, use the objective name suffixed by an index.
-            show_non_feasible: If True, show the non-feasible points in the plot.
+                If ``None``, use the objective name suffixed by an index.
+            show_non_feasible: If ``True``, show the non-feasible points in the plot.
 
         Raises:
             ValueError: If the numbers of objectives and objectives

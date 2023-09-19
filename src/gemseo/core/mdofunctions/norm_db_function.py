@@ -54,8 +54,8 @@ class NormDBFunction(MDOFunction):
         """
         Args:
             orig_func: The original function to be wrapped.
-            normalize: If True, then normalize the function's input vector.
-            is_observable: If True, new_iter_listeners are not called
+            normalize: If ``True``, then normalize the function's input vector.
+            is_observable: If ``True``, new_iter_listeners are not called
                 when function is called (avoid recursive call).
             optimization_problem: The optimization problem object that contains
                 the function.

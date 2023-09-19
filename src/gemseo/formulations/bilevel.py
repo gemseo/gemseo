@@ -93,7 +93,7 @@ class BiLevel(MDOFormulation):
             inner_mda_name: The name of the class used for the inner-MDA of the main
                 MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
             parallel_scenarios: Whether to run the sub-scenarios in parallel.
-            multithread_scenarios: If True and parallel_scenarios=True,
+            multithread_scenarios: If ``True`` and parallel_scenarios=True,
                 the sub-scenarios are run in parallel using multi-threading;
                 if False and parallel_scenarios=True, multiprocessing is used.
             apply_cstr_tosub_scenarios: Whether the :meth:`.add_constraint` method
@@ -515,9 +515,9 @@ class BiLevel(MDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If None, the name is generated from the output name.
+                If ``None``, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If None, the value is equal to 0.
+                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
         """
         super().add_constraint(
@@ -541,9 +541,9 @@ class BiLevel(MDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If None, the name is generated from the output name.
+                If ``None``, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If None, the value is equal to 0.
+                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
 
         Raises:

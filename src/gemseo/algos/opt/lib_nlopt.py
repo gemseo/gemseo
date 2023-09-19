@@ -243,12 +243,12 @@ class Nlopt(OptimizationLibrary):
             stopval: The objective value at which the optimization will stop.
                 Stop minimizing when an objective value :math:`\leq` stopval is
                 found, or stop maximizing when a value :math:`\geq` stopval
-                is found. If None, this termination condition will not be active.
+                is found. If ``None``, this termination condition will not be active.
             kkt_tol_abs: The absolute tolerance on the KKT residual norm.
                 If ``None`` this criterion is not activated.
             kkt_tol_rel: The relative tolerance on the KKT residual norm.
                 If ``None`` this criterion is not activated.
-            normalize_design_space: If True, normalize the design variables between 0 and 1.
+            normalize_design_space: If ``True``, normalize the design variables between 0 and 1.
             eq_tolerance: The tolerance on the equality constraints.
             ineq_tolerance: The tolerance on the inequality constraints.
             init_step: The initial step size :math:`r` for derivative-free algorithms.

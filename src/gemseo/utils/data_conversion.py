@@ -260,7 +260,7 @@ def deepcopy_dict_of_arrays(
     Args:
         dict_of_arrays: The dictionary of NumPy arrays to be copied.
         names: The keys of the dictionary for which to deepcopy the items.
-            If None, consider all the dictionary keys.
+            If ``None``, consider all the dictionary keys.
 
     Returns:
         A deep copy of the dictionary of NumPy arrays.

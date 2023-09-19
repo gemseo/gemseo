@@ -51,7 +51,7 @@ class ScalableModelFactory(BaseFactory):
         :param str model_name: name of the scalable model (its class name)
         :param Dataset data: learning dataset.
         :param dict sizes: sizes of input and output variables.
-            If None, use the original sizes.
+            If ``None``, use the original sizes.
             Default: None.
         :param parameters: model parameters
         :return: model_name scalable model

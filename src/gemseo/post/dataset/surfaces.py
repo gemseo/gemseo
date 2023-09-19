@@ -54,8 +54,8 @@ class Surfaces(DatasetPlot):
         Args:
             mesh: The name of the dataset misc corresponding to the mesh.
             variable: The name of the variable for the x-axis.
-            samples: The indices of the samples to plot. If None, plot all samples.
-            add_points: If True then display the samples over the surface plot.
+            samples: The indices of the samples to plot. If ``None``, plot all samples.
+            add_points: If ``True`` then display the samples over the surface plot.
             fill: Whether to generate a filled contour plot.
             levels: Either the number of contour lines
                 or the values of the contour lines in increasing order.

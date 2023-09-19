@@ -209,7 +209,7 @@ class DisciplineJacApprox:
         Args:
             inputs: The names of the inputs to be used for the differentiation.
             data: The input data mapping.
-                If None, use the local data of the discipline.
+                If ``None``, use the local data of the discipline.
 
         Returns:
             The input array.
@@ -232,7 +232,7 @@ class DisciplineJacApprox:
             inputs: The names of the inputs used to differentiate the outputs.
             x_indices: The components of the input vector
                 to be used for the differentiation.
-                If None, use all the components.
+                If ``None``, use all the components.
 
         Returns:
             The approximated Jacobian.
@@ -330,7 +330,7 @@ class DisciplineJacApprox:
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If None,
+                If ``None``,
                 consider all the components of all the ``inputs`` and ``outputs``.
 
         Returns:

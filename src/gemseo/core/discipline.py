@@ -233,7 +233,7 @@ class MDODiscipline(Serializable):
         """
         Args:
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
             input_grammar_file: The input grammar file path.
                 If ``None`` and ``auto_detect_grammar_files=True``,
                 look for ``"ClassName_input.json"``
@@ -466,7 +466,7 @@ class MDODiscipline(Serializable):
                 If ``None``,
                 use the name of the discipline class.
             comp_dir: The directory in which to search the grammar file.
-                If None,
+                If ``None``,
                 use the :attr:`.GRAMMAR_DIRECTORY` if any,
                 or the directory of the discipline class module.
 
@@ -537,7 +537,7 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The input variables against which to differentiate the outputs.
-                If None, all the inputs of the discipline are used.
+                If ``None``, all the inputs of the discipline are used.
 
         Raises:
             ValueError: When the inputs wrt which differentiate the discipline
@@ -577,7 +577,7 @@ class MDODiscipline(Serializable):
 
         Args:
             outputs: The output variables to be differentiated.
-                If None, all the outputs of the discipline are used.
+                If ``None``, all the outputs of the discipline are used.
 
         Raises:
             ValueError: When the outputs to differentiate are not discipline outputs.
@@ -660,7 +660,7 @@ class MDODiscipline(Serializable):
             cache_hdf_node_path: The name of the HDF file node
                 to store the discipline data,
                 possibly passed as a path ``root_name/.../group_name/.../node_name``.
-                If None, :attr:`.MDODiscipline.name` is used.
+                If ``None``, :attr:`.MDODiscipline.name` is used.
             is_memory_shared: Whether to store the data with a shared memory dictionary,
                 which makes the cache compatible with multiprocessing.
 
@@ -776,9 +776,9 @@ class MDODiscipline(Serializable):
 
         Args:
             input_grammar_file: The input grammar file path.
-                If None, do not initialize the input grammar from a schema file.
+                If ``None``, do not initialize the input grammar from a schema file.
             output_grammar_file: The output grammar file path.
-                If None, do not initialize the output grammar from a schema file.
+                If ``None``, do not initialize the output grammar from a schema file.
             grammar_type: The type of the input and output grammars.
         """
         factory = GrammarFactory()
@@ -933,7 +933,7 @@ class MDODiscipline(Serializable):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.MDODiscipline.default_inputs`.
+                If ``None``, use the :attr:`.MDODiscipline.default_inputs`.
 
         Returns:
             The discipline local data after execution.
@@ -1308,9 +1308,9 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The inputs wrt which the outputs are linearized.
-                If None, use the :attr:`.MDODiscipline._differentiated_inputs`.
+                If ``None``, use the :attr:`.MDODiscipline._differentiated_inputs`.
             outputs: The outputs to be linearized.
-                If None, use the :attr:`.MDODiscipline._differentiated_outputs`.
+                If ``None``, use the :attr:`.MDODiscipline._differentiated_outputs`.
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
@@ -1515,10 +1515,10 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The inputs wrt the outputs are linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed on all outputs.
         """
 
@@ -1533,14 +1533,14 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The inputs wrt to which the outputs are linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed on all outputs declared differentiable.
                 fill_missing_keys: if True, just fill the missing items
             init_type: The type used to initialize the Jacobian.
-            fill_missing_keys: If True,
+            fill_missing_keys: If ``True``,
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
 
@@ -1653,7 +1653,7 @@ class MDODiscipline(Serializable):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.MDODiscipline.default_inputs`.
+                If ``None``, use the :attr:`.MDODiscipline.default_inputs`.
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -1696,7 +1696,7 @@ class MDODiscipline(Serializable):
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If None,
+                If ``None``,
                 consider all the components of all the ``inputs`` and ``outputs``.
 
         Returns:

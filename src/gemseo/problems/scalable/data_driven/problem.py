@@ -98,7 +98,7 @@ class ScalableProblem:
         :param list(str) eq_constraints: equality constraints. Default: None.
         :param list(str) eq_constraints: inequality constraints. Default: None.
         :param bool maximize_objective: maximize objective. Default: False.
-        :param dict sizes: sizes of input and output variables. If None, use the
+        :param dict sizes: sizes of input and output variables. If ``None``, use the
             original sizes. Default: None.
         :param parameters: optional parameters for the scalable model.
         """

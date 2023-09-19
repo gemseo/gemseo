@@ -137,7 +137,7 @@ class DisciplinesFactory(BaseFactory):
 
         Args:
             name: The name of the class.
-            schema_path: the output json file path. If None: input.json or
+            schema_path: the output json file path. If ``None``: input.json or
                 output.json depending on grammar type.
             write_schema: Whether to write the schema files
 

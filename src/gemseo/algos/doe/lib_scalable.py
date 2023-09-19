@@ -71,7 +71,7 @@ class DiagonalDOE(DOELibrary):
                 The number of samples must be greater than or equal to 2.
             reverse: The dimensions or variables to sample from their upper bounds to
                 their lower bounds.
-                If None, every dimension will be sampled from its lower bound to its
+                If ``None``, every dimension will be sampled from its lower bound to its
                 upper bound.
             max_time: The maximum runtime in seconds.
                 If 0, no maximum runtime is set.

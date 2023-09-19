@@ -133,10 +133,10 @@ class MDOCouplingStructure:
         Args:
             add_self_coupled: Whether to add the disciplines that are self-coupled
                 to the list of strongly coupled disciplines.
-            by_group: If True, returns a list of lists of strongly coupled disciplines
+            by_group: If ``True``, returns a list of lists of strongly coupled disciplines
                 where the sublist contains the groups of disciplines that
                 are strongly coupled together.
-                If False, returns a single list.
+                If ``False``, returns a single list.
 
         Returns:
             The coupled disciplines list or list of list
@@ -260,7 +260,7 @@ class MDOCouplingStructure:
 
         Args:
             discipline: The discipline.
-            strong: If True, consider the strong couplings. Otherwise, the weak ones.
+            strong: If ``True``, consider the strong couplings. Otherwise, the weak ones.
 
         Returns:
             The names of the output coupling variables.
@@ -281,7 +281,7 @@ class MDOCouplingStructure:
 
         Args:
             discipline: The discipline.
-            strong: If True, consider the strong couplings. Otherwise, the weak ones.
+            strong: If ``True``, consider the strong couplings. Otherwise, the weak ones.
 
         Returns:
             The names of the input coupling variables.

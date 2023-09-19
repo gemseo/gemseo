@@ -84,7 +84,7 @@ class ScipyODEAlgos(ODESolverLib):
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html
 
         Args:
-            first_step: Initial step size. If None, let the algorithm choose.
+            first_step: Initial step size. If ``None``, let the algorithm choose.
             max_step: Maximum allowed step size.
             rtol: Relative tolerance.
             atol: Absolute tolerance.

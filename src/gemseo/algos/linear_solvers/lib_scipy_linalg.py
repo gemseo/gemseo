@@ -143,14 +143,14 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         Args:
             max_iter: The maximum number of iterations.
             preconditioner: The preconditionner, approximation of RHS^-1.
-                If None, no preconditioner is used.
+                If ``None``, no preconditioner is used.
             tol: The relative tolerance for convergence,
                 norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
             atol: The absolute tolerance for convergence,
                 norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
             x0: The initial guess for the solution.
                 M{sparse matrix, dense matrix, LinearOperator}.
-                If None, solvers usually start from the null vector.
+                If ``None``, solvers usually start from the null vector.
             inner_m int: The number of inner GMRES iterations per outer iteration.
             outer_k: The number of vectors to carry between inner GMRES iterations.
             outer_v:  The data used to augment the Krylov subspace.

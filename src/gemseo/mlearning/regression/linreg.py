@@ -182,7 +182,7 @@ class LinearRegressor(MLRegressionAlgo):
         """Return the regression coefficients of the linear model.
 
         Args:
-            as_dict: If True, return the coefficients as a dictionary.
+            as_dict: If ``True``, return the coefficients as a dictionary.
                 Otherwise, return the coefficients as a numpy.array
 
         Returns:
@@ -215,7 +215,7 @@ class LinearRegressor(MLRegressionAlgo):
         """Return the regression intercepts of the linear model.
 
         Args:
-            as_dict: If True, return the intercepts as a dictionary.
+            as_dict: If ``True``, return the intercepts as a dictionary.
                 Otherwise, return the intercepts as a numpy.array
 
         Returns:

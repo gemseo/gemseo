@@ -522,7 +522,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             last_iter: The last iteration of the history to be considered.
                 If ``None``, consider all the iterations.
             h_mat0: The initial approximation of the inverse of the Hessian matrix.
-                If None,
+                If ``None``,
                 use :math:`H_0=\frac{\Delta g_k^T\Delta x_k}
                 {\Delta g_k^T\Delta g_k}I_d`.
             at_most_niter: The maximum number of iterations to be considered.

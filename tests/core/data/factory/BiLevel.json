@@ -19,7 +19,7 @@
       "type": "boolean"
     },
     "multithread_scenarios": {
-      "description": "If True and parallel_scenarios=True, the sub-scenarios are run in parallel using multi-threading; if False and parallel_scenarios=True, multiprocessing is used.",
+      "description": "If ``True`` and parallel_scenarios=True, the sub-scenarios are run in parallel using multi-threading; if False and parallel_scenarios=True, multiprocessing is used.",
       "type": "boolean"
     },
     "apply_cstr_tosub_scenarios": {

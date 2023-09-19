@@ -423,9 +423,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
 
         Args:
             name: The name of the class.
-            write_schema: If True, write the JSON schema to a file.
+            write_schema: If ``True``, write the JSON schema to a file.
             schema_path: The path to the JSON schema file.
-                If None, the file is saved in the current directory in a file named
+                If ``None``, the file is saved in the current directory in a file named
                 after the name of the class.
 
         Returns:

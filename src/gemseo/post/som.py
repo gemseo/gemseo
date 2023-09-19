@@ -108,7 +108,7 @@ class SOM(OptPostProcessor):
         Args:
             n_x: The number of grids in x.
             n_y: The number of grids in y.
-            annotate: If True, add label of neuron value to SOM plot.
+            annotate: If ``True``, add label of neuron value to SOM plot.
         """  # noqa: D205, D212, D415
         criteria = [
             self.opt_problem.get_objective_name()
@@ -186,7 +186,7 @@ class SOM(OptPostProcessor):
             fig_indx: The axe index in the figure.
             grid_size_x: The number of SOMs in the grid on the x axis.
             grid_size_y: The number of SOMs in the grid on the y axis.
-            annotate: If True, add label with average value of neural.
+            annotate: If ``True``, add label with average value of neural.
         """
         f_hist = array(f_hist_scalar).T.real
         unique_ind = unique(f_hist[2, :])

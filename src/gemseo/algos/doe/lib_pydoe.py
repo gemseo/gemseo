@@ -133,15 +133,15 @@ class PyDOE(DOELibrary):
                 Either "orthogonal" or "rotatable".
             face: The relation between the start points and the corner
             (factorial) points. Either "circumscribed", "inscribed" or "faced".
-            criterion: The criterion to use when sampling the points. If None,
+            criterion: The criterion to use when sampling the points. If ``None``,
                 randomize the points within the intervals.
             iterations: The number of iterations in the `correlation` and
                 `maximin` algorithms.
             eval_jac: Whether to evaluate the jacobian.
             center_bb: The number of center points for the Box-Behnken design.
-                If None, use a pre-determined number of points.
+                If ``None``, use a pre-determined number of points.
             center_cc: The 2-tuple of center points for the central composite
-                design. If None, use (4, 4).
+                design. If ``None``, use (4, 4).
             n_samples: The number of samples. If there is a parameter ``levels``,
                 the latter can be specified
                 and the former set to its default value ``None``.

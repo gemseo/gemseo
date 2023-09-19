@@ -94,7 +94,7 @@ class ScalableDiagonalModel(ScalableModel):
 
         :param Dataset data: learning dataset.
         :param dict sizes: sizes of input and output variables.
-            If None, use the original sizes.
+            If ``None``, use the original sizes.
             Default: None.
         :param fill_factor: degree of sparsity of the dependency matrix.
             Default: -1.
@@ -149,7 +149,7 @@ class ScalableDiagonalModel(ScalableModel):
     def scalable_function(self, input_value=None):
         """Evaluate the scalable functions.
 
-        :param dict input_value: input values. If None, use default inputs.
+        :param dict input_value: input values. If ``None``, use default inputs.
         :return: evaluation of the scalable functions.
         :rtype: dict
         """
@@ -161,7 +161,7 @@ class ScalableDiagonalModel(ScalableModel):
     def scalable_derivatives(self, input_value=None):
         """Evaluate the scalable derivatives.
 
-        :param dict input_value: input values. If None, use default inputs.
+        :param dict input_value: input values. If ``None``, use default inputs.
         :return: evaluation of the scalable derivatives.
         :rtype: dict
         """
@@ -406,7 +406,7 @@ class ScalableDiagonalModel(ScalableModel):
     def __generate_random_io_dep(self, io_dependency):
         """Generate the dependency between the new inputs and the new outputs.
 
-        :param io_dependency: input-output dependency structure. If None,
+        :param io_dependency: input-output dependency structure. If ``None``,
             all output components can depend on all input components.
             Default: None.
         :type io_dependency: dict(list(str))
@@ -463,7 +463,7 @@ class ScalableDiagonalModel(ScalableModel):
         :param str dataname: name of the variable to check
             if component is empty.
         :param int index: component index of the variable.
-        :param io_dep: input-output dependency structure. If None,
+        :param io_dep: input-output dependency structure. If ``None``,
             all output components can depend on all input components.
             Default: None.
         :type io_dep: dict(list(str))

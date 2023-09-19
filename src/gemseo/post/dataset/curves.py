@@ -50,7 +50,7 @@ class Curves(DatasetPlot):
             mesh: The name of the dataset misc corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot.
-                If None, plot all the samples.
+                If ``None``, plot all the samples.
         """  # noqa: D205, D212, D415
         super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 

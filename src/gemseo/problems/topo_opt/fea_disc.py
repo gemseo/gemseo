@@ -62,11 +62,11 @@ class FininiteElementAnalysis(MDODiscipline):
             f_direction: The force direction for each ``f_node``, either 0 for x or 1 for y.
             f_amplitude: The force amplitude for each pair ``(f_node, f_direction)``.
             fixed_nodes: The indices of the nodes where the structure is clamped.
-                If None, a default value is used.
+                If ``None``, a default value is used.
             fixed_dir: The clamped direction for each node, encode 0 for x and 1 for y.
-                If None, a default value is used.
+                If ``None``, a default value is used.
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
         """
 
         super().__init__(name=name)

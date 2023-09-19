@@ -55,7 +55,7 @@
     },
     "cache_hdf_node_path": {
       "type": "string",
-      "description": "Name of the HDF dataset to store the discipline\n data. If None, the discipline name is used."
+      "description": "Name of the HDF dataset to store the discipline\n data. If ``None``, the discipline name is used."
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",

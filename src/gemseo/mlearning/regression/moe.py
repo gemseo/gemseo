@@ -379,7 +379,7 @@ class MOERegressor(MLRegressionAlgo):
                 defining the calibration variables.
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If None, do not perform calibration.
+                If ``None``, do not perform calibration.
             **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
@@ -409,7 +409,7 @@ class MOERegressor(MLRegressionAlgo):
                 defining the calibration variables.
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If None, do not perform calibration.
+                If ``None``, do not perform calibration.
             **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
@@ -439,7 +439,7 @@ class MOERegressor(MLRegressionAlgo):
                 defining the calibration variables.
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If None, do not perform calibration.
+                If ``None``, do not perform calibration.
             **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
