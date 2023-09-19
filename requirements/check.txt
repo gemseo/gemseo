@@ -10,7 +10,7 @@ distlib==0.3.7
     # via virtualenv
 filelock==3.12.4
     # via virtualenv
-identify==2.5.28
+identify==2.5.29
     # via pre-commit
 nodeenv==1.8.0
     # via pre-commit

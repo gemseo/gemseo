@@ -71,7 +71,7 @@ requests-toolbelt==1.0.0
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.5.2
+rich==13.5.3
     # via twine
 secretstorage==3.3.3
     # via keyring
@@ -82,7 +82,7 @@ tomli==2.0.1
     #   pyproject-hooks
 twine==4.0.2
     # via -r requirements/dist.in
-typing-extensions==4.7.1
+typing-extensions==4.8.0
     # via pydantic
 urllib3==2.0.4
     # via
@@ -90,5 +90,5 @@ urllib3==2.0.4
     #   twine
 wheel-filename==1.4.1
     # via check-wheel-contents
-zipp==3.16.2
+zipp==3.17.0
     # via importlib-metadata
