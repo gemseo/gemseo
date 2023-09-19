@@ -8,7 +8,7 @@ certifi==2023.7.22
     # via requests
 charset-normalizer==3.2.0
     # via requests
-contourpy==1.1.0
+contourpy==1.1.1
     # via matplotlib
 covdefaults==2.3.0
     # via gemseo (pyproject.toml)
@@ -135,7 +135,7 @@ tomli==2.0.1
     #   pytest
 tqdm==4.65.0
     # via gemseo (pyproject.toml)
-typing-extensions==4.7.1
+typing-extensions==4.8.0
     # via
     #   gemseo (pyproject.toml)
     #   pydantic
