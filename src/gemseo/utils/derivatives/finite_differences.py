@@ -20,9 +20,7 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Callable
-from typing import Final
-from typing import Sequence
+from typing import ClassVar
 
 from numpy import argmax
 from numpy import full
@@ -31,7 +29,6 @@ from numpy import tile
 from numpy import where
 from numpy import zeros
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -51,35 +48,7 @@ class FirstOrderFD(GradientApproximator):
 
     _APPROXIMATION_MODE = ApproximationMode.FINITE_DIFFERENCES
 
-    __DEFAULT_STEP: Final[float] = 1e-6
-    """The default value for the step."""
-
-    def __init__(  # noqa:D107
-        self,
-        f_pointer: Callable[[ndarray], ndarray],
-        step: float | ndarray | None = None,
-        design_space: DesignSpace | None = None,
-        normalize: bool = True,
-        parallel: bool = False,
-        **parallel_args: int | bool | float,
-    ) -> None:
-        super().__init__(
-            f_pointer,
-            step=self.__DEFAULT_STEP if step is None else step,
-            design_space=design_space,
-            normalize=normalize,
-            parallel=parallel,
-            **parallel_args,
-        )
-
-    def f_gradient(  # noqa:D102
-        self,
-        x_vect: ndarray,
-        step: float | ndarray | None = None,
-        x_indices: Sequence[int] | None = None,
-        **kwargs: Any,
-    ) -> ndarray:
-        return super().f_gradient(x_vect, step=step, x_indices=x_indices, **kwargs)
+    _DEFAULT_STEP: ClassVar[float] = 1.0e-6
 
     def _compute_parallel_grad(
         self,
