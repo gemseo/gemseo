@@ -60,6 +60,7 @@ pprint.pprint(sensitivity_analysis.indices)
 # %%
 # They can also be accessed separately:
 pprint.pprint(sensitivity_analysis.first_order_indices)
+pprint.pprint(sensitivity_analysis.second_order_indices)
 pprint.pprint(sensitivity_analysis.total_order_indices)
 
 # %%
@@ -79,7 +80,18 @@ pprint.pprint(sensitivity_analysis.main_indices)
 sensitivity_analysis.sort_parameters("y")
 
 # %%
-# Lastly,
-# we can use the method :meth:`.SobolAnalysis.plot`
+# We can use the method :meth:`.SobolAnalysis.plot`
 # to visualize both first-order and total Sobol' indices:
 sensitivity_analysis.plot("y", save=False, show=True)
+
+# %%
+# Lastly,
+# the sensitivity indices can be exported to a :class:`.Dataset`:
+dataset = sensitivity_analysis.to_dataset()
+dataset
+
+# %%
+# Note that this view does not contain the second-order Sobol' indices
+# as the latter do not have a tabular structure.
+# Use the attribute :attr:`.Dataset.misc` to access it.
+pprint.pprint(dataset.misc)

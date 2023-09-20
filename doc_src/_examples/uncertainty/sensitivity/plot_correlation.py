@@ -75,7 +75,11 @@ pprint.pprint(sensitivity_analysis.main_indices)
 print(sensitivity_analysis.sort_parameters("y"))
 
 # %%
-# Lastly,
-# we can use the method :meth:`.CorrelationAnalysis.plot`
+# We can use the method :meth:`.CorrelationAnalysis.plot`
 # to visualize the different correlation coefficients:
 sensitivity_analysis.plot("y", save=False, show=True)
+
+# %%
+# Lastly,
+# the sensitivity indices can be exported to a :class:`.Dataset`:
+sensitivity_analysis.to_dataset()

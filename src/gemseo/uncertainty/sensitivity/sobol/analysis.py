@@ -171,7 +171,7 @@ class SobolAnalysis(SensitivityAnalysis):
         MAUNTZ_KUCHERENKO = "MauntzKucherenko"
         MARTINEZ = "Martinez"
 
-    __ALGO_NAME_TO_CLASS: dict[Algorithm, type] = {
+    __ALGO_NAME_TO_CLASS: Final[dict[Algorithm, type]] = {
         Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
         Algorithm.JANSEN: JansenSensitivityAlgorithm,
         Algorithm.MAUNTZ_KUCHERENKO: MauntzKucherenkoSensitivityAlgorithm,
@@ -188,6 +188,9 @@ class SobolAnalysis(SensitivityAnalysis):
         """The total-order Sobol' index."""
 
     __SECOND: Final[str] = "second"
+
+    _INTERACTION_METHODS: ClassVar[tuple[str]] = (__SECOND,)
+
     __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"

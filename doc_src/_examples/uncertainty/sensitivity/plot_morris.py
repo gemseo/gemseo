@@ -72,7 +72,11 @@ pprint.pprint(sensitivity_analysis.outputs_bounds)
 sensitivity_analysis.sort_parameters("y")
 
 # %%
-# Lastly,
-# we can use the method :meth:`.MorrisAnalysis.plot`
+# We can use the method :meth:`.MorrisAnalysis.plot`
 # to visualize the different series of indices:
 sensitivity_analysis.plot("y", save=False, show=True, lower_mu=0, lower_sigma=0)
+
+# %%
+# Lastly,
+# the sensitivity indices can be exported to a :class:`.Dataset`:
+sensitivity_analysis.to_dataset()
