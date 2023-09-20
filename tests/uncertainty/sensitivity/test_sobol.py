@@ -333,3 +333,12 @@ def test_unscale_indices(sobol, use_variance, order):
 def test_compute_indices_output_names(sobol):
     """Check compute_indices with different types for output_names."""
     assert sobol.compute_indices(["y"]).keys() == sobol.compute_indices("y").keys()
+
+
+def test_to_dataset(sobol):
+    """Check that the second-order indices are stored in Dataset.misc."""
+    dataset = sobol.to_dataset()
+    assert "first" in dataset.group_names
+    assert "total" in dataset.group_names
+    assert "second" not in dataset.group_names
+    assert "second" in dataset.misc

@@ -104,7 +104,15 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The dataset containing the discipline evaluations."""
 
     Method: ClassVar[type[StrEnum]]
-    """The names of the sensitivity methods."""
+    """The names of the sensitivity methods considering simple effects.
+
+    A simple effect is the effect of an isolated input variable on an output variable
+    while an interaction effect is the effect of the interaction between several input
+    variables on an output variable.
+    """
+
+    _INTERACTION_METHODS: ClassVar[tuple[str]] = ()
+    """The names of the sensitivity methods considering interaction effects."""
 
     DEFAULT_DRIVER = None
 
@@ -975,6 +983,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         dataset = Dataset()
         for method, indices in self.indices.items():
+            if method in self._INTERACTION_METHODS:
+                dataset.misc[method] = indices
+                continue
+
             variables = []
             sizes = {}
             data = []
