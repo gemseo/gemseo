@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from numbers import Number
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -38,6 +39,9 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     _APPROXIMATION_MODE: ClassVar[ApproximationMode]
     """The approximation mode that a derived class implements."""
+
+    _DEFAULT_STEP: ClassVar[Number]
+    """The default value for the step."""
 
     def __init__(
         self,
@@ -63,7 +67,7 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.f_pointer = f_pointer
         self._parallel_args = parallel_args
         self._parallel = parallel
-        self.step = step
+        self.step = step if step is not None else self._DEFAULT_STEP
         self._design_space = design_space
         self._normalize = normalize
         self._function_kwargs = {}
