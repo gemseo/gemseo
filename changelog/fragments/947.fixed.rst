@@ -1,0 +1,1 @@
+A ``DesignSpace`` containing a design variable without current value can be used to extend another ``DesignSpace``.

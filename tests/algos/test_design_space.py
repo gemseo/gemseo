@@ -345,8 +345,9 @@ def test_extend():
     design_space.add_variable("x1", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     other = DesignSpace()
     other.add_variable("x2", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
+    other.add_variable("x3")
     design_space.extend(other)
-    assert design_space.__contains__("x2")
+    assert "x2" in design_space
     assert design_space.get_size("x2") == other.get_size("x2")
     assert (design_space.get_type("x2") == other.get_type("x2")).all()
     assert (design_space.get_lower_bound("x2") == other.get_lower_bound("x2")).all()
@@ -354,6 +355,7 @@ def test_extend():
     assert (
         design_space.get_current_value(["x2"]) == other.get_current_value(["x2"])
     ).all()
+    assert other["x3"] == design_space["x3"]
 
 
 def test_active_bounds():
