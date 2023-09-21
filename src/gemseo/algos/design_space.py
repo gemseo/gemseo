@@ -2260,7 +2260,7 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type = other.get_type(name)
             l_b = other.get_lower_bound(name)
             u_b = other.get_upper_bound(name)
-            value = other.get_current_value(as_dict=True)[name]
+            value = other.get_current_value(as_dict=True).get(name)
             self.add_variable(name, size, var_type, l_b, u_b, value)
 
     @staticmethod
