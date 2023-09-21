@@ -7,7 +7,7 @@
 attrs==23.1.0
     # via check-wheel-contents
 build==1.0.3
-    # via -r requirements/dist.in
+    # via -r dist.in
 certifi==2023.7.22
     # via requests
 cffi==1.15.1
@@ -15,10 +15,10 @@ cffi==1.15.1
 charset-normalizer==3.2.0
     # via requests
 check-wheel-contents==0.4.0
-    # via -r requirements/dist.in
+    # via -r dist.in
 click==8.1.7
     # via check-wheel-contents
-cryptography==41.0.3
+cryptography==41.0.4
     # via secretstorage
 docutils==0.20.1
     # via readme-renderer
@@ -26,7 +26,6 @@ idna==3.4
     # via requests
 importlib-metadata==6.8.0
     # via
-    #   build
     #   keyring
     #   twine
 jaraco-classes==3.3.0
@@ -75,13 +74,8 @@ rich==13.5.3
     # via twine
 secretstorage==3.3.3
     # via keyring
-tomli==2.0.1
-    # via
-    #   build
-    #   check-wheel-contents
-    #   pyproject-hooks
 twine==4.0.2
-    # via -r requirements/dist.in
+    # via -r dist.in
 typing-extensions==4.8.0
     # via pydantic
 urllib3==2.0.4
