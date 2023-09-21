@@ -557,7 +557,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def plot_bar(
         self,
-        outputs: OutputsType,
+        outputs: OutputsType = (),
         inputs: Iterable[str] = (),
         standardize: bool = False,
         title: str = "",
@@ -585,7 +585,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 a list of such tuples or
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
-                If ``None``, use the default outputs.
+                If empty, use the default outputs.
             inputs: The uncertain input variables
                 for which to display the sensitivity indices.
                 If empty, display all the uncertain input variables.
@@ -613,6 +613,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A bar chart representing the sensitivity indices.
         """
+        outputs = outputs or self._output_names
         plot = BarPlot(
             self.__create_dataset_to_plot(
                 inputs, outputs, standardize, sort, sorting_output
@@ -653,7 +654,6 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 a list of such tuples or
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
-                If ``None``, use the default outputs.
             standardize: Whether to scale the indices to :math:`[0,1]`.
             sort: Whether to sort the uncertain variables
                 by decreasing order of the sensitivity indices
@@ -715,7 +715,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def plot_radar(
         self,
-        outputs: OutputsType,
+        outputs: OutputsType = (),
         inputs: Iterable[str] = (),
         standardize: bool = False,
         title: str = "",
@@ -748,7 +748,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 a list of such tuples or
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
-                If ``None``, use the default outputs.
+                If empty, use the default outputs.
             inputs: The uncertain input variables
                 for which to display the sensitivity indices.
                 If empty, display all the uncertain input variables.
@@ -778,6 +778,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A radar chart representing the sensitivity indices.
         """
+        outputs = outputs or self._output_names
         plot = RadarChart(
             self.__create_dataset_to_plot(
                 inputs, outputs, standardize, sort, sorting_output

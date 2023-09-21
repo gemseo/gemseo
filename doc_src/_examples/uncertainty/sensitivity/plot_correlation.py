@@ -71,8 +71,8 @@ pprint.pprint(sensitivity_analysis.indices)
 pprint.pprint(sensitivity_analysis.main_indices)
 
 # %%
-# We can also sort the input parameters by decreasing order of influence:
-print(sensitivity_analysis.sort_parameters("y"))
+# We can also get the input parameters sorted by decreasing order of influence:
+sensitivity_analysis.sort_parameters("y")
 
 # %%
 # Lastly,
