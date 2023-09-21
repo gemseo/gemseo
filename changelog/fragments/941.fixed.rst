@@ -1,0 +1,1 @@
+``SensitivityAnalysis.plot_bar`` and ``SensitivityAnalysis.plot_radar`` use all the outputs when the argument ``outputs`` is empty (e.g. ``None``, ``""`` or ``()``).

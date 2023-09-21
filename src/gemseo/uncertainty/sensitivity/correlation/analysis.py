@@ -422,7 +422,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     def plot_radar(  # noqa: D102
         self,
-        outputs: OutputsType,
+        outputs: OutputsType = (),
         inputs: Iterable[str] = (),
         title: str = "",
         save: bool = True,
