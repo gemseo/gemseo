@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sized
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -451,8 +452,10 @@ class N2JSON:
             for name in discipline.get_input_data_names():
                 if name not in variable_sizes or variable_sizes[name] == self.__NA:
                     default_value = discipline.default_inputs.get(name)
-                    if default_value is not None:
+                    if hasattr(default_value, "size"):
                         size = default_value.size
+                    elif isinstance(default_value, Sized):
+                        size = len(default_value)
                     else:
                         size = self.__NA
                     variable_sizes[name] = size

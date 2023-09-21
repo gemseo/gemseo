@@ -21,6 +21,7 @@ import pytest
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_json import N2JSON
+from numpy import array
 from numpy import ones
 
 
@@ -28,9 +29,14 @@ from numpy import ones
 def n2_json() -> N2JSON:
     """The N2JSON related to two strongly coupled disciplines and a weakly one."""
     description_list = [
-        ("D1", ["y21"], ["y12"]),
-        ("D2", ["y12"], ["y21"]),
-        ("D3", ["y12", "y21"], ["obj"]),
+        ("D1", ["y21"], ["y12a", "y12b"], {}),
+        (
+            "D2",
+            ["y12a", "y12b"],
+            ["y21"],
+            {"y12a": array([[1, 2]] * 2), "y12b": [1, 2, 3]},
+        ),
+        ("D3", ["y12a", "y21"], ["obj"], {}),
     ]
     disciplines = []
     data = ones(1)
@@ -41,6 +47,7 @@ def n2_json() -> N2JSON:
         disc = MDODiscipline(name)
         disc.input_grammar.update_from_data(input_d)
         disc.output_grammar.update_from_data(output_d)
+        disc.default_inputs.update(desc[3])
         disciplines.append(disc)
     return N2JSON(DependencyGraph(disciplines))
 
@@ -53,13 +60,14 @@ def expected_links(n2_json):
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
+    variable_sizes = {"y12a": 4, "y12b": 3, "y21": "n/a"}
     return [
         {
             "source": 3,
             "target": 4,
-            "value": 1,
+            "value": 2,
             "description": n2_json._create_coupling_html(
-                "D1", "D2", ["y12"], {"y12": "n/a", "y21": "n/a"}
+                "D1", "D2", ["y12a", "y12b"], variable_sizes
             ),
         },
         {
@@ -67,7 +75,7 @@ def expected_links(n2_json):
             "target": 2,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D1", "D3", ["y12"], {"y12": "n/a", "y21": "n/a"}
+                "D1", "D3", ["y12a"], variable_sizes
             ),
         },
         {
@@ -75,7 +83,7 @@ def expected_links(n2_json):
             "target": 3,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D2", "D1", ["y21"], {"y12": "n/a", "y21": "n/a"}
+                "D2", "D1", ["y21"], variable_sizes
             ),
         },
         {
@@ -83,7 +91,7 @@ def expected_links(n2_json):
             "target": 2,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D2", "D3", ["y21"], {"y12": "n/a", "y21": "n/a"}
+                "D2", "D3", ["y21"], variable_sizes
             ),
         },
         {"source": 0, "target": 0, "value": 1, "description": ""},
@@ -129,7 +137,7 @@ def expected_nodes(n2_json):
     for discipline in [disciplines[index] for index in [2, 0, 1]]:
         desc = n2_json._create_discipline_html(
             discipline,
-            {"y12": "n/a", "y21": "n/a"},
+            {"y12a": 4, "y12b": 3, "y21": "n/a"},
         )
         nodes.append(
             {
@@ -197,14 +205,14 @@ def test_generate_discipline_html(n2_json):
             related to two strongly coupled disciplines and a weakly one.
     """
     html = n2_json._create_discipline_html(
-        next(n2_json._graph.disciplines), {"y12": 1, "y21": 2}
+        next(n2_json._graph.disciplines), {"y21": "n/a", "y12a": 4, "y12b": 3}
     )
     expected_html = (
         "The inputs of <b>D1</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
-        "            <td>y21</td><td>(2)</td>"
+        "            <td>y21</td><td>(n/a)</td>"
         "        </tr>"
         "    </table>"
         "</div>"
@@ -212,7 +220,10 @@ def test_generate_discipline_html(n2_json):
         "<div align='center'>"
         "    <table>"
         "        <tr>"
-        "            <td>y12</td><td>(1)</td>"
+        "            <td>y12a</td><td>(4)</td>"
+        "        </tr>"
+        "        <tr>"
+        "            <td>y12b</td><td>(3)</td>"
         "        </tr>"
         "    </table>"
         "</div>"
@@ -340,7 +351,7 @@ def test_compute_variable_sizes(n2_json):
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
-    assert n2_json._compute_variable_sizes() == {"y12": "n/a", "y21": "n/a"}
+    assert n2_json._compute_variable_sizes() == {"y12a": 4, "y12b": 3, "y21": "n/a"}
 
 
 def test_compute_groups(n2_json):
@@ -369,7 +380,7 @@ def test_create_nodes(n2_json, expected_nodes):
     children = [[2], [3, 4]]
     nodes, groups = n2_json._create_nodes(
         {"D1": 1, "D2": 1, "D3": 0},
-        {"y12": "n/a", "y21": "n/a"},
+        {"y12a": 4, "y12b": 3, "y21": "n/a"},
         disciplines,
         n_groups,
         children,
@@ -404,7 +415,7 @@ def test_create_links(n2_json, expected_links):
     links = n2_json._create_links(
         n2_json._graph.get_disciplines_couplings(),
         5,
-        {"y12": "n/a", "y21": "n/a"},
+        {"y12a": 4, "y12b": 3, "y21": "n/a"},
         ["D3", "D1", "D2"],
         2,
     )
