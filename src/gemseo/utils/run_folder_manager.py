@@ -23,7 +23,6 @@ from uuid import uuid4
 
 from strenum import StrEnum
 
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 FoldersIter = StrEnum("FoldersIter", "NUMBERED UUID")
 
@@ -33,12 +32,13 @@ class RunFolderManager:
 
     __counter: Value
     """The number of existing run folders."""
+
     __output_folder_basepath: Path
     """The absolute path of the root folder of the run folders."""
+
     __lock: Lock
     """The non-recursive lock object."""
-    __use_shell: bool
-    """Whether to run the command using the default shell."""
+
     _folders_iter: FoldersIter
     """The type of unique identifiers for the output folders."""
 
@@ -46,10 +46,8 @@ class RunFolderManager:
         self,
         output_folder_basepath: str | Path = "",
         folders_iter: FoldersIter = FoldersIter.NUMBERED,
-        use_shell: bool = True,
     ) -> None:
         """
-
         Args:
             output_folder_basepath: The path the root folder of the run folders.
                 If ``""`` is passed then use the current working directory.
@@ -61,18 +59,13 @@ class RunFolderManager:
                 Otherwise, a unique number based on the UUID function is
                 generated. This last option shall be used if multiple MDO
                 processes are run in the same work folder.
-            use_shell: If ``True``, run the command using the default shell.
-                Otherwise, run directly the command.
-
         """  # noqa:D205 D212 D415
         self.__output_folder_basepath = (
             Path.cwd()
             if output_folder_basepath == ""
             else Path(output_folder_basepath).absolute().resolve()
         )
-        self.__use_shell = use_shell
         self._folders_iter = folders_iter
-        self.__check_base_path_on_windows()
         if folders_iter == FoldersIter.NUMBERED:
             self.__lock = Lock()
             self.__counter = Value("i", self.__get_max_outdir())
@@ -132,22 +125,3 @@ class RunFolderManager:
         if not out_dirs:
             return 0
         return max(literal_eval(n) for n in out_dirs)
-
-    def __check_base_path_on_windows(self) -> None:
-        """Check that the base path can be used.
-
-        Raises:
-            ValueError: When the users use the shell under Windows
-            and the base path is located on a network location.
-        """
-        if PLATFORM_IS_WINDOWS and self.__use_shell:
-            output_folder_base_path = Path(self.__output_folder_basepath).resolve()
-            if not output_folder_base_path.parts[0].startswith("\\\\"):
-                return
-
-            raise ValueError(
-                "A network base path and use_shell cannot be used together"
-                " under Windows, as cmd.exe cannot change the current folder"
-                " to a UNC path."
-                " Please try use_shell=False or use a local base path."
-            )

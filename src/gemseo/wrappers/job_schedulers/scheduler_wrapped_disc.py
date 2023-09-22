@@ -35,7 +35,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
     The discipline is serialized to the disk, its inputs too, then a job file is created
     from a template to execute it with the provided options. The submission command is
-    launched, it will setup the environment, deserialize the discipline and its inputs,
+    launched, it will set up the environment, deserialize the discipline and its inputs,
     execute it and serialize the outputs. Finally, the deserialized outputs are returned
     by the wrapper.
     """
@@ -114,7 +114,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         """Parse the template.
 
         Either it is passed directly by the user, or, if None, tries to find it in
-        the templates directory. The file name must then be the class name.
+        the templates' directory. The file name must then be the class name.
 
         Raises:
             FileNotFoundError: If ``job_template_path`` does not exist.
@@ -196,8 +196,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         cmd = self._create_run_command(dest_job_file_path, current_workdir)
         LOGGER.debug("Submitting the job command: %s", cmd)
         completed = sub_run(
-            cmd,
-            shell=True,
+            cmd.split(),
             capture_output=True,
             cwd=current_workdir,
         )
@@ -221,7 +220,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
         If an exception is contained inside, raises it.
 
-        If the outputs contains data, it updates self.local_data with it.
+        If the outputs contain data, it updates self.local_data with it.
 
         Args:
             current_workdir: The current working directory.

@@ -19,14 +19,15 @@
 from __future__ import annotations
 
 import pickle
+import re
 from pathlib import Path
 from string import Template
-from subprocess import CalledProcessError
 
 import pytest
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.wrappers import job_schedulers
 from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
@@ -125,13 +126,12 @@ def test_generate_job_template_fail(discipline, tmpdir):
 def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog):
     """Test the run failure is correctly handled."""
     discipline._scheduler_run_command = "IDONTEXIST"
-    with pytest.raises(
-        CalledProcessError,
-        match="Command 'IDONTEXIST .* returned non-zero exit status 1.",
-    ):
+    if PLATFORM_IS_WINDOWS:
+        match = re.escape("[WinError 2] The system cannot find the file specified")
+    else:
+        match = re.escape("[Errno 2] No such file or directory: 'IDONTEXIST'")
+    with pytest.raises(FileNotFoundError, match=match):
         discipline._run_command(tmpdir, tmpdir / "output.pckl")
-
-    assert "Failed to submit the job command IDONTEXIST" in caplog.text
 
 
 def test_handle_outputs_errors(discipline: JobSchedulerDisciplineWrapper, tmpdir):
