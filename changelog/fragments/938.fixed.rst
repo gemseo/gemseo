@@ -1,0 +1,1 @@
+One can no longer add two random variables with the same name in a ``ParameterSpace``.

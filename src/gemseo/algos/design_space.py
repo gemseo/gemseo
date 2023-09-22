@@ -415,9 +415,7 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: Either if the variable already exists
                 or if the size is not a positive integer.
         """
-        if name in self.variable_names:
-            raise ValueError(f"Variable '{name}' already exists.")
-
+        self._check_variable_name(name)
         if size <= 0 or int(size) != size:
             raise ValueError(f"The size of '{name}' should be a positive integer.")
 
@@ -460,6 +458,18 @@ class DesignSpace(collections.abc.MutableMapping):
                 raise
 
         self.__update_current_metadata()
+
+    def _check_variable_name(self, name: str) -> None:
+        """Check if the space contains a variable.
+
+        Args:
+            name: The name of the variable.
+
+        Raises:
+            ValueError: When the variable already exists.
+        """
+        if name in self.variable_names:
+            raise ValueError(f"The variable '{name}' already exists.")
 
     @property
     def names_to_indices(self) -> dict[str, range]:
@@ -2122,11 +2132,12 @@ class DesignSpace(collections.abc.MutableMapping):
         Returns:
             The string representation of the design space.
         """
-        new_line_symbol = "<br/>" if use_html else "\n"
+        prefix = " " if self.name else ""
+        suffix = "<br/>" if use_html else "\n"
         method_name = "get_html_string" if use_html else "get_string"
         title = " ".join(re.findall("[A-Z][^A-Z]*", self.__class__.__name__)).lower()
         return (
-            f"{title.capitalize()}: {self.name}{new_line_symbol}"
+            f"{title.capitalize()}:{prefix}{self.name}{suffix}"
             + getattr(self.get_pretty_table(with_index=True), method_name)()
         )
 

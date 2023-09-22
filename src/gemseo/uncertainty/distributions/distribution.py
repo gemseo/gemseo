@@ -234,7 +234,12 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         return {}
 
     def __repr__(self) -> str:
-        return f"{self.distribution_name}({pretty_str(self.standard_parameters, sort=False)})"
+        prefix = "" if self.dimension == 1 else f"[{self.dimension}]"
+        return (
+            f"{self.distribution_name}{prefix}("
+            f"{pretty_str(self.standard_parameters, sort=False)}"
+            f")"
+        )
 
     @abstractmethod
     def compute_samples(

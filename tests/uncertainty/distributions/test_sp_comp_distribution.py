@@ -61,7 +61,18 @@ def test_variable_name(distributions):
 
 
 def test_str(composed_distribution):
-    assert str(composed_distribution) == "Composed(None)"
+    """Check the string representation of the composed distribution."""
+    assert (
+        repr(composed_distribution)
+        == str(composed_distribution)
+        == (
+            "SPComposedDistribution("
+            "norm[2](mu=0.0, sigma=1.0), "
+            "norm[2](mu=0.0, sigma=1.0); "
+            "IndependentCopula"
+            ")"
+        )
+    )
 
 
 def test_copula(distributions):

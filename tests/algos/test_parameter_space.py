@@ -255,17 +255,6 @@ def test_unnormalize(parameter_space, one_dim):
     assert allclose(vector, expectation, 1e-3)
 
 
-def test_update_parameter_space():
-    """Check the redefinition of a variable."""
-    space = ParameterSpace()
-    space.add_variable("x1", l_b=0.0, u_b=1.0)
-    assert space.get_lower_bound("x1")[0] == 0.0
-    assert space.get_upper_bound("x1")[0] == 1.0
-    space.add_random_variable("x1", "OTUniformDistribution", minimum=0.0, maximum=2.0)
-    assert space.get_lower_bound("x1")[0] == 0.0
-    assert space.get_upper_bound("x1")[0] == 2.0
-
-
 def test_str_and_tabularview():
     """Check that str and unnormalize_vect work correctly."""
     space = ParameterSpace()
@@ -719,3 +708,33 @@ def test_random_variable_interfaced_distribution(
     marginal = parameter.distributions["x"].marginals[0]
     assert marginal.distribution_name == interfaced_distribution
     assert marginal.parameters == interfaced_distribution_parameters
+
+
+def test_str():
+    """Check the string representation of a parameter space."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_variable("a")
+    parameter_space.add_random_variable("b", "OTUniformDistribution")
+    parameter_space.add_random_variable("c", "OTUniformDistribution", 2)
+    parameter_space.add_random_vector("d", "OTUniformDistribution", maximum=[2, 3, 4])
+    expected = """Parameter space:
++------+-------------+-------+-------------+-------+-------------------------------+
+| name | lower_bound | value | upper_bound | type  |      Initial distribution     |
++------+-------------+-------+-------------+-------+-------------------------------+
+| a    |     -inf    |  None |     inf     | float |                               |
+| b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
+| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
+| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
++------+-------------+-------+-------------+-------+-------------------------------+"""
+    assert repr(parameter_space) == expected
+
+
+def test_existing_variable():
+    """Check that one cannot add a random variable twice."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("a", "OTUniformDistribution")
+    with pytest.raises(ValueError, match=re.escape("The variable 'a' already exists.")):
+        parameter_space.add_random_variable("a", "OTUniformDistribution")

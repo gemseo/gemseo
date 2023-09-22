@@ -251,6 +251,7 @@ class ParameterSpace(DesignSpace):
                 when the lengths of the distribution parameter collections
                 are not consistent.
         """
+        self._check_variable_name(name)
         # TODO: API: remove this compatibility layer
         # TODO: API: use interfaced_distribution_parameters only.
         interfaced_distribution_parameters = self.__get_distribution_parameters(
@@ -703,12 +704,10 @@ class ParameterSpace(DesignSpace):
         distribution = []
         for variable in self.variable_names:
             if variable in self.uncertain_variables:
-                dist = self.distributions[variable]
-                for _ in range(dist.dimension):
-                    distribution.append(str(dist))
+                for marginal in self.distributions[variable].marginals:
+                    distribution.append(repr(marginal))
             else:
-                for _ in range(self.variable_sizes[variable]):
-                    distribution.append(self._BLANK)
+                distribution.extend([self._BLANK] * self.variable_sizes[variable])
 
         table.add_column(self._INITIAL_DISTRIBUTION, distribution)
         return table

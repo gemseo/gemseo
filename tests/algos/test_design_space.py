@@ -89,7 +89,7 @@ def design_space():
 def test_add_variable_when_already_exists(design_space):
     """Check that adding an existing variable raises an error."""
     design_space.add_variable("varname")
-    with pytest.raises(ValueError, match="Variable 'varname' already exists."):
+    with pytest.raises(ValueError, match="The variable 'varname' already exists."):
         design_space.add_variable(name="varname")
 
 
@@ -780,7 +780,11 @@ def test_str(table_template, design_space_2, name):
     """Check that a design space is correctly rendered."""
     if name:
         design_space_2.name = name
-    table_template = f"Design space: {name}\n" + table_template
+        prefix = " "
+    else:
+        prefix = ""
+
+    table_template = f"Design space:{prefix}{name}\n{table_template}"
     assert table_template.format(index_0="[0]", index_1="[1]") == str(design_space_2)
 
 
@@ -1392,7 +1396,7 @@ def test_export_import_with_none_value(tmp_wd):
 def test_repr_html(design_space_2):
     """Check the HTML representation of a design space."""
     assert design_space_2._repr_html_() == REPR_HTML_WRAPPER.format(
-        """Design space: <br/><table>
+        """Design space:<br/><table>
     <tr>
         <th style='text-align: left;'>name</th>
         <th style='text-align: left;'>lower_bound</th>
