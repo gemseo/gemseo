@@ -132,6 +132,9 @@ class DiscFromExe(MDODiscipline):
       to provide a specific parser to the :class:`.DiscFromExe`,
       with the :func:`.write_input_file_method`
       and :func:`.parse_outfile_method` arguments of the constructor.
+    - For security reasons,
+      the executable is executed via the Python subprocess library with no shell.
+      If a shell is needed, you may override this in a derived class.
     """
 
     _run_folder_manager: RunFolderManager
@@ -161,6 +164,7 @@ class DiscFromExe(MDODiscipline):
     data_processor: DataProcessor
     """A data processor to be used before the execution of the discipline."""
 
+    # TODO: API: remove use_shell.
     def __init__(
         self,
         input_template: str | Path,
@@ -213,25 +217,30 @@ class DiscFromExe(MDODiscipline):
                 use :func:`~.write_input_file`.
             parse_out_separator: The separator used for the
                 :attr:`~.Parser.KEY_VALUE` output parser.
-            use_shell: If ``True``, run the command using the default shell.
-                Otherwise, run directly the command.
+            use_shell: This argument is ignored and will be removed,
+                the shell is not used.
             output_folder_basepath: The base path of the execution directories.
-
 
         Raises:
             TypeError: If the provided ``parse_outfile_method`` is not callable.
                 If the provided ``write_input_file_method`` is not callable.
         """  # noqa:D205 D212 D415
         super().__init__(name=name)
+
+        if use_shell:
+            LOGGER.warning(
+                "The argument 'use_shell' is no longer used,"
+                "the executable is run without shell."
+            )
+
         self._run_folder_manager = RunFolderManager(
-            output_folder_basepath, folders_iter, use_shell
+            output_folder_basepath, folders_iter
         )
         self.input_template = input_template
         self.output_template = output_template
         self.input_filename = input_filename
         self.output_filename = output_filename
         self.executable_command = executable_command
-        self._use_shell = use_shell
         if parse_outfile_method == Parser.TEMPLATE:
             self.parse_outfile = parse_outfile
         elif parse_outfile_method == Parser.KEY_VALUE:
@@ -279,31 +288,35 @@ class DiscFromExe(MDODiscipline):
         }
 
     def _run(self) -> None:
-        out_dir = self._run_folder_manager.get_unique_run_folder_path()
-        out_dir.mkdir()
+        working_directory = self._run_folder_manager.get_unique_run_folder_path()
+        working_directory.mkdir()
         self.write_input_file(
-            out_dir / self.input_filename,
+            working_directory / self.input_filename,
             self.local_data,
             self._in_pos,
             self._in_lines,
         )
 
-        if self._use_shell:
-            executable_command = self.executable_command
-        else:
-            executable_command = self.executable_command.split()
-
-        err = subprocess.call(
-            executable_command,
-            shell=self._use_shell,
+        completed = subprocess.run(
+            self.executable_command.split(),
             stderr=subprocess.STDOUT,
-            cwd=out_dir,
+            cwd=working_directory,
         )
-        if err != 0:
-            raise RuntimeError(f"Execution failed and returned error code: {err}.")
 
-        with open(out_dir / self.output_filename) as outfile:
-            out_lines = outfile.readlines()
+        if completed.returncode != 0:
+            LOGGER.error(
+                "Failed to execute the command %s, for discipline %s "
+                "in the working directory %s",
+                self.executable_command,
+                self.name,
+                working_directory,
+            )
+
+        completed.check_returncode()
+
+        out_lines = (
+            (working_directory / self.output_filename).read_text().splitlines(True)
+        )
 
         if len(out_lines) != len(self._out_lines):
             raise ValueError(
@@ -479,7 +492,7 @@ def parse_outfile(
                     break
                 found_e = True
                 continue
-            # Check that we have nout reached EOL or space or whatever
+            # Check that we have not reached EOL or space or whatever
             if char not in NUMERICS:
                 break
             if i == maxi - 1:

@@ -18,11 +18,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
-from subprocess import CalledProcessError
 
 import pytest
 from gemseo import create_discipline
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.wrappers.job_schedulers.slurm import SLURM
 from pytest import fixture
 
@@ -56,7 +57,9 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
     disc = create_discipline("SobieskiMission")
     wrapped = SLURM(disc, workdir_path=tmpdir)
 
-    with pytest.raises(
-        CalledProcessError, match="sbatch .* returned non-zero exit status 1."
-    ):
+    if PLATFORM_IS_WINDOWS:
+        match = re.escape("[WinError 2] The system cannot find the file specified")
+    else:
+        match = re.escape("[Errno 2] No such file or directory: 'sbatch'")
+    with pytest.raises(FileNotFoundError, match=match):
         wrapped.execute()
