@@ -44,6 +44,7 @@ from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
+from typing import TYPE_CHECKING
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -58,12 +59,14 @@ from numpy import setdiff1d
 from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import read_csv
-from pandas.core.frame import Axes
-from pandas.core.frame import Dtype
 
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from pandas._typing import Axes
+    from pandas._typing import Dtype
 
 LOGGER = logging.getLogger(__name__)
 
