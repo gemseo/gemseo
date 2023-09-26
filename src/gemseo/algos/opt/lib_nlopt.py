@@ -18,7 +18,22 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""NLopt library wrapper."""
+"""NLopt library wrapper.
+
+Warnings:
+    If the objective, or a constraint, of the :class:`.OptimizationProblem`
+    returns a value of type ``int``
+    then ``nlopt.opt.optimize`` will terminate with
+    ``ValueError: nlopt invalid argument``.
+
+    This behavior has been identified as
+    `a bug internal to NLopt 2.7.1 <https://github.com/stevengj/nlopt/issues/530>`_
+    and has been fixed in the development version of NLopt.
+
+    Until a new version of NLopt including the bugfix is released,
+    the user of |g| shall provide objective and constraint functions
+    that return values of type ``float`` and ``NDArray[float]``.
+"""
 from __future__ import annotations
 
 import logging
