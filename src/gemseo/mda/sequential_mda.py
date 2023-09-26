@@ -19,15 +19,18 @@
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
 from __future__ import annotations
 
-from typing import Any
-from typing import Mapping
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.mda import MDA
 from gemseo.mda.newton_raphson import MDANewtonRaphson
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Mapping
+    from typing import Sequence
+    from gemseo.core.coupling_structure import MDOCouplingStructure
 
 
 class MDASequential(MDA):
@@ -46,7 +49,7 @@ class MDASequential(MDA):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] = None,
+        linear_solver_options: Mapping[str, Any] | None = None,
     ) -> None:
         """
         Args:
@@ -54,16 +57,16 @@ class MDASequential(MDA):
         """  # noqa:D205 D212 D415
         super().__init__(
             disciplines,
+            max_mda_iter=max_mda_iter,
             name=name,
             grammar_type=grammar_type,
-            max_mda_iter=max_mda_iter,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            coupling_structure=coupling_structure,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
-            coupling_structure=coupling_structure,
         )
         self._compute_input_couplings()
 
@@ -73,32 +76,29 @@ class MDASequential(MDA):
             self._log_convergence = self._log_convergence or mda.log_convergence
 
     @MDA.log_convergence.setter
-    def log_convergence(  # noqa: D102
-        self,
-        value: bool,
-    ) -> None:
+    def log_convergence(self, value: bool) -> None:  # noqa: D102
         self._log_convergence = value
         for mda in self.mda_sequence:
             mda.log_convergence = value
 
-    def _initialize_grammars(self) -> None:
-        """Define all the inputs and outputs."""
-        for discipline in self.disciplines:
-            self.input_grammar.update(discipline.input_grammar)
-            self.output_grammar.update(discipline.output_grammar)
-        self._add_residuals_norm_to_output_grammar()
-
     def _run(self) -> None:
         """Run the MDAs in a sequential way."""
         self._couplings_warm_start()
-        # execute MDAs in sequence
+
         if self.reset_history_each_run:
             self.residual_history = []
-        for mda_i in self.mda_sequence:
-            mda_i.reset_statuses_for_run()
-            self.local_data = mda_i.execute(self.local_data)
-            self.residual_history += mda_i.residual_history
-            if mda_i.normed_residual < self.tolerance:
+
+        # Execute the MDAs in sequence
+        for mda in self.mda_sequence:
+            mda.reset_statuses_for_run()
+
+            # Execute the i-th MDA
+            self.local_data = mda.execute(self.local_data)
+
+            # Extend the residual history
+            self.residual_history += mda.residual_history
+
+            if mda.normed_residual < self.tolerance:
                 break
 
 
@@ -119,46 +119,40 @@ class MDAGSNewton(MDASequential):
         warm_start: bool = False,
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
-        linear_solver_options: Mapping[str, Any] = None,
+        linear_solver_options: Mapping[str, Any] | None = None,
         log_convergence: bool = False,
-        **newton_mda_options: float,
+        **newton_mda_options: float | str | None,
     ) -> None:
         """
         Args:
-            relax_factor: The relaxation factor.
-            linear_solver: The type of linear solver
-                to be used to solve the Newton problem.
-            max_mda_iter_gs: The maximum number of iterations
-                of the Gauss-Seidel solver.
-            log_convergence: Whether to log the MDA convergence,
-                expressed in terms of normed residuals.
-            **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
+            max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel MDA.
+            newton_linear_solver: The name of the linear solver for the Newton method.
+            newton_linear_solver_options: The options for the Newton linear solver.
         """  # noqa:D205 D212 D415
-        mda_gs = MDAGaussSeidel(
-            disciplines, max_mda_iter=max_mda_iter_gs, log_convergence=log_convergence
+        mda_gauss_seidel = MDAGaussSeidel(
+            disciplines,
+            max_mda_iter=max_mda_iter_gs,
+            tolerance=tolerance,
+            log_convergence=log_convergence,
         )
-        mda_gs.tolerance = tolerance
+
         mda_newton = MDANewtonRaphson(
             disciplines,
-            max_mda_iter,
-            relax_factor,
-            name=None,
+            max_mda_iter=max_mda_iter,
             grammar_type=grammar_type,
-            linear_solver=linear_solver,
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
             linear_solver_options=linear_solver_options,
             **newton_mda_options,
         )
-        sequence = [mda_gs, mda_newton]
+
         super().__init__(
             disciplines,
-            sequence,
+            [mda_gauss_seidel, mda_newton],
+            max_mda_iter=max_mda_iter,
             name=name,
             grammar_type=grammar_type,
-            max_mda_iter=max_mda_iter,
-            tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             linear_solver=linear_solver,

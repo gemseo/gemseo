@@ -12,17 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# modify it under the terms of the GNU Lesser General Public
-# License version 3 as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -40,7 +29,6 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 if TYPE_CHECKING:
     from numpy.typing import NDArray
     from typing import ClassVar
-    from typing import Iterable
 
 
 class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -79,7 +67,7 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._iterates = deque(maxlen=self._MINIMUM_NUMBER_OF_ITERATES)
         self._residuals = deque(maxlen=self._MINIMUM_NUMBER_OF_RESIDUALS)
 
-    def clear_iterates(self) -> None:
+    def clear(self) -> None:
         """Clear the iterates."""
         self._iterates.clear()
         self._residuals.clear()
@@ -114,51 +102,3 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def _compute_transformed_iterate(self) -> NDArray:
         """Compute the next transformed iterate."""
-
-
-class CompositeSequenceTransformer(SequenceTransformer):
-    """A composite of SequenceTransformer."""
-
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 0
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 0
-
-    __sequence_transformers: Iterable[SequenceTransformer]
-    """The sequence transformers that are chained."""
-
-    def __init__(self, sequence_transformers: Iterable[SequenceTransformer]) -> None:
-        """
-        Args:
-            sequence_transformers: The sequence of SequenceTransformers.
-        """  # noqa:D205 D212 D415
-        super().__init__()
-
-        self.__sequence_transformers = sequence_transformers
-
-    def _compute_transformed_iterate(self) -> None:  # pragma: no cover
-        pass
-
-    def clear_iterates(self) -> None:
-        """Clear the iterates in the double-ended queues."""
-        for transformer in self.__sequence_transformers:
-            transformer.clear_iterates()
-
-    def compute_transformed_iterate(
-        self,
-        current_iterate: NDArray,
-        next_iterate: NDArray,
-    ) -> NDArray:
-        """Compute the next transformed iterate.
-
-        Args:
-            current_iterate: The current iterate :math:`x_n`.
-            next_iterate: The new iterate :math:`G(x_n)`.
-
-        Returns:
-            The next transformed iterate :math:`x_{n+1}`.
-        """
-        for transformer in self.__sequence_transformers:
-            next_iterate = transformer.compute_transformed_iterate(
-                current_iterate, next_iterate
-            )
-
-        return next_iterate

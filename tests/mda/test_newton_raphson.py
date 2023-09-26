@@ -20,11 +20,11 @@
 from __future__ import annotations
 
 import pickle
-import re
 from unittest import mock
 
 import pytest
 from gemseo import create_mda
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
@@ -45,6 +45,86 @@ TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
+@pytest.fixture(scope="module")
+def sobiesky_disciplines():
+    """Returns the Sobieski's disciplines."""
+    return [SobieskiAerodynamics(), SobieskiStructure(), SobieskiPropulsion()]
+
+
+@pytest.fixture(scope="module")
+def compute_reference_n_iter(sobiesky_disciplines):
+    """Compute the number of iterations to serve as a reference.
+
+    The Newton-Raphson method is applied to the Sobiesky problem without accelerations.
+    """
+    mda = MDANewtonRaphson(
+        sobiesky_disciplines, over_relaxation_factor=1.0, tolerance=1e-12
+    )
+    mda.execute()
+    return len(mda.residual_history)
+
+
+@pytest.mark.parametrize("acceleration_method", AccelerationMethod)
+def test_acceleration_methods(
+    sobiesky_disciplines, compute_reference_n_iter, acceleration_method
+):
+    """Tests the acceleration methods."""
+    mda = MDANewtonRaphson(
+        sobiesky_disciplines,
+        tolerance=1e-12,
+        acceleration_method=acceleration_method,
+        over_relaxation_factor=1.0,
+    )
+    mda.execute()
+
+    # Check that the number of iterations have been at least decreased
+    assert len(mda.residual_history) <= compute_reference_n_iter
+
+
+# TODO: Remove tests once the old attributes are removed
+def test_compatibility(sobiesky_disciplines):
+    """Tests that the compatibility with previous behavior is ensured."""
+    mda_1 = MDANewtonRaphson(
+        sobiesky_disciplines,
+        tolerance=1e-12,
+        relax_factor=0.95,
+    )
+    mda_1.reset_history_each_run = True
+    mda_1.execute()
+
+    mda_2 = MDANewtonRaphson(
+        sobiesky_disciplines,
+        tolerance=1e-12,
+        over_relaxation_factor=0.95,
+    )
+    mda_2.reset_history_each_run = True
+    mda_2.execute()
+
+    assert mda_1.residual_history == mda_2.residual_history
+
+    mda_1.cache.clear()
+    mda_1.relax_factor = 0.9
+    mda_1.execute()
+
+    mda_2.cache.clear()
+    mda_2.over_relaxation_factor = 0.9
+    mda_2.execute()
+
+    assert mda_1.residual_history == mda_2.residual_history
+
+
+# TODO: Remove tests once the old attributes are removed
+def test_compatibility_setters_getters(sobiesky_disciplines):
+    """Tests that the compatibility with previous behavior is ensured."""
+    mda = MDANewtonRaphson(
+        sobiesky_disciplines,
+        tolerance=1e-12,
+        relax_factor=0.95,
+    )
+    assert mda.relax_factor == 0.95
+    assert mda.over_relaxation_factor == 0.95
+
+
 @pytest.mark.parametrize("coupl_scaling", ["n_coupling_variables", "no_scaling"])
 def test_raphson_sobieski(coupl_scaling):
     """Test the execution of Gauss-Seidel on Sobieski."""
@@ -59,18 +139,6 @@ def test_raphson_sobieski(coupl_scaling):
     mda.warm_start = True
     mda.execute({"x_1": mda.default_inputs["x_1"] + 1.0e-2})
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
-
-
-@pytest.mark.parametrize("relax_factor", [-0.1, 1.1])
-def test_newton_raphson_invalid_relax_factor(relax_factor):
-    """Test invalid relaxation factor values."""
-    expected = re.escape(
-        "Newton relaxation factor should belong to (0, 1] (current value: {}).".format(
-            relax_factor
-        )
-    )
-    with pytest.raises(ValueError, match=expected):
-        MDANewtonRaphson([Sellar1(), Sellar2()], relax_factor=relax_factor)
 
 
 def test_raphson_sobieski_sparse():
@@ -113,7 +181,7 @@ def test_raphson_sellar_without_cache(use_cache):
     residual_length = len(mda.residual_history)
     assert mda.residual_history[-1] < tolerance
     assert disciplines[0].n_calls == residual_length
-    assert disciplines[0].n_calls_linearize == residual_length - 1
+    assert disciplines[0].n_calls_linearize == residual_length
 
 
 @pytest.mark.parametrize("parallel", [False, True])
@@ -349,7 +417,7 @@ def test_linear_solver_not_converged(caplog):
     )
     expected_log = (
         f"The linear solver {solver} failed to converge"
-        " during the Newton step computation."
+        " during the Newton's step computation."
     )
     mda.execute()
     assert expected_log in caplog.text

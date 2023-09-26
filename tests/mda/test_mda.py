@@ -25,6 +25,7 @@ import os
 import numpy as np
 import pytest
 from gemseo import create_discipline
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
@@ -216,7 +217,7 @@ def test_convergence_warning(caplog):
     assert not residual_is_small
     assert not max_iter_is_reached
 
-    mda.scaling = "no_scaling"
+    mda.scaling = MDA.ResidualScaling.NO_SCALING
     mda._compute_residual(np.array([1, 2]), np.array([10, 10]))
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
@@ -351,3 +352,13 @@ def test_get_sub_disciplines(
     disciplines = [Sellar1(), Sellar2()]
     mda = mda_class(disciplines)
     assert mda.get_sub_disciplines() == mda.disciplines == disciplines
+
+
+def test_sequence_transformers_setters(sellar_mda):
+    assert sellar_mda.acceleration_method == AccelerationMethod.NONE
+    sellar_mda.acceleration_method = AccelerationMethod.SECANT
+    assert sellar_mda.acceleration_method == AccelerationMethod.SECANT
+
+    assert sellar_mda.over_relaxation_factor == 1.0
+    sellar_mda.over_relaxation_factor = 0.5
+    assert sellar_mda.over_relaxation_factor == 0.5

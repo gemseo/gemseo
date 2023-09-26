@@ -72,7 +72,7 @@ class TestMDFFormulation(FormulationsBaseTest):
     def test_exec_mdf_cstr(self):
         """"""
         options = {
-            "tolerance": 1e-10,
+            "tolerance": 1e-12,
             "max_mda_iter": 50,
             "warm_start": True,
             "use_lu_fact": False,

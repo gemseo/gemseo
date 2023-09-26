@@ -23,20 +23,23 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
-from typing import Mapping
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import array
-from numpy import ndarray
-from numpy.linalg import norm
 from scipy.optimize import root
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Mapping
+    from typing import Sequence
+    from numpy.typing import NDArray
+    from gemseo.core.discipline_data import DisciplineData
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,17 +47,14 @@ LOGGER = logging.getLogger(__name__)
 class MDAQuasiNewton(MDARoot):
     r"""Quasi-Newton solver for MDA.
 
-    `Quasi-Newton methods
-    <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
-    include numerous variants
-    (
-    `Broyden
-    <https://en.wikipedia.org/wiki/Broyden%27s_method>`__,
-    `Levenberg-Marquardt
-    <https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>`__,
-    ...).
-    The name of the variant should be provided
-    as a parameter :code:`method` of the class.
+    `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
+    include numerous variants (
+    `Broyden <https://en.wikipedia.org/wiki/Broyden%27s_method>`__,
+    `Levenberg-Marquardt <https://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm>`
+    __, ...).
+
+    The name of the variant should be provided via the :code:`method` parameter of the
+    class.
 
     The new iterate is given by:
 
@@ -62,12 +62,12 @@ class MDAQuasiNewton(MDARoot):
 
        x_{k+1} = x_k - \\rho_k B_k f(x_k)
 
-    where :math:`\\rho_k` is a coefficient chosen
-    in order to minimize the convergence and :math:`B_k` is an approximation
-    of the inverse of the Jacobian :math:`Df(x_k)^{-1}`.
+    where :math:`\\rho_k` is a coefficient chosen in order to minimize the convergence
+    and :math:`B_k` is an approximation of :math:`Df(x_k)^{-1}`, the inverse of the
+    Jacobian of :math:`f` at :math:`x_k`.
     """
 
-    # quasi-Newton methods
+    # Available quasi-Newton methods
     HYBRID = "hybr"
     LEVENBERG_MARQUARDT = "lm"
     BROYDEN1 = "broyden1"
@@ -107,12 +107,12 @@ class MDAQuasiNewton(MDARoot):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] = None,
+        linear_solver_options: Mapping[str, Any] | None = None,
     ) -> None:
         """
         Args:
-            method: The name of the method in scipy root finding,
-                among :attr:`.QUASI_NEWTON_METHODS`.
+            method: The name of the method in scipy root finding, among
+                :attr:`.QUASI_NEWTON_METHODS`.
             use_gradient: Whether to use the analytic gradient of the discipline.
 
         Raises:
@@ -132,9 +132,10 @@ class MDAQuasiNewton(MDARoot):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
+
         if method not in self.QUASI_NEWTON_METHODS:
-            msg = f"Method '{method}' is not a valid quasi-Newton method."
-            raise ValueError(msg)
+            raise ValueError(f"Method '{method}' is not a valid quasi-Newton method.")
+
         self.use_gradient = use_gradient
         self.local_residual_history = []
         self.last_outputs = None  # used for computing the residual history
@@ -170,15 +171,17 @@ class MDAQuasiNewton(MDARoot):
         """Determine whether resolution method accepts a callback function."""
         return [self.BROYDEN1, self.BROYDEN2]
 
-    def _run(self) -> dict[str, ndarray]:
+    def _run(self) -> DisciplineData:
         if self.warm_start:
             self._couplings_warm_start()
+
         self.reset_disciplines_statuses()
+
         self.execute_all_disciplines(self.local_data)
 
-        couplings = self.strong_couplings
+        self._compute_coupling_sizes(self._input_couplings)
 
-        if not couplings:
+        if not self.strong_couplings:
             msg = (
                 "MDAQuasiNewton found no strong couplings. Executed all"
                 "disciplines once."
@@ -191,8 +194,8 @@ class MDAQuasiNewton(MDARoot):
         self.current_iter = 0
 
         def fun(
-            x_vect: ndarray,
-        ) -> ndarray:
+            x_vect: NDArray,
+        ) -> NDArray:
             """Evaluate all residuals, possibly in parallel.
 
             Args:
@@ -201,98 +204,93 @@ class MDAQuasiNewton(MDARoot):
             self.current_iter += 1
             # transform input vector into a dict
             input_values = update_dict_of_arrays_from_array(
-                self.local_data, couplings, x_vect
+                self.local_data, self.strong_couplings, x_vect
             )
             # compute all residuals
             self.reset_disciplines_statuses()
             self.execute_all_disciplines(input_values)
-            residuals = self.assembly.residuals(input_values, couplings).real
-            #             if residuals.size == 1:  # Weak couplings already treated
-            #                 return residuals[0]
-            return residuals
+            return self.assembly.residuals(input_values, self.strong_couplings).real
 
         jac = None
         if self.use_gradient:
-            for discipline in self.disciplines:
-                # Tells the discipline what to linearize
-                outs = discipline.get_output_data_names()
-                to_linearize = set(outs) & set(couplings)
-                discipline.add_differentiated_outputs(list(to_linearize))
-                inpts = discipline.get_input_data_names()
-                to_linearize = set(inpts) & set(couplings)
-                discipline.add_differentiated_inputs(list(to_linearize))
-            # linearize the residuals
+            self.assembly.set_newton_differentiated_ios(self.strong_couplings)
 
             def jacobian(
-                x_vect: ndarray,
-            ) -> ndarray:
+                x_vect: NDArray,
+            ) -> NDArray:
                 """Linearize all residuals.
 
                 Args:
                     x_vect: The value of the design variables.
                 """
                 # transform input vector into a dict
-                input_values = update_dict_of_arrays_from_array(
-                    self.local_data, couplings, x_vect
+                self.local_data.update(
+                    split_array_to_dict_of_arrays(
+                        x_vect, self._coupling_sizes, self.strong_couplings
+                    )
                 )
                 # linearize all residuals
                 self.reset_disciplines_statuses()
                 for discipline in self.disciplines:
-                    discipline.linearize(input_values)
+                    discipline.linearize(self.local_data)
                 # assemble the system
-                n_couplings = 0
-                for coupling in couplings:
-                    discipline = self.coupling_structure.find_discipline(coupling)
-                    size = list(discipline.jac[coupling].values())[0].shape[0]
-                    n_couplings += size
-                self.assembly.compute_sizes(couplings, couplings, couplings)
+                self.assembly.compute_sizes(
+                    self.strong_couplings, self.strong_couplings, self.strong_couplings
+                )
                 dresiduals = self.assembly.assemble_jacobian(
-                    couplings, couplings, is_residual=True
-                ).todense()
-                return dresiduals
+                    self.strong_couplings, self.strong_couplings, is_residual=True
+                )
+                return dresiduals.toarray().real
 
             jac = jacobian
 
         # initial solution
-        y_0 = concatenate_dict_of_arrays_to_array(self.local_data, couplings).real
+        self.current_couplings = self._current_strong_couplings().real
         # callback function to retrieve the residual at iteration k
-        norm_0 = norm(y_0.real)
         if self.reset_history_each_run:
             self.residual_history = []
 
         # callback function to store residuals
-        self.last_outputs = y_0
         if self.method in self._methods_with_callback():
 
             def callback(
-                y_k: ndarray,
+                new_couplings: NDArray,
                 _,
             ) -> None:
                 """Store the current residual in the history.
 
                 Args:
-                    y_k: The coupling variables.
+                    new_couplings: The new coupling variables.
                     _: ignored
                 """
-                self.last_outputs = y_k
-                self.normed_residual = norm((y_k - self.last_outputs).real) / norm_0
-                self.residual_history.append(self.normed_residual)
+                self._compute_residual(self.current_couplings, new_couplings)
+                self.current_couplings = new_couplings
 
         else:
             callback = None
 
         # solve the system
         y_opt = root(
-            fun, x0=y_0, method=self.method, jac=jac, callback=callback, options=options
+            fun,
+            x0=self.current_couplings,
+            method=self.method,
+            jac=jac,
+            callback=callback,
+            tol=self.tolerance,
+            options=options,
         )
         self._warn_convergence_criteria()
 
         # transform optimal vector into a dict
-        self.local_data = update_dict_of_arrays_from_array(
-            self.local_data, couplings, y_opt.x
+        self.local_data.update(
+            split_array_to_dict_of_arrays(
+                y_opt.x, self._coupling_sizes, self.strong_couplings
+            )
         )
+
         if self.method in self._methods_with_callback():
             self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
+
         return self.local_data
 
     def _initialize_grammars(self) -> None:

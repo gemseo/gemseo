@@ -1,0 +1,9 @@
+Acceleration methods and over-relaxation are now available for :class:`.MDAJacobi`, :class:`.MDAGaussSeidel` and :class:`.MDANewtonRaphson`.
+They are configured at initialization via the ``acceleration_method`` and ``over_relaxation_factor`` and can be modified afterward via the attributes :attr:`.MDA.acceleration_method` and :attr:`.MDA.over_relaxation_factor`.
+
+Available acceleration methods are:
+    - :class:`.Alternate2Delta`,
+    - :class:`.AlternateDeltaSquared`,
+    - :class:`.Aitken`,
+    - :class:`.Secant`,
+    - :class:`.MinimumPolynomial`,
