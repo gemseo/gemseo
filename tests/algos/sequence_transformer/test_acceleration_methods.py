@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
     SequenceTransformerFactory,
 )
@@ -50,7 +51,7 @@ def g(x: ndarray) -> ndarray:
 def test_no_acceleration():
     """Tests the case where no acceleration is applied."""
     x_0 = INITIAL_VECTOR.copy()
-    transformer = factory.create("NoAcceleration")
+    transformer = factory.create(AccelerationMethod.NONE)
 
     x_1 = g(x_0)
     new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
@@ -60,7 +61,7 @@ def test_no_acceleration():
 def test_alternate_2_delta():
     """Tests the alternate 2-δ acceleration method."""
     x_0 = INITIAL_VECTOR.copy()
-    transformer = factory.create("Alternate2Delta")
+    transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
 
     x_1 = g(x_0)
     new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
@@ -85,7 +86,7 @@ def test_alternate_2_delta():
 def test_alternate_delta_squared():
     """Tests the alternate δ² acceleration method."""
     x_0 = INITIAL_VECTOR.copy()
-    transformer = factory.create("AlternateDeltaSquared")
+    transformer = factory.create(AccelerationMethod.ALTERNATE_DELTA_SQUARED)
 
     x_1 = g(x_0)
     new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
@@ -111,7 +112,7 @@ def test_alternate_delta_squared():
 def test_secant():
     """Tests the secant method."""
     x_0 = INITIAL_VECTOR.copy()
-    transformer = factory.create("Secant")
+    transformer = factory.create(AccelerationMethod.SECANT)
 
     x_1 = g(x_0)
     new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
@@ -133,7 +134,7 @@ def test_secant():
 def test_aitken():
     """Tests the Aitken method."""
     x_0 = INITIAL_VECTOR.copy()
-    transformer = factory.create("Secant")
+    transformer = factory.create(AccelerationMethod.AITKEN)
 
     x_1 = g(x_0)
     new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
@@ -159,6 +160,8 @@ def test_minimum_polynomial_parameters(window_size):
     """Tests the window size argument of MinimumPolynomial."""
     if window_size in [0, "foo"]:
         with pytest.raises(ValueError):
-            factory.create("MinimumPolynomial", window_size=window_size)
+            factory.create(
+                AccelerationMethod.MINIMUM_POLYNOMIAL, window_size=window_size
+            )
     else:
-        factory.create("MinimumPolynomial", window_size=window_size)
+        factory.create(AccelerationMethod.MINIMUM_POLYNOMIAL, window_size=window_size)

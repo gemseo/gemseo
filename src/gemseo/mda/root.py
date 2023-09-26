@@ -20,13 +20,9 @@
 from __future__ import annotations
 
 from multiprocessing import cpu_count
-from typing import Any
-from typing import Final
-from typing import Mapping
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import ndarray
-
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
@@ -34,6 +30,13 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.mda.mda import MDA
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Final
+    from typing import Mapping
+    from typing import Sequence
+    from numpy.typing import NDArray
 
 N_CPUS: Final[int] = cpu_count()
 
@@ -64,28 +67,27 @@ class MDARoot(MDA):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] = None,
+        linear_solver_options: Mapping[str, Any] | None = None,
         parallel: bool = False,
         use_threading: bool = True,
         n_processes: int = N_CPUS,
+        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
+        over_relaxation_factor: float = 1.0,
     ) -> None:
         """
         Args:
             parallel: Whether to execute and linearize the disciplines in parallel.
-            n_processes: The maximum number of simultaneous threads,
-                if ``use_threading`` is True, or processes otherwise,
-                used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution;
-                multiprocessing will copy (serialize) all the disciplines,
-                while threading will share all the memory.
-                This is important to note
-                if you want to execute the same discipline multiple times,
-                you shall use multiprocessing.
+            n_processes: The maximum simultaneous number of threads if ``use_threading``
+                is set to True, otherwise processes, used to parallelize the execution.
+            use_threading: Whether to use threads instead of processes to parallelize
+                the execution. Processes will copy (serialize) all the disciplines,
+                while threads will share all the memory. If one wants to execute the
+                same discipline multiple times then multiprocessing should be prefered.
         """  # noqa:D205 D212 D415
         self.use_threading = use_threading
         self.n_processes = n_processes
         self.parallel = parallel
+
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -99,17 +101,13 @@ class MDARoot(MDA):
             log_convergence=log_convergence,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
+            acceleration_method=acceleration_method,
+            over_relaxation_factor=over_relaxation_factor,
         )
         self._compute_input_couplings()
 
-    def _initialize_grammars(self) -> None:
-        for disciplines in self.disciplines:
-            self.input_grammar.update(disciplines.input_grammar)
-            self.output_grammar.update(disciplines.output_grammar)
-        self._add_residuals_norm_to_output_grammar()
-
     def linearize_all_disciplines(
-        self, input_data: Mapping[str, ndarray], execute: bool = True
+        self, input_data: Mapping[str, NDArray], execute: bool = True
     ) -> None:
         """Linearize all disciplines.
 
@@ -136,7 +134,7 @@ class MDARoot(MDA):
                 disc.linearize(input_data, execute=execute)
 
     def execute_all_disciplines(
-        self, input_local_data: Mapping[str, ndarray], update_local_data: bool = True
+        self, input_local_data: Mapping[str, NDArray], update_local_data: bool = True
     ) -> None:
         """Execute all disciplines.
 

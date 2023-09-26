@@ -12,23 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# modify it under the terms of the GNU Lesser General Public
-# License version 3 as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Relaxation methods."""
+"""The over-relaxation method."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -56,10 +45,20 @@ class OverRelaxation(SequenceTransformer):
         """  # noqa:D205 D212 D415
         super().__init__()
 
+        self.factor = factor
+
+    @property
+    def factor(self) -> float:
+        """The over-relaxation factor."""
+        return self.__factor
+
+    @factor.setter
+    def factor(self, factor: float) -> None:
         if not (0 < factor <= 2):
-            raise ValueError("Relax factor must be within ]0, 2].")
+            raise ValueError("Relax factor must lie within ]0, 2].")
 
         self.__factor = factor
+        self.clear()
 
     def _compute_transformed_iterate(self) -> NDArray:
         gxn_1, gxn = self._iterates

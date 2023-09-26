@@ -21,8 +21,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
@@ -30,8 +32,6 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from numpy import array
 from numpy import isclose
-from numpy import ones
-from numpy import zeros
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -48,43 +48,69 @@ def test_jacobi_sobieski():
     assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
 
 
-def test_secant_acceleration(tmp_wd):
-    tolerance = 1e-12
-    mda = SobieskiMDAJacobi(tolerance=tolerance, max_mda_iter=30, acceleration=None)
-    mda.execute()
-    nit1 = len(mda.residual_history)
+@pytest.fixture(scope="module")
+def compute_reference_n_iter():
+    """Compute the number of iterations to serve as a reference.
 
+    The Jacobi method is applied to the Sobiesky problem without accelerations.
+    """
     mda = SobieskiMDAJacobi(
-        tolerance=tolerance, max_mda_iter=30, acceleration=mda.SECANT_ACCELERATION
+        tolerance=1e-12, max_mda_iter=30, acceleration_method=AccelerationMethod.NONE
     )
     mda.execute()
-    mda.plot_residual_history(filename="Jacobi_secant.pdf")
-    nit2 = len(mda.residual_history)
+    return len(mda.residual_history)
 
+
+@pytest.mark.parametrize("acceleration_method", AccelerationMethod)
+def test_acceleration_methods(compute_reference_n_iter, acceleration_method):
+    """Tests the acceleration methods."""
     mda = SobieskiMDAJacobi(
-        tolerance=tolerance, max_mda_iter=30, acceleration=mda.M2D_ACCELERATION
+        tolerance=1e-12, max_mda_iter=30, acceleration_method=acceleration_method
     )
     mda.execute()
-    mda.plot_residual_history(filename="Jacobi_m2d.pdf")
-    nit3 = len(mda.residual_history)
-    assert nit2 < nit1
-    assert nit3 < nit1
-    assert nit3 < nit2
+
+    # Check that the number of iterations have been at least decreased
+    assert len(mda.residual_history) <= compute_reference_n_iter
 
 
-def test_m2d_acceleration_linalg_error():
-    """Verify the linalg error handling."""
+# TODO: Remove tests once the old attributes are removed
+def test_compatibility():
+    """Tests that the compatibility with previous behavior is ensured."""
+    mda_1 = SobieskiMDAJacobi(acceleration="m2d")
+    mda_1.reset_history_each_run = True
+    mda_1.execute()
+
+    mda_2 = SobieskiMDAJacobi(acceleration_method=AccelerationMethod.ALTERNATE_2_DELTA)
+    mda_2.reset_history_each_run = True
+    mda_2.execute()
+
+    assert mda_1.residual_history == mda_2.residual_history
+
+    mda_1.cache.clear()
+    mda_1.acceleration = "secant"
+    mda_1.execute()
+
+    mda_2.cache.clear()
+    mda_2.acceleration_method = AccelerationMethod.SECANT
+    mda_2.execute()
+
+    assert mda_1.residual_history == mda_2.residual_history
+
+
+# TODO: Remove tests once the old attributes are removed
+def test_compatibility_setters_getters():
+    """Tests that the compatibility with previous behavior is ensured."""
+    mda = SobieskiMDAJacobi(acceleration="")
+    assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
+    assert mda.acceleration_method == AccelerationMethod.ALTERNATE_2_DELTA
+
     mda = SobieskiMDAJacobi(acceleration="m2d")
-    sol, ok = mda._minimize_2md(1.0, zeros(2), zeros(2))
-    assert not ok
-    assert (sol == zeros(2)).all()
+    assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
+    assert mda.acceleration_method == AccelerationMethod.ALTERNATE_2_DELTA
 
-
-def test_secant_acceleration_linalg_error():
-    """Verify the nan handling."""
     mda = SobieskiMDAJacobi(acceleration="secant")
-    sol = mda._compute_secant_acc(zeros(2), zeros(2), ones(2), zeros(2))
-    assert (sol == ones(2)).all()
+    assert mda.acceleration == AccelerationMethod.SECANT
+    assert mda.acceleration_method == AccelerationMethod.SECANT
 
 
 def test_mda_jacobi_parallel():

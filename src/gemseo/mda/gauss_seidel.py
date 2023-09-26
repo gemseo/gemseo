@@ -19,37 +19,56 @@
 """A Gauss Seidel algorithm for solving MDAs."""
 from __future__ import annotations
 
-from typing import Any
-from typing import Mapping
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Mapping
+    from typing import Sequence
+    from numpy.typing import NDArray
+    from gemseo.core.coupling_structure import MDOCouplingStructure
 
 
 class MDAGaussSeidel(MDA):
-    """An MDA analysis based on the Gauss-Seidel algorithm.
+    r"""Perform an MDA using the Gauss-Seidel algorithm.
 
-    This algorithm is an iterative technique to solve the linear system:
-
-    .. math::
-
-       Ax = b
-
-    by decomposing the matrix :math:`A`
-    into the sum of a lower triangular matrix :math:`L_*`
-    and a strictly upper triangular matrix :math:`U`.
-
-    The new iterate is given by:
+    This algorithm is a fixed point iteration method to solve systems of non-linear
+    equations of the form,
 
     .. math::
+        \left\{
+            \begin{matrix}
+                F_1(x_1, x_2, \dots, x_n) = 0 \\
+                F_2(x_1, x_2, \dots, x_n) = 0 \\
+                \vdots \\
+                F_n(x_1, x_2, \dots, x_n) = 0
+            \end{matrix}
+        \right.
 
-       x_{k+1} = L_*^{-1}(b-Ux_k)
+    Begining with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained by
+    performing the following :math:`n` steps.
+
+    *Step 1:* knowing :math:`x_2^{(i)}, \dots, x_n^{(i)}`, compute :math:`x_1^{(i+1)}`
+    by solving,
+    .. math::
+        r_1(x_1^{(i+1)}) = F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0.
+
+    *Step :math:`k \leq n`:* knowing :math:`x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}` on
+    one hand, and :math:`x_{k+1}^{(i)}, \dots, x_n^{(i)}` on the other hand, compute
+    :math:`x_1^{(i+1)}` by solving,
+    .. math::
+        r_k(x_k^{(i+1)}) = F_1(x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)},
+        x_k^{(i+1)}, x_{k+1}^{(i)}, \dots, x_n^{(i)}) = 0.
+
+    These :math:`n` steps account for one iteration of the Gauss-Seidel method.
     """
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
         name: str | None = None,
@@ -59,20 +78,26 @@ class MDAGaussSeidel(MDA):
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        over_relax_factor: float = 1.0,
+        over_relax_factor: float | None = None,  # TODO: API: Remove the argument.
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] = None,
+        linear_solver_options: Mapping[str, Any] | None = None,
+        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
+        over_relaxation_factor: float = 1.0,
     ) -> None:
         """
         Args:
-            over_relax_factor: The relaxation coefficient,
-                used to make the method more robust,
-                if ``0<over_relax_factor<1`` or faster if ``1<over_relax_factor<=2``.
-                If ``over_relax_factor =1.``, it is deactivated.
+            over_relax_factor: Deprecated, please consider using
+                :attr:`MDA.over_relaxation_factor` instead.
+                The relaxation coefficient, used to make the method more robust, if
+                ``0<over_relax_factor<1`` or faster if ``1<over_relax_factor<=2``. If
+                ``over_relax_factor =1.``, it is deactivated.
         """  # noqa:D205 D212 D415
-        self.chain = MDOChain(disciplines, grammar_type=grammar_type)
+        # TODO: API: Remove the old name and attributes for over-relaxation factor.
+        if over_relax_factor is not None:
+            over_relaxation_factor = over_relax_factor
+
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -86,55 +111,78 @@ class MDAGaussSeidel(MDA):
             log_convergence=log_convergence,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
+            acceleration_method=acceleration_method,
+            over_relaxation_factor=over_relaxation_factor,
         )
-        assert over_relax_factor > 0.0
-        assert over_relax_factor <= 2.0
-        self.over_relax_factor = over_relax_factor
         self._compute_input_couplings()
 
+    # TODO: API: Remove the property and its setter.
+    @property
+    def over_relax_factor(self) -> float:
+        """The over-relaxation factor."""
+        return self.over_relaxation_factor
+
+    @over_relax_factor.setter
+    def over_relax_factor(self, over_relaxation_factor: float) -> None:
+        self.over_relaxation_factor = over_relaxation_factor
+
     def _initialize_grammars(self) -> None:
-        self.input_grammar = self.chain.input_grammar.copy()
-        self.output_grammar = self.chain.output_grammar.copy()
+        """Define the input and output grammars from the disciplines' ones."""
+        self.input_grammar.clear()
+        self.output_grammar.clear()
+        for discipline in self.disciplines:
+            self.input_grammar.update(
+                discipline.input_grammar, exclude_names=self.output_grammar.keys()
+            )
+            self.output_grammar.update(discipline.output_grammar)
+
         self._add_residuals_norm_to_output_grammar()
 
+    def __execute_all_disciplines(self) -> None:
+        """Execute all the disciplines in sequence."""
+        for discipline in self.disciplines:
+            discipline.execute(self.local_data)
+            self.local_data.update(discipline.get_output_data())
+
+    def __compute_initial_coupling_vector(self) -> NDArray:
+        """Compute the initial coupling vector.
+
+        Returns:
+            The vector filled in with the initial coupling values.
+        """
+        self.__execute_all_disciplines()
+        self._compute_coupling_sizes(self.strong_couplings)
+
+        return self._current_strong_couplings()
+
     def _run(self) -> None:
-        # Run the disciplines in a sequential way
-        # until the difference between outputs is under tolerance.
         if self.warm_start:
             self._couplings_warm_start()
-        current_couplings = 0.0
 
-        relax = self.over_relax_factor
-        use_relax = relax != 1.0
+        current_couplings = self.__compute_initial_coupling_vector()
 
-        while not self._stop_criterion_is_reached or self._current_iter == 0:
-            for discipline in self.disciplines:
-                discipline.execute(self.local_data)
-                outs = discipline.get_output_data()
-                if use_relax:
-                    # First time this output is computed, update directly local data
-                    self.local_data.update(
-                        {k: v for k, v in outs.items() if k not in self.local_data}
-                    )
-                    # The couplings already exist in the local data,
-                    # so the over relaxation can be applied
-                    self.local_data.update(
-                        {
-                            k: relax * v + (1.0 - relax) * self.local_data[k]
-                            for k, v in outs.items()
-                            if k in self.local_data
-                        }
-                    )
-                else:
-                    self.local_data.update(outs)
+        self._sequence_transformer.clear()
+        # Perform fixed point iterations
+        while True:
+            self.__execute_all_disciplines()
 
-            new_couplings = self._current_strong_couplings()
+            new_couplings = self._sequence_transformer.compute_transformed_iterate(
+                current_couplings, self._current_strong_couplings()
+            )
+
+            self.local_data.update(
+                split_array_to_dict_of_arrays(
+                    new_couplings, self._coupling_sizes, self.strong_couplings
+                )
+            )
+
             self._compute_residual(
                 current_couplings,
                 new_couplings,
-                log_normed_residual=self.log_convergence,
+                log_normed_residual=self._log_convergence,
             )
-            current_couplings = new_couplings
 
-        for discipline in self.disciplines:  # Update all outputs without relax
-            self.local_data.update(discipline.get_output_data())
+            if self._stop_criterion_is_reached:
+                break
+
+            current_couplings = new_couplings

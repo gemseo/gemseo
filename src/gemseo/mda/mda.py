@@ -24,31 +24,42 @@ from abc import abstractmethod
 from enum import auto
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Any
-from typing import ClassVar
-from typing import Iterable
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 from numpy import abs
 from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 from numpy.linalg import norm
-from numpy.typing import NDArray
 from strenum import LowercaseStrEnum
 
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
+    RelaxationAcceleration,
+)
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import ClassVar
+    from typing import Collection
+    from typing import Iterable
+    from typing import Mapping
+    from typing import Sequence
+
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
+
+    from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -71,7 +82,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     linear_solver_tolerance: float
     """The tolerance of the linear solver in the adjoint equation."""
 
-    linear_solver_options: dict[str, Any]
+    linear_solver_options: Mapping[str, Any]
     """The options of the linear solver."""
 
     _max_mda_iter: int
@@ -120,6 +131,15 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
+
+    _coupling_sizes: Mapping[str, int]
+    """The size of each coupling variables the MDA is acting on."""
+
+    _sequence_transformer: RelaxationAcceleration
+    """The sequence transformer aimed at improving the convergence rate.
+
+    The transformation applies a relaxation followed by an acceleration.
+    """
 
     class ResidualScaling(LowercaseStrEnum):
         """The scaling method applied to MDA residuals for convergence monitoring."""
@@ -172,7 +192,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
         name: str | None = None,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
@@ -183,7 +203,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] = None,
+        linear_solver_options: Mapping[str, Any] | None = None,
+        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
+        over_relaxation_factor: float = 1.0,
     ) -> None:
         """
         Args:
@@ -208,6 +230,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 expressed in terms of normed residuals.
             linear_solver: The name of the linear solver.
             linear_solver_options: The options passed to the linear solver factory.
+            acceleration_method: The acceleration method to be used to improve the
+                convergence rate of the fixed point iteration method.
+            over_relaxation_factor: The over-relaxation factor.
         """  # noqa:D205 D212 D415
         super().__init__(name, grammar_type=grammar_type)
         self.tolerance = tolerance
@@ -225,6 +250,12 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self._starting_indices = []
         self.reset_history_each_run = False
         self.warm_start = warm_start
+
+        self._sequence_transformer = RelaxationAcceleration(
+            over_relaxation_factor, acceleration_method
+        )
+
+        self._coupling_sizes = {}
 
         self.scaling = self.ResidualScaling.INITIAL_RESIDUAL_NORM
         self._scaling_data = None
@@ -248,6 +279,24 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__check_linear_solver_options()
         self._check_coupling_types()
         self._log_convergence = log_convergence
+
+    @property
+    def acceleration_method(self) -> AccelerationMethod:
+        """The acceleration method."""
+        return self._sequence_transformer.acceleration_method
+
+    @acceleration_method.setter
+    def acceleration_method(self, acceleration_method: AccelerationMethod) -> None:
+        self._sequence_transformer.acceleration_method = acceleration_method
+
+    @property
+    def over_relaxation_factor(self) -> float:
+        """The over-relaxation factor."""
+        return self._sequence_transformer.over_relaxation_factor
+
+    @over_relaxation_factor.setter
+    def over_relaxation_factor(self, over_relaxation_factor: float) -> None:
+        self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
 
     @property
     def max_mda_iter(self) -> int:
@@ -435,8 +484,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        all_disc = [self]
-        all_disc.extend(self.disciplines)
+        all_disc = [self] + self.disciplines
         graph = DependencyGraph(all_disc)
         res = graph.get_disciplines_couplings()
         for discipline in self.disciplines:
@@ -445,8 +493,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        inputs: Collection[str] | None = None,
+        outputs: Collection[str] | None = None,
     ) -> None:
         # Do not re-execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
@@ -833,3 +881,14 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         # MDODiscipline does not declare this method as abstract on purpose,
         # but for MDAs this makes sense.
         pass
+
+    def _compute_coupling_sizes(self, coupling_variables: Iterable[str]) -> None:
+        """Compute the size of the provided coupling variables.
+
+        Args:
+            coupling_variables: The coupling variable names.
+        """
+        if not self._coupling_sizes:
+            self._coupling_sizes = {
+                key: self.local_data[key].size for key in coupling_variables
+            }

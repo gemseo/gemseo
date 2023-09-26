@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pytest
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
 from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
     SequenceTransformerFactory,
@@ -109,9 +110,11 @@ def test_sequence_transformer(compute_reference_n_iter, transformer):
     assert n_iter <= n_iter_ref
 
 
-def test_clear_iterates():
+def test_clear():
     """Tests the clear mechanism of the double-ended queue."""
-    transformer = SequenceTransformerFactory().create("Alternate2Delta")
+    transformer = SequenceTransformerFactory().create(
+        AccelerationMethod.ALTERNATE_2_DELTA
+    )
 
     assert len(transformer._iterates) == 0
     assert len(transformer._residuals) == 0
@@ -121,7 +124,7 @@ def test_clear_iterates():
     assert len(transformer._iterates) == 1
     assert len(transformer._residuals) == 1
 
-    transformer.clear_iterates()
+    transformer.clear()
 
     assert len(transformer._iterates) == 0
     assert len(transformer._residuals) == 0
@@ -129,7 +132,7 @@ def test_clear_iterates():
 
 def test_composite(compute_reference_n_iter):
     """Tests that the Composite structure reduces the number of iterations."""
-    aitken = factory.create("Aitken")
+    aitken = factory.create(AccelerationMethod.AITKEN)
     relaxation = factory.create("OverRelaxation", factor=0.8)
 
     _transformer = factory.create(
@@ -141,4 +144,4 @@ def test_composite(compute_reference_n_iter):
 
     assert n_iter <= n_iter_ref
 
-    _transformer.clear_iterates()
+    _transformer.clear()
