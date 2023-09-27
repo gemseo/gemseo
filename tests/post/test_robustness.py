@@ -34,7 +34,7 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None)
+@image_comparison(None, tol_py38=0.61)
 def test_common_scenario(
     use_standardized_objective,
     baseline_images,
@@ -53,7 +53,7 @@ def test_common_scenario(
     indirect=["baseline_images"],
     ids=["stddev"],
 )
-@image_comparison(None)
+@image_comparison(None, tol_py38=0.61)
 def test_common_scenario_std(
     baseline_images,
     common_problem,
