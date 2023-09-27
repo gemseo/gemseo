@@ -1,1 +1,0 @@
-The default value of the argument ``outputs`` of the methods ``plot_bar`` and ``plot_radar`` of ``SensitivityAnalysis`` is ``()``. In this case, the ``SensitivityAnalysis`` uses all the outputs.

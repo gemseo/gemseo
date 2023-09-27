@@ -1,2 +1,0 @@
-An XDSM can now take into account several levels of nested scenarios as well as nested ``MDA``.
-An XDSM with a nested Scenario can also take into account more complex formulations than ``DisciplinaryOpt``, such as ``MDF``.

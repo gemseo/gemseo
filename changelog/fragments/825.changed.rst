@@ -1,1 +1,0 @@
-The classes ``KMeans`` use ``"auto"`` as default value for the argument ``n_init`` of the scikit-learn's ``KMeans`` class.

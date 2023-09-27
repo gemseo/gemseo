@@ -1,1 +1,0 @@
-The method ``Dataset.to_dict_of_arrays`` can break down the result by entry with the boolean argument ``by_entry`` whose default value is ``False``.

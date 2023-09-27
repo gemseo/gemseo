@@ -1,2 +1,0 @@
-- The string representation of a ``ComposedDistribution`` uses both the string representations of the marginals and the string representation of the copula.
-- The string representation of a ``Distribution`` uses both the string representation of its parameters and its dimension when the latter is greater than 1.

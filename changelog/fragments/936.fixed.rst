@@ -1,1 +1,0 @@
-``SobolAnalysis`` can export the indices to a ``Dataset``, even when the second-order Sobol' indices are computed.

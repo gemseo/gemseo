@@ -1,1 +1,0 @@
-:class:`.OptimizationResult` has new fields ``x_0_as_dict`` and ``x_opt_as_dict`` bounding the names of the design variables to their initial and optimal values.

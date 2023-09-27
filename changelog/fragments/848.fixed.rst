@@ -1,2 +1,0 @@
-The MDA chain can change at once the ``max_mda_iter`` of all its MDAs.
-The behaviour of the ``max_mda_iter`` of this class has been changed to do so.

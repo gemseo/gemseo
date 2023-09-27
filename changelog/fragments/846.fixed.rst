@@ -1,1 +1,0 @@
-``execute_post`` can post-process a ``Path``.

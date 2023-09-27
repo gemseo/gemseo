@@ -1,1 +1,0 @@
-``OptimizationProblem.minimize_objective`` is now a property that changes the sign of the objective function if needed.

@@ -1,6 +1,0 @@
-- The name of the ``MDOFunction`` resulting from the sum (resp. subtraction, multiplication, division) of
-two ``MDOFunction`` s named ``"f"`` and ``"g"`` is ``"[f+g]"`` (resp. ``"[f-g]"`` , ``"[f*g]"`` , ``"[f/g]"``).
-- The name of the ``MDOFunction`` defined as the opposite of the ``MDOFunction`` named ``"f"`` is ``-f``.
-- In the expression of an ``MDOFunction`` resulting from the multiplication or division of ``MDOFunction`` s, the expression of an operand is now grouped with round parentheses if this operand is a sum or subtraction. For example, for ``"f(x) = 1+x"`` and ``"g(x) = x"`` the resulting expression for ``f*g`` is
-``"[f*g](x) = (1+x)*x"``.
-- The expression of the ``MDOFunction`` defined as the opposite of itself is ``-(expr)``.

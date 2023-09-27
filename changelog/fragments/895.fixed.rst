@@ -1,1 +1,0 @@
-``PCERegressor`` now handles multidimensional random input variables.

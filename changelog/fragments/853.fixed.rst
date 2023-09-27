@@ -1,1 +1,0 @@
-``CorrelationAnalysis`` and ``SobolAnalysis`` use the input names in the order provided by the ``ParameterSpace``.

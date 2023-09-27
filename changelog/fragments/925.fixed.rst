@@ -1,1 +1,0 @@
-The sampling phase of a ``SensitivityAnalysis`` no longer reproduces the full log of the ``DOEScenario``. Only the disciplines, the MDO formulation and the progress bar are considered.

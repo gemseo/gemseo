@@ -1,1 +1,0 @@
-``output_names`` was added to ``MDOFunction.DICT_REPR_ATTR`` in order for it to be exported when saving to an hdf file.

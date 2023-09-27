@@ -1,1 +1,0 @@
-The algorithms of a ``DriverLibrary`` have a new option ``"log_problem"`` (default: ``True``). Set it to ``False`` so as not to log the sections related to an optimization problem, namely the problem definition, the optimization result and the evolution of the objective value. This can be useful when a ``DOEScenario`` is used as a pure sampling scenario.
