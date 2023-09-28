@@ -71,7 +71,7 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
     wrapped = LSF(disc, workdir_path=tmpdir, queue_name="all")
 
     if PLATFORM_IS_WINDOWS:
-        match = re.escape("[WinError 2] The system cannot find the file specified")
+        match = r"\[WinError 2\] .*"
     else:
         match = re.escape("[Errno 2] No such file or directory: 'bsub'")
     with pytest.raises(FileNotFoundError, match=match):
