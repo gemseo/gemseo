@@ -127,7 +127,7 @@ def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog):
     """Test the run failure is correctly handled."""
     discipline._scheduler_run_command = "IDONTEXIST"
     if PLATFORM_IS_WINDOWS:
-        match = re.escape("[WinError 2] The system cannot find the file specified")
+        match = r"\[WinError 2\] .*"
     else:
         match = re.escape("[Errno 2] No such file or directory: 'IDONTEXIST'")
     with pytest.raises(FileNotFoundError, match=match):

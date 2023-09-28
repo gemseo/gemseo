@@ -58,7 +58,7 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
     wrapped = SLURM(disc, workdir_path=tmpdir)
 
     if PLATFORM_IS_WINDOWS:
-        match = re.escape("[WinError 2] The system cannot find the file specified")
+        match = r"\[WinError 2\] .*"
     else:
         match = re.escape("[Errno 2] No such file or directory: 'sbatch'")
     with pytest.raises(FileNotFoundError, match=match):
