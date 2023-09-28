@@ -209,7 +209,7 @@ class MDODiscipline(Serializable):
 
     virtual_execution: ClassVar[bool] = False
     """Whether to skip the :meth:`._run` method during execution and return the
-    default_outputs, whatever the inputs."""
+    :attr:`.default_outputs`, whatever the inputs."""
 
     N_CPUS = cpu_count()
 
@@ -1473,7 +1473,7 @@ class MDODiscipline(Serializable):
 
     @property
     def default_outputs(self) -> Defaults:
-        """The default outputs."""
+        """The default outputs used when :attr:`.virtual_execution` is ``True``."""
         return self.output_grammar.defaults
 
     @default_outputs.setter
