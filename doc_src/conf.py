@@ -113,6 +113,7 @@ autodoc_kwargs_defaults = True
 autodoc_mock_imports = [
     "optimize",
     "matlab",
+    "matlabengine",
     "da",
     "pymoo",
     "petsc4py",
