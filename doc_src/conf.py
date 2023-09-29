@@ -239,7 +239,7 @@ intersphinx_mapping = {
 html_context = dict()
 html_context["pretty_version"] = pretty_version
 
-__version_regex = re.compile(r"\d+\.\d+\.\d+")
+__VERSION_REGEX = re.compile(r"^(develop|\d+\.\d+\.\d+\.?\w*)$")
 
 
 def __filter_versions(
@@ -258,13 +258,9 @@ def __filter_versions(
     """
     _versions = []
     for rtd_version in rtd_versions:
-        if rtd_version["active"] and __version_regex.match(rtd_version["slug"]):
-            slug = rtd_version["slug"]
-            if "dev" in slug:
-                slug = "develop"
-
+        slug = rtd_version["slug"]
+        if rtd_version["active"] and __VERSION_REGEX.match(slug):
             _versions.append((slug, rtd_version["urls"]["documentation"]))
-
     return _versions
 
 
