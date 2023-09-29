@@ -13,7 +13,7 @@ Static Application Security Testing
 -----------------------------------
 
 We use the ``gitlab.com`` integrated
-`SAST analyzers<https://docs.gitlab.com/ee/user/application_security/sast/index.html>`_
+`SAST analyzers <https://docs.gitlab.com/ee/user/application_security/sast/index.html>`_
 to scan for vulnerabilities in |g| source code.
 
 Dependency scanning
@@ -21,4 +21,4 @@ Dependency scanning
 
 Our ``gitlab.com`` projects are mirrored on ``github.com`` and
 scanned there for dependency vulnerabilities by
-`Dependabot<https://docs.github.com/en/code-security/dependabot/dependabot-alerts>`_.
+`Dependabot <https://docs.github.com/en/code-security/dependabot/dependabot-alerts>`_.
