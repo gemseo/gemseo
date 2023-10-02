@@ -97,7 +97,6 @@ The computation relies on
 """
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
@@ -131,8 +130,6 @@ from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SobolAnalysis(SensitivityAnalysis):
@@ -338,7 +335,13 @@ class SobolAnalysis(SensitivityAnalysis):
                 )
                 algos[-1].setConfidenceLevel(confidence_level)
 
-        return self.indices
+        self._indices = {
+            self.Method.FIRST: self.__get_indices(self.__GET_FIRST_ORDER_INDICES),
+            self.__SECOND: self.__get_indices(self.__GET_SECOND_ORDER_INDICES),
+            self.Method.TOTAL: self.__get_indices(self.__GET_TOTAL_ORDER_INDICES),
+        }
+
+        return self._indices
 
     def __get_indices(
         self, method_name: str
@@ -351,6 +354,12 @@ class SobolAnalysis(SensitivityAnalysis):
         Returns:
             The first-, second- or total-order indices.
         """
+        if (
+            method_name == self.__GET_SECOND_ORDER_INDICES
+            and not self.__eval_second_order
+        ):
+            return {}
+
         names_to_sizes = self.dataset.variable_names_to_n_components
         indices = {
             output_name: [
@@ -395,7 +404,7 @@ class SobolAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__get_indices(self.__GET_FIRST_ORDER_INDICES)
+        return self._indices[self.Method.FIRST]
 
     @property
     def second_order_indices(self) -> SecondOrderIndicesType:
@@ -413,10 +422,7 @@ class SobolAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        if not self.__eval_second_order:
-            return {}
-
-        return self.__get_indices(self.__GET_SECOND_ORDER_INDICES)
+        return self._indices[self.__SECOND]
 
     @property
     def total_order_indices(self) -> FirstOrderIndicesType:
@@ -434,7 +440,7 @@ class SobolAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__get_indices(self.__GET_TOTAL_ORDER_INDICES)
+        return self._indices[self.Method.TOTAL]
 
     def __unscale_index(
         self,
@@ -553,16 +559,6 @@ class SobolAnalysis(SensitivityAnalysis):
                 )
 
         return intervals
-
-    @property
-    def indices(  # noqa: D102
-        self,
-    ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
-        return {
-            self.Method.FIRST: self.first_order_indices,
-            self.__SECOND: self.second_order_indices,
-            self.Method.TOTAL: self.total_order_indices,
-        }
 
     def plot(
         self,

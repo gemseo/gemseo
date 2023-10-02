@@ -21,7 +21,6 @@
 """Class for the estimation of various correlation coefficients."""
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
@@ -59,8 +58,6 @@ from gemseo.utils.compatibility.openturns import compute_srrc
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
-
-LOGGER = logging.getLogger(__name__)
 
 
 class CorrelationAnalysis(SensitivityAnalysis):
@@ -137,7 +134,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        self.__correlation = None
         super().__init__(
             disciplines,
             parameter_space,
@@ -160,7 +156,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         input_samples = Sample(
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
-        self.__correlation = {}
+        self._indices = {}
         # For each correlation method
         new_methods = [self.Method.KENDALL, self.Method.SSRC]
         for method in self.Method:
@@ -170,7 +166,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
             # The version of OpenTURNS offers this correlation method.
             get_indices = self.__METHODS_TO_FUNCTIONS[method]
             sizes = self.dataset.variable_names_to_n_components
-            self.__correlation[method] = {
+            self._indices[method] = {
                 output_name: [
                     split_array_to_dict_of_arrays(
                         array(
@@ -194,7 +190,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 for output_name in output_names
             }
 
-        return self.indices
+        return self._indices
 
     @property
     def pcc(self) -> FirstOrderIndicesType:
@@ -212,7 +208,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.PCC]
+        return self._indices[self.Method.PCC]
 
     @property
     def prcc(self) -> FirstOrderIndicesType:
@@ -230,7 +226,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.PRCC]
+        return self._indices[self.Method.PRCC]
 
     @property
     def src(self) -> FirstOrderIndicesType:
@@ -248,7 +244,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.SRC]
+        return self._indices[self.Method.SRC]
 
     @property
     def ssrc(self) -> FirstOrderIndicesType:
@@ -266,7 +262,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation.get(self.Method.SSRC, {})
+        return self._indices.get(self.Method.SSRC, {})
 
     @property
     def kendall(self) -> FirstOrderIndicesType:
@@ -284,7 +280,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation.get(self.Method.KENDALL, {})
+        return self._indices.get(self.Method.KENDALL, {})
 
     @property
     def srrc(self) -> FirstOrderIndicesType:
@@ -302,7 +298,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.SRRC]
+        return self._indices[self.Method.SRRC]
 
     @property
     def pearson(self) -> FirstOrderIndicesType:
@@ -320,7 +316,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.PEARSON]
+        return self._indices[self.Method.PEARSON]
 
     @property
     def spearman(self) -> FirstOrderIndicesType:
@@ -338,27 +334,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.SPEARMAN]
-
-    @property
-    def indices(self) -> dict[str, FirstOrderIndicesType]:
-        """The sensitivity indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "method_name": {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-            }
-        """
-        return self.__correlation
+        return self._indices[self.Method.SPEARMAN]
 
     def plot(  # noqa: D102
         self,
