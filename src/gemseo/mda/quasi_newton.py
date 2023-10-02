@@ -176,10 +176,8 @@ class MDAQuasiNewton(MDARoot):
             self._couplings_warm_start()
 
         self.reset_disciplines_statuses()
-
         self.execute_all_disciplines(self.local_data)
-
-        self._compute_coupling_sizes(self._input_couplings)
+        self._compute_coupling_sizes()
 
         if not self.strong_couplings:
             msg = (
@@ -245,7 +243,7 @@ class MDAQuasiNewton(MDARoot):
             jac = jacobian
 
         # initial solution
-        self.current_couplings = self._current_strong_couplings().real
+        self.current_couplings = self._current_working_couplings().real
         # callback function to retrieve the residual at iteration k
         if self.reset_history_each_run:
             self.residual_history = []

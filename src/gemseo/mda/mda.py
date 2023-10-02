@@ -132,6 +132,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
 
+    __resolved_coupling_names: tuple[str, ...] | None
+    """The names of the coupling variables the MDA is solving."""
+
     _coupling_sizes: Mapping[str, int]
     """The size of each coupling variables the MDA is acting on."""
 
@@ -269,6 +272,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.strong_couplings = self.coupling_structure.strong_couplings
         self.all_couplings = self.coupling_structure.all_couplings
         self._input_couplings = []
+        self.__resolved_coupling_names = None
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
         self.use_lu_fact = use_lu_fact
         # By default don't use an approximate cache for linearization
@@ -297,6 +301,27 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     @over_relaxation_factor.setter
     def over_relaxation_factor(self, over_relaxation_factor: float) -> None:
         self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
+
+    @property
+    def _resolved_coupling_names(self) -> tuple[str, ...] | None:
+        """The names of the coupling variables the MDA is solving."""
+        return self.__resolved_coupling_names
+
+    @_resolved_coupling_names.setter
+    def _resolved_coupling_names(self, couplings: Iterable[str]) -> None:
+        """
+        Raises:
+            RuntimeError: whenever one attempt to reset the resolved coupling names.
+        """  # noqa: D205 D212 D415
+        if self.__resolved_coupling_names is not None:
+            raise RuntimeError(
+                "The resolved coupling names have already been set, any changes could "
+                "make the MDA solution inconsistent."
+            )
+
+        self.__resolved_coupling_names = tuple(
+            coupling for coupling in sorted(couplings)
+        )
 
     @property
     def max_mda_iter(self) -> int:
@@ -403,17 +428,13 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         input_couplings = set(self.strong_couplings) & set(self.get_input_data_names())
         self._input_couplings = sorted(input_couplings)
 
-    def _current_input_couplings(self) -> ndarray:
-        """Return the current values of the input coupling variables."""
-        if not self._input_couplings:
+    def _current_working_couplings(self) -> ndarray:
+        """Return the current values of the working coupling variables."""
+        if not self._resolved_coupling_names:
             return array([])
-        return concatenate([self.local_data[name] for name in self._input_couplings])
-
-    def _current_strong_couplings(self) -> ndarray:
-        """Return the current values of the strong coupling variables."""
-        if not self.strong_couplings:
-            return array([])
-        return concatenate([self.local_data[name] for name in self.strong_couplings])
+        return concatenate(
+            [self.local_data[name] for name in self._resolved_coupling_names]
+        )
 
     def _retrieve_diff_inouts(
         self, compute_all_jacobians: bool = False
@@ -554,15 +575,13 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         residual = (current_couplings - new_couplings).real
 
         if self.scaling == self.ResidualScaling.NO_SCALING:
-            normed_residual = norm(residual)
-
-            self.normed_residual = normed_residual
+            self.normed_residual = float(norm(residual))
 
         elif self.scaling == self.ResidualScaling.INITIAL_RESIDUAL_NORM:
-            normed_residual = norm(residual)
+            normed_residual = float(norm(residual))
 
             if self._scaling_data is None:
-                self._scaling_data = normed_residual + (normed_residual == 0)
+                self._scaling_data = normed_residual if normed_residual != 0 else 1.0
 
             self.normed_residual = normed_residual / self._scaling_data
 
@@ -576,20 +595,23 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
         elif self.scaling == self.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
             if self._scaling_data is None:
-                self._scaling_data = list()
+                self._scaling_data = []
 
                 index = 0
-                for output in self.get_outputs_by_name(self._input_couplings):
-                    current_slice = slice(index, index + output.size)
-                    initial_norm = norm(residual[current_slice])
-                    self._scaling_data.append(
-                        (current_slice, initial_norm + (initial_norm == 0))
-                    )
-                    index += output.size
+                for coupling in self._resolved_coupling_names:
+                    coupling_size = self._coupling_sizes[coupling]
+                    current_slice = slice(index, index + coupling_size)
+
+                    initial_norm = float(norm(residual[current_slice]))
+                    initial_norm = initial_norm if initial_norm != 0.0 else 1.0
+
+                    self._scaling_data.append((current_slice, initial_norm))
+
+                    index += coupling_size
 
             normalized_norms = list()
-            for index, initial_norm in self._scaling_data:
-                normalized_norms.append(norm(residual[index]) / initial_norm)
+            for current_slice, initial_norm in self._scaling_data:
+                normalized_norms.append(norm(residual[current_slice]) / initial_norm)
 
             self.normed_residual = max(normalized_norms)
 
@@ -603,7 +625,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             if self._scaling_data is None:
                 self._scaling_data = residual + (residual == 0)
 
-            self.normed_residual = norm(residual / self._scaling_data)
+            self.normed_residual = float(norm(residual / self._scaling_data))
             self.normed_residual /= new_couplings.size**0.5
 
         else:
@@ -625,6 +647,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             self._current_iter += 1
 
         self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
+
         return self.normed_residual
 
     def check_jacobian(
@@ -882,13 +905,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         # but for MDAs this makes sense.
         pass
 
-    def _compute_coupling_sizes(self, coupling_variables: Iterable[str]) -> None:
-        """Compute the size of the provided coupling variables.
-
-        Args:
-            coupling_variables: The coupling variable names.
-        """
+    def _compute_coupling_sizes(self) -> None:
+        """Compute the size of the provided coupling variables."""
         if not self._coupling_sizes:
             self._coupling_sizes = {
-                key: self.local_data[key].size for key in coupling_variables
+                key: self.local_data[key].size for key in self._resolved_coupling_names
             }

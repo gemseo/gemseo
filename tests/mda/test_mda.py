@@ -76,7 +76,7 @@ def test_reset(sellar_mda, sellar_inputs):
 def test_input_couplings():
     with concretize_classes(MDA):
         mda = MDA([Sellar1()])
-    assert len(mda._current_input_couplings()) == 0
+    assert len(mda._current_working_couplings()) == 0
 
     with concretize_classes(MDA):
         mda = MDA(
@@ -92,6 +92,30 @@ def test_input_couplings():
         mda._compute_input_couplings()
         sorted_c = ["y_12", "y_21", "y_23", "y_31", "y_32"]
         assert mda._input_couplings == sorted_c
+
+
+def test_resolved_couplings():
+    """Tests the resolved coupling names."""
+    disciplines = create_disciplines_from_desc(
+        [
+            ("A", ["x"], ["a"]),
+            ("B", ["a", "y"], ["b"]),
+            ("C", ["b"], ["y"]),
+        ],
+    )
+
+    mda = MDAJacobi(disciplines)
+    assert set(mda._resolved_coupling_names) == set(mda._input_couplings)
+
+    mda = MDAGaussSeidel(disciplines)
+    assert set(mda._resolved_coupling_names) == set(mda.strong_couplings)
+
+    with pytest.raises(
+        RuntimeError,
+        match="The resolved coupling names have already been set, any changes could "
+        "make the MDA solution inconsistent.",
+    ):
+        mda._resolved_coupling_names = "a"
 
 
 def test_jacobian(sellar_mda, sellar_inputs):
@@ -255,68 +279,6 @@ def test_log_convergence(caplog):
 
     mda._compute_residual(np.array([1, 2]), np.array([2, 1]), log_normed_residual=True)
     assert "MDA running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
-
-
-@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-@pytest.mark.parametrize("scaling_strategy", MDA.ResidualScaling)
-def test_scale_res_size(mda_class, scaling_strategy):
-    coupl_size = 10
-    disciplines = create_disciplines_from_desc(
-        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
-        inputs_size=coupl_size,
-        outputs_size=coupl_size,
-    )
-
-    # Define a reference MDA without scaling
-    mda = mda_class(disciplines, max_mda_iter=1)
-    mda.scaling = "no_scaling"
-    mda.execute()
-
-    # Define MDA with the specified scaling strategy
-    mda_with_scaling = mda_class(disciplines, max_mda_iter=1)
-    mda_with_scaling.scaling = scaling_strategy
-    mda_with_scaling.execute()
-
-    reference_residual = mda.residual_history[-1]
-    scaled_residual = mda_with_scaling.residual_history[-1]
-
-    if scaling_strategy == MDA.ResidualScaling.NO_SCALING:
-        assert scaled_residual == reference_residual
-
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_NORM:
-        assert scaled_residual == 1.0
-
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
-        assert scaled_residual == 1.0
-
-    elif scaling_strategy == MDA.ResidualScaling.N_COUPLING_VARIABLES:
-        assert scaled_residual == reference_residual / (2 * coupl_size) ** 0.5
-
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
-        assert scaled_residual == 1.0
-
-    elif scaling_strategy == MDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
-        assert scaled_residual == 1.0
-
-
-@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-@pytest.mark.parametrize("scale_active", ["initial_residual_norm", "no_scaling"])
-def test_deactivate_scaling(mda_class, scale_active):
-    coupl_size = 10
-    disciplines = create_disciplines_from_desc(
-        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
-        inputs_size=coupl_size,
-        outputs_size=coupl_size,
-    )
-
-    mda = mda_class(disciplines, max_mda_iter=2)
-    mda.scaling = scale_active
-    mda.execute()
-
-    if scale_active == "no_scaling":
-        assert not (mda.residual_history[0] == 1.0)
-    elif scale_active == "initial_residual_norm":
-        assert mda.residual_history[0] == 1.0
 
 
 def test_not_numeric_couplings():

@@ -59,16 +59,19 @@ class MDAJacobi(MDA):
             \end{matrix}
         \right.
 
-    Begining with :math:`x_1^{(0)}, \\dots, x_n^{(0)}`, the iterates are obtained as the
-    solution of the following :math:`n` *independent* non-linear equations:
+    Begining with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained as the
+    solution of the following :math:`n` **independent** non-linear equations:
 
     .. math::
         \left\{
             \begin{matrix}
-                r_1(x_1^{(i+1)}) = F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0 \\
-                r_2(x_2^{(i+1)}) = F_2(x_1^{(i)}, x_2^{(i+1)}, \dots, x_n^{(i)}) = 0 \\
+                r_1\left( x_1^{(i+1)} \right) =
+                    F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0 \\
+                r_2\left( x_2^{(i+1)} \right) =
+                    F_2(x_1^{(i)}, x_2^{(i+1)}, \dots, x_n^{(i)}) = 0 \\
                 \vdots \\
-                r_n(x_n^{(i+1)}) = F_n(x_1^{(i)}, x_2^{(i)}, \dots, x_n^{(i+1)}) = 0
+                r_n\left( x_n^{(i+1)} \right) =
+                F_n(x_1^{(i)}, x_2^{(i)}, \dots, x_n^{(i+1)}) = 0
             \end{matrix}
         \right.
     """
@@ -143,6 +146,7 @@ class MDAJacobi(MDA):
         )
 
         self._compute_input_couplings()
+        self._resolved_coupling_names = self._input_couplings
 
         self.parallel_execution = DiscParallelExecution(
             disciplines,
@@ -207,12 +211,12 @@ class MDAJacobi(MDA):
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self) -> None:
-        self._compute_coupling_sizes(self._input_couplings)
+        self._compute_coupling_sizes()
 
         if self.warm_start:
             self._couplings_warm_start()
 
-        current_couplings = self._current_input_couplings()
+        current_couplings = self._current_working_couplings()
 
         self._sequence_transformer.clear()
         # Perform fixed point iterations
@@ -220,7 +224,7 @@ class MDAJacobi(MDA):
             self.execute_all_disciplines(self.local_data)
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
-                current_couplings, self._current_input_couplings()
+                current_couplings, self._current_working_couplings()
             )
 
             self.local_data.update(
