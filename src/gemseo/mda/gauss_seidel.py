@@ -51,18 +51,21 @@ class MDAGaussSeidel(MDA):
         \right.
 
     Begining with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained by
-    performing the following :math:`n` steps.
+    performing **sequentially** the following :math:`n` steps.
 
-    *Step 1:* knowing :math:`x_2^{(i)}, \dots, x_n^{(i)}`, compute :math:`x_1^{(i+1)}`
+    **Step 1:** knowing :math:`x_2^{(i)}, \dots, x_n^{(i)}`, compute :math:`x_1^{(i+1)}`
     by solving,
-    .. math::
-        r_1(x_1^{(i+1)}) = F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0.
 
-    *Step :math:`k \leq n`:* knowing :math:`x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}` on
+    .. math::
+        r_1\left( x_1^{(i+1)} \right) =
+            F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0.
+
+    **Step** :math:`k \leq n`: knowing :math:`x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}` on
     one hand, and :math:`x_{k+1}^{(i)}, \dots, x_n^{(i)}` on the other hand, compute
     :math:`x_1^{(i+1)}` by solving,
+
     .. math::
-        r_k(x_k^{(i+1)}) = F_1(x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)},
+        r_k\left( x_k^{(i+1)} \right) = F_1(x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)},
         x_k^{(i+1)}, x_{k+1}^{(i)}, \dots, x_n^{(i)}) = 0.
 
     These :math:`n` steps account for one iteration of the Gauss-Seidel method.
@@ -114,7 +117,9 @@ class MDAGaussSeidel(MDA):
             acceleration_method=acceleration_method,
             over_relaxation_factor=over_relaxation_factor,
         )
+
         self._compute_input_couplings()
+        self._resolved_coupling_names = self.strong_couplings
 
     # TODO: API: Remove the property and its setter.
     @property
@@ -151,9 +156,9 @@ class MDAGaussSeidel(MDA):
             The vector filled in with the initial coupling values.
         """
         self.__execute_all_disciplines()
-        self._compute_coupling_sizes(self.strong_couplings)
+        self._compute_coupling_sizes()
 
-        return self._current_strong_couplings()
+        return self._current_working_couplings()
 
     def _run(self) -> None:
         if self.warm_start:
@@ -167,7 +172,7 @@ class MDAGaussSeidel(MDA):
             self.__execute_all_disciplines()
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
-                current_couplings, self._current_strong_couplings()
+                current_couplings, self._current_working_couplings()
             )
 
             self.local_data.update(

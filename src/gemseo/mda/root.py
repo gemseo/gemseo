@@ -104,7 +104,9 @@ class MDARoot(MDA):
             acceleration_method=acceleration_method,
             over_relaxation_factor=over_relaxation_factor,
         )
+
         self._compute_input_couplings()
+        self._resolved_coupling_names = self.strong_couplings
 
     def linearize_all_disciplines(
         self, input_data: Mapping[str, NDArray], execute: bool = True

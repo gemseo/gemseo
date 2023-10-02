@@ -48,12 +48,15 @@ class MDANewtonRaphson(MDARoot):
     r"""Newton solver for MDA.
 
     The `Newton-Raphson method <https://en.wikipedia.org/wiki/Newton%27s_method>`__ is
-    parameterized by a relaxation factor :math:`\alpha \in (0, 1]` to limit the length
-    of the steps taken along the Newton direction. The new iterate is given by:
+    an iterative method to solve general equations of the form,
 
     .. math::
+        F(x) = 0, \quad \text{where} \quad F: \mathbb{R}^n \rightarrow \mathbb{R}^n.
 
-       x_{k+1} = x_k - \alpha J_f(x_k)^{-1} f(x_k),
+    Begining with :math:`x_0 \in \mathbb{R}^n` the successive iterates are given by:
+
+    .. math::
+       x_{k+1} = x_k - J_f(x_k)^{-1} f(x_k),
 
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
     """
@@ -193,12 +196,12 @@ class MDANewtonRaphson(MDARoot):
         return newton_step
 
     def _run(self) -> None:
-        self._compute_coupling_sizes(self._input_couplings)
+        self._compute_coupling_sizes()
 
         if self.warm_start:
             self._couplings_warm_start()
 
-        current_couplings = self._current_strong_couplings()
+        current_couplings = self._current_working_couplings()
 
         first_iteration = True
 
@@ -215,7 +218,7 @@ class MDANewtonRaphson(MDARoot):
 
             self.linearize_all_disciplines(current_input_data, execute=False)
 
-            residuals = (current_couplings - self._current_strong_couplings()).real
+            residuals = (current_couplings - self._current_working_couplings()).real
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
                 current_couplings,
