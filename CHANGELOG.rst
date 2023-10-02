@@ -27,7 +27,7 @@ and this project adheres to
 
 .. towncrier release notes start
 
-Version 5.1.0 (2023-09-27)
+Version 5.1.0 (2023-10-02)
 **************************
 
 
@@ -124,6 +124,8 @@ Added
 Fixed
 -----
 
+- Fix the MDA residual scaling strategy based on sub-residual norms.
+  `#957 <https://gitlab.com/gemseo/dev/gemseo/-/issues/957>`_
 - An XDSM can now take into account several levels of nested scenarios as well as nested ``MDA``.
   An XDSM with a nested Scenario can also take into account more complex formulations than ``DisciplinaryOpt``, such as ``MDF``.
   `#687 <https://gitlab.com/gemseo/dev/gemseo/-/issues/687>`_
@@ -244,7 +246,6 @@ Fixed
 - The MDAJacobi executions are now deterministic.
   The MDAJacobi m2d acceleration is deactivated when the least square problem is not well solved.
   `#882 <https://gitlab.com/gemseo/dev/gemseo/-/issues/882>`_
-
 
 
 Version 5.0.0 (2023-06-02)
