@@ -809,6 +809,7 @@ class SR1Approx(HessianApproximation):
     The approximation at iteration :math:`k+1` is:
 
     .. math::
+
        B_{k+1}=B_k +
        \frac{(\Delta g_k-B_k\Delta x_k)(\Delta g_k-B_k\Delta x_k)^T}
        {(\Delta g_k-B_k\Delta x_k)^T\Delta x_k}

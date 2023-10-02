@@ -50,6 +50,7 @@ class MDAJacobi(MDA):
     equations of the form,
 
     .. math::
+
         \left\{
             \begin{matrix}
                 F_1(x_1, x_2, \dots, x_n) = 0 \\
@@ -63,6 +64,7 @@ class MDAJacobi(MDA):
     solution of the following :math:`n` **independent** non-linear equations:
 
     .. math::
+
         \left\{
             \begin{matrix}
                 r_1\left( x_1^{(i+1)} \right) =
