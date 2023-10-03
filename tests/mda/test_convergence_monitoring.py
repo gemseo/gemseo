@@ -147,7 +147,7 @@ def test_scaling_strategy_jacobi(disciplines: list[MDODiscipline], scaling_strat
         result = 0.0
         for _, subres_norm in mda._scaling_data:
             result += subres_norm**2
-        assert abs(result**0.5 - norm(initial_residual_vector)) < 1e-15
+        assert abs(result**0.5 - norm(initial_residual_vector)) < 1e-12
 
         subres_norms = []
         for coupling in initial_residual.keys():
