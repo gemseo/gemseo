@@ -21,11 +21,11 @@
 from __future__ import annotations
 
 import abc
-import itertools
 import logging
 import sys
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
+from itertools import chain
 from multiprocessing import RLock
 from multiprocessing import Value
 from typing import ClassVar
@@ -40,11 +40,13 @@ from numpy import ascontiguousarray
 from numpy import complex128
 from numpy import concatenate
 from numpy import float64
+from numpy import hstack
 from numpy import int32
 from numpy import int64
 from numpy import ndarray
 from numpy import uint8
 from numpy import vstack
+from pandas import MultiIndex
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.core.discipline_data import Data
@@ -94,7 +96,7 @@ class AbstractCache(ABCMapping):
       associating output and input names,
       i.e. ``{"output_name": {"input_name": array}}``.
 
-    Example:
+    Examples:
         The evaluation of the function :math:`y=f(x)=(x^2, 2x^3`)`
         and its derivative at :math:`x=1` leads to cache the entry defined by:
 
@@ -120,13 +122,13 @@ class AbstractCache(ABCMapping):
     access (``cache_entry = cache[input_data]``)
     and update (``cache.update(other_cache)``).
 
-    Note:
+    Notes:
         ``cache_entry`` is a :class:`.CacheEntry`
         with the ordered fields *input*, *output* and *jacobian*
         accessible either by index, e.g. ``input_data = cache_entry[0]``,
         or by name, e.g. ``input_data = cache_entry.inputs``.
 
-    Note:
+    Notes:
         If an output name is also an input name,
         the output name is suffixed with ``[out]``.
 
@@ -203,7 +205,7 @@ class AbstractCache(ABCMapping):
         """
         if not self.__names_to_sizes:
             last_entry = self.last_entry
-            for name, data in itertools.chain(
+            for name, data in chain(
                 last_entry.inputs.items(), last_entry.outputs.items()
             ):
                 if isinstance(data, ndarray):
@@ -216,16 +218,24 @@ class AbstractCache(ABCMapping):
 
         return self.__names_to_sizes
 
-    def __str__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Name: {}", self.name)
-        msg.indent()
-        msg.add("Type: {}", self.__class__.__name__)
-        msg.add("Tolerance: {}", self.tolerance)
-        msg.add("Input names: {}", self.input_names)
-        msg.add("Output names: {}", self.output_names)
-        msg.add("Length: {}", len(self))
-        return str(msg)
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the cache."""
+        mls = MultiLineString()
+        mls.add("Name: {}", self.name)
+        mls.indent()
+        mls.add("Type: {}", self.__class__.__name__)
+        mls.add("Tolerance: {}", self.tolerance)
+        mls.add("Input names: {}", self.input_names)
+        mls.add("Output names: {}", self.output_names)
+        mls.add("Length: {}", len(self))
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def __setitem__(
         self,
@@ -294,8 +304,8 @@ class AbstractCache(ABCMapping):
         categorize: bool = True,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
-    ) -> IODataset:
-        """Build a :class:`.IODataset` from the cache.
+    ) -> Dataset:
+        """Build a :class:`.Dataset` from the cache.
 
         Args:
             name: A name for the dataset.
@@ -315,61 +325,44 @@ class AbstractCache(ABCMapping):
         """
         dataset_name = name or self.name
         if categorize:
-            dataset = IODataset(dataset_name=dataset_name)
-            input_group = dataset.INPUT_GROUP
-            output_group = dataset.OUTPUT_GROUP
+            dataset_class = IODataset
+            input_group = IODataset.INPUT_GROUP
+            output_group = IODataset.OUTPUT_GROUP
         else:
-            dataset = Dataset(dataset_name=dataset_name)
-            input_group = output_group = dataset.DEFAULT_GROUP
+            dataset_class = Dataset
+            input_group = output_group = Dataset.DEFAULT_GROUP
 
-        self.__fill_dataset_by_group(
-            dataset,
-            input_names or self.input_names,
-            input_group,
-            is_output_group=False,
+        data = []
+        columns = []
+        for variable_names, group_name, is_output_group in zip(
+            [input_names or self.input_names, output_names or self.output_names],
+            [input_group, output_group],
+            [False, True],
+        ):
+            for variable_name in variable_names:
+                cache_entries = []
+                for cache_entry in self:
+                    if cache_entry.outputs:
+                        if is_output_group:
+                            selected_cache_entry = cache_entry.outputs[variable_name]
+                        else:
+                            selected_cache_entry = cache_entry.inputs[variable_name]
+                        cache_entries.append(selected_cache_entry)
+
+                new_data = vstack(cache_entries)
+                data.append(new_data)
+                columns.extend(
+                    [(group_name, variable_name, i) for i in range(new_data.shape[1])]
+                )
+
+        return dataset_class(
+            hstack(data),
+            dataset_name=dataset_name,
+            columns=MultiIndex.from_tuples(
+                columns,
+                names=dataset_class.COLUMN_LEVEL_NAMES,
+            ),
         )
-        self.__fill_dataset_by_group(
-            dataset,
-            output_names or self.output_names,
-            output_group,
-            is_output_group=True,
-        )
-
-        return dataset
-
-    def __fill_dataset_by_group(
-        self,
-        dataset: IODataset,
-        names: list[str],
-        group: str,
-        is_output_group: bool,
-    ) -> None:
-        """Fill a group of a dataset with cache variables.
-
-        If the same variable name occurs in the input and the output,
-        suffix the output name to make it unique.
-
-        Args:
-            dataset: The dataset to be filled.
-            names: The variable names of the group to be added to the dataset.
-            group: The group of variables to be added to the dataset.
-            is_output_group: Whether ``group`` is a group of output variables.
-        """
-        for name in names:
-            cache_entries = []
-            for cache_entry in self:
-                if cache_entry.outputs:
-                    if is_output_group:
-                        selected_cache_entry = cache_entry.outputs[name]
-                    else:
-                        selected_cache_entry = cache_entry.inputs[name]
-                    cache_entries.append(selected_cache_entry)
-            data = vstack(cache_entries)
-            if is_output_group:
-                final_name = name
-                dataset.add_variable(final_name, data, group)
-            else:
-                dataset.add_variable(name, data, group)
 
 
 class AbstractFullCache(AbstractCache):
@@ -695,9 +688,7 @@ class AbstractFullCache(AbstractCache):
     @property
     def _all_groups(self) -> list[int]:
         """Sorted the indices of the entries."""
-        return sorted(
-            itertools.chain(*(v.tolist() for v in self._hashes_to_indices.values()))
-        )
+        return sorted(chain(*(v.tolist() for v in self._hashes_to_indices.values())))
 
     @synchronized
     def __iter__(self) -> Generator[CacheEntry]:
@@ -780,14 +771,19 @@ class AbstractFullCache(AbstractCache):
                 variable_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
 
         cache_as_array = vstack(
-            concatenate(
-                [all_input_data[index][name].flatten() for name in shared_input_names]
-                + [
-                    all_output_data[index][name].flatten()
-                    for name in shared_output_names
-                ]
-            )
-            for index in range(len(all_input_data))
+            [
+                concatenate(
+                    [
+                        all_input_data[index][name].flatten()
+                        for name in shared_input_names
+                    ]
+                    + [
+                        all_output_data[index][name].flatten()
+                        for name in shared_output_names
+                    ]
+                )
+                for index in range(len(all_input_data))
+            ]
         )
         save_data_arrays_to_xml(variable_names, cache_as_array, file_path)
 

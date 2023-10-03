@@ -61,7 +61,7 @@ get_available_disciplines()
 # -------------------
 # The :func:`.create_discipline` function can create a
 # :class:`.MDODiscipline` or a list of :class:`.MDODiscipline`
-# by using its class name. Specific :code:`**options` can be provided in
+# by using its class name. Specific ``**options`` can be provided in
 # argument. E.g.
 disciplines = create_discipline(
     [
@@ -71,31 +71,29 @@ disciplines = create_discipline(
         "SobieskiStructure",
     ]
 )
-print(type(disciplines))
-print(type(disciplines[0]))
-print(isinstance(disciplines[0], MDODiscipline))
+type(disciplines), type(disciplines[0]), isinstance(disciplines[0], MDODiscipline)
 # %%
 # This function can also be used to create a particular :class:`.MDODiscipline`
 # from scratch, such as :class:`.AnalyticDiscipline`
 # or :class:`.AutoPyDiscipline`. E.g.
 addition = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
-print(addition.execute({"x1": array([1.0]), "x2": array([2.0])}))
+addition.execute({"x1": array([1.0]), "x2": array([2.0])})
 
 # %%
 # Get all inputs/outputs
 # ----------------------
 # The :func:`~gemseo.disciplines.utils.get_all_inputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
-# argument :code:`recursive` (default: :code:`False`) is :code:`True`,
+# argument ``recursive`` (default: ``False``) is ``True``,
 # merging the input data from the discipline grammars. E.g.
-print(get_all_inputs(disciplines))
+get_all_inputs(disciplines)
 
 # %%
 # The :func:`~gemseo.disciplines.utils.get_all_outputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
-# argument :code:`recursive` (default: :code:`False`) is :code:`True`,
+# argument ``recursive`` (default: ``False``) is ``True``,
 # merging the input data from the discipline grammars. E.g.
-print(get_all_outputs(disciplines))
+get_all_outputs(disciplines)
 
 # %%
 # Get discipline schemas for inputs, outputs and options
@@ -103,22 +101,22 @@ print(get_all_outputs(disciplines))
 #
 # - The function :func:`.get_discipline_inputs_schema` returns
 #   the inputs of a discipline. E.g.
-print(get_discipline_inputs_schema(disciplines[0]))
+get_discipline_inputs_schema(disciplines[0])
 
 # %%
 # - The function :func:`.get_discipline_outputs_schema` returns
 #   the outputs of a discipline. E.g.
-print(get_discipline_outputs_schema(disciplines[0]))
+get_discipline_outputs_schema(disciplines[0])
 
 # %%
 # - The function :func:`.get_discipline_options_schema` returns
 #   the options of a discipline. E.g.
-print(get_discipline_options_schema("SobieskiMission"))
+get_discipline_options_schema("SobieskiMission")
 
 # %%
 # - The function :func:`.get_discipline_options_defaults`
 #   can get the default option values of a discipline. E.g.
-print(get_discipline_options_defaults("SobieskiMission"))
+get_discipline_options_defaults("SobieskiMission")
 
 # %%
 # Plot coupling structure

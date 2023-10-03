@@ -20,7 +20,14 @@
 """The scalable problem."""
 from __future__ import annotations
 
+from statistics import NormalDist
 from typing import Any
+from typing import Iterable
+
+from numpy import diag
+from numpy import trace
+from numpy.typing import NDArray
+from scipy.linalg import block_diag
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -49,7 +56,7 @@ class ScalableProblem(_ScalableProblem):
     It builds a set of strongly coupled scalable disciplines completed by a system
     discipline computing the objective function and the constraints.
 
-    These disciplines are defined on an unit design space, i.e. design variables belongs
+    These disciplines are defined on a unit design space, i.e. design variables belongs
     to :math:`[0, 1]`.
     """
 
@@ -90,7 +97,12 @@ class ScalableProblem(_ScalableProblem):
         return scenario
 
     def create_quadratic_programming_problem(
-        self, add_coupling: bool = False
+        self,
+        add_coupling: bool = False,
+        covariance_matrices: Iterable[NDArray[float]] = (),
+        use_margin: bool = True,
+        margin_factor: float = 2.0,
+        tolerance: float = 0.01,
     ) -> OptimizationProblem:
         r"""Create the quadratic programming (QP) version of the MDO problem.
 
@@ -99,8 +111,22 @@ class ScalableProblem(_ScalableProblem):
         under the linear constraints :math:`Ax-b\leq 0`,
         where the matrix :math:`Q` is symmetric.
 
+        In the presence of uncertainties,
+        offsets are added to the objective and constraint expressions.
+
         Args:
             add_coupling: Whether to add the coupling variables as an observable.
+            use_margin: Whether the statistics used for the constraints
+                are margins or probabilities;
+                if ``False``, the random vectors are assumed to be Gaussian.
+            covariance_matrices: The covariance matrices
+                :math:`\Sigma_1,\ldots,\Sigma_N`
+                of the random variables :math:`U_1,\ldots,U_N`.
+                If empty, do not consider uncertainties.
+            margin_factor: The factor :math:`\kappa`
+                used in the expression of the margins.
+            tolerance: The tolerance level :math:`\varepsilon`
+                for the violation probability.
 
         Returns:
             The quadratic optimization problem.
@@ -111,9 +137,21 @@ class ScalableProblem(_ScalableProblem):
         A = self.qp_problem.A[0 : self._p, :]  # noqa: N806
         b = self.qp_problem.b[0 : self._p]
 
-        f = lambda x: (0.5 * x @ Q @ x + c.T @ x + d)[0]  # noqa: E731
+        if covariance_matrices:
+            P = self._inv_C  # noqa: N806
+            Sigma = block_diag(*covariance_matrices)  # noqa: N806
+            P_Sigma_Pt = P @ Sigma @ P.T  # noqa: N806
+            f_offset = trace(P_Sigma_Pt)
+            if use_margin:
+                g_offset = margin_factor * diag(P_Sigma_Pt) ** 0.5
+            else:
+                g_offset = -diag(P_Sigma_Pt) ** 0.5 * NormalDist().inv_cdf(tolerance)
+        else:
+            g_offset = f_offset = 0
+
+        f = lambda x: (0.5 * x @ Q @ x + c.T @ x + d + f_offset)[0]  # noqa: E731
         df = lambda x: Q @ x + c.T  # noqa: E731
-        g = lambda x: A @ x - b  # noqa: E731
+        g = lambda x: A @ x - b + g_offset  # noqa: E731
         dg = lambda x: A  # noqa: E731
 
         design_space = DesignSpace()

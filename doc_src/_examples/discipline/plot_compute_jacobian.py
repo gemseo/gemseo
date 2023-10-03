@@ -23,7 +23,7 @@ Compute the Jacobian of a discipline analytically
 =================================================
 
 In this example,
-we will compute the Jacobians of some outputs of a :class:`.MDODiscipline`
+we will compute the Jacobians of some outputs of an :class:`.MDODiscipline`
 with respect to some inputs, based on its analytical derivatives.
 """
 from __future__ import annotations
@@ -39,18 +39,18 @@ discipline = AnalyticDiscipline({"y": "a**2+b", "z": "a**3+b**2"})
 # %%
 # We can execute it with its default input values:
 discipline.execute()
-print(discipline.local_data)
+discipline.local_data
 
 # %%
 # or with custom ones:
 discipline.execute({"a": array([1.0])})
-print(discipline.local_data)
+discipline.local_data
 
 # %%
 # Then,
 # we use the method :meth:`.MDODiscipline.linearize` to compute the derivatives:
 jacobian_data = discipline.linearize()
-print(jacobian_data)
+jacobian_data
 
 # %%
 # There is no Jacobian data
@@ -65,7 +65,7 @@ print(jacobian_data)
 discipline.add_differentiated_inputs(["a"])
 discipline.add_differentiated_outputs(["z"])
 jacobian_data = discipline.linearize()
-print(jacobian_data)
+jacobian_data
 
 # %%
 # By default,
@@ -73,10 +73,10 @@ print(jacobian_data)
 # for which to compute the Jacobian on.
 # We can change them with ``input_data``:
 jacobian_data = discipline.linearize(input_data={"a": array([1.0])})
-print(jacobian_data)
+jacobian_data
 
 # %%
 # We can also force the discipline to compute
 # the derivatives of all the outputs with respect to all the inputs:
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
-print(jacobian_data)
+jacobian_data

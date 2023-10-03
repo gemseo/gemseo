@@ -69,7 +69,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -77,7 +77,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> MeasureType:
         raise NotImplementedError
 
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -87,7 +87,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> MeasureType:
         raise NotImplementedError
 
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,

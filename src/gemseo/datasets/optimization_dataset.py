@@ -59,22 +59,38 @@ class OptimizationDataset(Dataset):
 
     @property
     def design_variable_names(self) -> list[str]:
-        """The names of the design variables."""
+        """The names of the design variables.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
         return self.get_variable_names(self.DESIGN_GROUP)
 
     @property
     def constraint_names(self) -> list[str]:
-        """The names of the constraints."""
+        """The names of the constraints.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
         return self.get_variable_names(self.CONSTRAINT_GROUP)
 
     @property
     def objective_names(self) -> list[str]:
-        """The names of the objectives."""
+        """The names of the objectives.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
         return self.get_variable_names(self.OBJECTIVE_GROUP)
 
     @property
     def observable_names(self) -> list[str]:
-        """The names of the observables."""
+        """The names of the observables.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
         return self.get_variable_names(self.OBSERVABLE_GROUP)
 
     @property

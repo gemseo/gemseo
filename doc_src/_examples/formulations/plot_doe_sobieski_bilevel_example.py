@@ -133,7 +133,7 @@ system_scenario = create_scenario(
 # %%
 # .. note::
 #
-#    Setting :code:`reset_x0_before_opt=True` is mandatory when doing a DOE
+#    Setting ``reset_x0_before_opt=True`` is mandatory when doing a DOE
 #    in parallel. If we want reproducible results, don't reuse previous xopt.
 
 system_scenario.formulation.mda1.warm_start = False

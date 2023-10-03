@@ -4,10 +4,10 @@ git+https://gitlab.com/gemseo/dev/gemseo-petsc.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pymoo.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-calibration.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-mlearning.git@develop
-git+https://gitlab.com/gemseo/dev/gemseo-umdo.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-fmu.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-mma.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-matlab.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pdfo.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pseven.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-template-editor-gui.git@develop
+git+https://gitlab.com/gemseo/dev/gemseo-benchmark.git@develop

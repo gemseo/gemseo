@@ -87,24 +87,24 @@ model.learn()
 # Use it for prediction
 # ---------------------
 input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-print(model.predict(input_value))
+model.predict(input_value)
 
 # %%
 # Save the regression model
 # -------------------------
 # Lastly, we save the model.
 directory = model.to_pickle()
-print(directory)
+directory
 
 # %%
 # Load the regression model
 # -------------------------
 # In an other study, we could load this model.
 loaded_model = import_regression_model(directory)
-print(loaded_model)
+loaded_model
 
 # %%
 # Use the loaded regression model
 # -------------------------------
 # And use it!
-print(loaded_model.predict(input_value))
+loaded_model.predict(input_value)

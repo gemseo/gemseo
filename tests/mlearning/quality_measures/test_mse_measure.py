@@ -73,19 +73,19 @@ def test_constructor(dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_evaluate_learn(dataset):
+def test_compute_learning_measure(dataset):
     """Test evaluate learn method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_train = measure.evaluate_learn()
+    mse_train = measure.compute_learning_measure()
     assert mse_train < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_train = measure.evaluate_learn()
+    rmse_train = measure.compute_learning_measure()
     assert abs(mse_train**0.5 - rmse_train) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_train = measure.evaluate_learn()
+    mse_train = measure.compute_learning_measure()
     assert mse_train < TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -94,57 +94,60 @@ def test_evaluate_learn(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = MSEMeasure(algo)
-    mse_train = measure.evaluate_learn()
+    mse_train = measure.compute_learning_measure()
     assert mse_train < TOL_DEG_2
 
 
-def test_evaluate_test(dataset, dataset_test):
+def test_compute_test_measure(dataset, dataset_test):
     """Test evaluate test method."""
     algo = PolynomialRegressor(dataset, degree=2)
-    mse_test = MSEMeasure(algo).evaluate_test(dataset_test)
+    mse_test = MSEMeasure(algo).compute_test_measure(dataset_test)
     assert mse_test < TOL_DEG_2
-    assert abs(mse_test**0.5 - RMSEMeasure(algo).evaluate_test(dataset_test)) < 1e-6
+    assert (
+        abs(mse_test**0.5 - RMSEMeasure(algo).compute_test_measure(dataset_test))
+        < 1e-6
+    )
 
     algo = PolynomialRegressor(dataset, degree=1)
-    assert MSEMeasure(algo).evaluate_test(dataset_test) < TOL_DEG_1
+    assert MSEMeasure(algo).compute_test_measure(dataset_test) < TOL_DEG_1
 
     algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
-    assert MSEMeasure(algo).evaluate_test(test_data=dataset_test) < TOL_DEG_2
+    assert MSEMeasure(algo).compute_test_measure(test_data=dataset_test) < TOL_DEG_2
 
 
-def test_evaluate_loo(dataset):
+def test_compute_leave_one_out_measure(dataset):
     """Test evaluate leave one out method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_loo = measure.evaluate_loo()
+    mse_loo = measure.compute_leave_one_out_measure()
     assert mse_loo < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_loo = measure.evaluate_loo()
+    rmse_loo = measure.compute_leave_one_out_measure()
     assert abs(mse_loo**0.5 - rmse_loo) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_loo = measure.evaluate_loo()
+    mse_loo = measure.compute_leave_one_out_measure()
     assert mse_loo < TOL_DEG_1
 
 
-def test_evaluate_kfolds(dataset):
+def test_compute_cross_validation_measure(dataset):
     """Test evaluate k-folds method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_kfolds = measure.evaluate_kfolds()
+    mse_kfolds = measure.compute_cross_validation_measure()
     assert mse_kfolds < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_kfolds = measure.evaluate_kfolds()
+    rmse_kfolds = measure.compute_cross_validation_measure()
     assert abs(mse_kfolds**0.5 - rmse_kfolds) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_kfolds = measure.evaluate_kfolds()
+    mse_kfolds = measure.compute_cross_validation_measure()
     assert mse_kfolds < TOL_DEG_1
 
     algo = PolynomialRegressor(
@@ -153,29 +156,31 @@ def test_evaluate_kfolds(dataset):
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
     measure = MSEMeasure(algo, fit_transformers=True)
-    mse_kfolds = measure.evaluate_kfolds()
+    mse_kfolds = measure.compute_cross_validation_measure()
     assert mse_kfolds < TOL_DEG_2
 
 
-def test_evaluate_bootstrap(dataset):
+def test_compute_bootstrap_measure(dataset):
     """Test evaluate bootstrap method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
-    mse_bootstrap = measure.evaluate_bootstrap()
+    mse_bootstrap = measure.compute_bootstrap_measure()
     assert mse_bootstrap < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_bootstrap = measure.evaluate_bootstrap()
-    rmse_bootstrap_2 = measure.evaluate_bootstrap(samples=list(range(20)))
+    rmse_bootstrap = measure.compute_bootstrap_measure()
+    rmse_bootstrap_2 = measure.compute_bootstrap_measure(samples=list(range(20)))
     assert abs(rmse_bootstrap - rmse_bootstrap_2) < 1e-6
     assert abs(mse_bootstrap**0.5 - rmse_bootstrap) < 1e-6
 
     algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
-    mse_bootstrap = measure.evaluate_bootstrap()
+    mse_bootstrap = measure.compute_bootstrap_measure()
     assert mse_bootstrap < TOL_DEG_1
 
 
-@pytest.mark.parametrize("method", ["evaluate_bootstrap", "evaluate_kfolds"])
+@pytest.mark.parametrize(
+    "method", ["compute_bootstrap_measure", "compute_cross_validation_measure"]
+)
 @pytest.mark.parametrize("fit", [False, True])
 def test_fit_transformers(algo_for_transformer, method, fit):
     """Check that the transformers are fitted with the sub-datasets.
@@ -190,7 +195,9 @@ def test_fit_transformers(algo_for_transformer, method, fit):
     assert allclose(e1(seed=0), e2(seed=0)) is fit
 
 
-@pytest.mark.parametrize("method", ["evaluate_bootstrap", "evaluate_kfolds"])
+@pytest.mark.parametrize(
+    "method", ["compute_bootstrap_measure", "compute_cross_validation_measure"]
+)
 @pytest.mark.parametrize("seed", [None, 0])
 def test_seed(algo_for_transformer, method, seed):
     """Check that the seed is correctly used."""

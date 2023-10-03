@@ -39,6 +39,7 @@ def compute_linear_approximation(
     :math:`f` at a point :math:`\xref` is defined as
 
     .. math::
+
         \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
         f(x)
         \approx
@@ -96,6 +97,7 @@ def compute_quadratic_approximation(
     :math:`f` is defined as
 
     .. math::
+
         \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
         f(x)
         \approx

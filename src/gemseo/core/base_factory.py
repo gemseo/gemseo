@@ -38,6 +38,7 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_default_option_values
 from gemseo.utils.source_parsing import get_options_doc
 
@@ -201,15 +202,6 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
                     cls, cls.__module__.split(".")[0]
                 )
 
-    def __log_import_failure(self, pkg_name: str) -> None:
-        """Log import failures.
-
-        Args:
-            pkg_name: The name of a package that failed to be imported.
-        """
-        LOGGER.debug("Failed to import package %s", pkg_name)
-        self.failed_imports[pkg_name] = ""
-
     def __import_modules_from_env_var(self) -> list[str]:
         """Import the modules from the path given by an environment variable.
 
@@ -245,20 +237,33 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Args:
             pkg_name: The name of the package.
         """
-        pkg = importlib.import_module(pkg_name)
+        try:
+            pkg = importlib.import_module(pkg_name)
+        except Exception as error:
+            self.__record_import_failure(pkg_name, error)
+            return
 
         if not hasattr(pkg, "__path__"):
             # not a package so no more module to import
             return
 
         for _, mod_name, _ in pkgutil.walk_packages(
-            pkg.__path__, pkg.__name__ + ".", self.__log_import_failure
+            pkg.__path__, pkg.__name__ + ".", self.__record_import_failure
         ):
             try:
                 importlib.import_module(mod_name)
-            except Exception as err:  # pylint: disable=(broad-except
-                LOGGER.debug("Failed to import module: %s", mod_name, exc_info=True)
-                self.failed_imports[mod_name] = str(err)
+            except Exception as error:
+                self.__record_import_failure(mod_name, error)
+
+    def __record_import_failure(self, name: str, error: Exception | str = "") -> None:
+        """Record an import failure.
+
+        Args:
+            name: The name of the module or package to be imported.
+            error: The exception object raised while importing the module or package.
+        """
+        LOGGER.debug("Failed to import module: %s", name, exc_info=True)
+        self.failed_imports[name] = str(error)
 
     def __get_sub_classes(self, cls: type) -> dict[str, type]:
         """Find all the subclasses of a class.
@@ -349,13 +354,15 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     def create(
         self,
         class_name: str,
-        **options: Any,
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """Return an instance of a class.
 
         Args:
             class_name: The name of the class.
-            **options: The arguments to be passed to the class constructor.
+            **args: The positional arguments to be passed to the class constructor.
+            **kwargs: The keyword arguments to be passed to the class constructor.
 
         Returns:
             The instance of the class.
@@ -365,10 +372,17 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         """
         cls = self.get_class(class_name)
         try:
-            return cls(**options)
+            return cls(*args, **kwargs)
         except TypeError:
             LOGGER.error(
-                "Failed to create class %s with arguments %s", class_name, options
+                (
+                    "Failed to create class %s "
+                    "with positional arguments %s "
+                    "and keyword arguments %s."
+                ),
+                class_name,
+                args,
+                kwargs,
             )
             raise
 
@@ -409,9 +423,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
 
         Args:
             name: The name of the class.
-            write_schema: If True, write the JSON schema to a file.
+            write_schema: If ``True``, write the JSON schema to a file.
             schema_path: The path to the JSON schema file.
-                If None, the file is saved in the current directory in a file named
+                If ``None``, the file is saved in the current directory in a file named
                 after the name of the class.
 
         Returns:
@@ -429,12 +443,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
         grammar.set_descriptions(option_descriptions)
-
-        # Remove args bound to None from the required properties
-        # because they are optional.
-        for opt, val in default_option_values.items():
-            if val is None:
-                grammar.required_names.remove(opt)
+        grammar.defaults = default_option_values
+        for name in default_option_values:
+            grammar.required_names.remove(name)
 
         if write_schema:
             grammar.to_file(schema_path)
@@ -478,8 +489,9 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     def __str__(self) -> str:
         return f"Factory of {self._CLASS.__name__} objects"
 
-    def __repr__(self) -> str:
-        # Display the successfully loaded modules and the failed imports with the reason
+    @property
+    def __pretty_table_representation(self) -> PrettyTable:
+        """The successfully loaded modules and the failed imports with the reason."""
         table = PrettyTable(
             ["Module", "Is available?", "Purpose or error message"],
             title=self._CLASS.__name__,
@@ -509,4 +521,12 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         for name in sorted(names_to_import_statuses.keys()):
             table.add_row(names_to_import_statuses[name])
 
-        return table.get_string()
+        return table
+
+    def __repr__(self) -> str:
+        return self.__pretty_table_representation.get_string()
+
+    def _repr_html_(self) -> str:
+        return REPR_HTML_WRAPPER.format(
+            self.__pretty_table_representation.get_html_string()
+        )

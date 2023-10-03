@@ -41,11 +41,11 @@ configure_logger()
 #
 # The :func:`.get_available_doe_algorithms` function returns the list
 # of optimization algorithms available in |g| or in external modules
-print(get_available_doe_algorithms())
+get_available_doe_algorithms()
 
 # %%
 # Get options schema
 # ------------------
-# For a given optimization algorithm, e.g. :code:`"DiagonalDOE"`,
+# For a given optimization algorithm, e.g. ``"DiagonalDOE"``,
 # we can get the options; e.g.
-print(get_algorithm_options_schema("DiagonalDOE"))
+get_algorithm_options_schema("DiagonalDOE")

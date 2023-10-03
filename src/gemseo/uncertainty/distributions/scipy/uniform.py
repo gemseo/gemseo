@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPUniformDistribution(SPDistribution):
     """Create a uniform distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.uniform import (
         ...     SPUniformDistribution
         ... )
@@ -40,17 +40,15 @@ class SPUniformDistribution(SPDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         maximum: float = 1.0,
         dimension: int = 1,
     ) -> None:
         """
         Args:
-            variable: The name of the uniform random variable.
             minimum: The minimum of the uniform random variable.
             maximum: The maximum of the uniform random variable.
-            dimension: The dimension of the uniform random variable.
         """  # noqa: D205,D212,D415
         parameters = {"loc": minimum, "scale": maximum - minimum}
         standard_parameters = {self._LOWER: minimum, self._UPPER: maximum}

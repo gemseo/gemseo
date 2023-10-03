@@ -65,7 +65,7 @@ class MLErrorMeasure(MLQualityMeasure):
         """
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def evaluate_learn(
+    def compute_learning_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -73,8 +73,12 @@ class MLErrorMeasure(MLQualityMeasure):
     ) -> MeasureType:
         """
         Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
         """
         self._train_algo(samples)
         return self._post_process_measure(
@@ -87,7 +91,7 @@ class MLErrorMeasure(MLQualityMeasure):
             as_dict,
         )
 
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: IODataset,
         samples: Sequence[int] | None = None,
@@ -96,8 +100,12 @@ class MLErrorMeasure(MLQualityMeasure):
     ) -> MeasureType:
         """
         Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
         """
         self._train_algo(samples)
         return self._post_process_measure(
@@ -118,25 +126,28 @@ class MLErrorMeasure(MLQualityMeasure):
             as_dict,
         )
 
-    def evaluate_loo(
+    def compute_leave_one_out_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         as_dict: bool = False,
     ) -> MeasureType:
         """
-        Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+        as_dict: Whether the full quality measure is returned
+            as a mapping from ``algo.output names`` to quality measures.
+            Otherwise,
+            the full quality measure as an array
+            stacking these quality measures
+            according to the order of ``algo.output_names``.
         """
-        return self.evaluate_kfolds(
+        return self.compute_cross_validation_measure(
             samples=samples,
             n_folds=self.algo.learning_set.n_samples,
             multioutput=multioutput,
             as_dict=as_dict,
         )
 
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -146,9 +157,12 @@ class MLErrorMeasure(MLQualityMeasure):
         as_dict: bool = False,
     ) -> MeasureType:
         """
-        Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+        as_dict: Whether the full quality measure is returned
+            as a mapping from ``algo.output names`` to quality measures.
+            Otherwise,
+            the full quality measure as an array
+            stacking these quality measures
+            according to the order of ``algo.output_names``.
         """
         self._train_algo(samples)
         samples = self._assure_samples(samples)
@@ -173,7 +187,7 @@ class MLErrorMeasure(MLQualityMeasure):
             sum(qualities) / len(qualities), multioutput, as_dict
         )
 
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
@@ -183,8 +197,12 @@ class MLErrorMeasure(MLQualityMeasure):
     ) -> MeasureType:
         """
         Args:
-            as_dict: Whether to express the measure as a dictionary
-                whose keys are the output names.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
         """
         samples = self._assure_samples(samples)
         self._train_algo(samples)
@@ -229,8 +247,9 @@ class MLErrorMeasure(MLQualityMeasure):
         Args:
             outputs: The reference data.
             predictions: The predicted labels.
-            multioutput: Whether to return the quality measure
-                for each output component. If not, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
@@ -243,10 +262,15 @@ class MLErrorMeasure(MLQualityMeasure):
 
         Args:
             measure: The measure to post-process.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
-            as_dict: Whether to return the measure as is or as a dictionary
-                whose keys are the output names.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
 
         Returns:
             The post-processed measure.
@@ -262,3 +286,10 @@ class MLErrorMeasure(MLQualityMeasure):
         return split_array_to_dict_of_arrays(
             data, self.algo.learning_set.variable_names_to_n_components, names
         )
+
+    # TODO: API: remove these aliases in the next major release.
+    evaluate_learn = compute_learning_measure
+    evaluate_test = compute_test_measure
+    evaluate_kfolds = compute_cross_validation_measure
+    evaluate_loo = compute_leave_one_out_measure
+    evaluate_bootstrap = compute_bootstrap_measure

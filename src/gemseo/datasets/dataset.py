@@ -44,6 +44,7 @@ from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
+from typing import TYPE_CHECKING
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -58,10 +59,14 @@ from numpy import setdiff1d
 from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import read_csv
-from pandas.core.frame import Axes
-from pandas.core.frame import Dtype
 
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from pandas._typing import Axes
+    from pandas._typing import Dtype
 
 LOGGER = logging.getLogger(__name__)
 
@@ -127,7 +132,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     misc: dict[str, Any]
     """Miscellaneous information specific to the dataset, and not to an entry."""
 
-    _COLUMN_LEVEL_NAMES: Final[tuple[str, str, str]] = (
+    COLUMN_LEVEL_NAMES: Final[tuple[str, str, str]] = (
         "GROUP",
         "VARIABLE",
         "COMPONENT",
@@ -179,11 +184,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             columns = MultiIndex(
                 levels=[[], [], []],
                 codes=[[], [], []],
-                names=self._COLUMN_LEVEL_NAMES,
+                names=self.COLUMN_LEVEL_NAMES,
             )
         super().__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
+        self._reindex()
         self.name = dataset_name or self.__class__.__name__
         self.misc = {}
 
@@ -193,12 +199,20 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     @property
     def group_names(self) -> list[str]:
-        """The names of the groups of variables in alphabetical order."""
+        """The names of the groups of variables in alphabetical order.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
         return sorted(self.columns.levels[self.__GROUP_LEVEL].unique())
 
     @property
     def variable_names(self) -> list[str]:
-        """The names of the variables in alphabetical order."""
+        """The names of the variables in alphabetical order.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
         return sorted(self.columns.levels[self.__VARIABLE_LEVEL].unique())
 
     @property
@@ -211,6 +225,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             A variable name can belong to more than one group
             while a variable identifier is unique
             as a group name is unique.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
         """
         return sorted(self.columns.droplevel(self.__COMPONENT_LEVEL).unique())
 
@@ -246,6 +263,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The names of the groups that contain the variable.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
         """
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
@@ -269,6 +289,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The names of the variables contained in the group.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
         """
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
@@ -359,7 +382,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         components: ComponentType = (),
         indices: IndexType = (),
     ) -> None:
-        """Replace the data of some existing indices and columns by a deepcopy of ``data``.
+        """Replace some existing indices and columns by a deepcopy of ``data``.
 
         Args:
             data: The new data to be inserted in the dataset.
@@ -435,7 +458,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: If the group already has the added components
                 of the variable named ``variable_name``.
         """
-        n_components = components if isinstance(components, int) else len(components)
+        n_components = 1 if isinstance(components, int) else len(components)
         data = self.__force_to_2d_array(data, n_components)
 
         if components:
@@ -451,12 +474,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
         self.__transform_multi_index_column_to_single_index_column()
         apply_scalar_to_all_entries = len(data) == 1 and not self.empty
-        for component, data_column in zip(components, data.T):
-            if apply_scalar_to_all_entries:
-                value = data_column[0]
-            else:
-                value = data_column
-            self[(group_name, variable_name, component)] = value
+
+        columns = [(group_name, variable_name, component) for component in components]
+        if apply_scalar_to_all_entries:
+            value = data[0]
+        else:
+            value = data
+        self[columns] = value
 
         self.__transform_single_index_column_to_multi_index_column()
         self._reindex()
@@ -679,7 +703,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def __transform_single_index_column_to_multi_index_column(self) -> None:
         """Transform the tuple columns into multi-index columns."""
         self.columns = MultiIndex.from_tuples(
-            self.columns, names=self._COLUMN_LEVEL_NAMES
+            self.columns, names=self.COLUMN_LEVEL_NAMES
         )
 
     @classmethod
@@ -731,7 +755,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 ]
             )
 
-        index = MultiIndex.from_tuples(columns, names=cls._COLUMN_LEVEL_NAMES)
+        index = MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
         dataset = cls(data, columns=index)
         dataset._reindex()
         return dataset
@@ -809,7 +833,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
 
         dataset = cls(dataframe)
-        dataset.columns = dataset.columns.set_names(cls._COLUMN_LEVEL_NAMES)
+        dataset.columns = dataset.columns.set_names(cls.COLUMN_LEVEL_NAMES)
         dataset._reindex()
         return dataset
 
@@ -884,40 +908,102 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """Reindex the dataframe."""
 
     def to_dict_of_arrays(
-        self, by_group: bool = True
-    ) -> dict[str, ndarray | dict[str, ndarray]]:
+        self, by_group: bool = True, by_entry: bool = False
+    ) -> (
+        dict[str, ndarray | dict[str, ndarray]]
+        | list[dict[str, ndarray | dict[str, ndarray]]]
+    ):
         """Convert the dataset into a dictionary of NumPy arrays.
 
         Args:
             by_group: Whether the data are returned as
-                ``{group_name: {variable_name: variable_value}}``.
+                ``{group_name: {variable_name: variable_values}}``.
                 Otherwise,
-                the data are returned either as ``{variable_name: variable_value}``
+                the data are returned either as ``{variable_name: variable_values}``
                 if only one group contains the variable ``variable_name``
-                or as ``{f"{group_name}:{variable_name}": variable_value}``
+                or as ``{f"{group_name}:{variable_name}": variable_values}``
                 if at least two groups contain the variable ``variable_name``.
+            by_entry: Whether the data are returned as
+                ``[{group_name: {variable_name: variable_value_1}}, ...]``,
+                ``[{variable_name: variable_value_1}, ...]``
+                or ``[{f"{group_name}:{variable_name}": variable_value_1}, ...]``
+                according to ``by_group``.
+                Otherwise,
+                the data are returned as
+                ``{group_name: {variable_name: variable_value_1}}``,
+                ``{variable_name: variable_value_1}``
+                or ``{f"{group_name}:{variable_name}": variable_value_1}``.
 
         Returns:
             The dataset expressed as a dictionary of NumPy arrays.
         """
+        indices = self.index if by_entry else [()]
         if by_group:
-            return {
-                group_name: {
-                    variable_name: self.get_view(group_name, variable_name).to_numpy()
-                    for variable_name in self.get_variable_names(group_name)
+            list_of_dict_of_arrays = [
+                {
+                    group_name: {
+                        variable_name: self.get_view(
+                            group_name, variable_name, indices=index
+                        ).to_numpy()
+                        for variable_name in self.get_variable_names(group_name)
+                    }
+                    for group_name in self.group_names
                 }
-                for group_name in self.group_names
-            }
+                for index in indices
+            ]
+        else:
+            list_of_dict_of_arrays = []
+            for index in indices:
+                dict_of_arrays = {}
+                for group_name, variable_name in self.variable_identifiers:
+                    if len(self.get_group_names(variable_name)) == 1:
+                        name = variable_name
+                    else:
+                        name = f"{group_name}:{variable_name}"
 
-        dict_of_arrays = {}
-        for group_name, variable_name in self.variable_identifiers:
-            if len(self.get_group_names(variable_name)) == 1:
-                name = variable_name
-            else:
-                name = f"{group_name}:{variable_name}"
+                    dict_of_arrays[name] = self.get_view(
+                        group_names=group_name,
+                        variable_names=variable_name,
+                        indices=index,
+                    ).to_numpy()
+                list_of_dict_of_arrays.append(dict_of_arrays)
 
-            dict_of_arrays[name] = self.get_view(
-                group_names=group_name, variable_names=variable_name
-            ).to_numpy()
+        if by_entry:
+            return [
+                {k: v.ravel() for k, v in d.items()} for d in list_of_dict_of_arrays
+            ]
+        else:
+            return list_of_dict_of_arrays[0]
 
-        return dict_of_arrays
+    @property
+    def summary(self) -> str:
+        """A summary of the dataset."""
+        string = MultiLineString()
+        string.add(self.name)
+        string.indent()
+        string.add("Class: {}", self.__class__.__name__)
+        string.add("Number of entries: {}", len(self))
+        string.add("Number of variable identifiers: {}", len(self.variable_identifiers))
+        string.add("Variables names and sizes by group:")
+        string.indent()
+        for group_name in self.group_names:
+            variable_names = self.get_variable_names(group_name)
+            variable_names_and_sizes = []
+            for variable_name in variable_names:
+                variable_size = len(
+                    self.get_variable_components(group_name, variable_name)
+                )
+                variable_names_and_sizes.append(f"{variable_name} ({variable_size})")
+            if variable_names_and_sizes:
+                string.add(
+                    "{}: {}",
+                    group_name,
+                    pretty_str(variable_names_and_sizes, use_and=True),
+                )
+        total = sum(self.group_names_to_n_components.values())
+        string.dedent()
+        string.add("Number of dimensions (total = {}) by group:", total)
+        string.indent()
+        for group_name, group_size in sorted(self.group_names_to_n_components.items()):
+            string.add("{}: {}", group_name, group_size)
+        return str(string)

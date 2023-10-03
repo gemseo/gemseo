@@ -48,6 +48,8 @@ from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
@@ -556,10 +558,10 @@ def test_export_hdf(tmp_wd):
         assert file_path.exists()
         assert str(imp_pb) == str(problem)
         assert str(imp_pb.solution) == str(problem.solution)
-        assert file_path.exists()
-
-        assert problem.get_eq_cstr_total_dim() == 1
-        assert problem.get_ineq_cstr_total_dim() == 2
+        assert imp_pb.get_eq_cstr_total_dim() == 1
+        assert imp_pb.get_ineq_cstr_total_dim() == 2
+        assert imp_pb.pb_type == "non-linear"
+        assert imp_pb.differentiation_method == "user"
 
     problem.to_hdf(file_path)
 
@@ -1150,7 +1152,7 @@ def test_get_functions_dimensions(constrained_problem, names, dimensions):
     assert constrained_problem.get_functions_dimensions(names) == dimensions
 
 
-@pytest.mark.parametrize(
+parametrize_unsatisfied_constraints = pytest.mark.parametrize(
     ["design", "n_unsatisfied"],
     [
         (array([0.0, 0.0]), 0),
@@ -1159,14 +1161,37 @@ def test_get_functions_dimensions(constrained_problem, names, dimensions):
         (array([1.0, 1.0]), 3),
     ],
 )
+
+
+@parametrize_unsatisfied_constraints
 def test_get_number_of_unsatisfied_constraints(
     constrained_problem, design, n_unsatisfied
 ):
     """Check the computation of the number of unsatisfied constraints."""
+    constrained_problem.evaluate_functions = mock.Mock(
+        return_value=({"g": design[0], "h": design}, {})
+    )
     assert (
         constrained_problem.get_number_of_unsatisfied_constraints(design)
         == n_unsatisfied
     )
+    args_list = constrained_problem.evaluate_functions.call_args_list
+    assert len(args_list) == 1 and args_list[0].kwargs["constraint_names"] == {"g", "h"}
+
+
+@parametrize_unsatisfied_constraints
+def test_get_number_of_unsatisfied_constraints_from_passed_values(
+    constrained_problem, design, n_unsatisfied
+):
+    """Check the computation of the number of unsatisfied constraints from values."""
+    constrained_problem.evaluate_functions = mock.Mock()
+    assert (
+        constrained_problem.get_number_of_unsatisfied_constraints(
+            design, {"g": design[0], "h": design}
+        )
+        == n_unsatisfied
+    )
+    constrained_problem.evaluate_functions.assert_not_called()
 
 
 def test_get_scalar_constraint_names(constrained_problem):
@@ -1615,10 +1640,10 @@ def test_objective_name():
     [
         (None, False, "c"),
         (None, True, "-c"),
-        (1.0, True, "-c + 1.0"),
-        (-1.0, True, "-c - 1.0"),
-        (1.0, False, "c - 1.0"),
-        (-1.0, False, "c + 1.0"),
+        (1.0, True, "-[c-1.0]"),
+        (-1.0, True, "-[c+1.0]"),
+        (1.0, False, "[c-1.0]"),
+        (-1.0, False, "[c+1.0]"),
     ],
 )
 def test_constraint_names(has_default_name, value, positive, cstr_type, name):
@@ -1637,10 +1662,10 @@ def test_constraint_names(has_default_name, value, positive, cstr_type, name):
 
     assert problem.constraint_names[original_name] == [cstr_name]
 
-    if not has_default_name:
-        assert cstr_name == "c"
-    else:
+    if has_default_name:
         assert cstr_name == name
+    else:
+        assert cstr_name == "c"
 
 
 def test_constraint_names_with_aggregation():
@@ -1830,3 +1855,61 @@ def test_is_multi_objective():
 
     problem.objective.output_names = ["x", "x"]
     assert not problem.is_mono_objective
+
+
+def test_optimization_result_save_nested_dict(tmp_wd):
+    """Check that the nested dictionaries of OptimizationResult are correctly saved."""
+    problem = Power2()
+    execute_algo(problem, "SLSQP")
+    problem.to_hdf("problem.hdf5")
+    x_0_as_dict = problem.solution.x_0_as_dict
+    x_opt_as_dict = problem.solution.x_opt_as_dict
+    problem = OptimizationProblem.from_hdf("problem.hdf5")
+    assert compare_dict_of_arrays(x_0_as_dict, problem.solution.x_0_as_dict)
+    assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
+
+
+def test_repr_html():
+    """Check the string and HTML representation of an optimization problem."""
+    problem = Power2()
+    assert (
+        repr(problem)
+        == str(problem)
+        == """Optimization problem:
+   minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2
+   with respect to x
+   subject to constraints:
+      ineq1(x): 0.5 - x[0]**3 <= 0.0
+      ineq2(x): 0.5 - x[1]**3 <= 0.0
+      eq(x): 0.9 - x[2]**3 == 0.0"""
+    )
+    assert problem._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Optimization problem:<br/>"
+        "<ul>"
+        "<li>minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2</li>"
+        "<li>with respect to x</li><li>subject to constraints:</li>"
+        "<ul>"
+        "<li>ineq1(x): 0.5 - x[0]**3 <= 0.0</li>"
+        "<li>ineq2(x): 0.5 - x[1]**3 <= 0.0</li>"
+        "<li>eq(x): 0.9 - x[2]**3 == 0.0</li>"
+        "</ul>"
+        "</ul>"
+    )
+
+
+@pytest.mark.parametrize("minimize", [True, False])
+def test_minimize_objective(pow2_problem, minimize):
+    """Test the minimize objective setter."""
+    initial_minimize = pow2_problem.minimize_objective
+    x_0 = np.ones(3)
+    f_0 = pow2_problem.objective(x_0)
+
+    pow2_problem.minimize_objective = minimize
+    f_1 = pow2_problem.objective(x_0)
+
+    assert pow2_problem.minimize_objective == minimize
+
+    if initial_minimize == minimize:
+        assert f_0 == f_1
+    else:
+        assert f_0 == -f_1

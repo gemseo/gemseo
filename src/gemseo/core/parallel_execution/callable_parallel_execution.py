@@ -21,23 +21,25 @@ from __future__ import annotations
 
 import logging
 import multiprocessing as mp
-import os
 import queue
 import sys
 import threading as th
 import time
 import traceback
+from multiprocessing import get_context
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Final
 from typing import Sequence
 from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+from strenum import StrEnum
 
 from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
-IS_WIN: Final[bool] = os.name == "nt"
 
 SUBPROCESS_NAME: Final[str] = "subprocess"
 
@@ -58,10 +60,10 @@ def _execute_workers(
         queue_in: The queue with the task index to execute.
         queue_out: The queue object where the outputs of the workers are saved.
     """
-    for task_index in iter(queue_in.get, None):
+    for task_index, input in iter(queue_in.get, None):
         try:
             sys.stdout.flush()
-            output = task_callables(task_index)
+            output = task_callables(task_index, input)
         except Exception as err:
             traceback.print_exc()
             queue_out.put((task_index, err))
@@ -80,16 +82,15 @@ class _TaskCallables:
     inputs: Sequence[Any]
     """The inputs to be passed to the callables."""
 
-    def __init__(self, callables: Sequence[Callable], inputs: Sequence[Any]) -> None:
+    def __init__(self, callables: Sequence[Callable]) -> None:
         """
         Args:
             callables: The callables.
             inputs: The inputs to be passed to the callables.
         """  # noqa: D205, D212, D415
-        self.inputs = inputs
         self.callables = callables
 
-    def __call__(self, task_index: int) -> Any:
+    def __call__(self, task_index: int, input) -> Any:
         """Call a callable.
 
         Args:
@@ -102,7 +103,7 @@ class _TaskCallables:
             callable_ = self.callables[task_index]
         else:
             callable_ = self.callables[0]
-        return callable_(self.inputs[task_index])
+        return callable_(input)
 
 
 class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
@@ -110,6 +111,25 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
 
     The inputs must be independent objects.
     """
+
+    class MultiProcessingStartMethod(StrEnum):
+        """The multiprocessing start method."""
+
+        FORK = "fork"
+        SPAWN = "spawn"
+        FORKSERVER = "forkserver"
+
+    MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod]
+    """The start method used for multiprocessing.
+
+    The default is :attr:`.MultiProcessingStartMethod.SPAWN` on Windows,
+    :attr:`.MultiProcessingStartMethod.FORK` otherwise.
+    """
+
+    if PLATFORM_IS_WINDOWS:
+        MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.SPAWN
+    else:
+        MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.FORK
 
     N_CPUS: Final[int] = mp.cpu_count()
     """The number of CPUs."""
@@ -170,7 +190,6 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         self.n_processes = n_processes
         self.use_threading = use_threading
         self.wait_time_between_fork = wait_time_between_fork
-        self.inputs = []
         self.__exceptions_to_re_raise = exceptions_to_re_raise
         self._check_unicity(workers)
 
@@ -227,7 +246,6 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             raise TypeError("task_submitted_callback function must be callable.")
 
         n_tasks = len(inputs)
-        self.inputs = inputs
 
         tasks = list(range(n_tasks))[::-1]
         # Queue for workers.
@@ -240,9 +258,10 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             queue_in = manager.Queue()
             queue_out = manager.Queue()
             tasks = manager.list(tasks)
-            processor = mp.Process
+            self.__check_multiprocessing_start_method()
+            processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process
 
-        task_callables = _TaskCallables(self.workers, self.inputs)
+        task_callables = _TaskCallables(self.workers)
 
         processes = []
         for _ in range(min(n_tasks, self.n_processes)):
@@ -265,7 +284,7 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             # Delay the next processes execution after the first one.
             if self.wait_time_between_fork > 0 and task_index > 0:
                 time.sleep(self.wait_time_between_fork)
-            queue_in.put(task_index)
+            queue_in.put((task_index, inputs[task_index]))
 
         if task_submitted_callback is not None:
             task_submitted_callback()
@@ -303,3 +322,22 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             raise output
 
         return ordered_outputs
+
+    def __check_multiprocessing_start_method(self):
+        """Check the multiprocessing start method with respect to the platform.
+
+        Raises:
+            ValueError: If the start method is different from ``spawn`` on
+                Windows platform.
+        """
+        if (
+            PLATFORM_IS_WINDOWS
+            and self.MULTI_PROCESSING_START_METHOD
+            != self.MultiProcessingStartMethod.SPAWN
+        ):
+            raise ValueError(
+                f"The multiprocessing start method "
+                f"{self.MULTI_PROCESSING_START_METHOD.value} "
+                f"cannot be used on the Windows platform. "
+                f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
+            )

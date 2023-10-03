@@ -688,7 +688,7 @@ def test_check_disciplines():
         ValueError,
         match="Two disciplines, among "
         f"which {discipline_2.name}, "
-        "compute the same output: {'y'}",
+        "compute the same outputs: {'y'}",
     ):
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
 
@@ -718,28 +718,28 @@ def identity_scenario() -> MDOScenario:
             None,
             1.0,
             False,
-            ["y - 1.0", "y(x) - 1.0", "y(x) - 1.0 == 0.0", "y(x) == 1.0"],
+            ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 == 0.0", "y(x) == 1.0"],
         ),
         (
             "eq",
             None,
             -1.0,
             False,
-            ["y + 1.0", "y(x) + 1.0", "y(x) + 1.0 == 0.0", "y(x) == -1.0"],
+            ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 == 0.0", "y(x) == -1.0"],
         ),
         (
             "eq",
             "cstr",
             1.0,
             False,
-            ["cstr", "y(x) - 1.0", "y(x) - 1.0 == 0.0", "cstr: y(x) == 1.0"],
+            ["cstr", "y(x)-1.0", "y(x)-1.0 == 0.0", "cstr: y(x) == 1.0"],
         ),
         (
             "eq",
             "cstr",
             -1.0,
             False,
-            ["cstr", "y(x) + 1.0", "y(x) + 1.0 == 0.0", "cstr: y(x) == -1.0"],
+            ["cstr", "y(x)+1.0", "y(x)+1.0 == 0.0", "cstr: y(x) == -1.0"],
         ),
         ("ineq", None, None, False, ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"]),
         (
@@ -754,28 +754,28 @@ def identity_scenario() -> MDOScenario:
             None,
             1.0,
             False,
-            ["y - 1.0", "y(x) - 1.0", "y(x) - 1.0 <= 0.0", "y(x) <= 1.0"],
+            ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 <= 0.0", "y(x) <= 1.0"],
         ),
         (
             "ineq",
             None,
             -1.0,
             False,
-            ["y + 1.0", "y(x) + 1.0", "y(x) + 1.0 <= 0.0", "y(x) <= -1.0"],
+            ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 <= 0.0", "y(x) <= -1.0"],
         ),
         (
             "ineq",
             "cstr",
             1.0,
             False,
-            ["cstr", "y(x) - 1.0", "y(x) - 1.0 <= 0.0", "cstr: y(x) <= 1.0"],
+            ["cstr", "y(x)-1.0", "y(x)-1.0 <= 0.0", "cstr: y(x) <= 1.0"],
         ),
         (
             "ineq",
             "cstr",
             -1.0,
             False,
-            ["cstr", "y(x) + 1.0", "y(x) + 1.0 <= 0.0", "cstr: y(x) <= -1.0"],
+            ["cstr", "y(x)+1.0", "y(x)+1.0 <= 0.0", "cstr: y(x) <= -1.0"],
         ),
         ("ineq", None, None, True, ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"]),
         (
@@ -790,28 +790,28 @@ def identity_scenario() -> MDOScenario:
             None,
             1.0,
             True,
-            ["-y + 1.0", "-y(x) + 1.0", "-y(x) + 1.0 <= 0.0", "y(x) >= 1.0"],
+            ["-[y-1.0]", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "y(x) >= 1.0"],
         ),
         (
             "ineq",
             None,
             -1.0,
             True,
-            ["-y - 1.0", "-y(x) - 1.0", "-y(x) - 1.0 <= 0.0", "y(x) >= -1.0"],
+            ["-[y+1.0]", "-(y(x)+1.0)", "-(y(x)+1.0) <= 0.0", "y(x) >= -1.0"],
         ),
         (
             "ineq",
             "cstr",
             1.0,
             True,
-            ["cstr", "-y(x) + 1.0", "-y(x) + 1.0 <= 0.0", "cstr: y(x) >= 1.0"],
+            ["cstr", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "cstr: y(x) >= 1.0"],
         ),
         (
             "ineq",
             "cstr",
             -1.0,
             True,
-            ["cstr", "-y(x) - 1.0", "-y(x) - 1.0 <= 0.0", "cstr: y(x) >= -1.0"],
+            ["cstr", "-(y(x)+1.0)", "-(y(x)+1.0) <= 0.0", "cstr: y(x) >= -1.0"],
         ),
     ],
 )

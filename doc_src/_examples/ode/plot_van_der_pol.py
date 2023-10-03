@@ -81,18 +81,18 @@ from numpy import zeros
 # Step 1 : Defining the problem
 # .............................
 
-mu = 1e3
+mu = 5
 
 
 def evaluate_f(time, state):
     return state[1], mu * state[1] * (1 - state[0] ** 2) - state[0]
 
 
-initial_state = array([2, -2 / 3 + 10 / (81 * mu) - 292 / (2187 * mu * mu)])
-
-initial_time = 0
-final_time = 0.5
+initial_state = array([2, -2 / 3])
+initial_time = 0.0
+final_time = 50.0
 ode_problem = ODEProblem(evaluate_f, initial_state, initial_time, final_time)
+
 
 # %%
 # By default, the Jacobian of the problem is approximated using the finite
@@ -119,7 +119,7 @@ ode_problem = ODEProblem(
 #
 # Whether the Jacobian is specified or not, once the problem is defined, the ODE
 # solver is called on the :class:`.ODEProblem` by using the :class:`.ODESolversFactory`:
-ODESolversFactory().execute(ode_problem, first_step=1e-6)
+ODESolversFactory().execute(ode_problem)
 
 # %%
 # By default, the Runge-Kutta method of order 4(5) (``"RK45"``) is used, but other
@@ -140,8 +140,8 @@ ODESolversFactory().execute(ode_problem, first_step=1e-6)
 # can be accessed through the vectors :attr:`.ODEProblem.states` and
 # :attr:`.ODEProblem.times`.
 
-plt.plot(ode_problem.time_vector, ode_problem.result.state_vector[0])
-plt.plot(ode_problem.time_vector, ode_problem.result.state_vector[1])
+plt.plot(ode_problem.result.time_vector, ode_problem.result.state_vector[0])
+plt.plot(ode_problem.result.time_vector, ode_problem.result.state_vector[1])
 plt.show()
 
 # %%

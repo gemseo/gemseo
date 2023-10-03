@@ -23,8 +23,8 @@ Multistart optimization
 =======================
 
 Runs simple optimization problem with multiple starting points
-Nests a :class:`.MDOScenario` in a :class:`.DOEScenario`
-using a :class:`.MDOScenarioAdapter`.
+Nests an :class:`.MDOScenario` in a :class:`.DOEScenario`
+using an :class:`.MDOScenarioAdapter`.
 """
 from __future__ import annotations
 

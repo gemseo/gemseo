@@ -50,7 +50,7 @@ over the interval :math:`[-\pi,\pi]`
 and structure in the data may be visible in these :math:`n` Andrews curves.
 
 A variable name can be passed to the :meth:`.DatasetPlot.execute` method
-by means of the :code:`classifier` keyword
+by means of the ``classifier`` keyword
 in order to color the curves according to the value of the variable name.
 This is useful when the data is labeled.
 """

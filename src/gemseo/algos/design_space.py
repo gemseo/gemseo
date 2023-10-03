@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import collections
 import logging
+import re
 from copy import deepcopy
 from numbers import Number
 from pathlib import Path
@@ -77,6 +78,7 @@ from numpy import string_
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
+from numpy._typing import NDArray
 from strenum import StrEnum
 
 from gemseo.algos.opt_result import OptimizationResult
@@ -85,6 +87,7 @@ from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import pretty_str
 
 LOGGER = logging.getLogger(__name__)
@@ -179,13 +182,16 @@ class DesignSpace(collections.abc.MutableMapping):
     __norm_current_value_array: ndarray
     """The norm of the current value stored as a concatenated array."""
 
+    __names_to_indices: dict[str, range]
+    """The names bound to the indices in a design vector."""
+
     def __init__(self, name: str = "") -> None:
         """
         Args:
             name: The name to be given to the design space.
                 If empty, the design space is unnamed.
         """  # noqa: D205, D212, D415
-        self.name = name or ""
+        self.name = name
         self.variable_names = []
         self.dimension = 0
         self.variable_sizes = {}
@@ -209,6 +215,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__has_current_value = False
         self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
         self.__clear_dependent_data()
+        self.__names_to_indices = {}
 
     @property
     def _current_value(self) -> dict[str, ndarray]:
@@ -271,9 +278,20 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable to be removed.
         """
         self.__norm_data_is_computed = False
-        self.dimension -= self.variable_sizes[name]
+        size = self.variable_sizes.pop(name)
+        self.dimension -= size
+        del self.__names_to_indices[name]
+        for variable_name in reversed(self.variable_names):
+            if variable_name == name:
+                break
+
+            indices = self.__names_to_indices[variable_name]
+            # N.B. the steps of the ranges of indices are assumed equal to 1
+            self.__names_to_indices[variable_name] = range(
+                indices.start - size, indices.stop - size
+            )
+
         self.variable_names.remove(name)
-        del self.variable_sizes[name]
         del self.variable_types[name]
         del self.normalize[name]
         if name in self._lower_bounds:
@@ -387,23 +405,23 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type: Either the type of the variable
                 or the types of its components.
             l_b: The lower bound of the variable.
-                If None, use :math:`-\infty`.
+                If ``None``, use :math:`-\infty`.
             u_b: The upper bound of the variable.
-                If None, use :math:`+\infty`.
+                If ``None``, use :math:`+\infty`.
             value: The default value of the variable.
-                If None, do not use a default value.
+                If ``None``, do not use a default value.
 
         Raises:
             ValueError: Either if the variable already exists
                 or if the size is not a positive integer.
         """
-        if name in self.variable_names:
-            raise ValueError(f"Variable '{name}' already exists.")
-
+        self._check_variable_name(name)
         if size <= 0 or int(size) != size:
             raise ValueError(f"The size of '{name}' should be a positive integer.")
 
         # name and size
+        current_index = self.dimension
+        self.__names_to_indices[name] = range(current_index, current_index + size)
         self.variable_names.append(name)
         self.dimension += size
         self.variable_sizes[name] = size
@@ -440,6 +458,23 @@ class DesignSpace(collections.abc.MutableMapping):
                 raise
 
         self.__update_current_metadata()
+
+    def _check_variable_name(self, name: str) -> None:
+        """Check if the space contains a variable.
+
+        Args:
+            name: The name of the variable.
+
+        Raises:
+            ValueError: When the variable already exists.
+        """
+        if name in self.variable_names:
+            raise ValueError(f"The variable '{name}' already exists.")
+
+    @property
+    def names_to_indices(self) -> dict[str, range]:
+        """The names bound to the indices."""
+        return self.__names_to_indices
 
     def _add_type(
         self,
@@ -659,7 +694,7 @@ class DesignSpace(collections.abc.MutableMapping):
             name: The name of the variable.
             size: The size of the variable.
             bound: The bound of the variable.
-            is_lower: If True, the bound is a lower bound.
+            is_lower: If ``True``, the bound is a lower bound.
                 Otherwise, it is an upper bound.
 
         Raises:
@@ -802,7 +837,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             x_vect: The values of the variables.
             variable_names: The names of the variables.
-                If None, use the names of the variables of the design space.
+                If ``None``, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of the values vector is wrong,
@@ -879,7 +914,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             x_dict: The values of the variables.
             variable_names: The names of the variables.
-                If None, use the names of the variables of the design space.
+                If ``None``, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of an array is wrong,
@@ -997,7 +1032,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             variable_names: The names of the variables.
-                If None, use the names of the variables of the design space.
+                If ``None``, use the names of the variables of the design space.
 
         Raises:
             ValueError: If the names of the variables of the current design value
@@ -1160,23 +1195,26 @@ class DesignSpace(collections.abc.MutableMapping):
     def get_variables_indexes(
         self,
         variable_names: Iterable[str],
-    ) -> ndarray:
-        """Return the indexes of a design array corresponding to the variables names.
+        use_design_space_order: bool = True,
+    ) -> NDArray[int]:
+        """Return the indexes of a design array corresponding to variables names.
 
         Args:
             variable_names: The names of the variables.
+            use_design_space_order: Whether to order the indexes according to
+                the order of the variables names in the design space.
+                Otherwise the indexes will be ordered in the same order as
+                the variables names were required.
 
         Returns:
             The indexes of a design array corresponding to the variables names.
         """
-        indexes = list()
-        index = 0
-        for name in self.variable_names:
-            var_size = self.get_size(name)
-            if name in variable_names:
-                indexes.extend(range(index, index + var_size))
-            index += var_size
-        return array(indexes)
+        if use_design_space_order:
+            names = [name for name in self.variable_names if name in variable_names]
+        else:
+            names = variable_names
+
+        return concatenate([self.__names_to_indices[name] for name in names])
 
     def __update_normalization_vars(self) -> None:
         """Compute the inner attributes used for normalization and unnormalization."""
@@ -1228,9 +1266,9 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If True, remove the lower bounds at normalization.
+            minus_lb: If ``True``, remove the lower bounds at normalization.
             out: The array to store the normalized vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             The normalized vector.
@@ -1366,7 +1404,7 @@ class DesignSpace(collections.abc.MutableMapping):
             minus_lb: Whether to remove the lower bounds at normalization.
             no_check: Whether to check if the components are in :math:`[0,1]`.
             out: The array to store the unnormalized vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             The unnormalized vector.
@@ -1440,7 +1478,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             vector: A point of the design space.
             out: The array to store the transformed vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             A vector with components in :math:`[0,1]`.
@@ -1459,7 +1497,7 @@ class DesignSpace(collections.abc.MutableMapping):
             vector: A vector with components in :math:`[0,1]`.
             no_check: Whether to check if the components are in :math:`[0,1]`.
             out: The array to store the untransformed vector.
-                If None, create a new array.
+                If ``None``, create a new array.
 
         Returns:
             A point of the variables space.
@@ -1630,7 +1668,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             variable_names: The names of the variables
                 of which the lower bounds are required.
-                If None, use the variables of the design space.
+                If ``None``, use the variables of the design space.
 
         Returns:
             The lower bounds of the variables.
@@ -1648,7 +1686,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             variable_names: The names of the variables
                 of which the upper bounds are required.
-                If None, use the variables of the design space.
+                If ``None``, use the variables of the design space.
 
         Returns:
             The upper bounds of the variables.
@@ -1767,7 +1805,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             design_values: The design point to be converted.
             variable_names: The variables to be considered.
-                If None, use the variables of the design space.
+                If ``None``, use the variables of the design space.
 
         Returns:
             The point as an array.
@@ -1843,7 +1881,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             file_path: The path to the file to export the design space.
-            append: If True, appends the data in the file.
+            append: If ``True``, appends the data in the file.
         """
         mode = "a" if append else "w"
 
@@ -1956,7 +1994,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__update_common_dtype()
 
     @classmethod
-    def from_file(cls, file_path: str | Path, **options) -> DesignSpace:
+    def from_file(cls, file_path: str | Path, **options: Any) -> DesignSpace:
         """Create a design space from a file.
 
         Args:
@@ -2000,7 +2038,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             output_file: The path to the file.
             fields: The fields to be exported.
-                If None, export all fields.
+                If ``None``, export all fields.
             header_char: The header character.
             **table_options: The names and values of additional attributes
                 for the :class:`.PrettyTable` view
@@ -2085,11 +2123,29 @@ class DesignSpace(collections.abc.MutableMapping):
         design_space.check()
         return design_space
 
-    def __str__(self) -> str:
+    def __get_string_representation(self, use_html: bool) -> str:
+        """Return the string representation of the design space.
+
+        Args:
+            use_html: Whether the string representation is HTML code.
+
+        Returns:
+            The string representation of the design space.
+        """
+        prefix = " " if self.name else ""
+        suffix = "<br/>" if use_html else "\n"
+        method_name = "get_html_string" if use_html else "get_string"
+        title = " ".join(re.findall("[A-Z][^A-Z]*", self.__class__.__name__)).lower()
         return (
-            f"Design space: {self.name}\n"
-            + self.get_pretty_table(with_index=True).get_string()
+            f"{title.capitalize()}:{prefix}{self.name}{suffix}"
+            + getattr(self.get_pretty_table(with_index=True), method_name)()
         )
+
+    def __repr__(self) -> str:
+        return self.__get_string_representation(False)
+
+    def _repr_html_(self) -> str:
+        return REPR_HTML_WRAPPER.format(self.__get_string_representation(True))
 
     def project_into_bounds(
         self,
@@ -2099,7 +2155,7 @@ class DesignSpace(collections.abc.MutableMapping):
         """Project a vector onto the bounds, using a simple coordinate wise approach.
 
         Args:
-            normalized: If True, then the vector is assumed to be normalized.
+            normalized: If ``True``, then the vector is assumed to be normalized.
             x_c: The vector to be projected onto the bounds.
 
         Returns:
@@ -2215,7 +2271,7 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type = other.get_type(name)
             l_b = other.get_lower_bound(name)
             u_b = other.get_upper_bound(name)
-            value = other.get_current_value(as_dict=True)[name]
+            value = other.get_current_value(as_dict=True).get(name)
             self.add_variable(name, size, var_type, l_b, u_b, value)
 
     @staticmethod

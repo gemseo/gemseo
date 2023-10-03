@@ -49,7 +49,7 @@ from openturns import RandomGenerator
 
 def test_composed_distribution():
     """Check the composed distribution associated with a OTDistribution."""
-    assert OTDistribution._COMPOSED_DISTRIBUTION == OTComposedDistribution
+    assert OTDistribution.COMPOSED_DISTRIBUTION_CLASS == OTComposedDistribution
 
 
 def test_constructor():
@@ -211,7 +211,7 @@ def test_uniform():
 
 def test_exponential():
     distribution = OTExponentialDistribution("x")
-    assert str(distribution) == "Exponential(loc=0.0, rate=1.0)"
+    assert str(distribution) == "Exponential(rate=1.0, loc=0.0)"
 
 
 def test_triangular():

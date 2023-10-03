@@ -44,14 +44,14 @@ configure_logger()
 #
 # The :func:`.get_available_mdas` function returns the list
 # of MDAs available in |g| or in external modules
-print(get_available_mdas())
+get_available_mdas()
 
 # %%
 # Get MDA options schema
 # ----------------------
-# For a given MDA algorithm, e.g. :code:`"MDAGaussSeidel"`,
+# For a given MDA algorithm, e.g. ``"MDAGaussSeidel"``,
 # we can get the options; e.g.
-print(get_mda_options_schema("MDAGaussSeidel"))
+get_mda_options_schema("MDAGaussSeidel")
 
 # %%
 # Create an MDA
@@ -61,4 +61,4 @@ print(get_mda_options_schema("MDAGaussSeidel"))
 disciplines = create_discipline(["Sellar1", "Sellar2"])
 mda = create_mda("MDAGaussSeidel", disciplines)
 output_data = mda.execute()
-print(output_data)
+output_data

@@ -36,7 +36,10 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from numpy import allclose
+from numpy import concatenate
 from numpy import ndarray
+from numpy import ones
 from numpy import random
 from numpy.random import randn
 from scipy.sparse import csr_matrix
@@ -310,3 +313,43 @@ def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format):
     }
 
     ja.total_derivatives(inputs, ["f"], ["x"], mc.all_couplings)
+
+
+@pytest.mark.parametrize("compute_residuals", [True, False])
+@pytest.mark.parametrize("size", [1, 3])
+def test_compute_newton_step(compute_residuals, size):
+    """Test the Newton step for linear disciplines."""
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "b"], ["a"]), ("B", ["a"], ["b", "f"])],
+        matrix_density=1.0,
+        inputs_size=size,
+        outputs_size=size,
+    )
+
+    inputs = {"a": ones(size), "b": ones(size)}
+    for disc in disciplines:
+        disc.linearize(inputs, compute_all_jacobians=True)
+    if compute_residuals:
+        residuals = concatenate(
+            [
+                disciplines[0].local_data["a"] - inputs["a"],
+                disciplines[1].local_data["b"] - inputs["b"],
+            ]
+        )
+    else:
+        residuals = None
+    assembly = JacobianAssembly(MDOCouplingStructure(disciplines))
+    couplings = ["a", "b"]
+    assembly.compute_sizes([], [], couplings)
+
+    sol, conv = assembly.compute_newton_step(inputs, couplings, residuals=residuals)
+    assert conv
+    d_a = sol[:size]
+    d_b = sol[size:]
+    inputs_up = {"a": inputs["a"] + d_a, "b": inputs["b"] + d_b}
+    for disc in disciplines:
+        disc.execute(inputs_up)
+
+    # 1 iteration is enough to solve the coupling for linear problems.
+    assert allclose(inputs_up["a"], disciplines[0].local_data["a"])
+    assert allclose(inputs_up["b"], disciplines[1].local_data["b"])

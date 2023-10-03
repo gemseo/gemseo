@@ -47,7 +47,7 @@ dataset.add_output_variable("c", [[-1.0], [-2.0]])
 # %%
 # as well as another variable:
 dataset.add_variable("x", [[10.0], [20.0]])
-print(dataset)
+dataset
 
 # %%
 # We could also do the same with the methods
@@ -58,28 +58,28 @@ dataset.add_input_group(
 )
 dataset.add_output_group([[-1.0], [-2.0]], ["c"])
 dataset.add_variable("x", [[10.0], [20.0]])
-print(dataset)
+dataset
 
 # %%
 # Then,
 # we can easily access the names of the input and output variables:
-print(dataset.input_names)
-print(dataset.output_names)
+dataset.input_names, dataset.output_names
 # %%
 # and those of all variables:
-print(dataset.variable_names)
+dataset.variable_names
 
 # %%
 # The :class:`.IODataset` provides also the number of samples:
-print(dataset.n_samples)
+dataset.n_samples
 # %%
 # and the samples:
-print(dataset.samples)
+dataset.samples
 
 # %%
 # Lastly,
 # we can get the input data as an :class:`.IODataset` view:
-print(dataset.input_dataset)
+dataset.input_dataset
 
-# %% and the same for the output data:
-print(dataset.output_dataset)
+# %%
+# and the same for the output data:
+dataset.output_dataset

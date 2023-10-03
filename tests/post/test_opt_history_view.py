@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -127,7 +128,11 @@ def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all)
             with matplotlib pyplot.
     """
     problem = OptimizationProblem.from_hdf(problem_path)
-    post = execute_post(problem, "OptHistoryView", show=False, save=False)
+    # The use of the default value is deliberate;
+    # to check that the JSON grammar works properly.
+    post = execute_post(
+        problem, "OptHistoryView", variable_names=None, show=False, save=False
+    )
     post.figures
 
 
@@ -192,6 +197,10 @@ def test_common_scenario(
     opt.execute(save=False)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 9),
+    reason="The last version of matplotlib does not support py38",
+)
 @pytest.mark.parametrize(
     "case,baseline_images",
     [
@@ -238,3 +247,37 @@ def test_461(case, baseline_images):
 
     execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
     execute_post(problem, "OptHistoryView", save=False, show=False)
+
+
+@image_comparison(
+    baseline_images=[
+        "opt_history_view_variables_variable_names",
+        "opt_history_view_objective_variable_names",
+        "opt_history_view_x_xstar_variable_names",
+        "opt_history_view_hessian_variable_names",
+        "opt_history_view_ineq_constraints_variable_names",
+    ]
+)
+def test_variable_names(pyplot_close_all):
+    execute_post(
+        Path(__file__).parent / "mdf_backup.h5",
+        "OptHistoryView",
+        variable_names=["x_2", "x_1"],
+        save=False,
+        show=False,
+    )
+
+
+def test_no_gradient_history(caplog):
+    """Check that OptHistoryView works without gradient history."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=-1, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.database.store(array([-1]), {"f": array([1])})
+    problem.database.store(array([0]), {"f": array([0])})
+    problem.database.store(array([1]), {"f": array([1])})
+    post_processor = execute_post(problem, "OptHistoryView", save=False, show=False)
+    assert set(post_processor.figures.keys()) == {"variables", "objective", "x_xstar"}
+    assert "Failed to create Hessian approximation." not in caplog.text

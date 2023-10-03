@@ -113,7 +113,7 @@ This tool allows the generation of an N2 chart and an XDSM diagram from an Excel
 
 Its usage is:
 
-``gemseo-study [-h] [-o OUT_DIR] [-x] [-p] [-h HEIGHT] [-w WIDTH] [-t STUDY_TYPE] study_file``
+``gemseo-study [-h] [-o OUT_DIR] [-x] [-p] [--height HEIGHT] [--width WIDTH] [-t STUDY_TYPE] study_file``
 
 with
 
@@ -126,8 +126,8 @@ optional arguments:
   -o OUT_DIR, --out_dir OUT_DIR    The path of the directory to save the files.
   -x, --xdsm                       Whether to generate an XDSM; compatible only with the study type 'mdo'.
   -p, --save-pdf                   Whether to save the XDSM as a PDF file.
-  -h HEIGHT, --height HEIGHT       The height of the N2 figure in inches.
-  -w WIDTH, --width WIDTH          The width of the N2 figure in inches.
+  --height HEIGHT                  The height of the N2 figure in inches.
+  --width WIDTH                    The width of the N2 figure in inches.
 
 Excel file templates
 --------------------

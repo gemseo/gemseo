@@ -95,10 +95,10 @@ disciplines = create_discipline(
 # The scenario delegates the creation of the optimization problem to the
 # :ref:`MDO formulation <mdo_formulations>`.
 #
-# Therefore, it needs the list of :code:`disciplines`, the names of the formulation,
+# Therefore, it needs the list of ``disciplines``, the names of the formulation,
 # the name of the objective function and the design space.
 #
-# - The :code:`design_space` (shown below for reference)
+# - The ``design_space`` (shown below for reference)
 #   defines the unknowns of the optimization problem, and their bounds. It contains
 #   all the design variables needed by the :ref:`MDF formulation <mdf_formulation>`.
 #   It can be imported from a text file, or created from scratch with the methods
@@ -136,13 +136,13 @@ x_0 = design_space.get_current_value(as_dict=True)
 # - The available :ref:`MDO formulations <mdo_formulations>` are located in the
 #   **gemseo.formulations** package, see :ref:`extending-gemseo` for extending
 #   GEMSEO with other formulations.
-# - The :code:`formulation` classname (here, :code:`"MDF"`) shall be passed to
+# - The ``formulation`` classname (here, ``"MDF"``) shall be passed to
 #   the scenario to select them.
 # - The list of available formulations can be obtained by using
 #   :func:`.get_available_formulations`.
 get_available_formulations()
 # %%
-# - :math:`y\_4` corresponds to the :code:`objective_name`. This name must be one
+# - :math:`y\_4` corresponds to the ``objective_name``. This name must be one
 #   of the disciplines outputs, here the ``SobieskiMission`` discipline. The list of
 #   all outputs of the disciplines can be obtained by using
 #   :meth:`~gemseo.disciplines.utils.get_all_outputs`:
@@ -162,7 +162,7 @@ scenario = create_scenario(
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
 # minimize functions by default. Which is why, when creating the scenario, the argument
-# :code:`maximize_objective` shall be set to :code:`True`.
+# ``maximize_objective`` shall be set to ``True``.
 #
 # Differentiation method
 # ~~~~~~~~~~~~~~~~~~~~~~

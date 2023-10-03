@@ -79,12 +79,12 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
 dataset = scenario.to_dataset(opt_naming=False)
 analysis = create_statistics(dataset, name="SobieskiMission")
 
-print(analysis)
+analysis
 
 # %%
 # and easily obtain statistics,
 # such as the minimum values of the different variables over the dataset:
-print(analysis.compute_minimum())
+analysis.compute_minimum()
 
 # %%
 # Create an :class:`.EmpiricalStatistics` object for the range
@@ -93,55 +93,55 @@ print(analysis.compute_minimum())
 analysis = create_statistics(
     dataset, variable_names=["y_4"], name="SobieskiMission.range"
 )
-print(analysis)
+analysis
 
 # %%
 # Get minimum
 # ~~~~~~~~~~~
 # Here is the minimum value:
-print(analysis.compute_minimum())
+analysis.compute_minimum()
 
 # %%
 # Get maximum
 # ~~~~~~~~~~~
 # Here is the maximum value:
-print(analysis.compute_maximum())
+analysis.compute_maximum()
 
 # %%
 # Get range
 # ~~~~~~~~~
 # Here is the (different between minimum and maximum values):
-print(analysis.compute_range())
+analysis.compute_range()
 
 # %%
 # Get mean
 # ~~~~~~~~
 # Here is the mean value:
-print(analysis.compute_mean())
+analysis.compute_mean()
 
 # %%
 # Get central moment
 # ~~~~~~~~~~~~~~~~~~
 # Here is the second central moment:
-print(analysis.compute_moment(2))
+analysis.compute_moment(2)
 
 # %%
 # Get standard deviation
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Here is the standard deviation:
-print(analysis.compute_standard_deviation())
+analysis.compute_standard_deviation()
 
 # %%
 # Get variance
 # ~~~~~~~~~~~~
 # Here is the variance.
-print(analysis.compute_variance())
+analysis.compute_variance()
 
 # %%
 # Get quantile
 # ~~~~~~~~~~~~
 # Here is the quantile with level equal to 80%:
-print(analysis.compute_quantile(0.8))
+analysis.compute_quantile(0.8)
 
 # %%
 # Get probability
@@ -149,23 +149,24 @@ print(analysis.compute_quantile(0.8))
 # Here are the probability
 # to respectively be greater and lower than the default output value:
 default_output = discipline.execute()
-print(analysis.compute_probability(default_output))
-print(analysis.compute_probability(default_output, greater=False))
+analysis.compute_probability(default_output), analysis.compute_probability(
+    default_output, greater=False
+)
 
 # %%
 # Get quartile
 # ~~~~~~~~~~~~
 # Here is the second quartile:
-print(analysis.compute_quartile(2))
+analysis.compute_quartile(2)
 
 # %%
 # Get percentile
 # ~~~~~~~~~~~~~~
 # Here is the 50the percentile:
-print(analysis.compute_percentile(50))
+analysis.compute_percentile(50)
 
 # %%
 # Get median
 # ~~~~~~~~~~
 # Here is the median:
-print(analysis.compute_median())
+analysis.compute_median()

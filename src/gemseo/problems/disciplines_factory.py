@@ -65,7 +65,7 @@ class DisciplinesFactory(BaseFactory):
         self.__base_grammar_names = self.__base_grammar.keys()
 
     def create(self, discipline_name: str, **options):
-        """Create a :class:`.MDODiscipline` from its name.
+        """Create an :class:`.MDODiscipline` from its name.
 
         Args:
             discipline_name: The name of the discipline
@@ -137,7 +137,7 @@ class DisciplinesFactory(BaseFactory):
 
         Args:
             name: The name of the class.
-            schema_path: the output json file path. If None: input.json or
+            schema_path: the output json file path. If ``None``: input.json or
                 output.json depending on grammar type.
             write_schema: Whether to write the schema files
 

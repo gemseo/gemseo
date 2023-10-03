@@ -1,0 +1,122 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDOScenario_scn-1-1",
+        "type": "mdo",
+        "subxdsm": "MDOScenario_scn-1-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "n^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "z^*"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize z(n)\n   with respect to n"
+  },
+  "MDOScenario_scn-1-1": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "D1",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "D2",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "z^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "z"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "z"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "y^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "z"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "y"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          "Dis3"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize z(x)\n   with respect to x"
+  }
+}

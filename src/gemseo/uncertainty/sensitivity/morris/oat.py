@@ -48,44 +48,53 @@ From these elementary effects, we can compare their absolute values
 """
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import ClassVar
-from typing import Mapping
 
-from numpy import array
 from numpy import atleast_1d
 from numpy import inf
 from numpy import maximum
 from numpy import minimum
-from numpy import ndarray
 
 from gemseo.algos.database import DatabaseValueType
-from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.disciplines.utils import get_all_outputs
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 
 class _OATSensitivity(MDODiscipline):
-    """An :class:`.MDODiscipline` to compute finite diff.
-
-    of a :class:`.DOEScenario`.
-    """
+    """A discipline computing finite differences from a multidisciplinary system."""
 
     _PREFIX: ClassVar[str] = "fd"
     __SEPARATOR: ClassVar[str] = "!"
 
+    __io_names_to_fd_names: dict[str, dict[str, str]]
+    """The IO names of the original discipline bound to the output names."""
+
+    __output_names: list[str]
+    """The names of the disciplines to sample."""
+
+    scenario: DOEScenario
+    """The scenario defining the multidisciplinary system."""
+
+    step: float
+    """The variation step of an input relative to its range, between 0 and 0.5."""
+
+    parameter_space: ParameterSpace
+    """The design space on which to sample the discipline."""
+
+    output_range: dict[str, list[float, float]]
+    """The names of the outputs bound to their lower and upper bounds."""
+
     def __init__(
         self,
         scenario: DOEScenario,
-        parameter_space: DesignSpace,
+        parameter_space: ParameterSpace,
         step: float,
     ) -> None:
         """
         Args:
-            scenario: The scenario for the analysis.
-            parameter_space: A parameter space.
+            scenario: The multidisciplinary scenario for the analysis.
+            parameter_space: A parameter space on which to compute finite differences.
             step: The variation step of an input relative to its range,
                 between 0 and 0.5 (i.e. between 0 and 50% input range variation).
 
@@ -101,7 +110,10 @@ class _OATSensitivity(MDODiscipline):
         super().__init__()
         input_names = parameter_space.variable_names
         self.input_grammar.update_from_names(input_names)
-        self.__output_names = get_all_outputs(scenario.disciplines)
+        problem = scenario.formulation.opt_problem
+        self.__output_names = [problem.get_objective_name()] + [
+            observable.name for observable in problem.observables
+        ]
         output_names = [
             self.get_fd_name(input_name, output_name)
             for output_name in self.__output_names
@@ -109,15 +121,18 @@ class _OATSensitivity(MDODiscipline):
         ]
         self.output_grammar.update_from_names(output_names)
 
-        # The scenario is evaluated many times, this setting
-        # prevents conflicts between runs.
-        scenario.clear_history_before_run = True
         self.scenario = scenario
-
         self.step = step
         self.parameter_space = parameter_space
         self.output_range = self.output_range = {
             name: [inf, -inf] for name in self.__output_names
+        }
+        self.__io_names_to_fd_names = {
+            input_name: {
+                output_name: self.get_fd_name(input_name, output_name)
+                for output_name in self.__output_names
+            }
+            for input_name in input_names
         }
 
     def __update_output_range(
@@ -136,45 +151,34 @@ class _OATSensitivity(MDODiscipline):
             output_range[1] = maximum(output_value, output_range[1])
 
     def _run(self) -> None:
-        inputs = self.get_input_data()
-        samples = array([concatenate_dict_of_arrays_to_array(inputs, inputs.keys())])
-
-        # The opt_problem must be reset, this allows us to evaluate it again with
-        # different samples without getting max iter reached exceptions.
-        opt_problem = self.scenario.formulation.opt_problem
-        opt_problem.reset()
-        self.scenario.execute(
-            {
-                "algo": "CustomDOE",
-                "algo_options": {"samples": samples},
-            }
-        )
-
-        previous_data = opt_problem.database.last_item
-
-        self.__update_output_range(previous_data)
-
+        problem = self.scenario.formulation.opt_problem
+        problem.reset()
+        input_sample = self.get_inputs_asarray()
+        output_sample, _ = problem.evaluate_functions(input_sample, normalize=False)
+        self.__update_output_range(output_sample)
         for input_name in self.get_input_data_names():
-            inputs = self.__update_inputs(inputs, input_name, self.step)
-            samples = array(
-                [concatenate_dict_of_arrays_to_array(inputs, inputs.keys())]
+            next_input_sample = input_sample.copy()
+            l_b = self.parameter_space.get_lower_bound(input_name)
+            u_b = self.parameter_space.get_upper_bound(input_name)
+            indices = self.parameter_space.get_variables_indexes([input_name])
+            abs_step = self.step * (u_b - l_b)
+            if next_input_sample[indices] + abs_step > u_b:
+                next_input_sample[indices] -= abs_step
+            else:
+                next_input_sample[indices] += abs_step
+
+            next_output_sample, _ = problem.evaluate_functions(
+                next_input_sample, normalize=False
             )
-
-            # Reset the opt_problem before each evaluation.
-            opt_problem.reset()
-            self.scenario.execute(
-                {"algo": "CustomDOE", "algo_options": {"samples": samples}}
-            )
-
-            new_data = opt_problem.database.last_item
-
-            self.__update_output_range(new_data)
+            self.__update_output_range(output_sample)
+            output_to_fd_names = self.__io_names_to_fd_names[input_name]
             for output_name in self.__output_names:
-                out_diff_name = self.get_fd_name(input_name, output_name)
-                out_diff_value = new_data[output_name] - previous_data[output_name]
-                self.local_data[out_diff_name] = atleast_1d(out_diff_value)
+                self.local_data[output_to_fd_names[output_name]] = atleast_1d(
+                    next_output_sample[output_name] - output_sample[output_name]
+                )
 
-            previous_data = new_data
+            input_sample = next_input_sample
+            output_sample = next_output_sample
 
     @classmethod
     def get_io_names(cls, fd_name: str) -> list[str, str]:
@@ -199,30 +203,3 @@ class _OATSensitivity(MDODiscipline):
             The finite difference name.
         """
         return self.__SEPARATOR.join([self._PREFIX, output_name, input_name])
-
-    def __update_inputs(
-        self,
-        inputs: Mapping[str, ndarray],
-        input_name: str,
-        step: float,
-    ) -> Mapping[str, ndarray]:
-        """Update the input data from a finite difference step and an input name.
-
-        Args:
-            inputs: The original input data.
-            input_name: An input name.
-            step: The variation step of an input relative to its range,
-                between 0 and 0.5 (i.e. between 0 and 50% input range variation).
-
-        Returns:
-            The updated input data.
-        """
-        inputs = deepcopy(inputs)
-        l_b = self.parameter_space.get_lower_bound(input_name)
-        u_b = self.parameter_space.get_upper_bound(input_name)
-        abs_step = step * (u_b - l_b)
-        if inputs[input_name] + abs_step > u_b:
-            inputs[input_name] -= abs_step
-        else:
-            inputs[input_name] += abs_step
-        return inputs

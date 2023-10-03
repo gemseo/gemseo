@@ -180,9 +180,12 @@ class ParametricStatistics(Statistics):
     fitting_criterion: FittingCriterion
     """The goodness-of-fit criterion, measuring how the distribution fits the data."""
 
-    level: float | None
-    """The test level, i.e. risk of committing a Type 1 error, that is an incorrect
-    rejection of a true null hypothesis, for criteria based on test hypothesis."""
+    level: float
+    """The test level used by the selection criteria that are significance tests.
+
+    In statistical hypothesis testing, the test level corresponds to the risk of
+    committing a type 1 error, that is an incorrect rejection of the null hypothesis
+    """
 
     selection_criterion: SelectionCriterion
     """The selection criterion to select a distribution from a list of candidates."""
@@ -199,11 +202,11 @@ class ParametricStatistics(Statistics):
         self,
         dataset: Dataset,
         distributions: Sequence[DistributionName],
-        variable_names: Iterable[str] | None = None,
+        variable_names: Iterable[str] = (),
         fitting_criterion: FittingCriterion = FittingCriterion.BIC,
         level: float = 0.05,
         selection_criterion: SelectionCriterion = SelectionCriterion.BEST,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         """
         Args:
@@ -224,11 +227,9 @@ class ParametricStatistics(Statistics):
         self.fitting_criterion = fitting_criterion
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
+        self.level = level
         if self.fitting_criterion in self.SignificanceTest.__members__:
-            self.level = level
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
-        else:
-            self.level = None
 
         self._all_distributions = self._fit_distributions(distributions)
         self.__distributions = {}
@@ -291,7 +292,7 @@ class ParametricStatistics(Statistics):
     def plot_criteria(
         self,
         variable: str,
-        title: str | None = None,
+        title: str = "",
         save: bool = False,
         show: bool = True,
         directory: str | Path = ".",
@@ -302,9 +303,9 @@ class ParametricStatistics(Statistics):
 
         Args:
             variable: The name of the variable.
-            title: A plot title.
-            save: If True, save the plot on the disk.
-            show: If True, show the plot.
+            title: The title of the plot, if any.
+            save: If ``True``, save the plot on the disk.
+            show: If ``True``, show the plot.
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
             fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
@@ -360,15 +361,10 @@ class ParametricStatistics(Statistics):
                 variable, index, self.dataset.variable_names_to_n_components[variable]
             )
         )
-        if title is not None:
+        if title:
             plt.suptitle(title)
 
-        if save:
-            file_path = Path(directory) / "criteria.pdf"
-        else:
-            file_path = None
-
-        save_show_figure(fig, show, file_path)
+        save_show_figure(fig, show, Path(directory) / "criteria.pdf" if save else "")
 
     def _select_best_distributions(
         self, distribution_names: Sequence[DistributionName]

@@ -39,14 +39,14 @@ configure_logger()
 # ------------
 #
 # Let's consider a binary software computing the float output
-# :math:`c = a^2 + b^2` from two float inputs : :code:`'a'` and :code:`'b'`.
+# :math:`c = a^2 + b^2` from two float inputs : ``'a'`` and ``'b'``.
 #
-# The inputs are read in the :code:`'inputs.txt'` file
+# The inputs are read in the ``'inputs.txt'`` file
 # which looks like: `a=1 b=2` and
-# the output is written to: :code:`'outputs.txt'` which looks like `c=5`.
+# the output is written to: ``'outputs.txt'`` which looks like `c=5`.
 #
-# Then, the executable can be run using the shell command :code:`'python run.py'`.
-# Let's make a discipline out of this from an initial :code:`'inputs.txt'`.
+# Then, the executable can be run using the shell command ``'python run.py'``.
+# Let's make a discipline out of this from an initial ``'inputs.txt'``.
 
 
 # %%
@@ -58,13 +58,13 @@ configure_logger()
 # 1. Instantiate the :class:`.MDODiscipline` using the super constructor,
 # 2. Initialize the grammars using the
 #    :meth:`.JSONGrammar.update` method,
-# 3. Set the default inputs from the initial :code:`'inputs.txt'`
+# 3. Set the default inputs from the initial ``'inputs.txt'``
 #
 # The :class:`!MDODiscipline._run` method consists in three steps:
 #
 # 1. Get the input data from :attr:`!MDODiscipline.local_data` and write the
-#    :code:`'inputs.txt'` file,
-# 2. Run the executable using the :code:`subprocess.run()` command (`see more
+#    ``'inputs.txt'`` file,
+# 2. Run the executable using the ``subprocess.run()`` command (`see more
 #    <https://docs.python.org/3/library/subprocess.html#subprocess.run>`_),
 # 3. Get the output values and store them to :attr:`!MDODiscipline.local_data`.
 #
@@ -111,8 +111,8 @@ class ShellExecutableDiscipline(MDODiscipline):
 # ---------------------------
 # Now we can run it with default input values:
 shell_disc = ShellExecutableDiscipline()
-print(shell_disc.execute())
+shell_disc.execute()
 
 # %%
 # or run it with new input values:
-print(shell_disc.execute({"a": array([2.0]), "b": array([3.0])}))
+shell_disc.execute({"a": array([2.0]), "b": array([3.0])})

@@ -83,7 +83,7 @@ class R2Measure(MLErrorMeasure):
             multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[multioutput],
         )
 
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: list[int] | None = None,
@@ -119,7 +119,7 @@ class R2Measure(MLErrorMeasure):
             1 - sse / var / len(ymean), multioutput, as_dict
         )
 
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: list[int] | None = None,
@@ -128,3 +128,7 @@ class R2Measure(MLErrorMeasure):
         as_dict: bool = False,
     ) -> NoReturn:
         raise NotImplementedError
+
+    # TODO: API: remove these aliases in the next major release.
+    evaluate_kfolds = compute_cross_validation_measure
+    evaluate_bootstrap = compute_bootstrap_measure

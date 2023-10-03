@@ -43,7 +43,7 @@ while the (i,i) subplot represents the empirical distribution of the samples
 by means of an histogram or a kernel density estimator.
 
 A variable name can be passed to the :meth:`.DatasetPlot.execute` method
-by means of the :code:`classifier` keyword in order to color the curves
+by means of the ``classifier`` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """
@@ -78,7 +78,7 @@ class ScatterMatrix(DatasetPlot):
         Args:
             classifier: The name of the variable to build the cluster.
             kde: The type of the distribution representation.
-                If True, plot kernel-density estimator on the diagonal.
+                If ``True``, plot kernel-density estimator on the diagonal.
                 Otherwise, use histograms.
             size: The size of the points.
             marker: The marker for the points.
@@ -133,7 +133,10 @@ class ScatterMatrix(DatasetPlot):
             dataframe = dataframe.drop(labels=variable_name, axis=1)
 
         dataframe.columns = self._get_variable_names(dataframe)
-        fig, axes = self._get_figure_and_axes(fig, axes, self.fig_size)
+        n_cols = n_rows = dataframe.shape[1] if axes is None else 1
+        fig, axes = self._get_figure_and_axes(
+            fig, axes, self.fig_size, n_rows=n_rows, n_cols=n_cols
+        )
         sub_axes = scatter_matrix(
             dataframe,
             diagonal=diagonal,

@@ -32,7 +32,7 @@ class LSF(JobSchedulerDisciplineWrapper):
 
     The discipline is serialized to the disk, its input too, then a job file is created
     from a template to execute it with the provided options. The submission command is
-    launched, it will setup the environment, deserialize the discipline and its inputs,
+    launched, it will set up the environment, deserialize the discipline and its inputs,
     execute it and serialize the outputs. Finally, the deserialized outputs are returned
     by the wrapper.
     """

@@ -25,7 +25,7 @@ contained in the study directory are graphically post-processed. This class
 provides several methods to easily change graphical properties, notably
 the plot labels. It also makes it possible to define a cost function per
 MDO formulation, converting the numbers of executions and linearizations
-of the different disciplines required by a MDO process in an estimation
+of the different disciplines required by an MDO process in an estimation
 of the computational cost associated with what would be a scaled version
 of the true problem.
 
@@ -345,8 +345,8 @@ class PostScalabilityStudy:
         :param float xmargin: margin on left and right sides of the x-axis
         :param int minbox: minimal number of values for boxplot (default: 2).
         :param bool notch: if True, will produce a notched boxplot.
-        :param float whis:  the reach of the whiskers to the beyond
-            the first and third quartiles (default: 1.5).
+        :param float whis: the reach of the whiskers to the beyond the first and third
+            quartiles (default: 1.5).
         """
         if not hasattr(widths, "__len__"):
             widths = [widths] * len(self.get_scaling_strategies(True))
@@ -413,8 +413,8 @@ class PostScalabilityStudy:
         :param list(str) scales: scales
         :param str color: line color.
         :param bool notch: if True, will produce a notched boxplot.
-        :param float whis:  the reach of the whiskers to the beyond
-            the first and third quartiles (default: 1.5).
+        :param float whis: the reach of the whiskers to the beyond the first and third
+            quartiles (default: 1.5).
         :param float xmargin: margin on left and right sides of the x-axis
         """
         plt.figure(name)
@@ -454,8 +454,8 @@ class PostScalabilityStudy:
         :param str fill_color: fill color
         :param bool notch: if True, will produce a notched boxplot.
         :param list(float) widths: widths of boxplots
-        :param float whis:  the reach of the whiskers to the beyond
-            the first and third quartiles
+        :param float whis: the reach of the whiskers to the beyond the first and third
+            quartiles
         """
         if len(data.shape) == 3:
             data = data[0, :, :]
@@ -581,8 +581,8 @@ class PostScalabilityStudy:
     def get_optimization_strategies(self, unique: bool = False) -> list[str]:
         """Get the names of the optimization strategies.
 
-        :param bool unique: return either unique values if True
-            or one value per scalability result if False (default: False).
+        :param bool unique: return either unique values if True or one value per
+            scalability result if False (default: False).
         :return: names of the optimization strategies.
         :rtype: list(str)
         """
@@ -599,8 +599,8 @@ class PostScalabilityStudy:
     def get_scaling_strategies(self, unique: bool = False) -> list[int]:
         """Get the identifiers of the scaling strategies.
 
-        :param bool unique: return either unique values if True
-            or one value per scalability result if False (default: False).
+        :param bool unique: return either unique values if True or one value per
+            scalability result if False (default: False).
         :return: identifiers of scaling strategies
         :rtype: list(int)
         """
@@ -613,9 +613,9 @@ class PostScalabilityStudy:
     def get_replicates(self, unique: bool = False) -> list[int]:
         """Get the replicate identifiants.
 
-        :param bool unique: return either unique values if True
-            or one value per scalability result if False (default: False).
-        :return: identifiants of replicates.
+        :param bool unique: return either unique values if True or one value per
+            scalability result if False (default: False).
+        :return: identifiers of replicates.
         :rtype: list(int)
         """
         rep = [int(name.split("_")[-1]) for name in self.names]

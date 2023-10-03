@@ -37,6 +37,7 @@ class MDOLinearFunction(MDOFunction):
     * and a vector :math:`b` of zero-order coefficients :math:`(b_i)_{i = 1, \dots m}`
 
     .. math::
+
         F(x)
         =
         Ax + b
@@ -53,7 +54,7 @@ class MDOLinearFunction(MDOFunction):
     __initial_expression: str | None
     """The initially provided expression.
 
-    If None the expression is computed.
+    If ``None`` the expression is computed.
     """
 
     def __init__(

@@ -20,7 +20,6 @@
 r"""Draw a bar plot from a :class:`.Dataset`."""
 from __future__ import annotations
 
-import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import arange
@@ -28,6 +27,7 @@ from numpy import linspace
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.compatibility.matplotlib import get_color_map
 
 
 class BarPlot(DatasetPlot):
@@ -51,35 +51,32 @@ class BarPlot(DatasetPlot):
     ) -> list[Figure]:
         # radar solid grid lines
         all_data = self.dataset.to_numpy()
-        sizes = self.dataset.variable_names_to_n_components
-        variable_names = self.dataset.get_columns()
-        dimension = sum(sizes.values())
+        feature_names = self.dataset.get_columns()
+        n_series, n_features = all_data.shape
         series_names = self.dataset.index
-
         if not self.color:
-            colormap = plt.cm.get_cmap(self.colormap)
-            self.color = [colormap(color) for color in linspace(0, 1, len(all_data))]
+            color_map = get_color_map(self.colormap)
+            self.color = [color_map(color) for color in linspace(0, 1, n_series)]
 
         fig, axes = self._get_figure_and_axes(fig, axes)
-
         axes.tick_params(labelsize=self.font_size)
-
-        discretization = arange(dimension)
-        width = 0.75 / len(all_data)
+        first_series_positions = arange(n_features)
+        width = 0.75 / n_series
         subplots = []
         positions = [
-            discretization + index * width + width / 2 for index in range(dimension)
+            first_series_positions + index * width + width / 2
+            for index in range(n_series)
         ]
-        for position, name, data, color in zip(
+        for feature_positions, series_name, series_data, series_color in zip(
             positions, series_names, all_data, self.color
         ):
             subplots.append(
                 axes.bar(
-                    position,
-                    data.tolist(),
+                    feature_positions,
+                    series_data.tolist(),
                     width,
-                    label=name,
-                    color=color,
+                    label=series_name,
+                    color=series_color,
                 )
             )
 
@@ -99,8 +96,8 @@ class BarPlot(DatasetPlot):
                     va="bottom",
                 )
 
-        axes.set_xticks(discretization)
-        axes.set_xticklabels(variable_names)
+        axes.set_xticks([position + 0.375 for position in first_series_positions])
+        axes.set_xticklabels(feature_names)
         axes.set_xlabel(self.xlabel)
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title, fontsize=self.font_size * 1.2)

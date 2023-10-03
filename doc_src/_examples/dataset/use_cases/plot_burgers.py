@@ -38,13 +38,17 @@ configure_logger()
 # We can easily load this dataset
 # by means of the high-level function :func:`~gemseo.create_benchmark_dataset`:
 dataset = create_benchmark_dataset("BurgersDataset")
-print(dataset)
+dataset
 
 # %%
-# Show the input and output data
-# ------------------------------
-print(dataset.input_dataset)
-print(dataset.output_dataset)
+# Show the input
+# --------------
+dataset.input_dataset
+
+# %%
+# Show the output data
+# --------------------
+dataset.output_dataset
 
 # %%
 # Load customized dataset
@@ -53,7 +57,7 @@ print(dataset.output_dataset)
 dataset = create_benchmark_dataset(
     "BurgersDataset", n_samples=20, n_x=700, fluid_viscosity=0.03
 )
-print(dataset)
+dataset
 
 # %%
 # Plot the data

@@ -46,7 +46,7 @@ configure_logger()
 # Define the objective function
 # -----------------------------
 # We define the objective function :math:`f(x)=\sin(x)-\exp(x)`
-# using a :class:`.MDOFunction` defined by the sum of :class:`.MDOFunction` objects.
+# using an :class:`.MDOFunction` defined by the sum of :class:`.MDOFunction` objects.
 f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
 f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 objective = f_1 - f_2
@@ -78,13 +78,11 @@ problem.objective = objective
 # Solve the problem
 # ^^^^^^^^^^^^^^^^^
 opt = OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
-
-print("Optimum = ", opt)
+opt
 
 # %%
 # Note that you can get all the optimization algorithms names:
-algo_list = OptimizersFactory().algorithms
-print("Available algorithms ", algo_list)
+OptimizersFactory().algorithms
 
 # %%
 # Save the optimization results
@@ -100,8 +98,8 @@ execute_post(problem, "OptHistoryView", show=True, save=False)
 # %%
 # .. note::
 #
-#    We can also save this plot using the arguments :code:`save=False`
-#    and :code:`file_path='file_path'`.
+#    We can also save this plot using the arguments ``save=False``
+#    and ``file_path='file_path'``.
 
 # %%
 # Solve the optimization problem using a DOE algorithm
@@ -109,4 +107,4 @@ execute_post(problem, "OptHistoryView", show=True, save=False)
 # We can also see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE).
 opt = DOEFactory().execute(problem, "lhs", n_samples=10, normalize_design_space=True)
-print("Optimum = ", opt)
+opt

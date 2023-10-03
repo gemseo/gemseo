@@ -48,8 +48,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         """Returns the solution of the parameterized optimization problem.
 
         :param p: parameter of the optimization problem
-        :param minimize: if True, returns the solution of the minimization
-            problem
+        :param minimize: if True, returns the solution of the minimization problem
         """
         # Set the parameterized optimal sol
         sol = array([1, p]) * p / (p + 1)
@@ -68,8 +67,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         """Returns the parameterized optimization problem.
 
         :param p: parameter of the optimization problem
-        :param minimize: if True, the problem is formulated as a minimization
-            problem problem
+        :param minimize: if True, the problem is formulated as a minimization problem
         :param solve: if True, the problem is solved
         """
         # Create the design space

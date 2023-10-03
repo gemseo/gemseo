@@ -164,7 +164,7 @@ class OpenTURNS(DOELibrary):
                 the latter can be specified
                 and the former set to its default value ``None``.
             centers: The centers for axial, factorial and composite designs.
-                If None, centers = 0.5.
+                If ``None``, centers = 0.5.
             eval_jac: Whether to evaluate the jacobian.
             n_samples: The number of samples. If there is a parameter ``levels``,
                 the latter can be specified
@@ -175,7 +175,7 @@ class OpenTURNS(DOELibrary):
             criterion: The space-filling criterion, either "C2", "PhiP" or "MinDist".
             temperature: The temperature profile for simulated annealing,
                 either "Geometric" or "Linear".
-            annealing: If True, use simulated annealing to optimize LHS. Otherwise,
+            annealing: If ``True``, use simulated annealing to optimize LHS. Otherwise,
                 use crude Monte Carlo.
             n_replicates: The number of Monte Carlo replicates to optimize LHS.
             seed: The seed value.
@@ -288,16 +288,16 @@ class OpenTURNS(DOELibrary):
         Args:
             dimension: The dimension of the variables space.
             n_samples: The number of samples.
-                If None, set from the options.
+                If ``None``, set from the options.
             seed: The seed to be used.
-                If None, use :attr:`.seed`.
+                If ``None``, use :attr:`.seed`.
             **options: The options for the DOE algorithm, see associated JSON file.
 
         Returns:
             The samples for the DOE.
         """
         self.seed += 1
-        openturns.RandomGenerator.SetSeed(seed or self.seed)
+        openturns.RandomGenerator.SetSeed(self.seed if seed is None else seed)
 
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
             return self.__generate_lhs(n_samples, dimension, **options)

@@ -37,10 +37,10 @@ Illustration on the Sobieski use case
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The post-processing features are illustrated on MDO results obtained on the :ref:`SSBJ use case <sobieski_problem>`,
-using different types of :code:`formulation` (:ref:`MDF formulation <mdf_formulation>`, :ref:`IDF formulation <idf_formulation>`, ...)
+using different types of ``formulation`` (:ref:`MDF formulation <mdf_formulation>`, :ref:`IDF formulation <idf_formulation>`, ...)
 
 The following code sets up and executes the problem. It is possible to try different types of MDO strategies by changing
-the :code:`formulation` value. For a detailed explanation on how to setup the case, please see
+the ``formulation`` value. For a detailed explanation on how to setup the case, please see
 :ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`.
 
 
@@ -70,7 +70,7 @@ the :code:`formulation` value. For a detailed explanation on how to setup the ca
 How to apply a post-process feature?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-From this :code:`scenario`, we can apply any kind of post-processing dedicated to :class:`~gemseo.core.scenario.Scenario` instances,
+From this ``scenario``, we can apply any kind of post-processing dedicated to :class:`~gemseo.core.scenario.Scenario` instances,
 
 - either by means of its :meth:`~gemseo.core.scenario.Scenario.post_process` method:
 

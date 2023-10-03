@@ -67,8 +67,7 @@ grammar = PydanticGrammar("grammar", model=Model)
 
 # %%
 # Show the contents of the grammar.
-print(repr(grammar))
-print()
+grammar
 
 # %%
 # Validate data against the grammar
@@ -82,8 +81,6 @@ try:
 except InvalidDataError as error:
     print(error)
 
-print()
-
 # %%
 # Validating data with bad type will raise an error shows the bad elements,
 # here the first elements shall be an int and the third one shall be a ndarray of int.
@@ -93,8 +90,6 @@ try:
     )
 except InvalidDataError as error:
     print(error)
-
-print()
 
 # %%
 # Validating compliant data.
@@ -107,8 +102,7 @@ grammar.validate(
 # ----------------
 # As compared to the other types of grammars, the grammar defaults are be defined
 # in the pydantic model and does not require to be manually defined from the grammar.
-print(grammar.defaults)
-print()
+grammar.defaults
 
 # %%
 # Model inheritance
@@ -132,5 +126,4 @@ grammar = PydanticGrammar("grammar", model=Model2)
 
 # %%
 # Show the contents of the grammar.
-print(repr(grammar))
-print()
+grammar

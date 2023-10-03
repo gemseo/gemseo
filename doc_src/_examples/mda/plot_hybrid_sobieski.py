@@ -36,8 +36,9 @@ configure_logger()
 def display_result(res, mda_name):
     """Display coupling and output variables in logger.
 
-    @param res: result (dict) of MDA
-    @param mda_name: name of the current MDA
+    Args:
+        res: result of MDA
+        mda_name: name of the current MDA
     """
     # names of the coupling variables
     coupling_names = [
@@ -52,11 +53,7 @@ def display_result(res, mda_name):
         "y_34",
     ]
     for coupling_var in coupling_names:
-        print(
-            "{}, coupling variable {}: {}".format(
-                mda_name, coupling_var, res[coupling_var]
-            ),
-        )
+        print(f"{mda_name}, coupling variable {coupling_var}: {res[coupling_var]}")
 
     # names of the output variables
     output_names = ["y_1", "y_2", "y_3", "y_4", "g_1", "g_2", "g_3"]
@@ -82,7 +79,7 @@ disciplines = create_discipline(
     ]
 )
 mda1 = create_mda("MDAJacobi", disciplines, max_mda_iter=1)
-mda2 = create_mda("MDANewtonRaphson", disciplines)
+mda2 = create_mda("MDAGaussSeidel", disciplines)
 mda_sequence = [mda1, mda2]
 mda = create_mda("MDASequential", disciplines, mda_sequence=mda_sequence)
 res = mda.execute()

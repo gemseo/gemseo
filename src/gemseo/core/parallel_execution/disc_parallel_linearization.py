@@ -27,7 +27,6 @@ from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import IS_WIN
 
 
 class _Functor:
@@ -37,12 +36,19 @@ class _Functor:
     are returned.
     """
 
-    def __init__(self, discipline: MDODiscipline) -> None:
+    def __init__(self, discipline: MDODiscipline, execute: bool = True) -> None:
         """
         Args:
             discipline: The discipline to get a callable from.
+            execute: Whether to start by executing the discipline
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline was executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.cache`.
         """  # noqa:D205 D212 D415
         self.__disc = discipline
+        self.__execute = execute
 
     def __call__(
         self, inputs: Data | None
@@ -54,7 +60,7 @@ class _Functor:
         Returns:
             The discipline :attr:`.MDODiscipline.local_data` and its jacobian.
         """  # noqa:D205 D212 D415
-        jac = self.__disc.linearize(inputs)
+        jac = self.__disc.linearize(inputs, execute=self.__execute)
         return self.__disc.local_data, jac
 
 
@@ -71,13 +77,20 @@ class DiscParallelLinearization(CallableParallelExecution):
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: tuple[type[Exception]] = (),
+        execute: bool = True,
     ) -> None:
         """
         Args:
             disciplines: The disciplines to execute.
+            execute: Whether to start by executing the discipline
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline was executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.cache`.
         """  # noqa:D205 D212 D415
         super().__init__(
-            workers=[_Functor(d) for d in disciplines],
+            workers=[_Functor(d, execute=execute) for d in disciplines],
             n_processes=n_processes,
             use_threading=use_threading,
             wait_time_between_fork=wait_time_between_fork,
@@ -99,18 +112,20 @@ class DiscParallelLinearization(CallableParallelExecution):
             exec_callback=exec_callback,
             task_submitted_callback=task_submitted_callback,
         )
-        if len(self._disciplines) == 1 or not len(self._disciplines) == len(
-            self.inputs
-        ):
+        if len(self._disciplines) == 1 or not len(self._disciplines) == len(inputs):
             if len(self._disciplines) == 1:
                 self.workers[0].local_data = ordered_outputs[0][0]
                 self.workers[0].jac = ordered_outputs[0][1]
-            if IS_WIN and not self.use_threading:
+            if (
+                not self.use_threading
+                and self.MULTI_PROCESSING_START_METHOD
+                == self.MultiProcessingStartMethod.SPAWN
+            ):
                 disc = self._disciplines[0]
                 # Only increase the number of calls if the Jacobian was computed.
                 if ordered_outputs[0][0]:
-                    disc.n_calls += len(self.inputs)
-                    disc.n_calls_linearize += len(self.inputs)
+                    disc.n_calls += len(inputs)
+                    disc.n_calls_linearize += len(inputs)
         else:
             for disc, output in zip(self.workers, ordered_outputs):
                 # When the discipline in the worker failed, output is None.

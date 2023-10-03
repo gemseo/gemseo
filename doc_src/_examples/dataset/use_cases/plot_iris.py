@@ -72,7 +72,7 @@ iris = create_benchmark_dataset("IrisDataset")
 
 # %%
 # and get some information about it
-print(iris)
+iris
 
 # %%
 # Manipulate the dataset
@@ -87,11 +87,11 @@ data = iris.get_view(indices=samples)
 
 # %%
 # or only the parameters:
-print(iris.get_view(group_names=iris.PARAMETER_GROUP, indices=samples))
+iris.get_view(group_names=iris.PARAMETER_GROUP, indices=samples)
 
 # %%
 # or only the labels:
-print(iris.get_view(group_names="labels", indices=samples))
+iris.get_view(group_names="labels", indices=samples)
 
 # %%
 # Plot the dataset

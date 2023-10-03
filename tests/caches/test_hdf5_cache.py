@@ -23,7 +23,7 @@ import h5py
 import pytest
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import ones
 
@@ -82,22 +82,39 @@ def test_hasgroup(tmp_wd):
     )
 
 
-def test_str(tmp_wd):
+def test_repr(tmp_wd):
     """Check string representation."""
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
     cache[{"i": ones(2)}] = ({"o": ones(2)}, None)
-    expected = MultiLineString()
-    expected.add("Name: Dummy")
-    expected.indent()
-    expected.add("Type: HDF5Cache")
-    expected.add("Tolerance: 0.0")
-    expected.add("Input names: ['i']")
-    expected.add("Output names: ['o']")
-    expected.add("Length: 2")
-    expected.add("HDF file path: dummy.h5")
-    expected.add("HDF node path: Dummy")
-    assert str(cache) == str(expected)
+    expected = """Name: Dummy
+   Type: HDF5Cache
+   Tolerance: 0.0
+   Input names: ['i']
+   Output names: ['o']
+   Length: 2
+   HDF file path: dummy.h5
+   HDF node path: Dummy"""
+    assert repr(cache) == str(cache) == expected
+
+
+def test_repr_html(tmp_wd):
+    """Check HDF5Cache._repr_html."""
+    cache = create_cache()
+    cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
+    cache[{"i": ones(2)}] = ({"o": ones(2)}, None)
+    assert cache._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Name: Dummy<br/>"
+        "<ul>"
+        "<li>Type: HDF5Cache</li>"
+        "<li>Tolerance: 0.0</li>"
+        "<li>Input names: ['i']</li>"
+        "<li>Output names: ['o']</li>"
+        "<li>Length: 2</li>"
+        "<li>HDF file path: dummy.h5</li>"
+        "<li>HDF node path: Dummy</li>"
+        "</ul>"
+    )
 
 
 def test_cache_array_str(tmp_wd):

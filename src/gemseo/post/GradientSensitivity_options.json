@@ -1,28 +1,28 @@
 {
-    "name": "GradientSensitivity_options",
-    "required": [],
-    "properties": {
-        "iteration":{
-            "anyOf": [
-				{
-					"type": "null"
-				},
-				{
-					"type": "integer"
-				}
-			],
-            "default": null
+  "name": "GradientSensitivity_options",
+  "required": [],
+  "properties": {
+    "iteration": {
+      "anyOf": [
+        {
+          "type": "null"
         },
-        "scale_gradients": {
-            "type": "boolean",
-            "default": false
-        },
-        "compute_missing_gradients": {
-            "type": "boolean",
-            "default": false
+        {
+          "type": "integer"
         }
+      ],
+      "default": null
     },
-    "additionalProperties": false,
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object"
+    "scale_gradients": {
+      "type": "boolean",
+      "default": false
+    },
+    "compute_missing_gradients": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
 }

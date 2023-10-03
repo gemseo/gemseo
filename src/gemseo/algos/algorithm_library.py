@@ -35,6 +35,7 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
+from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -267,7 +268,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def execute(
         self,
-        problem: Any,
+        problem: BaseProblem,
         algo_name: str = None,
         **options: Any,
     ) -> None:

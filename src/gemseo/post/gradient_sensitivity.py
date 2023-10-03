@@ -54,7 +54,7 @@ class GradientSensitivity(OptPostProcessor):
                 e.g. ``5`` for the 5-th iteration
                 or ``-2`` for the penultimate one.
                 If ``None``, use the iteration of the optimum.
-            scale_gradients: If True, normalize each gradient
+            scale_gradients: If ``True``, normalize each gradient
                 w.r.t. the design variables.
             compute_missing_gradients: Whether to compute the gradients at the
                 selected iteration if they were not computed by the algorithm.

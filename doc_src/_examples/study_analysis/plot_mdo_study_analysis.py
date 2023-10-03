@@ -67,9 +67,9 @@ study.generate_xdsm(".")
 # and the Excel file path ``mdo_study.xlsx`` is the specification of the MDO study.
 # Here, we set some options of ``gemseo-study``:
 #
-# - :code:`-o outputs` is the output directory,
-# - :code:`-h 5` is the height of the N2 chart in inches,
-# - :code:`-w 5` is the width of the N2 chart in inches,
-# - :code:`-x` is an option to create of the XDSM
+# - ``-o outputs`` is the output directory,
+# - ``-h 5`` is the height of the N2 chart in inches,
+# - ``-w 5`` is the width of the N2 chart in inches,
+# - ``-x`` is an option to create of the XDSM
 #   (compatible only with the study type 'mdo'),
-# - :code:`-l` is an option to create a PDF file with the creation of the XDSM.
+# - ``-l`` is an option to create a PDF file with the creation of the XDSM.

@@ -34,11 +34,11 @@ build:
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_petsc
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_mlearning
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_calibration
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_umdo
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_fmu
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_mma
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_pdfo
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_matlab
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_pseven
       - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_template_editor_gui
+      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_benchmark
       - sphinx-apidoc -e -M -o doc_src/_modules src/gemseo

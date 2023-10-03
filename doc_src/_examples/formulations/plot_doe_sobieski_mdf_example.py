@@ -75,7 +75,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 #
 # We need to define the design space.
 design_space = SobieskiProblem().design_space
-print(design_space)
+design_space
 
 # %%
 # Instantiate the scenario

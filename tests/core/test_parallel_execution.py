@@ -42,6 +42,7 @@ from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import X_SHARED
 from gemseo.problems.sellar.sellar import Y_1
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from numpy import array
 from numpy import complex128
 from numpy import equal
@@ -242,58 +243,6 @@ def test_not_worker(capfd):
     assert err
 
 
-def test_par_discipline_linearization():
-    """Test the parallel linearization for a single worker."""
-    sellar_par_lin = Sellar1()
-    in_names = ["x_local", "x_shared", "y_2"]
-    sellar_par_lin.add_differentiated_inputs(in_names)
-    out_names = ["y_1"]
-    sellar_par_lin.add_differentiated_outputs(out_names)
-
-    parallel_execution = DiscParallelLinearization([sellar_par_lin])
-
-    input_list = [
-        {
-            "x_local": array([0.0 + 0.0j]),
-            "x_shared": array([1.0 + 0.0j, 0.0 + 0.0j]),
-            "y_2": array([1.0 + 0.0j]),
-        },
-        {
-            "x_local": array([0.5 + 0.0j]),
-            "x_shared": array([0.5 + 0.0j, 0.0 + 0.0j]),
-            "y_2": array([0.5 + 0.0j]),
-        },
-    ]
-
-    parallel_execution.execute(input_list)
-
-    assert sellar_par_lin.n_calls_linearize == 2
-
-
-def test_par_discipline_lin_no_jac():
-    """Test the parallel linearization for a single worker with no defined outputs."""
-    sellar_par_lin = Sellar1()
-
-    parallel_execution = DiscParallelLinearization([sellar_par_lin])
-
-    input_list = [
-        {
-            "x_local": array([0.0 + 0.0j]),
-            "x_shared": array([1.0 + 0.0j, 0.0 + 0.0j]),
-            "y_2": array([1.0 + 0.0j]),
-        },
-        {
-            "x_local": array([0.5 + 0.0j]),
-            "x_shared": array([0.5 + 0.0j, 0.0 + 0.0j]),
-            "y_2": array([0.5 + 0.0j]),
-        },
-    ]
-
-    parallel_execution.execute(input_list)
-
-    assert sellar_par_lin.n_calls_linearize == 0
-
-
 def f(x: float = 0.0) -> float:
     """A function that raises an exception on certain conditions."""
     if x == 0:
@@ -328,3 +277,81 @@ def test_re_raise_exceptions(exceptions, raises_exception):
             parallel_execution.execute(input_list)
     else:
         assert parallel_execution.execute(input_list) == [array([2.0]), None]
+
+
+@pytest.fixture()
+def reset_default_multiproc_method():
+    """Reset the global multiproccessing method to the FORK method."""
+    yield
+    CallableParallelExecution.MULTI_PROCESSING_START_METHOD = (
+        (CallableParallelExecution.MultiProcessingStartMethod.FORK)
+        if not PLATFORM_IS_WINDOWS
+        else CallableParallelExecution.MultiProcessingStartMethod.SPAWN
+    )
+
+
+@pytest.mark.parametrize(
+    "parallel_class, n_calls_attr, add_diff, expected_n_calls",
+    [
+        (DiscParallelExecution, "n_calls", False, 2),
+        (DiscParallelLinearization, "n_calls_linearize", False, 0),
+        (DiscParallelLinearization, "n_calls_linearize", True, 2),
+    ],
+)
+@pytest.mark.parametrize(
+    "mp_method",
+    [
+        (CallableParallelExecution.MultiProcessingStartMethod.FORK),
+        (CallableParallelExecution.MultiProcessingStartMethod.SPAWN),
+        ("threading"),
+    ],
+)
+def test_multiprocessing_context(
+    parallel_class,
+    n_calls_attr,
+    mp_method,
+    add_diff,
+    expected_n_calls,
+    reset_default_multiproc_method,
+):
+    """Test the multiprocessing where the method for the context is changed.
+
+    The test is applied on both parallel execution and linearization, with and without
+    the definition of differentiated I/O.
+    """
+
+    # Just for the test purpose, we consider multithreading as an mp_method
+    # and set the boolean ``use_threading`` from this.
+    use_threading = True if mp_method == "threading" else False
+    if not use_threading:
+        CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_method
+
+    sellar = Sellar1()
+    if add_diff:
+        sellar.add_differentiated_inputs()
+        sellar.add_differentiated_outputs()
+
+    parallel_execution = parallel_class([sellar], use_threading=use_threading)
+
+    input_list = [
+        {
+            "x_local": array([0.0 + 0.0j]),
+            "x_shared": array([1.0 + 0.0j, 0.0 + 0.0j]),
+            "y_2": array([1.0 + 0.0j]),
+        },
+        {
+            "x_local": array([0.5 + 0.0j]),
+            "x_shared": array([0.5 + 0.0j, 0.0 + 0.0j]),
+            "y_2": array([0.5 + 0.0j]),
+        },
+    ]
+
+    if (
+        PLATFORM_IS_WINDOWS
+        and mp_method == CallableParallelExecution.MultiProcessingStartMethod.FORK
+    ):
+        with pytest.raises(ValueError):
+            parallel_execution.execute(input_list)
+    else:
+        parallel_execution.execute(input_list)
+        assert getattr(sellar, n_calls_attr) == expected_n_calls

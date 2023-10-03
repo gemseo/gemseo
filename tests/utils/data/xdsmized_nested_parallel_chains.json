@@ -92,9 +92,9 @@
           "Dis1",
           {
             "parallel": [
-              ["Dis2"],
-              ["Dis3"],
-              ["Dis4"]
+              "Dis2",
+              "Dis3",
+              "Dis4"
             ]
           }
         ]

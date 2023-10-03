@@ -19,9 +19,9 @@ from gemseo_templator.blocks.template import Block
 block = Block(
     title="Data persistence",
     description=(
-        'Store disciplinary evaluations in a <a href="cache.html">cache</a>,'
+        'Store disciplinary evaluations in a <a href="data_persistence/cache.html">cache</a>,'
         "either in memory or saved in a file. "
-        'Use a <a href="dataset.html">dataset</a> to store many kinds of data '
+        'Use a <a href="data_persistence/dataset.html">dataset</a> to store many kinds of data '
         "and make them easy to handle for visualization, display and query purposes."
     ),
     examples="examples/cache/index.html",

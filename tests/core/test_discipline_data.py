@@ -33,26 +33,45 @@ def to_df_key(
     return f"{key1}{DisciplineData.SEPARATOR}{key2}"
 
 
-def test_copy():
-    """Verify copy()."""
-    leaf_data = [0]
-    df = DataFrame(data={"a": leaf_data})
-    data = {"x": df, "y": 0, "z": [0]}
-    d = DisciplineData(deepcopy(data))
-    d_copy = d.copy()
+def assert_equal(disc_data_1, disc_data_2, shallow_copy: bool) -> None:
+    """Assert that 2 disciplines data object are equal."""
+    assert disc_data_2 == disc_data_1
 
-    assert list(d.keys()) == list(d_copy.keys())
-
-    # Adding a key is not propagated to the copy.
-    d["w"] = 0
-    assert "w" not in d_copy
-
-    # Item's values are shared.
-    assert d["z"] is d_copy["z"]
+    if shallow_copy:
+        assert disc_data_1["z"] is disc_data_2["z"]
+    else:
+        assert disc_data_1["z"] is not disc_data_2["z"]
 
     # For data frames 'is' cannot be used, we check indirectly.
-    d["x~a"][0] = 1
-    assert d_copy["x~a"] == d["x~a"]
+    disc_data_1["x~a"][0] = 1
+    if shallow_copy:
+        assert disc_data_2["x~a"] == disc_data_1["x~a"]
+    else:
+        assert disc_data_2["x~a"] != disc_data_1["x~a"]
+
+    # Adding a key is not propagated to the copy.
+    disc_data_1["w"] = 0
+    assert "w" not in disc_data_2
+
+
+def test_copy():
+    """Verify copy()."""
+    df = DataFrame(data={"a": [0]})
+    data = {"x": df, "y": 0, "z": [0]}
+    d = DisciplineData(data)
+    d_copy = d.copy()
+
+    assert_equal(d, d_copy, True)
+
+
+def test_deepcopy():
+    """Verify deepcopy()."""
+    df = DataFrame(data={"a": [0]})
+    data = {"x": df, "y": 0, "z": [0]}
+    d = DisciplineData(data)
+    d_copy = deepcopy(d)
+
+    assert_equal(d, d_copy, False)
 
 
 @pytest.mark.parametrize("with_namespace", (True, False))

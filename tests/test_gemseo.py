@@ -29,6 +29,7 @@ from gemseo import compute_doe
 from gemseo import configure
 from gemseo import create_benchmark_dataset
 from gemseo import create_cache
+from gemseo import create_dataset
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_mda
@@ -36,6 +37,7 @@ from gemseo import create_parameter_space
 from gemseo import create_scalable
 from gemseo import create_scenario
 from gemseo import create_surrogate
+from gemseo import DatasetClassName
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_coupling_graph
@@ -75,15 +77,17 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda import MDA
+from gemseo.post._graph_view import GraphView
+from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import cos
 from numpy import linspace
@@ -98,6 +102,19 @@ class Observer:
 
     def update(self, atom):
         self.status_changes += 1
+
+
+@pytest.fixture(scope="module")
+def scenario() -> MDOScenario:
+    """An MDO scenario after execution."""
+    scenario = create_scenario(
+        create_discipline("SobieskiMission"),
+        "DisciplinaryOpt",
+        "y_4",
+        SobieskiProblem().design_space,
+    )
+    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    return scenario
 
 
 def test_generate_n2_plot(tmp_wd):
@@ -119,12 +136,9 @@ def test_generate_n2_plot(tmp_wd):
     assert Path(file_path).exists()
 
 
-def test_generate_coupling_graph(tmp_wd):
-    """Test the coupling graph with the Sobieski problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
+@pytest.mark.parametrize("full", [False, True])
+def test_generate_coupling_graph(tmp_wd, full):
+    """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
     disciplines = create_discipline(
         [
@@ -135,7 +149,7 @@ def test_generate_coupling_graph(tmp_wd):
         ]
     )
     file_path = "coupl.pdf"
-    generate_coupling_graph(disciplines, file_path)
+    assert isinstance(generate_coupling_graph(disciplines, file_path, full), GraphView)
     assert Path(file_path).exists()
     assert Path("coupl.dot").exists()
 
@@ -204,21 +218,31 @@ def test_monitor_scenario():
     )
 
 
-def test_execute_post(tmp_wd):
+@pytest.mark.parametrize("obj_type", [Scenario, str, Path])
+def test_execute_post(scenario, obj_type, tmp_wd):
     """Test the API method to call the post-processing factory.
 
     Args:
+        scenario: An MDO scenario after execution.
+        obj_type: The type of the object to post-process.
         tmp_wd: Fixture to move into a temporary directory.
     """
-    scenario = create_scenario(
-        create_discipline("SobieskiMission"),
-        "DisciplinaryOpt",
-        "y_4",
-        SobieskiProblem().design_space,
-    )
-    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    if obj_type is Scenario:
+        obj = scenario
+    else:
+        file_name = "results.hdf5"
+        scenario.save_optimization_history(file_name)
+        if obj_type == str:
+            obj = file_name
+        else:
+            obj = Path(file_name)
 
-    execute_post(scenario, "OptHistoryView", save=True, show=False)
+    post = execute_post(obj, "OptHistoryView", save=False, show=False)
+    assert isinstance(post, OptHistoryView)
+
+
+def test_execute_post_type_error(scenario):
+    """Test the method execute_post with a wrong typed argument."""
     with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
         execute_post(1234, "OptHistoryView")
 
@@ -530,7 +554,7 @@ def test_get_formulation_options_schema():
     """Test that the formulation options schemas are retrieved correctly."""
     mdf_schema = get_formulation_options_schema("MDF")
     for prop in ["maximize_objective", "inner_mda_name"]:
-        assert prop in mdf_schema["required"]
+        assert prop in mdf_schema["properties"]
 
     idf_schema = get_formulation_options_schema("IDF")
     for prop in [
@@ -539,7 +563,7 @@ def test_get_formulation_options_schema():
         "n_processes",
         "use_threading",
     ]:
-        assert prop in idf_schema["required"]
+        assert prop in idf_schema["properties"]
     get_formulation_options_schema("IDF", pretty_print=True)
 
 
@@ -657,24 +681,18 @@ def test_print_configuration(capfd):
     out, err = capfd.readouterr()
     assert not err
 
-    expected = MultiLineString()
-    expected.add("Settings")
-    expected.indent()
-    expected.add("MDODiscipline")
-    expected.indent()
-    expected.add("The caches are activated.")
-    expected.add("The counters are activated.")
-    expected.add("The input data are checked before running the discipline.")
-    expected.add("The output data are checked after running the discipline.")
-    expected.dedent()
-    expected.add("MDOFunction")
-    expected.indent()
-    expected.add("The counters are activated.")
-    expected.dedent()
-    expected.add("DriverLibrary")
-    expected.indent()
-    expected.add("The progress bar is activated.")
-    assert str(expected) in out
+    expected = """Settings
+   MDODiscipline
+      The caches are activated.
+      The counters are activated.
+      The input data are checked before running the discipline.
+      The output data are checked after running the discipline.
+   MDOFunction
+      The counters are activated.
+   DriverLibrary
+      The progress bar is activated."""
+
+    assert expected in out
 
     gemseo_modules = [
         "MDODiscipline",
@@ -859,3 +877,14 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
         job_out_filename="run_disc.py",
     )
     assert "y_4" in wrapped.execute()
+
+
+def test_create_dataset_without_name():
+    """Check create_dataset without name."""
+    assert create_dataset().name == "Dataset"
+    assert create_dataset(class_name=DatasetClassName.IODataset).name == "IODataset"
+
+
+def test_create_dataset_class_name():
+    """Check create_dataset with class_name set from the enum DatasetClassName."""
+    isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)

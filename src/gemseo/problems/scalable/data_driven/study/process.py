@@ -93,20 +93,20 @@ class ScalabilityStudy:
         The constructor of the ScalabilityStudy class requires two mandatory
         arguments:
 
-        - the :code:`'objective'` name,
-        - the list of :code:`'design_variables'` names.
+        - the ``'objective'`` name,
+        - the list of ``'design_variables'`` names.
 
         Concerning output files, we can specify:
 
-        - the :code:`directory` which is :code:`'study'` by default,
+        - the ``directory`` which is ``'study'`` by default,
         - the prefix of output file names (default: no prefix).
 
         Regarding optimization parametrization, we can specify:
 
-        - the list of equality constraints names (:code:`eq_constraints`),
-        - the list of inequality constraints names (:code:`ineq_constraints`),
+        - the list of equality constraints names (``eq_constraints``),
+        - the list of inequality constraints names (``ineq_constraints``),
         - the choice of maximizing the objective function
-          (:code:`maximize_objective`).
+          (``maximize_objective``).
 
         By default, the objective function is minimized and the MDO problem
         is unconstrained.
@@ -115,15 +115,15 @@ class ScalabilityStudy:
         we can overwrite:
 
         - the default fill factor of the input-output dependency matrix
-          :code:`ineq_constraints`,
+          ``ineq_constraints``,
         - the probability to set the inequality constraints as active at
-          initial step of the optimization :code:`active_probability`,
+          initial step of the optimization ``active_probability``,
         - the offset of satisfaction for inequality constraints
-          :code:`feasibility_level`,
+          ``feasibility_level``,
         - the use of a preliminary MDA to start at equilibrium
-          :code:`start_at_equilibrium`,
+          ``start_at_equilibrium``,
         - the post-processing of the optimization database to get results
-          earlier than final step :code:`early_stopping`.
+          earlier than final step ``early_stopping``.
 
         :param str objective: name of the objective
         :param list(str) design_variables: names of the design variables
@@ -523,9 +523,8 @@ class ScalabilityStudy:
     def __update_var_scaling(scaling, size: int, varnames: Sequence[str]) -> None:
         """Update a scaling dictionary for a given list of variables and a given size.
 
-        :param dict scaling: scaling dictionary whose keys are variable names
-            and values are dictionary with scaling properties,
-            e.g. {'size': val}
+        :param dict scaling: scaling dictionary whose keys are variable names and values
+            are dictionary with scaling properties, e.g. {'size': val}
         :param int size: size of the variable
         :param list(str) varnames: list of variable names
         """
@@ -568,8 +567,7 @@ class ScalabilityStudy:
         """Execute the scalability study, one or several times to take into account the
         random features of the scalable problems.
 
-        :param int n_replicates: number of times the scalability study
-            is repeated. Default: 1.
+        :param int n_replicates: number of times the scalability study is repeated.
         """
         plural = "s" if n_replicates > 1 else ""
         LOGGER.info("Execute scalability study %s time%s", n_replicates, plural)

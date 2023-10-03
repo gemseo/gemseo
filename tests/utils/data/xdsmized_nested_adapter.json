@@ -1,0 +1,360 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "D1",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "MDOScenario_scn-1-1",
+        "type": "mdo",
+        "subxdsm": "MDOScenario_scn-1-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x0^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "z2^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x0"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "z2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x0"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "z1^*, y1^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "y1"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          "Dis3"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize z2(x0)\n   with respect to x0"
+  },
+  "MDOScenario_scn-1-1": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "MDAJacobi",
+        "type": "mda"
+      },
+      {
+        "id": "Dis3",
+        "name": "D2",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "MDOScenario_scn-2-1",
+        "type": "mdo",
+        "subxdsm": "MDOScenario_scn-2-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x2^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "z2^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "z2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x2"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "z2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x2"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "z2"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "y2^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "z2"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "y3"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis4",
+        "name": "y2"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis2",
+        "name": "y2"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "y2"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis2",
+        "name": "y3"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis3",
+        "name": "y3"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          [
+            {
+              "parallel": [
+                "Dis3",
+                [
+                  "Dis4"
+                ]
+              ]
+            }
+          ]
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize z2(x2)\n   with respect to x2"
+  },
+  "MDOScenario_scn-2-1": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "MDOScenario_scn-3-1",
+        "type": "mdo",
+        "subxdsm": "MDOScenario_scn-3-1"
+      },
+      {
+        "id": "Dis3",
+        "name": "D3",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x3^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "z3^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x3"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "z3"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x3"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "z3"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "y3^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "z3"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "z4"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          "Dis3"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize z3(x3)\n   with respect to x3"
+  },
+  "MDOScenario_scn-3-1": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "D4",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x4^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "z4^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x4"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "z4"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x4"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "z4"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "z4"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize z4(x4)\n   with respect to x4"
+  }
+}

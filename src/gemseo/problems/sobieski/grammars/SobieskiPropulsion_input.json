@@ -1,34 +1,39 @@
 {
-    "name": "SobieskiPropulsion_input",
-    "required": [ "y_23","x_3","x_shared","c_3"],
-    "properties": {
-        "y_23": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        },
-        "x_3": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        },
-        "x_shared": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        },
-        "c_3": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array",
-            "description": "engine weight reference"
-        }
+  "name": "SobieskiPropulsion_input",
+  "required": [
+    "y_23",
+    "x_3",
+    "x_shared",
+    "c_3"
+  ],
+  "properties": {
+    "y_23": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
     },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "id": "#SobieskiPropulsion_input"
+    "x_3": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    },
+    "x_shared": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    },
+    "c_3": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array",
+      "description": "engine weight reference"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "id": "#SobieskiPropulsion_input"
 }

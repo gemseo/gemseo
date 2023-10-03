@@ -39,8 +39,9 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
-OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 MeasureType = Union[float, ndarray, Dict[str, ndarray]]
+OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
+MeasureOptionsType = Dict[str, OptionType]
 
 
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -87,6 +88,15 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         BOOTSTRAP = "BOOTSTRAP"
         """The name of the method to evaluate the measure by bootstrap."""
 
+    class EvaluationFunctionName(StrEnum):
+        """The name of the function associated with an evaluation method."""
+
+        LEARN = "evaluate_learn"
+        TEST = "evaluate_test"
+        LOO = "evaluate_loo"
+        KFOLDS = "evaluate_kfolds"
+        BOOTSTRAP = "evaluate_bootstrap"
+
     SMALLER_IS_BETTER: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
 
@@ -119,7 +129,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__default_seed = 0
 
     @abstractmethod
-    def evaluate_learn(
+    def compute_learning_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -129,15 +139,16 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
         """
 
     @abstractmethod
-    def evaluate_test(
+    def compute_test_measure(
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -149,14 +160,15 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             test_data: The test dataset.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
         """
 
-    def evaluate_loo(
+    def compute_leave_one_out_measure(
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -166,20 +178,21 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
 
         Returns:
             The value of the quality measure.
         """
-        return self.evaluate_kfolds(
+        return self.compute_cross_validation_measure(
             samples=samples,
             n_folds=len(self.algo.learning_set),
             multioutput=multioutput,
         )
 
     @abstractmethod
-    def evaluate_kfolds(
+    def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -193,19 +206,20 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
             randomize: Whether to shuffle the samples before dividing them in folds.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
-                then an unpredictable generator will be used.
+                an unpredictable generator is used.
 
         Returns:
             The value of the quality measure.
         """
 
     @abstractmethod
-    def evaluate_bootstrap(
+    def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
@@ -218,11 +232,12 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             n_replicates: The number of bootstrap replicates.
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
-            multioutput: If ``True``, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether the quality measure is returned
+                for each component of the outputs.
+                Otherwise, the average quality measure.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
-                then an unpredictable generator will be used.
+                an unpredictable generator will be used.
 
         Returns:
             The value of the quality measure.
@@ -292,7 +307,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
                 e.g. [2, 3], [1, 5] and [0, 4].
             seed: The seed to initialize the random generator used for shuffling.
                 If ``None``,
-                then an unpredictable random generator will be pulled from the OS.
+                an unpredictable random generator will be pulled from the OS.
 
         Returns:
             * The folds defined as sub-sets of ``samples``.
@@ -315,9 +330,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             A random number generator.
         """
         self.__default_seed += 1
-        if seed is None:
-            seed = self.__default_seed
-        return default_rng(seed)
+        return default_rng(self.__default_seed if seed is None else seed)
 
     def _train_algo(self, samples: Sequence[int] | None) -> None:
         """Train the original algorithm if necessary.
@@ -328,6 +341,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         if not self.algo.is_trained:
             self.algo.learn(samples)
+
+    # TODO: API: remove these aliases in the next major release.
+    evaluate_loo = compute_leave_one_out_measure
 
 
 class MLQualityMeasureFactory(BaseFactory):

@@ -145,7 +145,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _compute_disc_to_uuids(self) -> None:
         """Update discipline to uuids mapping from uuids to discipline mapping.
 
-        Note:
+        Notes:
             A discipline might correspond to several AtomicExecutionSequence hence
             might correspond to several uuids.
         """
@@ -176,12 +176,10 @@ class AtomicExecSequence(ExecutionSequence):
         self._observer = None
 
     def __str__(self) -> str:
-        return self.discipline.name + "(" + str(self.status) + ")"
+        return f"{self.discipline.name}({self.status})"
 
     def __repr__(self) -> str:
-        return (
-            self.discipline.name + "(" + str(self.status) + ", " + str(self.uuid) + ")"
-        )
+        return f"{self.discipline.name}({self.status}, {self.uuid})"
 
     def accept(self, visitor) -> None:
         """Accept a visitor object (see Visitor pattern).
@@ -224,7 +222,7 @@ class AtomicExecSequence(ExecutionSequence):
         """Update status from given discipline.
 
         Reflect the status then notifies the parent and the observer if any.
-        Note: update_status if discipline status change actually
+        Notes: update_status if discipline status change actually
         compared to current, otherwise do nothing.
 
         Args:

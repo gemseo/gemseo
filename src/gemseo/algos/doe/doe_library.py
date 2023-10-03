@@ -402,7 +402,6 @@ class DOELibrary(DriverLibrary):
                         x_vect=sample,
                         eval_jac=self.eval_jac,
                         normalize=False,
-                        eval_observables=True,
                     )
                 except ValueError:
                     LOGGER.error(

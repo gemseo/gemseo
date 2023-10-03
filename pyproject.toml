@@ -1,8 +1,7 @@
 [build-system]
 requires = [
-    "setuptools>=45",
-    "setuptools_scm[toml]>=6.2",
-    "wheel",
+    "setuptools",
+    "setuptools_scm[toml]",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -20,6 +19,7 @@ log_file_format = "%(levelname)8s - %(asctime)s: %(message)s"
 markers = [
     "doc_examples: marks docs examples tests"
 ]
+
 [tool.black]
 target-version = ['py38']
 

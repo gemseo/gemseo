@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 class OTExponentialDistribution(OTDistribution):
     """Create an exponential distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.exponential import (
         ...     OTExponentialDistribution
         ... )
@@ -40,7 +40,7 @@ class OTExponentialDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         rate: float = 1.0,
         loc: float = 0.0,
         dimension: int = 1,
@@ -51,18 +51,8 @@ class OTExponentialDistribution(OTDistribution):
     ) -> None:
         """
         Args:
-            variable: The name of the exponential random variable.
             rate: The rate of the exponential random variable.
             loc: The location of the exponential random variable.
-            dimension: The dimension of the exponential random variable.
-            transformation: A transformation
-                applied to the random variable,
-                e.g. 'sin(x)'. If None, no transformation.
-            lower_bound: A lower bound to truncate the distribution.
-                If None, no lower truncation.
-            upper_bound: An upper bound to truncate the distribution.
-                If None, no upper truncation.
-            threshold: A threshold in [0,1].
         """  # noqa: D205,D212,D415
         standard_parameters = {self._RATE: rate, self._LOC: loc}
         super().__init__(

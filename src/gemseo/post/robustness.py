@@ -40,11 +40,9 @@ LOGGER = logging.getLogger(__name__)
 class Robustness(OptPostProcessor):
     """Uncertainty quantification at the optimum.
 
-    Compute the quadratic approximations of all the output functions,
-    propagate analytically a normal distribution centered
-    on the optimal design variables
-    with a standard deviation which is a percentage of the mean passed in option
-    (default: 1%)
+    Compute the quadratic approximations of all the output functions, propagate
+    analytically a normal distribution centered on the optimal design variables with a
+    standard deviation which is a percentage of the mean passed in option (default: 1%)
     and plot the corresponding output boxplot.
     """
 

@@ -27,7 +27,6 @@ from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
 from gemseo.problems.ode.van_der_pol import VanDerPol
 from numpy import arange
 from numpy import array
-from numpy import array_equal
 from numpy import exp
 from numpy import sqrt
 from numpy import sum
@@ -62,13 +61,14 @@ def test_scipy_ode_algos(algo_name):
     assert algo_name in algos.algorithms
 
 
-def test_ode_problem_1d():
+@pytest.mark.parametrize("time_vector", [None, arange(0, 1, 0.1)])
+def test_ode_problem_1d(time_vector):
     r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
-    :math:`f(0) = 1`. Compare the solution returned by the solver to the
-    known analytical solution :math:`f: s \mapsto \exp(s)`. Root-mean-square of
-    difference bewteen analytical and approximated solutions should be small.
+    :math:`f(0) = 1`. Compare the solution returned by the solver to the known
+    analytical solution :math:`f: s \mapsto \exp(s)`. Root-mean-square of difference
+    bewteen analytical and     approximated solutions should be small.
     """
 
     def _func(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
@@ -78,7 +78,6 @@ def test_ode_problem_1d():
         return array(1)
 
     _initial_state = [1]
-    _time_vector = arange(0, 1, 0.1)
     _initial_time = 0
     _final_time = 1
 
@@ -88,17 +87,18 @@ def test_ode_problem_1d():
         initial_state=_initial_state,
         initial_time=_initial_time,
         final_time=_final_time,
-        time_vector=_time_vector,
+        time_vector=time_vector,
     )
     assert not problem.result.is_converged
     assert problem.result.n_func_evaluations == 0
     assert problem.result.n_jac_evaluations == 0
     assert problem.result.state_vector.size == 0
+    assert problem.result.time_vector.size == 0
 
     algo_name = "DOP853"
     ODESolversFactory().execute(problem, algo_name, first_step=1e-6)
 
-    analytical_solution = exp(problem.time_vector)
+    analytical_solution = exp(problem.result.time_vector)
     assert sqrt(sum((problem.result.state_vector - analytical_solution) ** 2)) < 1e-6
 
     problem.check()
@@ -107,9 +107,8 @@ def test_ode_problem_1d():
     assert problem.jac == _jac
     assert len(problem.initial_state) == 1
     assert problem.initial_state == _initial_state
-    assert problem.result.state_vector is not None
-    assert problem.result.state_vector.size == problem.time_vector.size
-    assert array_equal(problem.time_vector, _time_vector)
+    assert problem.result.state_vector.size != 0
+    assert problem.result.state_vector.size == problem.result.time_vector.size
     assert problem.result.solver_name == algo_name
     assert (
         problem.result.solver_message
@@ -149,7 +148,7 @@ def test_ode_problem_2d():
     assert problem.result.solver_name == algo_name
     assert problem.result.state_vector is not None
 
-    analytical_solution = exp(problem.time_vector)
+    analytical_solution = exp(problem.result.time_vector)
     assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
 
 
@@ -271,9 +270,10 @@ def test_unconverged(caplog):
     assert f"The ODE solver {algo_name} did not converge." in caplog.records[1].message
 
 
-def test_check_ode_problem():
+@pytest.mark.parametrize("problem", [OrbitalDynamics, VanDerPol])
+def test_check_ode_problem(problem):
     """Ensure the check method of ODEProblem behaves as expected."""
-    problem = OrbitalDynamics()
+    problem = problem()
     assert problem.result.state_vector.size == 0
     problem.check()
 
@@ -281,7 +281,7 @@ def test_check_ode_problem():
     assert problem.result.state_vector is not None
     problem.check()
 
-    problem.time_vector = zeros(1)
+    problem.result.time_vector = zeros(0)
     try:
         problem.check()
     except ValueError:

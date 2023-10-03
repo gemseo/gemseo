@@ -39,7 +39,7 @@ configure_logger()
 # Load dataset
 # ~~~~~~~~~~~~
 dataset = create_burgers_dataset(n_samples=20)
-print(dataset)
+dataset
 
 t = dataset.input_dataset.to_numpy()[:, 0]
 u_t = dataset.output_dataset.to_numpy()

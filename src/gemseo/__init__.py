@@ -148,8 +148,11 @@ from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.dataset_factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.matplotlib_figure import FigSizeType
+
+# TODO: API: protect these import under TYPE_CHECKING.
 
 try:
     __version__ = __pkg_resources.get_distribution("package-name").version
@@ -159,7 +162,7 @@ except __pkg_resources.DistributionNotFound:
 
 if TYPE_CHECKING:
     from logging import Logger
-    from matplotlib.figure import Figure
+    from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
@@ -167,7 +170,6 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
     from gemseo.datasets.dataset import Dataset
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
     from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -179,6 +181,7 @@ if TYPE_CHECKING:
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
         JobSchedulerDisciplineWrapper,
     )
+    from gemseo.post._graph_view import GraphView
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -245,14 +248,17 @@ def generate_coupling_graph(
     disciplines: Sequence[MDODiscipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
-) -> None:
+) -> GraphView:
     """Generate a graph of the couplings between disciplines.
 
     Args:
         disciplines: The disciplines from which the graph is generated.
         file_path: The path of the file to save the figure.
-        full: If True, generate the full coupling graph.
+        full: If ``True``, generate the full coupling graph.
             Otherwise, generate the condensed one.
+
+    Returns:
+        The graph of the couplings between disciplines.
 
     Examples:
         >>> from gemseo import create_discipline, generate_coupling_graph
@@ -266,9 +272,9 @@ def generate_coupling_graph(
 
     coupling_structure = MDOCouplingStructure(disciplines)
     if full:
-        coupling_structure.graph.export_initial_graph(file_path)
+        return coupling_structure.graph.export_initial_graph(file_path)
     else:
-        coupling_structure.graph.export_reduced_graph(file_path)
+        return coupling_structure.graph.export_reduced_graph(file_path)
 
 
 def get_available_formulations() -> list[str]:
@@ -1253,7 +1259,7 @@ def create_surrogate(
             If a group is specified,
             the :class:`.Transformer` will be applied
             to all the variables of this group.
-            If None, do not transform the variables.
+            If ``None``, do not transform the variables.
             The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
@@ -1323,20 +1329,20 @@ def execute_post(
     to_post_proc: Scenario | OptimizationProblem | str | Path,
     post_name: str,
     **options: Any,
-) -> dict[str, Figure]:
+) -> OptPostProcessor:
     """Post-process a result.
 
     Args:
         to_post_proc: The result to be post-processed,
             either a DOE scenario,
-            a MDO scenario,
+            an MDO scenario,
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
         post_name: The name of the post-processing.
         **options: The post-processing options.
 
     Returns:
-        The figures, to be customized if not closed.
+        The post-processor.
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario, execute_post
@@ -1359,7 +1365,7 @@ def execute_post(
         opt_problem = to_post_proc.formulation.opt_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
-    elif isinstance(to_post_proc, str):
+    elif isinstance(to_post_proc, (str, PathLike)):
         opt_problem = OptimizationProblem.from_hdf(to_post_proc)
     else:
         raise TypeError(f"Cannot post process type: {type(to_post_proc)}")
@@ -1657,21 +1663,26 @@ def create_cache(
     return CacheFactory().create(cache_type, name=name, **options)
 
 
+DatasetClassName = StrEnum("DatasetClassName", __DatasetFactory().class_names)
+
+
 def create_dataset(
-    name: str,
-    data: ndarray | str | Path,
+    name: str = "",
+    data: ndarray | str | Path = "",
     variable_names: str | Iterable[str] = (),
     variable_names_to_n_components: dict[str, int] | None = None,
     variable_names_to_group_names: dict[str, str] | None = None,
     delimiter: str = ",",
     header: bool = True,
-) -> IODataset:
+    class_name: DatasetClassName = DatasetClassName.Dataset,
+) -> Dataset:
     """Create a dataset from a NumPy array or a data file.
 
     Args:
         name: The name to be given to the dataset.
         data: The data to be stored in the dataset,
             either a NumPy array or a file path.
+            If empty, return an empty dataset.
         variable_names: The names of the variables.
             If empty, use default names.
         variable_names_to_n_components: The number of components of the variables.
@@ -1681,8 +1692,9 @@ def create_dataset(
             If ``None``,
             use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
         delimiter: The field delimiter.
-        header: If True and `data` is a string,
+        header: If ``True`` and `data` is a string,
             read the variables names on the first line of the file.
+        class_name: The name of the dataset class.
 
     Returns:
         The dataset generated from the NumPy array or data file.
@@ -1693,22 +1705,26 @@ def create_dataset(
     See Also:
         create_benchmark_dataset
     """
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.datasets.dataset_factory import DatasetFactory
+
+    dataset_class = DatasetFactory().get_class(class_name)
 
     if isinstance(data, ndarray):
-        dataset = IODataset.from_array(
+        dataset = dataset_class.from_array(
             data,
             variable_names,
             variable_names_to_n_components,
             variable_names_to_group_names,
         )
-    elif isinstance(data, PathLike):
+    elif data == "":
+        dataset = dataset_class()
+    elif isinstance(data, (PathLike, str)):
         data = Path(data)
         extension = data.suffix
         if extension == ".csv":
-            dataset = IODataset.from_csv(data, delimiter=delimiter)
+            dataset = dataset_class.from_csv(data, delimiter=delimiter)
         elif extension == ".txt":
-            dataset = IODataset.from_txt(
+            dataset = dataset_class.from_txt(
                 data,
                 variable_names,
                 variable_names_to_n_components,
@@ -1717,13 +1733,18 @@ def create_dataset(
                 header,
             )
         else:
-            LOGGER.warning("%s not considered for loading.", str(data))
+            raise ValueError(
+                "The dataset can be created from a file with a .csv or .txt extension, "
+                f"not {extension}."
+            )
     else:
         raise ValueError(
-            f"The dataset can be created from file or array, not {type(data)}."
+            "The dataset can be created from an array or a .csv or .txt file, "
+            f"not a {type(data)}."
         )
 
-    dataset.name = name
+    if name:
+        dataset.name = name
     return dataset
 
 
@@ -1738,7 +1759,7 @@ class DatasetType(StrEnum):
 def create_benchmark_dataset(
     dataset_type: DatasetType,
     **options: Any,
-) -> IODataset:
+) -> Dataset:
     """Instantiate a dataset.
 
     Typically, benchmark datasets can be found in :mod:`gemseo.datasets.dataset`.
@@ -1917,7 +1938,7 @@ def configure(
     This could be useful to speed up calculations in presence of cheap disciplines
     such as analytic formula and surrogate models.
 
-    Warning:
+    Warnings:
         This function should be called before calling anything from |g|.
 
     Args:
@@ -1991,13 +2012,13 @@ def wrap_discipline_in_job_scheduler(
     Raises:
         OSError: if the job template does not exist.
 
-    Warning:
+    Warnings:
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in GEMSEO are serializable but it is possible that
         custom ones are not and this will make the submission proess fail.
 
     Examples:
-        This example execute a DOE of 100 points on a MDA, each MDA is executed on 24 CPUS
+        This example execute a DOE of 100 points on an MDA, each MDA is executed on 24 CPUS
         using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
         everytime a point of the DOE is computed, another one is submitted to the queue.
 

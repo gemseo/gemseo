@@ -19,13 +19,11 @@
 """A set of functions to handle OS dependent path operations."""
 from __future__ import annotations
 
-import platform
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
-from typing import Final
 
-PLATFORM_IS_WINDOWS: Final[bool] = platform.platform().startswith("Windows")
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
 def to_os_specific(path: Path) -> PureWindowsPath | PurePosixPath:

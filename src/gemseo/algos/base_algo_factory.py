@@ -223,5 +223,8 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         """
         return self._factory.get_class(name)
 
+    def _repr_html(self) -> str:
+        return self._factory._repr_html_()
+
     def __repr__(self) -> str:
         return repr(self._factory)

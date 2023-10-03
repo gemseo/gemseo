@@ -43,14 +43,18 @@ The constructor has also optional arguments:
 
 - a variable dimension (default: 1),
 - a standard representation of these parameters
-  (default: use :code:`parameters`).
+  (default: use ``parameters``).
 """
 from __future__ import annotations
 
 import logging
+from types import MappingProxyType
+from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
+from typing import TYPE_CHECKING
 
 import scipy
 import scipy.stats as sp_stats
@@ -59,10 +63,13 @@ from numpy import ndarray
 from numpy import vstack
 
 from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.uncertainty.distributions.distribution import ParametersType
 from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,7 +89,7 @@ class SPDistribution(Distribution):
         :class:`.SPTriangularDistribution`
         :class:`.SPUniformDistribution`
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.distribution import (
         ...    SPDistribution
         ... )
@@ -91,27 +98,35 @@ class SPDistribution(Distribution):
         expon(loc=3, scale=0.5)
     """
 
-    _COMPOSED_DISTRIBUTION = SPComposedDistribution
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[
+        type[ComposedDistribution] | None
+    ] = SPComposedDistribution
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
-        variable: str,
-        interfaced_distribution: str,
-        parameters: ParametersType,
+        variable: str = Distribution.DEFAULT_VARIABLE_NAME,
+        interfaced_distribution: str = "uniform",
+        parameters: Mapping[str, Any] = MappingProxyType({}),
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
         """
         Args:
-            variable: The name of the random variable.
-            interfaced_distribution: The name of the probability distribution,
-                typically the name of a class wrapped from an external library,
-                such as ``"norm"`` for SciPy.
-            parameters: The parameters of the probability distribution.
-            dimension: The dimension of the random variable.
-            standard_parameters: The standard representation
-                of the parameters of the probability distribution.
-        """  # noqa: D205,D212,D415
+            standard_parameters: The parameters of the probability distribution
+                used for string representation only
+                (use ``parameters`` for computation).
+                If ``None``, use ``parameters`` instead.
+                For instance,
+                let us consider the interfaced SciPy distribution ``"uniform"``.
+                Then,
+                the string representation of
+                ``SPDistribution("x", "uniform", parameters, 1, {"min": 1, "max": 3})``
+                with ``parameters={"loc": 1, "scale": 2}``
+                is ``"uniform(max=3, min=1)"``
+                while the string representation of
+                ``SPDistribution("x", "uniform", parameters)``
+                is ``"uniform(loc=1, scale=2)"``.
+        """  # noqa: D205 D212 D415
         super().__init__(
             variable,
             interfaced_distribution,
@@ -122,12 +137,10 @@ class SPDistribution(Distribution):
         self.marginals = self.__create_distributions(
             self.distribution_name, self.parameters
         )
-        math_support = str(self.support)
-        num_range = str(self.range)
         msg = MultiLineString()
         msg.indent()
-        msg.add("Mathematical support: {}", math_support)
-        msg.add("Numerical range: {}", num_range)
+        msg.add("Mathematical support: {}", self.support)
+        msg.add("Numerical range: {}", self.range)
         LOGGER.debug("%s", msg)
 
     def compute_samples(  # noqa: D102
@@ -177,19 +190,22 @@ class SPDistribution(Distribution):
             The marginal SciPy distributions.
         """
         try:
-            sp_dist = getattr(sp_stats, distribution)
+            create_distribution = getattr(sp_stats, distribution)
         except Exception:
             raise ValueError(f"{distribution} is an unknown scipy distribution.")
+
         try:
-            sp_dist(**parameters)
+            parameters = parameters or {}
+            create_distribution(**parameters)
+            distributions = [create_distribution(**parameters)] * self.dimension
         except Exception:
             raise ValueError(
-                "{} does not take these arguments; "
-                "more details on: {}.".format(distribution, SP_WEBSITE)
+                f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
+                f"more details on: {SP_WEBSITE}."
             )
-        sp_dist = [sp_dist(**parameters)] * self.dimension
-        self.__set_bounds(sp_dist)
-        return sp_dist
+
+        self.__set_bounds(distributions)
+        return distributions
 
     def __set_bounds(
         self,

@@ -98,6 +98,7 @@ from numpy import ndarray
 
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -106,6 +107,9 @@ class ComposedDistribution(Distribution):
     """Joint probability distribution."""
 
     _COMPOSED = "Composed"
+
+    __copula_name: str
+    """The name of the copula method."""
 
     def __init__(
         self,
@@ -127,6 +131,8 @@ class ComposedDistribution(Distribution):
         self._marginal_variables = [
             distribution.variable_name for distribution in distributions
         ]
+        self.__copula_name = copula.__class__.__name__ if copula is not None else ""
+        # TODO: API: set parameters to (distributions, copula) instead of (copula,).
         super().__init__(
             variable or "_".join(self._marginal_variables),
             self._COMPOSED,
@@ -146,6 +152,15 @@ class ComposedDistribution(Distribution):
                 distribution,
             )
         LOGGER.debug("%s", msg)
+
+    def __repr__(self) -> str:
+        if self.dimension == 1:
+            return repr(self.marginals[0])
+        else:
+            return (
+                f"{self.__class__.__name__}({pretty_repr(self.marginals, sort=False)}; "
+                f"{self.__copula_name if self.__copula_name else 'IndependentCopula'})"
+            )
 
     def _set_bounds(
         self,

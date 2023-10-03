@@ -24,7 +24,7 @@ Overview
 
 The :class:`.OTDistributionFitter` class considers several samples
 of an uncertain variable, fits a user-defined probability distribution
-from this dataset and returns a :class:`.OTDistribution`.
+from this dataset and returns an :class:`.OTDistribution`.
 It can also return a goodness-of-fit measure
 associated with this distribution,
 e.g. Bayesian Information Criterion, Kolmogorov test or Chi Squared test,
@@ -57,9 +57,9 @@ Measure the goodness-of-fit
 
 The :meth:`.OTDistributionFitter.measure` method has two mandatory arguments:
 
-- a distribution which is either a :class:`.OTDistribution`
+- a distribution which is either an :class:`.OTDistribution`
   or a distribution name from which :meth:`!fit` method
-  builds a :class:`.OTDistribution`,
+  builds an :class:`.OTDistribution`,
 - a fitting criterion name.
 
 .. note::

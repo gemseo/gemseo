@@ -23,7 +23,9 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.disciplines.linear_combination import LinearCombination
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import array
+from numpy import zeros
 
 
 @pytest.fixture
@@ -105,3 +107,11 @@ def test_parallel_doe_execution(linear_combination_for_tests):
     assert opt_problem.database.get_function_value(
         "delta", array([1.0, 1.0, 1.0])
     ) == array([0.0])
+
+
+def test_default_values(linear_combination_for_tests):
+    """Check that all the input variables have zero as default value."""
+    assert compare_dict_of_arrays(
+        linear_combination_for_tests.default_inputs,
+        {"alpha": zeros(1), "beta": zeros(1), "gamma": zeros(1)},
+    )

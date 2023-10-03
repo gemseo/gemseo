@@ -71,11 +71,15 @@ pprint.pprint(sensitivity_analysis.indices)
 pprint.pprint(sensitivity_analysis.main_indices)
 
 # %%
-# We can also sort the input parameters by decreasing order of influence:
-print(sensitivity_analysis.sort_parameters("y"))
+# We can also get the input parameters sorted by decreasing order of influence:
+sensitivity_analysis.sort_parameters("y")
+
+# %%
+# We can use the method :meth:`.CorrelationAnalysis.plot`
+# to visualize the different correlation coefficients:
+sensitivity_analysis.plot("y", save=False, show=True)
 
 # %%
 # Lastly,
-# we can use the method :meth:`.CorrelationAnalysis.plot`
-# to visualize the different correlation coefficients:
-sensitivity_analysis.plot("y", save=False, show=True)
+# the sensitivity indices can be exported to a :class:`.Dataset`:
+sensitivity_analysis.to_dataset()

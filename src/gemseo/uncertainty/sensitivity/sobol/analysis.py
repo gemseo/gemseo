@@ -99,6 +99,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import ClassVar
 from typing import Collection
@@ -170,7 +171,7 @@ class SobolAnalysis(SensitivityAnalysis):
         MAUNTZ_KUCHERENKO = "MauntzKucherenko"
         MARTINEZ = "Martinez"
 
-    __ALGO_NAME_TO_CLASS: dict[Algorithm, type] = {
+    __ALGO_NAME_TO_CLASS: Final[dict[Algorithm, type]] = {
         Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
         Algorithm.JANSEN: JansenSensitivityAlgorithm,
         Algorithm.MAUNTZ_KUCHERENKO: MauntzKucherenkoSensitivityAlgorithm,
@@ -187,6 +188,9 @@ class SobolAnalysis(SensitivityAnalysis):
         """The total-order Sobol' index."""
 
     __SECOND: Final[str] = "second"
+
+    _INTERACTION_METHODS: ClassVar[tuple[str]] = (__SECOND,)
+
     __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
@@ -204,9 +208,9 @@ class SobolAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         formulation: str = "MDF",
         compute_second_order: bool = True,
         use_asymptotic_distributions: bool = True,
@@ -238,9 +242,7 @@ class SobolAnalysis(SensitivityAnalysis):
              to ensure a better estimation of the first- and second-order indices.
         """  # noqa: D205, D212, D415
         self.__output_names_to_sobol_algos = {}
-        if algo_options is None:
-            algo_options = {}
-
+        algo_options = algo_options or {}
         algo_options["eval_second_order"] = compute_second_order
         super().__init__(
             disciplines,
@@ -284,7 +286,7 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: str | Sequence[str] | None = None,
+        outputs: str | Sequence[str] = (),
         algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
     ) -> dict[str, FirstOrderIndicesType]:
@@ -298,7 +300,9 @@ class SobolAnalysis(SensitivityAnalysis):
             output_names = [output_names]
 
         inputs = Sample(
-            self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
+            self.dataset.get_view(
+                group_names=self.dataset.INPUT_GROUP, variable_names=self._input_names
+            ).to_numpy()
         )
 
         input_dimension = self.dataset.group_names_to_n_components[
@@ -347,14 +351,13 @@ class SobolAnalysis(SensitivityAnalysis):
         Returns:
             The first-, second- or total-order indices.
         """
-        input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
         names_to_sizes = self.dataset.variable_names_to_n_components
         indices = {
             output_name: [
                 split_array_to_dict_of_arrays(
                     array(getattr(ot_algorithm, method_name)()),
                     names_to_sizes,
-                    input_names,
+                    self._input_names,
                 )
                 for ot_algorithm in self.__output_names_to_sobol_algos[output_name]
             ]
@@ -365,7 +368,7 @@ class SobolAnalysis(SensitivityAnalysis):
                 output_name: [
                     {
                         k: split_array_to_dict_of_arrays(
-                            v.T, names_to_sizes, input_names
+                            v.T, names_to_sizes, self._input_names
                         )
                         for k, v in output_component_indices.items()
                     }
@@ -523,7 +526,6 @@ class SobolAnalysis(SensitivityAnalysis):
                     ]
                 }
         """
-        input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
         names_to_sizes = self.dataset.variable_names_to_n_components
         intervals = {}
         for output_name, sobol_algos in self.__output_names_to_sobol_algos.items():
@@ -535,10 +537,10 @@ class SobolAnalysis(SensitivityAnalysis):
                     interval = sobol_algorithm.getTotalOrderIndicesInterval()
 
                 names_to_lower_bounds = split_array_to_dict_of_arrays(
-                    array(interval.getLowerBound()), names_to_sizes, input_names
+                    array(interval.getLowerBound()), names_to_sizes, self._input_names
                 )
                 names_to_upper_bounds = split_array_to_dict_of_arrays(
-                    array(interval.getUpperBound()), names_to_sizes, input_names
+                    array(interval.getUpperBound()), names_to_sizes, self._input_names
                 )
                 intervals[output_name].append(
                     {
@@ -546,7 +548,7 @@ class SobolAnalysis(SensitivityAnalysis):
                             names_to_lower_bounds[input_name],
                             names_to_upper_bounds[input_name],
                         )
-                        for input_name in input_names
+                        for input_name in self._input_names
                     }
                 )
 
@@ -565,14 +567,14 @@ class SobolAnalysis(SensitivityAnalysis):
     def plot(
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         sort: bool = True,
         sort_by_total: bool = True,
     ) -> None:
@@ -582,11 +584,12 @@ class SobolAnalysis(SensitivityAnalysis):
         with their confidence intervals.
 
         Args:
-            sort: The sorting option.
-                If True, sort variables before display.
-            sort_by_total: The type of sorting.
-                If True, sort variables according to total-order Sobol' indices.
-                Otherwise, use first-order Sobol' indices.
+            title: The title of the plot.
+                If empty, use a default one.
+            sort: Whether to sort the uncertain variables by decreasing order.
+            sort_by_total: Whether to sort according to the total-order Sobol' indices
+                when ``sort`` is ``True``.
+                Otherwise, use the first-order Sobol' indices.
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
@@ -684,7 +687,7 @@ class SobolAnalysis(SensitivityAnalysis):
             output_component,
             len(self.total_order_indices[output_name]),
         )
-        if title is None:
+        if not title:
             title = f"Sobol' indices for the output {pretty_output_name}"
         variance = self.output_variances[output_name][output_component]
         ax.set_title(f"{title}\nVar[{pretty_output_name}]={variance:.1e}")

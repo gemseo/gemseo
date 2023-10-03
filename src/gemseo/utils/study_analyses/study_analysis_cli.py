@@ -95,6 +95,9 @@ def main() -> None:
     directory_path.mkdir(exist_ok=True)
     study = STUDY_ANALYSIS_TYPES[args.study_type](args.study_file)
     study.generate_n2(directory_path / "n2.pdf", fig_size=(args.height, args.width))
+    file_name = "{}_coupling_graph.pdf"
+    study.generate_coupling_graph(directory_path / file_name.format("full"))
+    study.generate_coupling_graph(directory_path / file_name.format("condensed"), False)
     if args.xdsm:
         if args.study_type == "mdo":
             study.generate_xdsm(directory_path, save_pdf=args.save_pdf, show_html=True)

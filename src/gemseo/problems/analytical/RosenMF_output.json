@@ -1,14 +1,16 @@
 {
-    "name": "RosenMF_output",
-    "required": ["rosen"],
-    "properties": {
-        "rosen": {
-            "items": {
-                "type": "number"
-            },
-            "type": "array"
-        }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object"
+  "name": "RosenMF_output",
+  "required": [
+    "rosen"
+  ],
+  "properties": {
+    "rosen": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
 }

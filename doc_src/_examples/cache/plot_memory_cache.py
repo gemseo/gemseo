@@ -21,7 +21,7 @@
 """
 Memory full cache
 =================
-This example shows how to manipulate a :class:`.MemoryFullCache` object.
+This example shows how to manipulate an :class:`.MemoryFullCache` object.
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ configure_logger()
 #     ``if __name__ == '__main__':`` statement.
 
 cache = MemoryFullCache()
-print(cache)
+cache
 
 # %%
 # Cache
@@ -64,17 +64,19 @@ print(cache)
 
 cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
-print(cache)
+cache
 
 # %%
 # Get all data
 # ------------
 #
-# Once the cache has been filled, the user can get the length of the cache. The
-# user can also print all the data contained inside the cache.
-print(len(cache))
-for data in cache:
-    print(data)
+# We can now print some information from the cache, such as its length:
+len(cache)
+
+# %%
+# We can
+# also display all the cached data so far.
+[entry for entry in cache]
 
 # %%
 # Get last cached data
@@ -84,13 +86,12 @@ for data in cache:
 # entered in the cache.
 
 last_entry = cache.last_entry
-print(last_entry.inputs)
-print(last_entry.outputs)
+last_entry.inputs, last_entry.outputs
 
 # %%
 # Clear
 # -----
-# The user can clear an cache of all its entries by using the
+# The user can clear a cache of all its entries by using the
 # :meth:`.MemoryFullCache.clear` method:
 cache.clear()
-print(cache)
+cache

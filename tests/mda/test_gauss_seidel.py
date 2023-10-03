@@ -19,19 +19,80 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from copy import deepcopy
+
 import pytest
 from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import isclose
 
 from ..core.test_chain import two_virtual_disciplines  # noqa W0611 F811
+
+
+@pytest.fixture(scope="module")
+def compute_reference_n_iter():
+    """Compute the number of iterations to serve as a reference.
+
+    The Gauss-Seidel method is applied to the Sobiesky problem without accelerations.
+    """
+    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+    mda.execute()
+    return len(mda.residual_history)
+
+
+@pytest.mark.parametrize("acceleration_method", AccelerationMethod)
+def test_acceleration_methods(compute_reference_n_iter, acceleration_method):
+    """Tests the acceleration methods."""
+    mda = SobieskiMDAGaussSeidel(
+        tolerance=1e-12, max_mda_iter=30, acceleration_method=acceleration_method
+    )
+    mda.execute()
+
+    # Check that the number of iterations have been at least decreased
+    assert len(mda.residual_history) <= compute_reference_n_iter
+
+
+# TODO: Remove tests once the old attributes are removed
+def test_compatibility():
+    """Tests that the compatibility with previous behavior is ensured."""
+    mda_1 = SobieskiMDAGaussSeidel(over_relax_factor=0.95)
+    mda_1.reset_history_each_run = True
+    mda_1.execute()
+
+    mda_2 = SobieskiMDAGaussSeidel(over_relaxation_factor=0.95)
+    mda_2.reset_history_each_run = True
+    mda_2.execute()
+
+    assert mda_1.residual_history == mda_2.residual_history
+
+    mda_1.cache.clear()
+    mda_1.over_relax_factor = 0.5
+    mda_1.execute()
+
+    mda_2.cache.clear()
+    mda_2.over_relaxation_factor = 0.5
+    mda_2.execute()
+
+    assert mda_1.residual_history == mda_2.residual_history
+
+
+# TODO: Remove tests once the old attributes are removed
+def test_compatibility_setters_getters():
+    """Tests that the compatibility with previous behavior is ensured."""
+    mda = SobieskiMDAGaussSeidel(over_relax_factor=0.95)
+    assert mda.over_relax_factor == 0.95
+    assert mda.over_relaxation_factor == 0.95
 
 
 @image_comparison(["sobieski"])
@@ -60,6 +121,60 @@ def test_expected_workflow():
     expected = (
         "{MDAGaussSeidel(None), [MDODiscipline(None), "
         "MDODiscipline(None), MDODiscipline(None), ], }"
+    )
+    assert str(mda.get_expected_workflow()) == expected
+
+
+def test_expected_workflow_with_adapter():
+    discs = create_discipline(
+        [
+            "SobieskiPropulsion",
+            "SobieskiStructure",
+            "SobieskiAerodynamics",
+            "SobieskiMission",
+        ]
+    )
+    design_space = SobieskiProblem().design_space
+    scn_propu = create_scenario(
+        discs,
+        "DisciplinaryOpt",
+        "y_4",
+        design_space=deepcopy(design_space).filter("x_3"),
+        name="PropulsionScenario",
+    )
+    adapter_propu = MDOScenarioAdapter(scn_propu, ["x_1", "x_2"], ["x_3"])
+    scn_aero = create_scenario(
+        discs,
+        "DisciplinaryOpt",
+        "y_4",
+        design_space=deepcopy(design_space).filter("x_2"),
+        name="AeroScenario",
+    )
+    adapter_aero = MDOScenarioAdapter(scn_aero, ["x_1", "x_3"], ["x_2"])
+    scn_struct = create_scenario(
+        discs,
+        "DisciplinaryOpt",
+        "y_4",
+        design_space=deepcopy(design_space).filter("x_1"),
+        name="StructureScenario",
+    )
+    adapter_struct = MDOScenarioAdapter(scn_struct, ["x_2", "x_3"], ["x_1"])
+    adapters = [adapter_propu, adapter_aero, adapter_struct]
+
+    mda = MDAGaussSeidel(adapters)
+
+    expected = (
+        "{MDAGaussSeidel(None), ["
+        + "{PropulsionScenario(None), [SobieskiPropulsion(None), "
+        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        + "SobieskiMission(None), ], }, "
+        + "{AeroScenario(None), [SobieskiPropulsion(None), "
+        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        + "SobieskiMission(None), ], }, "
+        + "{StructureScenario(None), [SobieskiPropulsion(None), "
+        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        + "SobieskiMission(None), ], }, "
+        + "], }"
     )
     assert str(mda.get_expected_workflow()) == expected
 
@@ -152,10 +267,10 @@ def test_parallel_doe(generate_parallel_doe_data):
     "baseline_images,n_iterations,logscale",
     [
         (["all_iter_default_log"], None, None),
-        (["all_iter_modified_log"], None, [1e-15, 10.0]),
+        (["all_iter_modified_log"], None, [1e-10, 10.0]),
+        (["five_iter_default_log"], 5, None),
+        (["five_iter_modified_log"], 5, [1e-10, 10.0]),
         (["n_iter_larger_than_history"], 50, None),
-        (["eight_iter_default_log"], 8, None),
-        (["eight_iter_modified_log"], 8, [1e-15, 10.0]),
     ],
 )
 @image_comparison(None, tol=0.098)
@@ -172,7 +287,7 @@ def test_plot_residual_history(
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=10)
+    mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
     mda.execute()
     mda.plot_residual_history(save=False, n_iterations=n_iterations, logscale=logscale)
 

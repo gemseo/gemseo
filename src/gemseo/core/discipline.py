@@ -35,6 +35,7 @@ from typing import Any
 from typing import ClassVar
 from typing import Generator
 from typing import Iterable
+from typing import Iterator
 from typing import Mapping
 from typing import MutableMapping
 from typing import NoReturn
@@ -68,7 +69,7 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.core.execution_sequence import SerialExecSequence
+    from gemseo.core.execution_sequence import AtomicExecSequence
 
 LOGGER = logging.getLogger(__name__)
 
@@ -208,7 +209,7 @@ class MDODiscipline(Serializable):
 
     virtual_execution: ClassVar[bool] = False
     """Whether to skip the :meth:`._run` method during execution and return the
-    default_outputs, whatever the inputs."""
+    :attr:`.default_outputs`, whatever the inputs."""
 
     N_CPUS = cpu_count()
 
@@ -232,7 +233,7 @@ class MDODiscipline(Serializable):
         """
         Args:
             name: The name of the discipline.
-                If None, use the class name.
+                If ``None``, use the class name.
             input_grammar_file: The input grammar file path.
                 If ``None`` and ``auto_detect_grammar_files=True``,
                 look for ``"ClassName_input.json"``
@@ -334,13 +335,21 @@ class MDODiscipline(Serializable):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the object."""
+        mls = MultiLineString()
+        mls.add(self.name)
+        mls.indent()
+        mls.add("Inputs: {}", pretty_str(self.get_input_data_names()))
+        mls.add("Outputs: {}", pretty_str(self.get_output_data_names()))
+        return mls
+
     def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add(self.name)
-        msg.indent()
-        msg.add("Inputs: {}", pretty_str(self.get_input_data_names()))
-        msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
-        return str(msg)
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def _init_shared_memory_attrs(self) -> None:
         self._n_calls = Value("i", 0)
@@ -457,7 +466,7 @@ class MDODiscipline(Serializable):
                 If ``None``,
                 use the name of the discipline class.
             comp_dir: The directory in which to search the grammar file.
-                If None,
+                If ``None``,
                 use the :attr:`.GRAMMAR_DIRECTORY` if any,
                 or the directory of the discipline class module.
 
@@ -528,7 +537,7 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The input variables against which to differentiate the outputs.
-                If None, all the inputs of the discipline are used.
+                If ``None``, all the inputs of the discipline are used.
 
         Raises:
             ValueError: When the inputs wrt which differentiate the discipline
@@ -568,7 +577,7 @@ class MDODiscipline(Serializable):
 
         Args:
             outputs: The output variables to be differentiated.
-                If None, all the outputs of the discipline are used.
+                If ``None``, all the outputs of the discipline are used.
 
         Raises:
             ValueError: When the outputs to differentiate are not discipline outputs.
@@ -651,7 +660,7 @@ class MDODiscipline(Serializable):
             cache_hdf_node_path: The name of the HDF file node
                 to store the discipline data,
                 possibly passed as a path ``root_name/.../group_name/.../node_name``.
-                If None, :attr:`.MDODiscipline.name` is used.
+                If ``None``, :attr:`.MDODiscipline.name` is used.
             is_memory_shared: Whether to store the data with a shared memory dictionary,
                 which makes the cache compatible with multiprocessing.
 
@@ -708,7 +717,7 @@ class MDODiscipline(Serializable):
         """
         return get_sub_disciplines(self._disciplines, recursive)
 
-    def get_expected_workflow(self) -> SerialExecSequence:
+    def get_expected_workflow(self) -> AtomicExecSequence:
         """Return the expected execution sequence.
 
         This method is used for the XDSM representation.
@@ -726,7 +735,7 @@ class MDODiscipline(Serializable):
         # avoid circular dependency
         from gemseo.core.execution_sequence import ExecutionSequenceFactory
 
-        return ExecutionSequenceFactory.serial(self)
+        return ExecutionSequenceFactory.atom(self)
 
     def get_expected_dataflow(
         self,
@@ -767,9 +776,9 @@ class MDODiscipline(Serializable):
 
         Args:
             input_grammar_file: The input grammar file path.
-                If None, do not initialize the input grammar from a schema file.
+                If ``None``, do not initialize the input grammar from a schema file.
             output_grammar_file: The output grammar file path.
-                If None, do not initialize the output grammar from a schema file.
+                If ``None``, do not initialize the output grammar from a schema file.
             grammar_type: The type of the input and output grammars.
         """
         factory = GrammarFactory()
@@ -924,7 +933,7 @@ class MDODiscipline(Serializable):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.MDODiscipline.default_inputs`.
+                If ``None``, use the :attr:`.MDODiscipline.default_inputs`.
 
         Returns:
             The discipline local data after execution.
@@ -1274,7 +1283,7 @@ class MDODiscipline(Serializable):
         compute_all_jacobians: bool = False,
         print_errors: bool = False,
         numerical_error: float = EPSILON,
-    ):
+    ) -> ndarray:
         """Compute the optimal finite-difference step.
 
         Compute the optimal step
@@ -1299,9 +1308,9 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The inputs wrt which the outputs are linearized.
-                If None, use the :attr:`.MDODiscipline._differentiated_inputs`.
+                If ``None``, use the :attr:`.MDODiscipline._differentiated_inputs`.
             outputs: The outputs to be linearized.
-                If None, use the :attr:`.MDODiscipline._differentiated_outputs`.
+                If ``None``, use the :attr:`.MDODiscipline._differentiated_outputs`.
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
@@ -1464,7 +1473,7 @@ class MDODiscipline(Serializable):
 
     @property
     def default_outputs(self) -> Defaults:
-        """The default outputs."""
+        """The default outputs used when :attr:`.virtual_execution` is ``True``."""
         return self.output_grammar.defaults
 
     @default_outputs.setter
@@ -1506,10 +1515,10 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The inputs wrt the outputs are linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed on all outputs.
         """
 
@@ -1524,14 +1533,14 @@ class MDODiscipline(Serializable):
 
         Args:
             inputs: The inputs wrt to which the outputs are linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
-                If None,
+                If ``None``,
                 the linearization should be performed on all outputs declared differentiable.
                 fill_missing_keys: if True, just fill the missing items
             init_type: The type used to initialize the Jacobian.
-            fill_missing_keys: If True,
+            fill_missing_keys: If ``True``,
                 just fill the missing items with zeros/empty
                 but do not override the existing data.
 
@@ -1644,7 +1653,7 @@ class MDODiscipline(Serializable):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.MDODiscipline.default_inputs`.
+                If ``None``, use the :attr:`.MDODiscipline.default_inputs`.
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -1687,7 +1696,7 @@ class MDODiscipline(Serializable):
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If None,
+                If ``None``,
                 consider all the components of all the ``inputs`` and ``outputs``.
 
         Returns:
@@ -1979,7 +1988,7 @@ class MDODiscipline(Serializable):
 
     def get_outputs_by_name(
         self,
-        data_names: Iterable[str],
+        data_names: Iterator[str],
     ) -> list[Any]:
         """Return the local data associated with output variables.
 
@@ -2155,7 +2164,7 @@ class MDODiscipline(Serializable):
     def get_data_list_from_dict(
         keys: str | Iterable,
         data_dict: dict[str, Any],
-    ) -> Any | Generator[Any]:
+    ) -> Any | Iterator[Any]:
         """Filter the dict from a list of keys or a single key.
 
         If keys is a string, then the method return the value associated to the

@@ -29,6 +29,7 @@ from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.moe import MOERegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import allclose
 from numpy import array
 from numpy import hstack
@@ -162,17 +163,14 @@ def test_predict_class(model, model_with_transform):
     assert prediction["labels"].shape == (6, 1)
 
 
-def test_predict_local_model(model):
+@pytest.mark.parametrize(
+    "input_data,shape", [(INPUT_VALUE, (1,)), (INPUT_VALUES, (6, 1))]
+)
+@pytest.mark.parametrize("index", [0, 1])
+def test_predict_local_model(model, input_data, index, shape):
     """Test prediction of individual regression model."""
-    prediction = model.predict_local_model(INPUT_VALUE, 0)
-    option_1 = allclose(prediction["y"][0], 11.22893081, atol=ATOL, rtol=RTOL)
-    prediction = model.predict_local_model(INPUT_VALUE, 1)
-    option_2 = allclose(prediction["y"][0], 11.22893081, atol=ATOL, rtol=RTOL)
-    assert option_1 or option_2
-    predictions = model.predict_local_model(INPUT_VALUES, 0)
-    assert isinstance(predictions, dict)
-    assert "y" in predictions
-    assert predictions["y"].shape == (6, 1)
+    prediction = model.predict_local_model(input_data, index)
+    assert prediction["y"].shape == shape
 
 
 def test_local_model_transform(model_with_transform):
@@ -216,15 +214,49 @@ def test_save_and_load(model, tmp_wd):
         assert allclose(value, out2[name], 1e-3)
 
 
-def test_str(model):
-    """Test str representation."""
-    repres = str(model)
-    assert "MOERegressor" in repres
-    assert "KMeans" in repres
-    assert "KNNClassifier" in repres
-    assert "Local model 0" in repres
-    assert "Local model 1" in repres
-    assert "Local model 2" not in repres
+def test_repr_str_(model):
+    """Test string representations."""
+    expected = """MOERegressor(hard=True)
+   built from 36 learning samples
+   Clustering
+      KMeans(n_clusters=2, random_state=0, var_names=None)
+   Classification
+      KNNClassifier(n_neighbors=5)
+   Regression
+      Local model 0
+         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)
+      Local model 1
+         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)"""
+    assert repr(model) == str(model) == expected
+
+
+def test_repr_html(model):
+    """Check MOERegressor._repr_html."""
+    assert model._repr_html_() == REPR_HTML_WRAPPER.format(
+        "MOERegressor(hard=True)<br/>"
+        "<ul>"
+        "<li>built from 36 learning samples</li>"
+        "<li>Clustering</li>"
+        "<ul>"
+        "<li>KMeans(n_clusters=2, random_state=0, var_names=None)</li>"
+        "</ul>"
+        "<li>Classification</li>"
+        "<ul>"
+        "<li>KNNClassifier(n_neighbors=5)</li>"
+        "</ul>"
+        "<li>Regression</li>"
+        "<ul>"
+        "<li>Local model 0</li>"
+        "<ul>"
+        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)</li>"
+        "</ul>"
+        "<li>Local model 1</li>"
+        "<ul>"
+        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)</li>"
+        "</ul>"
+        "</ul>"
+        "</ul>"
+    )
 
 
 def test_moe_with_candidates(dataset):

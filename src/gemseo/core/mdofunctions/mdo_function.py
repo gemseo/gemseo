@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Copyright 2023 Capgemini Engineering
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
@@ -47,6 +48,7 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
+from gemseo.core.mdofunctions._operations import _OperationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
@@ -74,12 +76,12 @@ class MDOFunction(Serializable):
     to define the objective function, the constraints and the observables
     of an :class:`.OptimizationProblem`.
 
-    A :class:`.MDOFunction` is initialized from an optional callable and a name,
-    e.g. :code:`func = MDOFunction(lambda x: 2*x, "my_function")`.
+    an :class:`.MDOFunction` is initialized from an optional callable and a name,
+    e.g. ``func = MDOFunction(lambda x: 2*x, "my_function")``.
 
     .. note::
 
-       The callable can be set to :code:`None`
+       The callable can be set to ``None``
        when the user does not want to use a callable
        but a database to browse for the output vector corresponding to an input vector
        (see :meth:`.MDOFunction.set_pt_from_database`).
@@ -87,14 +89,14 @@ class MDOFunction(Serializable):
     The following information can also be provided at initialization:
 
     - the type of the function,
-      e.g. :code:`f_type="obj"` if the function will be used as an objective
+      e.g. ``f_type="obj"`` if the function will be used as an objective
       (see :attr:`.MDOFunction.FunctionType`),
     - the function computing the Jacobian matrix,
-      e.g. :code:`jac=lambda x: array([2.])`,
+      e.g. ``jac=lambda x: array([2.])``,
     - the literal expression to be used for the string representation of the object,
-      e.g. :code:`expr="2*x"`,
+      e.g. ``expr="2*x"``,
     - the names of the inputs and outputs of the function,
-      e.g. :code:`input_names=["x"]` and :code:`output_names=["y"]`.
+      e.g. ``input_names=["x"]`` and ``output_names=["y"]``.
 
     .. warning::
 
@@ -112,23 +114,23 @@ class MDOFunction(Serializable):
     can be accessed with the properties :attr:`.MDOFunction.func`
     and :attr:`.MDOFunction.jac`.
 
-    A :class:`.MDOFunction` is callable:
-    :code:`output = func(array([3.])) # expected: array([6.])`.
+    an :class:`.MDOFunction` is callable:
+    ``output = func(array([3.])) # expected: array([6.])``.
 
     Elementary operations can be performed with :class:`.MDOFunction` instances:
-    addition (:code:`func = func1 + func2` or :code:`func = func1 + offset`),
-    subtraction (:code:`func = func1 - func2` or :code:`func = func1 - offset`),
-    multiplication (:code:`func = func1 * func2` or :code:`func = func1 * factor`)
-    and opposite  (:code:`func = -func1`).
-    It is also possible to build a :class:`.MDOFunction`
+    addition (``func = func1 + func2`` or ``func = func1 + offset``),
+    subtraction (``func = func1 - func2`` or ``func = func1 - offset``),
+    multiplication (``func = func1 * func2`` or ``func = func1 * factor``)
+    and opposite  (``func = -func1``).
+    It is also possible to build an :class:`.MDOFunction`
     as a concatenation of :class:`.MDOFunction` objects:
-    :code:`func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"`).
+    ``func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"``).
 
-    Moreover, a :class:`.MDOFunction` can be approximated
+    Moreover, an :class:`.MDOFunction` can be approximated
     with either a first-order or second-order Taylor polynomial at a given input vector,
     using respectively :meth:`.MDOFunction.linear_approximation`
     and :meth:`quadratic_approx`;
-    such an approximation is also a :class:`.MDOFunction`.
+    such an approximation is also an :class:`.MDOFunction`.
 
     Lastly, the user can check the Jacobian function by means of approximation methods
     (see :meth:`.MDOFunction.check_grad`).
@@ -166,6 +168,7 @@ class MDOFunction(Serializable):
         "input_names",
         "dim",
         "special_repr",
+        "output_names",
     ]
     """The names of the attributes to be serialized."""
 
@@ -619,13 +622,14 @@ class MDOFunction(Serializable):
         """
         jac = self._min_jac if self.has_jac else None
 
+        name = f"-{self.name}"
         if self.expr:
-            name = "-" + self.name.translate({ord("-"): "+", ord("+"): "-"})
-            expr = "-" + self.expr.translate({ord("-"): "+", ord("+"): "-"})
+            expr = f"-({self.expr})"
         else:
-            name = expr = f"-{self.name}"
             if self.input_names:
-                expr = f"-{self.name}({pretty_str(self.input_names, sort=False)})"
+                expr = f"{name}({pretty_str(self.input_names, sort=False)})"
+            else:
+                expr = name
 
         return MDOFunction(
             self._min_pt,
@@ -669,22 +673,6 @@ class MDOFunction(Serializable):
         """
         return _MultiplicationFunctionMaker(MDOFunction, self, other).function
 
-    @staticmethod
-    def _compute_operation_expression(
-        operand_1: str, operator: str, operand_2: str | float | int
-    ) -> str:
-        """Return the string expression of an operation between two operands.
-
-        Args:
-            operand_1: The first operand.
-            operator: The operator applying to both operands.
-            operand_2: The second operand.
-
-        Returns:
-            The string expression of the sum of the operands.
-        """
-        return f"{operand_1} {operator} {operand_2}"
-
     def offset(self, value: OutputType) -> MDOFunction:
         """Add an offset value to the function.
 
@@ -705,10 +693,10 @@ class MDOFunction(Serializable):
 
         function = self + value
         name = f"{self.name}({pretty_str(self.input_names, sort=False)})"
-        function.name = self._compute_operation_expression(
-            self.name, operator, second_operand
+        function.name = _OperationFunctionMaker.get_string_representation(
+            self.name, operator, second_operand, True
         )
-        function.expr = self._compute_operation_expression(
+        function.expr = _OperationFunctionMaker.get_string_representation(
             self.expr or name, operator, second_operand
         )
         return function
@@ -814,7 +802,7 @@ class MDOFunction(Serializable):
         return repr_dict
 
     @staticmethod
-    def init_from_dict_repr(**attributes) -> MDOFunction:
+    def init_from_dict_repr(**attributes: Any) -> MDOFunction:
         """Initialize a new function.
 
         This is typically used for deserialization.
@@ -862,8 +850,8 @@ class MDOFunction(Serializable):
         Args:
             database: The database to read.
             design_space: The design space used for normalization.
-            normalize: If True, the values of the inputs are unnormalized before call.
-            jac: If True, a Jacobian pointer is also generated.
+            normalize: If ``True``, the values of the inputs are unnormalized before call.
+            jac: If ``True``, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """
         SetPtFromDatabase(database, design_space, self, normalize, jac, x_tolerance)

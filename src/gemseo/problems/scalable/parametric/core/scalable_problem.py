@@ -177,7 +177,7 @@ class ScalableProblem:
 
             row_start = row_end
 
-        inv_C = inv(C)  # noqa: N806
+        self._inv_C = inv(C)  # noqa: N806
 
         # Define the matrices \alpha and \beta.
         D = zeros((self._p, d))  # noqa: N806
@@ -191,8 +191,8 @@ class ScalableProblem:
             row_start = row_end
             col_start = col_end
 
-        self.__alpha = inv_C @ concatenate(a_i)
-        self.__beta = -inv_C @ D
+        self.__alpha = self._inv_C @ concatenate(a_i)
+        self.__beta = -self._inv_C @ D
 
         q = quantile(
             [self.compute_y(x).min() for x in rand(self.__N_SAMPLES, sum(d_i) + d_0)],
@@ -266,16 +266,23 @@ class ScalableProblem:
 
         self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
 
-    def compute_y(self, x: NDArray[float]) -> NDArray[float]:
+    def compute_y(
+        self, x: NDArray[float], u: NDArray[float] | None = None
+    ) -> NDArray[float]:
         r"""Compute the coupling vector :math:`y`.
 
         Args:
             x: A design point.
+            u: An uncertain point, if any.
 
         Returns:
-            The coupling vector associated with the design point :math:`x`.
+            The coupling vector associated with the design point :math:`x`
+            and the uncertain vector :math:`U` if any.
         """
-        return self.__alpha + self.__beta @ x
+        y = self.__alpha + self.__beta @ x
+        if u is not None:
+            y += self._inv_C @ u
+        return y
 
     @property
     def main_discipline(self) -> _MAIN_DISCIPLINE_CLASS:
@@ -287,25 +294,33 @@ class ScalableProblem:
         """The scalable disciplines."""
         return self.disciplines[1:]
 
-    def __str__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Scalable problem")
-        msg.indent()
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the scalable problem."""
+        mls = MultiLineString()
+        mls.add("Scalable problem")
+        mls.indent()
         for discipline in self.disciplines:
-            msg.add(discipline.name)
-            msg.indent()
-            msg.add("Inputs")
-            msg.indent()
+            mls.add(discipline.name)
+            mls.indent()
+            mls.add("Inputs")
+            mls.indent()
             for name in discipline.input_names:
-                msg.add(f"{name} ({discipline.names_to_sizes[name]})")
+                mls.add(f"{name} ({discipline.names_to_sizes[name]})")
 
-            msg.dedent()
-            msg.add("Outputs")
-            msg.indent()
+            mls.dedent()
+            mls.add("Outputs")
+            mls.indent()
             for name in discipline.output_names:
-                msg.add(f"{name} ({discipline.names_to_sizes[name]})")
+                mls.add(f"{name} ({discipline.names_to_sizes[name]})")
 
-            msg.dedent()
-            msg.dedent()
+            mls.dedent()
+            mls.dedent()
 
-        return str(msg)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()

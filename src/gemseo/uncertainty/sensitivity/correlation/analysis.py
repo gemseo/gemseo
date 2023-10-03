@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import Callable
 from typing import Collection
@@ -130,9 +131,9 @@ class CorrelationAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
@@ -150,7 +151,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         self.main_method = self.Method.SPEARMAN
 
     def compute_indices(  # noqa: D102
-        self, outputs: str | Sequence[str] | None = None
+        self, outputs: str | Sequence[str] = ()
     ) -> dict[str, FirstOrderIndicesType]:
         output_names = outputs or self.default_output
         if isinstance(output_names, str):
@@ -159,7 +160,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
         input_samples = Sample(
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
-
         self.__correlation = {}
         # For each correlation method
         new_methods = [self.Method.KENDALL, self.Method.SSRC]
@@ -169,7 +169,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
             # The version of OpenTURNS offers this correlation method.
             get_indices = self.__METHODS_TO_FUNCTIONS[method]
-            input_names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
             sizes = self.dataset.variable_names_to_n_components
             self.__correlation[method] = {
                 output_name: [
@@ -181,7 +180,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                             )
                         ),
                         sizes,
-                        input_names,
+                        self._input_names,
                     )
                     # For each component of the output variable
                     for output_component_samples in self.dataset.get_view(
@@ -364,14 +363,14 @@ class CorrelationAnalysis(SensitivityAnalysis):
     def plot(  # noqa: D102
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
     ) -> None:
         if isinstance(output, str):
             output_name, output_index = output, 0
@@ -380,9 +379,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
         all_indices = tuple(self.Method)
         dataset = Dataset()
-        for input_name in self._filter_names(
-            self.dataset.get_variable_names(self.dataset.INPUT_GROUP), inputs
-        ):
+        for input_name in self._filter_names(self._input_names, inputs):
             # Store all the sensitivity indices
             # related to the tuple (output_name, output_index, input_name)
             # in a 2D NumPy array shaped as (n_indices, input_dimension).
@@ -425,15 +422,15 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     def plot_radar(  # noqa: D102
         self,
-        outputs: OutputsType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        outputs: OutputsType = (),
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         min_radius: float = -1.0,
         max_radius: float = 1.0,
         **options: bool,

@@ -36,7 +36,7 @@ Here, we take 5 for the dimension of all outputs (here "y\_1", which is of dimen
 2. Creation of the discipline
 -----------------------------
 
-First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument :code:`"Sellar1"`. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
+First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument ``"Sellar1"``. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
 
 .. code::
 
@@ -65,23 +65,23 @@ In |g|, scalable disciplines are defined by the class :class:`.ScalableDisciplin
 
 Such a scalable discipline takes as mandatory arguments:
 
-- a :code:`hdf_file_path` with its :code:`hdf_node_path` storing the evaluations of the :class:`.MDODiscipline`, here :code:`sellar`, over a :class:`.DiagonalDOE`,
-- a :code:`sizes` dictionary describing the required sizes of inputs and outputs,
-- a :code:`fill_factor` describing the probability of connection between an input and an output in the :class:`.ScalableDiscipline`,
+- a ``hdf_file_path`` with its ``hdf_node_path`` storing the evaluations of the :class:`.MDODiscipline`, here ``sellar``, over a :class:`.DiagonalDOE`,
+- a ``sizes`` dictionary describing the required sizes of inputs and outputs,
+- a ``fill_factor`` describing the probability of connection between an input and an output in the :class:`.ScalableDiscipline`,
 
 and optional ones :
 
-- a :code:`comp_dep` matrix (default: :code:`None`) that establishes the selection of a single original component for each scalable component,
-- a :code:`inpt_dep` matrix (default: :code:`None`) that establishes the dependency of outputs w.r.t. inputs,
-- a :code:`force_input_dependency` assertion (default: :code:`False`) describing that for any output, force dependency with at least on input,
-- a :code:`allow_unused_inputs` assertion (default: :code:`False`) describing the possibility to have an input with no dependence with any output
-- a :code:`seed` (default: :code:`1`)
+- a ``comp_dep`` matrix (default: ``None``) that establishes the selection of a single original component for each scalable component,
+- a ``inpt_dep`` matrix (default: ``None``) that establishes the dependency of outputs w.r.t. inputs,
+- a ``force_input_dependency`` assertion (default: ``False``) describing that for any output, force dependency with at least on input,
+- a ``allow_unused_inputs`` assertion (default: ``False``) describing the possibility to have an input with no dependence with any output
+- a ``seed`` (default: ``1``)
 
 2.1. Sample the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :code:`hdf_file_path` file is built from the :func:`.create_scenario` API function applied to the :class:`.MDODiscipline` instance, :code:`sellar`,
-with :code:`DOE` scenario type and the following :class:`.DesignSpace`:
+The ``hdf_file_path`` file is built from the :func:`.create_scenario` API function applied to the :class:`.MDODiscipline` instance, ``sellar``,
+with ``DOE`` scenario type and the following :class:`.DesignSpace`:
 
 .. code::
 
@@ -89,7 +89,7 @@ with :code:`DOE` scenario type and the following :class:`.DesignSpace`:
 
    design_space = SellarDesignSpace()
 
-The DOE algorithm is :code:`'DiagonalDOE'` and use a sampling of size :code:`n_samples=30`:
+The DOE algorithm is ``'DiagonalDOE'`` and use a sampling of size ``n_samples=30``:
 
 .. code::
 
@@ -118,7 +118,7 @@ A scalable discipline is a discipline version for which inputs and outputs can t
    output_names = sellar.get_output_data_names()
    sizes = {name: variable_sizes for name in input_names + output_names}
 
-The :code:`sizes` of the inputs are specified in a dictionary at the construction of the :class:`.ScalableDiscipline` instance.
+The ``sizes`` of the inputs are specified in a dictionary at the construction of the :class:`.ScalableDiscipline` instance.
 
 Lastly, we define the density factor for the matrix S describing the dependencies between the inputs and the outputs of the discipline:
 
@@ -195,7 +195,7 @@ We obtain different output components in higher dimension.
 4. Perspectives
 ---------------
 
-This :class:`.ScalableDiscipline` can now be included as any other in a :class:`.MDOScenario` to compare the scalability of MDO or coupling strategies.
+This :class:`.ScalableDiscipline` can now be included as any other in an :class:`.MDOScenario` to compare the scalability of MDO or coupling strategies.
 
 Such a :class:`.ScalableDiscipline` as two main advantages:
 

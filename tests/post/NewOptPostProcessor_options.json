@@ -1,8 +1,8 @@
 {
-    "name": "NewOptPostProcessor",
-    "required": [],
-    "properties": {},
-    "additionalProperties": false,
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object"
+  "name": "NewOptPostProcessor",
+  "required": [],
+  "properties": {},
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
 }

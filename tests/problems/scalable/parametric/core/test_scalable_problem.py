@@ -19,7 +19,7 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.scalable_problem import ScalableProblem
-from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy.random import get_state
 from numpy.random import rand
@@ -49,49 +49,79 @@ def custom_scalable_problem() -> ScalableProblem():
 
 def test_str(default_scalable_problem):
     """Check the string representation of a scalable problem."""
-    message = MultiLineString()
-    message.add("Scalable problem")
-    message.indent()
-    message.add("MainDiscipline")
-    message.indent()
-    message.add("Inputs")
-    message.indent()
-    message.add("x_0 (1)")
-    message.add("y_1 (1)")
-    message.add("y_2 (1)")
-    message.dedent()
-    message.add("Outputs")
-    message.indent()
-    message.add("f (1)")
-    message.add("c_1 (1)")
-    message.add("c_2 (1)")
-    message.dedent()
-    message.dedent()
-    message.add("ScalableDiscipline[1]")
-    message.indent()
-    message.add("Inputs")
-    message.indent()
-    message.add("x_0 (1)")
-    message.add("x_1 (1)")
-    message.add("y_2 (1)")
-    message.dedent()
-    message.add("Outputs")
-    message.indent()
-    message.add("y_1 (1)")
-    message.dedent()
-    message.dedent()
-    message.add("ScalableDiscipline[2]")
-    message.indent()
-    message.add("Inputs")
-    message.indent()
-    message.add("x_0 (1)")
-    message.add("x_2 (1)")
-    message.add("y_1 (1)")
-    message.dedent()
-    message.add("Outputs")
-    message.indent()
-    message.add("y_2 (1)")
-    assert str(default_scalable_problem) == str(message)
+    expected = """Scalable problem
+   MainDiscipline
+      Inputs
+         x_0 (1)
+         y_1 (1)
+         y_2 (1)
+      Outputs
+         f (1)
+         c_1 (1)
+         c_2 (1)
+   ScalableDiscipline[1]
+      Inputs
+         x_0 (1)
+         x_1 (1)
+         y_2 (1)
+      Outputs
+         y_1 (1)
+   ScalableDiscipline[2]
+      Inputs
+         x_0 (1)
+         x_2 (1)
+         y_1 (1)
+      Outputs
+         y_2 (1)"""
+    assert repr(default_scalable_problem) == str(default_scalable_problem) == expected
+
+
+def test_repr_html(default_scalable_problem):
+    """Check the string representation of a scalable problem."""
+    assert default_scalable_problem._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Scalable problem<br/>"
+        "<ul>"
+        "<li>MainDiscipline</li>"
+        "<ul>"
+        "<li>Inputs</li>"
+        "<ul>"
+        "<li>x_0 (1)</li>"
+        "<li>y_1 (1)</li>"
+        "<li>y_2 (1)</li>"
+        "</ul>"
+        "<li>Outputs</li>"
+        "<ul>"
+        "<li>f (1)</li>"
+        "<li>c_1 (1)</li>"
+        "<li>c_2 (1)</li>"
+        "</ul>"
+        "<li>ScalableDiscipline[1]</li>"
+        "<ul>"
+        "<li>Inputs</li>"
+        "<ul>"
+        "<li>x_0 (1)</li>"
+        "<li>x_1 (1)</li>"
+        "<li>y_2 (1)</li>"
+        "</ul>"
+        "<li>Outputs</li>"
+        "<ul>"
+        "<li>y_1 (1)</li>"
+        "</ul>"
+        "<li>ScalableDiscipline[2]</li>"
+        "<ul>"
+        "<li>Inputs</li>"
+        "<ul>"
+        "<li>x_0 (1)</li>"
+        "<li>x_2 (1)</li>"
+        "<li>y_1 (1)</li>"
+        "</ul>"
+        "<li>Outputs</li>"
+        "<ul>"
+        "<li>y_2 (1)</li>"
+        "</ul>"
+        "</ul>"
+        "</ul>"
+    )
 
 
 def test_instance_seed(default_scalable_problem):

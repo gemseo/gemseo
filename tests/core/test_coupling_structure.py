@@ -21,9 +21,11 @@ from __future__ import annotations
 import unittest
 from os.path import exists
 from random import shuffle
+from unittest import mock
 
 import pytest
 from gemseo import create_discipline
+from gemseo.core import coupling_structure
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -267,3 +269,12 @@ def test_coupl_properties():
     coupl = MDOCouplingStructure(disciplines)
     assert coupl.get_input_couplings(disciplines[1], strong=False) == ["y_1"]
     assert coupl.get_input_couplings(disciplines[1]) == []
+
+
+def test_check_disciplines_consistency():
+    """Test that MDOCouplingStructure checks the consistency of the disciplines."""
+    disciplines = create_discipline(["Sellar1", "Sellar2"])
+    with mock.patch.object(coupling_structure, "check_disciplines_consistency") as func:
+        MDOCouplingStructure(disciplines)
+
+    assert func.call_args.args == (disciplines, True, False)

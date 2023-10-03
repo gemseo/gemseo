@@ -43,7 +43,7 @@ from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
-from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSavedObjectType
@@ -57,8 +57,7 @@ SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 class MLClusteringAlgo(MLUnsupervisedAlgo):
     """Clustering algorithm.
 
-    The inheriting classes shall overload the
-    :meth:`!MLUnsupervisedAlgo._fit` method.
+    The inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method.
     """
 
     labels: list[int]
@@ -69,7 +68,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 
     def __init__(
         self,
-        data: IODataset,
+        data: Dataset,
         transformer: TransformerType = MLUnsupervisedAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
@@ -100,9 +99,8 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 class MLPredictiveClusteringAlgo(MLClusteringAlgo):
     """Predictive clustering algorithm.
 
-    The inheriting classes shall overload the
-    :meth:`!MLUnsupervisedAlgo._fit` method, and the
-    :meth:`!MLClusteringAlgo._predict` and
+    The inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method,
+    and the :meth:`!MLClusteringAlgo._predict` and
     :meth:`!MLClusteringAlgo._predict_proba` methods if possible.
     """
 
@@ -113,9 +111,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """Predict the clusters from the input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -167,9 +165,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specify these input data either as a numpy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;

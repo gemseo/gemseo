@@ -111,7 +111,7 @@ class CustomDOE(DOELibrary):
                 They must be at least a 2D-array.
                 If ``None``, use ``doe_file``.
             delimiter: The character used to separate values.
-                If None, use whitespace.
+                If ``None``, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
                 None implies no comments.
@@ -152,7 +152,7 @@ class CustomDOE(DOELibrary):
         Args:
             doe_file: Either the file, the filename, or the generator to read.
             delimiter: The character used to separate values.
-                If None, use whitespace.
+                If ``None``, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
                 None implies no comments.

@@ -54,8 +54,11 @@ The constructor has also optional arguments:
 from __future__ import annotations
 
 import logging
+from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Iterable
+from typing import TYPE_CHECKING
 
 import openturns as ot
 from numpy import array
@@ -68,6 +71,9 @@ from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 OT_WEBSITE = (
     "http://openturns.github.io/openturns/latest/user_manual/"
@@ -83,7 +89,7 @@ class OTDistribution(Distribution):
     Create a probability distribution for an uncertain variable
     from its dimension and probability distribution name and properties.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.distribution import (
         ...     OTDistribution
         ... )
@@ -92,16 +98,18 @@ class OTDistribution(Distribution):
         Exponential(3, 2)
     """
 
-    _COMPOSED_DISTRIBUTION = OTComposedDistribution
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[
+        type[ComposedDistribution] | None
+    ] = OTComposedDistribution
 
     marginals: list[ot.Distribution]
-    distribution = ot.ComposedDistribution
+    distribution: ot.ComposedDistribution
 
     def __init__(
         self,
-        variable: str,
-        interfaced_distribution: str,
-        parameters: ParametersType,
+        variable: str = Distribution.DEFAULT_VARIABLE_NAME,
+        interfaced_distribution: str = "Uniform",
+        parameters: tuple[Any] = (),
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
         transformation: str | None = None,
@@ -111,14 +119,19 @@ class OTDistribution(Distribution):
     ) -> None:
         r"""
         Args:
-            variable: The name of the random variable.
-            interfaced_distribution: The name of the probability distribution,
-                typically the name of a class wrapped from an external library,
-                such as ``"Normal"``.
-            parameters: The parameters of the probability distribution.
-            dimension: The dimension of the random variable.
-            standard_parameters: The standard representation
-                of the parameters of the probability distribution.
+            standard_parameters: The parameters of the probability distribution
+                used for string representation only
+                (use ``parameters`` for computation).
+                If ``None``, use ``parameters`` instead.
+                For instance,
+                let us consider the interfaced OpenTURNS distribution ``"Dirac"``.
+                Then,
+                the string representation of
+                ``OTDistribution("x", "Dirac", (1,), 1, {"loc": 1})``
+                is ``"Dirac(loc=1)"``
+                while the string representation of
+                ``OTDistribution("x", "Dirac", (1,))``
+                is ``"Dirac(1)"``.
             transformation: A transformation applied
                 to the random variable,
                 e.g. :math:`\sin(x)`. If ``None``, no transformation.
@@ -150,6 +163,10 @@ class OTDistribution(Distribution):
         msg.add("Numerical range: {}", self.range)
         msg.add("Transformation: {}", self.transformation)
         LOGGER.debug("%s", msg)
+
+    def _get_empty_parameter_set(self) -> tuple:
+        """Return an empty parameter set."""
+        return ()
 
     def compute_samples(self, n_samples: int = 1) -> ndarray:  # noqa: D102
         return array(self.distribution.getSample(n_samples))
@@ -232,26 +249,32 @@ class OTDistribution(Distribution):
             The marginal OpenTURNS distributions.
         """
         try:
-            ot_dist = getattr(ot, distribution)
+            create_distribution = getattr(ot, distribution)
         except Exception:
             raise ValueError(f"{distribution} is an unknown OpenTURNS distribution.")
+
         try:
-            ot_dist = [ot_dist(*parameters)] * self.dimension
+            distributions = [create_distribution(*parameters)] * self.dimension
         except Exception:
             raise ValueError(
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {OT_WEBSITE}."
             )
-        self.__set_bounds(ot_dist)
+
+        self.__set_bounds(distributions)
         if transformation is not None:
-            ot_dist = self.__transform_marginal_distributions(ot_dist, transformation)
-        self.__set_bounds(ot_dist)
-        if lower_bound is not None or upper_bound is not None:
-            ot_dist = self.__truncate_marginal_distributions(
-                ot_dist, lower_bound, upper_bound, threshold
+            distributions = self.__transform_marginal_distributions(
+                distributions, transformation
             )
-        self.__set_bounds(ot_dist)
-        return ot_dist
+
+        self.__set_bounds(distributions)
+        if lower_bound is not None or upper_bound is not None:
+            distributions = self.__truncate_marginal_distributions(
+                distributions, lower_bound, upper_bound, threshold
+            )
+
+        self.__set_bounds(distributions)
+        return distributions
 
     def __transform_marginal_distributions(
         self, marginals: Iterable[ot.Distribution], transformation: str

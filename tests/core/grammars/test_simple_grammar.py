@@ -22,6 +22,7 @@ from typing import Mapping
 import pytest
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import ndarray
 
@@ -457,6 +458,22 @@ Grammar name: g
       name2: str
          default: foo
 """.strip()
+    )
+    assert g._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Grammar name: g<br/>"
+        "<ul>"
+        "<li>Required elements:</li>"
+        "<ul>"
+        "<li>name1: int</li>"
+        "</ul>"
+        "<li>Optional elements:</li>"
+        "<ul>"
+        "<li>name2: str</li>"
+        "<ul>"
+        "<li>default: foo</li>"
+        "</ul>"
+        "</ul>"
+        "</ul>"
     )
 
 

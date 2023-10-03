@@ -60,7 +60,7 @@ a regression model can predict the outputs corresponding to new inputs values.
    :mod:`~gemseo.mlearning.regression.regression`
 
 The quality of a machine learning algorithm can be measured
-using a :class:`.MLQualityMeasure`
+using an :class:`.MLQualityMeasure`
 either with respect to the learning dataset
 or to a test dataset or using resampling methods,
 such as K-folds or leave-one-out cross-validation techniques.
@@ -115,7 +115,6 @@ from typing import Union
 from numpy import ndarray
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
@@ -143,7 +142,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
     """
 
-    learning_set: IODataset
+    learning_set: Dataset
     """The learning dataset."""
 
     parameters: dict[str, MLAlgoParameterType]
@@ -182,7 +181,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        data: IODataset,
+        data: Dataset,
         transformer: TransformerType = IDENTITY,
         **parameters: MLAlgoParameterType,
     ) -> None:
@@ -294,17 +293,25 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             fit_transformers: Whether to fit the variable transformers.
         """
 
-    def __str__(self) -> str:
-        msg = MultiLineString()
-        msg.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
-        msg.indent()
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the algorithm."""
+        mls = MultiLineString()
+        mls.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
+        mls.indent()
         if self.LIBRARY:
-            msg.add("based on the {} library", self.LIBRARY)
+            mls.add("based on the {} library", self.LIBRARY)
         if self.is_trained:
-            msg.add(
+            mls.add(
                 "built from {} learning samples", len(self._learning_samples_indices)
             )
-        return str(msg)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def to_pickle(
         self,

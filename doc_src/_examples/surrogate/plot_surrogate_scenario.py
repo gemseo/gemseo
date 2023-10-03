@@ -45,7 +45,7 @@ a text file using the :meth:`.Dataset.from_array` and
 :meth:`.Dataset.from_txt`.
 
 Then, the surrogate discipline can be used as any other discipline in a
-:class:`.MDOScenario`, a :class:`.DOEScenario`, or a :class:`.MDA`.
+:class:`.MDOScenario`, a :class:`.DOEScenario`, or an :class:`.MDA`.
 """
 from __future__ import annotations
 
@@ -179,7 +179,7 @@ synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
 # Then, we execute it as any :class:`.MDODiscipline`:
 input_data = {"x": array([2.0])}
 out = synthetic_surrogate.execute(input_data)
-print(out["y"])
+out["y"]
 
 # %%
 # In our study case, from the :term:`DOE` built at Step 1,

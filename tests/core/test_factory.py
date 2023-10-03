@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 import re
 import shutil
 import subprocess
@@ -27,6 +28,7 @@ from importlib import metadata
 from pathlib import Path
 
 import pytest
+from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.base_factory import _FactoryMultitonMeta
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
@@ -99,33 +101,38 @@ def test_create_bad_option(reset_factory):
         factory.create("MDF", bad_option="bad_value")
 
 
-def test_parse_docstrings(reset_factory, tmp_wd):
+@pytest.mark.parametrize(
+    "formulation_name", ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
+)
+def test_parse_docstrings(reset_factory, tmp_wd, formulation_name):
     factory = MDOFormulationsFactory()
     formulations = factory.class_names
 
     assert len(formulations) > 3
 
-    for formulation_name in ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]:
-        doc = factory.get_options_doc(formulation_name)
-        assert "disciplines" in doc
-        assert "maximize_objective" in doc
+    doc = factory.get_options_doc(formulation_name)
+    assert "disciplines" in doc
+    assert "maximize_objective" in doc
 
-        opt_vals = factory.get_default_option_values(formulation_name)
-        assert len(opt_vals) >= 1
+    opt_vals = factory.get_default_option_values(formulation_name)
+    assert len(opt_vals) >= 1
 
-        grammar = factory.get_options_grammar(formulation_name, write_schema=True)
-        file_name = f"{grammar.name}.json"
-        assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
+    grammar = factory.get_options_grammar(formulation_name, write_schema=True)
+    file_name = f"{grammar.name}.json"
+    assert (
+        Path(DATA / file_name).read_text().split()
+        == Path(file_name).read_text().split()
+    )
 
-        grammar.validate(opt_vals)
+    grammar.validate(opt_vals)
 
-        opt_doc = factory.get_options_doc(formulation_name)
-        data_names = grammar.keys()
-        assert "name" not in data_names
-        assert "design_space" not in data_names
-        assert "objective_name" not in data_names
-        for item in data_names:
-            assert item in opt_doc
+    opt_doc = factory.get_options_doc(formulation_name)
+    data_names = grammar.keys()
+    assert "name" not in data_names
+    assert "design_space" not in data_names
+    assert "objective_name" not in data_names
+    for item in data_names:
+        assert item in opt_doc
 
 
 def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
@@ -160,11 +167,10 @@ def test_ext_plugin_gemseo_path(monkeypatch, reset_factory):
     assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
-def test_wanted_classes(monkeypatch, reset_factory):
-    """Verify that the classes found are the expected ones."""
-    monkeypatch.setenv("GEMSEO_PATH", DATA)
-    # There could be more classes available with the plugins
-    assert "DummyBiLevel" in MDOFormulationsFactory().class_names
+def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory):
+    """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
+    monkeypatch.setenv("GEMSEO_PATH", DATA / "gemseo_dummy_plugins")
+    assert MDOFormulationsFactory().failed_imports == {"bad": "division by zero"}
 
 
 def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
@@ -201,3 +207,22 @@ def test_str():
     """Verify str() on a factory."""
     factory = MDOFormulationsFactory()
     assert str(factory) == "Factory of MDOFormulation objects"
+
+
+def test_positional_arguments():
+    """Check that BaseFactory supports the positional arguments."""
+    cache = CacheFactory().create("SimpleCache", 0.1)
+    assert cache.tolerance == 0.1
+
+
+def test_creation_error(caplog):
+    """Check that BaseFactory logs a message in the case of a creation error."""
+    with pytest.raises(TypeError):
+        CacheFactory().create("SimpleCache", 1, 2, 3, a=2)
+
+    record_tuple = caplog.record_tuples[0]
+    assert record_tuple[1] == logging.ERROR
+    assert record_tuple[2] == (
+        "Failed to create class SimpleCache with positional arguments (1, 2, 3) "
+        "and keyword arguments {'a': 2}."
+    )

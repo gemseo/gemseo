@@ -142,7 +142,7 @@ Then install `tox`_ and `pre-commit`_:
 
 .. code-block:: console
 
-   pipx install "tox<4"
+   pipx install tox
    pipx install pre-commit
 
 Finally,
@@ -255,8 +255,7 @@ Coding Style
 We use the `pep8`_ convention.
 The formatting of the source code is done
 with `reorder_python_imports`_ and `black`_.
-The code is systematically checked with `flake8`_
-and on demand with `pylint`_.
+The code is systematically checked with `flake8`_.
 A git commit shall have no flake8 violations.
 
 Except for *pylint*,
@@ -264,8 +263,6 @@ all these tools are used:
 
 * either automatically by the git hooks when creating a commit,
 * or manually by running :command:`tox -e style`.
-
-Use :command:`tox -e pylint` to run `pylint`_.
 
 Coding guidelines
 +++++++++++++++++
@@ -444,11 +441,15 @@ git will perform predefined actions:
 * fix the Python import order,
 * fix the Python code formatting,
 * check for Python coding issues (see :ref:`coding-style`),
+* fix some of the above coding issues.
+* fix outdated Python syntax,
 * check the commit message (see :ref:`commit-msg`),
 * check for forbidden :func:`print` usage,
 * check for misused :mod:`logging` formatting,
 * check for :file:`.rst` files issues.
-* check or fix license headers
+* check or fix license headers,
+* check for docstrings formatting,
+* check for docstrings coverage,
 
 Those actions will eventually modify the files about to be committed.
 In this case your commit is denied
@@ -659,7 +660,7 @@ Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py37,py38
+   tox -e py38,py39
 
 Tests coverage
 ++++++++++++++
@@ -836,3 +837,24 @@ and change the ``Program:`` entry
 with the path to ``pre-commit`` as installed in :ref:`requirements`:
 
 .. image:: /_images/pycharm/file-watchers-settings.png
+
+Environment variables
++++++++++++++++++++++
+
+Configure `PyCharm`_
+so that the test environments do not open graphical windows during test execution:
+
+#. Click on *Run > Edit Configurations...* in the main menu.
+#. Click
+
+   - on *Edit configuration templates...* on the bottom left
+     and then on *Python tests > pytest* in the tree on the left
+     to set the environment variables for all the Python test environments,
+   - or on *Python tests > {configuration name}*
+     to set the environment variables for a specific Python test environment.
+
+#. Open the section *Configuration > Environment* on the right.
+#. Write *MPLBACKEND=AGG* in the text field *Environment variables*
+   (or click on the button in this field
+   and add a new environment variable
+   with *MPLBACKEND* as name and *AGG* as value).

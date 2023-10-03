@@ -39,9 +39,7 @@ parameters of the machine learning algorithm while the output is the quality cri
 """
 from __future__ import annotations
 
-from typing import Dict
 from typing import Iterable
-from typing import Union
 
 from numpy import argmin
 from numpy import array
@@ -59,9 +57,8 @@ from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.mlearning.quality_measures.quality_measure import MeasureOptionsType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
-
-MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
 
 
 class MLAlgoAssessor(MDODiscipline):
@@ -173,9 +170,10 @@ class MLAlgoAssessor(MDODiscipline):
         )
         algo.learn()
         measure = self.measure(algo)
-        learning = measure.evaluate_learn(multioutput=False)
+        learning = measure.compute_learning_measure(multioutput=False)
         evaluate = getattr(
-            measure, f"evaluate_{self.__measure_evaluation_method_name.lower()}"
+            measure,
+            measure.EvaluationFunctionName[self.__measure_evaluation_method_name],
         )
         criterion = evaluate(**self.measure_options)
         self.store_local_data(criterion=array([criterion]), learning=array([learning]))

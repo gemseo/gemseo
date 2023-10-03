@@ -42,7 +42,7 @@ Create a simple optimization on a single discipline
 ---------------------------------------------------
 
 Use the :class:`.DisciplinaryOpt` formulation
-and a :class:`.MDOScenario`.
+and an :class:`.MDOScenario`.
 The :class:`.DisciplinaryOpt` formulation
 executes the :class:`.MDODiscipline` alone,
 or the list of :class:`.MDODiscipline`

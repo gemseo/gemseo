@@ -92,7 +92,7 @@ class LinearSolverLibrary(AlgorithmLibrary):
         Args:
             lhs: The linear system matrix.
             dtype: The numpy dtype of the resulting linear operator.
-                If None, XXX.
+                If ``None``, XXX.
 
         Returns:
             The preconditioner operator.

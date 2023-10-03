@@ -63,7 +63,7 @@ and :math:`\\Omega` is a regularization term that limits the parameters
 from over-fitting, typically some norm of its argument.
 
 The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
-through the :class:`.MLSupervisedAlgo` class based on a :class:`.IODataset`.
+through the :class:`.MLSupervisedAlgo` class based on an :class:`.IODataset`.
 """
 from __future__ import annotations
 
@@ -677,9 +677,9 @@ class MLSupervisedAlgo(MLAlgo):
         """Predict output data from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
+        e.g. ``array([1., 2., 3.])``
         or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;

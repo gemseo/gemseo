@@ -19,13 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import sys
 from copy import deepcopy
 from os.path import dirname
 from os.path import join
+from pathlib import Path
+from subprocess import CalledProcessError
 
 import pytest
 from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.algos.design_space import DesignSpace
 from gemseo.utils.run_folder_manager import FoldersIter
 from gemseo.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.wrappers.disc_from_exe import parse_outfile
@@ -39,38 +42,7 @@ from .sum_data import execute as exec_sum
 DIRNAME = dirname(__file__)
 
 
-@pytest.fixture()
-def xfail_if_windows_unc_issue(tmp_wd, use_shell=True):
-    if str(tmp_wd).startswith("\\\\") and use_shell and sys.platform.startswith("win"):
-        pytest.xfail("cmd.exe cannot perform the cd command on a UNC network path.")
-
-
-@pytest.mark.skipif(
-    not sys.platform.startswith("win"), reason="This test is only relevant on Windows."
-)
-def test_disc_from_exe_network_path_windows():
-    """Test that a network location cannot be used as a workdir under Windows."""
-    with pytest.raises(
-        ValueError,
-        match="A network base path and use_shell cannot be used together"
-        " under Windows, as cmd.exe cannot change the current folder"
-        " to a UNC path."
-        " Please try use_shell=False or use a local base path.",
-    ):
-        create_discipline(
-            "DiscFromExe",
-            input_template=join(DIRNAME, "input.json.template"),
-            output_template=join(DIRNAME, "output.json.template"),
-            output_folder_basepath="\\\\my_fake_network_location\\folder\\",
-            executable_command="ls",
-            input_filename="input.json",
-            output_filename="output.json",
-            use_shell=True,
-        )
-
-
-@pytest.mark.parametrize("use_shell", [True, False])
-def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
+def test_disc_from_exe_json(tmp_wd):
     sum_path = join(DIRNAME, "sum_data.py")
     exec_cmd = f"python {sum_path} -i input.json -o output.json"
 
@@ -82,7 +54,6 @@ def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
         executable_command=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
-        use_shell=use_shell,
     )
 
     indata = {
@@ -101,7 +72,7 @@ def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
     assert abs(out_jac["out"]["a"] - 1) < 1e-8
 
 
-def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
+def test_disc_from_exe_cfgobj(tmp_wd):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
@@ -156,9 +127,7 @@ def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
         ("FAIL", None),
     ],
 )
-def test_disc_from_exe_cfgobj_folder_iter_str(
-    xfail_if_windows_unc_issue, tmp_wd, folders_iter
-):
+def test_disc_from_exe_cfgobj_folder_iter_str(tmp_wd, folders_iter):
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
     disc = create_discipline(
@@ -190,7 +159,7 @@ def test_disc_from_exe_cfgobj_folder_iter_str(
         lambda a, b: zip(a, b),
     ],
 )
-def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, parser):
+def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser):
     """Test the instantiation of the discipline with built-in and custom parsers."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
@@ -249,7 +218,7 @@ def test_disc_from_exe_wrong_inputs(tmp_wd):
         )
 
 
-def test_disc_from_exe_fail_exe(xfail_if_windows_unc_issue, tmp_wd):
+def test_disc_from_exe_fail_exe(tmp_wd):
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc = create_discipline(
@@ -270,7 +239,7 @@ def test_disc_from_exe_fail_exe(xfail_if_windows_unc_issue, tmp_wd):
     disc.reset_statuses_for_run()
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f err_code"
     disc.executable_command = exec_cmd
-    with pytest.raises(RuntimeError):
+    with pytest.raises(CalledProcessError):
         disc.execute(indata)
 
 
@@ -329,3 +298,44 @@ def test_parse_outfile():
     output_mod[0] = output_mod[0][:-1]
     values2 = parse_outfile(out_pos, output_mod)
     assert values2["out 1"] == 1.0
+
+
+def test_parallel_execution(tmp_wd):
+    """Check if a :class:`~.DiscFromExe` executed within a multiprocess DOE can generate
+    unique folders in :attr:`~.FoldersIter.NUMBERED` mode.
+
+    The check is focused on this topic since the multiprocess features of
+    :class:`~.DiscFromExe` are used there.
+    """
+    nb_process = 2
+    sum_path = join(DIRNAME, "sum_data.py")
+    exec_cmd = f"python {sum_path} -i input.json -o output.json"
+
+    disc = create_discipline(
+        "DiscFromExe",
+        input_template=join(DIRNAME, "input.json.template"),
+        output_template=join(DIRNAME, "output.json.template"),
+        output_folder_basepath=str(tmp_wd),
+        executable_command=exec_cmd,
+        input_filename="input.json",
+        output_filename="output.json",
+        folders_iter=FoldersIter.NUMBERED,
+    )
+
+    design_space = DesignSpace()
+    design_space.add_variable("a", 1, l_b=1, u_b=2, value=1.02)
+
+    scenario = create_scenario(
+        disc, "DisciplinaryOpt", "out", design_space, scenario_type="DOE"
+    )
+
+    scenario.execute(
+        {
+            "algo": "OT_LHS",
+            "n_samples": 2,
+            "n_processes": nb_process,
+        }
+    )
+
+    for i in range(nb_process):
+        assert Path(f"{i+1}").is_dir()

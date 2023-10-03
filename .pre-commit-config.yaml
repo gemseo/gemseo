@@ -13,6 +13,11 @@ repos:
       exclude: \.gitlab-ci.yml
     - id: check-added-large-files
     - id: check-json
+    - id: pretty-format-json
+      args: [
+        --autofix,
+        --no-sort-keys,
+      ]
     - id: check-toml
     - id: destroyed-symlinks
     - id: check-symlinks
@@ -25,7 +30,7 @@ repos:
     - id: rst-inline-touching-normal
 
 - repo: https://github.com/PyCQA/autoflake
-  rev: v2.1.1
+  rev: v2.2.1
   hooks:
     - id: autoflake
       args: [
@@ -34,7 +39,7 @@ repos:
       ]
 
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.9.0
+  rev: v3.11.0
   hooks:
     - id: reorder-python-imports
       name: reorder python imports in src
@@ -59,7 +64,7 @@ repos:
       ]
 
 - repo: https://github.com/myint/docformatter
-  rev: v1.6.5
+  rev: v1.7.5
   hooks:
     - id: docformatter
       args: [
@@ -71,35 +76,35 @@ repos:
       ]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.4.0
+  rev: v3.13.0
   hooks:
     - id: pyupgrade
       args: [--py38-plus]
 
 - repo: https://github.com/psf/black
-  rev: 23.3.0
+  rev: 23.9.1
   hooks:
     - id: black
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0
+  rev: 6.1.0
   hooks:
     - id: flake8
       additional_dependencies:
-        - flake8-bugbear==23.5.9
+        - flake8-bugbear==23.9.16
         - flake8-docstrings==1.7.0
         - flake8-logging-format==0.9.0
         - flake8-print==5.0.0
         - pep8-naming==0.13.3
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: 3.2.2
+  rev: 3.10.0
   hooks:
     - id: commitizen
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.1
+  rev: v1.5.4
   hooks:
     - id: insert-license
       name: insert LGPL license

@@ -71,24 +71,9 @@ The GEMSEO documentation is distributed under the CC BY-SA 4.0 license.
 The GEMSEO product depends on other software which have various licenses.
 The list of dependencies with their licenses is given in the CREDITS.rst file.
 
-Contributors
-------------
+About us
+--------
 
-- Francois Gallard
-- Damien Guenot
-- Vincent Gachelin
-- Charlie Vanaret
-- Remi Lafage
-- Pierre-Jean Barjhoux
-- Benoit Pauwels
-- Matthias De Lozzo
-- Jean-Christophe Giret
-- Syver Doving Agdestein
-- Antoine Dechaume
-- Anne Gazaix
-- Nicolas Roussouly
-- Gilberto Ruiz Jimenez
-- Arthur Piat
-- Selime Gürol
-- Reda El Amri
-- Simone Coniglio
+Visit the page `About us <https://gemseo.readthedocs.io/en/develop/aboutus.html>`__
+to find out more about GEMSEO (context, history, references, etc.)
+and its contributors.

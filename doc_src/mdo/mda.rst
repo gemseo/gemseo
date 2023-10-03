@@ -145,7 +145,7 @@ Execution and convergence analysis
 
 The MDAs are run using the default input data
 of the disciplines as a starting point.
-A MDA provides a method to plot the evolution
+an MDA provides a method to plot the evolution
 of the residuals of the system with respect to the iterations ;
 the plot may be displayed and/or saved with
 :meth:`~MDA.plot_residual_history`:
@@ -247,7 +247,7 @@ which generates a chain of MDAs according
 to the graph of dependency in order to minimize the execution time.
 The user provides a base MDA class to solve the coupled problems.
 The overall sequential process made of inner-MDAs and
-disciplines execution is created by a :class:`.MDOChain`.
+disciplines execution is created by an :class:`.MDOChain`.
 The inner-MDAs can be specified using the argument ``inner_mda_name``.
 
 .. code::

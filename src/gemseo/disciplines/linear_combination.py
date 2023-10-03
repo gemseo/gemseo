@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Iterable
 
 from numpy import eye
+from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -39,11 +40,11 @@ class LinearCombination(MDODiscipline):
     and the coefficients :math:`a_1,\ldots,a_d` are equal to 1,
     the discipline simply sums the inputs.
 
-    Note:
+    Notes:
         By default,
         the :class:`.LinearCombination` simply sums the inputs.
 
-    Example:
+    Examples:
         >>> discipline = LinearCombination(["alpha", "beta", "gamma"], "delta",
                 input_coefficients={"alpha": 1.,"beta": 2.,"gamma": 3.})
         >>> input_data = {"alpha": array([1.0]), "beta": array([1.0]),
@@ -52,11 +53,20 @@ class LinearCombination(MDODiscipline):
         >>> delta = discipline.local_data["delta"]  # delta = array([6.])
     """
 
+    __offset: float
+    r"""The offset :math:`a_0` in :math:`a_0+\sum_{i=1}^d a_i x_i`."""
+
+    __coefficients: dict[str, float]
+    r"""The coefficients :math:`a_1,\ldots,a_d` in :math:`a_0+\sum_{i=1}^d a_i x_i`."""
+
+    __output_name: str
+    """The name of the output."""
+
     def __init__(
         self,
         input_names: Iterable[str],
         output_name: str,
-        input_coefficients: dict[str, float] = None,
+        input_coefficients: dict[str, float] | None = None,
         offset: float = 0.0,
     ) -> None:
         """
@@ -68,14 +78,14 @@ class LinearCombination(MDODiscipline):
             offset: The output value when all the input variables are equal to zero.
         """  # noqa: D205, D212, D415
         super().__init__()
-        self.__offset = offset
-        self.__coefficients = input_coefficients
-        self.__output_name = output_name
         self.input_grammar.update_from_names(input_names)
         self.output_grammar.update_from_names([output_name])
-        self.__coefficients = {name: 1.0 for name in self.get_input_data_names()}
+        self.default_inputs.update({input_name: zeros(1) for input_name in input_names})
+        self.__coefficients = {input_name: 1.0 for input_name in input_names}
         if input_coefficients:
             self.__coefficients.update(input_coefficients)
+        self.__offset = offset
+        self.__output_name = output_name
 
     def _run(self) -> None:
         self.local_data[self.__output_name] = self.__offset

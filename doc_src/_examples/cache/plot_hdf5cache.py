@@ -60,7 +60,7 @@ cache = HDF5Cache(hdf_file_path="my_cache.hdf5", hdf_node_path="node1")
 # %%
 # It is possible to see the principal attributes of the cache by printing it,
 # either using a print statement or using the logger:
-print(cache)
+cache
 
 # %%
 # Cache
@@ -71,20 +71,20 @@ print(cache)
 # cache manually.
 # Here, we provide to the cache the data dictionary, and we set `x` as input
 # and `y` as output.
-
 cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
-print(cache)
+cache
 
 # %%
 # Get all data
 # ------------
-# We can now print some information from the cache, such as its length. We can
-# also display all the cached data so far.
+# We can now print some information from the cache, such as its length:
+len(cache)
 
-print(len(cache))
-for data in cache:
-    print(data)
+# %%
+# We can
+# also display all the cached data so far.
+[entry for entry in cache]
 
 # %%
 # Get last cached data
@@ -93,8 +93,7 @@ for data in cache:
 # outputs.
 
 last_entry = cache.last_entry
-print(last_entry.inputs)
-print(last_entry.outputs)
+last_entry.inputs, last_entry.outputs
 
 # %%
 # Clear the cache
@@ -103,4 +102,4 @@ print(last_entry.outputs)
 # been stored so far in the HDF5 file.
 
 cache.clear()
-print(cache)
+cache

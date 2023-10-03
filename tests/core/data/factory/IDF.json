@@ -7,7 +7,7 @@
       "type": "boolean"
     },
     "normalize_constraints": {
-      "description": "If True, the outputs of the coupling consistency constraints are scaled.",
+      "description": "If ``True``, the outputs of the coupling consistency constraints are scaled.",
       "type": "boolean"
     },
     "n_processes": {
@@ -19,20 +19,12 @@
       "type": "boolean"
     },
     "start_at_equilibrium": {
-      "description": "If True, an MDA is used to initialize the coupling variables.",
+      "description": "If ``True``, an MDA is used to initialize the coupling variables.",
       "type": "boolean"
     },
     "grammar_type": {
       "description": "The type of the input and output grammars.",
       "type": "string"
     }
-  },
-  "required": [
-    "grammar_type",
-    "maximize_objective",
-    "n_processes",
-    "normalize_constraints",
-    "start_at_equilibrium",
-    "use_threading"
-  ]
+  }
 }

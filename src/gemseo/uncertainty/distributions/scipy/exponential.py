@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPExponentialDistribution(SPDistribution):
     """Create an exponential distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.exponential import (
         ...     SPExponentialDistribution
         ... )
@@ -40,17 +40,15 @@ class SPExponentialDistribution(SPDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         rate: float = 1.0,
         loc: float = 0.0,
         dimension: int = 1,
     ) -> None:
         """
         Args:
-            variable: The name of the exponential random variable.
             rate: The rate of the exponential random variable.
             loc: The location of the exponential random variable.
-            dimension: The dimension of the exponential random variable.
         """  # noqa: D205,D212,D415
         parameters = {"loc": loc, "scale": 1 / float(rate)}
         super().__init__(variable, "expon", parameters, dimension)

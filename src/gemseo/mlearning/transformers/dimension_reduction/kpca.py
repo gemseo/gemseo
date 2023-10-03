@@ -51,7 +51,7 @@ class KPCA(DimensionReduction):
     ) -> None:
         """
         Args:
-            fit_inverse_transform: If True, learn the inverse transform
+            fit_inverse_transform: If ``True``, learn the inverse transform
                 for non-precomputed kernels.
             kernel: The name of the kernel,
                 either 'linear', 'poly', 'rbf', 'sigmoid', 'cosine' or 'precomputed'.

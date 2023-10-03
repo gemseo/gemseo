@@ -1,0 +1,23 @@
+[flake8]
+# See http://www.pydocstyle.org/en/latest/error_codes.html for more details.
+# https://github.com/PyCQA/flake8-bugbear#how-to-enable-opinionated-warnings
+ignore =
+    E501
+    # no docstring for standard and private methods
+    D105
+    E203
+    W503
+select = B,C,D,E,F,G,N,T,W,B950
+# settings for compatibility with black, see
+# https://github.com/psf/black/blob/master/docs/compatible_configs.md#flake8
+# https://black.readthedocs.io/en/stable/the_black_code_style.html?highlight=bugbear#line-length
+max-line-length = 88
+docstring-convention = google
+per-file-ignores =
+    # ignore docstring that have not yet be converted to the google style
+    src/gemseo/mlearning/*:D
+    src/gemseo/problems/*:D
+    src/gemseo/utils/testing/opt_lib_test_base.py:D
+    tests/*.py:D
+    # also ignore print statements violations in the examples and tutorials
+    doc_src/*.py:T,D

@@ -36,15 +36,17 @@ from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from numpy import arange
 from numpy import array
 from numpy import eye
 from numpy import float64
 from numpy import zeros
-from numpy.linalg import norm
+from scipy.sparse import eye as speye
 
 DIR_PATH = Path(__file__).parent
 
@@ -80,29 +82,32 @@ def test_jac_and_outputs_caching(
     simple_cache, memory_full_cache, memory_full_cache_loc, hdf5_cache
 ):
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
+        # Test the cache are empty
         assert not cache
         assert not cache.last_entry.inputs
-        input_data = {"i": arange(3)}
+
+        # Create input, output and jacobian
+        input_data = {"i1": arange(3), "i2": arange(3)}
         output_data = {"o": arange(4)}
+        jac = {"o": {"i1": eye(4, 3), "i2": speye(4, 3)}}
+
+        # Cache and retrieve output
         cache.cache_outputs(input_data, output_data)
-        _, out, jac = cache[input_data]
-        assert out
-        assert not jac
-        assert_items_equal(out, output_data)
+        _, out_loaded, jac_loaded = cache[input_data]
+        assert out_loaded
+        assert not jac_loaded
+        assert_items_equal(out_loaded, output_data)
 
-        jac = {"o": {"i": eye(4, 3)}}
+        # Cache and retrieve jacobian
         cache.cache_jacobian(input_data, jac)
-
-        _, out, jac_l = cache[input_data]
-        assert jac_l is not None
-        assert norm(jac_l["o"]["i"].flatten() - eye(4, 3).flatten()) == 0.0
-        assert out is not None
+        _, out_loaded, jac_loaded = cache[input_data]
+        assert out_loaded is not None
+        assert compare_dict_of_arrays(jac, jac_loaded)
 
         cache.tolerance = 1e-6
-        _, out_t, jac_t = cache[input_data]
-        assert jac_t is not None
-        assert norm(jac_t["o"]["i"].flatten() - eye(4, 3).flatten()) == 0.0
-        assert out_t is not None
+        _, out_tol, jac_tol = cache[input_data]
+        assert out_loaded is not None
+        assert compare_dict_of_arrays(jac, jac_loaded)
 
         cache.tolerance = 0.0
 
@@ -305,9 +310,14 @@ def test_read_hashes(tmp_wd):
 
 
 def test_read_group(tmp_wd):
+    """Check that a group is correctly read."""
     cache = HDF5Cache(hdf_file_path="out3.h5")
-    cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
-    cache._read_input_output_data([1], {"x": arange(3), "y": arange(2)})
+    input_data = {"x": arange(3), "y": arange(3)}
+    output_data = {"f": array([1])}
+    cache.cache_outputs(input_data, output_data)
+    cache_entry = cache._read_input_output_data([1], {"x": arange(3), "y": arange(3)})
+    assert_items_equal(cache_entry.inputs, input_data)
+    assert_items_equal(cache_entry.outputs, output_data)
 
 
 def test_get_all_data(
@@ -605,8 +615,9 @@ def test_setitem_empty_data(simple_cache, caplog):
 @pytest.mark.parametrize("first_jacobian", [None, {"y": {"x": array([[4.0]])}}])
 @pytest.mark.parametrize("second_jacobian", [None, {"y": {"x": array([[4.0]])}}])
 @pytest.mark.parametrize("first_outputs", [None, {"y": array([3.0])}])
+@pytest.mark.parametrize("categorize", [False, True])
 def test_export_to_dataset_and_entries(
-    simple_cache, first_jacobian, second_jacobian, first_outputs
+    simple_cache, first_jacobian, second_jacobian, first_outputs, categorize
 ):
     """Check exporting a simple cache to a dataset and entries.
 
@@ -617,8 +628,15 @@ def test_export_to_dataset_and_entries(
     second_outputs = {"y": array([2.0])}
     simple_cache[first_inputs] = (first_outputs, first_jacobian)
     simple_cache[second_inputs] = (second_outputs, second_jacobian)
-    dataset = simple_cache.to_dataset()
+    dataset = simple_cache.to_dataset(categorize=categorize)
     assert len(dataset) == 1
+    if categorize:
+        assert isinstance(dataset, IODataset)
+        assert "x" in dataset.input_names
+        assert "y" in dataset.output_names
+    else:
+        assert dataset.group_names == [dataset.PARAMETER_GROUP]
+
     assert dataset.get_view(variable_names="x").to_numpy()[0, 0] == 1.0
     assert dataset.get_view(variable_names="y").to_numpy()[0, 0] == 2.0
 

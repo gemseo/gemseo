@@ -43,7 +43,7 @@ compute and return output Jacobian matrices.
 A first simple example with scalar inputs and outputs
 =====================================================
 
-Assume that we have a MATLAB file :code:`simple_scalar_func.m` that contains
+Assume that we have a MATLAB file ``simple_scalar_func.m`` that contains
 the following function definition:
 
 .. code::
@@ -158,7 +158,7 @@ output vector :math:`\bf{y}`, the total derivatives denoted
 :ref:`jacobian_assembly`.
 
 If Jacobian matrices are returned by the MATLAB function, the |g| discipline can take
-them into account by prescribing the argument :code:`is_jac_returned_by_func=True`.
+them into account by prescribing the argument ``is_jac_returned_by_func=True``.
 
 Let's take a simple example and assume that the MATLAB file
 ``jac_fun.m`` contains the following function:
@@ -186,7 +186,7 @@ Create the discipline instance
 ------------------------------
 
 Building the discipline is still very simple using the API, we just need to add
-the boolean argument :code:`is_jac_returned_by_func` in this case:
+the boolean argument ``is_jac_returned_by_func`` in this case:
 
 .. code::
 
@@ -379,8 +379,8 @@ the third based on a different one:
     eng2 = get_matlab_engine("workspace_1")
     eng3 = get_matlab_engine("workspace_2")
 
-Checking that :code:`eng1 is eng2` equals :code:`True` whereas
-:code:`eng1 is eng3` equals :code:`False`.
+Checking that ``eng1 is eng2`` equals ``True`` whereas
+``eng1 is eng3`` equals ``False``.
 
 This ``workspace_name`` string that is passed to the :func:`.get_matlab_engine` can be controlled
 with the argument ``matlab_engine_name`` when building the MATLAB discipline from

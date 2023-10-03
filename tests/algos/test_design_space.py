@@ -31,6 +31,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import array_equal
 from numpy import inf
@@ -88,7 +89,7 @@ def design_space():
 def test_add_variable_when_already_exists(design_space):
     """Check that adding an existing variable raises an error."""
     design_space.add_variable("varname")
-    with pytest.raises(ValueError, match="Variable 'varname' already exists."):
+    with pytest.raises(ValueError, match="The variable 'varname' already exists."):
         design_space.add_variable(name="varname")
 
 
@@ -344,8 +345,9 @@ def test_extend():
     design_space.add_variable("x1", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
     other = DesignSpace()
     other.add_variable("x2", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
+    other.add_variable("x3")
     design_space.extend(other)
-    assert design_space.__contains__("x2")
+    assert "x2" in design_space
     assert design_space.get_size("x2") == other.get_size("x2")
     assert (design_space.get_type("x2") == other.get_type("x2")).all()
     assert (design_space.get_lower_bound("x2") == other.get_lower_bound("x2")).all()
@@ -353,6 +355,7 @@ def test_extend():
     assert (
         design_space.get_current_value(["x2"]) == other.get_current_value(["x2"])
     ).all()
+    assert other["x3"] == design_space["x3"]
 
 
 def test_active_bounds():
@@ -754,7 +757,7 @@ def table_template() -> str:
 """.strip()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def design_space_2() -> DesignSpace:
     """Return a design space with scalar and vectorial variables."""
     design_space = DesignSpace()
@@ -779,7 +782,11 @@ def test_str(table_template, design_space_2, name):
     """Check that a design space is correctly rendered."""
     if name:
         design_space_2.name = name
-    table_template = f"Design space: {name}\n" + table_template
+        prefix = " "
+    else:
+        prefix = ""
+
+    table_template = f"Design space:{prefix}{name}\n{table_template}"
     assert table_template.format(index_0="[0]", index_1="[1]") == str(design_space_2)
 
 
@@ -838,6 +845,23 @@ def test_get_variables_indexes(design_space, names, expected):
     """Test the variables indexes getter."""
     design_space.filter(["x10", "x11", "x12"])
     assert (design_space.get_variables_indexes(names) == array(expected)).all()
+
+
+@pytest.mark.parametrize(
+    ["use_design_space_order", "expected"],
+    [(True, array([0, 1, 2, 3, 4, 5])), (False, array([3, 4, 0, 1, 2, 5]))],
+)
+def test_get_variables_indexes_in_user_order(
+    design_space, use_design_space_order, expected
+):
+    """Test the variables indexes getter in user order."""
+    design_space.filter(["x10", "x11", "x12"])
+    assert_equal(
+        design_space.get_variables_indexes(
+            ["x11", "x10", "x12"], use_design_space_order
+        ),
+        expected,
+    )
 
 
 def test_gradient_normalization(design_space):
@@ -1369,3 +1393,39 @@ def test_export_import_with_none_value(tmp_wd):
     design_space.to_csv("foo.csv")
     txt_design_space = DesignSpace.from_csv("foo.csv")
     assert txt_design_space == design_space
+
+
+def test_repr_html(design_space_2):
+    """Check the HTML representation of a design space."""
+    assert design_space_2._repr_html_() == REPR_HTML_WRAPPER.format(
+        """Design space:<br/><table>
+    <tr>
+        <th style='text-align: left;'>name</th>
+        <th style='text-align: left;'>lower_bound</th>
+        <th style='text-align: left;'>value</th>
+        <th style='text-align: left;'>upper_bound</th>
+        <th style='text-align: left;'>type</th>
+    </tr>
+    <tr>
+        <td>x</td>
+        <td>-inf</td>
+        <td>None</td>
+        <td>inf</td>
+        <td>float</td>
+    </tr>
+    <tr>
+        <td>y[0]</td>
+        <td>-inf</td>
+        <td>None</td>
+        <td>inf</td>
+        <td>float</td>
+    </tr>
+    <tr>
+        <td>y[1]</td>
+        <td>-inf</td>
+        <td>None</td>
+        <td>inf</td>
+        <td>float</td>
+    </tr>
+</table>"""
+    )

@@ -93,7 +93,9 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     def __str__(self) -> str:
         return f"Grammar name: {self.name}"
 
-    def __repr__(self) -> str:
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the grammar."""
         text = MultiLineString()
         text.add(str(self))
         text.indent()
@@ -104,7 +106,13 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         text.add("Optional elements:")
         text.indent()
         self._repr_optional_elements(text)
-        return str(text)
+        return text
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     def __delitem__(
         self,

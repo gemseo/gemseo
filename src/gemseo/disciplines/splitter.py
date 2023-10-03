@@ -29,7 +29,7 @@ class Splitter(MDODiscipline):
 
     Several output variables containing slice of the input variable are extracted.
 
-    Example:
+    Examples:
         >>> discipline = Splitter("alpha", {"beta": [0, 1], "delta": [2, 3],
         "gamma": 4})
         >>> discipline.execute({"alpha": array([1.0, 2.0, 3.0, 4.0, 5.0])})

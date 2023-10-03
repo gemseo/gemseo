@@ -42,11 +42,11 @@ configure_logger()
 #
 # The :meth:`.get_available_opt_algorithms` function returns the list
 # of optimization algorithms available in |g| or in external modules
-print(get_available_opt_algorithms())
+get_available_opt_algorithms()
 
 # %%
 # Get options schema
 # ------------------
-# For a given optimization algorithm, e.g. :code:`"NLOPT_SLSQP"`,
+# For a given optimization algorithm, e.g. ``"NLOPT_SLSQP"``,
 # we can get the options; e.g.
-print(get_algorithm_options_schema("NLOPT_SLSQP"))
+get_algorithm_options_schema("NLOPT_SLSQP")

@@ -26,7 +26,7 @@ The :class:`.OptimizationProblem` class operates on a :class:`.DesignSpace` defi
 - an initial guess :math:`x_0` for the design variables,
 - the bounds :math:`l_b \leq x \leq u_b` of the design variables.
 
-A (possible vector) objective function with a :class:`.MDOFunction` type
+A (possible vector) objective function with an :class:`.MDOFunction` type
 is set using the ``objective`` attribute.
 If the optimization problem looks for the maximum of this objective function,
 the :meth:`.OptimizationProblem.change_objective_sign`
@@ -64,24 +64,29 @@ from copy import deepcopy
 from functools import reduce
 from numbers import Number
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
 from typing import Final
 from typing import Iterable
+from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
 
 import h5py
 import numpy
+from h5py import Group
 from numpy import abs as np_abs
 from numpy import all as np_all
 from numpy import any as np_any
 from numpy import argmin
 from numpy import array
 from numpy import array_equal
+from numpy import bytes_
+from numpy import hstack
 from numpy import inf
 from numpy import insert
 from numpy import isnan
@@ -94,6 +99,7 @@ from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
 from numpy.typing import NDArray
+from pandas import MultiIndex
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
@@ -114,7 +120,6 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -142,7 +147,7 @@ class OptimizationProblem(BaseProblem):
 
     - a :class:`.DesignSpace` specifying the design variables
       in terms of names, lower bounds, upper bounds and initial guesses,
-    - the objective function as a :class:`.MDOFunction`,
+    - the objective function as an :class:`.MDOFunction`,
       which can be a vector,
 
     execute it from an algorithm provided by a :class:`.DriverLibrary`,
@@ -188,13 +193,13 @@ class OptimizationProblem(BaseProblem):
     nonproc_new_iter_observables: list[MDOFunction]
     """The non-processed observables to be called at each new iterate."""
 
-    minimize_objective: bool
-    """Whether to maximize the objective."""
+    __minimize_objective: bool
+    """Whether to minimize the objective."""
 
     fd_step: float
     """The finite differences step."""
 
-    pb_type: str
+    pb_type: ProblemType
     """The type of optimization problem."""
 
     ineq_tolerance: float
@@ -308,7 +313,7 @@ class OptimizationProblem(BaseProblem):
             design_space: The design space on which the functions are evaluated.
             pb_type: The type of the optimization problem.
             input_database: A database to initialize that of the optimization problem.
-                If None, the optimization problem starts from an empty database.
+                If ``None``, the optimization problem starts from an empty database.
             differentiation_method: The default differentiation method to be applied
                 to the functions of the optimization problem.
             fd_step: The step to be used by the step-based differentiation methods.
@@ -327,7 +332,7 @@ class OptimizationProblem(BaseProblem):
         self.new_iter_observables = []
         self.nonproc_observables = []
         self.nonproc_new_iter_observables = []
-        self.minimize_objective = True
+        self.__minimize_objective = True
         self.fd_step = fd_step
         self.__differentiation_method = None
         self.differentiation_method = differentiation_method
@@ -345,6 +350,7 @@ class OptimizationProblem(BaseProblem):
         else:
             self.database = Database.from_hdf(input_database)
         self.solution = None
+        # TODO: API: initialize with OptimizationResult()
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
             design_space.get_current_value(as_dict=True)
@@ -427,6 +433,16 @@ class OptimizationProblem(BaseProblem):
             )
         self._objective = func
 
+    @property
+    def minimize_objective(self) -> bool:
+        """Whether to minimize the objective."""
+        return self.__minimize_objective
+
+    @minimize_objective.setter
+    def minimize_objective(self, value: bool) -> None:
+        if self.__minimize_objective != value:
+            self.change_objective_sign()
+
     @staticmethod
     def repr_constraint(
         func: MDOFunction,
@@ -440,8 +456,8 @@ class OptimizationProblem(BaseProblem):
             func: The constraint function.
             cstr_type: The type of the constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
-            positive: If True, then the inequality constraint is positive.
+                If ``None``, this value is 0.
+            positive: If ``True``, then the inequality constraint is positive.
 
         Returns:
             A string representation of the constraint.
@@ -489,9 +505,9 @@ class OptimizationProblem(BaseProblem):
         Args:
             cstr_func: The constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
+                If ``None``, this value is 0.
             cstr_type: The type of the constraint.
-            positive: If True, then the inequality constraint is positive.
+            positive: If ``True``, then the inequality constraint is positive.
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
@@ -544,7 +560,7 @@ class OptimizationProblem(BaseProblem):
         Args:
             cstr_func: The constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
+                If ``None``, this value is 0.
         """
         self.add_constraint(cstr_func, value, cstr_type=MDOFunction.ConstraintType.EQ)
 
@@ -559,8 +575,8 @@ class OptimizationProblem(BaseProblem):
         Args:
             cstr_func: The constraint.
             value: The value for which the constraint is active.
-                If None, this value is 0.
-            positive: If True, then the inequality constraint is positive.
+                If ``None``, this value is 0.
+            positive: If ``True``, then the inequality constraint is positive.
         """
         self.add_constraint(
             cstr_func,
@@ -704,7 +720,7 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             obs_func: An observable to be observed.
-            new_iter: If True, then the observable will be called at each new iterate.
+            new_iter: If ``True``, then the observable will be called at each new iterate.
         """
         name = obs_func.name
         if name in self.__observable_names:
@@ -827,8 +843,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The names of the constraints.
         """
-        names = [constraint.name for constraint in self.constraints]
-        return names
+        return [constraint.name for constraint in self.constraints]
 
     def get_nonproc_constraints(self) -> list[MDOFunction]:
         """Retrieve the non-processed constraints.
@@ -973,7 +988,7 @@ class OptimizationProblem(BaseProblem):
             input_function: The function to be tested.
 
         Raises:
-            TypeError: If the function is not a :class:`.MDOFunction`.
+            TypeError: If the function is not an :class:`.MDOFunction`.
         """
         if not isinstance(input_function, MDOFunction):
             raise TypeError(
@@ -1064,8 +1079,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             callback_func: A function to be called after some event.
-            each_new_iter: If True, then callback at every iteration.
-            each_store: If True,
+            each_new_iter: If ``True``, then callback at every iteration.
+            each_store: If ``True``,
                 then callback at every call to :meth:`.Database.store`.
         """
         if each_store:
@@ -1121,7 +1136,7 @@ class OptimizationProblem(BaseProblem):
                 If ``observable_names`` is not ``None`` then the value of
                 ``eval_observables`` is ignored.
             normalize: Whether to consider the input vector ``x_vect`` normalized.
-            no_db_no_norm: If True, then do not use the pre-processed functions,
+            no_db_no_norm: If ``True``, then do not use the pre-processed functions,
                 so we have no database, nor normalization.
             constraint_names: The names of the constraints to evaluate.
                 If ``None`` then all the constraints are evaluated.
@@ -1423,9 +1438,9 @@ class OptimizationProblem(BaseProblem):
             func: The scaled and derived function to be pre-processed.
             is_function_input_normalized: Whether to consider the function input as
                 normalized and unnormalize it before the evaluation takes place.
-            use_database: If True, then the function is wrapped in the database.
-            round_ints: If True, then round the integer variables.
-            is_observable: If True, new_iter_listeners are not called
+            use_database: If ``True``, then the function is wrapped in the database.
+            round_ints: If ``True``, then round the integer variables.
+            is_observable: If ``True``, new_iter_listeners are not called
                 when function is called (avoid recursive call)
 
         Returns:
@@ -1469,7 +1484,7 @@ class OptimizationProblem(BaseProblem):
             The scaled linear function.
 
         Raises:
-            TypeError: If the original function is not a :class:`.MDOLinearFunction`.
+            TypeError: If the original function is not an :class:`.MDOLinearFunction`.
         """
         if not isinstance(orig_func, MDOLinearFunction):
             raise TypeError("Original function must be linear")
@@ -1591,6 +1606,7 @@ class OptimizationProblem(BaseProblem):
                 )
                 self.fd_step = self.fd_step.real
 
+    # TODO: API: to be deprecated in favor of self.minimize_objective
     def change_objective_sign(self) -> None:
         """Change the objective function sign in order to minimize its opposite.
 
@@ -1599,7 +1615,7 @@ class OptimizationProblem(BaseProblem):
         performance function to maximize must be converted into a cost function to
         minimize, by means of this method.
         """
-        self.minimize_objective = not self.minimize_objective
+        self.__minimize_objective = not self.__minimize_objective
         self.objective = -self.objective
 
     def _satisfied_constraint(
@@ -1627,14 +1643,14 @@ class OptimizationProblem(BaseProblem):
     ) -> bool:
         """Check if a point is feasible.
 
-        Note:
+        Notes:
             If the value of a constraint is absent from this point,
             then this constraint will be considered satisfied.
 
         Args:
             out_val: The values of the objective function, and eventually constraints.
             constraints: The constraints whose values are to be tested.
-                If None, then take all constraints of the problem.
+                If ``None``, then take all constraints of the problem.
 
         Returns:
             The feasibility of the point.
@@ -1866,10 +1882,12 @@ class OptimizationProblem(BaseProblem):
             x_opt, f_opt, c_opt, c_opt_d = self.__get_optimum_feas(feas_x, feas_f)
         return f_opt, x_opt, is_feas, c_opt, c_opt_d
 
-    def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Optimization problem:")
-        msg.indent()
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the optimization problem."""
+        mls = MultiLineString()
+        mls.add("Optimization problem:")
+        mls.indent()
 
         # objective representation
         if self.minimize_objective or self.use_standardized_objective:
@@ -1880,24 +1898,30 @@ class OptimizationProblem(BaseProblem):
             start = 1
 
         objective_function = [line for line in repr(self.objective).split("\n") if line]
-        msg.add(optimize_verb + objective_function[0][start:])
+        mls.add(optimize_verb + objective_function[0][start:])
         for line in objective_function[1:]:
-            msg.add(" " * len(optimize_verb) + line)
+            mls.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add("with respect to {}", pretty_str(self.design_space.variable_names))
+        mls.add("with respect to {}", pretty_str(self.design_space.variable_names))
         if self.has_constraints():
-            msg.add("subject to constraints:")
-            msg.indent()
+            mls.add("subject to constraints:")
+            mls.indent()
             for constraints in self.get_ineq_constraints():
                 constraints = [cstr for cstr in str(constraints).split("\n") if cstr]
                 for constraint in constraints:
-                    msg.add(constraint)
+                    mls.add(constraint)
             for constraints in self.get_eq_constraints():
                 constraints = [cstr for cstr in str(constraints).split("\n") if cstr]
                 for constraint in constraints:
-                    msg.add(constraint)
-        return str(msg)
+                    mls.add(constraint)
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     @staticmethod
     def __store_h5data(
@@ -1912,9 +1936,11 @@ class OptimizationProblem(BaseProblem):
             group: The group pointer.
             data_array: The data to be stored.
             dataset_name: The name of the dataset to store the array.
-            dtype: Numpy dtype or string. If None, dtype('f') will be used.
+            dtype: Numpy dtype or string. If ``None``, dtype('f') will be used.
         """
-        if data_array is None or data_array == []:
+        if data_array is None or (
+            isinstance(data_array, Iterable) and not len(data_array)
+        ):
             return
         if isinstance(data_array, ndarray):
             data_array = data_array.real
@@ -1931,39 +1957,42 @@ class OptimizationProblem(BaseProblem):
         group.create_dataset(dataset_name, data=data_array, dtype=dtype)
 
     @classmethod
-    def __store_attr_h5data(
-        cls,
-        obj: Any,
-        group: str,
-    ) -> None:
-        """Store an object that has a to_dict attribute in the hdf5 dataset.
+    def __store_attr_h5data(cls, obj: Any, group: Group) -> None:
+        """Store an object in the HDF5 dataset.
+
+        The object shall be a mapping or have a method to_dict().
 
         Args:
             obj: The object to store
             group: The hdf5 group.
         """
-        data_dict = obj.to_dict()
-        for attr_name, attr in data_dict.items():
+        data = obj if isinstance(obj, Mapping) else obj.to_dict()
+        for name, value in data.items():
             dtype = None
-            is_arr_n = isinstance(attr, ndarray) and issubdtype(attr.dtype, np_number)
-            if isinstance(attr, str):
-                attr = attr.encode("ascii", "ignore")
-            elif isinstance(attr, bytes):
-                attr = attr.decode()
-            elif hasattr(attr, "__iter__") and not is_arr_n:
-                attr = [
+            if isinstance(value, str):
+                value = value.encode("ascii", "ignore")
+            elif isinstance(value, bytes):
+                value = value.decode()
+            elif isinstance(value, Mapping) and not isinstance(value, DesignSpace):
+                cls.__store_attr_h5data(value, group.require_group(f"/{name}"))
+                continue
+            elif hasattr(value, "__iter__") and not (
+                isinstance(value, ndarray) and issubdtype(value.dtype, np_number)
+            ):
+                value = [
                     att.encode("ascii", "ignore") if isinstance(att, str) else att
-                    for att in attr
+                    for att in value
                 ]
                 dtype = h5py.special_dtype(vlen=str)
-            cls.__store_h5data(group, attr, attr_name, dtype)
+
+            cls.__store_h5data(group, value, name, dtype)
 
     def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
             file_path: The path of the file to store the data.
-            append: If True, then the data are appended to the file if not empty.
+            append: If ``True``, then the data are appended to the file if not empty.
         """
         LOGGER.info("Export optimization problem to file: %s", str(file_path))
 
@@ -1995,6 +2024,7 @@ class OptimizationProblem(BaseProblem):
                         self.__store_attr_h5data(observable, o_subgroup)
 
                 if hasattr(self.solution, "to_dict"):
+                    # TODO: API: initialize with OptimizationResult() and avoid hasattr
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
@@ -2023,15 +2053,16 @@ class OptimizationProblem(BaseProblem):
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
         with h5py.File(file_path) as h5file:
-            group = get_hdf5_group(h5file, opt_pb.OPT_DESCR_GROUP)
-
-            for attr_name, attr in group.items():
-                val = attr[()]
-                val = val.decode() if isinstance(val, bytes) else val
-                setattr(opt_pb, attr_name, val)
-
             if opt_pb.SOLUTION_GROUP in h5file:
                 group_data = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
+                if "x_0_as_dict" in h5file:
+                    group_data["x_0_as_dict"] = cls.__h5_group_to_dict(
+                        h5file, "x_0_as_dict"
+                    )
+                if "x_opt_as_dict" in h5file:
+                    group_data["x_opt_as_dict"] = cls.__h5_group_to_dict(
+                        h5file, "x_opt_as_dict"
+                    )
                 attr = OptimizationResult.from_dict(group_data)
                 opt_pb.solution = attr
 
@@ -2044,6 +2075,18 @@ class OptimizationProblem(BaseProblem):
                 opt_pb.database, design_space, x_tolerance=x_tolerance
             )
             opt_pb.objective = attr
+
+            group = get_hdf5_group(h5file, opt_pb.OPT_DESCR_GROUP)
+            for attr_name, attr in group.items():
+                val = attr[()]
+                if isinstance(val, ndarray) and isinstance(val[0], bytes_):
+                    val = val[0].decode()
+
+                # Set the private attribute __minimize_objective instead of the property
+                # to avoid an unnecessary change of sign of the objective function.
+                if attr_name == "minimize_objective":
+                    attr_name = "_OptimizationProblem__minimize_objective"
+                setattr(opt_pb, attr_name, val)
 
             if opt_pb.CONSTRAINTS_GROUP in h5file:
                 group = get_hdf5_group(h5file, opt_pb.CONSTRAINTS_GROUP)
@@ -2070,7 +2113,7 @@ class OptimizationProblem(BaseProblem):
         opt_naming: bool = True,
         export_gradients: bool = False,
         input_values: Iterable[ndarray] = (),
-    ) -> OptimizationDataset | IODataset:
+    ) -> Dataset:
         """Export the database of the optimization problem to a :class:`.Dataset`.
 
         The variables can be classified into groups:
@@ -2104,18 +2147,18 @@ class OptimizationProblem(BaseProblem):
         # Set the different groups
         if categorize:
             if opt_naming:
-                dataset = OptimizationDataset(dataset_name=dataset_name)
-                input_group = dataset.DESIGN_GROUP
-                output_group = dataset.FUNCTION_GROUP
-                gradient_group = dataset.GRADIENT_GROUP
+                dataset_class = OptimizationDataset
+                input_group = OptimizationDataset.DESIGN_GROUP
+                output_group = OptimizationDataset.FUNCTION_GROUP
+                gradient_group = OptimizationDataset.GRADIENT_GROUP
             else:
-                dataset = IODataset(dataset_name=dataset_name)
-                input_group = dataset.INPUT_GROUP
-                output_group = dataset.OUTPUT_GROUP
-                gradient_group = dataset.GRADIENT_GROUP
+                dataset_class = IODataset
+                input_group = IODataset.INPUT_GROUP
+                output_group = IODataset.OUTPUT_GROUP
+                gradient_group = IODataset.GRADIENT_GROUP
         else:
-            dataset = Dataset(dataset_name=dataset_name)
-            input_group = output_group = gradient_group = dataset.DEFAULT_GROUP
+            dataset_class = Dataset
+            input_group = output_group = gradient_group = Dataset.DEFAULT_GROUP
 
         # Add database inputs
         input_names = self.design_space.variable_names
@@ -2123,107 +2166,84 @@ class OptimizationProblem(BaseProblem):
         input_history = array(self.database.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
-        offset = int(opt_naming)
+        offset = int(categorize & opt_naming)
         for input_value in input_values:
             _positions = where((input_history == input_value).all(axis=1))[0]
             positions.extend((_positions + offset).tolist())
 
-        input_history = split_array_to_dict_of_arrays(
-            input_history, names_to_sizes, input_names
-        )
-        for input_name, input_value in input_history.items():
-            dataset.add_variable(input_name, input_value.real, input_group)
+        data = [input_history.real]
+        columns = [
+            (input_group, name, index)
+            for name in input_names
+            for index in range(names_to_sizes[name])
+        ]
 
         # Add database outputs
         variable_names = self.database.get_function_names()
         output_names = [name for name in variable_names if name not in input_names]
-
-        self.__add_database_outputs(
-            dataset,
-            output_names,
-            n_samples,
-            output_group,
+        self.__add_data_to_database(
+            data, columns, output_names, n_samples, output_group, False
         )
 
         # Add database output gradients
         if export_gradients:
-            self.__add_database_output_gradients(
-                dataset,
-                output_names,
-                n_samples,
-                gradient_group,
+            self.__add_data_to_database(
+                data, columns, output_names, n_samples, gradient_group, True
             )
 
-        return dataset.get_view(indices=positions)
+        return dataset_class(
+            hstack(data),
+            dataset_name=dataset_name,
+            columns=MultiIndex.from_tuples(
+                columns,
+                names=dataset_class.COLUMN_LEVEL_NAMES,
+            ),
+        ).get_view(indices=positions)
 
-    def __add_database_outputs(
+    def __add_data_to_database(
         self,
-        dataset: Dataset,
+        data: list[NDArray[float]],
+        columns: list[tuple[str, str, int]],
         output_names: Iterable[str],
         n_samples: int,
-        output_group: str,
-    ) -> None:
-        """Add the database outputs to the dataset.
-
-        Args:
-            dataset: The dataset where the outputs will be added.
-            output_names: The names of the outputs in the database.
-            n_samples: The total number of samples, including possible
-                points where the evaluation failed.
-            output_group: The dataset group where the variables will
-                be added.
-        """
-        for output_name in output_names:
-            output_history, input_history = self.database.get_function_history(
-                output_name, with_x_vect=True
-            )
-            output_history = self.__replace_missing_values(
-                output_history, input_history, array(self.database.get_x_vect_history())
-            )
-
-            dataset.add_variable(
-                output_name,
-                output_history.reshape((n_samples, -1)).real,
-                output_group,
-            )
-
-    def __add_database_output_gradients(
-        self,
-        dataset: Dataset,
-        output_names: Iterable[str],
-        n_samples: int,
-        gradient_group: str,
+        group: str,
+        store_gradient: bool,
     ) -> None:
         """Add the database output gradients to the dataset.
 
         Args:
-            dataset: The dataset where the outputs will be added.
+            data: The sequence of data arrays to be augmented with the output data.
+            columns: The multi-index columns to be augmented with the output names.
             output_names: The names of the outputs in the database.
-            n_samples: The total number of samples, including possible
-                points where the evaluation failed.
-            gradient_group: The dataset group where the variables will
-                be added.
+            n_samples: The total number of samples,
+                including possible points where the evaluation failed.
+            group: The dataset group where the variables will be added.
+            store_gradient: Whether the variable of interest
+                is the gradient of the output.
         """
+        x_vect_history = array(self.database.get_x_vect_history())
         for output_name in output_names:
-            if self.database.check_output_history_is_empty(
-                Database.get_gradient_name(output_name)
-            ):
-                continue
+            if store_gradient:
+                function_name = Database.get_gradient_name(output_name)
+                if self.database.check_output_history_is_empty(function_name):
+                    continue
+            else:
+                function_name = output_name
 
-            gradient_history, input_history = self.database.get_gradient_history(
-                output_name, with_x_vect=True
+            history, input_history = self.database.get_function_history(
+                function_name=function_name, with_x_vect=True
             )
-            gradient_history = self.__replace_missing_values(
-                gradient_history,
-                input_history,
-                array(self.database.get_x_vect_history()),
+            history = (
+                self.__replace_missing_values(
+                    history,
+                    input_history,
+                    x_vect_history,
+                )
+                .reshape((n_samples, -1))
+                .real
             )
-
-            dataset.add_variable(
-                Database.get_gradient_name(output_name),
-                gradient_history.reshape(n_samples, -1).real,
-                gradient_group,
-            )
+            data.append(history)
+            columns.extend([(group, function_name, i) for i in range(history.shape[1])])
 
     @staticmethod
     def __replace_missing_values(
@@ -2316,8 +2336,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             names: The names of the variables.
-            as_dict: If True, return values as dictionary.
-            filter_non_feasible: If True, remove the non-feasible points from
+            as_dict: If ``True``, return values as dictionary.
+            filter_non_feasible: If ``True``, remove the non-feasible points from
                 the data.
 
         Returns:
@@ -2362,7 +2382,7 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             names: The names of the functions.
-                If None, then the objective and all the constraints are considered.
+                If ``None``, then the objective and all the constraints are considered.
 
         Returns:
             The dimensions of the outputs of the problem functions.
@@ -2412,27 +2432,42 @@ class OptimizationProblem(BaseProblem):
     def get_number_of_unsatisfied_constraints(
         self,
         design_variables: ndarray,
+        values: Mapping[str, float | ndarray] = MappingProxyType({}),
     ) -> int:
         """Return the number of scalar constraints not satisfied by design variables.
 
         Args:
             design_variables: The design variables.
+            values: The values of the constraints.
+                N.B. the missing values will be read from the database or computed.
 
         Returns:
             The number of unsatisfied scalar constraints.
         """
         n_unsatisfied = 0
-        values, _ = self.evaluate_functions(
-            design_variables, eval_obj=False, eval_observables=False, normalize=False
-        )
+        missing_names = set(self.get_constraint_names()).difference(values)
+        if missing_names:
+            constraints_values = self.evaluate_functions(
+                design_variables,
+                eval_obj=False,
+                eval_observables=False,
+                normalize=False,
+                constraint_names=missing_names,
+            )[0]
+            constraints_values.update(values)
+        else:
+            constraints_values = values
+
         for constraint in self.constraints:
-            value = atleast_1d(values[constraint.name])
+            value = atleast_1d(constraints_values[constraint.name])
             if constraint.f_type == MDOFunction.ConstraintType.EQ:
                 value = numpy.absolute(value)
                 tolerance = self.eq_tolerance
             else:
                 tolerance = self.ineq_tolerance
+
             n_unsatisfied += sum(value > tolerance)
+
         return n_unsatisfied
 
     def get_scalar_constraint_names(self) -> list[str]:

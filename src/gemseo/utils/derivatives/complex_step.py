@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Callable
-from typing import Final
+from typing import ClassVar
 from typing import Sequence
 
 from numpy import complex128
@@ -57,9 +57,9 @@ class ComplexStep(GradientApproximator):
 
     _APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP
 
-    __DEFAULT_STEP: Final[complex] = 1e-20
-    """The default value for the step."""
+    _DEFAULT_STEP: ClassVar[complex] = 1e-20
 
+    # TODO: API: remove normalize argument which is not used.
     def __init__(  # noqa:D107
         self,
         f_pointer: Callable[[ndarray], ndarray],
@@ -69,14 +69,17 @@ class ComplexStep(GradientApproximator):
         parallel: bool = False,
         **parallel_args: int | bool | float,
     ) -> None:
+        """
+        Args:
+            normalize: This argument is not used.
+        """  # noqa:D205 D212 D415
         if design_space is not None:
             design_space.to_complex()
         super().__init__(
             f_pointer,
-            step=self.__DEFAULT_STEP if step is None else step,
+            step=step,
             parallel=parallel,
             design_space=design_space,
-            normalize=True,
             **parallel_args,
         )
 

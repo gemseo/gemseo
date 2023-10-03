@@ -124,19 +124,19 @@ class ScipyLinprog(OptimizationLibrary):
         Args:
             max_iter: The maximum number of iterations, i.e. unique calls to the
                 objective function.
-            autoscale: If True, then the linear problem is scaled.
+            autoscale: If ``True``, then the linear problem is scaled.
                 Refer to the SciPy documentation for more details.
-            presolve: If True, then attempt to detect infeasibility,
+            presolve: If ``True``, then attempt to detect infeasibility,
                 unboundedness or problem simplifications before solving.
                 Refer to the SciPy documentation for more details.
-            redundancy_removal: If True, then linearly dependent
+            redundancy_removal: If ``True``, then linearly dependent
                 equality-constraints are removed.
             callback: A function to be called at least once per iteration.
                 Takes a scipy.optimize.OptimizeResult as single argument.
-                If None, no function is called.
+                If ``None``, no function is called.
                 Refer to the SciPy documentation for more details.
-            verbose: If True, then the convergence messages are printed.
-            normalize_design_space: If True, scales variables in [0, 1].
+            verbose: If ``True``, then the convergence messages are printed.
+            normalize_design_space: If ``True``, scales variables in [0, 1].
             disp: Whether to print convergence messages.
             **kwargs: The other algorithm's options.
 
@@ -229,8 +229,11 @@ class ScipyLinprog(OptimizationLibrary):
         is_feasible = self.problem.is_point_feasible(val_opt)
         optim_result = OptimizationResult(
             x_0=x_0,
+            x_0_as_dict=self.problem.design_space.array_to_dict(x_0),
             x_opt=x_opt,
+            x_opt_as_dict=self.problem.design_space.array_to_dict(x_opt),
             f_opt=f_opt,
+            objective_name=self.problem.objective.name,
             status=linprog_result.status,
             constraint_values=constraint_values,
             constraints_grad=constraints_grad,

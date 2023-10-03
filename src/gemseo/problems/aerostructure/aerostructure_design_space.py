@@ -28,9 +28,8 @@ from gemseo.algos.design_space import DesignSpace
 
 
 class AerostructureDesignSpace(DesignSpace):
-    """**AerostructureDesignSpace** creates the :class:`.DesignSpace`
-    of the Aerostructure problem
-    whose :class:`.MDODiscipline` are :class:`.Aerodynamics`,
+    """**AerostructureDesignSpace** creates the :class:`.DesignSpace` of the
+    Aerostructure problem whose :class:`.MDODiscipline` are :class:`.Aerodynamics`,
     :class:`.Structure` and :class:`.Mission`.
 
     - thick_airfoils belongs to [5., 25.], with initial value equal to 15.

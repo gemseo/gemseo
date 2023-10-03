@@ -1,15 +1,17 @@
 {
-    "name": "QuadApprox_options",
-    "required": ["function"],
-    "properties": {
-        "function":{
-            "type": "string"
-        },
-        "func_index":{
-        	"type":"integer"
-        }
+  "name": "QuadApprox_options",
+  "required": [
+    "function"
+  ],
+  "properties": {
+    "function": {
+      "type": "string"
     },
-    "additionalProperties": false,
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object"
+    "func_index": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
 }

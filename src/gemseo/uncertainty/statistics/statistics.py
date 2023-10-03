@@ -142,35 +142,41 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         dataset: Dataset,
-        variable_names: Iterable[str] | None = None,
-        name: str | None = None,
+        variable_names: Iterable[str] = (),
+        name: str = "",
     ) -> None:
         """
         Args:
             dataset: A dataset.
-            variable_names: The variables of interest.
-                Default: consider all the variables available in the dataset.
-            name: A name for the object.
-                Default: use the concatenation of the class and dataset names.
+            variable_names: The names of the variables for which to compute statistics.
+                If empty, consider all the variables of the dataset.
+            name: A name for the toolbox computing statistics.
+                If empty, concatenate the names of the dataset and the name of the class.
         """  # noqa: D205,D212,D415
         class_name = self.__class__.__name__
-        default_name = f"{class_name}_{dataset.name}"
-        self.name = name or default_name
-        msg = f"Create {self.name}, a {class_name} library."
-        LOGGER.info(msg)
+        self.name = name or f"{class_name}({dataset.name})"
+        LOGGER.info("Create %s, a %s library.", self.name, class_name)
         self.dataset = dataset
         self.n_samples = len(dataset)
         self.names = variable_names or dataset.variable_names
         self.n_variables = len(self.names)
 
-    def __str__(self) -> str:
-        msg = MultiLineString()
-        msg.add(self.name)
-        msg.indent()
-        msg.add("n_samples: {}", self.n_samples)
-        msg.add("n_variables: {}", self.n_variables)
-        msg.add("variables: {}", pretty_str(self.names))
-        return str(msg)
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the object."""
+        mls = MultiLineString()
+        mls.add(self.name)
+        mls.indent()
+        mls.add("n_samples: {}", self.n_samples)
+        mls.add("n_variables: {}", self.n_variables)
+        mls.add("variables: {}", pretty_str(self.names))
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     def compute_tolerance_interval(
         self,
@@ -487,7 +493,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             variable_name: The name of the variable, e.g. ``"X"``.
             statistic_name: The name of the statistic, e.g. ``"probability"``.
-            show_name: If True, show option names.
+            show_name: If ``True``, show option names.
                 Otherwise, only show option values.
             **options: The options passed to the statistical function,
                 e.g. ``{"greater": True, "thresh": 1.0}``.

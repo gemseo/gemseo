@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 class OTTriangularDistribution(OTDistribution):
     """Create a triangular distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.openturns.triangular import (
         ...     OTTriangularDistribution
         ... )
@@ -40,7 +40,7 @@ class OTTriangularDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         mode: float = 0.5,
         maximum: float = 1.0,
@@ -52,19 +52,9 @@ class OTTriangularDistribution(OTDistribution):
     ) -> None:
         """
         Args:
-            variable: The name of the triangular random variable.
             minimum: The minimum of the triangular random variable.
             mode: The mode of the triangular random variable.
             maximum: The maximum of the random variable.
-            dimension: The dimension of the triangular random variable.
-            transformation: A transformation
-                applied to the random variable,
-                e.g. 'sin(x)'. If None, no transformation.
-            lower_bound: A lower bound to truncate the distribution.
-                If None, no lower truncation.
-            upper_bound: An upper bound to truncate the distribution.
-                If None, no upper truncation.
-            threshold: A threshold in [0,1].
         """  # noqa: D205,D212,D415
         standard_parameters = {
             self._LOWER: minimum,

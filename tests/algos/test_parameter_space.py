@@ -19,10 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.parameter_space import RandomVariable
+from gemseo.algos.parameter_space import RandomVector
 from gemseo.datasets.io_dataset import IODataset
 from numpy import allclose
 from numpy import arange
@@ -30,6 +33,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import concatenate
 from numpy import ndarray
+from numpy.testing import assert_array_equal
 from openturns import NormalCopula
 
 
@@ -249,17 +253,6 @@ def test_unnormalize(parameter_space, one_dim):
     else:
         expectation = array([values, values])
     assert allclose(vector, expectation, 1e-3)
-
-
-def test_update_parameter_space():
-    """Check the redefinition of a variable."""
-    space = ParameterSpace()
-    space.add_variable("x1", l_b=0.0, u_b=1.0)
-    assert space.get_lower_bound("x1")[0] == 0.0
-    assert space.get_upper_bound("x1")[0] == 1.0
-    space.add_random_variable("x1", "OTUniformDistribution", minimum=0.0, maximum=2.0)
-    assert space.get_lower_bound("x1")[0] == 0.0
-    assert space.get_upper_bound("x1")[0] == 2.0
 
 
 def test_str_and_tabularview():
@@ -485,16 +478,21 @@ def test_rename_variable():
     random_variable = RandomVariable(
         "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
     )
+    random_vector = RandomVector(
+        "SPNormalDistribution", 2, {"mu": [0.5, 1], "sigma": [2.0]}
+    )
 
     parameter_space = ParameterSpace()
     parameter_space["x"] = design_variable
     parameter_space["u"] = random_variable
+    parameter_space["z"] = random_vector
     parameter_space.rename_variable("x", "y")
     parameter_space.rename_variable("u", "v")
 
     other_parameter_space = ParameterSpace()
     other_parameter_space["y"] = design_variable
     other_parameter_space["v"] = random_variable
+    other_parameter_space["z"] = random_vector
 
     assert parameter_space == other_parameter_space
 
@@ -521,3 +519,222 @@ def test_copula():
         parameter_space.distribution.distribution.getCopula().getName()
         == "NormalCopula"
     )
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"minimum": [0], "mode": [1, 2], "maximum": [3, 4, 5]},
+        {"minimum": [0, 1], "mode": [2, 3, 4]},
+        {"size": 3, "minimum": [0, 1]},
+    ],
+)
+def test_random_vector_consistency(kwargs):
+    """Check the error when adding a random vector with inconsistent parameter sizes."""
+    text = "The lengths of the distribution parameter collections are not consistent."
+    parameter_space = ParameterSpace()
+    with pytest.raises(ValueError, match=re.escape(text)):
+        parameter_space.add_random_vector("x", "SPTriangularDistribution", **kwargs)
+
+
+@pytest.mark.parametrize(
+    "kwargs,samples",
+    [
+        ({"variable_value": [1, 2]}, array([[1, 2]] * 4)),
+        ({"variable_value": [1, 2], "size": 2}, array([[1, 2]] * 4)),
+        ({"variable_value": [1]}, array([[1]] * 4)),
+        ({"variable_value": [1], "size": 2}, array([[1, 1]] * 4)),
+    ],
+)
+def test_ot_random_vector(kwargs, samples):
+    """Check add_random_vector with different settings.
+
+    Use OpenTURNS.
+    """
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_vector("x", "OTDiracDistribution", **kwargs)
+    assert_array_equal(parameter_space.compute_samples(4), samples)
+
+
+@pytest.mark.parametrize(
+    "kwargs,upper_bound",
+    [
+        ({"maximum": [1, 2]}, [1, 2]),
+        ({"maximum": [1, 2], "size": 2}, [1, 2]),
+        ({"maximum": [1]}, [1]),
+        ({"maximum": [1], "size": 2}, [1, 1]),
+    ],
+)
+def test_sp_random_vector(kwargs, upper_bound):
+    """Check add_random_vector with different settings.
+
+    Use SciPy.
+    """
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_vector("x", "SPUniformDistribution", **kwargs)
+    assert_array_equal(
+        parameter_space.distribution.math_upper_bound, array(upper_bound)
+    )
+
+
+@pytest.mark.parametrize(
+    "kwargs,samples",
+    [
+        ({"interfaced_distribution_parameters": ([1, 2],)}, array([[1, 2]] * 4)),
+        (
+            {"interfaced_distribution_parameters": ([1, 2],), "size": 2},
+            array([[1, 2]] * 4),
+        ),
+        ({"interfaced_distribution_parameters": ([1],)}, array([[1]] * 4)),
+        (
+            {"interfaced_distribution_parameters": ([1],), "size": 2},
+            array([[1, 1]] * 4),
+        ),
+    ],
+)
+@pytest.mark.parametrize("use_parameters", [False, True])
+def test_ot_random_vector_interfaced_distribution(kwargs, samples, use_parameters):
+    """Check add_random_vector with interfaced_distribution and different settings.
+
+    Use OpenTURNS.
+    """
+    if use_parameters:
+        kwargs["parameters"] = kwargs.pop("interfaced_distribution_parameters")
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_vector(
+        "x", "OTDistribution", interfaced_distribution="Dirac", **kwargs
+    )
+    assert_array_equal(parameter_space.compute_samples(4), samples)
+
+
+@pytest.mark.parametrize(
+    "kwargs,upper_bound",
+    [
+        (
+            {"interfaced_distribution_parameters": {"scale": [1, 2]}},
+            [1, 2],
+        ),
+        (
+            {"interfaced_distribution_parameters": {"scale": [1, 2]}, "size": 2},
+            [1, 2],
+        ),
+        ({"interfaced_distribution_parameters": {"scale": [1]}}, [1]),
+        (
+            {"interfaced_distribution_parameters": {"scale": [1]}, "size": 2},
+            [1, 1],
+        ),
+    ],
+)
+@pytest.mark.parametrize("use_parameters", [False, True])
+def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound, use_parameters):
+    """Check add_random_vector with interfaced_distribution.
+
+    Use SciPy.
+    """
+    if use_parameters:
+        kwargs["parameters"] = kwargs.pop("interfaced_distribution_parameters")
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_vector(
+        "x", "SPDistribution", interfaced_distribution="uniform", **kwargs
+    )
+    assert_array_equal(
+        parameter_space.distribution.math_upper_bound, array(upper_bound)
+    )
+
+
+@pytest.mark.parametrize("method", ["add_random_vector", "add_random_variable"])
+def test_parameters_and_interfaced_distribution_parameters(method):
+    """Check that parameters and interfaced_distribution_parameters cannot be used at
+    the same time."""
+    parameter_space = ParameterSpace()
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "'interfaced_distribution_parameters' is the new name of 'parameters' "
+            "which will be removed in the next major release; "
+            "you cannot use both names at the same time; "
+            "please use 'interfaced_distribution_parameters'."
+        ),
+    ):
+        getattr(parameter_space, method)(
+            "x",
+            "SPDistribution",
+            interfaced_distribution="uniform",
+            interfaced_distribution_parameters={"scale": [1], "loc": [2]},
+            parameters={"scale": [1], "loc": [2]},
+        )
+
+
+@pytest.mark.parametrize(
+    "obj,args,expected",
+    [
+        ("variable", (2,), RandomVector),
+        ("variable", (), RandomVariable),
+        ("vector", (2,), RandomVector),
+        ("vector", (), RandomVariable),
+    ],
+)
+def test_random_vector_getitem(obj, args, expected):
+    """Check the type object returned by __getitem__ depending on the size."""
+    parameter_space = ParameterSpace()
+    add_random_obj = getattr(parameter_space, f"add_random_{obj}")
+    add_random_obj("x", "SPUniformDistribution", *args)
+    assert isinstance(parameter_space["x"], expected)
+
+
+@pytest.mark.parametrize(
+    "distribution,interfaced_distribution,interfaced_distribution_parameters",
+    [
+        ("OTDistribution", "Uniform", ()),
+        ("OTDistribution", "Uniform", (2, 4)),
+        ("SPDistribution", "uniform", {}),
+        ("SPDistribution", "uniform", {"scale": 2, "loc": 2}),
+    ],
+)
+@pytest.mark.parametrize("use_parameters", [False, True])
+def test_random_variable_interfaced_distribution(
+    distribution,
+    interfaced_distribution,
+    interfaced_distribution_parameters,
+    use_parameters,
+):
+    """Test adding a random variable from an interfaced distribution."""
+    parameter = ParameterSpace()
+    keyword = "parameters" if use_parameters else "interfaced_distribution_parameters"
+    kwargs = {keyword: interfaced_distribution_parameters}
+    parameter.add_random_variable(
+        "x", distribution, interfaced_distribution=interfaced_distribution, **kwargs
+    )
+    marginal = parameter.distributions["x"].marginals[0]
+    assert marginal.distribution_name == interfaced_distribution
+    assert marginal.parameters == interfaced_distribution_parameters
+
+
+def test_str():
+    """Check the string representation of a parameter space."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_variable("a")
+    parameter_space.add_random_variable("b", "OTUniformDistribution")
+    parameter_space.add_random_variable("c", "OTUniformDistribution", 2)
+    parameter_space.add_random_vector("d", "OTUniformDistribution", maximum=[2, 3, 4])
+    expected = """Parameter space:
++------+-------------+-------+-------------+-------+-------------------------------+
+| name | lower_bound | value | upper_bound | type  |      Initial distribution     |
++------+-------------+-------+-------------+-------+-------------------------------+
+| a    |     -inf    |  None |     inf     | float |                               |
+| b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
+| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
+| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
++------+-------------+-------+-------------+-------+-------------------------------+"""
+    assert repr(parameter_space) == expected
+
+
+def test_existing_variable():
+    """Check that one cannot add a random variable twice."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("a", "OTUniformDistribution")
+    with pytest.raises(ValueError, match=re.escape("The variable 'a' already exists.")):
+        parameter_space.add_random_variable("a", "OTUniformDistribution")

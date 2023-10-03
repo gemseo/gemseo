@@ -28,8 +28,9 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 def generate_parallel_doe(
-    main_mda_name: str,
+    main_mda_name: str = "MDAChain",
     n_samples: int = 4,
+    inner_mda_name: str = "MDAJacobi",
 ) -> float:
     """Execute a parallel DOE with a custom `main_mda_name`.
 
@@ -37,6 +38,7 @@ def generate_parallel_doe(
         main_mda_name: The main mda class to be used to execute the
             parallel DOE scenario.
         n_samples: The number of samples for the DOE.
+        inner_mda_name: The inner mda class.
 
     Returns:
         The optimum solution of the parallel DOE scenario.
@@ -57,6 +59,7 @@ def generate_parallel_doe(
         scenario_type="DOE",
         maximize_objective=True,
         main_mda_name=main_mda_name,
+        inner_mda_name=inner_mda_name,
     )
     scenario.execute(
         {

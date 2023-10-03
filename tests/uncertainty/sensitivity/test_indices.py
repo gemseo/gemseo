@@ -80,12 +80,14 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
     def __init__(self):
         self.dataset = IODataset()
         data = array([[1, 2, 3]])
-        variables = ["x1", "x2"]
-        sizes = {"x1": 1, "x2": 2}
-        self.dataset.add_group(self.dataset.INPUT_GROUP, data, variables, sizes)
-        variables = ["y1", "y2"]
-        sizes = {"y1": 1, "y2": 2}
-        self.dataset.add_group(self.dataset.OUTPUT_GROUP, data, variables, sizes)
+        self._input_names = ["x1", "x2"]
+        self._output_names = ["y1", "y2"]
+        self.dataset.add_group(
+            self.dataset.INPUT_GROUP, data, self._input_names, {"x1": 1, "x2": 2}
+        )
+        self.dataset.add_group(
+            self.dataset.OUTPUT_GROUP, data, ["y1", "y2"], {"y1": 1, "y2": 2}
+        )
 
     @property
     def indices(self):
@@ -196,15 +198,24 @@ def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
 
 
 BARPLOT_TEST_PARAMETERS = {
-    "without_option": ({"outputs": "y2"}, ["bar_plot"]),
+    "without_option": ({}, ["bar_plot"]),
     "standardize": ({"outputs": "y2", "standardize": True}, ["bar_plot_standardize"]),
     "inputs": ({"outputs": "y2", "inputs": ["x1"]}, ["bar_plot_inputs"]),
     "inputs_standardize": (
         {"standardize": True, "inputs": ["x1"], "outputs": "y2"},
         ["bar_plot_inputs_standardize"],
     ),
-    "outputs": ({"outputs": ["y1", "y2"]}, ["bar_plot_outputs"]),
+    "outputs": ({"outputs": [("y2", 0)]}, ["bar_plot_outputs"]),
     "n_digits": ({"outputs": "y2", "n_digits": 1}, ["bar_plot_n_digits"]),
+    "do_not_sort": ({"outputs": ["y1", "y2"], "sort": False}, ["bar_plot_do_not_sort"]),
+    "sorting_output_as_str": (
+        {"outputs": ["y1", "y2"], "sorting_output": "y2"},
+        ["bar_plot_sorting_output_as_str"],
+    ),
+    "sorting_output_as_tuple": (
+        {"outputs": ["y1", "y2"], "sorting_output": ("y2", 1)},
+        ["bar_plot_sorting_output_as_tuple"],
+    ),
 }
 
 
@@ -221,14 +232,14 @@ def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis, pyplot_clo
 
 
 RADAR_TEST_PARAMETERS = {
-    "without_option": ({"outputs": "y2"}, ["radar_plot"]),
+    "without_option": ({}, ["radar_plot"]),
     "standardize": ({"outputs": "y2", "standardize": True}, ["radar_plot_standardize"]),
     "inputs": ({"outputs": "y2", "inputs": ["x1"]}, ["radar_plot_inputs"]),
     "inputs_standardize": (
         {"standardize": True, "inputs": ["x1"], "outputs": "y2"},
         ["radar_plot_inputs_standardize"],
     ),
-    "outputs": ({"outputs": ["y1", "y2"]}, ["radar_plot_outputs"]),
+    "outputs": ({"outputs": [("y2", 0)]}, ["radar_plot_outputs"]),
 }
 
 

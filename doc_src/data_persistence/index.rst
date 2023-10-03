@@ -23,7 +23,7 @@ and allows access to it at any time.
 
 |g| offers different tools for data persistence:
 
-- the cache stores the evaluations of a :class:`.MDODiscipline`,
+- the cache stores the evaluations of an :class:`.MDODiscipline`,
 - the database stores the evaluations of the :class:`.MDOFunction` instances attached to an :class:`.OptimizationProblem`,
 - the dataset is a generic structure facilitating the post-processing of the data.
 

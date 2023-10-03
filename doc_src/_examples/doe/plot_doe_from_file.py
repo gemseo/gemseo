@@ -65,4 +65,4 @@ scenario.execute({"algo": "CustomDOE", "algo_options": {"doe_file": "doe.txt"}})
 # which should be the product of :math:`a` and :math:`b`.
 opt_problem = scenario.formulation.opt_problem
 dataset = opt_problem.to_dataset(name="custom_sampling", opt_naming=False)
-print(dataset)
+dataset

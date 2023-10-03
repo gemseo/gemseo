@@ -29,7 +29,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPTriangularDistribution(SPDistribution):
     """Create a triangular distribution.
 
-    Example:
+    Examples:
         >>> from gemseo.uncertainty.distributions.scipy.triangular import (
         ...     SPTriangularDistribution
         ... )
@@ -40,7 +40,7 @@ class SPTriangularDistribution(SPDistribution):
 
     def __init__(
         self,
-        variable: str,
+        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         mode: float = 0.5,
         maximum: float = 1.0,
@@ -48,11 +48,9 @@ class SPTriangularDistribution(SPDistribution):
     ) -> None:
         """
         Args:
-            variable: The name of the triangular random variable.
             minimum: The minimum of the triangular random variable.
             mode: The mode of the triangular random variable.
             maximum: The maximum of the triangular random variable.
-            dimension: The dimension of the triangular random variable.
         """  # noqa: D205,D212,D415
         parameters = {
             "loc": minimum,

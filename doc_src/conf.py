@@ -113,6 +113,7 @@ autodoc_kwargs_defaults = True
 autodoc_mock_imports = [
     "optimize",
     "matlab",
+    "matlabengine",
     "da",
     "pymoo",
     "petsc4py",
@@ -122,6 +123,7 @@ autodoc_mock_imports = [
     "pdfo",
     "jnius",
     "PySide6",
+    "pytest",
 ]
 
 ################################################################################
@@ -238,7 +240,7 @@ intersphinx_mapping = {
 html_context = dict()
 html_context["pretty_version"] = pretty_version
 
-__version_regex = re.compile(r"\d+\.\d+\.\d+")
+__VERSION_REGEX = re.compile(r"^(develop|\d+\.\d+\.\d+\.?\w*)$")
 
 
 def __filter_versions(
@@ -257,13 +259,9 @@ def __filter_versions(
     """
     _versions = []
     for rtd_version in rtd_versions:
-        if rtd_version["active"] and __version_regex.match(rtd_version["slug"]):
-            slug = rtd_version["slug"]
-            if "dev" in slug:
-                slug = "develop"
-
+        slug = rtd_version["slug"]
+        if rtd_version["active"] and __VERSION_REGEX.match(slug):
             _versions.append((slug, rtd_version["urls"]["documentation"]))
-
     return _versions
 
 
@@ -289,20 +287,34 @@ html_context["meta_og_root_url"] = "https://gemseo.readthedocs.io/en"
 html_context["plugins"] = {}
 if not os.environ.get("DOC_WITHOUT_PLUGINS"):
     html_context["plugins"] = {
-        "gemseo-calibration": "Capability to calibrate GEMSEO disciplines from data",
-        "gemseo-mlearning": "Miscellaneous machine learning capabilities",
-        "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
-        "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
-        "gemseo-scilab": "Interfacing Scilab functions",
-        "gemseo-umdo": "Capability for MDO under uncertainty",
-        "gemseo-fmu": "GEMSEO plugin for FMU dynamic models",
-        "gemseo-mma": "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
-        "gemseo-pdfo": "GEMSEO plugin for the PDFO library.",
-        "gemseo-pseven": "GEMSEO plugin for the pSeven library.",
-        "gemseo-matlab": "GEMSEO plugin for MATLAB.",
-        "gemseo-template-editor-gui": (
-            "A GUI to create input and output file templates for DiscFromExe."
+        "gemseo-benchmark": (
+            "A GEMSEO-based package to benchmark optimization algorithm.",
+            False,
         ),
+        "gemseo-calibration": (
+            "Capability to calibrate GEMSEO disciplines from data",
+            False,
+        ),
+        "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", False),
+        "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
+        "gemseo-mlearning": ("Miscellaneous machine learning capabilities", False),
+        "gemseo-mma": (
+            "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
+            False,
+        ),
+        "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", False),
+        "gemseo-petsc": (
+            "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
+            False,
+        ),
+        "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", False),
+        "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", False),
+        "gemseo-scilab": ("Interfacing Scilab functions", False),
+        "gemseo-template-editor-gui": (
+            "A GUI to create input and output file templates for DiscFromExe.",
+            False,
+        ),
+        "gemseo-umdo": ("Capability for MDO under uncertainty", True),
     }
 html_context["js_files"] = ["_static/jquery.js", "_static/xdsm/xdsmjs.js"]
 

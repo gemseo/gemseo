@@ -38,8 +38,8 @@ class KMeans(OptPostProcessor):
     The default number of clusters is 5 and can be modified in option.
 
     The k-means construction depends
-    on the :code:`MiniBatchKMeans` class
-    of the :code:`cluster` module of the
+    on the ``MiniBatchKMeans`` class
+    of the ``cluster`` module of the
     `scikit-learn library <https://scikit-learn.org/stable/modules/generated/
     sklearn.cluster.MiniBatchKMeans.html>`_ .
     """
@@ -74,7 +74,7 @@ class KMeans(OptPostProcessor):
         x_vars = array(x_history)
         x_vars_sc = StandardScaler().fit_transform(x_vars)
         # estimate bandwidth for mean shift
-        algorithm = cluster.MiniBatchKMeans(n_clusters=n_clusters)
+        algorithm = cluster.MiniBatchKMeans(n_clusters=n_clusters, n_init="auto")
         # predict cluster memberships
         algorithm.fit(x_vars_sc)
         y_pred = algorithm.labels_.astype(int)

@@ -1,0 +1,44 @@
+{
+  "name": "SciPy_MILP_options",
+  "properties": {
+    "disp": {
+      "type": "boolean"
+    },
+    "node_limit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "presolve": {
+      "type": "boolean"
+    },
+    "time_limit": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0.0
+        }
+      ]
+    },
+    "mip_rel_gap": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "eq_tolerance": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0.0
+        }
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
+}

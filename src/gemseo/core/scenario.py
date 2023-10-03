@@ -46,6 +46,7 @@ from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.datasets.dataset import Dataset
+from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
@@ -185,21 +186,8 @@ class Scenario(MDODiscipline):
         return MDOFormulationsFactory()
 
     def _check_disciplines(self) -> None:
-        """Check that two disciplines do not compute the same output.
-
-        Raises:
-            ValueError: If two disciplines compute the same output.
-        """
-        all_outs = set()
-        for disc in self.disciplines:
-            outs = set(disc.get_output_data_names())
-            common = outs & all_outs
-            if len(common) > 0:
-                raise ValueError(
-                    f"Two disciplines, among which {disc.name}, "
-                    f"compute the same output: {common}"
-                )
-            all_outs |= outs
+        """Check that two disciplines do not compute the same output."""
+        check_disciplines_consistency(self.disciplines, False, True)
 
     @property
     def design_space(self) -> DesignSpace:

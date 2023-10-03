@@ -113,7 +113,7 @@ During the process execution :
 #. A :term:`driver` is instantiated, it can be either an :term:`optimization algorithm` or a :term:`DOE` algorithm.
 #. The driver solves the optimization problem that was created by the MDO formulation at the building step.
 #. To this aim, the driver calls the objective function and constraints.
-#. These functions point to the generic processes (that aim at solving a coupling problem for a MDA)
+#. These functions point to the generic processes (that aim at solving a coupling problem for an MDA)
    or MDO subscenarios (for :term:`bi-level` scenarios), in order to find an optimum.
 #. These calls trigger the :term:`generic process` execution, which themselves execute the :term:`disciplines<discipline>`.
 

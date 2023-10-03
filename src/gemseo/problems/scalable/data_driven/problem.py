@@ -26,7 +26,7 @@ This module implements the concept of scalable problem by means of the
 
 Given
 
-- a MDO scenario based on a set of sampled disciplines
+- an MDO scenario based on a set of sampled disciplines
   with a particular problem dimension,
 - a new problem dimension (= number of inputs and outputs),
 
@@ -98,8 +98,8 @@ class ScalableProblem:
         :param list(str) eq_constraints: equality constraints. Default: None.
         :param list(str) eq_constraints: inequality constraints. Default: None.
         :param bool maximize_objective: maximize objective. Default: False.
-        :param dict sizes: sizes of input and output variables.
-            If None, use the original sizes. Default: None.
+        :param dict sizes: sizes of input and output variables. If ``None``, use the
+            original sizes. Default: None.
         :param parameters: optional parameters for the scalable model.
         """
         self.disciplines = [dataset.name for dataset in datasets]
@@ -219,8 +219,7 @@ class ScalableProblem:
     def _build_scalable_disciplines(self, sizes=None, **parameters) -> None:
         """Build scalable disciplines.
 
-        :param dict sizes: dictionary whose keys are variable names
-            and variables sizes.
+        :param dict sizes: dictionary whose keys are variable names and variables sizes.
         :param parameters: options.
         """
         copied_parameters = deepcopy(parameters)
@@ -388,7 +387,7 @@ class ScalableProblem:
         return design_space
 
     def __get_equilibrium(self, mda_name: str = "MDAJacobi", **options):
-        """Get the equilibrium point from a MDA method.
+        """Get the equilibrium point from an MDA method.
 
         :param str mda_name: MDA name (default: 'MDAJacobi')
         :return: equilibrium point
@@ -406,8 +405,8 @@ class ScalableProblem:
     ) -> None:
         """Add inequality constraints.
 
-        :param float active_probability: probability to set the inequality
-            constraints as active at initial step of the optimization
+        :param float active_probability: probability to set the inequality constraints
+            as active at initial step of the optimization
         :param float feasibility_level: offset of satisfaction for inequality
             constraints
         :param dict equilibrium: starting point at equilibrium

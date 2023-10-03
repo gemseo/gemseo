@@ -62,6 +62,12 @@ class BiLevel(MDOFormulation):
     SUBSCENARIOS_LEVEL = "sub-scenarios"
     LEVELS = (SYSTEM_LEVEL, SUBSCENARIOS_LEVEL)
 
+    __sub_scenarios_log_level: int | None
+    """The level of the root logger during the sub-scenarios executions.
+
+    If ``None``, do not change the level of the root logger.
+    """
+
     def __init__(
         self,
         disciplines: list[MDODiscipline],
@@ -76,6 +82,7 @@ class BiLevel(MDOFormulation):
         apply_cstr_to_system: bool = True,
         reset_x0_before_opt: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        sub_scenarios_log_level: int | None = None,
         **main_mda_options: Any,
     ) -> None:
         """
@@ -86,7 +93,7 @@ class BiLevel(MDOFormulation):
             inner_mda_name: The name of the class used for the inner-MDA of the main
                 MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
             parallel_scenarios: Whether to run the sub-scenarios in parallel.
-            multithread_scenarios: If True and parallel_scenarios=True,
+            multithread_scenarios: If ``True`` and parallel_scenarios=True,
                 the sub-scenarios are run in parallel using multi-threading;
                 if False and parallel_scenarios=True, multiprocessing is used.
             apply_cstr_tosub_scenarios: Whether the :meth:`.add_constraint` method
@@ -96,6 +103,9 @@ class BiLevel(MDOFormulation):
                 the constraint to the optimization problem of the system scenario.
             reset_x0_before_opt: Whether to restart the sub optimizations
                 from the initial guesses, otherwise warm start them.
+            sub_scenarios_log_level: The level of the root logger
+                during the sub-scenarios executions.
+                If ``None``, do not change the level of the root logger.
             **main_mda_options: The options of the main MDA, which may include those
                 of the inner-MDA.
         """  # noqa: D205, D212, D415
@@ -120,6 +130,7 @@ class BiLevel(MDOFormulation):
         self.couplstr = MDOCouplingStructure(self.get_sub_disciplines())
 
         # Create MDA
+        self.__sub_scenarios_log_level = sub_scenarios_log_level
         self._build_mdas(main_mda_name, inner_mda_name, **main_mda_options)
 
         # Create MDOChain : MDA1 -> sub scenarios -> MDA2
@@ -163,6 +174,9 @@ class BiLevel(MDOFormulation):
             The adapters for the sub-scenarios.
         """
         adapters = []
+        scenario_log_level = adapter_options.pop(
+            "scenario_log_level", self.__sub_scenarios_log_level
+        )
         for scenario in self.get_sub_scenarios():
             adapter_inputs = self._compute_adapter_inputs(scenario, use_non_shared_vars)
             adapter_outputs = self._compute_adapter_outputs(scenario, output_functions)
@@ -171,6 +185,7 @@ class BiLevel(MDOFormulation):
                 adapter_inputs,
                 adapter_outputs,
                 grammar_type=self._grammar_type,
+                scenario_log_level=scenario_log_level,
                 **adapter_options,
             )
             adapters.append(adapter)
@@ -500,9 +515,9 @@ class BiLevel(MDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If None, the name is generated from the output name.
+                If ``None``, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If None, the value is equal to 0.
+                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
         """
         super().add_constraint(
@@ -526,9 +541,9 @@ class BiLevel(MDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If None, the name is generated from the output name.
+                If ``None``, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If None, the value is equal to 0.
+                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
 
         Raises:

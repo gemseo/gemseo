@@ -61,13 +61,13 @@ class FunctionFromDiscipline(MDOFunction):
             mdo_formulation: The MDOFormulation object in which the function is
                 located.
             discipline: The discipline computing these outputs.
-                If None, the discipline is detected from the inner disciplines.
-            top_level_disc: If True, search the discipline among the top level ones.
+                If ``None``, the discipline is detected from the inner disciplines.
+            top_level_disc: If ``True``, search the discipline among the top level ones.
             x_names: The names of the design variables.
-                If None, use self.get_x_names_of_disc(discipline).
+                If ``None``, use self.get_x_names_of_disc(discipline).
             all_data_names: The reference data names for masking x.
-                If None, use self.get_optim_variable_names().
-            differentiable: If True, then inputs and outputs are added
+                If ``None``, use self.get_optim_variable_names().
+            differentiable: If ``True``, then inputs and outputs are added
                 to the list of variables to be differentiated.
         """  # noqa: D205, D212, D415
         self.__output_names = output_names
@@ -85,7 +85,9 @@ class FunctionFromDiscipline(MDOFunction):
             )
             self.__discipline = self.__gen.discipline
         else:
-            self.__gen = MDODisciplineAdapterGenerator(self.__discipline)
+            self.__gen = MDODisciplineAdapterGenerator(
+                self.__discipline, self.__mdo_formulation.design_space.variable_sizes
+            )
 
         if self.__x_names is None:
             self.__x_names = self.__mdo_formulation.get_x_names_of_disc(

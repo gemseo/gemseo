@@ -84,7 +84,7 @@ class ScipyODEAlgos(ODESolverLib):
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html
 
         Args:
-            first_step: Initial step size. If None, let the algorithm choose.
+            first_step: Initial step size. If ``None``, let the algorithm choose.
             max_step: Maximum allowed step size.
             rtol: Relative tolerance.
             atol: Absolute tolerance.
@@ -131,7 +131,7 @@ class ScipyODEAlgos(ODESolverLib):
             LOGGER.warning(solution.message)
 
         self.problem.result.state_vector = solution.y
-        self.problem.time_vector = solution.t
+        self.problem.result.time_vector = solution.t
         self.problem.result.n_func_evaluations = solution.nfev
         self.problem.result.n_jac_evaluations = solution.njev
 

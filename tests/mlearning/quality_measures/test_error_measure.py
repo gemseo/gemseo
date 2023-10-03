@@ -22,6 +22,9 @@ from __future__ import annotations
 
 import pytest
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.quality_measures.error_measure_factory import (
+    MLErrorMeasureFactory,
+)
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
@@ -36,7 +39,7 @@ from numpy import newaxis
 
 @pytest.mark.parametrize(
     "method",
-    ["evaluate_bootstrap", "evaluate_kfolds"],
+    ["compute_bootstrap_measure", "compute_cross_validation_measure"],
 )
 def test_resampling_based_measure(method):
     """Check that a resampling-based measure does not re-train the algo (but a copy)."""
@@ -74,7 +77,12 @@ def test_dataset() -> IODataset:
 @pytest.mark.parametrize("input_names", [None, ["x1"]])
 @pytest.mark.parametrize("output_names", [None, ["y2"]])
 @pytest.mark.parametrize(
-    "method", ["evaluate_bootstrap", "evaluate_kfolds", "evaluate_test"]
+    "method",
+    [
+        "compute_bootstrap_measure",
+        "compute_cross_validation_measure",
+        "compute_test_measure",
+    ],
 )
 @pytest.mark.parametrize(
     "measure_cls,expected", [(MSEMeasure, 0.0), (RMSEMeasure, 0.0), (R2Measure, 1.0)]
@@ -90,13 +98,13 @@ def test_subset_of_inputs_and_outputs(
 ):
     """Check that quality measures correctly handle algo with subsets of IO names."""
     kwargs = {}
-    if method == "evaluate_test":
+    if method == "compute_test_measure":
         kwargs["test_data"] = test_dataset
 
     algo = LinearRegressor(
         learning_dataset, input_names=input_names, output_names=output_names
     )
-    if not (measure_cls == R2Measure and method == "evaluate_bootstrap"):
+    if not (measure_cls == R2Measure and method == "compute_bootstrap_measure"):
         measure = measure_cls(algo)
         evaluate = getattr(measure, method)
         result = evaluate(**kwargs)
@@ -118,3 +126,9 @@ def test_subset_of_inputs_and_outputs(
             assert compare_dict_of_arrays(
                 result, {"y1#y2": array([expected])}, tolerance=1e-3
             )
+
+
+def test_factory():
+    """Test the MLErrorMeasureFactory."""
+    assert MLErrorMeasureFactory().is_available("R2Measure")
+    assert not MLErrorMeasureFactory().is_available("SilhouetteMeasure")

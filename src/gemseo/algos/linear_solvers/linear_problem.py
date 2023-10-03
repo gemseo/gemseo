@@ -32,10 +32,10 @@ from gemseo.algos.base_problem import BaseProblem
 
 
 class LinearProblem(BaseProblem):
-    """Representation of the linear equations' system ``A.x = b``.
+    r"""Representation of the linear equations' system :math:`Ax = b`.
 
-    It also contains the solution, and some properties of the system such as the symmetry
-    or positive definiteness.
+    It also contains the solution, and some properties of the system such as the
+    symmetry or positive definiteness.
     """
 
     rhs: ndarray
@@ -44,7 +44,7 @@ class LinearProblem(BaseProblem):
     lhs: ndarray | LinearOperator | spmatrix
     """The left-hand side of the equation.
 
-    If None, the problem can't be solved and the user has to set it after init.
+    If ``None``, the problem can't be solved and the user has to set it after init.
     """
 
     solution: ndarray
@@ -91,8 +91,8 @@ class LinearProblem(BaseProblem):
             is_symmetric: Whether to assume that the LHS is symmetric.
             is_positive_def: Whether to assume that the LHS is positive definite.
             is_converged: Whether the solution is converged to the specified tolerance.
-                If False, the algorithm stopped before convergence.
-                If None, no run was performed.
+                If ``False``, the algorithm stopped before convergence.
+                If ``None``, no run was performed.
         """  # noqa: D205, D212, D415
         self.rhs = rhs
         self.lhs = lhs
@@ -120,11 +120,11 @@ class LinearProblem(BaseProblem):
         """Compute the L2 norm of the residuals of the problem.
 
         Args:
-            relative_residuals: If True, return norm(lhs.solution-rhs)/norm(rhs),
+            relative_residuals: If ``True``, return norm(lhs.solution-rhs)/norm(rhs),
                 else return norm(lhs.solution-rhs).
             store: Whether to store the residuals value in the residuals_history attribute.
             current_x: Compute the residuals associated with current_x,
-                If None, compute then from the solution attribute.
+                If ``None``, compute then from the solution attribute.
 
         Returns:
             The residuals value.

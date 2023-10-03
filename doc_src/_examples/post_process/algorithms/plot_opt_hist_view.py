@@ -102,7 +102,7 @@ scenario = create_scenario(
 scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
-scenario.execute({"algo": "SLSQP", "max_iter": 10})
+scenario.execute({"algo": "SLSQP", "max_iter": 100})
 
 # %%
 # Post-process scenario
@@ -120,4 +120,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(
+    "OptHistoryView", save=False, show=True, variable_names=["x_2", "x_1"]
+)

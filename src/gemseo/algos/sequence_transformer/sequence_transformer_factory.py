@@ -12,9 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Entry point to setuptools."""
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Bocquet Sebastien, Scotto Di Perrotolo Alexandre.
+"""A factory to instantiate SequenceTransformer from their class names."""
 from __future__ import annotations
 
-import setuptools
+from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
+from gemseo.core.base_factory import BaseFactory
 
-setuptools.setup()
+
+class SequenceTransformerFactory(BaseFactory):
+    """Factory to instantiate SequenceTransformer."""
+
+    _CLASS = SequenceTransformer
+    _MODULE_NAMES = ("gemseo.algos.sequence_transformer",)

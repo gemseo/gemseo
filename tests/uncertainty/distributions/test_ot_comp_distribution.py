@@ -46,6 +46,23 @@ def composed_distribution(
     return OTComposedDistribution(distributions)
 
 
+@pytest.mark.parametrize("dimensions", [(1,), (1, 1), (2,)])
+def test_repr(composed_distribution, dimensions):
+    """Check the string representation of a composed distribution."""
+    normal = "Normal(mu=0.0, sigma=1.0)"
+    normal2 = "Normal[2](mu=0.0, sigma=1.0)"
+    distributions = [OTNormalDistribution(dimension=dimensions[0])]
+    if sum(dimensions) == 1:
+        expected = normal
+    elif len(dimensions) == 1:
+        expected = f"OTComposedDistribution({normal2}; IndependentCopula)"
+    else:
+        expected = f"OTComposedDistribution({normal}, {normal}; IndependentCopula)"
+        distributions.append(OTNormalDistribution(dimension=dimensions[1]))
+
+    assert repr(OTComposedDistribution(distributions)) == expected
+
+
 def test_constructor(composed_distribution):
     assert composed_distribution.dimension == 4
     assert composed_distribution.variable_name == "x1_x2"
@@ -58,6 +75,10 @@ def test_constructor(composed_distribution):
 def test_copula(distributions):
     """Check the use of an OpenTURNS copula."""
     distribution = OTComposedDistribution(distributions, copula=NormalCopula(4))
+    assert repr(distribution) == (
+        "OTComposedDistribution("
+        "Normal[2](mu=0.0, sigma=1.0), Normal[2](mu=0.0, sigma=1.0); NormalCopula)"
+    )
     assert distribution.distribution.getCopula().getName() == "NormalCopula"
 
 
@@ -67,7 +88,18 @@ def test_variable_name(distributions):
 
 
 def test_str(composed_distribution):
-    assert str(composed_distribution) == "Composed(None)"
+    """Check the string representation of the composed distribution."""
+    assert (
+        repr(composed_distribution)
+        == str(composed_distribution)
+        == (
+            "OTComposedDistribution("
+            "Normal[2](mu=0.0, sigma=1.0), "
+            "Normal[2](mu=0.0, sigma=1.0); "
+            "IndependentCopula"
+            ")"
+        )
+    )
 
 
 def test_get_sample(composed_distribution):

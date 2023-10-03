@@ -71,8 +71,7 @@ jac_same = same_scaler.compute_jacobian(data)
 jac_scaled = scaler.compute_jacobian(data)
 jac_min_max_scaled = min_max_scaler.compute_jacobian(data)
 jac_standard_scaled = standard_scaler.compute_jacobian(data)
-
-print(jac_standard_scaled)
+jac_standard_scaled
 
 # %%
 # Print properties
@@ -94,11 +93,7 @@ print("{:^18}{:^8}{:^8}{:^8}{:^8}".format("", "min", "max", "mean", "std"))
 for name, y in zip(
     names, [data, same_data, scaled_data, min_max_scaled_data, standard_scaled_data]
 ):
-    print(
-        "{} : {: .3f}, {: .3f}, {: .3f}, {: .3f}".format(
-            name, npmin(y), npmax(y), mean(y), std(y)
-        ),
-    )
+    print(f"{name} : {npmin(y): .3f}, {npmax(y): .3f}, {mean(y): .3f}, {std(y): .3f}")
 
 # %%
 # Plot data

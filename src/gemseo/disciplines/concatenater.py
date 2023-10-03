@@ -33,7 +33,7 @@ class Concatenater(MDODiscipline):
 
     These input variables can be scaled before concatenation.
 
-    Example:
+    Examples:
         >>> from gemseo import create_discipline
         >>> sellar_system_disc = create_discipline('SellarSystem')
         >>> constraint_names = ['c1', 'c2']
@@ -87,10 +87,10 @@ class Concatenater(MDODiscipline):
 
         Args:
             inputs: The linearization should be performed with respect
-                to inputs list. If None, linearization should
+                to inputs list. If ``None``, linearization should
                 be performed wrt all inputs (Default value = None)
             outputs: The linearization should be performed on outputs list.
-                If None, linearization should be performed
+                If ``None``, linearization should be performed
                 on all outputs (Default value = None)
         """
         self._init_jacobian(inputs, outputs)

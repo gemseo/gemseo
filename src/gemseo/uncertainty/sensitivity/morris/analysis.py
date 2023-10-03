@@ -70,6 +70,7 @@ This methodology relies on the :class:`.MorrisAnalysis` class.
 from __future__ import annotations
 
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 from typing import Collection
 from typing import Iterable
@@ -233,9 +234,9 @@ class MorrisAnalysis(SensitivityAnalysis):
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None,
-        output_names: Iterable[str] | None = None,
-        algo: str | None = None,
-        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        output_names: Iterable[str] = (),
+        algo: str = "",
+        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
         n_replicates: int = 5,
         step: float = 0.05,
         formulation: str = "MDF",
@@ -267,6 +268,12 @@ class MorrisAnalysis(SensitivityAnalysis):
             self.__n_replicates = n_replicates
         else:
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
+            if self.__n_replicates == 0:
+                raise ValueError(
+                    f"The number of samples ({n_samples}) must be "
+                    "at least equal to the dimension of the input space plus one "
+                    f"({parameter_space.dimension}+1={parameter_space.dimension+1})."
+                )
 
         disciplines = list(disciplines)
         if not output_names:
@@ -284,7 +291,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         super().__init__(
             [discipline],
             parameter_space,
-            n_samples=n_replicates,
+            n_samples=self.__n_replicates,
             algo=algo,
             algo_options=algo_options,
         )
@@ -304,7 +311,7 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def compute_indices(
         self,
-        outputs: str | Sequence[str] | None = None,
+        outputs: str | Sequence[str] = (),
         normalize: bool = False,
     ) -> dict[str, FirstOrderIndicesType]:
         """
@@ -381,14 +388,14 @@ class MorrisAnalysis(SensitivityAnalysis):
     def plot(
         self,
         output: VariableType,
-        inputs: Iterable[str] | None = None,
-        title: str | None = None,
+        inputs: Iterable[str] = (),
+        title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_format: str | None = None,
+        file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_format: str = "",
         offset: float = 1,
         lower_mu: float | None = None,
         lower_sigma: float | None = None,
@@ -402,14 +409,13 @@ class MorrisAnalysis(SensitivityAnalysis):
             offset: The offset to display the inputs names,
                 expressed as a percentage applied to both x-range and y-range.
             lower_mu: The lower bound for :math:`\mu`.
-                If None, use a default value.
+                If ``None``, use a default value.
             lower_sigma: The lower bound for :math:`\sigma`.
-                If None, use a default value.
+                If ``None``, use a default value.
         """  # noqa: D415 D417
         if not isinstance(output, tuple):
             output = (output, 0)
-        names = self.dataset.get_variable_names(self.dataset.INPUT_GROUP)
-        names = self._filter_names(names, inputs)
+        names = self._filter_names(self._input_names, inputs)
         x_val = [self.mu_star[output[0]][output[1]][name] for name in names]
         y_val = [self.sigma[output[0]][output[1]][name] for name in names]
         fig, ax = plt.subplots()

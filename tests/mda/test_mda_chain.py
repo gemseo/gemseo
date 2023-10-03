@@ -205,10 +205,10 @@ def test_simple_grammar_type(in_gtype):
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
 
-    assert type(mda.input_grammar) == SimpleGrammar
-    assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
+    assert isinstance(mda.input_grammar, SimpleGrammar)
+    assert isinstance(mda.mdo_chain.input_grammar, SimpleGrammar)
     for inner_mda in mda.inner_mdas:
-        assert type(inner_mda.input_grammar) == SimpleGrammar
+        assert isinstance(inner_mda.input_grammar, SimpleGrammar)
 
 
 def test_mix_sim_jsongrammar(sellar_disciplines):
@@ -216,12 +216,12 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
         sellar_disciplines,
         grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
-    assert type(mda_chain_s.input_grammar) == SimpleGrammar
+    assert isinstance(mda_chain_s.input_grammar, SimpleGrammar)
 
     out_1 = mda_chain_s.execute()
 
     mda_chain = MDAChain(sellar_disciplines)
-    assert type(mda_chain.input_grammar) == JSONGrammar
+    assert isinstance(mda_chain.input_grammar, JSONGrammar)
 
     out_2 = mda_chain.execute()
 
@@ -389,3 +389,22 @@ def test_mdachain_parallelmdochain_options(parallel_options):
         mdachain_parallel_options=mdo_parallel_chain_options,
     )
     assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
+
+
+def test_max_mda_iter(sellar_disciplines):
+    """Test that changing the max_mda_iter of a chain modifies all the inner mdas."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-13,
+        max_mda_iter=30,
+        chain_linearize=True,
+        warm_start=True,
+    )
+    assert mda_chain.max_mda_iter == 30
+    for mda in mda_chain.inner_mdas:
+        assert mda.max_mda_iter == 30
+
+    mda_chain.max_mda_iter = 10
+    assert mda_chain.max_mda_iter == 10
+    for mda in mda_chain.inner_mdas:
+        assert mda.max_mda_iter == 10

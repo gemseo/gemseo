@@ -46,7 +46,6 @@ from __future__ import annotations
 
 from operator import ge
 from operator import le
-from typing import Iterable
 from typing import Mapping
 
 from numpy import all as np_all
@@ -59,7 +58,6 @@ from numpy import std
 from numpy import var
 from scipy.stats import moment
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.statistics import Statistics
 
 
@@ -108,14 +106,6 @@ class EmpiricalStatistics(Statistics):
         >>> statistics = EmpiricalStatistics(dataset)
         >>> mean = statistics.compute_mean()
     """
-
-    def __init__(  # noqa: D107
-        self,
-        dataset: Dataset,
-        variable_names: Iterable[str] | None = None,
-        name: str | None = None,
-    ) -> None:
-        super().__init__(dataset, variable_names, name or dataset.name)
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         return {

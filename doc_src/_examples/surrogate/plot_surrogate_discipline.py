@@ -30,7 +30,7 @@ with two inputs and two outputs:
 - :math:`y_2=-1-2x_1-3x_2`
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
-For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegressionAlgo`
+For that, we use a :class:`.SurrogateDiscipline` relying on an :class:`.MLRegressionAlgo`
 """
 from __future__ import annotations
 
@@ -89,8 +89,7 @@ model = create_surrogate("GaussianProcessRegressor", data=dataset)
 # Predict output
 # --------------
 # Once it is built, we can use it for prediction, either with default inputs
+model.execute()
+# %%
 # or with user-defined ones.
-print(model.execute())
-input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-output_value = model.execute(input_value)
-print(output_value)
+model.execute({"x_1": array([1.0]), "x_2": array([2.0])})

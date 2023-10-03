@@ -42,6 +42,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.core.scenario import Scenario
+from gemseo.utils.logging_tools import LoggingContext
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,6 +71,12 @@ class MDOScenarioAdapter(MDODiscipline):
     UPPER_BND_SUFFIX = "_upper_bnd"
     MULTIPLIER_SUFFIX = "_multiplier"
 
+    __scenario_log_level: int | None
+    """The level of the root logger during the scenario execution.
+
+    If ``None``, do not change the level of the root logger.
+    """
+
     def __init__(
         self,
         scenario: Scenario,
@@ -84,20 +91,21 @@ class MDOScenarioAdapter(MDODiscipline):
         name: str | None = None,
         keep_opt_history: bool = False,
         opt_history_file_prefix: str = "",
+        scenario_log_level: int | None = None,
     ) -> None:
         """
         Args:
             scenario: The scenario to adapt.
             input_names: The inputs to overload at sub-scenario execution.
             output_names: The outputs to get from the sub-scenario execution.
-            reset_x0_before_opt: If True, reset the initial guess
+            reset_x0_before_opt: If ``True``, reset the initial guess
                 before running the sub optimization.
-            set_x0_before_opt: If True, set the initial guess of the sub-scenario.
+            set_x0_before_opt: If ``True``, set the initial guess of the sub-scenario.
                 This is useful for multi-start optimization.
-            set_bounds_before_opt: If True, set the bounds of the design space.
+            set_bounds_before_opt: If ``True``, set the bounds of the design space.
                 This is useful for trust regions.
             cache_type: The type of cache policy.
-            output_multipliers: If True,
+            output_multipliers: If ``True``,
                 the Lagrange multipliers of the scenario optimal solution are computed
                 and added to the outputs.
             name: The name of the scenario adapter.
@@ -111,6 +119,9 @@ class MDOScenarioAdapter(MDODiscipline):
                 i.e the number of stored databases.
                 If empty, the databases are not exported.
                 The databases can be exported only is ``keep_opt_history=True``.
+            scenario_log_level: The level of the root logger
+                during the scenario execution.
+                If ``None``, do not change the level of the root logger.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -163,6 +174,7 @@ class MDOScenarioAdapter(MDODiscipline):
             scenario.design_space.get_current_value(as_dict=True)
         )
         self.post_optimal_analysis = None
+        self.__scenario_log_level = scenario_log_level
 
     def _update_grammars(self) -> None:
         """Update the input and output grammars.
@@ -277,7 +289,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         Args:
             variable_name: The name of the variable.
-            is_upper: If True, return name of the upper bound-constraint multiplier.
+            is_upper: If ``True``, return name of the upper bound-constraint multiplier.
                 Otherwise, return the name of the lower bound-constraint multiplier.
 
         Returns:
@@ -304,7 +316,8 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def _run(self) -> None:
         self._pre_run()
-        self.scenario.execute()
+        with LoggingContext(level=self.__scenario_log_level):
+            self.scenario.execute()
         self._post_run()
 
     def _pre_run(self) -> None:
@@ -444,7 +457,7 @@ class MDOScenarioAdapter(MDODiscipline):
     def get_expected_dataflow(  # noqa: D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return self.scenario.get_expected_dataflow()
+        return []
 
     def _compute_jacobian(
         self,
@@ -461,9 +474,9 @@ class MDOScenarioAdapter(MDODiscipline):
 
         Args:
             inputs: The linearization should be performed with respect to these inputs.
-                If None, the linearization should be performed w.r.t. all inputs.
+                If ``None``, the linearization should be performed w.r.t. all inputs.
             outputs: The linearization should be performed on these outputs.
-                If None, the linearization should be performed on all outputs.
+                If ``None``, the linearization should be performed on all outputs.
 
         Raises:
             ValueError: Either
@@ -546,7 +559,7 @@ class MDOScenarioAdapter(MDODiscipline):
         Args:
             inputs: The names of the inputs w.r.t. which differentiate.
             func_names: The names of the functions to differentiate
-                If None, then all the optimizations functions are differentiated.
+                If ``None``, then all the optimizations functions are differentiated.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,

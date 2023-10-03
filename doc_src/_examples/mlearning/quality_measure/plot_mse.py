@@ -76,8 +76,7 @@ n_train = int(amount_train * n_samples)
 n_test = n_samples - n_train
 train = sort(choice(samples, n_train, False))
 test = sort([sample for sample in samples if sample not in train])
-print("Train:", train)
-print("Test:", test)
+train, test
 
 # %%
 # Build datasets
@@ -86,28 +85,34 @@ data = hstack([x[:, None], y[:, None]])
 variables = ["x", "y"]
 groups = {"x": IODataset.INPUT_GROUP, "y": IODataset.OUTPUT_GROUP}
 dataset = create_dataset(
-    "synthetic_data", data[train], variables, variable_names_to_group_names=groups
+    "synthetic_data",
+    data[train],
+    variables,
+    variable_names_to_group_names=groups,
+    class_name="IODataset",
 )
 dataset_test = create_dataset(
-    "synthetic_data", data[test], variables, variable_names_to_group_names=groups
+    "synthetic_data",
+    data[test],
+    variables,
+    variable_names_to_group_names=groups,
+    class_name="IODataset",
 )
 
 # %%
 # Build regression model
 # ----------------------
 model = create_regression_model("PolynomialRegressor", dataset, degree=max_pow)
-print(model)
+model
 
 # %%
 # Predictions errors
 # ------------------
 measure = MSEMeasure(model)
 
-mse_train = measure.evaluate_learn()
-mse_test = measure.evaluate_test(dataset_test)
-
-print("Training error:", mse_train)
-print("Test error:", mse_test)
+mse_train = measure.compute_learning_measure()
+mse_test = measure.compute_test_measure(dataset_test)
+mse_train, mse_test
 
 # %%
 # Compute predictions
@@ -145,7 +150,7 @@ for power in powers:
     model = create_regression_model("PolynomialRegressor", dataset, degree=power)
     measure = MSEMeasure(model)
 
-    test_mse = measure.evaluate_test(dataset_test)
+    test_mse = measure.compute_test_measure(dataset_test)
     test_errors += [test_mse]
 
     y_refined = model.predict({"x": x_refined[:, None]})["y"].flatten()
@@ -159,5 +164,4 @@ plt.show()
 
 # %%
 # Grid search
-print(test_errors)
-print("Power for minimal test error:", argmin(test_errors))
+test_errors, f"Power for minimal test error: {argmin(test_errors)}"

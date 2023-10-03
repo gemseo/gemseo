@@ -25,8 +25,14 @@ from unittest.mock import Mock
 import pytest
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
+from gemseo.mlearning.quality_measures.cluster_measure import (
+    MLPredictiveClusteringMeasure,
+)
+from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
+from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.utils.testing.helpers import concretize_classes
 from numpy import array
 from numpy import array_equal
@@ -129,3 +135,51 @@ def test_cross_validation_seed(measure, seed):
         assert array_equal(samples_1, samples_2)
     else:
         assert not array_equal(samples_1, samples_2)
+
+
+@pytest.mark.parametrize(
+    "cls,old,new",
+    [
+        (MLQualityMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
+        (MLErrorMeasure, "evaluate_learn", "compute_learning_measure"),
+        (MLErrorMeasure, "evaluate_test", "compute_test_measure"),
+        (MLErrorMeasure, "evaluate_kfolds", "compute_cross_validation_measure"),
+        (MLErrorMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
+        (MLErrorMeasure, "evaluate_bootstrap", "compute_bootstrap_measure"),
+        (MLClusteringMeasure, "evaluate_learn", "compute_learning_measure"),
+        (MLPredictiveClusteringMeasure, "evaluate_test", "compute_test_measure"),
+        (
+            MLPredictiveClusteringMeasure,
+            "evaluate_kfolds",
+            "compute_cross_validation_measure",
+        ),
+        (
+            MLPredictiveClusteringMeasure,
+            "evaluate_loo",
+            "compute_leave_one_out_measure",
+        ),
+        (
+            MLPredictiveClusteringMeasure,
+            "evaluate_bootstrap",
+            "compute_bootstrap_measure",
+        ),
+        (
+            MLPredictiveClusteringMeasure,
+            "evaluate_bootstrap",
+            "compute_bootstrap_measure",
+        ),
+        (
+            R2Measure,
+            "evaluate_kfolds",
+            "compute_cross_validation_measure",
+        ),
+        (
+            R2Measure,
+            "evaluate_bootstrap",
+            "compute_bootstrap_measure",
+        ),
+    ],
+)
+def test_deprecated_evaluate_xxx(cls, old, new):
+    """Check that the aliases of the deprecated evaluation methods are correct."""
+    assert getattr(cls, old) == getattr(cls, new)

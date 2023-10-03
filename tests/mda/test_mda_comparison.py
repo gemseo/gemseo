@@ -22,9 +22,7 @@ from __future__ import annotations
 import os
 
 import numpy as np
-from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.newton import MDANewtonRaphson
-from gemseo.mda.sequential_mda import MDAGSNewton
+from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
@@ -49,13 +47,13 @@ def test_compare_mda_jacobi_gs():
 
 def test_mda_jacobi_newton_hybrid(sellar_disciplines):
     """Compare Newton and Gauss-Seidel MDA."""
-    mda_j = MDAJacobi(sellar_disciplines)
+    mda_j = MDAChain(sellar_disciplines, inner_mda_name="MDAJacobi")
     out1 = mda_j.execute()
 
-    mda_newton = MDANewtonRaphson(sellar_disciplines)
+    mda_newton = MDAChain(sellar_disciplines, inner_mda_name="MDANewtonRaphson")
     out2 = mda_newton.execute()
 
-    mda_hybrid = MDAGSNewton(sellar_disciplines)
+    mda_hybrid = MDAChain(sellar_disciplines, inner_mda_name="MDAGSNewton")
     out3 = mda_hybrid.execute()
 
     for key, value1 in out1.items():

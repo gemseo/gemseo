@@ -45,7 +45,7 @@ LOGGER = configure_logger()
 # Define the objective function
 # -----------------------------
 # We define the objective function :math:`f(x)=\sum_{i=1}^dx_i`
-# using a :class:`.MDOFunction`.
+# using an :class:`.MDOFunction`.
 objective = MDOFunction(np_sum, name="f", expr="sum(x)")
 
 # %%
@@ -83,5 +83,4 @@ execute_post(
 
 # %%
 # Note that you can get all the optimization algorithms names:
-algo_list = DOEFactory().algorithms
-print("Available algorithms ", algo_list)
+DOEFactory().algorithms

@@ -54,18 +54,18 @@ fitter = OTDistributionFitter(variable_name, data)
 # ------------------
 # From this distribution fitter,
 # we can easily fit any distribution available in the OpenTURNS library:
-print(fitter.available_distributions)
+fitter.available_distributions
 
 # %%
 # For example,
 # we can fit a normal distribution:
 norm_dist = fitter.fit("Normal")
-print(norm_dist)
+norm_dist
 
 # %%
 # or an exponential one:
 exp_dist = fitter.fit("Exponential")
-print(exp_dist)
+exp_dist
 
 # %%
 # The returned object is an :class:`.OTDistribution`
@@ -80,9 +80,11 @@ norm_dist.plot()
 # by means of a fitting criterion.
 # Some fitting criteria are based on significance tests
 # made of a test statistics, a p-value and a significance level.
-# We can access the names of the available fitting criteria:
-print(fitter.available_criteria)
-print(fitter.available_significance_tests)
+# We can access the names of all the available fitting criteria:
+fitter.available_criteria
+# %%
+# or only the significance tests
+fitter.available_significance_tests
 
 # %%
 # For example,
@@ -90,10 +92,10 @@ print(fitter.available_significance_tests)
 # by considering the `Bayesian information criterion (BIC)
 # <https://en.wikipedia.org/wiki/Bayesian_information_criterion>`_:
 quality_measure = fitter.compute_measure(norm_dist, "BIC")
-print("Normal: ", quality_measure)
+"Normal", quality_measure
 
 quality_measure = fitter.compute_measure(exp_dist, "BIC")
-print("Exponential: ", quality_measure)
+"Exponential", quality_measure
 
 # %%
 # Here,
@@ -102,13 +104,14 @@ print("Exponential: ", quality_measure)
 # We can also the Kolmogorov fitting criterion
 # which is based on the Kolmogorov significance test:
 acceptable, details = fitter.compute_measure(norm_dist, "Kolmogorov")
-print("Normal: ", acceptable, details)
+"Normal", acceptable, details
 acceptable, details = fitter.compute_measure(exp_dist, "Kolmogorov")
-print("Exponential: ", acceptable, details)
+"Exponential", acceptable, details
 
 # %%
 # In this case,
-# the :meth:`.OTDistributionFitter.measure` method returns a tuple with two values:
+# the :meth:`.OTDistributionFitter.compute_measure` method
+# returns a tuple with two values:
 #
 # 1. a boolean
 #    indicating if the measured distribution is acceptable to model the data,
@@ -118,7 +121,7 @@ print("Exponential: ", acceptable, details)
 # .. note::
 #     We can also change the significance level for significance tests
 #     whose default value is 0.05.
-#     For that, use the :code:`level` argument.
+#     For that, use the ``level`` argument.
 
 # %%
 # Select an optimal distribution
@@ -140,4 +143,4 @@ print("Exponential: ", acceptable, details)
 # the :meth:`.OTDistributionFitter.select` method uses a significance level equal to 0.5
 # and 'best' selection criterion.
 selected_distribution = fitter.select(["Exponential", "Normal"], "Kolmogorov")
-print(selected_distribution)
+selected_distribution

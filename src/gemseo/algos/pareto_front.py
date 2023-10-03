@@ -208,8 +208,8 @@ def generate_pareto_plots(
         fig_size: The matplotlib figure sizes in x and y directions, in inches.
         non_feasible_samples: The array of bool of size n_samples,
             True if the current sample is non-feasible.
-            If None, all the samples are considered feasible.
-        show_non_feasible: If True, show the non-feasible points in
+            If ``None``, all the samples are considered feasible.
+        show_non_feasible: If ``True``, show the non-feasible points in
             the Pareto front plot.
 
     Raises:

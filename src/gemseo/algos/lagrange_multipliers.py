@@ -52,6 +52,7 @@ class LagrangeMultipliers:
     below.
 
     .. math::
+
         \begin{aligned}
             & \text{Minimize}    & & f(x) \\
             & \text{relative to} & & x \\
@@ -67,6 +68,7 @@ class LagrangeMultipliers:
     :math:`\lambda_h`, :math:`\lambda_\ell` and :math:`\lambda_u` satisfying
 
     .. math::
+
         \left\{\begin{aligned}
             &\frac{\partial f}{\partial x}(x^\ast)
             +\lambda_g^\top\frac{\partial g}{\partial x}(x^\ast)

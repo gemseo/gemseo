@@ -80,8 +80,8 @@ To be used, if your :class:`.MDODiscipline` of interest does not exist, you must
 .. note::
 
     The JSON grammars are automatically detected when they are in the same
-    folder as your subclass module and named :code:`"CLASSNAME_input.json"` and :code:`"CLASSNAME_output.json"`
-    and the :code:`auto_detect_grammar_files` option is :code:`True`.
+    folder as your subclass module and named ``"CLASSNAME_input.json"`` and ``"CLASSNAME_output.json"``
+    and the ``auto_detect_grammar_files`` option is ``True``.
 
 What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,7 +138,7 @@ using a list of discipline names rather than a single discipline name, e.g.:
 
     disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
-In this case, :code:`disciplines` is a list of :class:`.MDODiscipline`,
+In this case, ``disciplines`` is a list of :class:`.MDODiscipline`,
 where the first one is an instance of :class:`.Sellar1`,
 the second one is an instance of :class:`.Sellar2` and
 the third one is an instance of :class:`.SellarSystem`.
@@ -146,7 +146,7 @@ the third one is an instance of :class:`.SellarSystem`.
 .. note::
 
    If the constructor of a discipline has specific arguments,
-   these arguments can be passed into a :code:`dict` to the :func:`.create_discipline` method,
+   these arguments can be passed into a ``dict`` to the :func:`.create_discipline` method,
    e.g.:
 
    .. code::
@@ -155,7 +155,7 @@ the third one is an instance of :class:`.SellarSystem`.
 
       discipline = create_discipline('MyDisciplineWithArguments', **kwargs)
 
-   where :code:`kwargs = {'arg1_key': arg1_val, 'arg1_key': arg1_val, ...}`.
+   where ``kwargs = {'arg1_key': arg1_val, 'arg1_key': arg1_val, ...}``.
 
 .. note::
 
@@ -177,13 +177,13 @@ either using the default cache strategy, e.g.:
 
    sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.SIMPLE)
 
-or the HDF5 cache strategy with the discipline name as node name (here :code:`SellarSystem`), e.g.:
+or the HDF5 cache strategy with the discipline name as node name (here ``SellarSystem``), e.g.:
 
 .. code::
 
    sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5')
 
-or the HDF5 cache strategy with a user-defined name as node name (here :code:`node`), e.g.:
+or the HDF5 cache strategy with a user-defined name as node name (here ``node``), e.g.:
 
 .. code::
 
@@ -195,10 +195,10 @@ or the HDF5 cache strategy with a user-defined name as node name (here :code:`no
 
 .. note::
 
-   The :meth:`.MDODiscipline.set_cache_policy` method takes an additional argument, named :code:`cache_tolerance`,
+   The :meth:`.MDODiscipline.set_cache_policy` method takes an additional argument, named ``cache_tolerance``,
    which represents the tolerance for the approximate cache maximal relative norm difference to consider that two input arrays are equal.
 
-   By default, :code:`cache_tolerance` is equal to zero. We can get its value by means of the :attr:`.MDODiscipline.cache_tol` getter
+   By default, ``cache_tolerance`` is equal to zero. We can get its value by means of the :attr:`.MDODiscipline.cache_tol` getter
    and change its value by means of the :attr:`.MDODiscipline.cache_tol` setter.
 
 How to execute an :class:`.MDODiscipline`?
@@ -218,7 +218,7 @@ which results in:
    {'obj': array([ 1.36787944+0.j]), 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
 
 
-or with user-defined values, defined into a :code:`dict` indexed by input data names with NumPy array values, e.g.:
+or with user-defined values, defined into a ``dict`` indexed by input data names with NumPy array values, e.g.:
 
 .. code::
 
@@ -254,7 +254,7 @@ which results in:
 5.b. How to check the validity of input or output data?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can check the validity of a :code:`dict` of input data (resp. output data) by means of the :meth:`.MDODiscipline.check_input_data`
+We can check the validity of a ``dict`` of input data (resp. output data) by means of the :meth:`.MDODiscipline.check_input_data`
 (resp. :meth:`.MDODiscipline.check_output_data`) methods, e.g.:
 
 .. code::
@@ -309,12 +309,12 @@ which results in:
     [array([ 1.+0.j]), array([ 1.+0.j,  0.+0.j]), array([ 1.+0.j]), array([ 0.+0.j])]
     [array([ 2.16+0.j]), array([-23.+0.j]), array([ 1.36787944+0.j])]
 
-The :code:`list` returned by :code:`sellar_system.get_all_inputs()` (resp. :code:`sellar_system.get_all_outputs()`) is sorted according to the order in :code:`sellar_system.get_input_data_names()` (resp. :code:`sellar_system.get_output_data_names()`).
+The ``list`` returned by ``sellar_system.get_all_inputs()`` (resp. ``sellar_system.get_all_outputs()``) is sorted according to the order in ``sellar_system.get_input_data_names()`` (resp. ``sellar_system.get_output_data_names()``).
 
 All input or output data values as a large array
 ------------------------------------------------
 
-This :code:`list` of NumPy arrays can be converted into a large NumPy array by means of :meth:`.MDODiscipline.get_inputs_asarray` method (resp. :meth:`.MDODiscipline.get_outputs_asarray`), e.g.
+This ``list`` of NumPy arrays can be converted into a large NumPy array by means of :meth:`.MDODiscipline.get_inputs_asarray` method (resp. :meth:`.MDODiscipline.get_outputs_asarray`), e.g.
 
 .. code::
 
@@ -332,7 +332,7 @@ which results in:
 All input or output data values as a dictionary
 -----------------------------------------------
 
-The same result can be obtained with a :code:`dict` format by means of the :meth:`.MDODiscipline.get_input_data` and :meth:`.MDODiscipline.get_output_data` methods:
+The same result can be obtained with a ``dict`` format by means of the :meth:`.MDODiscipline.get_input_data` and :meth:`.MDODiscipline.get_output_data` methods:
 
 .. code::
 
@@ -350,12 +350,12 @@ which results in:
 Some input or output data values as a list
 ------------------------------------------
 
-We can also get the data value for a given variable name or a given :code:`list` of variable names by means of the  :meth:`.MDODiscipline.get_inputs_by_name` or :meth:`.MDODiscipline.get_outputs_by_name` method.
+We can also get the data value for a given variable name or a given ``list`` of variable names by means of the  :meth:`.MDODiscipline.get_inputs_by_name` or :meth:`.MDODiscipline.get_outputs_by_name` method.
 
 How to get any local data value?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once the discipline has been executed, we can get the value of any variable or :code:`list` of variables (inputs, outputs and others)
+Once the discipline has been executed, we can get the value of any variable or ``list`` of variables (inputs, outputs and others)
 stored in the :attr:`!MDODiscipline.local_data` attribute
 by means of the :meth:`.MDODiscipline.get_local_data_by_name` method, e.g.
 

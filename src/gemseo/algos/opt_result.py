@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import fields
 from typing import Mapping
 from typing import Union
@@ -37,11 +38,20 @@ class OptimizationResult:
     x_0: ndarray | None = None
     """The initial values of the design variables."""
 
+    x_0_as_dict: dict[str, ndarray] = field(default_factory=dict)
+    """The design variable names bound to the initial design values."""
+
     x_opt: ndarray | None = None
     """The optimal values of the design variables, called the *optimum*."""
 
+    x_opt_as_dict: dict[str, ndarray] = field(default_factory=dict)
+    """The design variable names bound to the optimal design values."""
+
     f_opt: ndarray | None = None
     """The value of the objective function at the optimum."""
+
+    objective_name: str = ""
+    """The name of the objective function."""
 
     status: int | None = None
     """The status of the optimization."""
@@ -81,14 +91,22 @@ class OptimizationResult:
     __CONSTRAINTS_GRAD = "constraints_grad"
     __NOT_DICT_KEYS = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
 
+    @property
+    def __string_representation(self) -> MultiLineString:
+        """The string representation of the optimization result."""
+        mls = MultiLineString()
+        mls.add("Optimization result:")
+        mls.indent()
+        mls.add("Design variables: {}", self.x_opt)
+        mls.add("Objective function: {}", self.f_opt)
+        mls.add("Feasible solution: {}", self.is_feasible)
+        return mls
+
     def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Optimization result:")
-        msg.indent()
-        msg.add("Design variables: {}", self.x_opt)
-        msg.add("Objective function: {}", self.f_opt)
-        msg.add("Feasible solution: {}", self.is_feasible)
-        return str(msg)
+        return str(self.__string_representation)
+
+    def _repr_html_(self) -> str:
+        return self.__string_representation._repr_html_()
 
     @property
     def _strings(self) -> list[MultiLineString]:

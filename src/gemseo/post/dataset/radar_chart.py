@@ -29,6 +29,7 @@ from numpy import rad2deg
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.compatibility.matplotlib import get_color_map
 
 
 class RadarChart(DatasetPlot):
@@ -92,8 +93,8 @@ class RadarChart(DatasetPlot):
 
         series_names = self.dataset.index
         if not self.color:
-            colormap = plt.cm.get_cmap(self.colormap)
-            self.color = [colormap(color) for color in linspace(0, 1, len(all_data))]
+            color_map = get_color_map(self.colormap)
+            self.color = [color_map(color) for color in linspace(0, 1, len(all_data))]
 
         if not self.linestyle:
             self.linestyle = [linestyle] * len(series_names)

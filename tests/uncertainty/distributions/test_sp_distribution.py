@@ -35,7 +35,7 @@ from numpy.random import seed
 
 def test_composed_distribution():
     """Check the composed distribution associated with a SPDistribution."""
-    assert SPDistribution._COMPOSED_DISTRIBUTION == SPComposedDistribution
+    assert SPDistribution.COMPOSED_DISTRIBUTION_CLASS == SPComposedDistribution
 
 
 def test_constructor():

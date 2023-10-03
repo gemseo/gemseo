@@ -17,8 +17,8 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Solve a 2D L-shape topology optimization problem
-================================================
+Solve a 2D MBB topology optimization problem
+============================================
 """
 from __future__ import annotations
 
@@ -32,20 +32,22 @@ configure_logger()
 # %%
 # Setup the topology optimization problem
 # ---------------------------------------
-# Define the target volume fractio:
+
+# %%
+# Define the target volume fraction:
 volume_fraction = 0.3
 
 # %%
 # Define the problem type:
-problem_name = "L-Shape"
+problem_name = "MBB"
 
 # %%
-# Define the number of elements in the x- and y- directions:
-n_x = 25
+# Define the number of elements in x- and y- directions:
+n_x = 50
 n_y = 25
 
 # %%
-# Define the full material Young's modulus and Poisson's ratio:
+# Define the full material Young's modulus and the Poisson's ratio:
 e0 = 1
 nu = 0.3
 
@@ -58,7 +60,6 @@ penalty = 3
 min_member_size = 1.5
 # %%
 # Instantiate the :class:`.DesignSpace` and the disciplines:
-
 
 design_space, disciplines = initialize_design_space_and_discipline_to(
     problem=problem_name,
@@ -73,13 +74,14 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # %%
 # Solve the topology optimization problem
 # ---------------------------------------
-# Generate a :class:`.MDOScenario`:
+# Generate an :class:`.MDOScenario`
 scenario = create_scenario(
     disciplines,
     formulation="DisciplinaryOpt",
     objective_name="compliance",
     design_space=design_space,
 )
+
 # %%
 # Add the volume fraction constraint to the scenario:
 scenario.add_constraint("volume fraction", "ineq", value=volume_fraction)
@@ -90,7 +92,7 @@ scenario.xdsmize()
 
 # %%
 # Execute the scenario
-scenario.execute({"max_iter": 200, "algo": "NLOPT_MMA"})
+scenario.execute(input_data={"max_iter": 200, "algo": "NLOPT_MMA"})
 
 # %%
 # Results

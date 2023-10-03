@@ -113,8 +113,8 @@ measure_randfor = MSEMeasure(randfor)
 # Evaluate on training set directly (keyword: 'learn')
 # ****************************************************
 print("Learn:")
-print("Error MoE:", measure_moe.evaluate_learn())
-print("Error Random Forest:", measure_randfor.evaluate_learn())
+print("Error MoE:", measure_moe.compute_learning_measure())
+print("Error Random Forest:", measure_randfor.compute_learning_measure())
 
 plt.figure()
 plt.plot(x_refined, moe.predict(x_refined[:, None]).flatten(), label="MoE")
@@ -151,12 +151,12 @@ plt.show()
 # cross validation algorithm. We also plot the predictions from the last
 # iteration of the algorithm.
 print("K-folds:")
-print("Error MoE:", measure_moe.evaluate_kfolds())
-print("Error Random Forest:", measure_randfor.evaluate_kfolds())
+print("Error MoE:", measure_moe.compute_cross_validation_measure())
+print("Error Random Forest:", measure_randfor.compute_cross_validation_measure())
 
 print("Loo:")
-print("Error MoE:", measure_moe.evaluate_loo())
-print("Error Random Forest:", measure_randfor.evaluate_loo())
+print("Error MoE:", measure_moe.compute_leave_one_out_measure())
+print("Error Random Forest:", measure_randfor.compute_leave_one_out_measure())
 
 plt.plot(x_refined, moe.predict(x_refined[:, None]).flatten(), label="MoE")
 plt.plot(
@@ -186,7 +186,7 @@ X_1_refined, X_2_refined = meshgrid(x_refined, x_refined)
 x_1_refined, x_2_refined = X_1_refined.flatten(), X_2_refined.flatten()
 x_refined = hstack((x_1_refined[:, None], x_2_refined[:, None]))
 
-print(dataset)
+dataset
 
 # %%
 # Create regression algorithms
@@ -216,12 +216,12 @@ measure_moe = MSEMeasure(moe)
 measure_randfor = MSEMeasure(randfor)
 
 print("Learn:")
-print("Error MoE:", measure_moe.evaluate_learn())
-print("Error Random Forest:", measure_randfor.evaluate_learn())
+print("Error MoE:", measure_moe.compute_learning_measure())
+print("Error Random Forest:", measure_randfor.compute_learning_measure())
 
 print("K-folds:")
-print("Error MoE:", measure_moe.evaluate_kfolds())
-print("Error Random Forest:", measure_randfor.evaluate_kfolds())
+print("Error MoE:", measure_moe.compute_cross_validation_measure())
+print("Error Random Forest:", measure_randfor.compute_cross_validation_measure())
 
 # %%
 # Plot data

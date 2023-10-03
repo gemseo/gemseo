@@ -166,6 +166,9 @@ class JSONGrammar(BaseGrammar):
     ) -> None:
         """Update the elements from another grammar or names or a schema.
 
+        Args:
+            merge: Whether to merge or update the grammar.
+
         Raises:
             TypeError: If the grammar is not a :class:`JSONGrammar`.
         """  # noqa:D417

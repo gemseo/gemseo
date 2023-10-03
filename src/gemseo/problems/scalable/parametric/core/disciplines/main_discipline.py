@@ -40,9 +40,8 @@ from gemseo.problems.scalable.parametric.core.variable_names import (
 class MainDiscipline(BaseDiscipline):
     r"""The main discipline of the scalable problem.
 
-    It computes the objective :math:`x_0^Tx_0 + \sum_{i=1}^N y_i^Ty_i`.
-    and the left-hand side of the constraints
-    :math:`t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0`.
+    It computes the objective :math:`x_0^Tx_0 + \sum_{i=1}^N y_i^Ty_i`. and the left-
+    hand side of the constraints :math:`t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0`.
     """
 
     __n_scalable_disciplines: int

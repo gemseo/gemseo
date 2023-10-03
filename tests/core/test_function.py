@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Copyright 2023 Capgemini Engineering
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
@@ -103,7 +104,8 @@ def test_init_from_dict_repr():
         ValueError,
         match=re.escape(
             "Cannot initialize MDOFunction attribute: foo, "
-            "allowed ones are: dim, expr, f_type, input_names, name, special_repr."
+            "allowed ones are: dim, expr, f_type, input_names, name, output_names, "
+            "special_repr."
         ),
     ):
         MDOFunction.init_from_dict_repr(foo="sin")
@@ -228,8 +230,16 @@ def test_repr_4():
         input_names=["x"],
     )
     i = MDOFunction(math.sin, name="I", input_names=["y"], expr="sin(y)")
-    assert str(g + i) == "G+I(x, y) = sin(x)+sin(y)"
-    assert str(g - i) == "G-I(x, y) = sin(x)-sin(y)"
+    assert str(g + i) == "[G+I](x, y) = sin(x)+sin(y)"
+    assert str(g - i) == "[G-I](x, y) = sin(x)-sin(y)"
+
+
+def test_repr_5(get_full_sin_func):
+    """Test the representation of many sign changes on an MDOFunction."""
+    sin = get_full_sin_func
+    minus_sin = -sin
+    plus_sin = -minus_sin
+    assert str(plus_sin) == "--F(x) = -(-(sin(x)))"
 
 
 def test_wrong_jac_shape():
@@ -402,17 +412,17 @@ def function():
 @pytest.mark.parametrize(
     "neg,neg_after,value,expected_n,expected_e",
     [
-        (False, True, 1.0, "n + 1.0", "e + 1.0"),
-        (True, True, 1.0, "-n - 1.0", "-e - 1.0"),
-        (False, True, -1.0, "n - 1.0", "e - 1.0"),
-        (True, True, -1.0, "-n + 1.0", "-e + 1.0"),
-        (False, False, 1.0, "n + 1.0", "e + 1.0"),
-        (True, False, 1.0, "-n + 1.0", "-e + 1.0"),
-        (False, False, -1.0, "n - 1.0", "e - 1.0"),
-        (True, False, -1.0, "-n - 1.0", "-e - 1.0"),
-        (False, False, array([1.0, 1.0]), "n + offset", "e + offset"),
-        (True, False, array([1.0, 1.0]), "-n + offset", "-e + offset"),
-        (True, True, array([1.0, 1.0]), "-n - offset", "-e - offset"),
+        (False, True, 1.0, "[n+1.0]", "e+1.0"),
+        (True, True, 1.0, "-[n+1.0]", "-(e+1.0)"),
+        (False, True, -1.0, "[n-1.0]", "e-1.0"),
+        (True, True, -1.0, "-[n-1.0]", "-(e-1.0)"),
+        (False, False, 1.0, "[n+1.0]", "e+1.0"),
+        (True, False, 1.0, "[-n+1.0]", "-(e)+1.0"),
+        (False, False, -1.0, "[n-1.0]", "e-1.0"),
+        (True, False, -1.0, "[-n-1.0]", "-(e)-1.0"),
+        (False, False, array([1.0, 1.0]), "[n+offset]", "e+offset"),
+        (True, False, array([1.0, 1.0]), "[-n+offset]", "-(e)+offset"),
+        (True, True, array([1.0, 1.0]), "-[n+offset]", "-(e+offset)"),
     ],
 )
 def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expected_e):
@@ -525,7 +535,7 @@ def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
     if fexpr and gexpr:
         suffix = f" = {fexpr}{op_name}{gexpr}"
 
-    assert repr(f_op_g) == f"f{op_name}g(x)" + suffix
+    assert repr(f_op_g) == f"[f{op_name}g](x)" + suffix
     assert f_op_g(2) == func
     assert f_op_g.jac(2) == jac
 
@@ -550,10 +560,26 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     if op_name == "*":
         assert repr(f_op_2) == "2*f(x)" + suffix
     else:
-        assert repr(f_op_2) == "f/2(x)" + suffix
+        assert repr(f_op_2) == "[f/2](x)" + suffix
 
     assert f_op_2(2) == func
     assert f_op_2.jac(2) == jac
+
+
+@pytest.mark.parametrize(
+    "expr_1, expr_2, op, expected",
+    [
+        ("1+x", "x", mul, "[f*g](x) = (1+x)*x"),
+        ("1-x", "-x+3", mul, "[f*g](x) = (1-x)*(-x+3)"),
+        ("(1+(x-4))", "x", truediv, "[f/g](x) = (1+(x-4))/x"),
+        ("((x-4)-9)", "x", truediv, "[f/g](x) = ((x-4)-9)/x"),
+    ],
+)
+def test_repr_mult_sum(expr_1, expr_2, op, expected):
+    """Test the str repr of the product of two functions."""
+    f = MDOFunction(simple_function, "f", expr=expr_1, input_names=["x"])
+    g = MDOFunction(simple_function, "g", expr=expr_2, input_names=["x"])
+    assert repr(op(f, g)) == expected
 
 
 def simple_function(x: ndarray) -> ndarray:
@@ -686,16 +712,16 @@ def test_concatenate(f_out, g_out, h_out):
         (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", False, "f(y, x) = 2*x"),
         (MDOFunction.FunctionType.NONE, ["y", "x"], "", False, "f(y, x)"),
         (MDOFunction.FunctionType.NONE, None, "", True, "-f"),
-        (MDOFunction.FunctionType.NONE, None, "2*x", True, "-f = -2*x"),
-        (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", True, "-f(y, x) = -2*x"),
+        (MDOFunction.FunctionType.NONE, None, "2*x", True, "-f = -(2*x)"),
+        (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", True, "-f(y, x) = -(2*x)"),
         (MDOFunction.FunctionType.NONE, ["y", "x"], "", True, "-f(y, x)"),
         (MDOFunction.FunctionType.INEQ, None, "", False, "f <= 0.0"),
         (MDOFunction.FunctionType.INEQ, None, "2*x", False, "2*x <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", False, "2*x <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "", False, "f(y, x) <= 0.0"),
         (MDOFunction.FunctionType.INEQ, None, "", True, "-f <= 0.0"),
-        (MDOFunction.FunctionType.INEQ, None, "2*x", True, "-2*x <= 0.0"),
-        (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", True, "-2*x <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, None, "2*x", True, "-(2*x) <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", True, "-(2*x) <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "", True, "-f(y, x) <= 0.0"),
     ],
 )

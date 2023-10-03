@@ -20,9 +20,11 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.utils.study_analyses import coupling_study_analysis
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
@@ -39,6 +41,12 @@ has_no_pdflatex = {
     "condition": skip_condition,
     "reason": "no pdflatex available",
 }
+
+
+@pytest.fixture(scope="module")
+def study_analysis() -> CouplingStudyAnalysis:
+    """A coupling study analysis."""
+    return CouplingStudyAnalysis(INPUT_DIR / "disciplines_spec_without_scenario.xlsx")
 
 
 def test_generate_n2(tmp_wd):
@@ -176,10 +184,26 @@ def test_xls_study_parser(tmp_wd, caplog):
         assert line == expected_line
 
 
-def test_coupling_study_analysis(tmp_wd):
+def test_coupling_study_analysis_n2_chart(study_analysis, tmp_wd):
     """Check CouplingStudyAnalysis."""
-    analysis = CouplingStudyAnalysis(
-        INPUT_DIR / "disciplines_spec_without_scenario.xlsx"
-    )
-    analysis.generate_n2()
+    """Check that the N2 graph is generated correctly from a study analysis."""
+    study_analysis.generate_n2()
     assert Path("n2.pdf").exists()
+
+
+def test_coupling_study_analysis_coupling_graph(study_analysis):
+    """Check that the coupling graph is generated correctly from a study analysis."""
+    file_path = Path("a.pdf")
+    with mock.patch.object(coupling_study_analysis, "generate_coupling_graph") as meth:
+        study_analysis.generate_coupling_graph(file_path)
+        assert meth.call_args.args == (
+            list(study_analysis.disciplines.values()),
+            file_path,
+            True,
+        )
+        study_analysis.generate_coupling_graph(file_path, False)
+        assert meth.call_args.args == (
+            list(study_analysis.disciplines.values()),
+            file_path,
+            False,
+        )

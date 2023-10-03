@@ -22,7 +22,7 @@ thanks to the class  :class:`.AnalyticDiscipline` which is a quick alternative t
 Create the dictionary of analytic outputs
 *****************************************
 
-First of all, we have to define the output expressions in a dictionary where keys are output names and values are formula with :code:`string` format:
+First of all, we have to define the output expressions in a dictionary where keys are output names and values are formula with ``string`` format:
 
 .. code::
 
@@ -34,9 +34,9 @@ Create and instantiate the discipline
 Then, we create and instantiate the corresponding :class:`.AnalyticDiscipline` inheriting from :class:`.MDODiscipline`
 by means of the API function :func:`.create_discipline` with:
 
-- :code:`discipline_name="AnalyticDiscipline"`,
-- :code:`name="analytic"`,
-- :code:`expressions=expr_dict`.
+- ``discipline_name="AnalyticDiscipline"``,
+- ``name="analytic"``,
+- ``expressions=expr_dict``.
 
 In practice, we write:
 
@@ -48,8 +48,8 @@ In practice, we write:
 
 .. note::
 
-   |g| takes care of the grammars and :meth:`!MDODiscipline._run` method generation from the :code:`expressions` argument.
-   In the background, |g| considers that :code:`x` is a monodimensional float input parameter and :code:`y_1` and :code:`y_2` are monodimensional float output parameters.
+   |g| takes care of the grammars and :meth:`!MDODiscipline._run` method generation from the ``expressions`` argument.
+   In the background, |g| considers that ``x`` is a monodimensional float input parameter and ``y_1`` and ``y_2`` are monodimensional float output parameters.
 
 Execute the discipline
 **********************

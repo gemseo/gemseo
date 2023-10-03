@@ -45,8 +45,7 @@ from gemseo.mlearning.core.ml_algo import TransformerType
 class MLUnsupervisedAlgo(MLAlgo):
     """Unsupervised machine learning algorithm.
 
-    Inheriting classes shall overload the
-    :meth:`!MLUnsupervisedAlgo._fit` method.
+    Inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method.
     """
 
     input_names: list[str]

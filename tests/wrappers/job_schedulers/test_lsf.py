@@ -18,11 +18,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
-from subprocess import CalledProcessError
 
 import pytest
 from gemseo import create_discipline
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.wrappers.job_schedulers.lsf import LSF
 from pytest import fixture
 
@@ -63,14 +64,15 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
     """Tests the LSF wrapper execution errors when LSF is not available."""
     disc = create_discipline("SobieskiMission")
     wrapped = LSF(disc, workdir_path=tmpdir)
-    with pytest.raises(
-        KeyError, match="Value not passed to template for key: 'queue_name'"
-    ):
+    match = "Value not passed to template for key: 'queue_name'"
+    with pytest.raises(KeyError, match=match):
         wrapped.execute()
 
     wrapped = LSF(disc, workdir_path=tmpdir, queue_name="all")
 
-    with pytest.raises(
-        CalledProcessError, match="bsub -K .* returned non-zero exit status 1."
-    ):
+    if PLATFORM_IS_WINDOWS:
+        match = r"\[WinError 2\] .*"
+    else:
+        match = re.escape("[Errno 2] No such file or directory: 'bsub'")
+    with pytest.raises(FileNotFoundError, match=match):
         wrapped.execute()

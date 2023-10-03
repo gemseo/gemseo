@@ -68,11 +68,15 @@ pprint.pprint(sensitivity_analysis.main_indices)
 pprint.pprint(sensitivity_analysis.outputs_bounds)
 
 # %%
-# We can also sort the input parameters by decreasing order of influence:
-print(sensitivity_analysis.sort_parameters("y"))
+# We can also get the input parameters sorted by decreasing order of influence:
+sensitivity_analysis.sort_parameters("y")
+
+# %%
+# We can use the method :meth:`.MorrisAnalysis.plot`
+# to visualize the different series of indices:
+sensitivity_analysis.plot("y", save=False, show=True, lower_mu=0, lower_sigma=0)
 
 # %%
 # Lastly,
-# we can use the method :meth:`.MorrisAnalysis.plot`
-# to visualize the different series of indices:
-sensitivity_analysis.plot("y", save=False, show=True, lower_mu=0, lower_sigma=0)
+# the sensitivity indices can be exported to a :class:`.Dataset`:
+sensitivity_analysis.to_dataset()

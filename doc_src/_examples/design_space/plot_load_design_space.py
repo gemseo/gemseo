@@ -40,11 +40,8 @@ configure_logger()
 #
 # The user can read a design space from a file using the
 # :func:`.create_design_space` function.
-
-
 design_space = read_design_space("design_space.csv")
-print(design_space)
-
+design_space
 
 # %%
 # Filtering the design space
@@ -52,9 +49,8 @@ print(design_space)
 #
 # The user can filter the design space in order to only keep some variables. To
 # do so, the user can use the :meth:`.DesignSpace.filter` method:
-
 design_space.filter(["x1", "x2"])
-print(design_space)
+design_space
 
 # %%
 # Export the design space
@@ -62,6 +58,4 @@ print(design_space)
 #
 # The user can export a :class:`.DesignSpace` instance by using the
 # :func:`.write_design_space` function.
-
-
 write_design_space(design_space, "new_design_space.csv")

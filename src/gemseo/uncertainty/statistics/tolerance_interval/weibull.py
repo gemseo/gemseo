@@ -34,9 +34,8 @@ class WeibullToleranceInterval(ToleranceInterval):
 
     The formulae come from the R library *tolerance* [1]_.
 
-    .. [1] Derek S. Young,
-           *tolerance: An R Package for Estimating Tolerance Intervals*,
-           Journal of Statistical Software, 36(5), 2010
+    .. [1] Derek S. Young,        *tolerance: An R Package for Estimating Tolerance
+    Intervals*,        Journal of Statistical Software, 36(5), 2010
     """
 
     def __init__(
