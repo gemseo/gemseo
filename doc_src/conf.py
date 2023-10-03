@@ -118,6 +118,7 @@ autodoc_mock_imports = [
     "pymoo",
     "petsc4py",
     "scilab2py",
+    "pyfmi",
     "fmpy",
     "pdfo",
     "jnius",

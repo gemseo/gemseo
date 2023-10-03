@@ -32,6 +32,8 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from numpy import array
 from numpy import isclose
+from numpy import ones
+from numpy import zeros
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -111,6 +113,21 @@ def test_compatibility_setters_getters():
     mda = SobieskiMDAJacobi(acceleration="secant")
     assert mda.acceleration == AccelerationMethod.SECANT
     assert mda.acceleration_method == AccelerationMethod.SECANT
+
+
+def test_m2d_acceleration_linalg_error():
+    """Verify the linalg error handling."""
+    mda = SobieskiMDAJacobi(acceleration="m2d")
+    sol, ok = mda._minimize_2md(1.0, zeros(2), zeros(2))
+    assert not ok
+    assert (sol == zeros(2)).all()
+
+
+def test_secant_acceleration_linalg_error():
+    """Verify the nan handling."""
+    mda = SobieskiMDAJacobi(acceleration="secant")
+    sol = mda._compute_secant_acc(zeros(2), zeros(2), ones(2), zeros(2))
+    assert (sol == ones(2)).all()
 
 
 def test_mda_jacobi_parallel():
