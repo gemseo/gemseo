@@ -255,8 +255,7 @@ Coding Style
 We use the `pep8`_ convention.
 The formatting of the source code is done
 with `reorder_python_imports`_ and `black`_.
-The code is systematically checked with `flake8`_
-and on demand with `pylint`_.
+The code is systematically checked with `flake8`_.
 A git commit shall have no flake8 violations.
 
 Except for *pylint*,
@@ -264,8 +263,6 @@ all these tools are used:
 
 * either automatically by the git hooks when creating a commit,
 * or manually by running :command:`tox -e style`.
-
-Use :command:`tox -e pylint` to run `pylint`_.
 
 Coding guidelines
 +++++++++++++++++

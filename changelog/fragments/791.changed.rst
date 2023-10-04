@@ -1,1 +1,0 @@
-The performance of :class:`.MDANewtonRaphson` was improved.

@@ -1,1 +1,0 @@
-The high-level function ``create_dataset`` returns a base ``Dataset`` by default.

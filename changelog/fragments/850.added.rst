@@ -1,1 +1,0 @@
-``DesignSpace.get_variables_indexes`` features a new optional argument ``use_design_space_order`` to switch the order of the indexes between the design space order and the user order.

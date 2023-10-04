@@ -1,1 +1,0 @@
-The generation of XDSM diagrams for MDA looping over MDOScenarios.

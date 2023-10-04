@@ -41,6 +41,7 @@ class MDAGaussSeidel(MDA):
     equations of the form,
 
     .. math::
+
         \left\{
             \begin{matrix}
                 F_1(x_1, x_2, \dots, x_n) = 0 \\
@@ -50,13 +51,14 @@ class MDAGaussSeidel(MDA):
             \end{matrix}
         \right.
 
-    Begining with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained by
+    Beginning with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained by
     performing **sequentially** the following :math:`n` steps.
 
     **Step 1:** knowing :math:`x_2^{(i)}, \dots, x_n^{(i)}`, compute :math:`x_1^{(i+1)}`
     by solving,
 
     .. math::
+
         r_1\left( x_1^{(i+1)} \right) =
             F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0.
 
@@ -65,6 +67,7 @@ class MDAGaussSeidel(MDA):
     :math:`x_1^{(i+1)}` by solving,
 
     .. math::
+
         r_k\left( x_k^{(i+1)} \right) = F_1(x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)},
         x_k^{(i+1)}, x_{k+1}^{(i)}, \dots, x_n^{(i)}) = 0.
 

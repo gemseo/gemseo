@@ -1,1 +1,0 @@
-The argument ``n_samples`` passed to ``MorrisAnalysis`` is correctly taken into account.

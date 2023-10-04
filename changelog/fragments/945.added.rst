@@ -1,1 +1,0 @@
-``N2HTML`` can use any sized default inputs (NumPy arrays, lists, tuples, ...) to deduce the size of the input variables.

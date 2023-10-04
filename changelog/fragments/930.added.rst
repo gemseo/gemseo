@@ -1,2 +1,0 @@
-- ``SensitivityAnalysis.plot_bar`` and ``SensitivityAnalysis.plot_radar`` have new arguments ``sort`` and ``sorting_output`` to sort the uncertain variables by decreasing order of the sensitivity indices associated with a sorting output variable.
-- ``DatasetPlot`` has a new argument ``xtick_rotation`` to set the rotation angle of the x-ticks for a better readability when the number of ticks is important.

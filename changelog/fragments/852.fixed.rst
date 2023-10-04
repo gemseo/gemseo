@@ -1,1 +1,0 @@
-The methods ``to_dataset`` build ``Dataset`` objects in one go instead of adding variables one by one.

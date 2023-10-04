@@ -1,2 +1,0 @@
-- The ``DatasetFactory`` is a factory of ``Dataset``.
-- The high-level function ``create_dataset`` can return any type of ``Dataset``.

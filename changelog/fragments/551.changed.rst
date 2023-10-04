@@ -1,3 +1,0 @@
-- ``Distribution``: the default value of ``variable`` is ``"x"``; same for ``OTDistribution``, ``SPDistribution`` and their sub-classes.
-- ``SPDistribution``: the default values of ``interfaced_distribution`` and ``parameters``  are ``uniform`` and ``{}``.
-- ``OTDistribution``: the default values of ``interfaced_distribution`` and ``parameters`` are ``Uniform`` and ``()``.

@@ -1,2 +1,0 @@
-- The argument ``scenario_log_level`` of :class:`.MDOScenarioAdapter` allows to change the level of the root logger during the execution of its scenario.
-- The argument ``sub_scenarios_log_level`` of :class:`.BiLevel` allows to change the level of the root logger during the execution of its sub-scenarios.

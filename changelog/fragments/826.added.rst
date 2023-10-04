@@ -1,1 +1,0 @@
-``MLAlgo.__repr__`` returns the same as ``MLAlgo.__str__`` before this change and ``MLAlgo.__str__`` does not overload ``MLAlgo.__repr__``.

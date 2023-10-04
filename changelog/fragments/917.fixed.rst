@@ -1,1 +1,0 @@
-The string representation of an ``MDOFunction`` is now correct even after several sign changes.

@@ -1,2 +1,0 @@
-- Implement ``deepcopy`` for ```DisciplineData``.
-- ``generate_coupling_graph``, ``DependencyGraph.write_full_graph`` and ``DependencyGraph.write_condensed_graph`` return a ``GraphView``.

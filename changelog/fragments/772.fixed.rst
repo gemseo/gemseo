@@ -1,1 +1,0 @@
-The properties of the :class:`.JSONGrammar` created by :meth:`.BaseFactory.get_options_grammar` are no longer required.

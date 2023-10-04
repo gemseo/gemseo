@@ -37,6 +37,7 @@ class MDOLinearFunction(MDOFunction):
     * and a vector :math:`b` of zero-order coefficients :math:`(b_i)_{i = 1, \dots m}`
 
     .. math::
+
         F(x)
         =
         Ax + b

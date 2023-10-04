@@ -27,6 +27,227 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 5.1.0 (2023-10-02)
+**************************
+
+
+Added
+-----
+
+- The argument ``scenario_log_level`` of ``MDOScenarioAdapter`` allows to change the level of the root logger during the execution of its scenario.
+- The argument ``sub_scenarios_log_level`` of ``BiLevel`` allows to change the level of the root logger during the execution of its sub-scenarios.
+  `#370 <https://gitlab.com/gemseo/dev/gemseo/-/issues/370>`_
+- ``DesignSpace`` has a pretty HTML representation.
+  `#504 <https://gitlab.com/gemseo/dev/gemseo/-/issues/504>`_
+- The method ``add_random_vector()`` adds a random vector with independent components to a ``ParameterSpace`` from a probability distribution name and parameters. These parameters can be set component-wise.
+  `#551 <https://gitlab.com/gemseo/dev/gemseo/-/issues/551>`_
+- The high-level function ``create_dataset`` returns an empty ``Dataset`` by default with a default name.
+  `#721 <https://gitlab.com/gemseo/dev/gemseo/-/issues/721>`_
+- ``OptimizationResult`` has new fields ``x_0_as_dict`` and ``x_opt_as_dict`` bounding the names of the design variables to their initial and optimal values.
+  `#775 <https://gitlab.com/gemseo/dev/gemseo/-/issues/775>`_
+- Enable the possibility of caching sparse Jacobian with cache type HDF5Cache.
+  `#783 <https://gitlab.com/gemseo/dev/gemseo/-/issues/783>`_
+- Acceleration methods for MDAs are defined in dedicated classes inheriting from ``SequenceTransformer``.
+
+  Available sequence transformers are:
+
+  - The alternate 2-δ method: ``Alternate2Delta``.
+  - The alternate δ² method: ``AlternateDeltaSquared``.
+  - The secante method: ``Secante``.
+  - The Aitken method: ``Aitken``.
+  - The minimum polynomial method: ``MinimumPolynomial``.
+  - The over-relaxation: ``OverRelaxation``.
+
+  `#799 <https://gitlab.com/gemseo/dev/gemseo/-/issues/799>`_
+- The values of the constraints can be passed to method ``OptimizationProblem.get_number_of_unsatisfied_constraints.``
+  `#802 <https://gitlab.com/gemseo/dev/gemseo/-/issues/802>`_
+- ``MLErrorMeasureFactory`` is a factory of ``MLErrorMeasure``.
+- ``SurrogateDiscipline.get_error_measure`` returns an ``MLErrorMeasure`` to assess the quality of a ``SurrogateDiscipline``; use one of its evaluation methods to compute it, e.g. ``evaluate_learn`` to compute a learning error.
+  `#822 <https://gitlab.com/gemseo/dev/gemseo/-/issues/822>`_
+- - The ``DatasetFactory`` is a factory of ``Dataset``.
+  - The high-level function ``create_dataset`` can return any type of ``Dataset``.
+  `#823 <https://gitlab.com/gemseo/dev/gemseo/-/issues/823>`_
+- ``Dataset`` has a string property ``summary`` returning some information, e.g. number of entries, number of variable identifiers, ...
+  `#824 <https://gitlab.com/gemseo/dev/gemseo/-/issues/824>`_
+- ``MLAlgo.__repr__`` returns the same as ``MLAlgo.__str__`` before this change and ``MLAlgo.__str__`` does not overload ``MLAlgo.__repr__``.
+  `#826 <https://gitlab.com/gemseo/dev/gemseo/-/issues/826>`_
+- The method ``Dataset.to_dict_of_arrays`` can break down the result by entry with the boolean argument ``by_entry`` whose default value is ``False``.
+  `#828 <https://gitlab.com/gemseo/dev/gemseo/-/issues/828>`_
+- Added Scipy MILP solver wrapper.
+  `#833 <https://gitlab.com/gemseo/dev/gemseo/-/issues/833>`_
+- ``DesignSpace.get_variables_indexes`` features a new optional argument ``use_design_space_order`` to switch the order of the indexes between the design space order and the user order.
+  `#850 <https://gitlab.com/gemseo/dev/gemseo/-/issues/850>`_
+- ``ScalableProblem.create_quadratic_programming_problem`` handles the case where uncertain vectors are added in the coupling equations.
+  `#863 <https://gitlab.com/gemseo/dev/gemseo/-/issues/863>`_
+- ``MDODisciplineAdapterGenerator`` can use a dictionary of variable sizes at instantiation.
+  `#870 <https://gitlab.com/gemseo/dev/gemseo/-/issues/870>`_
+- The multi-processing start method (spawn or fork) can now be chosen.
+  `#885 <https://gitlab.com/gemseo/dev/gemseo/-/issues/885>`_
+- Acceleration methods and over-relaxation are now available for ``MDAJacobi``, ``MDAGaussSeidel`` and ``MDANewtonRaphson``.
+  They are configured at initialization via the ``acceleration_method`` and ``over_relaxation_factor`` and can be modified afterward via the attributes ``MDA.acceleration_method`` and ``MDA.over_relaxation_factor``.
+
+  Available acceleration methods are:
+
+      - ``Alternate2Delta``,
+      - ``AlternateDeltaSquared``,
+      - ``Aitken``,
+      - ``Secant``,
+      - ``MinimumPolynomial``,
+
+  `#900 <https://gitlab.com/gemseo/dev/gemseo/-/issues/900>`_
+
+- ``CouplingStudyAnalysis`` has a new method ``generate_coupling_graph``.
+- The CLI ``gemseo-study`` generates the condensed and full coupling graphs as PDF files.
+  `#910 <https://gitlab.com/gemseo/dev/gemseo/-/issues/910>`_
+- The ``check_disciplines_consistency`` function checks if two disciplines compute the same output and raises an error or logs a warning message if this is the case.
+- ``MDOCouplingStructure`` logs a message with ``WARNING`` level if two disciplines compute the same output.
+  `#912 <https://gitlab.com/gemseo/dev/gemseo/-/issues/912>`_
+- The default value of an input variable of a ``LinearCombination`` is zero.
+  `#913 <https://gitlab.com/gemseo/dev/gemseo/-/issues/913>`_
+- ``BaseFactory.create`` supports positional arguments.
+  `#918 <https://gitlab.com/gemseo/dev/gemseo/-/issues/918>`_
+- The algorithms of a ``DriverLibrary`` have a new option ``"log_problem"`` (default: ``True``). Set it to ``False`` so as not to log the sections related to an optimization problem, namely the problem definition, the optimization result and the evolution of the objective value. This can be useful when a ``DOEScenario`` is used as a pure sampling scenario.
+  `#925 <https://gitlab.com/gemseo/dev/gemseo/-/issues/925>`_
+- ``SensitivityAnalysis.plot_bar`` and ``SensitivityAnalysis.plot_radar`` have new arguments ``sort`` and ``sorting_output`` to sort the uncertain variables by decreasing order of the sensitivity indices associated with a sorting output variable.
+- ``DatasetPlot`` has a new argument ``xtick_rotation`` to set the rotation angle of the x-ticks for a better readability when the number of ticks is important.
+  `#930 <https://gitlab.com/gemseo/dev/gemseo/-/issues/930>`_
+- ``SensitivityAnalysis.to_dataset`` stores the second-order Sobol' indices in the dictionary ``Dataset.misc`` with the key ``"second"``.
+  `#936 <https://gitlab.com/gemseo/dev/gemseo/-/issues/936>`_
+- The string representation of a ``ComposedDistribution`` uses both the string representations of the marginals and the string representation of the copula.
+- The string representation of a ``Distribution`` uses both the string representation of its parameters and its dimension when the latter is greater than 1.
+  `#937 <https://gitlab.com/gemseo/dev/gemseo/-/issues/937>`_
+- The default value of the argument ``outputs`` of the methods ``plot_bar`` and ``plot_radar`` of ``SensitivityAnalysis`` is ``()``. In this case, the ``SensitivityAnalysis`` uses all the outputs.
+  `#941 <https://gitlab.com/gemseo/dev/gemseo/-/issues/941>`_
+- ``N2HTML`` can use any sized default inputs (NumPy arrays, lists, tuples, ...) to deduce the size of the input variables.
+  `#945 <https://gitlab.com/gemseo/dev/gemseo/-/issues/945>`_
+
+Fixed
+-----
+
+- Fix the MDA residual scaling strategy based on sub-residual norms.
+  `#957 <https://gitlab.com/gemseo/dev/gemseo/-/issues/957>`_
+- An XDSM can now take into account several levels of nested scenarios as well as nested ``MDA``.
+  An XDSM with a nested Scenario can also take into account more complex formulations than ``DisciplinaryOpt``, such as ``MDF``.
+  `#687 <https://gitlab.com/gemseo/dev/gemseo/-/issues/687>`_
+- The properties of the ``JSONGrammar`` created by ``BaseFactory.get_options_grammar`` are no longer required.
+  `#772 <https://gitlab.com/gemseo/dev/gemseo/-/issues/772>`_
+- If ``time_vector`` is not user-specified, then it is generated by the solver. As such, the
+  array generated by the solver belongs in the ``ODEResult``.
+  `#778 <https://gitlab.com/gemseo/dev/gemseo/-/issues/778>`_
+- Fix plot at the end of the Van der Pol tutorial illustrating an ``ODEProblem``.
+  `#806 <https://gitlab.com/gemseo/dev/gemseo/-/issues/806>`_
+- The high-level function ``create_dataset`` returns a base ``Dataset`` by default.
+  `#823 <https://gitlab.com/gemseo/dev/gemseo/-/issues/823>`_
+- ``SurrogateDiscipline.__str__`` is less verbose by inheriting from ``MDODiscipline``; use ``SurrogateDiscipline.__repr__`` instead of the older ``SurrogateDiscipline.__repr__``.
+  `#837 <https://gitlab.com/gemseo/dev/gemseo/-/issues/837>`_
+- ``OptHistoryView`` can be executed with ``variable_names=None`` to explicitly display all the design variables.
+- The variable names specified with the argument ``variable_names`` of ``OptHistoryView`` are correctly considered.
+- ``OptimizationProblem.from_hdf`` sets ``pb_type`` and ``differentiation_method`` as string.
+- ``OptHistoryView``, ``ObjConstrHist`` and ``ConstraintsHistory`` display a limited number of iterations on the *x*-axis to make it more readable by avoiding xtick overlay.
+- ``DesignSpace`` has a new property ``names_to_indices`` defining the design vector indices associated with variable names.
+  `#838 <https://gitlab.com/gemseo/dev/gemseo/-/issues/838>`_
+- ``execute_post`` can post-process a ``Path``.
+  `#846 <https://gitlab.com/gemseo/dev/gemseo/-/issues/846>`_
+- The MDA chain can change at once the ``max_mda_iter`` of all its MDAs.
+  The behaviour of the ``max_mda_iter`` of this class has been changed to do so.
+  `#848 <https://gitlab.com/gemseo/dev/gemseo/-/issues/848>`_
+- The methods ``to_dataset`` build ``Dataset`` objects in one go instead of adding variables one by one.
+  `#852 <https://gitlab.com/gemseo/dev/gemseo/-/issues/852>`_
+- ``CorrelationAnalysis`` and ``SobolAnalysis`` use the input names in the order provided by the ``ParameterSpace``.
+  `#853 <https://gitlab.com/gemseo/dev/gemseo/-/issues/853>`_
+- The ``RunFolderManager`` can now work with a non-empty ``output_folder_basepath``
+  when using ``folders_iter = FoldersIter.NUMBERED``.
+  Their name can be different from a number.
+  `#865 <https://gitlab.com/gemseo/dev/gemseo/-/issues/865>`_
+- The argument ``output_names`` of ``MorrisAnalysis`` works properly again.
+  `#866 <https://gitlab.com/gemseo/dev/gemseo/-/issues/866>`_
+- The argument ``n_samples`` passed to ``MorrisAnalysis`` is correctly taken into account.
+  `#869 <https://gitlab.com/gemseo/dev/gemseo/-/issues/869>`_
+- ``DOELibrary`` works when the design variables have no default value.
+  `#870 <https://gitlab.com/gemseo/dev/gemseo/-/issues/870>`_
+- The generation of XDSM diagrams for MDA looping over MDOScenarios.
+  `#879 <https://gitlab.com/gemseo/dev/gemseo/-/issues/879>`_
+- ``BarPlot`` handles now correctly a ``Dataset`` whose number of rows is higher than the number of variables.
+  `#880 <https://gitlab.com/gemseo/dev/gemseo/-/issues/880>`_
+- The DOE algorithms consider the optional seed when it is equal to 0 and use the driver's one when it is missing.
+  `#886 <https://gitlab.com/gemseo/dev/gemseo/-/issues/886>`_
+- ``PCERegressor`` now handles multidimensional random input variables.
+  `#895 <https://gitlab.com/gemseo/dev/gemseo/-/issues/895>`_
+- ``get_all_inputs`` and ``get_all_outputs`` return sorted names and so are now deterministic.
+  `#901 <https://gitlab.com/gemseo/dev/gemseo/-/issues/901>`_
+- ``OptHistoryView`` no longer logs a warning when post-processing an optimization problem whose objective gradient history is empty.
+  `#902 <https://gitlab.com/gemseo/dev/gemseo/-/issues/902>`_
+- The string representation of an ``MDOFunction`` is now correct even after several sign changes.
+  `#917 <https://gitlab.com/gemseo/dev/gemseo/-/issues/917>`_
+- The sampling phase of a ``SensitivityAnalysis`` no longer reproduces the full log of the ``DOEScenario``. Only the disciplines, the MDO formulation and the progress bar are considered.
+  `#925 <https://gitlab.com/gemseo/dev/gemseo/-/issues/925>`_
+- The ``Correlations`` plot now labels its subplots correctly when the constraints of the
+  optimization problem include an offset.
+  `#931 <https://gitlab.com/gemseo/dev/gemseo/-/issues/931>`_
+- The string representation of a ``Distribution`` no longer sorts the parameters.
+  `#935 <https://gitlab.com/gemseo/dev/gemseo/-/issues/935>`_
+- ``SobolAnalysis`` can export the indices to a ``Dataset``, even when the second-order Sobol' indices are computed.
+  `#936 <https://gitlab.com/gemseo/dev/gemseo/-/issues/936>`_
+- One can no longer add two random variables with the same name in a ``ParameterSpace``.
+  `#938 <https://gitlab.com/gemseo/dev/gemseo/-/issues/938>`_
+- ``SensitivityAnalysis.plot_bar`` and ``SensitivityAnalysis.plot_radar`` use all the outputs when the argument ``outputs`` is empty (e.g. ``None``, ``""`` or ``()``).
+  `#941 <https://gitlab.com/gemseo/dev/gemseo/-/issues/941>`_
+- A ``DesignSpace`` containing a design variable without current value can be used to extend another ``DesignSpace``.
+  `#947 <https://gitlab.com/gemseo/dev/gemseo/-/issues/947>`_
+- Security vulnerability when calling ``subprocess.run`` with ``shell=True``.
+  `#948 <https://gitlab.com/gemseo/dev/gemseo/-/issues/948>`_
+
+Changed
+-------
+
+- ``Distribution``: the default value of ``variable`` is ``"x"``; same for ``OTDistribution``, ``SPDistribution`` and their sub-classes.
+- ``SPDistribution``: the default values of ``interfaced_distribution`` and ``parameters``  are ``uniform`` and ``{}``.
+- ``OTDistribution``: the default values of ``interfaced_distribution`` and ``parameters`` are ``Uniform`` and ``()``.
+  `#551 <https://gitlab.com/gemseo/dev/gemseo/-/issues/551>`_
+- The high-level function ``create_dataset`` raises a ``ValueError`` when the file has a wrong extension.
+  `#721 <https://gitlab.com/gemseo/dev/gemseo/-/issues/721>`_
+- The performance of ``MDANewtonRaphson`` was improved.
+  `#791 <https://gitlab.com/gemseo/dev/gemseo/-/issues/791>`_
+- The classes ``KMeans`` use ``"auto"`` as default value for the argument ``n_init`` of the scikit-learn's ``KMeans`` class.
+  `#825 <https://gitlab.com/gemseo/dev/gemseo/-/issues/825>`_
+- ``output_names`` was added to ``MDOFunction.DICT_REPR_ATTR`` in order for it to be exported when saving to an hdf file.
+  `#860 <https://gitlab.com/gemseo/dev/gemseo/-/issues/860>`_
+- ``OptimizationProblem.minimize_objective`` is now a property that changes the sign of the objective function if needed.
+  `#909 <https://gitlab.com/gemseo/dev/gemseo/-/issues/909>`_
+- The name of the ``MDOFunction`` resulting from the sum (resp. subtraction, multiplication, division) of
+  two ``MDOFunction`` s named ``"f"`` and ``"g"`` is ``"[f+g]"`` (resp. ``"[f-g]"`` , ``"[f*g]"`` , ``"[f/g]"``).
+- The name of the ``MDOFunction`` defined as the opposite of the ``MDOFunction`` named ``"f"`` is ``-f``.
+- In the expression of an ``MDOFunction`` resulting from the multiplication or division of ``MDOFunction`` s, the expression of an operand is now grouped with round parentheses if this operand is a sum or subtraction. For example, for ``"f(x) = 1+x"`` and ``"g(x) = x"`` the resulting expression for ``f*g`` is ``"[f*g](x) = (1+x)*x"``.
+- The expression of the ``MDOFunction`` defined as the opposite of itself is ``-(expr)``.
+  `#917 <https://gitlab.com/gemseo/dev/gemseo/-/issues/917>`_
+- Renamed ``MLQualityMeasure.evaluate_learn`` to ``MLQualityMeasure.compute_learning_measure``.
+- Renamed ``MLQualityMeasure.evaluate_test`` to ``MLQualityMeasure.compute_test_measure``.
+- Renamed ``MLQualityMeasure.evaluate_kfolds`` to ``MLQualityMeasure.compute_cross_validation_measure``.
+- Renamed ``MLQualityMeasure.evaluate_loo`` to ``MLQualityMeasure.compute_leave_one_out_measure``.
+- Renamed ``MLQualityMeasure.evaluate_bootstrap`` to ``MLQualityMeasure.compute_bootstrap_measure``.
+  `#920 <https://gitlab.com/gemseo/dev/gemseo/-/issues/920>`_
+- The argument ``use_shell`` of the discipline ``DiscFromExe`` is no longer taken into account,
+  executable are now always executed without shell.
+  `#948 <https://gitlab.com/gemseo/dev/gemseo/-/issues/948>`_
+
+
+Version 5.0.1 (2023-09-07)
+**************************
+
+Added
+-----
+
+- The MDAJacobi performance and memory usage was improved.
+  `#882 <https://gitlab.com/gemseo/dev/gemseo/-/issues/882>`_
+
+Fixed
+-----
+
+- The MDAJacobi executions are now deterministic.
+  The MDAJacobi m2d acceleration is deactivated when the least square problem is not well solved.
+  `#882 <https://gitlab.com/gemseo/dev/gemseo/-/issues/882>`_
+
+
 Version 5.0.0 (2023-06-02)
 **************************
 
@@ -93,9 +314,9 @@ MDO processes
 - Add a new grammar type based on `Pydantic <https://docs.pydantic.dev/>`_: ``PydanticGrammar``.
   This new grammar is still experimental and subject to changes, use with cautions.
   `#436 <https://gitlab.com/gemseo/dev/gemseo/-/issues/436>`_
- - ``XLSStudyParser`` has a new argument ``has_scenario`` whose default value is ``True``; if ``False``, the sheet ``Scenario`` is not required.
-  - ``CouplingStudyAnalysis`` allows to generate an N2 diagram from an XLS file defining the disciplines in terms of input and output names.
-  - ``MDOStudyAnalysis`` allows to generate an N2 diagram and an XDSM from an XLS file defining an MDO problem in terms of disciplines, formulation, objective, constraint and design variables.
+- ``XLSStudyParser`` has a new argument ``has_scenario`` whose default value is ``True``; if ``False``, the sheet ``Scenario`` is not required.
+- ``CouplingStudyAnalysis`` allows to generate an N2 diagram from an XLS file defining the disciplines in terms of input and output names.
+- ``MDOStudyAnalysis`` allows to generate an N2 diagram and an XDSM from an XLS file defining an MDO problem in terms of disciplines, formulation, objective, constraint and design variables.
   `#696 <https://gitlab.com/gemseo/dev/gemseo/-/issues/696>`_
 - ``JSONGrammar`` can validate ``PathLike`` objects.
   `#759 <https://gitlab.com/gemseo/dev/gemseo/-/issues/759>`_

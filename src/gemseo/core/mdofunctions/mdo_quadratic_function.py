@@ -37,6 +37,7 @@ class MDOQuadraticFunction(MDOFunction):
     * and a scalar zero-order coefficient :math:`c`
 
     .. math::
+
         f(x)
         =
         c

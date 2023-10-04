@@ -1,1 +1,0 @@
-``MDODisciplineAdapterGenerator`` can use a dictionary of variable sizes at instantiation.

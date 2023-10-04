@@ -51,11 +51,13 @@ class MDANewtonRaphson(MDARoot):
     an iterative method to solve general equations of the form,
 
     .. math::
+
         F(x) = 0, \quad \text{where} \quad F: \mathbb{R}^n \rightarrow \mathbb{R}^n.
 
-    Begining with :math:`x_0 \in \mathbb{R}^n` the successive iterates are given by:
+    Beginning with :math:`x_0 \in \mathbb{R}^n` the successive iterates are given by:
 
     .. math::
+
        x_{k+1} = x_k - J_f(x_k)^{-1} f(x_k),
 
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.

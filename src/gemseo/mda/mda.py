@@ -151,6 +151,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         r"""The residual is not scaled and the MDA is considered converged when,
 
         .. math::
+
             \|R_k\|_2 \leq \text{tol}.
         """
 
@@ -159,6 +160,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         and not scaled otherwise. The MDA is considered converged when,
 
         .. math::
+
             \frac{ \|R_k\|_2 }{ \|R_0\|_2 } \leq \text{tol}.
         """
 
@@ -167,6 +169,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         individually. The MDA is considered converged when,
 
         .. math::
+
             \max_i \left| \frac{\|r^i_k\|_2}{\|r^i_0\|_2} \right| \leq \text{tol}.
         """
 
@@ -175,6 +178,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         considered converged when,
 
         .. math::
+
             \frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.
         """
 
@@ -183,6 +187,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         and not scaled otherwise. The MDA is considered converged when,
 
         .. math::
+
             \max_i \left| \frac{(R_k)_i}{(R_0)_i} \right| \leq \text{tol}.
         """
 
@@ -190,6 +195,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         r"""The residual is not scaled and the MDA is considered converged when.
 
         .. math::
+
             \frac{1}{\sqrt{n_\text{coupl.}}} \| R_k \div R_0 \|_2 \leq \text{tol}.
         """
 

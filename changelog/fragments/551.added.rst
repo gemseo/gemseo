@@ -1,1 +1,0 @@
-The method ``add_random_vector()`` adds a random vector with independent components to a ``ParameterSpace`` from a probability distribution name and parameters. These parameters can be set component-wise.

@@ -1,1 +1,0 @@
-``SensitivityAnalysis.to_dataset`` stores the second-order Sobol' indices in the dictionary ``Dataset.misc`` with the key ``"second"``.

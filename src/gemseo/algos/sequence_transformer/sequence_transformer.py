@@ -41,6 +41,7 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     A sequence transformer is a function :math:`f : \mathbb{R}^n \rightarrow
     \mathbb{R}^n` so that the new iterate is instead computed as
     .. math::
+
         x_{n+1}' = f(G, x_n, \dots, x_{n-k}, G(x_n)),
 
     for a given :math:`k \geq 0`.

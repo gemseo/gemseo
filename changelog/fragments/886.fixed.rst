@@ -1,1 +1,0 @@
-The DOE algorithms consider the optional seed when it is equal to 0 and use the driver's one when it is missing.
