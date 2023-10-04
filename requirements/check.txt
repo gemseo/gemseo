@@ -10,11 +10,11 @@ distlib==0.3.7
     # via virtualenv
 filelock==3.12.4
     # via virtualenv
-identify==2.5.29
+identify==2.5.30
     # via pre-commit
 nodeenv==1.8.0
     # via pre-commit
-platformdirs==3.10.0
+platformdirs==3.11.0
     # via virtualenv
 pre-commit==3.4.0
     # via -r requirements/check.in
