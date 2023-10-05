@@ -6,10 +6,8 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-Discipline
-==========
-
-Define an input-output process.
+Disciplines
+===========
 
 .. toctree::
    :glob:
