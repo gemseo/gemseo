@@ -27,6 +27,17 @@ and this project adheres to
 
 .. towncrier release notes start
 
+
+Version 5.1.1 (2023-10-04)
+**************************
+
+
+Security
+--------
+
+Upgrade the dependency ``pillow`` to mitigate a `vulnerability <https://github.com/advisories/GHSA-j7hp-h8jx-5ppr>`_.
+
+
 Version 5.1.0 (2023-10-02)
 **************************
 

@@ -12,9 +12,9 @@ build==1.0.3
     # via -r requirements/dist.in
 certifi==2023.7.22
     # via requests
-cffi==1.15.1
+cffi==1.16.0
     # via cryptography
-charset-normalizer==3.2.0
+charset-normalizer==3.3.0
     # via requests
 check-wheel-contents==0.5.0
     # via -r requirements/dist.in
@@ -47,7 +47,7 @@ more-itertools==10.1.0
     # via jaraco-classes
 nh3==0.2.14
     # via readme-renderer
-packaging==23.1
+packaging==23.2
     # via
     #   build
     #   check-wheel-contents
@@ -55,7 +55,7 @@ pkginfo==1.9.6
     # via twine
 pycparser==2.21
     # via cffi
-pydantic==2.4.1
+pydantic==2.4.2
     # via check-wheel-contents
 pydantic-core==2.10.1
     # via pydantic
@@ -75,7 +75,7 @@ requests-toolbelt==1.0.0
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.5.3
+rich==13.6.0
     # via twine
 secretstorage==3.3.3
     # via keyring
@@ -90,7 +90,7 @@ typing-extensions==4.8.0
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.0.5
+urllib3==2.0.6
     # via
     #   requests
     #   twine
