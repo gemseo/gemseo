@@ -580,8 +580,13 @@ class SobolAnalysis(SensitivityAnalysis):
     ) -> None:
         r"""Plot the first- and total-order Sobol' indices.
 
-        For :math:`i\in\{1,\ldots,d\}`, plot :math:`S_i^{1}` and :math:`S_T^{1}`
-        with their confidence intervals.
+        For the :math:`i`-th uncertain input variable,
+        plot its first-order Sobol' index :math:`S_i^{1}`
+        and its total-order Sobol' index :math:`S_i^{T}` with dots
+        and their confidence intervals with vertical lines.
+
+        The subtitle displays the standard deviation (StD) and the variance (Var)
+        of the output of interest.
 
         Args:
             title: The title of the plot.
@@ -690,7 +695,7 @@ class SobolAnalysis(SensitivityAnalysis):
         if not title:
             title = f"Sobol' indices for the output {pretty_output_name}"
         variance = self.output_variances[output_name][output_component]
-        ax.set_title(f"{title}\nVar[{pretty_output_name}]={variance:.1e}")
+        ax.set_title(f"{title}\nVar={variance:.1e}    StD={variance**0.5:.1e}")
         ax.set_axisbelow(True)
         ax.grid()
         self._save_show_plot(
