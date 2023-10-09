@@ -173,23 +173,8 @@ class SimpleGrammar(BaseGrammar):
         self.__names_to_types = {}
         self.__required_names = set()
 
-    def _repr_required_elements(self, text: MultiLineString) -> None:
-        for name, type_ in self.items():
-            if name in self.__required_names:
-                text.add(f"{name}: {type_.__name__}")
-
-    def _repr_optional_elements(self, text: MultiLineString) -> None:
-        for name, type_ in self.items():
-            if name not in self.__required_names:
-                if type_ is None:
-                    type_name = None
-                else:
-                    type_name = type_.__name__
-                text.add(f"{name}: {type_name}")
-                if name in self._defaults:
-                    text.indent()
-                    text.add(f"default: {self._defaults[name]}")
-                    text.dedent()
+    def _update_grammar_repr(self, _repr: MultiLineString, properties: Any) -> None:
+        _repr.add(f"Type: {properties}")
 
     def _validate(  # noqa: D102
         self,

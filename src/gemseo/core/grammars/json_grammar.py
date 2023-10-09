@@ -253,19 +253,27 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder = MutableMappingSchemaBuilder()
         self.__init_dependencies()
 
-    def _repr_required_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, schema in self.items():
-            if name in self.__schema_builder.required:
-                text.add(f"{name}: {schema.to_schema()}")
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        for k, v in properties.to_schema().items():
+            self.__repr_property(k, v, repr_)
 
-    def _repr_optional_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, schema in self.items():
-            if name not in self.__schema_builder.required:
-                text.add(f"{name}: {schema.to_schema()}")
-                if name in self._defaults:
-                    text.indent()
-                    text.add(f"default: {self._defaults[name]}")
-                    text.dedent()
+    @classmethod
+    def __repr_property(cls, name: str, value: Any, repr_: MultiLineString) -> None:
+        """Update the string representation of the grammar with that of a property.
+
+        Args:
+            name: The name of the property.
+            value: The value of the property.
+            repr_: The string representation of the grammar.
+        """
+        if isinstance(value, Mapping):
+            repr_.add(f"{name.capitalize()}:")
+            repr_.indent()
+            for k, v in value.items():
+                cls.__repr_property(k, v, repr_)
+            repr_.dedent()
+        else:
+            repr_.add(f"{name.capitalize()}: {value}")
 
     def _validate(  # noqa:D102
         self,

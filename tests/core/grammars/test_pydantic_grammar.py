@@ -282,10 +282,12 @@ Grammar name: g
             """
 Grammar name: g
    Required elements:
-      name1: <class 'int'>
+      name1:
+         Type: <class 'int'>
    Optional elements:
-      name2: numpy.ndarray[typing.Any, numpy.dtype[int]]
-         default: [0]
+      name2:
+         Type: numpy.ndarray[typing.Any, numpy.dtype[int]]
+         Default: [0]
 """,
         ),
     ],
