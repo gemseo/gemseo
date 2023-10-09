@@ -25,6 +25,7 @@ from collections import abc
 from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
+from html import escape
 from typing import Any
 from typing import Callable
 from typing import Iterable
@@ -208,27 +209,42 @@ class MultiLineString:
         self.__level = self.DEFAULT_LEVEL
 
     def _repr_html_(self) -> str:
-        msg = ""
-        level = self.DEFAULT_LEVEL
+        multiline_string_repr = ""
+        current_level = self.DEFAULT_LEVEL
         for line in self.__lines:
-            if line.level > level:
-                msg += "<ul>"
-            elif line.level < level:
-                msg += "</ul>"
+            if line.level > current_level:
+                # Start a new list (in the last item of the current list if any).
+                multiline_string_repr = multiline_string_repr.removesuffix("</li>")
+                multiline_string_repr += "<ul>"
+            elif line.level < current_level:
+                # End nested lists.
+                for _ in range(current_level - line.level):
+                    # Close the list.
+                    multiline_string_repr += "</ul>"
+                    if line.level != self.DEFAULT_LEVEL:
+                        # Close the item containing this list.
+                        multiline_string_repr += "</li>"
 
-            level = line.level
-            str_format = line.str_format
+            # String representation of the line.
+            line_string_repr = escape(line.str_format)
             if line.args or line.kwargs:
-                str_format = str_format.format(*line.args, **line.kwargs)
+                args = (escape(str(arg)) for arg in line.args)
+                kwargs = {k: escape(str(arg)) for k, arg in line.kwargs.items()}
+                line_string_repr = line_string_repr.format(*args, **kwargs)
 
-            if level == self.DEFAULT_LEVEL:
-                msg += f"{str_format}<br/>"
+            # Update the level of the current
+            current_level = line.level
+            if current_level == self.DEFAULT_LEVEL:
+                multiline_string_repr += f"{line_string_repr}<br/>"
             else:
-                msg += f"<li>{str_format}</li>"
+                multiline_string_repr += f"<li>{line_string_repr}</li>"
 
-        if level > self.DEFAULT_LEVEL:
-            msg += "</ul>" * (level - self.DEFAULT_LEVEL)
-        return REPR_HTML_WRAPPER.format(msg)
+        if current_level > self.DEFAULT_LEVEL:
+            # Close the lists that are still open.
+            multiline_string_repr += "</ul></li>" * (current_level - self.DEFAULT_LEVEL)
+            multiline_string_repr = multiline_string_repr.removesuffix("</li>")
+
+        return REPR_HTML_WRAPPER.format(multiline_string_repr)
 
     def indent(self) -> None:
         """Increase the indentation."""

@@ -453,26 +453,36 @@ def test_repr():
         == """
 Grammar name: g
    Required elements:
-      name1: int
+      name1:
+         Type: <class 'int'>
    Optional elements:
-      name2: str
-         default: foo
+      name2:
+         Type: <class 'str'>
+         Default: foo
 """.strip()
     )
     assert g._repr_html_() == REPR_HTML_WRAPPER.format(
         "Grammar name: g<br/>"
         "<ul>"
-        "<li>Required elements:</li>"
+        "<li>Required elements:"
         "<ul>"
-        "<li>name1: int</li>"
-        "</ul>"
-        "<li>Optional elements:</li>"
+        "<li>name1:"
         "<ul>"
-        "<li>name2: str</li>"
+        "<li>Type: &lt;class &#x27;int&#x27;&gt;</li>"
+        "</ul>"
+        "</li>"
+        "</ul>"
+        "</li>"
+        "<li>Optional elements:"
         "<ul>"
-        "<li>default: foo</li>"
+        "<li>name2:"
+        "<ul>"
+        "<li>Type: &lt;class &#x27;str&#x27;&gt;</li>"
+        "<li>Default: foo</li>"
         "</ul>"
+        "</li>"
         "</ul>"
+        "</li>"
         "</ul>"
     )
 

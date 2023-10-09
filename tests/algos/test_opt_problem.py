@@ -1887,12 +1887,13 @@ def test_repr_html():
         "Optimization problem:<br/>"
         "<ul>"
         "<li>minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2</li>"
-        "<li>with respect to x</li><li>subject to constraints:</li>"
+        "<li>with respect to x</li><li>subject to constraints:"
         "<ul>"
-        "<li>ineq1(x): 0.5 - x[0]**3 <= 0.0</li>"
-        "<li>ineq2(x): 0.5 - x[1]**3 <= 0.0</li>"
+        "<li>ineq1(x): 0.5 - x[0]**3 &lt;= 0.0</li>"
+        "<li>ineq2(x): 0.5 - x[1]**3 &lt;= 0.0</li>"
         "<li>eq(x): 0.9 - x[2]**3 == 0.0</li>"
         "</ul>"
+        "</li>"
         "</ul>"
     )
 

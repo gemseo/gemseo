@@ -189,19 +189,8 @@ class PydanticGrammar(BaseGrammar):
 
         self.__model = Model
 
-    def _repr_required_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, field in self.__model.__fields__.items():
-            if field.required:
-                text.add(f"{name}: {field.outer_type_}")
-
-    def _repr_optional_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, field in self.__model.__fields__.items():
-            if not field.required:
-                text.add(f"{name}: {field.outer_type_}")
-                if name in self._defaults:
-                    text.indent()
-                    text.add(f"default: {self._defaults[name]}")
-                    text.dedent()
+    def _update_grammar_repr(self, _repr: MultiLineString, properties: Any) -> None:
+        _repr.add(f"Type: {properties.outer_type_}")
 
     def _validate(  # noqa: D102
         self,

@@ -267,10 +267,14 @@ Grammar name: g
             """
 Grammar name: g
    Required elements:
-      name1: {'type': 'integer'}
+      name1:
+         Type: integer
    Optional elements:
-      name2: {'type': 'array', 'items': {'type': 'number'}}
-         default: foo
+      name2:
+         Type: array
+         Items:
+            Type: number
+         Default: foo
 """,
         ),
     ],

@@ -101,11 +101,11 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         text.indent()
         text.add("Required elements:")
         text.indent()
-        self._repr_required_elements(text)
+        self.__update_grammar_repr(text, True)
         text.dedent()
         text.add("Optional elements:")
         text.indent()
-        self._repr_optional_elements(text)
+        self.__update_grammar_repr(text, False)
         return text
 
     def __repr__(self) -> str:
@@ -153,20 +153,29 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             grammar: The grammar to be copied into.
         """
 
-    @abstractmethod
-    def _repr_required_elements(self, text: MultiLineString) -> None:
-        """Represent the required elements for `__repr__`.
+    def __update_grammar_repr(self, repr_: MultiLineString, required: bool) -> None:
+        """Update the string representation of the grammar with that of its elements.
 
         Args:
-            text: The text to be updated.
+            repr_: The string representation of the grammar.
+            required: Whether to show the required elements or the other ones.
         """
+        for name, properties in self.items():
+            if (name in self.required_names) == required:
+                repr_.add(f"{name}:")
+                repr_.indent()
+                self._update_grammar_repr(repr_, properties)
+                if not required:
+                    repr_.add(f"Default: {self._defaults.get(name, 'N/A')}")
+                repr_.dedent()
 
     @abstractmethod
-    def _repr_optional_elements(self, text: MultiLineString) -> None:
-        """Represent the optional elements for `__repr__`.
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        """Update the string representation of the grammar with an element.
 
         Args:
-            text: The text to be updated.
+            repr_: The string representation of the grammar.
+            properties: The properties of the element.
         """
 
     @property
