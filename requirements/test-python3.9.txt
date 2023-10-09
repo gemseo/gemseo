@@ -16,7 +16,7 @@ coverage[toml]==7.3.2
     # via
     #   covdefaults
     #   pytest-cov
-cycler==0.12.0
+cycler==0.12.1
     # via matplotlib
 dill==0.3.7
     # via openturns
@@ -30,7 +30,7 @@ execnet==2.0.2
     # via pytest-xdist
 fastjsonschema==2.18.0
     # via gemseo (pyproject.toml)
-fonttools==4.43.0
+fonttools==4.43.1
     # via matplotlib
 genson==1.2.2
     # via gemseo (pyproject.toml)
