@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements/dist.in
 #
-annotated-types==0.5.0
+annotated-types==0.6.0
     # via pydantic
 attrs==23.1.0
     # via check-wheel-contents
