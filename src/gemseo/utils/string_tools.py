@@ -30,6 +30,7 @@ from typing import Any
 from typing import Callable
 from typing import Iterable
 
+from gemseo.utils.compatibility.python import remove_suffix
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 # to store the raw ingredients of a string to be formatted later
@@ -214,7 +215,7 @@ class MultiLineString:
         for line in self.__lines:
             if line.level > current_level:
                 # Start a new list (in the last item of the current list if any).
-                multiline_string_repr = multiline_string_repr.removesuffix("</li>")
+                multiline_string_repr = remove_suffix(multiline_string_repr, "</li>")
                 multiline_string_repr += "<ul>"
             elif line.level < current_level:
                 # End nested lists.
@@ -242,7 +243,7 @@ class MultiLineString:
         if current_level > self.DEFAULT_LEVEL:
             # Close the lists that are still open.
             multiline_string_repr += "</ul></li>" * (current_level - self.DEFAULT_LEVEL)
-            multiline_string_repr = multiline_string_repr.removesuffix("</li>")
+            multiline_string_repr = remove_suffix(multiline_string_repr, "</li>")
 
         return REPR_HTML_WRAPPER.format(multiline_string_repr)
 
