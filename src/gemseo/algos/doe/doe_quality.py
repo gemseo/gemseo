@@ -15,7 +15,6 @@
 """DOE assessor."""
 from __future__ import annotations
 
-import logging
 from collections import namedtuple
 from collections.abc import Callable
 from numbers import Real
@@ -31,7 +30,6 @@ from numpy import ndarray
 from scipy.spatial import distance
 from scipy.stats import qmc
 
-LOGGER = logging.getLogger(__name__)
 
 __EUCLIDEAN: Final[str] = "euclidean"
 _DEFAULT_DISCREPANCY_TYPE_NAME: Final[str] = "CD"
