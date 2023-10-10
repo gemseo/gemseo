@@ -18,12 +18,13 @@ import logging
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.utils.testing.helpers import concretize_classes
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
@@ -164,7 +165,8 @@ def test_fullfact_error(
 
 def test__compute_fullfact_levels(caplog):
     """Check the WARNING logged when the number of samples is less than expected."""
-    DOELibrary._compute_fullfact_levels(10, 3)
+    with concretize_classes(BaseFullFactorialDOE):
+        BaseFullFactorialDOE()._compute_fullfact_levels(10, 3)
     message = (
         "A full-factorial DOE of 10 samples in dimension 3 does not exist; "
         "use 8 samples instead, i.e. the largest 3-th integer power less than 10."

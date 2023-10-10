@@ -25,6 +25,17 @@ OT_VERSION: Final[version.Version] = version.parse(openturns.__version__)
 
 IS_OT_LOWER_THAN_1_20: Final[bool] = OT_VERSION < version.parse("1.20")
 
+if OT_VERSION < version.parse("1.17.0"):
+
+    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
+        return openturns.SimulatedAnnealingLHS(lhs, temperature, criteria)
+
+else:
+
+    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
+        return openturns.SimulatedAnnealingLHS(lhs, criteria, temperature)
+
+
 if OT_VERSION < version.parse("1.18"):
 
     def get_eigenvalues(  # noqa:D103

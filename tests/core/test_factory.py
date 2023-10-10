@@ -29,15 +29,15 @@ from pathlib import Path
 
 import pytest
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.base_factory import _FactoryMultitonMeta
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+from gemseo.utils.base_multiton import BaseABCMultiton
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
 
 
-class MultitonFactory(metaclass=_FactoryMultitonMeta):
+class MultitonFactory(metaclass=BaseABCMultiton):
     _CLASS = int
     _MODULE_NAMES = tuple()
 
@@ -45,7 +45,7 @@ class MultitonFactory(metaclass=_FactoryMultitonMeta):
 def test_multiton():
     """Verify the multiton behavior."""
 
-    class MultitonFactory2(metaclass=_FactoryMultitonMeta):
+    class MultitonFactory2(metaclass=BaseABCMultiton):
         _CLASS = str
         _MODULE_NAMES = tuple()
 
@@ -58,9 +58,9 @@ def test_multiton_cache_clear():
     """Verify the clearing of the cache of the multiton."""
     # The cache is not empty because of the Multiton* classes declared in the module.
     MultitonFactory()
-    assert _FactoryMultitonMeta._FactoryMultitonMeta__cache
+    assert BaseABCMultiton._BaseMultiton__keys_to_class_instances
     BaseFactory.clear_cache()
-    assert not _FactoryMultitonMeta._FactoryMultitonMeta__cache
+    assert not BaseABCMultiton._BaseMultiton__keys_to_class_instances
 
 
 def test_print_configuration(reset_factory):

@@ -25,7 +25,6 @@ import logging
 import os
 import pkgutil
 import sys
-from abc import ABCMeta
 from abc import abstractmethod
 from importlib import metadata
 from inspect import isabstract
@@ -34,48 +33,14 @@ from typing import ClassVar
 from typing import Iterable
 from typing import NamedTuple
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
-
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
+from gemseo.utils.base_multiton import BaseABCMultiton
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_default_option_values
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
-
-
-class _FactoryMultitonMeta(ABCMeta, GoogleDocstringInheritanceMeta):
-    """A metaclass for implementing the Multiton design pattern.
-
-    See `Multiton <https://en.wikipedia.org/wiki/Multiton_pattern>`.
-
-    As opposed to the functools.lru_cache,
-    the objects built from this metaclass can be pickled.
-
-    A cache entry is bound to the tuple combining :attr:`.Factory._CLASS` and
-    :attr:`.Factory._MODULE_NAMES`.
-    When instantiating a factory, if an instance has already been created for this
-    tuple then this instance is used, otherwise a new instance is created is stored
-    into the cache.
-    """
-
-    __cache: ClassVar[dict[tuple, BaseFactory]] = {}
-    """The cache that keeps the factory instances."""
-
-    def __call__(cls) -> BaseFactory:  # noqa: D107
-        key = (cls._CLASS,) + tuple(cls._MODULE_NAMES)
-        # Either return an instance that match an already existing key
-        # or create and return a new instance.
-        obj = cls.__cache.get(key)
-        if obj is not None:
-            return obj
-        return cls.__cache.setdefault(key, type.__call__(cls))
-
-    @classmethod
-    def clear_cache(cls) -> None:
-        """Clear the cache."""
-        cls.__cache.clear()
 
 
 class _ClassInfo(NamedTuple):
@@ -88,7 +53,7 @@ class _ClassInfo(NamedTuple):
     """The name of the library (the module) that contains the class."""
 
 
-class BaseFactory(metaclass=_FactoryMultitonMeta):
+class BaseFactory(metaclass=BaseABCMultiton):
     """A base class for factory of objects.
 
     This factory can create objects from a base class

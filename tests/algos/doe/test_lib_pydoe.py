@@ -29,7 +29,6 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import array_equal
 from numpy import loadtxt
-from numpy import ones
 from numpy.linalg import norm
 
 from .utils import execute_problem
@@ -159,23 +158,6 @@ def test_export_error():
         Exception, match="Samples are missing, execute method before export."
     ):
         doe_library.export_samples("test.csv")
-
-
-def test_rescale_samples():
-    """"""
-    algo_name = "lhs"
-    dim = 3
-    n_samples = 100
-    doe_library = execute_problem(
-        DOE_LIB_NAME,
-        algo_name=algo_name,
-        dim=dim,
-        n_samples=n_samples,
-        criterion="corr",
-    )
-    samples = ones((10,))
-    samples[0] += 1e-15
-    doe_library._rescale_samples(samples)
 
 
 @pytest.mark.parametrize(

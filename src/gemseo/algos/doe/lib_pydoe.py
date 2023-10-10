@@ -26,13 +26,13 @@ from typing import Tuple
 from typing import Union
 
 import pyDOE2 as pyDOE
-from numpy import array
 from numpy import ndarray
 from numpy.random import RandomState
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 
 OptionType = Optional[
@@ -212,7 +212,7 @@ class PyDOE(DOELibrary):
             seed = options[self.SEED]
             return pyDOE.lhs(
                 options[self.DIMENSION],
-                random_state=RandomState(self.seed if seed is None else seed),
+                random_state=RandomState(self._get_seed(seed)),
                 samples=options["n_samples"],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),
@@ -240,10 +240,10 @@ class PyDOE(DOELibrary):
             )
 
         if self.algo_name == self.PYDOE_FULLFACT:
-            return self._generate_fullfact(
-                options[self.DIMENSION],
-                levels=options.get(self.LEVEL_KEYWORD),
-                n_samples=options.get(self.N_SAMPLES),
+            return PyDOEFullFactorialDOE().generate_samples(
+                options.pop(self.N_SAMPLES),
+                options.pop(self.DIMENSION),
+                **options,
             )
 
         if self.algo_name == self.PYDOE_2LEVELFACT:
@@ -251,23 +251,6 @@ class PyDOE(DOELibrary):
 
         if self.algo_name == self.PYDOE_PBDESIGN:
             return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
-
-    def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> ndarray:
-        doe = pyDOE.fullfact(levels)
-
-        # Because pyDOE return the DOE where the values of levels are integers from 0 to
-        # the maximum level number,
-        # we need to divide by levels - 1.
-        # To not divide by zero,
-        # we first find the null denominators,
-        # we replace them by one,
-        # then we change the final values of the DOE by 0.5.
-        divide_factor = array(levels) - 1
-        null_indices = divide_factor == 0
-        divide_factor[null_indices] = 1
-        doe /= divide_factor
-        doe[:, null_indices] = 0.5
-        return doe
 
     @classmethod
     def _get_unsuitability_reason(
