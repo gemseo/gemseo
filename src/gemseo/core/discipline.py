@@ -907,7 +907,7 @@ class MDODiscipline(Serializable):
     def execute(
         self,
         input_data: Mapping[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    ) -> DisciplineData:
         """Execute the discipline.
 
         This method executes the discipline:

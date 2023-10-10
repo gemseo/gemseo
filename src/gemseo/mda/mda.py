@@ -43,6 +43,7 @@ from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -789,7 +790,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def execute(  # noqa:D102
         self, input_data: Mapping[str, Any] | None = None
-    ) -> dict[str, Any]:
+    ) -> DisciplineData:
         self._current_iter = 0
         return super().execute(input_data=input_data)
 
