@@ -26,8 +26,10 @@ from typing import Iterable
 from typing import Mapping
 
 from numpy import array
+from numpy import expand_dims
 from numpy import float64
 from numpy import heaviside
+from numpy import ndarray
 from numpy import zeros
 from sympy import Expr
 from sympy import lambdify
@@ -188,6 +190,25 @@ class AnalyticDiscipline(MDODiscipline):
             input_name: zeros(1) for input_name in self.get_input_data_names()
         }
 
+    @staticmethod
+    def __cast_expression_to_array(expression: Expr) -> ndarray:
+        """Cast a SymPy expression to a NumPy array.
+
+        Args:
+            expression: The SymPy expression to cast.
+
+        Returns:
+            The NumPy array.
+        """
+        if expression.is_integer:
+            data_type = int
+        elif expression.is_real:
+            data_type = float
+        else:
+            data_type = complex
+
+        return array([expression], data_type)
+
     def _run(self) -> None:
         output_data = {}
         # Do not pass useless tokens to the expr, this may
@@ -199,13 +220,15 @@ class AnalyticDiscipline(MDODiscipline):
                 output_value = output_function(
                     *(input_data[input_symbol] for input_symbol in input_symbols)
                 )
-                output_data[output_name] = array([output_value], dtype=float64)
+                output_data[output_name] = expand_dims(output_value, 0)
 
         else:
             for output_name, output_expression in self._sympy_exprs.items():
                 try:
                     output_value = output_expression.evalf(subs=input_data)
-                    output_data[output_name] = array([output_value], dtype=float64)
+                    output_data[output_name] = self.__cast_expression_to_array(
+                        output_value
+                    )
                 except TypeError:
                     LOGGER.error(
                         "Failed to evaluate expression : %s", str(output_expression)

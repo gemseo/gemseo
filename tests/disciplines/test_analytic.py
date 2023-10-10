@@ -158,3 +158,10 @@ def test_linearize(
         assert discipline.jac == {"y": {"a": array([[2.0]])}}
     else:
         assert discipline.jac == {}
+
+
+@pytest.mark.parametrize("fast_evaluation", [False, True])
+def test_complex_outputs(fast_evaluation):
+    discipline = AnalyticDiscipline({"y": "x*I"}, fast_evaluation=fast_evaluation)
+    discipline.execute({"x": array([1.0])})
+    assert discipline.local_data["y"] == 1j
