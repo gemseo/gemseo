@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import sys
 
-if sys.version_info < (3, 10):  # pragma: >=3.10 no cover
+PYTHON_VERSION = sys.version_info
+
+if PYTHON_VERSION < (3, 10):  # pragma: >=3.10 no cover
     from typing_extensions import ParamSpecArgs  # noqa: F401
     from typing_extensions import ParamSpecKwargs  # noqa: F401
 
@@ -28,3 +30,16 @@ else:  # pragma: <3.10 no cover
     from types import EllipsisType
 
     EllipsisType
+
+if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
+
+    def remove_suffix(string: str, suffix: str) -> str:  # noqa: D103
+        if string.endswith(suffix):
+            return string[: -len(suffix)]
+
+        return string
+
+else:  # pragma: <3.9 no cover
+
+    def remove_suffix(string: str, suffix: str) -> str:  # noqa: D103
+        return string.removesuffix(suffix)
