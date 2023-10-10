@@ -1,0 +1,2 @@
+``AnalyticDiscipline`` casts SymPy outputs to appropriate NumPy data types
+(as opposed to systematically casting to ``float64``).
