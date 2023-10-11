@@ -31,6 +31,7 @@ from pathlib import PureWindowsPath
 
 import pytest
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
@@ -1308,3 +1309,11 @@ def test_repr_html():
         "<li>Outputs: y_1</li>"
         "</ul>"
     )
+
+
+def test_set_cache_policy_to_none():
+    """Check that set_cache_policy can use CacheType.NONE as cache_type value."""
+    discipline = MDODiscipline()
+    assert isinstance(discipline.cache, SimpleCache)
+    discipline.set_cache_policy(discipline.CacheType.NONE)
+    assert discipline.cache is None

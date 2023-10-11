@@ -672,6 +672,10 @@ class MDODiscipline(Serializable):
                    there may be duplicate computations
                    because the cache will not be shared among the processes.
         """
+        if cache_type == self.CacheType.NONE:
+            self.cache = None
+            return
+
         if self.cache.__class__.__name__ != cache_type or not (
             cache_type == self.CacheType.HDF5
             and cache_hdf_file == self.cache.hdf_file.hdf_file_path
