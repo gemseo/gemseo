@@ -42,7 +42,7 @@ extended-test:
           - py38-coverage
           - py310-coverage
 
-# This job creates a distribution from the develop branch and uploads it to the gitlab registry.
+# This job creates a distribution from new commit on the develop branch and uploads it to the gitlab registry.
 publish-gitlab:
   extends:
     - .publish-base
@@ -50,4 +50,8 @@ publish-gitlab:
     TWINE_PASSWORD: $CI_JOB_TOKEN
     TWINE_REPOSITORY_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"
+  before_script:
+    # Tags are necessary for setuptools-scm to determine the version,
+    # but gitlab makes shallow fetch by default.
+    - git fetch --tags
