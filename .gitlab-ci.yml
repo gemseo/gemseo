@@ -54,4 +54,4 @@ publish-gitlab:
   before_script:
     # Tags are necessary for setuptools-scm to determine the version,
     # but gitlab makes shallow fetch by default.
-    - git fetch --tags
+    - git fetch --tags --unshallow
