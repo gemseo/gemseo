@@ -1,0 +1,3 @@
+[tool.pip-tools]
+generate_hashes = true
+upgrade = true
