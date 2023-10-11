@@ -50,23 +50,32 @@ ot_distributions
 # ---------------------
 # Then,
 # we can create a probability distribution for a two-dimensional random variable
-# whose components are independent and distributed
-# as the standard normal distribution (mean = 0 and standard deviation = 1):
+# with independent components that follow a normal distribution.
+#
+# Case 1: the OpenTURNS distribution has a GEMSEO class
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# For the standard normal distribution (mean = 0 and standard deviation = 1):
 distribution_0_1 = create_distribution("x", "OTNormalDistribution", 2)
 distribution_0_1
 
 # %%
-# or create another distribution with mean = 1 and standard deviation = 2
-# for the marginal distributions:
+# For a normal with mean = 1 and standard deviation = 2:
 distribution_1_2 = create_distribution(
     "x", "OTNormalDistribution", 2, mu=1.0, sigma=2.0
 )
 distribution_1_2
 
 # %%
-# We could also use the generic :class:`.OTDistribution`
-# which allows access to all the OpenTURNS distributions
-# but this requires to know the signature of the methods of this library:
+# Case 2: the OpenTURNS distribution has no GEMSEO class
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When GEMSEO does not offer a class for the OpenTURNS distribution,
+# we can use the generic GEMSEO class :class:`.OTDistribution`
+# to create any OpenTURNS distribution
+# by setting ``interfaced_distribution`` to its OpenTURNS name
+# and ``parameters`` as a tuple of OpenTURNS parameter values
+# (`see the documentation of OpenTURNS
+# <https://openturns.github.io/openturns/latest/user_manual/_generated/
+# openturns.Normal.html#openturns.Normal>`__).
 distribution_1_2 = create_distribution(
     "x", "OTDistribution", 2, interfaced_distribution="Normal", parameters=(1.0, 2.0)
 )
@@ -88,38 +97,34 @@ distribution_0_1.plot()
 #    all components have the same distributions and so the plot will be the same.
 
 # %%
-# Get mean
-# --------
+# Get statistics
+# --------------
+# Mean
+# ~~~~
 # We can access the mean of the distribution:
 distribution_0_1.mean
 
 # %%
-# Get standard deviation
-# ----------------------
+# Standard deviation
+# ~~~~~~~~~~~~~~~~~~
 # We can access the standard deviation of the distribution:
 distribution_0_1.standard_deviation
 
 # %%
-# Get numerical range
-# -------------------
+# Numerical range
+# ~~~~~~~~~~~~~~~
 # We can access the range,
 # i.e. the difference between the numerical minimum and maximum,
 # of the distribution:
 distribution_0_1.range
 
 # %%
-# Get mathematical support
-# ------------------------
+# Mathematical support
+# ~~~~~~~~~~~~~~~~~~~~
 # We can access the range,
 # i.e. the difference between the minimum and maximum,
 # of the distribution:
 distribution_0_1.support
-
-# %%
-# Generate samples
-# ----------------
-# We can generate 10 samples of the distribution:
-distribution_0_1.compute_samples(10)
 
 # %%
 # Compute CDF
@@ -137,3 +142,9 @@ distribution_0_1.compute_cdf([0.0, 1.0])
 # (here the quantile at 50% for the first component
 # and the quantile at 97.5% for the second one):
 distribution_0_1.compute_inverse_cdf([0.5, 0.975])
+
+# %%
+# Generate samples
+# ----------------
+# We can generate 10 samples of the distribution:
+distribution_0_1.compute_samples(10)
