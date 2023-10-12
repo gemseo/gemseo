@@ -12,12 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Deprecated module for progress bar."""
+"""A dummy progress bar."""
 from __future__ import annotations
 
-from gemseo.algos._progress_bars.custom_tqdm_progress_bar import (  # noqa: F401
-    TqdmToLogger as ProgressBar,
-)
-from gemseo.algos._progress_bars.tqdm_to_logger import TqdmToLogger  # noqa: F401
+from numpy import ndarray
 
-# TODO: API: remove this module in gemseo 6.0.0.
+from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+
+
+class DummyProgressBar(BaseProgressBar):
+    """A dummy progress bar.
+
+    .. warning:: This progress bar is inactive.
+    """
+
+    def set_objective_value(  # noqa D102
+        self, x_vect: ndarray | None, current_iter_must_not_be_logged: bool = False
+    ) -> None:
+        ...
+
+    def finalize_iter_observer(self) -> None:  # noqa D102
+        ...

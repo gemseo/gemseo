@@ -51,6 +51,10 @@ from numpy import where
 from numpy import zeros
 from strenum import StrEnum
 
+from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
+from gemseo.algos._progress_bars.progress_bar import ProgressBar
+from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgressBar
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
@@ -58,8 +62,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.progress_bar import ProgressBar
-from gemseo.algos.progress_bar import TqdmToLogger
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import FunctionIsNan
@@ -124,39 +126,53 @@ class DriverLibrary(AlgorithmLibrary):
     _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
     """The name of the option to activate the progress bar in the optimization log."""
 
-    activate_progress_bar: ClassVar[bool] = True
-    """Whether to activate the progress bar in the optimization log."""
-
     _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar(
         "DriverLibOptions",
         file_path=Path(__file__).parent / "driver_lib_options.json",
     )
 
+    __LOG_PROBLEM: Final[str] = "log_problem"
+    """The name of the option to log the definition and result of the problem."""
+
     __RESET_ITERATION_COUNTERS_OPTION: Final[str] = "reset_iteration_counters"
     """The name of the option to reset the iteration counters of the OptimizationProblem
     before each execution."""
+
+    activate_progress_bar: ClassVar[bool] = True
+    """Whether to activate the progress bar in the optimization log."""
+
+    __iter: int
+    """The current iteration."""
+
+    # TODO: API: use 0.0 instead of None
+    _max_time: float | None
+    """The maximum duration of the execution."""
+
+    # TODO: API: use 0.0 instead of None
+    _start_time: float | None
+    """The time at which the execution begins."""
+
+    __log_problem: bool
+    """Whether to log the definition and result of the problem."""
+
+    __max_iter: int
+    """The maximum number of iterations."""
+
+    __progress_bar: BaseProgressBar
+    """The progress bar used during the execution."""
 
     __reset_iteration_counters: bool
     """Whether to reset the iteration counters of the OptimizationProblem before each
     execution."""
 
-    __log_problem: bool
-    """Whether to log the definition and result of the problem."""
-
-    __LOG_PROBLEM: Final[str] = "log_problem"
-    """The name of the option to log the definition and result of the problem."""
-
     def __init__(self) -> None:  # noqa:D107
-        # Library settings and check
         super().__init__()
-        self.__progress_bar = None
+        self.deactivate_progress_bar()
         self.__activate_progress_bar = self.activate_progress_bar
         self.__max_iter = 0
         self.__iter = 0
         self._start_time = None
         self._max_time = None
-        self.__message = None
-        self.__is_current_iteration_logged = True
         self.__reset_iteration_counters = True
         self.__log_problem = True
 
@@ -172,7 +188,7 @@ class DriverLibrary(AlgorithmLibrary):
 
     def deactivate_progress_bar(self) -> None:
         """Deactivate the progress bar."""
-        self.__progress_bar = None
+        self.__progress_bar = DummyProgressBar()
 
     def init_iter_observer(
         self,
@@ -196,60 +212,13 @@ class DriverLibrary(AlgorithmLibrary):
         self.problem.current_iter = self.__iter = (
             0 if self.__reset_iteration_counters else self.problem.current_iter
         )
-        self.__message = message
         if self.__activate_progress_bar:
-            self.__progress_bar = ProgressBar(
-                total=max_iter,
-                desc=message,
-                ascii=False,
-                bar_format="{desc} {percentage:3.0f}%|{bar}{r_bar}",
-                file=TqdmToLogger(),
-            )
-            self.__progress_bar.n = self.__iter
+            cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
+            self.__progress_bar = cls(max_iter, self.__iter, self.problem, message)
         else:
             self.deactivate_progress_bar()
 
         self._start_time = time()
-
-    def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
-        """Set the objective value in the progress bar.
-
-        Args:
-            x_vect: The design variables values.
-                If ``None``, consider the objective at the last iteration.
-        """
-        if self.__log_problem:
-            if x_vect is None:
-                obj = self.problem.objective.last_eval
-            else:
-                obj = self.problem.database.get_function_value(
-                    self.problem.objective.name, x_vect
-                )
-
-        if self.__log_problem and obj is None:
-            self.__is_current_iteration_logged = not self.__is_current_iteration_logged
-            if self.__is_current_iteration_logged:
-                self.__progress_bar.n += 1
-                obj = "Not evaluated"
-        else:
-            self.__is_current_iteration_logged = True
-            self.__progress_bar.n += 1
-            if self.__log_problem:
-                # if maximization problem: take the opposite
-                if (
-                    not self.problem.minimize_objective
-                    and not self.problem.use_standardized_objective
-                ):
-                    obj = -obj
-
-                if isinstance(obj, ndarray) and len(obj) == 1:
-                    obj = obj[0]
-
-        if self.__is_current_iteration_logged:
-            if self.__log_problem:
-                self.__progress_bar.set_postfix(refresh=True, obj=obj)
-            else:
-                self.__progress_bar.set_postfix(refresh=True)
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Iterate the progress bar, implement the stop criteria.
@@ -262,30 +231,18 @@ class DriverLibrary(AlgorithmLibrary):
             MaxTimeReached: If the elapsed time is greater than the maximum
                 execution time.
         """
-        # First check if the max_iter is reached and update the progress bar
-        if self.__progress_bar is not None and not self.__is_current_iteration_logged:
-            self.__set_progress_bar_objective_value(
-                self.problem.database.get_x_vect(self.problem.current_iter or -1)
-            )
+        self.__progress_bar.set_objective_value(None, True)
         self.__iter += 1
         self.problem.current_iter = self.__iter
         if self._max_time > 0:
-            delta_t = time() - self._start_time
-            if delta_t > self._max_time:
+            if time() - self._start_time > self._max_time:
                 raise MaxTimeReached()
 
-        if self.__progress_bar is not None:
-            self.__set_progress_bar_objective_value(x_vect)
+        self.__progress_bar.set_objective_value(x_vect)
 
     def finalize_iter_observer(self) -> None:
         """Finalize the iteration observer."""
-        if self.__progress_bar is not None:
-            if not self.__is_current_iteration_logged:
-                self.__set_progress_bar_objective_value(
-                    self.problem.database.get_x_vect(self.problem.current_iter or -1)
-                )
-            self.__progress_bar.leave = False
-            self.__progress_bar.close()
+        self.__progress_bar.finalize_iter_observer()
 
     def _pre_run(
         self,

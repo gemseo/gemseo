@@ -12,12 +12,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Deprecated module for progress bar."""
+"""The base progress bar."""
 from __future__ import annotations
 
-from gemseo.algos._progress_bars.custom_tqdm_progress_bar import (  # noqa: F401
-    TqdmToLogger as ProgressBar,
-)
-from gemseo.algos._progress_bars.tqdm_to_logger import TqdmToLogger  # noqa: F401
+from abc import ABC
+from abc import abstractmethod
 
-# TODO: API: remove this module in gemseo 6.0.0.
+from numpy import ndarray
+
+
+class BaseProgressBar(ABC):
+    """The base progress bar."""
+
+    @abstractmethod
+    def set_objective_value(
+        self, x_vect: ndarray | None, current_iter_must_not_be_logged: bool = False
+    ) -> None:
+        """Set the objective value.
+
+        Args:
+            x_vect: The design variables values.
+                If ``None``, consider the objective at the last iteration.
+            current_iter_must_not_be_logged: Set the objective value
+                only if the current iteration is not logged.
+        """
+
+    @abstractmethod
+    def finalize_iter_observer(self) -> None:
+        """Finalize the iteration observer."""

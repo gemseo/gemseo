@@ -23,6 +23,7 @@ from __future__ import annotations
 from unittest import mock
 
 import pytest
+from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
@@ -157,7 +158,10 @@ def test_progress_bar(activate_progress_bar):
     """Check the activation of the progress bar from the options of a DriverLibrary."""
     driver = OptimizersFactory().create("SLSQP")
     driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
-    assert (driver._DriverLibrary__progress_bar is None) is not activate_progress_bar
+    assert (
+        isinstance(driver._DriverLibrary__progress_bar, ProgressBar)
+        is activate_progress_bar
+    )
 
 
 def test_common_options():
