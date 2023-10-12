@@ -27,7 +27,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from typing import ClassVar
-from typing import Final
 from typing import Mapping
 from typing import MutableMapping
 
@@ -95,7 +94,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     opt_grammar: JSONGrammar | None
     """The grammar defining the options of the current algorithm."""
 
-    OPTIONS_DIR: Final[str] = "options"
+    OPTIONS_DIR: ClassVar[str | Path] = "options"
     """The name of the directory containing the files of the grammars of the options."""
 
     OPTIONS_MAP: dict[str, str] = {}

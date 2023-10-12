@@ -215,7 +215,6 @@ class OpenTURNS(DOELibrary):
         Returns:
             The samples for the DOE.
         """
-        self.seed += 1
         openturns.RandomGenerator.SetSeed(self._get_seed(seed))
         doe_algo = self.__ALGO_NAMES_TO_ALGO_DATA[self.algo_name].doe_algo_class()
         return doe_algo.generate_samples(n_samples, dimension, **options)

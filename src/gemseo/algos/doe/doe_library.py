@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import traceback
+from abc import abstractmethod
 from dataclasses import dataclass
 from multiprocessing import current_process
 from pathlib import Path
@@ -125,7 +126,7 @@ class DOELibrary(DriverLibrary):
         options[self._VARIABLE_NAMES] = self.problem.design_space.variable_names
         options[self._VARIABLE_SIZES] = self.problem.design_space.variable_sizes
 
-        self.unit_samples = self._generate_samples(**options)
+        self.unit_samples = self.__generate_samples(**options)
 
         LOGGER.debug(
             (
@@ -175,6 +176,15 @@ class DOELibrary(DriverLibrary):
 
         return samples
 
+    def __generate_samples(self, **options: Any) -> ndarray:
+        """Generate the samples of the input variables.
+
+        Args:
+            **options: The options of the DOE algorithm.
+        """
+        self.seed += 1
+        return self._generate_samples(**options)
+
     def _get_seed(self, seed: int | None) -> int:
         """Return a seed for the random number generator.
 
@@ -186,26 +196,29 @@ class DOELibrary(DriverLibrary):
         """
         return self.seed if seed is None else seed
 
+    @abstractmethod
     def _generate_samples(self, **options: Any) -> ndarray:
         """Generate the samples of the input variables.
 
         Args:
             **options: The options of the DOE algorithm.
         """
-        raise NotImplementedError()
 
-    def __call__(self, n_samples: int, dimension: int, **options: Any) -> ndarray:
+    def __call__(
+        self, n_samples: int | None, dimension: int, **options: Any
+    ) -> ndarray:
         """Generate a design of experiments in the unit hypercube.
 
         Args:
             n_samples: The number of samples.
+                If ``None``, the number of samples is deduced from the ``options``.
             dimension: The dimension of the input space.
             **options: The options of the DOE algorithm.
 
         Returns:
             A design of experiments in the unit hypercube.
         """
-        return self._generate_samples(
+        return self.__generate_samples(
             **self.__get_algorithm_options(options, n_samples, dimension)
         )
 
@@ -352,7 +365,7 @@ class DOELibrary(DriverLibrary):
         options = self.__get_algorithm_options(options, size, variables_space.dimension)
         options[self._VARIABLE_NAMES] = variables_space.variable_names
         options[self._VARIABLE_SIZES] = variables_space.variable_sizes
-        doe = self._generate_samples(**options)
+        doe = self.__generate_samples(**options)
         if unit_sampling:
             return doe
 

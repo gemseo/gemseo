@@ -1,0 +1,41 @@
+{
+  "name": "MC_options",
+  "required": [
+    "n_samples"
+  ],
+  "properties": {
+    "eval_jac": {
+      "type": "boolean"
+    },
+    "n_processes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "n_samples": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 0
+        }
+      ]
+    },
+    "wait_time_between_samples": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
+}
