@@ -25,6 +25,7 @@ from typing import Any
 from typing import Iterable
 from typing import Mapping
 
+import numpy
 from numpy import array
 from numpy import expand_dims
 from numpy import float64
@@ -213,7 +214,7 @@ class AnalyticDiscipline(MDODiscipline):
         output_data = {}
         # Do not pass useless tokens to the expr, this may
         # fail when tokens contain dots, or slow down the process
-        input_data = self.__convert_input_values_to_float()
+        input_data = self.__get_local_data_without_namespace()
         if self._fast_evaluation:
             for output_name, output_function in self._sympy_funcs.items():
                 input_symbols = self.output_names_to_symbols[output_name]
@@ -238,10 +239,14 @@ class AnalyticDiscipline(MDODiscipline):
 
         self.store_local_data(**output_data)
 
-    def __convert_input_values_to_float(self) -> dict[str, float]:
-        """Return the local data with float values."""
+    def __get_local_data_without_namespace(self) -> dict[str, numpy.number]:
+        """Return the local data without namespace prefixes.
+
+        Returns:
+            The local data without namespace prefixes.
+        """
         return {
-            input_name: float(self.local_data[input_name].real)
+            input_name: self.local_data[input_name].item()
             for input_name in self.get_input_data_names(with_namespaces=False)
         }
 
@@ -253,7 +258,7 @@ class AnalyticDiscipline(MDODiscipline):
         # otherwise there may be missing terms
         # if some formula have no dependency
         input_names, output_names = self._init_jacobian(inputs, outputs)
-        input_values = self.__convert_input_values_to_float()
+        input_values = self.__get_local_data_without_namespace()
         if self._fast_evaluation:
             for output_name in output_names:
                 gradient_function = self._sympy_jac_funcs[output_name]
