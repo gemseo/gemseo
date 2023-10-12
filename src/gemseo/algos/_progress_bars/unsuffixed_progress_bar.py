@@ -12,12 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Deprecated module for progress bar."""
+"""A progress bar not suffixed by metadata."""
 from __future__ import annotations
 
-from gemseo.algos._progress_bars.custom_tqdm_progress_bar import (  # noqa: F401
-    TqdmToLogger as ProgressBar,
-)
-from gemseo.algos._progress_bars.tqdm_to_logger import TqdmToLogger  # noqa: F401
+from numpy import ndarray
 
-# TODO: API: remove this module in gemseo 6.0.0.
+from gemseo.algos._progress_bars.progress_bar import ProgressBar
+
+
+class UnsuffixedProgressBar(ProgressBar):
+    """A progress bar not suffixed by metadata."""
+
+    def _set_objective_value(self, x_vect: ndarray | None) -> None:
+        self._tqdm_progress_bar.n += 1
+        self._tqdm_progress_bar.set_postfix(refresh=True)

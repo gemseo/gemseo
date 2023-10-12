@@ -25,6 +25,7 @@ from time import sleep
 from typing import Any
 
 import pytest
+from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
@@ -158,3 +159,24 @@ def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests):
 def dummy_sleep_function(x):
     sleep(0.1)
     return -x
+
+
+@pytest.mark.parametrize(
+    "e,r",
+    [
+        (1, " 1.00 it/sec"),
+        (60 - 1, " 0.02 it/sec"),
+        (60, " 1.00 it/min"),
+        (60 + 1, " 0.98 it/min"),
+        (60 * 60 - 1, " 0.02 it/min"),
+        (60 * 60, " 1.00 it/hour"),
+        (60 * 60 + 1, " 1.00 it/hour"),
+        (60 * 60 * 24 - 1, " 0.04 it/hour"),
+        (60 * 60 * 24, " 1.00 it/day"),
+        (60 * 60 * 24 + 1, " 1.00 it/day"),
+    ],
+)
+def test_rate_expression(e, r):
+    """Check CustomTqdmProgressBar.__get_rate_expression."""
+    f = CustomTqdmProgressBar._CustomTqdmProgressBar__get_rate_expression
+    assert f(1, e) == r
