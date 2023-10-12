@@ -1,0 +1,1 @@
+``AnalyticDiscipline`` no longer systematically casts inputs to ``float``.

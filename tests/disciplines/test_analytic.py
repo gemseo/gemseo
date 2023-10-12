@@ -24,6 +24,7 @@ import pytest
 import sympy
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from numpy import array
 from numpy.testing import assert_equal
 from packaging import version
@@ -162,6 +163,17 @@ def test_linearize(
 
 @pytest.mark.parametrize("fast_evaluation", [False, True])
 def test_complex_outputs(fast_evaluation):
+    """Check that complex outputs are supported."""
     discipline = AnalyticDiscipline({"y": "x*I"}, fast_evaluation=fast_evaluation)
     discipline.execute({"x": array([1.0])})
     assert discipline.local_data["y"] == 1j
+
+
+@pytest.mark.parametrize("fast_evaluation", [False, True])
+@pytest.mark.parametrize("linearization_mode", ApproximationMode)
+def test_jacobian_approximation(fast_evaluation, linearization_mode):
+    """Check that Jacobian approximation is supported."""
+    discipline = AnalyticDiscipline({"y": "exp(x)"}, fast_evaluation=fast_evaluation)
+    discipline.linearization_mode = linearization_mode
+    discipline.linearize({"x": array([0.0])}, True)
+    assert discipline.jac["y"]["x"] == pytest.approx(1)
