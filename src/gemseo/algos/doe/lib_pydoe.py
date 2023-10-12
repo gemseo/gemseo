@@ -207,7 +207,6 @@ class PyDOE(DOELibrary):
         Returns:
             The samples for the DOE.
         """
-        self.seed += 1
         if self.algo_name == self.PYDOE_LHS:
             seed = options[self.SEED]
             return pyDOE.lhs(
