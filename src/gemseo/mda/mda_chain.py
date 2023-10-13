@@ -33,7 +33,9 @@ from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.mda.initialization_chain import MDOInitializationChain
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
@@ -58,6 +60,9 @@ class MDAChain(MDA):
     inner_mdas: list[MDA]
     """The ordered MDAs."""
 
+    __initialize_defaults: bool
+    """Whether to compute the eventually missing :attr:`.default_inputs`."""
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -77,6 +82,7 @@ class MDAChain(MDA):
         linear_solver_options: Mapping[str, Any] | None = None,
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
+        initialize_defaults: bool = False,
         **inner_mda_options: float | int | bool | str | None,
     ) -> None:
         """
@@ -94,6 +100,9 @@ class MDAChain(MDA):
                 any.
             mdachain_parallel_options: The options of the MDOParallelChain instances, if
                 any.
+            initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
+                to compute the eventually missing :attr:`.default_inputs` at the first
+                execution.
             **inner_mda_options: The options of the inner-MDAs.
         """  # noqa:D205 D212 D415
         self.n_processes = n_processes
@@ -129,7 +138,7 @@ class MDAChain(MDA):
         )
 
         self.log_convergence = log_convergence
-
+        self.__initialize_defaults = initialize_defaults
         self._initialize_grammars()
         self._check_consistency()
         self._compute_input_couplings()
@@ -466,6 +475,17 @@ class MDAChain(MDA):
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
         super()._check_consistency()
+
+    def execute(  # noqa:D102
+        self, input_data: Mapping[str, Any] | None = None
+    ) -> DisciplineData:
+        if self.__initialize_defaults:
+            init_chain = MDOInitializationChain(
+                self.disciplines, available_data_names=input_data or ()
+            )
+            self.default_inputs.update(init_chain.execute(input_data))
+            self.__initialize_defaults = False
+        return super().execute(input_data=input_data)
 
     def _run(self) -> None:
         if self.warm_start:

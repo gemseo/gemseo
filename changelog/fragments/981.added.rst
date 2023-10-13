@@ -1,0 +1,1 @@
+``MDAChain`` has an option to initialize the default inputs by creating a ``MDOInitializationChain`` at first execution.
