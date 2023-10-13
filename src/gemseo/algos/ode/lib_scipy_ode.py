@@ -118,7 +118,7 @@ class ScipyODEAlgos(ODESolverLib):
             options["jac"] = self.problem.jac
 
         solution = solve_ivp(
-            fun=self.problem.func,
+            fun=self.problem.rhs_function,
             y0=self.problem.initial_state,
             method=self.algo_name,
             t_span=self.problem.integration_interval,

@@ -103,7 +103,7 @@ def test_ode_problem_1d(time_vector):
 
     problem.check()
 
-    assert problem.func == _func
+    assert problem.rhs_function == _func
     assert problem.jac == _jac
     assert len(problem.initial_state) == 1
     assert problem.initial_state == _initial_state

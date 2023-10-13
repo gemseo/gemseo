@@ -41,7 +41,7 @@ class ODEProblem(BaseProblem):
     :math:`f` is called the right-hand side of the ODE.
     """
 
-    func: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
+    rhs_function: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
     """The right-hand side of the ODE."""
 
     jac: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
@@ -80,7 +80,7 @@ class ODEProblem(BaseProblem):
             jac: The Jacobian of the right-hand side of the ODE.
             time_vector: The time vector for the solution.
         """  # noqa: D205, D212, D415
-        self.func = func
+        self.rhs_function = func
         self.jac = jac
         self.initial_state = asarray(initial_state)
         self.__time_vector = time_vector
@@ -112,7 +112,7 @@ class ODEProblem(BaseProblem):
                 raise ValueError("Inconsistent state and time shapes.")
 
     def _func(self, state) -> ndarray:
-        return asarray(self.func(self.result.time_vector, state))
+        return asarray(self.rhs_function(self.result.time_vector, state))
 
     def _jac(self, state) -> ndarray:
         return asarray(self.jac(self.result.time_vector, state))
