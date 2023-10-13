@@ -46,7 +46,7 @@ from numpy import zeros
 #
 # .. math::
 #
-#     f(t_0, s_0) = y_0
+#     s(t_0) = s_0
 #
 # For this example, we consider the Van der Pol equation as an example of a
 # time-independent problem.
