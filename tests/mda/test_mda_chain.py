@@ -27,12 +27,15 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.mda.mda_chain import MDAChain
+from gemseo.problems.scalable.linear.disciplines_generator import (
+    create_disciplines_from_desc,
+)
 from numpy import array
 from numpy import isclose
-from numpy import ones
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -52,7 +55,7 @@ DISC_DESCR_16D = [
     ("M", ["p", "s"], ["r"]),
     ("N", ["r"], ["t", "u"]),
     ("O", ["q", "t"], ["s", "v"]),
-    ("P", ["u", "v", "z"], []),
+    ("P", ["u", "v", "z"], ["xx"]),
 ]
 
 
@@ -177,24 +180,8 @@ def test_sellar_chain_linearize(sellar_disciplines):
     assert mda_chain.local_data[mda_chain.RESIDUALS_NORM][0] < 1e-13
 
 
-def generate_disciplines_from_desc(
-    description_list, grammar_type=MDODiscipline.GrammarType.JSON
-):
-    disciplines = []
-    data = ones(1)
-    for desc in description_list:
-        name = desc[0]
-        input_d = {k: data for k in desc[1]}
-        output_d = {k: data for k in desc[2]}
-        disc = MDODiscipline(name)
-        disc.input_grammar.update_from_data(input_d)
-        disc.output_grammar.update_from_data(output_d)
-        disciplines.append(disc)
-    return disciplines
-
-
 def test_16_disc_parallel():
-    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
+    disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     MDAChain(disciplines)
 
 
@@ -202,7 +189,7 @@ def test_16_disc_parallel():
     "in_gtype", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_simple_grammar_type(in_gtype):
-    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
+    disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
 
     assert isinstance(mda.input_grammar, SimpleGrammar)
@@ -408,3 +395,32 @@ def test_max_mda_iter(sellar_disciplines):
     assert mda_chain.max_mda_iter == 10
     for mda in mda_chain.inner_mdas:
         assert mda.max_mda_iter == 10
+
+
+def test_initialize_defaults():
+    """Test the automated initialization of the default_inputs."""
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y"], ["z"]), ("B", ["a", "z"], ["y"])]
+    )
+    del disciplines[0].default_inputs["y"]
+    chain = MDAChain(disciplines, initialize_defaults=False)
+    with pytest.raises(InvalidDataError, match="Missing required names: y."):
+        chain.execute()
+
+    MDAChain(disciplines, initialize_defaults=True).execute()
+
+    del disciplines[1].default_inputs["z"]
+    chain = MDAChain(disciplines, initialize_defaults=True)
+    with pytest.raises(
+        ValueError,
+        match="Cannot compute the inputs a, x, y, z, "
+        "for the following disciplines A, B.",
+    ):
+        chain.execute()
+
+    chain = MDAChain(disciplines, initialize_defaults=True)
+    assert "z" not in chain.default_inputs
+    chain.execute({"z": array([0])})
+    # Tests that the default inputs are well udapted
+    assert "z" in chain.default_inputs
+    chain.execute({"z": array([2])})
