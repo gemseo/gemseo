@@ -131,6 +131,24 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     _main_method: Method
     """The name of the main sensitivity analysis method."""
 
+    _indices: dict[str, FirstOrderIndicesType]
+    """The sensitivity indices computed by the method compute_indices.
+
+    With the following structure:
+
+    .. code-block:: python
+
+        {
+            "method_name": {
+                "output_name": [
+                    {
+                        "input_name": data_array,
+                    }
+                ]
+            }
+        }
+    """
+
     def __init__(
         self,
         disciplines: Collection[MDODiscipline],
@@ -280,7 +298,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def compute_indices(
         self, outputs: str | Sequence[str] = ()
-    ) -> dict[str, FirstOrderIndicesType]:
+    ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
         """Compute the sensitivity indices.
 
         Args:
@@ -308,7 +326,6 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @property
-    @abstractmethod
     def indices(self) -> dict[str, FirstOrderIndicesType]:
         """The sensitivity indices.
 
@@ -326,6 +343,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 }
             }
         """
+        return self._indices
 
     @property
     def main_method(self) -> Method:

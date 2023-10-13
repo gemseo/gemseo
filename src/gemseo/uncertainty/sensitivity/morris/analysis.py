@@ -370,13 +370,8 @@ class MorrisAnalysis(SensitivityAnalysis):
                     {name: array([val[idx]]) for name, val in func[output_name].items()}
                     for idx in range(length)
                 ]
-        return self.indices
 
-    @property
-    def indices(  # noqa: D102
-        self,
-    ) -> dict[str, FirstOrderIndicesType]:
-        return {
+        self._indices = {
             "MU": self.mu_,
             "MU_STAR": self.mu_star,
             "SIGMA": self.sigma,
@@ -384,6 +379,7 @@ class MorrisAnalysis(SensitivityAnalysis):
             "MIN": self.min,
             "MAX": self.max,
         }
+        return self._indices
 
     def plot(
         self,
