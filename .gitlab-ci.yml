@@ -22,6 +22,8 @@ test:
           - py39-coverage
   tags:
     - $TAG
+  after_script:
+    - $TOX_EXE coverage-diff
 
 # Define jobs for minor python env with this extended parent.
 extended-test:
