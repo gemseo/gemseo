@@ -23,7 +23,8 @@ test:
   tags:
     - $TAG
   after_script:
-    - $TOX_EXE coverage-diff
+    - git fetch origin develop --depth 1
+    - $TOX_EXE -e coverage-diff -- --compare-branch origin/develop
 
 # Define jobs for minor python env with this extended parent.
 extended-test:
