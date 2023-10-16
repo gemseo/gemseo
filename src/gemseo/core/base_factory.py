@@ -73,7 +73,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
     - the environment variable "GEMSEO_PATH" may contain the list of directories,
     - |g| plugins, i.e. packages which have declared a setuptools entry point.
 
-    A setuptools entry point is declared in a plugin :file:`setup.cfg` file,
+    A setuptools entry point is declared in a plugin :file:`pyproject.toml` file,
     with a section::
 
         [options.entry_points]
