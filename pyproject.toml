@@ -50,7 +50,7 @@ all = [
     "pydoe2 >=1.0.2,<=1.3.0",
     "scikit-learn >=0.18,<=1.3.1",
     "sympy >=1.5,<=1.12",
-    "xlwings >=0.27.0,<=0.27.15 ; platform_system=='Windows'",
+    "xlwings >=0.27.0,<=0.30.12 ; platform_system=='Windows'",
     "pillow >=9.5.0,<=10.0.1",
 ]
 test = [
