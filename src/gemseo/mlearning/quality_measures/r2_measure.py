@@ -39,20 +39,17 @@ where
 """
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import NoReturn
 
-from numpy import delete as npdelete
-from numpy import mean
 from numpy import ndarray
-from numpy import newaxis
-from numpy import repeat
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 
 from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.resampling.bootstrap import Bootstrap
+from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
 
 class R2Measure(MLErrorMeasure):
@@ -91,33 +88,83 @@ class R2Measure(MLErrorMeasure):
         randomize: bool = MLErrorMeasure._RANDOMIZE,
         seed: int | None = None,
         as_dict: bool = False,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
-        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
-
-        input_data = self.algo.input_data
-        output_data = self.algo.output_data
-
-        _multioutput = self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[multioutput]
-        algo = deepcopy(self.algo)
-
-        sse = 0
-        ymean = repeat(mean(output_data, axis=0)[newaxis, :], len(output_data), axis=0)
-        var = mean_squared_error(output_data, ymean, multioutput=_multioutput)
-        for n_fold in range(n_folds):
-            fold = folds[n_fold]
-            algo.learn(
-                samples=npdelete(samples, fold), fit_transformers=self._fit_transformers
-            )
-            mse = mean_squared_error(
-                output_data[fold],
-                algo.predict(input_data[fold]),
-                multioutput=_multioutput,
-            )
-            sse += mse * len(fold)
-
-        return self._post_process_measure(
-            1 - sse / var / len(ymean), multioutput, as_dict
+        return self.__evaluate_by_resampling(
+            as_dict,
+            multioutput,
+            randomize,
+            CrossValidation,
+            samples,
+            seed,
+            store_resampling_result,
+            n_folds=n_folds,
+            randomize=randomize,
         )
+
+    def __evaluate_by_resampling(
+        self,
+        as_dict,
+        multioutput,
+        update_seed,
+        resampler_class,
+        samples,
+        seed,
+        store_resampling_result,
+        **kwargs,
+    ) -> MeasureType:
+        """Evaluate the quality measure with a resampler.
+
+        Args:
+            as_dict: Whether to express the measure as a dictionary
+                whose keys are the output names.
+            multioutput: If ``True``, return the quality measure for each
+                output component. Otherwise, average these measures.
+            update_seed: Whether to update the seed before resampling.
+            resampler_class: The class of the resampler.
+            samples: The indices of the learning samples.
+                If ``None``, use the whole learning dataset.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                then an unpredictable generator will be used.
+            **kwargs: The options to instantiate the resampler.
+
+        Returns:
+            The estimation of the quality measure by resampling.
+        """
+        samples, seed = self._pre_process(samples, seed, update_seed)
+        resampler = resampler_class(samples, seed=seed, **kwargs)
+        stacked_predictions = resampler_class == CrossValidation
+        output_data = self.algo.output_data
+        _, predictions = resampler.execute(
+            self.algo,
+            store_resampling_result,
+            True,
+            stacked_predictions,
+            self._fit_transformers,
+            store_resampling_result,
+            self.algo.input_data,
+            output_data.shape,
+        )
+        var = self.algo.output_data.var(0)
+        if stacked_predictions:
+            mse = ((self.algo.output_data - predictions) ** 2).mean(0)
+            if not multioutput:
+                mse = mse.mean()
+                var = var.mean()
+        else:
+            mse = 0
+            for prediction, split in zip(predictions, resampler.splits):
+                mse += mean_squared_error(
+                    output_data[split.test],
+                    prediction,
+                    multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[
+                        multioutput
+                    ],
+                )
+            mse /= len(resampler.splits)
+
+        return self._post_process_measure(1 - mse / var, multioutput, as_dict)
 
     def compute_bootstrap_measure(
         self,
@@ -126,8 +173,18 @@ class R2Measure(MLErrorMeasure):
         multioutput: bool = True,
         seed: int | None = None,
         as_dict: bool = False,
+        store_resampling_result: bool = False,
     ) -> NoReturn:
-        raise NotImplementedError
+        return self.__evaluate_by_resampling(
+            as_dict,
+            multioutput,
+            False,
+            Bootstrap,
+            samples,
+            seed,
+            store_resampling_result,
+            n_replicates=n_replicates,
+        )
 
     # TODO: API: remove these aliases in the next major release.
     evaluate_kfolds = compute_cross_validation_measure

@@ -47,6 +47,8 @@ class F1Measure(MLErrorMeasure):
 
     SMALLER_IS_BETTER = False
 
+    algo: MLClassificationAlgo
+
     def __init__(
         self,
         algo: MLClassificationAlgo,

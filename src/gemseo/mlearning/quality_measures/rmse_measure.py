@@ -94,6 +94,7 @@ class RMSEMeasure(MSEMeasure):
         randomize: bool = MSEMeasure._RANDOMIZE,
         seed: int | None = None,
         as_dict: bool = False,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
             super().compute_cross_validation_measure(
@@ -103,6 +104,7 @@ class RMSEMeasure(MSEMeasure):
                 randomize=randomize,
                 seed=seed,
                 as_dict=as_dict,
+                store_resampling_result=store_resampling_result,
             )
         )
 
@@ -113,6 +115,7 @@ class RMSEMeasure(MSEMeasure):
         multioutput: bool = True,
         seed: int | None = None,
         as_dict: bool = False,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
             super().compute_bootstrap_measure(
@@ -120,6 +123,7 @@ class RMSEMeasure(MSEMeasure):
                 samples=samples,
                 multioutput=multioutput,
                 as_dict=as_dict,
+                store_resampling_result=store_resampling_result,
             ),
         )
 

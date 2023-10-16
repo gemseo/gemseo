@@ -81,7 +81,7 @@ def test_discipline(dataset):
     assert "degree" in result
     assert "criterion" in result
     assert "learning" in result
-    assert allclose(result["criterion"], array([25182]), atol=1e0)
+    assert allclose(result["criterion"], array([32107]), atol=1e0)
     assert array_equal(result["degree"], array([3]))
 
 

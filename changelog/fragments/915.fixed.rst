@@ -1,0 +1,1 @@
+There is no longer overlap between learning and test samples when using a cross-validation technique to estimate the quality measure of a machine learning algorithm.
