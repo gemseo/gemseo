@@ -154,10 +154,8 @@ def test_compute_cross_validation_measure(dataset):
 
 def test_compute_bootstrap_measure(dataset):
     """Test evaluate bootstrap method."""
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = R2Measure(algo)
-    with pytest.raises(NotImplementedError):
-        measure.compute_bootstrap_measure()
+    r2_measure = R2Measure(PolynomialRegressor(dataset, degree=2))
+    assert r2_measure.compute_bootstrap_measure() == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize("fit", [False, True])

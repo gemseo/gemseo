@@ -60,13 +60,27 @@ def test_constructor(dataset):
     assert kmeans.is_trained
 
 
-def test_learning_samples(dataset):
+@pytest.mark.parametrize(
+    "kwargs,expected", [({}, list(range(10))), ({"samples": [0, 1]}, [0, 1])]
+)
+def test_learning_samples_indices(dataset, kwargs, expected):
     algo = NewMLAlgo(dataset)
-    algo.learn()
-    assert list(algo.learning_samples_indices) == list(range(len(dataset)))
+    assert algo.learning_samples_indices == list(range(10))
+    algo.learn(**kwargs)
+    assert algo.learning_samples_indices == expected
+
+
+@pytest.mark.parametrize(
+    "kwargs,expected", [({}, ["a", "b", "c"]), ({"samples": ["c", "a"]}, ["c", "a"])]
+)
+def test_learning_samples_indices_with_abc_indices(kwargs, expected):
+    dataset = IODataset.from_array(arange(3).reshape(3, 1))
+    names = ["a", "b", "c"]
+    dataset.index = names
     algo = NewMLAlgo(dataset)
-    algo.learn(samples=[0, 1])
-    assert algo.learning_samples_indices == [0, 1]
+    assert algo.learning_samples_indices == names
+    algo.learn(**kwargs)
+    assert algo.learning_samples_indices == expected
 
 
 @pytest.mark.parametrize("samples", [range(10), [1, 2]])

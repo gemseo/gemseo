@@ -780,7 +780,7 @@ class MLSupervisedAlgo(MLAlgo):
         return self.learning_set.get_view(
             group_names=self.learning_set.INPUT_GROUP,
             variable_names=self.input_names,
-            indices=self.learning_samples_indices,
+            indices=self._learning_samples_indices,
         ).to_numpy()
 
     @property
@@ -789,7 +789,7 @@ class MLSupervisedAlgo(MLAlgo):
         return self.learning_set.get_view(
             group_names=self.learning_set.OUTPUT_GROUP,
             variable_names=self.output_names,
-            indices=self.learning_samples_indices,
+            indices=self._learning_samples_indices,
         ).to_numpy()
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
