@@ -63,7 +63,7 @@ doc = [
     "autodocsumm",
     "pillow",
     "pyenchant",
-    "sphinx <7",
+    "sphinx <8",
     "sphinx_gallery",
     "sphinxcontrib.bibtex <2",
     "sphinxcontrib.plantuml",
