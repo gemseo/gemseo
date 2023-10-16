@@ -65,7 +65,7 @@ doc = [
     "pyenchant",
     "sphinx <7",
     "sphinx_gallery",
-    "sphinxcontrib.bibtex <2",
+    "sphinxcontrib.bibtex <3",
     "sphinxcontrib.plantuml",
     "sphinxcontrib.spelling",
     "sphinxcontrib.apidoc",
