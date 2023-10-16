@@ -98,7 +98,7 @@ repos:
         - pep8-naming==0.13.3
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: 3.10.0
+  rev: 3.10.1
   hooks:
     - id: commitizen
       stages: [commit-msg]

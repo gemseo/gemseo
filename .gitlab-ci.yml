@@ -22,6 +22,9 @@ test:
           - py39-coverage
   tags:
     - $TAG
+  after_script:
+    - git fetch origin develop --depth 1
+    - $TOX_EXE -e coverage-diff -- --compare-branch origin/develop
 
 # Define jobs for minor python env with this extended parent.
 extended-test:

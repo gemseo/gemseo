@@ -4,18 +4,22 @@ FROM fedora:$FEDORA_VERSION
 
 RUN  dnf -y update \
   && dnf -y install pipx \
-  && dnf -y install python38 \
-  && dnf -y install python39 \
-  && dnf -y install python310 \
-  && dnf -y install git \
-  && dnf -y install graphviz \
-  && dnf -y install jq \
+                    python38 \
+                    python39 \
+                    python310 \
+                    git \
+                    graphviz \
+                    jq \
+                    https://gitlab.com/gitlab-org/cli/-/releases/v1.33.0/downloads/glab_1.33.0_Linux_x86_64.rpm \
   && dnf clean all
 
 RUN  pipx install 'tox<4' \
   && pipx install 'tox<4' --suffix 3 \
-  && pipx install 'tox<5' --suffix 4 \
-  && pip cache purge
+  && pipx install 'tox<5' --suffix 4
+
+RUN  curl -Os https://uploader.codecov.io/latest/linux/codecov  \
+  && chmod +x codecov \
+  && mv codecov /usr/bin
 
 # Explicitely update PATH because gitlab runner run the container in a way
 # that prevent .bashrc to be sourced.
