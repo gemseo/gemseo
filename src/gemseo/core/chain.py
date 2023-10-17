@@ -35,6 +35,7 @@ from strenum import StrEnum
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -165,7 +166,13 @@ class MDOChain(MDODiscipline):
                     for new_in, new_jac in discipline.jac[input_name].items():
                         # Chain rule the derivatives
                         # TODO: sum BEFORE dot
-                        loc_dot = curr_jac @ new_jac
+                        if isinstance(new_jac, JacobianOperator):
+                            # NumPy array @ JacobianOperator is not supported, thus
+                            # imposing to explictly use the __rmatmul__ method.
+                            loc_dot = new_jac.__rmatmul__(curr_jac)
+                        else:
+                            loc_dot = curr_jac @ new_jac
+
                         # when input_name==new_in, we are in the case of an
                         # input being also an output
                         # in this case we must only compose the derivatives
@@ -175,7 +182,12 @@ class MDOChain(MDODiscipline):
                             # d o     d o    d o     di_2
                             # ----  = ---- + ----- . -----
                             # d z     d z    d i_2    d z
-                            self.jac[output_name][new_in] += loc_dot
+                            if isinstance(loc_dot, JacobianOperator):
+                                self.jac[output_name][new_in] = (
+                                    loc_dot + self.jac[output_name][new_in]
+                                )
+                            else:
+                                self.jac[output_name][new_in] += loc_dot
                         else:
                             # The output is not yet linearized wrt this
                             # input_name.  We are in the case:
@@ -265,7 +277,7 @@ class MDOChain(MDODiscipline):
                 jacobian_copy[output_name] = output_jacobian_copy
                 for input_name, derivatives in output_jacobian.items():
                     output_jacobian_copy[input_name] = derivatives.copy()
-            elif isinstance(output_jacobian, (ndarray, spmatrix)):
+            elif isinstance(output_jacobian, (ndarray, spmatrix, JacobianOperator)):
                 jacobian_copy[output_name] = output_jacobian.copy()
 
         return jacobian_copy

@@ -15,14 +15,16 @@
 """Dummy linear discipline."""
 from __future__ import annotations
 
-from enum import Enum
+from enum import auto
 from typing import ClassVar
 from typing import Sequence
 
 from numpy import ones
 from numpy.random import rand
 from scipy.sparse import rand as sp_rand
+from strenum import LowercaseStrEnum
 
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -38,18 +40,18 @@ class LinearDiscipline(MDODiscipline):
 
     DEFAULT_MATRIX_DENSITY: ClassVar[float] = 0.1
 
-    class MatrixFormat(str, Enum):
+    class MatrixFormat(LowercaseStrEnum):
         """The format of the Jacobian matrix.
 
         DENSE corresponds to numpy.ndarray. CSC, CSR, LIL and DOK correspond to sparse
         format from scipy.sparse.
         """
 
-        DENSE = "dense"
-        CSC = "csc"
-        CSR = "csr"
-        LIL = "lil"
-        DOK = "dok"
+        DENSE = auto()
+        CSC = auto()
+        CSR = auto()
+        LIL = auto()
+        DOK = auto()
 
     def __init__(
         self,
@@ -61,6 +63,7 @@ class LinearDiscipline(MDODiscipline):
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         matrix_format: MatrixFormat = MatrixFormat.DENSE,
         matrix_density: float = DEFAULT_MATRIX_DENSITY,
+        matrix_free_jacobian: bool = False,
     ) -> None:
         """
         Args:
@@ -75,6 +78,7 @@ class LinearDiscipline(MDODiscipline):
             matrix_format: The format of the Jacobian matrix.
             matrix_density: The percentage of non-zero elements when the matrix is
                 sparse.
+            matrix_free_jacobian: Whether the Jacobians are casted as linear operators.
 
         Raises:
             ValueError: if ``input_names`` or ``output_names`` are empty.
@@ -95,6 +99,8 @@ class LinearDiscipline(MDODiscipline):
 
         self.inputs_size = inputs_size
         self.outputs_size = outputs_size
+
+        self.matrix_free_jacobian = matrix_free_jacobian
 
         if matrix_format == self.MatrixFormat.DENSE:
             self.mat = rand(self.size_out, self.size_in) / self.size_in
@@ -133,3 +139,24 @@ class LinearDiscipline(MDODiscipline):
         self.jac = split_array_to_dict_of_arrays(
             self.mat, self.__sizes_d, self.output_names, self.input_names
         )
+
+        if self.matrix_free_jacobian:
+            for output_name in self.output_names:
+                for input_name in self.input_names:
+                    jac = self.jac[output_name][input_name]
+
+                    operator = JacobianOperator(
+                        shape=jac.shape,
+                        dtype=jac.dtype,
+                    )
+
+                    def matvec(x, matrix=jac):
+                        return matrix @ x
+
+                    def rmatvec(x, matrix=jac):
+                        return matrix.T @ x
+
+                    operator._matvec = matvec
+                    operator._rmatvec = rmatvec
+
+                    self.jac[output_name][input_name] = operator

@@ -27,6 +27,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataError
@@ -38,6 +39,7 @@ from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
@@ -324,3 +326,59 @@ def test_sequence_transformers_setters(sellar_mda):
     assert sellar_mda.over_relaxation_factor == 1.0
     sellar_mda.over_relaxation_factor = 0.5
     assert sellar_mda.over_relaxation_factor == 0.5
+
+
+@pytest.fixture(scope="module")
+def disciplines() -> list[LinearDiscipline]:
+    return create_disciplines_from_desc(
+        [
+            ("A", ["x", "b"], ["a"]),
+            ("B", ["a", "b", "y"], ["b"]),
+            ("C", ["b"], ["y"]),
+        ]
+    )
+
+
+@pytest.fixture(scope="module")
+def reference_mda_jacobian(disciplines) -> dict[str, dict[str, np.ndarray]]:
+    """Compute the Jacobian of the MDA to serve as a reference."""
+    mda = MDANewtonRaphson(
+        disciplines,
+        max_mda_iter=100,
+        tolerance=1e-12,
+    )
+
+    mda.add_differentiated_inputs("x")
+    mda.add_differentiated_outputs("y")
+
+    return mda.linearize()
+
+
+@pytest.mark.parametrize("mode", [DerivationMode.DIRECT, DerivationMode.ADJOINT])
+@pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
+def test_matrix_free_linearization(
+    mode, matrix_type, disciplines, reference_mda_jacobian, caplog
+):
+    disciplines[1].matrix_free_jacobian = True
+
+    mda = MDANewtonRaphson(
+        disciplines,
+        max_mda_iter=100,
+        tolerance=1e-12,
+    )
+
+    mda.matrix_type = matrix_type
+    mda.linearization_mode = mode
+
+    mda.add_differentiated_inputs("x")
+    mda.add_differentiated_outputs("y")
+    mda.linearize()
+
+    if matrix_type == JacobianAssembly.JacobianType.MATRIX:
+        assert (
+            "The Jacobian is given as a linear operator. Performing the assembly "
+            "required to apply it to the identity which is not performant."
+            in caplog.text
+        )
+
+    assert np.allclose(reference_mda_jacobian["y"]["x"], mda.jac["y"]["x"], atol=1e-12)

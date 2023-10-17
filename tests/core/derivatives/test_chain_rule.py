@@ -22,12 +22,14 @@ import pytest
 from gemseo.core.chain import MDOChain
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
+from numpy import allclose
 from numpy.random import seed
 
 
@@ -40,6 +42,38 @@ DISC_DESCR_1 = [
     ("H", ["z"], ["w"]),
     ("I", ["m"], ["n"]),
 ]
+
+
+def test_matrix_free_chain_rule():
+    """Tests the chain rule with a matrix-free Jacobian."""
+    disciplines = create_disciplines_from_desc(
+        [
+            ("A", ["x", "b"], ["a"]),
+            ("B", ["a", "c"], ["b"]),
+            ("C", ["a", "b"], ["c"]),
+            ("D", ["c"], ["y"]),
+        ],
+    )
+
+    chain = MDOChain(disciplines)
+    chain.add_differentiated_inputs("x")
+    chain.add_differentiated_outputs("y")
+    chain.linearize()
+
+    disciplines[2].matrix_free_jacobian = True
+    disciplines[2].linearize(compute_all_jacobians=True)
+
+    chain_matrix_free = MDOChain(disciplines)
+    chain_matrix_free.add_differentiated_inputs("x")
+    chain_matrix_free.add_differentiated_outputs("y")
+    chain_matrix_free.linearize()
+
+    assert isinstance(chain_matrix_free.jac["y"]["x"], JacobianOperator)
+    assert allclose(
+        chain_matrix_free.jac["y"]["x"].get_matrix_representation(),
+        chain.jac["y"]["x"],
+        atol=1e-12,
+    )
 
 
 def test_traverse_add_diff_io_basic():
