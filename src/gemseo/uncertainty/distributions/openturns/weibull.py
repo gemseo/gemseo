@@ -12,52 +12,58 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The OpenTURNS-based normal distribution."""
+"""The OpenTURNS-based Weibull distribution."""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
-class OTNormalDistribution(OTDistribution):
-    """The OpenTURNS-based normal distribution.
+class OTWeibullDistribution(OTDistribution):
+    """The OpenTURNS-based Weibull distribution.
 
     Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.normal import (
-        ...     OTNormalDistribution
+        >>> from gemseo.uncertainty.distributions.openturns.weibull import (
+        ...     OTWeibullDistribution
         >>> )
-        >>> distribution = OTNormalDistribution('x', -1, 2)
+        >>> distribution = OTWeibullDistribution("u", 0.5, 1.0, 2.0)
         >>> print(distribution)
-        Normal(mu=-1, sigma=2)
+        WeibullMin(location=0.5, scale=1, shape=2)
     """
 
     def __init__(
         self,
         variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
-        mu: float = 0.0,
-        sigma: float = 1.0,
+        location: float = 0.0,
+        scale: float = 1.0,
+        shape: float = 1.0,
+        use_weibull_min: bool = True,
         dimension: int = 1,
         transformation: str | None = None,
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
     ) -> None:
-        """
+        r"""
         Args:
-            mu: The mean of the normal random variable.
-            sigma: The standard deviation
-                of the normal random variable.
+            location: The location parameter :math:`\gamma` of the Weibull distribution.
+            scale: The scale parameter of the Weibull distribution.
+            shape: The shape parameter of the Weibull distribution.
+            use_weibull_min: Whether to use
+                the Weibull minimum extreme value distribution
+                (the support of the random variable is :math:`[\gamma,+\infty[`)
+                or the Weibull maximum extreme value distribution
+                (the support of the random variable is :math:`]-\infty[,\gamma]`).
         """  # noqa: D205,D212,D415
         super().__init__(
             variable,
-            "Normal",
-            (mu, sigma),
+            "WeibullMin" if use_weibull_min else "WeibullMax",
+            (scale, shape, location),
             dimension,
-            {self._MU: mu, self._SIGMA: sigma},
+            {
+                self._LOCATION: location,
+                self._SCALE: scale,
+                self._SHAPE: shape,
+            },
             transformation,
             lower_bound,
             upper_bound,

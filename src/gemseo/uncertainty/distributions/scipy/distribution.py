@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a probability distribution from the SciPy library.
+"""The interface to SciPy-based probability distributions.
 
 The :class:`.SPDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
@@ -77,7 +77,7 @@ SP_WEBSITE = "https://docs.scipy.org/doc/scipy/reference/stats.html"
 
 
 class SPDistribution(Distribution):
-    """SciPy probability distribution.
+    """A SciPy-based probability distribution.
 
     Create a probability distribution for an uncertain variable
     from its dimension and distribution names and properties.
@@ -167,13 +167,11 @@ class SPDistribution(Distribution):
 
     @property
     def mean(self) -> ndarray:  # noqa: D102
-        mean = [marginal.mean() for marginal in self.marginals]
-        return array(mean)
+        return array([marginal.mean() for marginal in self.marginals])
 
     @property
     def standard_deviation(self) -> ndarray:  # noqa: D102
-        std = [marginal.std() for marginal in self.marginals]
-        return array(std)
+        return array([marginal.std() for marginal in self.marginals])
 
     def __create_distributions(
         self,

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""SciPy-based joint probability distribution.
+"""The SciPy-based joint probability distribution.
 
 :class:`.SPComposedDistribution` is a :class:`.ComposedDistribution`
 based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ library.
@@ -45,7 +45,7 @@ from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 
 class SPComposedDistribution(ComposedDistribution):
-    """SciPy-based joint probability distribution."""
+    """The SciPy-based joint probability distribution."""
 
     def __init__(  # noqa: D107
         self,

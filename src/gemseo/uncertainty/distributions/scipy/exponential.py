@@ -17,17 +17,14 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create an exponential distribution from the SciPy library.
-
-This class inherits from :class:`.SPDistribution`.
-"""
+"""The SciPy-based exponential distribution."""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPExponentialDistribution(SPDistribution):
-    """Create an exponential distribution.
+    """The SciPy-based exponential distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.exponential import (
@@ -50,5 +47,6 @@ class SPExponentialDistribution(SPDistribution):
             rate: The rate of the exponential random variable.
             loc: The location of the exponential random variable.
         """  # noqa: D205,D212,D415
-        parameters = {"loc": loc, "scale": 1 / float(rate)}
-        super().__init__(variable, "expon", parameters, dimension)
+        super().__init__(
+            variable, "expon", {"loc": loc, "scale": 1 / float(rate)}, dimension
+        )

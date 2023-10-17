@@ -1,0 +1,2 @@
+- ``OTWeibullDistribution`` is the OpenTURNS-based Weibull distribution.
+- ``SPWeibullDistribution`` is the SciPy-based Weibull distribution.

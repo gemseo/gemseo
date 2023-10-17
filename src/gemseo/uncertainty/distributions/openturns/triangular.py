@@ -17,17 +17,14 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a triangular distribution from the OpenTURNS library.
-
-This class inherits from :class:`.OTDistribution`.
-"""
+"""The OpenTURNS-based triangular distribution."""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
 class OTTriangularDistribution(OTDistribution):
-    """Create a triangular distribution.
+    """The OpenTURNS-based triangular distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.triangular import (
@@ -56,17 +53,16 @@ class OTTriangularDistribution(OTDistribution):
             mode: The mode of the triangular random variable.
             maximum: The maximum of the random variable.
         """  # noqa: D205,D212,D415
-        standard_parameters = {
-            self._LOWER: minimum,
-            self._MODE: mode,
-            self._UPPER: maximum,
-        }
         super().__init__(
             variable,
             "Triangular",
             (minimum, mode, maximum),
             dimension,
-            standard_parameters,
+            {
+                self._LOWER: minimum,
+                self._MODE: mode,
+                self._UPPER: maximum,
+            },
             transformation,
             lower_bound,
             upper_bound,
