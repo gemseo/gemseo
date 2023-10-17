@@ -146,13 +146,16 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The standard representation of the parameters of the distribution, used for its
     string representation."""
 
-    _MU = "mu"
-    _SIGMA = "sigma"
-    _LOWER = "lower"
-    _UPPER = "upper"
-    _MODE = "mode"
-    _RATE = "rate"
-    _LOC = "loc"
+    _LOC: Final[str] = "loc"
+    _LOWER: Final[str] = "lower"
+    _MODE: Final[str] = "mode"
+    _MU: Final[str] = "mu"
+    _RATE: Final[str] = "rate"
+    _SCALE: Final[str] = "scale"
+    _SHAPE: Final[str] = "shape"
+    _LOCATION: Final[str] = "location"
+    _SIGMA: Final[str] = "sigma"
+    _UPPER: Final[str] = "upper"
 
     DEFAULT_VARIABLE_NAME: Final[str] = "x"
     """The default name of the variable."""

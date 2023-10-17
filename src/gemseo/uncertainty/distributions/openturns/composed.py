@@ -17,11 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""OpenTURNS-based joint probability distribution.
-
-:class:`.OTComposedDistribution` is a :class:`.ComposedDistribution`
-based on the `OpenTURNS <https://openturns.github.io/www/>`_ library.
-"""
+"""The OpenTURNS-based joint probability distribution."""
 from __future__ import annotations
 
 from typing import Callable
@@ -40,7 +36,7 @@ from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 
 class OTComposedDistribution(ComposedDistribution):
-    """OpenTURNS-based joint probability distribution."""
+    """The OpenTURNS-based joint probability distribution."""
 
     def __init__(  # noqa: D107
         self,
@@ -70,8 +66,7 @@ class OTComposedDistribution(ComposedDistribution):
         self,
         n_samples: int = 1,
     ) -> ndarray:
-        sample = array(self.distribution.getSample(n_samples))
-        return sample
+        return array(self.distribution.getSample(n_samples))
 
     def compute_cdf(  # noqa: D102
         self,

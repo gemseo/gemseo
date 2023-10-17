@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a probability distribution from the OpenTURNS library.
+"""The interface to OpenTURNS-based probability distributions.
 
 The :class:`.OTDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
@@ -84,7 +84,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class OTDistribution(Distribution):
-    """OpenTURNS probability distribution.
+    """An OpenTURNS-based probability distribution.
 
     Create a probability distribution for an uncertain variable
     from its dimension and probability distribution name and properties.

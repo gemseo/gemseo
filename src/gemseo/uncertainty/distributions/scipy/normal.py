@@ -17,17 +17,14 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a normal distribution from the SciPy library.
-
-This class inherits from :class:`.SPDistribution`.
-"""
+"""The SciPy-based normal distribution."""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPNormalDistribution(SPDistribution):
-    """Create a normal distribution.
+    """The SciPy-based normal distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.normal import (
@@ -50,6 +47,10 @@ class SPNormalDistribution(SPDistribution):
             mu: The mean of the normal random variable.
             sigma: The standard deviation of the normal random variable.
         """  # noqa: D205,D212,D415
-        standard_parameters = {self._MU: mu, self._SIGMA: sigma}
-        parameters = {"loc": mu, "scale": sigma}
-        super().__init__(variable, "norm", parameters, dimension, standard_parameters)
+        super().__init__(
+            variable,
+            "norm",
+            {"loc": mu, "scale": sigma},
+            dimension,
+            {self._MU: mu, self._SIGMA: sigma},
+        )
