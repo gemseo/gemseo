@@ -29,8 +29,8 @@ from typing import Callable
 from typing import ClassVar
 from typing import Collection
 from typing import Final
-from typing import Generator
 from typing import Iterable
+from typing import Iterator
 from typing import Mapping
 from typing import NamedTuple
 from typing import TYPE_CHECKING
@@ -39,7 +39,6 @@ import matplotlib.pyplot as plt
 from numpy import concatenate
 from numpy import empty
 from numpy import fill_diagonal
-from numpy import int8
 from numpy import ndarray
 from numpy import zeros
 from numpy._typing import NDArray
@@ -58,6 +57,7 @@ from strenum import StrEnum
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.utils.matplotlib_figure import save_show_figure
 
@@ -80,8 +80,8 @@ def default_dict_factory() -> dict[Any, None]:
     return defaultdict(none_factory)
 
 
-class JacobianOperator(LinearOperator):
-    """Representation of the Jacobian as a SciPy ``LinearOperator``."""
+class AssembledJacobianOperator(LinearOperator):
+    """Representation of the assembled Jacobian as a SciPy ``LinearOperator``."""
 
     def __init__(
         self,
@@ -90,7 +90,7 @@ class JacobianOperator(LinearOperator):
         n_functions: int,
         n_variables: int,
         get_jacobian_generator: Callable[
-            [Iterable[str], Iterable[str], bool], Generator
+            [Iterable[str], Iterable[str], bool], Iterator
         ],
         is_residual: bool = False,
     ) -> None:
@@ -391,7 +391,7 @@ class JacobianAssembly:
         functions: Iterable[str],
         variables: Iterable[str],
         is_residual: bool = False,
-    ) -> Generator[Any, JacobianPosition]:
+    ) -> Iterator[tuple[ndarray | csr_matrix | JacobianOperator, JacobianPosition]]:
         """Iterate over Jacobian matrices.
 
         Provide a generator to iterate over the Jacobians associated with each provided
@@ -421,13 +421,20 @@ class JacobianAssembly:
                     if jacobian is not None:
                         # Make a copy to avoid in-place modifications
                         jacobian_copy = jacobian.copy()
+
                         if isinstance(jacobian_copy, ndarray):
                             fill_diagonal(jacobian_copy, jacobian.diagonal() - 1)
+
                         elif isinstance(jacobian_copy, spmatrix):
                             jacobian_copy.setdiag(jacobian.diagonal() - 1)
+
+                        elif isinstance(jacobian_copy, JacobianOperator):
+                            jacobian_copy = jacobian_copy.shift_identity()
+
                         jacobian = jacobian_copy
+
                     else:
-                        jacobian = -eye(variable_size, dtype=int8)
+                        jacobian = -eye(variable_size, dtype=int)
 
                 # Yield only if Jacobian exists
                 if jacobian is not None:
@@ -484,6 +491,9 @@ class JacobianAssembly:
         )
 
         for jacobian, position in jacobian_generator:
+            if isinstance(jacobian, JacobianOperator):
+                jacobian = jacobian.get_matrix_representation()
+
             total_jacobian[position.row_index][position.column_index] = csr_matrix(
                 jacobian.real
             )
@@ -496,7 +506,7 @@ class JacobianAssembly:
         variables: Collection[str],
         is_residual: bool = False,
         jacobian_type: JacobianType = JacobianType.MATRIX,
-    ) -> csr_matrix | JacobianOperator:
+    ) -> csr_matrix | AssembledJacobianOperator:
         """Form the Jacobian as a SciPy ``LinearOperator``.
 
         Args:
@@ -516,7 +526,7 @@ class JacobianAssembly:
             )
 
         if jacobian_type == self.JacobianType.LINEAR_OPERATOR:
-            return JacobianOperator(
+            return AssembledJacobianOperator(
                 functions,
                 variables,
                 self.compute_dimension(functions),

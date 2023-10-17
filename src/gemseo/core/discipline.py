@@ -53,6 +53,7 @@ from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractCache
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.derivatives.derivation_modes import DerivationMode
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.defaults import Defaults
@@ -173,7 +174,7 @@ class MDODiscipline(Serializable):
     run_solves_residuals: bool
     """Whether the run method shall solve the residuals."""
 
-    jac: dict[str, dict[str, ndarray]]
+    jac: dict[str, dict[str, ndarray | csr_array | JacobianOperator]]
     """The Jacobians of the outputs wrt inputs.
 
     The structure is ``{output: {input: matrix}}``.

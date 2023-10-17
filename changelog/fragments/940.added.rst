@@ -1,0 +1,1 @@
+MDA can now handle disciplines with matrix-free Jacobians. To define a matrix-free Jacobian, the user must fill in the :attr:`.MDODiscipline.jac` dictionary with :class:`.JacobianOperator` overloading the ``_matvec`` and ``_rmatvec`` methods to respectively implement the matrix-vector and transposed matrix-vector product.
