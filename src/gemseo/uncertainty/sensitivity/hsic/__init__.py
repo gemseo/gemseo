@@ -12,19 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Capabilities to run a sensitivity analysis.
+"""Capabilities to run a HSIC-based sensitivity analysis.
 
-This package contains:
-
-- an abstract class :class:`.SensitivityAnalysis`
-  to define the concept of sensitivity analysis,
-- a factory :class:`.SensitivityAnalysisFactory`
-  to create instances of :class:`.SensitivityAnalysis`,
-- concrete classes implementing this abstract class:
-
-  - :class:`.CorrelationAnalysis` (based on OpenTURNS capabilities)
-  - :class:`.MorrisAnalysis`,
-  - :class:`.SobolAnalysis` (based on OpenTURNS capabilities),
-  - :class:`.HSICAnalysis` (based on OpenTURNS capabilities).
+The main class is :class:`.HSICAnalysis` (based on OpenTURNS capabilities).
 """
 from __future__ import annotations

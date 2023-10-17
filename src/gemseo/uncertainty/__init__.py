@@ -43,6 +43,7 @@ This sub-package is based in particular on OpenTURNS.
     :class:`.CorrelationAnalysis`
     :class:`.MorrisAnalysis`
     :class:`.SobolAnalysis`
+    :class:`.HSICAnalysis`
 
 The sub-package :mod:`~gemseo.uncertainty.statistics` offers an abstract level
 for statistics, as well as parametric and empirical versions.
