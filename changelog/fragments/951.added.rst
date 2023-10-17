@@ -1,0 +1,1 @@
+``HSICAnalysis`` is a new ``SensitivityAnalysis`` based on the Hilbert-Schmidt independence criterion (HSIC).
