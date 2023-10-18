@@ -143,7 +143,7 @@ typing-extensions==4.8.0
     #   pydantic
 tzdata==2023.3
     # via pandas
-urllib3==2.0.6
+urllib3==2.0.7
     # via requests
 xdsmjs==2.0.0
     # via gemseo (pyproject.toml)
