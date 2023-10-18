@@ -22,9 +22,6 @@ test:
           - py39-coverage
   tags:
     - $TAG
-  after_script:
-    - git fetch origin develop --depth 1
-    - $TOX_EXE -e coverage-diff -- --compare-branch origin/develop
 
 # Define jobs for minor python env with this extended parent.
 extended-test:
@@ -52,9 +49,13 @@ publish-gitlab:
   variables:
     TWINE_PASSWORD: $CI_JOB_TOKEN
     TWINE_REPOSITORY_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+    GITLAB_TOKEN: $GITLAB_CI_AND_PUSH_TOKEN
   rules:
     - if: $CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"
   before_script:
     # Tags are necessary for setuptools-scm to determine the version,
     # but gitlab makes shallow fetch by default.
     - git fetch --tags --unshallow
+    # Remove the previous package.
+    - last_package=$(glab api projects/:fullpath/packages | jq '.[0].id')
+    - glab api -X DELETE projects/:fullpath/packages/$last_package
