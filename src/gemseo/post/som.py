@@ -148,7 +148,7 @@ class SOM(OptPostProcessor):
                 for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(
                         [f_h[0:3] + [f_h[3][k]] for f_h in f_hist],
-                        f"{criterion}_{k}",
+                        f"{criterion}[{k}]",
                         index + 1,
                         grid_size_x=grid_size_x,
                         grid_size_y=grid_size_y,
