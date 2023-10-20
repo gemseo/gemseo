@@ -138,8 +138,7 @@ class KMeans(MLPredictiveClusteringAlgo):
         self,
         data: ndarray,
     ) -> ndarray:
-        centers = self.algo.cluster_centers_
-        distances = norm(data[:, newaxis] - centers, axis=2)
-        inverse_distances = 1 / (distances + self.EPS)
-        probas = inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]
-        return probas
+        inverse_distances = 1 / (
+            norm(data[:, newaxis] - self.algo.cluster_centers_, axis=2) + self.EPS
+        )
+        return inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]

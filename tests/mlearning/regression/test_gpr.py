@@ -88,15 +88,23 @@ def test_predict(model):
 
 def test_predict_std_training_point(model):
     """Test std prediction for a training point."""
-    input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
-    prediction_std = model.predict_std(input_value)
+    prediction_std = model.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
     assert allclose(prediction_std, 0, atol=1e-3)
+    assert prediction_std.shape == (1, 2)
+
+
+def test_predict_std_1d_output(dataset):
+    """Test std prediction for a training point with a 1d output."""
+    gpr = GaussianProcessRegressor(dataset, output_names=["y_1"])
+    gpr.learn()
+    prediction_std = gpr.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
+    assert allclose(prediction_std, 0, atol=1e-3)
+    assert prediction_std.shape == (1, 1)
 
 
 def test_predict_std_test_point(model):
     """Test std prediction for a test point."""
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    prediction_std = model.predict_std(input_value)
+    prediction_std = model.predict_std({"x_1": array([1.0]), "x_2": array([2.0])})
     assert (prediction_std > 0).all()
 
 

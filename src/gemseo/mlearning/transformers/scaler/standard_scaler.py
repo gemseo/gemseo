@@ -56,7 +56,7 @@ class StandardScaler(Scaler):
 
     def __init__(
         self,
-        name: str = "StandardScaler",
+        name: str = "",
         offset: float = 0.0,
         coefficient: float = 1.0,
     ) -> None:

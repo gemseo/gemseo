@@ -41,7 +41,7 @@ class Pipeline(Transformer):
 
     def __init__(
         self,
-        name: str = "Pipeline",
+        name: str = "",
         transformers: Sequence[Transformer] | None = None,
     ) -> None:
         """
@@ -62,8 +62,7 @@ class Pipeline(Transformer):
         Returns:
             A deepcopy of the current instance.
         """
-        transformers = [trans.duplicate() for trans in self.transformers]
-        return self.__class__(self.name, transformers)
+        return self.__class__(self.name, [t.duplicate() for t in self.transformers])
 
     def _fit(
         self,
@@ -78,7 +77,7 @@ class Pipeline(Transformer):
             data: The data to be fitted.
         """
         for transformer in self.transformers:
-            data = transformer.fit_transform(data, *args)
+            transformer.fit_transform(data, *args)
 
     def transform(
         self,

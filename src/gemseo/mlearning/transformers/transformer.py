@@ -59,13 +59,13 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     CROSSED: ClassVar[bool] = False
     """Whether the :meth:`.fit` method requires two data arrays."""
 
-    def __init__(self, name: str = "Transformer", **parameters: ParameterType) -> None:
+    def __init__(self, name: str = "", **parameters: ParameterType) -> None:
         """
         Args:
             name: A name for this transformer.
             **parameters: The parameters of the transformer.
         """
-        self.name = name
+        self.name = name or self.__class__.__name__
         self.__parameters = parameters
         self.__is_fitted = False
 
@@ -198,12 +198,12 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
             """
             if data.ndim == 2:
                 return f(self, data, *args, **kwargs)
-            else:
-                out = f(self, data[newaxis, :], *args, **kwargs)
-                if isinstance(out, ndarray):
-                    out = out[0]
 
-                return out
+            out = f(self, data[newaxis, :], *args, **kwargs)
+            if isinstance(out, ndarray):
+                return out[0]
+
+            return out
 
         return g
 

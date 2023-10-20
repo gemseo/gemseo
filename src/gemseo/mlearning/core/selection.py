@@ -170,18 +170,8 @@ class MLAlgoSelection:
 
         for prodvalues in product(*values):
             params = dict(zip(keys, prodvalues))
-            if not calib_space:
-                algo_new = self.factory.create(name, data=self.dataset, **params)
-                measure = self.measure(algo_new)
-                evaluate = getattr(
-                    measure,
-                    measure.EvaluationFunctionName[
-                        self.__measure_evaluation_method_name
-                    ],
-                )
-                quality_new = evaluate(**self.measure_options)
-            else:
-                calib = MLAlgoCalibration(
+            if calib_space:
+                ml_algo_calibration = MLAlgoCalibration(
                     name,
                     self.dataset,
                     calib_space.variable_names,
@@ -191,9 +181,19 @@ class MLAlgoSelection:
                     measure_options=self.measure_options,
                     **params,
                 )
-                calib.execute(calib_algo)
-                algo_new = calib.optimal_algorithm
-                quality_new = calib.optimal_criterion
+                ml_algo_calibration.execute(calib_algo)
+                algo_new = ml_algo_calibration.optimal_algorithm
+                quality_new = ml_algo_calibration.optimal_criterion
+            else:
+                algo_new = self.factory.create(name, data=self.dataset, **params)
+                quality_measurer = self.measure(algo_new)
+                compute_quality_measure = getattr(
+                    quality_measurer,
+                    quality_measurer.EvaluationFunctionName[
+                        self.__measure_evaluation_method_name
+                    ],
+                )
+                quality_new = compute_quality_measure(**self.measure_options)
 
             if self.measure.is_better(quality_new, quality):
                 algo = algo_new
@@ -225,6 +225,8 @@ class MLAlgoSelection:
         for new_candidate in self.candidates[1:]:
             if self.measure.is_better(new_candidate[1], candidate[1]):
                 candidate = new_candidate
-        if not return_quality:
-            candidate = candidate[0]
-        return candidate
+
+        if return_quality:
+            return candidate
+
+        return candidate[0]

@@ -312,5 +312,6 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         Raises:
             NotImplementedError: When the method is called.
         """
-        name = self.__class__.__name__
-        raise NotImplementedError(f"Derivatives are not available for {name}.")
+        raise NotImplementedError(
+            f"Derivatives are not available for {self.__class__.__name__}."
+        )

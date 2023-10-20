@@ -666,10 +666,9 @@ class MOERegressor(MLRegressionAlgo):
         input_data: ndarray,
     ) -> ndarray:
         if self.hard:
-            jacobians = self._predict_jacobian_hard(input_data)
-        else:
-            jacobians = self._predict_jacobian_soft(input_data)
-        return jacobians
+            return self._predict_jacobian_hard(input_data)
+
+        return self._predict_jacobian_soft(input_data)
 
     def _predict_jacobian_hard(
         self,
@@ -685,17 +684,16 @@ class MOERegressor(MLRegressionAlgo):
         Returns:
             The predicted Jacobian data with shape (n_samples, n_outputs, n_inputs).
         """
-        n_samples = input_data.shape[0]
         classes = self.classifier.predict(input_data)[..., 0]
-        unq_classes = unique(classes)
+        first_regression_model = self.regress_models[0]
         jacobians = zeros(
             (
-                n_samples,
-                self.regress_models[0].output_dimension,
-                self.regress_models[0].input_dimension,
+                len(input_data),
+                first_regression_model.output_dimension,
+                first_regression_model.input_dimension,
             )
         )
-        for klass in unq_classes:
+        for klass in unique(classes):
             inds_kls = where(classes == klass)
             jacobians[inds_kls] = self.regress_models[klass].predict_jacobian(
                 input_data[inds_kls]

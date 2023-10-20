@@ -32,6 +32,7 @@ from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
+from numpy.testing import assert_almost_equal
 from sklearn.linear_model import ElasticNet
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
@@ -132,10 +133,15 @@ def test_coefficients_with_transform(dataset, model_with_transform):
 
 
 def test_intercept(model):
-    """Test intercept."""
+    """Check the value returned by intercept when as_dict is True."""
     intercept = model.get_intercept()
     assert allclose(intercept["y_1"], array([1.0]))
     assert allclose(intercept["y_2"], array([-1.0]))
+
+
+def test_intercept_false(model):
+    """Check the value returned by intercept when as_dict is False."""
+    assert_almost_equal(model.get_intercept(False), array([1.0, -1.0]))
 
 
 def test_intercept_with_output_dimension_change(dataset):

@@ -56,7 +56,7 @@ class KLSVD(DimensionReduction):
         self,
         mesh: ndarray,
         n_components: int | None = None,
-        name: str = "KLSVD",
+        name: str = "",
         use_random_svd: bool = False,
         n_singular_values: int | None = None,
         use_halko2010: bool = True,

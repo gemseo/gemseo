@@ -152,14 +152,13 @@ class LinearRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        return self.algo.predict(input_data)
+        return self.algo.predict(input_data).reshape((len(input_data), -1))
 
     def _predict_jacobian(
         self,
         input_data: ndarray,
     ) -> ndarray:
-        n_samples = input_data.shape[0]
-        return repeat(self.algo.coef_[None], n_samples, axis=0)
+        return repeat(self.algo.coef_[None], len(input_data), axis=0)
 
     @property
     def coefficients(self) -> ndarray:
@@ -170,10 +169,9 @@ class LinearRegressor(MLRegressionAlgo):
     def intercept(self) -> ndarray:
         """The regression intercepts of the linear model."""
         if self.parameters["fit_intercept"]:
-            intercept = self.algo.intercept_
-        else:
-            intercept = zeros(self.algo.coef_.shape[0])
-        return intercept
+            return self.algo.intercept_
+
+        return zeros(self.algo.coef_.shape[0])
 
     def get_coefficients(
         self,
@@ -193,20 +191,21 @@ class LinearRegressor(MLRegressionAlgo):
                 even though the transformers change the variables dimensions.
         """
         coefficients = self.coefficients
-        if as_dict:
-            if any(
-                [
-                    isinstance(transformer, DimensionReduction)
-                    for _, transformer in self.transformer.items()
-                ]
-            ):
-                raise ValueError(
-                    "Coefficients are only representable in dictionary "
-                    "form if the transformers do not change the "
-                    "dimensions of the variables."
-                )
-            coefficients = self.__convert_array_to_dict(coefficients)
-        return coefficients
+        if not as_dict:
+            return coefficients
+
+        if any(
+            [
+                isinstance(transformer, DimensionReduction)
+                for _, transformer in self.transformer.items()
+            ]
+        ):
+            raise ValueError(
+                "Coefficients are only representable in dictionary "
+                "form if the transformers do not change the "
+                "dimensions of the variables."
+            )
+        return self.__convert_array_to_dict(coefficients)
 
     def get_intercept(
         self,
@@ -226,19 +225,21 @@ class LinearRegressor(MLRegressionAlgo):
                 even though the transformers change the variables dimensions.
         """
         intercept = self.intercept
-        if as_dict:
-            if IODataset.OUTPUT_GROUP in self.transformer:
-                raise ValueError(
-                    "Intercept is only representable in dictionary "
-                    "form if the transformers do not change the "
-                    "dimensions of the output variables."
-                )
-            varsizes = self.learning_set.variable_names_to_n_components
-            intercept = split_array_to_dict_of_arrays(
-                intercept, varsizes, self.output_names
+        if not as_dict:
+            return intercept
+
+        if IODataset.OUTPUT_GROUP in self.transformer:
+            raise ValueError(
+                "Intercept is only representable in dictionary "
+                "form if the transformers do not change the "
+                "dimensions of the output variables."
             )
-            intercept = {key: list(val) for key, val in intercept.items()}
-        return intercept
+        intercept = split_array_to_dict_of_arrays(
+            intercept,
+            self.learning_set.variable_names_to_n_components,
+            self.output_names,
+        )
+        return {key: list(val) for key, val in intercept.items()}
 
     def __convert_array_to_dict(
         self,

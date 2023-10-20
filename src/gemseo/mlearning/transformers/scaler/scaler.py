@@ -66,7 +66,7 @@ class Scaler(Transformer):
 
     def __init__(
         self,
-        name: str = "Scaler",
+        name: str = "",
         offset: float | ndarray = 0.0,
         coefficient: float | ndarray = 1.0,
     ) -> None:

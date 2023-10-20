@@ -47,7 +47,7 @@ class PCA(DimensionReduction):
 
     def __init__(
         self,
-        name: str = "PCA",
+        name: str = "",
         n_components: int | None = None,
         scale: bool = False,
         **parameters: float | int | str | bool | None,

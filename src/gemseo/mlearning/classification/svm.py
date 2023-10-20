@@ -38,7 +38,6 @@ from typing import Final
 from typing import Iterable
 
 from numpy import ndarray
-from numpy import newaxis
 from sklearn.svm import SVC
 
 from gemseo.datasets.io_dataset import IODataset
@@ -96,7 +95,7 @@ class SVMClassifier(MLClassificationAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        return self.algo.predict(input_data)[:, newaxis].astype(int)
+        return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,

@@ -143,10 +143,9 @@ class MLClassificationAlgo(MLSupervisedAlgo):
                 with shape (n_samples, n_classes).
         """
         if hard:
-            probas = self._predict_proba_hard(input_data)
-        else:
-            probas = self._predict_proba_soft(input_data)
-        return probas
+            return self._predict_proba_hard(input_data)
+
+        return self._predict_proba_soft(input_data)
 
     def _predict_proba_hard(
         self,
@@ -160,13 +159,13 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         Returns:
             The indicator of belonging to each class with shape (n_samples, n_classes).
         """
-        n_samples = input_data.shape[0]
+        n_samples = len(input_data)
         prediction = self._predict(input_data).astype(int)
         n_outputs = prediction.shape[1]
         probas = zeros((n_samples, self.n_classes, n_outputs))
-        for n_sample in range(prediction.shape[0]):
+        for sample in range(n_samples):
             for n_output in range(n_outputs):
-                probas[n_sample, prediction[n_sample, n_output], n_output] = 1
+                probas[sample, prediction[sample, n_output], n_output] = 1
         return probas
 
     @abstractmethod

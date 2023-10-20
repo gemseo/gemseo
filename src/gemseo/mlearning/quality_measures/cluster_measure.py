@@ -59,9 +59,10 @@ class MLClusteringMeasure(MLQualityMeasure):
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
     ) -> MeasureType:
-        samples, _ = self._pre_process(samples)
         return self._compute_measure(
-            self._get_data()[samples], self.algo.labels, multioutput
+            self._get_data()[self._pre_process(samples)[0]],
+            self.algo.labels,
+            multioutput,
         )
 
     @abstractmethod
