@@ -164,19 +164,19 @@ class MLAlgoAssessor(MDODiscipline):
             if len(inputs[index]) == 1:
                 inputs[index] = inputs[index][0]
         self.parameters.update(inputs)
-        factory = MLAlgoFactory()
-        algo = factory.create(
+        algo = MLAlgoFactory().create(
             self.algo, data=self.data, transformer=self.transformer, **self.parameters
         )
         algo.learn()
         measure = self.measure(algo)
-        learning = measure.compute_learning_measure(multioutput=False)
-        evaluate = getattr(
+        compute_criterion = getattr(
             measure,
             measure.EvaluationFunctionName[self.__measure_evaluation_method_name],
         )
-        criterion = evaluate(**self.measure_options)
-        self.store_local_data(criterion=array([criterion]), learning=array([learning]))
+        self.store_local_data(
+            criterion=array([compute_criterion(**self.measure_options)]),
+            learning=array([measure.compute_learning_measure(multioutput=False)]),
+        )
         self.algos.append(algo)
 
 
@@ -276,33 +276,26 @@ class MLAlgoCalibration:
         Args:
             input_data: The driver properties.
         """
-        doe_factory = DOEFactory()
-
-        if doe_factory.is_available(input_data["algo"]):
-            self.scenario = DOEScenario(
-                [self.algo_assessor],
-                "DisciplinaryOpt",
-                self.algo_assessor.CRITERION,
-                self.calibration_space,
-                maximize_objective=self.maximize_objective,
-            )
+        if DOEFactory().is_available(input_data["algo"]):
+            cls = DOEScenario
         else:
-            self.scenario = MDOScenario(
-                [self.algo_assessor],
-                "DisciplinaryOpt",
-                self.algo_assessor.CRITERION,
-                self.calibration_space,
-                maximize_objective=self.maximize_objective,
-            )
+            cls = MDOScenario
+
+        self.scenario = cls(
+            [self.algo_assessor],
+            "DisciplinaryOpt",
+            self.algo_assessor.CRITERION,
+            self.calibration_space,
+            maximize_objective=self.maximize_objective,
+        )
         self.scenario.add_observable(self.algo_assessor.LEARNING)
         self.scenario.execute(input_data)
-        x_opt = self.scenario.design_space.get_current_value(as_dict=True)
-        f_opt = self.scenario.optimization_result.f_opt
         self.dataset = self.scenario.to_dataset(opt_naming=False)
-        algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
-        self.optimal_parameters = x_opt
-        self.optimal_criterion = f_opt
-        self.optimal_algorithm = algo_opt
+        self.optimal_parameters = self.scenario.optimization_result.x_opt_as_dict
+        self.optimal_criterion = self.scenario.optimization_result.f_opt
+        self.optimal_algorithm = self.algos[
+            argmin(self.get_history(self.algo_assessor.CRITERION))
+        ]
 
     def get_history(
         self,

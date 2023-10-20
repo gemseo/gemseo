@@ -43,7 +43,7 @@ class KPCA(DimensionReduction):
 
     def __init__(
         self,
-        name: str = "KPCA",
+        name: str = "",
         n_components: int | None = None,
         fit_inverse_transform: bool = True,
         kernel: str = "linear",

@@ -35,7 +35,7 @@ class DimensionReduction(Transformer):
 
     def __init__(
         self,
-        name: str = "DimensionReduction",
+        name: str = "",
         n_components: int | None = None,
         **parameters: bool | int | float | str | None,
     ) -> None:

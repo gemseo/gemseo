@@ -46,15 +46,13 @@ class Power(Transformer):
     _TRANSFORMER_NAME: ClassVar[str] = "yeo-johnson"
     """The name of the transformer in scikit-learn."""
 
-    def __init__(self, name: str | None = None, standardize: bool = True) -> None:
+    def __init__(self, name: str = "", standardize: bool = True) -> None:
         """
         Args:
             name: A name for this transformer. If ``None``, use the class name.
             standardize: Whether to apply zero-mean, unit-variance
                 normalization to the transformed output.
         """
-        if name is None:
-            name = self.__class__.__name__
         super().__init__(name, standardize=standardize)
         self.__power_transformer = PowerTransformer(
             method=self._TRANSFORMER_NAME,

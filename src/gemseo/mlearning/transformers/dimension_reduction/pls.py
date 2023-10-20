@@ -46,7 +46,7 @@ class PLS(DimensionReduction):
 
     def __init__(
         self,
-        name: str = "PLS",
+        name: str = "",
         n_components: int | None = None,
         **parameters: float | int | bool,
     ) -> None:

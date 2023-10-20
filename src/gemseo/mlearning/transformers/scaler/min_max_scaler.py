@@ -55,7 +55,7 @@ class MinMaxScaler(Scaler):
 
     def __init__(
         self,
-        name: str = "MinMaxScaler",
+        name: str = "",
         offset: float = 0.0,
         coefficient: float = 1.0,
     ) -> None:

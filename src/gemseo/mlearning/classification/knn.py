@@ -146,18 +146,14 @@ class KNNClassifier(MLClassificationAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo.predict(input_data).astype(int)
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]
-        return output_data
+        return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,
         input_data: ndarray,
     ) -> ndarray:
         probas = self.algo.predict_proba(input_data)
-        if len(probas[0].shape) == 1:
-            probas = probas[..., None]
-        else:
-            probas = stack(probas, axis=-1)
-        return probas
+        if probas[0].ndim == 1:
+            return probas[..., newaxis]
+
+        return stack(probas, axis=-1)

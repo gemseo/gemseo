@@ -127,6 +127,8 @@ class PolynomialRegressor(LinearRegressor):
         Raises:
             ValueError: If the degree is lower than one.
         """
+        if degree < 1:
+            raise ValueError("Degree must be >= 1.")
         super().__init__(
             data,
             degree=degree,
@@ -140,23 +142,19 @@ class PolynomialRegressor(LinearRegressor):
         )
         self._poly = PolynomialFeatures(degree=degree, include_bias=False)
         self.parameters["degree"] = degree
-        if degree < 1:
-            raise ValueError("Degree must be >= 1.")
 
     def _fit(
         self,
         input_data: ndarray,
         output_data: ndarray,
     ) -> None:
-        input_data = self._poly.fit_transform(input_data)
-        super()._fit(input_data, output_data)
+        super()._fit(self._poly.fit_transform(input_data), output_data)
 
     def _predict(
         self,
         input_data: ndarray,
     ) -> ndarray:
-        input_data = self._poly.transform(input_data)
-        return super()._predict(input_data)
+        return super()._predict(self._poly.transform(input_data))
 
     def _predict_jacobian(
         self,
@@ -172,17 +170,12 @@ class PolynomialRegressor(LinearRegressor):
         #
         # n_powers is given by the formula
         # n_powers = binom(n_inputs+degree, n_inputs)+1
-
-        vandermonde = self._poly.transform(input_data)
-
         powers = self._poly.powers_
         n_inputs = get_n_input_features_(self._poly)
-        n_powers = self._poly.n_output_features_
         n_outputs = self.algo.coef_.shape[0]
         coefs = self.get_coefficients()
-
         jac_intercept = zeros((n_outputs, n_inputs))
-        jac_coefs = zeros((n_outputs, n_powers, n_inputs))
+        jac_coefs = zeros((n_outputs, self._poly.n_output_features_, n_inputs))
 
         # Compute partial derivatives with respect to each input separately
         for index in range(n_inputs):
@@ -218,10 +211,9 @@ class PolynomialRegressor(LinearRegressor):
             jac_coefs[:, inds_keep, index] = dcoefs
 
         # Assemble polynomial (sum of weighted monomials)
-        contributions = jac_coefs[None] * vandermonde[:, newaxis, :, newaxis]
-        jacobians = jac_intercept + contributions.sum(axis=2)
-
-        return jacobians
+        vandermonde = self._poly.transform(input_data)
+        contributions = jac_coefs[newaxis] * vandermonde[:, newaxis, :, newaxis]
+        return jac_intercept + contributions.sum(axis=2)
 
     def get_coefficients(
         self,
@@ -241,13 +233,12 @@ class PolynomialRegressor(LinearRegressor):
         Raises:
             NotImplementedError: If the coefficients are required as a dictionary.
         """
-        coefficients = self.coefficients
         if as_dict:
             raise NotImplementedError(
                 "For now the coefficients can only be obtained "
                 "in the form of a NumPy array"
             )
-        return coefficients
+        return self.coefficients
 
     def _save_algo(
         self,

@@ -34,7 +34,6 @@ from typing import Final
 from typing import Iterable
 
 from numpy import ndarray
-from numpy import newaxis
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
 from gemseo.datasets.io_dataset import IODataset
@@ -87,10 +86,4 @@ class RandomForestRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo.predict(input_data)
-
-        # n_outputs=1 => output_shape=(n_samples,). Convert to (n_samples, 1).
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]
-
-        return output_data
+        return self.algo.predict(input_data).reshape((len(input_data), -1))

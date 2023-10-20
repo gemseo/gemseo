@@ -362,9 +362,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         directory = Path(path) / (directory or default_directory_name)
         directory.mkdir(exist_ok=True)
 
-        objects = self._get_objects_to_save()
         with (directory / self.FILENAME).open("wb") as handle:
-            pickle.dump(objects, handle)
+            pickle.dump(self._get_objects_to_save(), handle)
 
         self._save_algo(directory)
 

@@ -130,17 +130,18 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         Returns:
             The predicted cluster for each input data sample.
         """
-        as_dict = isinstance(data, Mapping)
-        if as_dict:
+        if isinstance(data, Mapping):
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
-        single_sample = len(data.shape) == 1
-        data = atleast_2d(data)
+
+        data_2d = atleast_2d(data)
         parameters = self.learning_set.DEFAULT_GROUP
         if parameters in self.transformer:
-            data = self.transformer[parameters].transform(data)
-        clusters = self._predict(atleast_2d(data)).astype(int)
-        if single_sample:
-            clusters = clusters[0]
+            data_2d = self.transformer[parameters].transform(data_2d)
+
+        clusters = self._predict(data_2d).astype(int)
+        if data.ndim == 1:
+            return clusters[0]
+
         return clusters
 
     @abstractmethod
@@ -185,14 +186,13 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             The probability of belonging to each cluster,
             with shape (n_samples, n_clusters) or (n_clusters,).
         """
-        as_dict = isinstance(data, Mapping)
-        if as_dict:
+        if isinstance(data, Mapping):
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
-        single_sample = len(data.shape) == 1
-        data = atleast_2d(data)
+
         probas = self._predict_proba(atleast_2d(data), hard)
-        if single_sample:
-            probas = probas.ravel()
+        if data.ndim == 1:
+            return probas.ravel()
+
         return probas
 
     def _predict_proba(
@@ -211,10 +211,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
                 with shape (n_samples, n_clusters).
         """
         if hard:
-            probas = self._predict_proba_hard(data)
-        else:
-            probas = self._predict_proba_soft(data)
-        return probas
+            return self._predict_proba_hard(data)
+
+        return self._predict_proba_soft(data)
 
     def _predict_proba_hard(
         self,

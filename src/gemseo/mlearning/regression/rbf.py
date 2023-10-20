@@ -341,10 +341,7 @@ class RBFRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo(*input_data.T)
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]  # n_outputs=1, rbf reduces
-        return output_data + self.y_average
+        return self.algo(*input_data.T).reshape((len(input_data), -1)) + self.y_average
 
     def _predict_jacobian(
         self,
@@ -360,14 +357,12 @@ class RBFRegressor(MLRegressionAlgo):
         # ref_points : (           ,           , n_inputs , n_learn_samples )
         # nodes      : (           , n_outputs ,          , n_learn_samples )
         # jacobians  : ( n_samples , n_outputs , n_inputs ,                 )
-        eps = self.algo.epsilon
         ref_points = self.algo.xi[newaxis, newaxis]
         nodes = self.algo.nodes.T[newaxis, :, newaxis]
         input_data = input_data[:, newaxis, :, newaxis]
         diffs = input_data - ref_points
         dists = norm(diffs, axis=2)[:, :, newaxis]
-        contributions = nodes * der_func(diffs, dists, eps=eps)
-        return contributions.sum(-1)
+        return (nodes * der_func(diffs, dists, eps=self.algo.epsilon)).sum(-1)
 
     def _check_available_jacobian(self) -> None:
         """Check if the Jacobian is available for the given setup.

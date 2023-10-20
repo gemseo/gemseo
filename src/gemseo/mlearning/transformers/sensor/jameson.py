@@ -33,7 +33,7 @@ class JamesonSensor(Transformer):
 
     def __init__(
         self,
-        name: str = "JamesonSensor",
+        name: str = "",
         threshold: float = 0.3,
         removing_part: float = 0.01,
         dimension: int = 1,
