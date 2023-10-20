@@ -57,13 +57,11 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Callable
 from typing import ClassVar
 from typing import Dict
 from typing import Final
 from typing import Iterable
 from typing import List
-from typing import Mapping
 from typing import NoReturn
 from typing import Optional
 from typing import Union
@@ -87,6 +85,7 @@ from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.core.supervised import SavedObjectType
+from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
@@ -96,7 +95,6 @@ from gemseo.mlearning.quality_measures.quality_measure import (
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -169,6 +167,8 @@ class MOERegressor(MLRegressionAlgo):
     _LOCAL_INPUT: Final[str] = "input"
     _LOCAL_OUTPUT: Final[str] = "output"
 
+    DataFormatters = MOEDataFormatters
+
     def __init__(
         self,
         data: IODataset,
@@ -211,68 +211,6 @@ class MOERegressor(MLRegressionAlgo):
         self.clusterer = None
         self.classifier = None
         self.regress_models = None
-
-    class DataFormatters(MLRegressionAlgo.DataFormatters):
-        """Machine learning regression model decorators."""
-
-        @classmethod
-        def format_predict_class_dict(
-            cls,
-            predict: Callable[[ndarray], ndarray],
-        ) -> Callable[[DataType], DataType]:
-            """Make an array-based function be called with a dictionary of NumPy arrays.
-
-            Args:
-                predict: The function to be called;
-                    it takes a NumPy array in input and returns a NumPy array.
-
-            Returns:
-                A function making the function 'predict' work with
-                either a NumPy data array
-                or a dictionary of NumPy data arrays indexed by variables names.
-                The evaluation will have the same type as the input data.
-            """
-
-            def wrapper(
-                self,
-                input_data: DataType,
-                *args,
-                **kwargs,
-            ) -> DataType:
-                """Evaluate 'predict' with either array or dictionary-based input data.
-
-                Firstly,
-                the pre-processing stage converts the input data to a NumPy data array,
-                if these data are expressed as a dictionary of NumPy data arrays.
-
-                Then,
-                the processing evaluates the function 'predict'
-                from this NumPy input data array.
-
-                Lastly,
-                the post-processing transforms the output data
-                to a dictionary of output NumPy data array
-                if the input data were passed as a dictionary of NumPy data arrays.
-
-                Args:
-                    input_data: The input data.
-                    *args: The positional arguments of the function 'predict'.
-                    **kwargs: The keyword arguments of the function 'predict'.
-
-                Returns:
-                    The output data with the same type as the input one.
-                """
-                as_dict = isinstance(input_data, Mapping)
-                if as_dict:
-                    input_data = concatenate_dict_of_arrays_to_array(
-                        input_data, self.input_names
-                    )
-                output_data = predict(self, input_data, *args, **kwargs)
-                if as_dict:
-                    output_data = {self.LABELS: output_data}
-                return output_data
-
-            return wrapper
 
     def set_clusterer(
         self,
