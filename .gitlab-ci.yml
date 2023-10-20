@@ -56,6 +56,3 @@ publish-gitlab:
     # Tags are necessary for setuptools-scm to determine the version,
     # but gitlab makes shallow fetch by default.
     - git fetch --tags --unshallow
-    # Remove the previous package.
-    - last_package=$(glab api projects/:fullpath/packages | jq '.[0].id')
-    - glab api -X DELETE projects/:fullpath/packages/$last_package
