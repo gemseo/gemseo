@@ -110,6 +110,7 @@ from typing import MutableMapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
+from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import ndarray
@@ -122,6 +123,9 @@ from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
 
 SavedObjectType = Union[Dataset, Dict[str, Transformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
@@ -195,6 +199,9 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     DEFAULT_TRANSFORMER: DefaultTransformerType = IDENTITY
     """The default transformer for the input and output data, if any."""
 
+    DataFormatters: ClassVar[type[BaseDataFormatters]]
+    """The data formatters for the learning and prediction methods."""
+
     def __init__(
         self,
         data: Dataset,
@@ -262,12 +269,6 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             "Tuple[str, Mapping[str, Any]] "
             "or str."
         )
-
-    class DataFormatters:
-        """Decorators for the internal MLAlgo methods.
-
-        :noindex:
-        """
 
     @property
     def is_trained(self) -> bool:
