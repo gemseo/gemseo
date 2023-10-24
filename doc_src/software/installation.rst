@@ -35,15 +35,12 @@ Requirements
 ************
 
 We try to support the Python interpreter versions following the official
-`Python release cycle<https://devguide.python.org/versions/#python-release-cycle>`_.
+`Python release cycle <https://devguide.python.org/versions/#python-release-cycle>`__.
 We may not support newer version of Python when a dependency of |g|
 does not provide support for it.
 We may support an old version of Python from its end-of-life date
 until a major release of |g|.
-The currently supported versions of Python are:
-- 3.8
-- 3.9
-- 3.10
+The currently supported versions of Python are 3.8, 3.9 and 3.10.
 
 To install |g|,
 you should use a Python environment.
