@@ -84,7 +84,6 @@ from typing import Iterable
 from numpy import concatenate
 from numpy import ndarray
 from numpy import newaxis
-from numpy import where
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -200,7 +199,7 @@ class PolynomialRegressor(LinearRegressor):
 
             # Find indices for the given powers
             inds_keep = [
-                where((powers == dpowers[i]).prod(axis=1) == 1)
+                ((powers == dpowers[i]).prod(axis=1) == 1).nonzero()[0]
                 for i in range(dpowers.shape[0])
             ]
             if len(inds_keep) > 0:

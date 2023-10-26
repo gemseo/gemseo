@@ -38,7 +38,7 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 if TYPE_CHECKING:
     from gemseo.core.scenario import Scenario
 
-from numpy import arange, copy, empty, in1d, ndarray, where, zeros
+from numpy import arange, copy, empty, in1d, ndarray, zeros
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.disciplines.utils import get_sub_disciplines
@@ -241,8 +241,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A boolean mask array.
         """
-        places = in1d(all_data_names, masked_data_names)
-        return where(places)
+        return in1d(all_data_names, masked_data_names).nonzero()
 
     def _get_generator_from(
         self,

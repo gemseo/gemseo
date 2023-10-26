@@ -30,7 +30,6 @@ from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
 from numpy import ndarray
-from numpy import where
 from numpy import zeros
 from numpy.linalg import matrix_rank
 from numpy.linalg import norm
@@ -223,7 +222,7 @@ class LagrangeMultipliers:
         """
         dspace = self.opt_problem.design_space
         x_dim = dspace.dimension
-        dim_act = sum(len(where(bnd)[0]) for bnd in act_bounds.values())
+        dim_act = sum(len(bnd.nonzero()[0]) for bnd in act_bounds.values())
         if dim_act == 0:
             return None, []
         act_array = concatenate([act_bounds[var] for var in dspace.variable_names])
@@ -424,7 +423,7 @@ class LagrangeMultipliers:
             l_b_mult = multipliers[i_min : i_min + n_act]
             lag[self.LOWER_BOUNDS] = (self.active_lb_names, l_b_mult)
             i_min += n_act
-            wrong_inds = where(l_b_mult < 0.0)[0]
+            wrong_inds = (l_b_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_lb_names)[wrong_inds]
                 LOGGER.warning(
@@ -438,7 +437,7 @@ class LagrangeMultipliers:
             u_b_mult = multipliers[i_min : i_min + n_act]
             lag[self.UPPER_BOUNDS] = (self.active_ub_names, u_b_mult)
             i_min += n_act
-            wrong_inds = where(u_b_mult < 0.0)[0]
+            wrong_inds = (u_b_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ub_names)[wrong_inds]
                 LOGGER.warning(
@@ -452,7 +451,7 @@ class LagrangeMultipliers:
             ineq_mult = multipliers[i_min : i_min + n_act]
             lag[self.INEQUALITY] = (self.active_ineq_names, ineq_mult)
             i_min += n_act
-            wrong_inds = where(ineq_mult < 0.0)[0]
+            wrong_inds = (ineq_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ineq_names)[wrong_inds]
                 LOGGER.warning(

@@ -97,10 +97,10 @@ class Correlations(OptPostProcessor):
             variable_names[obj_index] = self._obj_name
 
         correlation_coefficients = self.__compute_correlations(variable_history)
-        i_corr, j_corr = np.where(
+        i_corr, j_corr = (
             (np.abs(correlation_coefficients) > coeff_limit)
             & (np.abs(correlation_coefficients) < self.MAXIMUM_CORRELATION_COEFFICIENT)
-        )
+        ).nonzero()
         LOGGER.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
 
         if i_corr.size <= 16:

@@ -35,7 +35,6 @@ from numpy import flip
 from numpy import interp
 from numpy import max as np_max
 from numpy import sign
-from numpy import where
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
@@ -168,7 +167,7 @@ class ConstraintsHistory(OptPostProcessor):
 
             # Plot a vertical line at the last iteration (or pseudo-iteration)
             # where the constraint is (or should be) active.
-            indices_before_sign_change = where(diff(sign(constraint_history)))[0]
+            indices_before_sign_change = diff(sign(constraint_history)).nonzero()[0]
             if indices_before_sign_change.size != 0:
                 index_before_last_sign_change = indices_before_sign_change[-1]
                 indices = [

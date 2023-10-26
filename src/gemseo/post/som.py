@@ -38,7 +38,6 @@ from numpy import min as np_min
 from numpy import ndarray
 from numpy import nonzero
 from numpy import unique
-from numpy import where
 from numpy import zeros
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -192,7 +191,7 @@ class SOM(OptPostProcessor):
         unique_ind = unique(f_hist[2, :])
         average = {}
         for _, som_id in enumerate(unique_ind):
-            where_somid = where(f_hist[2, :] == som_id)[0]
+            where_somid = (f_hist[2, :] == som_id).nonzero()[0]
             ranges_of_uniques = f_hist[3, where_somid]
             average[som_id] = mean(ranges_of_uniques)
 
@@ -296,7 +295,7 @@ class SOM(OptPostProcessor):
         max_subarr_size = floor(sqrt(max_occ)) + 1
         dxdy_max = max_ofset / (max_subarr_size - 1)
         for grp in unique_indx:
-            inds_of_grp = where(coord_indx == grp)[0]
+            inds_of_grp = (coord_indx == grp).nonzero()[0]
             subarr_size = sqrt(len(inds_of_grp))
             if floor(subarr_size) < subarr_size:
                 subarr_size = floor(subarr_size) + 1
