@@ -194,6 +194,7 @@ Here are some references about |g| and its capabilities:
 - Olivanti, R., Gallard F., Brezillon, J, et al. `Comparison of Generic Multi-Fidelity Approaches for Bound-Constrained Nonlinear Optimization Applied to Adjoint-Based CFD Applications <https://doi.org/10.2514/6.2019-3102>`_, In : AIAA Aviation 2019 Forum
 - Vanaret, C., Gallard, F., Martins, J. R. `On the consequence of the "No Free Lunch" Theorem for Optimization on the Choice of an Appropriate MDO Architecture <https://arc.aiaa.org/doi/10.2514/6.2017-3148>`_, 18th AIAA/ISSMO Multidisciplinary Analysis and Optimization Conference, Denver, CO, USA, 2017
 
+.. seealso:: Find (almost) all the publications about |g| :ref:`on this page <publications>`.
 
 Artwork
 -------
