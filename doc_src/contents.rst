@@ -20,6 +20,7 @@ Table Of Contents
 
     overview
     aboutus
+    publications
     credits
     plugins
     roadmap
