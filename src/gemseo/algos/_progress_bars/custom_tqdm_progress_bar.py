@@ -73,21 +73,18 @@ class CustomTqdmProgressBar(tqdm.tqdm):
             return cls._INITIAL_RATE
 
         rate = n / elapsed
-        n = rate * 60
-        if n > 1:
+        if rate >= 1:
             return cls._RATE_TEMPLATE.format(rate, cls.__SEC_LABEL)
 
-        rate = n
-        n = rate * 60
-        if n > 1:
+        rate *= 60
+        if rate >= 1:
             return cls._RATE_TEMPLATE.format(rate, cls.__MIN_LABEL)
 
-        rate = n
-        n = rate * 24
-        if n > 1:
+        rate *= 60
+        if rate >= 1:
             return cls._RATE_TEMPLATE.format(rate, cls.__HOUR_LABEL)
 
-        return cls._RATE_TEMPLATE.format(n, cls.__DAY_LABEL)
+        return cls._RATE_TEMPLATE.format(rate * 24, cls.__DAY_LABEL)
 
     def status_printer(
         self, file: io.TextIOWrapper | io.StringIO
