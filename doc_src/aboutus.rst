@@ -168,7 +168,7 @@ Citation
 
 If you produce communications (scientific papers, conferences, reports) about work using |g|, thank you for citing us :
 
-    - Gallard, F., Vanaret, C., Guénot, D, et al. `GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation <https://arc.aiaa.org/doi/10.2514/6.2018-0657>`_. In : 2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference. 2018. p. 0657.
+    - Gallard, F., Vanaret, C., Guénot, D, *et al.*, `GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation <https://arc.aiaa.org/doi/10.2514/6.2018-0657>`_. In : 2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference. 2018. p. 0657.
 
     Bibtex entry::
 
@@ -184,14 +184,14 @@ References
 
 Here are some references about |g| and its capabilities:
 
-- Gallard, F., Vanaret, C., Guénot, D, et al. `GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation <https://arc.aiaa.org/doi/10.2514/6.2018-0657>`_, In : 2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference
-- Gallard, F., Barjhoux, P. J., Olivanti, R., et al. `GEMS, a Generic Engine for MDO Scenarios: Key Features In Application <https://doi.org/10.2514/6.2019-2991>`_, In : AIAA Aviation 2019 Forum
-- Gazaix, A., Gallard, F., Gachelin et al., `Towards the Industrialization of New MDO Methodologies and Tools for Aircraft Design <https://doi.org/10.2514/6.2017-3149>`_, In : 18th AIAA/ISSMO Multidisciplinary Analysis and Optimization Conference, 2017
-- Gazaix, A., Gallard, F., Ambert, et al., `Industrial Application of an Advanced Bi-level MDO Formulation to an Aircraft Engine Pylon Optimization <https://doi.org/10.2514/6.2019-3109>`_, In : AIAA Aviation 2019 Forum
-- Druot, T., Beleville, M., Roches, P., et al. `A Multidisciplinary Airplane Research Integrated Library With Applications To Partial Turboelectric Propulsion. <https://doi.org/10.2514/6.2019-3243>`_, In : AIAA Aviation 2019 Forum
-- Barjhoux, P. J., Diouane, Y., Grihon, S., et al.  `A bi-level methodology for solving large-scale mixed categorical structural optimization. <https://doi.org/10.1007/s00158-020-02491-w>`_, In : Structural and Multidisciplinary Optimization, 2020
-- Guénot, D., Gallard, F., Brezillon, J., et al. `Aerodynamic optimisation of a parametrised engine pylon on a mission path using the adjoint method <https://doi.org/10.1080/10618562.2019.1683163>`_, In : International Journal of Computational Fluid Dynamics, 2019
-- Olivanti, R., Gallard F., Brezillon, J, et al. `Comparison of Generic Multi-Fidelity Approaches for Bound-Constrained Nonlinear Optimization Applied to Adjoint-Based CFD Applications <https://doi.org/10.2514/6.2019-3102>`_, In : AIAA Aviation 2019 Forum
+- Gallard, F., Vanaret, C., Guénot, D, *et al.*, `GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation <https://arc.aiaa.org/doi/10.2514/6.2018-0657>`_, In : 2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference
+- Gallard, F., Barjhoux, P. J., Olivanti, R., *et al.*, `GEMS, a Generic Engine for MDO Scenarios: Key Features In Application <https://doi.org/10.2514/6.2019-2991>`_, In : AIAA Aviation 2019 Forum
+- Gazaix, A., Gallard, F., Gachelin *et al.*, `Towards the Industrialization of New MDO Methodologies and Tools for Aircraft Design <https://doi.org/10.2514/6.2017-3149>`_, In : 18th AIAA/ISSMO Multidisciplinary Analysis and Optimization Conference, 2017
+- Gazaix, A., Gallard, F., Ambert, *et al.*, `Industrial Application of an Advanced Bi-level MDO Formulation to an Aircraft Engine Pylon Optimization <https://doi.org/10.2514/6.2019-3109>`_, In : AIAA Aviation 2019 Forum
+- Druot, T., Beleville, M., Roches, P., *et al.*, `A Multidisciplinary Airplane Research Integrated Library With Applications To Partial Turboelectric Propulsion. <https://doi.org/10.2514/6.2019-3243>`_, In : AIAA Aviation 2019 Forum
+- Barjhoux, P. J., Diouane, Y., Grihon, S., *et al.*  `A bi-level methodology for solving large-scale mixed categorical structural optimization. <https://doi.org/10.1007/s00158-020-02491-w>`_, In : Structural and Multidisciplinary Optimization, 2020
+- Guénot, D., Gallard, F., Brezillon, J., *et al.* `Aerodynamic optimisation of a parametrised engine pylon on a mission path using the adjoint method <https://doi.org/10.1080/10618562.2019.1683163>`_, In : International Journal of Computational Fluid Dynamics, 2019
+- Olivanti, R., Gallard F., Brezillon, J, *et al.* `Comparison of Generic Multi-Fidelity Approaches for Bound-Constrained Nonlinear Optimization Applied to Adjoint-Based CFD Applications <https://doi.org/10.2514/6.2019-3102>`_, In : AIAA Aviation 2019 Forum
 - Vanaret, C., Gallard, F., Martins, J. R. `On the consequence of the "No Free Lunch" Theorem for Optimization on the Choice of an Appropriate MDO Architecture <https://arc.aiaa.org/doi/10.2514/6.2017-3148>`_, 18th AIAA/ISSMO Multidisciplinary Analysis and Optimization Conference, Denver, CO, USA, 2017
 
 .. seealso:: Find (almost) all the publications about |g| :ref:`on this page <publications>`.

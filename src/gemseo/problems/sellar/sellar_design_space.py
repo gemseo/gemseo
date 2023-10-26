@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The design space for the MDO problem proposed by Sellar et al. in.
+"""The design space for the MDO problem proposed by Sellar *et al.*
 
 Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent subspace
 optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
@@ -35,7 +35,7 @@ from gemseo.problems.sellar.sellar import Y_2
 
 
 class SellarDesignSpace(DesignSpace):
-    """The design space for the MDO problem proposed by Sellar et al (1996).
+    """The design space for the MDO problem proposed by Sellar *et al.* (1996).
 
     It is composed of:
     - :math:`x_{local}` belonging to :math:`[0., 10.]`,
