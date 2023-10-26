@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import logging
 import re
+import warnings
 from pathlib import Path
 
 import h5py
@@ -1429,3 +1430,13 @@ def test_repr_html(design_space_2):
     </tr>
 </table>"""
     )
+
+
+def test_normalization_runtimewarning():
+    """Check that normalization does no longer print a RuntimeWarning."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0, u_b=2)
+    design_space.add_variable("y", l_b=1, u_b=1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        design_space.normalize_vect(array([1.0, 1.0]))

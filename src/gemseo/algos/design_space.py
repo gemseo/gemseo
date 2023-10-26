@@ -71,7 +71,6 @@ from numpy import isnan
 from numpy import logical_or
 from numpy import mod
 from numpy import ndarray
-from numpy import nonzero
 from numpy import ones_like
 from numpy import round_ as np_round
 from numpy import string_
@@ -659,20 +658,20 @@ class DesignSpace(collections.abc.MutableMapping):
             return True
 
         test = vectorize(self.__is_numeric)(value)
-        indices = all_indices - set(list(where(test)[0]))
+        indices = all_indices - set(test.nonzero()[0])
         for idx in indices:
             raise ValueError(
                 f"Value {value[idx]} of variable '{name}' is not numerizable."
             )
 
         test = vectorize(self.__is_not_nan)(value)
-        indices = all_indices - set(list(where(test)[0]))
+        indices = all_indices - set(test.nonzero()[0])
         for idx in indices:
             raise ValueError(f"Value {value[idx]} of variable '{name}' is NaN.")
 
         # Check if some components of an integer variable are not integer.
         if self.variable_types[name][0] == self.DesignVariableType.INTEGER:
-            indices = all_indices - set(nonzero(self.__is_integer(value))[0])
+            indices = all_indices - set(self.__is_integer(value).nonzero()[0])
             for idx in indices:
                 raise ValueError(
                     f"Component value {value[idx]} of variable '{name}'"
@@ -753,9 +752,9 @@ class DesignSpace(collections.abc.MutableMapping):
         Raises:
             ValueError: If the bounds of the variable are not valid.
         """
-        l_b = self._lower_bounds.get(name, None)
-        u_b = self._upper_bounds.get(name, None)
-        inds = where(u_b < l_b)[0]
+        l_b = self._lower_bounds[name]
+        u_b = self._upper_bounds[name]
+        inds = (u_b < l_b).nonzero()[0]
         if inds.size != 0:
             raise ValueError(
                 "The bounds of variable '{}'{} are not valid: {}!<{}.".format(
@@ -779,12 +778,12 @@ class DesignSpace(collections.abc.MutableMapping):
         u_b = self._upper_bounds.get(name, None)
         current_value = self.__current_value.get(name, None)
         not_none = ~equal(current_value, None)
-        indices = where(
+        indices = (
             logical_or(
                 current_value[not_none] < l_b[not_none] - self.__bound_tol,
                 current_value[not_none] > u_b[not_none] + self.__bound_tol,
             )
-        )[0]
+        ).nonzero()[0]
         for index in indices:
             raise ValueError(
                 "The current value of variable '{}' ({}) is not "
@@ -884,7 +883,7 @@ class DesignSpace(collections.abc.MutableMapping):
         """
         l_b = self.__lower_bounds_array
         u_b = self.__upper_bounds_array
-        indices = where(x_vect < l_b - self.__bound_tol)[0]
+        indices = (x_vect < l_b - self.__bound_tol).nonzero()[0]
         if len(indices):
             value = x_vect[indices]
             lower_bound = l_b[indices]
@@ -894,7 +893,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 f"by {lower_bound - value}."
             )
 
-        indices = where(x_vect > u_b + self.__bound_tol)[0]
+        indices = (x_vect > u_b + self.__bound_tol).nonzero()[0]
         if len(indices):
             value = x_vect[indices]
             upper_bound = u_b[indices]
@@ -1018,9 +1017,9 @@ class DesignSpace(collections.abc.MutableMapping):
             u_b = where(equal(u_b, None), inf, u_b)
             x_vec_i = current_x[name]
             # lower bound saturated
-            active_l_b[name] = where(np_abs(x_vec_i - l_b) <= tol, True, False)
+            active_l_b[name] = np_abs(x_vec_i - l_b) <= tol
             # upper bound saturated
-            active_u_b[name] = where(np_abs(x_vec_i - u_b) <= tol, True, False)
+            active_u_b[name] = np_abs(x_vec_i - u_b) <= tol
 
         return active_l_b, active_u_b
 
@@ -1221,16 +1220,11 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__lower_bounds_array = self.get_lower_bounds()
         self.__upper_bounds_array = self.get_upper_bounds()
         self._norm_factor = self.__upper_bounds_array - self.__lower_bounds_array
-
-        norm_array = self.dict_to_array(self.normalize)
-        self.__norm_inds = where(norm_array)[0]
+        self.__norm_inds = self.dict_to_array(self.normalize).nonzero()[0]
         # In case lb=ub
-        self.__to_zero = where(self._norm_factor == 0.0)[0]
-        self._norm_factor_inv = 1.0 / (
-            self.__upper_bounds_array - self.__lower_bounds_array
-        )
-        self._norm_factor_inv[self.__to_zero] = 1.0
-
+        norm_factor_is_zero = self._norm_factor == 0.0
+        self.__to_zero = norm_factor_is_zero.nonzero()[0]
+        self._norm_factor_inv = 1 / where(norm_factor_is_zero, 1, self._norm_factor)
         self.__integer_components = concatenate(
             [
                 self.variable_types[variable_name] == self.DesignVariableType.INTEGER
@@ -2170,10 +2164,10 @@ class DesignSpace(collections.abc.MutableMapping):
             l_b = zeros_like(x_c)
             u_b = ones_like(x_c)
         x_p = array(x_c)
-        l_inds = where(x_c < l_b)
+        l_inds = (x_c < l_b).nonzero()
         x_p[l_inds] = l_b[l_inds]
 
-        u_inds = where(x_c > u_b)
+        u_inds = (x_c > u_b).nonzero()
         x_p[u_inds] = u_b[u_inds]
         return x_p
 

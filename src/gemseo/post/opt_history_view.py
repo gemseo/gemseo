@@ -52,7 +52,6 @@ from numpy import ndarray
 from numpy import ones_like
 from numpy import sort as np_sort
 from numpy import vstack
-from numpy import where
 from numpy.linalg import norm
 
 from gemseo.algos.database import Database
@@ -568,7 +567,7 @@ class OptHistoryView(OptPostProcessor):
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0, base=e),
         )
         if hasnan > 0:
-            x_absc_nan = where(idx_nan.any(axis=0))[0]
+            x_absc_nan = idx_nan.any(axis=0).nonzero()[0]
             for x_i in x_absc_nan:
                 plt.axvline(x_i, color="purple")
 

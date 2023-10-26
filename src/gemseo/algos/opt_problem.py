@@ -1730,7 +1730,7 @@ class OptimizationProblem(BaseProblem):
                 is_pt_feasible = False
                 if constraint.f_type == MDOFunction.ConstraintType.INEQ:
                     if isinstance(eval_cstr, ndarray):
-                        viol_inds = where(eval_cstr > self.ineq_tolerance)
+                        viol_inds = (eval_cstr > self.ineq_tolerance).nonzero()
                         f_violation += (
                             norm(eval_cstr[viol_inds] - self.ineq_tolerance) ** 2
                         )
@@ -2168,7 +2168,7 @@ class OptimizationProblem(BaseProblem):
         positions = []
         offset = int(categorize & opt_naming)
         for input_value in input_values:
-            _positions = where((input_history == input_value).all(axis=1))[0]
+            _positions = ((input_history == input_value).all(axis=1)).nonzero()[0]
             positions.extend((_positions + offset).tolist())
 
         data = [input_history.real]

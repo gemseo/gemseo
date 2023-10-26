@@ -70,7 +70,6 @@ from numpy import ndarray
 from numpy import newaxis
 from numpy import nonzero
 from numpy import unique
-from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
@@ -632,7 +631,7 @@ class MOERegressor(MLRegressionAlgo):
             )
         )
         for klass in unique(classes):
-            inds_kls = where(classes == klass)
+            inds_kls = (classes == klass).nonzero()[0]
             jacobians[inds_kls] = self.regress_models[klass].predict_jacobian(
                 input_data[inds_kls]
             )
