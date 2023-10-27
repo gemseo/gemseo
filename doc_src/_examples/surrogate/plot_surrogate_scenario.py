@@ -54,7 +54,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from numpy import array
 from numpy import hstack
 from numpy import vstack
@@ -118,7 +118,7 @@ discipline = create_discipline("SobieskiMission")
 # "x_shared", "y_24", "y_34"
 # as inputs of the DOE:
 #
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 
 # %%

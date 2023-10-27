@@ -26,7 +26,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -39,7 +39,7 @@ discipline = create_discipline("SobieskiMission")
 # %%
 # Create the design space
 # -----------------------
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 design_space.filter(["y_24", "y_34"])
 
 # %%

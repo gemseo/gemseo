@@ -35,7 +35,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.uncertainty import create_statistics
 
 configure_logger()
@@ -54,10 +54,10 @@ discipline = create_discipline("SobieskiMission")
 # %%
 # Then,
 # we load the design space of the Sobieski's SSBJ problem
-# by means of the property :meth:`.SobieskiProblem.design_space`
+# by means of the class :meth:`.SobieskiDesignSpace`
 # and :meth:`.DesignSpace.filter` the inputs of the
 # discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`.
-parameter_space = SobieskiProblem().design_space
+parameter_space = SobieskiDesignSpace()
 parameter_space.filter(discipline.get_input_data_names())
 
 # %%

@@ -29,7 +29,7 @@ from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
@@ -201,7 +201,7 @@ class TestExecSequence(unittest.TestCase):
 
     def test_sub_scenario(self):
         d1 = SobieskiPropulsion()
-        design_space = SobieskiProblem().design_space
+        design_space = SobieskiDesignSpace()
         sc_prop = MDOScenario(
             disciplines=[d1],
             formulation="DisciplinaryOpt",

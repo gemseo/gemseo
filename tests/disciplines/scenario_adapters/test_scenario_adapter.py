@@ -38,7 +38,7 @@ from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import 
     MDOObjectiveScenarioAdapter,
 )
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
@@ -57,7 +57,7 @@ from numpy import zeros_like
 
 def create_design_space():
     """"""
-    return SobieskiProblem().design_space
+    return SobieskiDesignSpace()
 
 
 @pytest.fixture
@@ -281,7 +281,7 @@ def test_compute_jacobian_exceptions(scenario):
 
 
 def build_struct_scenario():
-    ds = SobieskiProblem().design_space
+    ds = SobieskiDesignSpace()
     sc_str = MDOScenario(
         disciplines=[SobieskiStructure()],
         formulation="DisciplinaryOpt",
@@ -297,7 +297,7 @@ def build_struct_scenario():
 
 
 def build_prop_scenario():
-    ds = SobieskiProblem().design_space
+    ds = SobieskiDesignSpace()
     sc_prop = MDOScenario(
         disciplines=[SobieskiPropulsion()],
         formulation="DisciplinaryOpt",

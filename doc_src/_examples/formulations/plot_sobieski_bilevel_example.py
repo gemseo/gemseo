@@ -29,7 +29,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -59,7 +59,7 @@ propu, aero, mission, struct = create_discipline(
 # instead of minimizing y_4 (range), which is the default option.
 #
 # We need to define the design space.
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 
 # %%
 # Then, we build a sub-scenario for each strongly coupled disciplines,

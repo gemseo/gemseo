@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any
 
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 from gemseo.problems.sobieski.disciplines import create_disciplines
 
 
@@ -25,7 +26,7 @@ class SobieskiMDAGaussSeidel(MDAGaussSeidel):
 
     def __init__(
         self,
-        dtype: str = "float64",
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
         **mda_options: Any,
     ) -> None:
         """

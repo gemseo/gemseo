@@ -46,7 +46,7 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -848,7 +848,7 @@ def test_grad_normalization(pow2_problem):
 
 def test_2d_objective():
     disc = SobieskiStructure()
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     inputs = disc.get_input_data_names()
     design_space.filter([name for name in inputs if not name.startswith("c_")])
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
