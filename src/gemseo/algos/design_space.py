@@ -2266,13 +2266,15 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             other: The design space to be appended to the current one.
         """
-        for name in other.variable_names:
-            size = other.get_size(name)
-            var_type = other.get_type(name)
-            l_b = other.get_lower_bound(name)
-            u_b = other.get_upper_bound(name)
-            value = other.get_current_value(as_dict=True).get(name)
-            self.add_variable(name, size, var_type, l_b, u_b, value)
+        for name, variable in other.items():
+            self.add_variable(
+                name,
+                variable.size,
+                variable.var_type,
+                variable.l_b,
+                variable.u_b,
+                variable.value,
+            )
 
     @staticmethod
     def __cast_array_to_list(

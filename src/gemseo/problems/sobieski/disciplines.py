@@ -38,7 +38,7 @@ from gemseo.problems.sobieski.core.utils import SobieskiBase
 class SobieskiDiscipline(MDODiscipline):
     """Abstract base discipline for the Sobieski's SSBJ use case."""
 
-    dtype: str
+    dtype: SobieskiBase.DataType
     """The data type for the NumPy arrays."""
 
     sobieski_problem: SobieskiProblem
@@ -55,7 +55,7 @@ class SobieskiDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         """
         Args:
@@ -75,7 +75,8 @@ class SobieskiDiscipline(MDODiscipline):
 
     @classmethod
     def create_with_physical_naming(
-        cls, dtype: str = SobieskiBase.DTYPE_DOUBLE
+        cls,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> RemappingDiscipline:
         """
         Args:
@@ -99,7 +100,7 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
         enable_delay: bool | float = False,
     ) -> None:
         """
@@ -134,7 +135,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     @classmethod
     def create_with_physical_naming(
-        cls, dtype: str = SobieskiBase.DTYPE_DOUBLE, enable_delay: bool | float = False
+        cls,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
+        enable_delay: bool | float = False,
     ) -> RemappingDiscipline:
         """
         Args:
@@ -161,7 +164,7 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.default_inputs["c_0"] = array([self.sobieski_problem.constants[0]])
@@ -189,7 +192,7 @@ class SobieskiStructure(SobieskiDiscipline):
 
     @classmethod
     def create_with_physical_naming(
-        cls, dtype: str = SobieskiBase.DTYPE_DOUBLE
+        cls, dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT
     ) -> RemappingDiscipline:
         return RemappingDiscipline(
             cls(dtype=dtype),
@@ -224,7 +227,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.default_inputs["c_4"] = array([self.sobieski_problem.constants[4]])
@@ -250,7 +253,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     @classmethod
     def create_with_physical_naming(
-        cls, dtype: str = SobieskiBase.DTYPE_DOUBLE
+        cls,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> RemappingDiscipline:
         return RemappingDiscipline(
             cls(dtype=dtype),
@@ -281,7 +285,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.default_inputs["c_3"] = array([self.sobieski_problem.constants[3]])
@@ -308,7 +312,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     @classmethod
     def create_with_physical_naming(
-        cls, dtype: str = SobieskiBase.DTYPE_DOUBLE
+        cls,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> RemappingDiscipline:
         return RemappingDiscipline(
             cls(dtype=dtype),
@@ -332,7 +337,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
 
 def create_disciplines(
-    dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
 ) -> list[SobieskiDiscipline]:
     """Instantiate the structure, aerodynamics, propulsion and mission disciplines.
 
@@ -351,7 +356,7 @@ def create_disciplines(
 
 
 def create_disciplines_with_physical_naming(
-    dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
 ) -> list[RemappingDiscipline]:
     """Instantiate the structure, aerodynamics, propulsion and mission disciplines.
 

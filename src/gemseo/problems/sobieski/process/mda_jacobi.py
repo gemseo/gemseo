@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any
 
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 from gemseo.problems.sobieski.disciplines import create_disciplines
 
 
@@ -26,7 +27,7 @@ class SobieskiMDAJacobi(MDAJacobi):
     def __init__(
         self,
         n_processes: int = 1,
-        dtype: str = "float64",
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
         **mda_options: Any,
     ) -> None:
         """

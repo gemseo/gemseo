@@ -28,7 +28,7 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from numpy import array
 from numpy import isclose
@@ -170,7 +170,7 @@ def test_expected_workflow_with_adapter():
             "SobieskiMission",
         ]
     )
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
         "DisciplinaryOpt",

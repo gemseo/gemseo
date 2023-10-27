@@ -19,7 +19,7 @@ from functools import partial
 
 import pytest
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
@@ -65,7 +65,7 @@ def build_and_run_idf_scenario_with_constraints(
         SobieskiAerodynamics(dtype),
         SobieskiMission(dtype),
     ]
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     if dtype == "complex128":
         design_space.to_complex()
     if remove_coupl_from_ds:

@@ -35,6 +35,7 @@ LOGGER = logging.getLogger(__name__)
 class SobieskiDiscipline:
     """Base class for the disciplines of the Sobieski's SSBJ use case."""
 
+    # TODO: API: remove these unused class attributes.
     DTYPE_COMPLEX = SobieskiBase.DTYPE_COMPLEX
     DTYPE_DOUBLE = SobieskiBase.DTYPE_DOUBLE
 

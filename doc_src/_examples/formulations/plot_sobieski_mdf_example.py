@@ -27,7 +27,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -94,7 +94,7 @@ formulation_options = {
 # - ``'linear_solver_tolerance'``: set the linear solver tolerance,
 #   idem we need full convergence
 #
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 design_space
 
 # %%

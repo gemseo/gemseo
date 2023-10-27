@@ -31,7 +31,7 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
@@ -134,7 +134,7 @@ def test_expected_workflow_with_adapter():
             "SobieskiMission",
         ]
     )
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
         "DisciplinaryOpt",

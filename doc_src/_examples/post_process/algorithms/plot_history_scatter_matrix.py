@@ -30,7 +30,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -67,8 +67,8 @@ disciplines = create_discipline(
 # %%
 # Create design space
 # -------------------
-# We also read the design space from the :class:`.SobieskiProblem`.
-design_space = SobieskiProblem().design_space
+# We also create the :class:`.SobieskiDesignSpace`.
+design_space = SobieskiDesignSpace()
 
 # %%
 # Create and execute scenario

@@ -33,7 +33,7 @@ from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
@@ -70,7 +70,7 @@ def build_mdo_scenario(
             SobieskiStructureSG(),
         ]
 
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     scenario = DOEScenario(
         disciplines,
         formulation=formulation,
@@ -112,7 +112,7 @@ def test_parallel_doe_hdf_cache(caplog):
         disciplines,
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
         maximize_objective=True,
         scenario_type="DOE",
     )

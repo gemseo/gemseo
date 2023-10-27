@@ -42,7 +42,7 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
@@ -97,7 +97,7 @@ class TestXDSMizer(unittest.TestCase):
             disciplines,
             formulation=formulation,
             objective_name="y_4",
-            design_space=SobieskiProblem().design_space,
+            design_space=SobieskiDesignSpace(),
             **options,
         )
 
@@ -151,7 +151,7 @@ class TestXDSMizer(unittest.TestCase):
 
     def test_xdsmize_bilevel(self):
         """Test xdsmization of Sobieski problem solved with bilevel."""
-        design_space = SobieskiProblem().design_space
+        design_space = SobieskiDesignSpace()
         # Disciplinary optimization
         propulsion = SobieskiPropulsion()
         aerodynamics = SobieskiAerodynamics()

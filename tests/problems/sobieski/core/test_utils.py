@@ -28,14 +28,8 @@ from numpy import zeros
 
 
 def test_init():
-    SobieskiBase("float64")
-    SobieskiBase("complex128")
-    SobieskiBase(float64)
-    SobieskiBase(complex128)
-
-    assert SobieskiBase("float64").dtype == SobieskiBase(float64).dtype
-    assert SobieskiBase("complex128").dtype == SobieskiBase(complex128).dtype
-
+    assert SobieskiBase("float64").dtype == float64
+    assert SobieskiBase("complex128").dtype == complex128
     with pytest.raises(ValueError, match="foo"):
         SobieskiBase("foo")
 

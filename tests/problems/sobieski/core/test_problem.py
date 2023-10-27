@@ -512,15 +512,49 @@ def test_x0_optimum(problem, dtype):
 
 
 @pytest.mark.parametrize(
-    "design_variables,use_original_order",
+    "design_variables,physical_design_variables,use_original_order",
     [
-        (["x_shared", "x_1", "x_2", "x_3"], False),
-        (["x_1", "x_2", "x_3", "x_shared"], True),
+        (
+            ["x_shared", "x_1", "x_2", "x_3"],
+            [
+                "t_c",
+                "altitude",
+                "mach",
+                "ar",
+                "sweep",
+                "area",
+                "taper_ratio",
+                "wingbox_area",
+                "cf",
+                "throttle",
+            ],
+            False,
+        ),
+        (
+            ["x_1", "x_2", "x_3", "x_shared"],
+            [
+                "taper_ratio",
+                "wingbox_area",
+                "cf",
+                "throttle",
+                "t_c",
+                "altitude",
+                "mach",
+                "ar",
+                "sweep",
+                "area",
+            ],
+            True,
+        ),
     ],
 )
-def test_original_design_variables_order(design_variables, use_original_order):
+def test_original_design_variables_order(
+    design_variables, physical_design_variables, use_original_order
+):
     """Check the design space with original variables order."""
-    coupling_variables = [
+    problem = SobieskiProblem()
+    problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
+    variable_names = design_variables + [
         "y_14",
         "y_32",
         "y_31",
@@ -530,10 +564,17 @@ def test_original_design_variables_order(design_variables, use_original_order):
         "y_21",
         "y_12",
     ]
-
-    problem = SobieskiProblem()
-    problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
-    variable_names = design_variables + coupling_variables
     assert problem.design_space.variable_names == variable_names
-    assert problem.design_space_with_physical_naming.variable_names == variable_names
+    variable_names = physical_design_variables + [
+        "t_w_4",
+        "f_w",
+        "esf",
+        "e_w",
+        "cl_cd",
+        "sfc",
+        "cd",
+        "cl",
+        "t_w_2",
+        "twist",
+    ]
     assert problem.design_space_with_physical_naming.variable_names == variable_names

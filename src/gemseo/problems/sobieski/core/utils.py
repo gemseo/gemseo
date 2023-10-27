@@ -28,6 +28,7 @@ from __future__ import annotations
 import cmath
 import logging
 import math
+from types import ModuleType
 from typing import Sequence
 
 from numpy import array
@@ -37,6 +38,7 @@ from numpy import complex128
 from numpy import concatenate
 from numpy import float64
 from numpy import ndarray
+from strenum import StrEnum
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,29 +93,37 @@ _NAMES_TO_BOUNDS = {
 class SobieskiBase:
     """Utilities for Sobieski's SSBJ use case."""
 
+    # TODO: API: remove these unused class attributes.
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
     DTYPE_DEFAULT = DTYPE_COMPLEX
 
+    class DataType(StrEnum):
+        """A NumPy data type."""
+
+        COMPLEX = "complex128"
+        FLOAT = "float64"
+
+    dtype: DataType
+    """The NumPy data type."""
+
+    math: ModuleType
+    """The library of mathematical functions."""
+
     def __init__(
         self,
-        dtype: str,
+        dtype: DataType,
     ) -> None:
         """
         Args:
             dtype: The NumPy data type.
         """
-        self.dtype = dtype
-        if dtype == complex128:
-            self.math = cmath
-        elif dtype == float64:
-            self.math = math
-        elif dtype == self.DTYPE_DOUBLE:
-            self.math = math
-            self.dtype = float64
-        elif dtype == self.DTYPE_COMPLEX:
+        if dtype == self.DataType.COMPLEX:
             self.math = cmath
             self.dtype = complex128
+        elif dtype == self.DataType.FLOAT:
+            self.math = math
+            self.dtype = float64
         else:
             raise ValueError(f"Unknown dtype: {dtype}.")
 

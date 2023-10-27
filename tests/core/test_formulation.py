@@ -31,6 +31,7 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -44,7 +45,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_generator(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().design_space
+        ds = SobieskiDesignSpace()
         with concretize_classes(MDOFormulation):
             f = MDOFormulation([sm], "y_4", ds)
         args = ["toto"]
@@ -55,7 +56,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_cstrs(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().design_space
+        ds = SobieskiDesignSpace()
         with concretize_classes(MDOFormulation):
             f = MDOFormulation([sm], "y_4", ds)
         prob = f.opt_problem
@@ -110,9 +111,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_x0(self):
         """"""
         with concretize_classes(MDOFormulation):
-            _ = MDOFormulation(
-                [SobieskiMission()], "y_4", SobieskiProblem().design_space
-            )
+            _ = MDOFormulation([SobieskiMission()], "y_4", SobieskiDesignSpace())
 
     def test_add_user_defined_constraint_error(self):
         """Check that an error is raised when adding a constraint with wrong type."""

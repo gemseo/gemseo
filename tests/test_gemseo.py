@@ -86,7 +86,7 @@ from gemseo.mda.mda import MDA
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from numpy import array
 from numpy import cos
@@ -111,7 +111,7 @@ def scenario() -> MDOScenario:
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
     )
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
     return scenario
@@ -184,7 +184,7 @@ def test_create_scenario_and_monitor():
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
     )
 
     with pytest.raises(
@@ -194,7 +194,7 @@ def test_create_scenario_and_monitor():
             create_discipline("SobieskiMission"),
             "DisciplinaryOpt",
             "y_4",
-            SobieskiProblem().design_space,
+            SobieskiDesignSpace(),
             scenario_type="unknown",
         )
 
@@ -205,7 +205,7 @@ def test_monitor_scenario():
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
     )
 
     observer = Observer()
@@ -253,7 +253,7 @@ def test_create_doe_scenario():
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
         scenario_type="DOE",
     )
 
@@ -333,7 +333,7 @@ def test_get_formulation_sub_options_schema_print(capfd, formulation_name, opts)
 def test_get_scenario_inputs_schema():
     """Check that the scenario inputs schema is retrieved correctly."""
     aero = create_discipline(["SobieskiAerodynamics"])
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     sc_aero = create_scenario(
         aero, "DisciplinaryOpt", "y_24", design_space.filter("x_2")
     )
@@ -458,7 +458,7 @@ def test_create_surrogate():
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
     disc.set_cache_policy(disc.CacheType.MEMORY_FULL)
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
     doe.execute({"algo": "fullfact", "n_samples": 10})

@@ -25,7 +25,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
-from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -72,7 +72,7 @@ def test_variable_influence_doe(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     disc = SobieskiStructure()
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.get_input_data_names() if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)

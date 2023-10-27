@@ -36,7 +36,7 @@ from gemseo.problems.sobieski.core.utils import SobieskiBase
 class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
     """Base discipline for the Sobieski's SSBJ use case with simple grammars."""
 
-    dtype: str
+    dtype: SobieskiBase.DataType
     """The data type for the NumPy arrays."""
 
     init_values: dict[str, ndarray]
@@ -48,7 +48,7 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         """
         Args:
@@ -84,7 +84,7 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(("y_14", "y_24", "y_34", "x_shared"))
@@ -112,7 +112,7 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(["x_1", "y_21", "y_31", "x_shared"])
@@ -142,7 +142,7 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(["x_2", "y_12", "y_32", "x_shared"])
@@ -174,7 +174,7 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(["x_3", "y_23", "x_shared"])
