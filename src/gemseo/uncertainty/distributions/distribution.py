@@ -97,6 +97,7 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
@@ -412,10 +413,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The figure.
         """
-        variable_name = self.variable_name
-        if self.dimension > 1:
-            variable_name = f"{variable_name}[{index}]"
-
+        variable_name = repr_variable(self.variable_name, index, self.dimension)
         l_b = self.num_lower_bound[index]
         u_b = self.num_upper_bound[index]
         x_values = arange(l_b, u_b, (u_b - l_b) / 100)

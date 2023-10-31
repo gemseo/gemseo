@@ -191,3 +191,10 @@ analysis.compute_tolerance_interval(0.5)
 # tolerance interval with a coverage level equal to 90%
 # with a confidence level of 95%:
 analysis.compute_b_value()
+
+# %%
+# Plot the distribution
+# ~~~~~~~~~~~~~~~~~~~~~
+# We can draw the empirical cumulative distribution function
+# and the empirical probability density function:
+analysis.plot()

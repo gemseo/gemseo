@@ -170,3 +170,17 @@ analysis.compute_percentile(50)
 # ~~~~~~~~~~
 # Here is the median:
 analysis.compute_median()
+
+# %%
+# Plot the distribution
+# ~~~~~~~~~~~~~~~~~~~~~
+# We can use a boxplot to visualize the data distribution:
+analysis.plot_boxplot()
+
+# %%
+# draw the empirical cumulative distribution function:
+analysis.plot_cdf()
+
+# %%
+# or draw the empirical probability density function:
+analysis.plot_pdf()

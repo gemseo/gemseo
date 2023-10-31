@@ -46,19 +46,30 @@ from __future__ import annotations
 
 from operator import ge
 from operator import le
+from pathlib import Path
+from typing import Any
+from typing import Final
 from typing import Mapping
 
 from numpy import all as np_all
+from numpy import cumsum
+from numpy import linspace
 from numpy import max as np_max
 from numpy import mean
 from numpy import min as np_min
 from numpy import ndarray
 from numpy import quantile
 from numpy import std
+from numpy import unique
 from numpy import var
+from scipy.stats import gaussian_kde
 from scipy.stats import moment
 
+from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset.boxplot import Boxplot
+from gemseo.post.dataset.lines import Lines
 from gemseo.uncertainty.statistics.statistics import Statistics
+from gemseo.utils.string_tools import repr_variable
 
 
 class EmpiricalStatistics(Statistics):
@@ -106,6 +117,12 @@ class EmpiricalStatistics(Statistics):
         >>> statistics = EmpiricalStatistics(dataset)
         >>> mean = statistics.compute_mean()
     """
+
+    __CDF_LABEL: Final[str] = "CDF"
+    """The label for the cumulative distribution function."""
+
+    __PDF_LABEL: Final[str] = "PDF"
+    """The label for the probability density function."""
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         return {
@@ -187,3 +204,140 @@ class EmpiricalStatistics(Statistics):
         return {
             name: upper - lower[name] for name, upper in self.compute_maximum().items()
         }
+
+    def plot_boxplot(
+        self,
+        save: bool = False,
+        show: bool = True,
+        directory_path: str | Path = "",
+        file_format: str = "png",
+        **options: Any,
+    ) -> dict[str, Boxplot]:
+        """Visualize the data with a boxplot.
+
+        Args:
+            save: Whether to save the figures.
+            show: Whether to show the figures.
+            directory_path: The path to save the figures.
+            file_format: The file extension.
+            **options: The options of the :class:`.Boxplot` graphs.
+
+        Returns:
+            The boxplot of each variable.
+        """
+        plots = {
+            name: Boxplot(self.dataset, variables=[name], **options)
+            for name in self.names
+        }
+        for plot in plots.values():
+            plot.execute(
+                save=save,
+                show=show,
+                directory_path=directory_path,
+                file_format=file_format,
+            )
+        return plots
+
+    def plot_pdf(
+        self,
+        save: bool = False,
+        show: bool = True,
+        directory_path: str | Path = "",
+        file_format: str = "png",
+        **options: Any,
+    ):
+        """Visualize the empirical probability density function.
+
+        Args:
+            save: Whether to save the figures.
+            show: Whether to show the figures.
+            directory_path: The path to save the figures.
+            file_format: The file extension.
+            **options: The options of the :class:`.Lines` graphs.
+
+        Returns:
+            The graph of the probability density function for each variable.
+        """
+        plots = {}
+        for name in self.names:
+            size = self.dataset.variable_names_to_n_components[name]
+            for index, samples in enumerate(
+                self.dataset.get_view(variable_names=name).to_numpy().T
+            ):
+                kde = gaussian_kde(samples)
+                x = linspace(samples.min(), samples.max(), 1000)
+                dataset = Dataset()
+                dataset.add_variable(name, x)
+                dataset.add_variable(self.__PDF_LABEL, kde(x))
+                plot = Lines(dataset, [self.__PDF_LABEL], name, **options)
+                xlabel = repr_variable(name, index, size)
+                plot.xlabel = xlabel
+                plot.ylabel = "Probability density function"
+                plot.execute(
+                    save=save,
+                    show=show,
+                    directory_path=directory_path,
+                    file_format=file_format,
+                )
+                plots[xlabel] = plot
+
+        return plots
+
+    def plot_cdf(
+        self,
+        save: bool = False,
+        show: bool = True,
+        directory_path: str | Path = "",
+        file_format: str = "png",
+        **options: Any,
+    ) -> dict[str, Lines]:
+        """Visualize the empirical cumulative probability function.
+
+        Args:
+            save: Whether to save the figures.
+            show: Whether to show the figures.
+            directory_path: The path to save the figures.
+            file_format: The file extension.
+            **options: The options of the :class:`.Lines` graphs.
+
+        Returns:
+            The graph of the cumulative probability function for each variable.
+        """
+        plots = {}
+        for name in self.names:
+            size = self.dataset.variable_names_to_n_components[name]
+            for index, samples in enumerate(
+                self.dataset.get_view(variable_names=name).to_numpy().T
+            ):
+                x, y = self.__evaluate_ecdf(samples)
+                dataset = Dataset()
+                dataset.add_variable(self.__CDF_LABEL, x)
+                dataset.add_variable(name, y)
+                plot = Lines(dataset, [self.__CDF_LABEL], name, **options)
+                xlabel = repr_variable(name, index, size)
+                plot.xlabel = xlabel
+                plot.ylabel = "Cumulative probability function"
+                plot.execute(
+                    save=save,
+                    show=show,
+                    directory_path=directory_path,
+                    file_format=file_format,
+                )
+                plots[xlabel] = plot
+
+        return plots
+
+    @staticmethod
+    def __evaluate_ecdf(data: ndarray) -> tuple[ndarray, ndarray]:
+        """Evaluate the empirical cumulative distribution function (ECDF).
+
+        Args:
+            data: The data (one sample per row).
+
+        Returns:
+            The quantiles of the random variable,
+            the evaluations of the empirical cumulative distribution function (ECDF)
+            for these quantiles.
+        """
+        quantiles, counts = unique(data, return_counts=True)
+        return quantiles, cumsum(counts) / data.size

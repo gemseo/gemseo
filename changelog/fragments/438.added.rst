@@ -1,0 +1,3 @@
+- The method ``EmpiricalStatistics.plot_barplot`` generates a boxplot for each variable.
+- The method ``EmpiricalStatistics.plot_cdf`` draws the cumulative distribution function for each variable.
+- The method ``EmpiricalStatistics.plot_pdf`` draws the probability density function for each variable.
